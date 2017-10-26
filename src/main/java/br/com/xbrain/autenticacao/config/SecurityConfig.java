@@ -1,0 +1,61 @@
+package br.com.xbrain.autenticacao.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private AppUserDetailsService appUserDetailsService;
+
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .userDetailsService(appUserDetailsService)
+                .passwordEncoder(passwordEncoder());
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        String[] permitAll = {"/oauth/authorize", "/oauth/confirm_access"};
+
+        http
+                .authorizeRequests()
+                .antMatchers(permitAll).permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .requestMatchers()
+                .antMatchers(permitAll)
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                //.and()
+                //.httpBasic()
+                .and().formLogin().permitAll()
+                .and()
+                .csrf().disable()
+                .headers().frameOptions().disable();
+    }
+}
