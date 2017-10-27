@@ -47,6 +47,21 @@ public class UsuarioControllerTest {
     private EntityManager entityManager;
 
     @Test
+    public void deveSolicitarAutenticacao() throws Exception {
+        mvc.perform(get("/api/usuarios")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deveTerPermissaoDeGerenciaDeUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void deveRetornarPorId() throws Exception {
         mvc.perform(get("/api/usuarios/100")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
@@ -62,7 +77,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content", hasSize(2)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
