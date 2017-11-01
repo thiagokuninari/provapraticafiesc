@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        String[] permitAll = {"/oauth/authorize", "/oauth/confirm_access"};
+        String[] permitAll = {"/*", "/oauth/authorize", "/oauth/confirm_access"};
 
         http
                 .authorizeRequests()
