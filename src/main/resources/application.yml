@@ -3,7 +3,6 @@ server:
   compression:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
-  contextPath: /autenticacao
 
 app-config:
   oauth-client: xbrain-app-client
