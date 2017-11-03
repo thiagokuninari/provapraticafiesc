@@ -19,7 +19,6 @@ public class HttpsConfig {
     @Value("${server.http-port}")
     private Integer httpPort;
 
-
     @Bean
     public EmbeddedServletContainerFactory servletContainer() {
         TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory() {
