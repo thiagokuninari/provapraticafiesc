@@ -1,0 +1,39 @@
+package br.com.xbrain.autenticacao.modules.usuario.repository;
+
+import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import static br.com.xbrain.autenticacao.infra.JoinDescriptor.innerJoin;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static java.util.Arrays.asList;
+
+public class CargoRepositoryImpl extends CustomRepository<Cargo> implements CargoRepositoryCustom {
+
+    public Page<Cargo> findAll(Predicate predicate, Pageable pageable) {
+        return super.findAll(
+                asList(
+                        innerJoin(cargo.nivel)
+                ),
+                predicate,
+                pageable);
+    }
+
+    @Override
+    public Iterable<Cargo> findBySituacaoAndNivelId(ESituacao situacao, Integer nivelId) {
+        return new JPAQueryFactory(entityManager)
+                .select(cargo)
+                .from(cargo)
+                .innerJoin(cargo.nivel).fetchJoin()
+                .where(
+                        cargo.nivel.id.eq(nivelId)
+                                .and(cargo.situacao.eq(situacao))
+                )
+                .orderBy(cargo.nome.asc())
+                .fetch();
+    }
+}

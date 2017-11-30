@@ -1,6 +1,5 @@
-package br.com.xbrain.autenticacao.modules.oauth;
+package br.com.xbrain.autenticacao.modules.comum.controller;
 
-import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
+import static helpers.Usuarios.ADMIN;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,19 +26,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/usuarios.sql"})
-public class UsuarioAutenticadoControllerTest {
+public class UnidadeNegocioControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Test
-    public void deveRetornarOUsuarioAutenticado() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+    public void deveSolicitarAutenticacao() throws Exception  {
+        mvc.perform(get("/api/unidades-negocio")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deveRetornarTodos() throws Exception  {
+        mvc.perform(get("/api/unidades-negocio")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(200)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")));
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].nome", is("Pessoal")));
+    }
+
+    @Test
+    public void deveIgnorarXbrain() throws Exception  {
+        mvc.perform(get("/api/unidades-negocio?ignorarXbrain=true")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 }

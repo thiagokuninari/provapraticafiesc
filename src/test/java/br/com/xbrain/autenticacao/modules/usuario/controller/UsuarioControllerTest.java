@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
-import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,9 @@ import java.util.List;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
+import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.HELP_DESK;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Sql(scripts = {"classpath:/usuarios.sql"})
+@Sql(scripts = {"classpath:/usuarios.sql","classpath:/tests_database.sql"})
 public class UsuarioControllerTest {
 
     @Autowired
@@ -56,35 +59,35 @@ public class UsuarioControllerTest {
     @Test
     public void deveTerPermissaoDeGerenciaDeUsuario() throws Exception {
         mvc.perform(get("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void deveRetornarPorId() throws Exception {
-        mvc.perform(get("/api/usuarios/100")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+        mvc.perform(get("/api/usuarios/200")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(100)))
+                .andExpect(jsonPath("$.id", is(200)))
                 .andExpect(jsonPath("$.nome", is("ADMIN")));
     }
 
     @Test
     public void deveRetornarTodos() throws Exception {
         mvc.perform(get("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+                .andExpect(jsonPath("$.content", hasSize(9)))
+                .andExpect(jsonPath("$.content[0].nome", is("xbrain_admin")));
     }
 
     @Test
     public void deveFiltrarPorNome() throws Exception {
         mvc.perform(get("/api/usuarios?nome=ADMIN")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)));
@@ -94,7 +97,7 @@ public class UsuarioControllerTest {
     public void deveSalvar() throws Exception {
         Usuario usuario = umUsuario("JOAO");
         mvc.perform(post("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(usuario)))
                 .andExpect(status().isOk());
@@ -108,16 +111,18 @@ public class UsuarioControllerTest {
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(post("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new Usuario())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(6)))
+                .andExpect(jsonPath("$", hasSize(8)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
                         "O campo telefone é obrigatório.",
+                        "O campo unidadeNegocio é obrigatório.",
+                        "O campo empresas é obrigatório.",
                         "O campo cargo é obrigatório.",
                         "O campo departamento é obrigatório.")));
     }
@@ -128,6 +133,8 @@ public class UsuarioControllerTest {
         usuario.setCargo(new Cargo(1));
         usuario.setDepartamento(new Departamento(1));
         usuario.setCpf("097.238.645-92");
+        usuario.setUnidadeNegocio(new UnidadeNegocio(1));
+        usuario.setEmpresasId(singletonList(4));
         usuario.setEmail("usuario@teste.com");
         usuario.setTelefone("43 995565661");
         return usuario;

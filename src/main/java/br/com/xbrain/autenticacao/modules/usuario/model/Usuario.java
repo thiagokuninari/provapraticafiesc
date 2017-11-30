@@ -1,11 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
@@ -13,6 +17,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "USUARIO")
@@ -35,7 +41,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL", nullable = false, length = 80)
+    @Column(name = "EMAIL_01", nullable = false, length = 80)
     private String email;
 
     @Email
@@ -45,7 +51,7 @@ public class Usuario {
 
     @NotNull
     @Size(min = 3, max = 100)
-    @Column(name = "TELEFONE")
+    @Column(name = "TELEFONE_01")
     private String telefone;
 
     @Column(name = "TELEFONE_02")
@@ -75,6 +81,22 @@ public class Usuario {
     private LocalDate nascimento;
 
     @NotNull
+    @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UnidadeNegocio unidadeNegocio;
+
+    @JsonIgnore
+    @NotEmpty
+    @JoinTable(name = "USUARIO_EMPRESA", joinColumns = {
+            @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_USUARIO"))}, inverseJoinColumns = {
+            @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
+    @ManyToMany
+    private List<Empresa> empresas;
+
+    @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_CARGO"), nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -102,5 +124,23 @@ public class Usuario {
 
     public boolean isNovoCadastro() {
         return id == null;
+    }
+
+    public List<Integer> getEmpresasId() {
+        return empresas != null && Hibernate.isInitialized(empresas)
+                ? empresas
+                        .stream()
+                        .map(Empresa::getId)
+                        .collect(Collectors.toList())
+                : null;
+    }
+
+    public void setEmpresasId(List<Integer> ids) {
+        if (ids != null) {
+            empresas = ids
+                    .stream()
+                    .map(Empresa::new)
+                    .collect(Collectors.toList());
+        }
     }
 }

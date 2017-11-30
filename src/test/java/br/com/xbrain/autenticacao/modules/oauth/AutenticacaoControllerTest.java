@@ -31,11 +31,11 @@ public class AutenticacaoControllerTest {
     public void deveAutenticar() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
         assertNotNull(token.getAccessToken());
-        assertEquals("100-ADMIN@XBRAIN.COM.BR", token.getLogin());
+        assertEquals("200-ADMIN@XBRAIN.COM.BR", token.getLogin());
         assertFalse(token.getPermissoes().isEmpty());
         assertEquals("ADMIN", token.getNome());
         assertEquals("X-BRAIN", token.getNivel());
-        assertEquals("DESENVOLVIMENTO", token.getDepartamento());
+        assertEquals("Administrativo", token.getDepartamento());
         assertEquals("ADMINISTRADOR", token.getCargo());
     }
 

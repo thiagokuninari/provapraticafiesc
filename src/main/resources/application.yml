@@ -29,7 +29,11 @@ spring:
             mode: none
       hibernate:
         hbm2ddl:
-          import_files: database/initial-data.sql
+          import_files:
+            database/estrutura.sql,
+            database/organizacional.sql,
+            database/sistema.sql,
+            database/cidades.sql
 
   datasource:
     jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
