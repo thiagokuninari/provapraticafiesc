@@ -25,9 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Sql(scripts = {
-        "classpath:/tests_database.sql",
-        "classpath:/usuarios.sql"})
+@Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioCidadeControllerTest {
 
     @Autowired
