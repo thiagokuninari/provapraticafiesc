@@ -21,7 +21,7 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usuarioRepository
-                .findByEmail(username)
+                .findByEmail(username.toUpperCase())
                 .map(u -> {
                     if (u.getDataInativacao() != null) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
