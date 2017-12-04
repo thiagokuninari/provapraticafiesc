@@ -1,8 +1,9 @@
 target/
 *.iml
 .idea/
-src/main/resources/public/app
+src/main/resources/public
 log/
+nb-configuration.xml
 
 # Mac
 .DS_Store
