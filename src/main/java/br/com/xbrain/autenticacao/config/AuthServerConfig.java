@@ -28,6 +28,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     private CustomJdbcTokenStore customJdbcTokenStore;
 
+    private static final int UM_MES_EM_SEGUNDOS = 2592000;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -46,7 +48,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(oauthClientSecret)
                 .authorizedGrantTypes("authorization_code", "refresh_token", "password")
                 .autoApprove(true)
-                .scopes("app");
+                .scopes("app")
+                .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS);
     }
 
     @Override
