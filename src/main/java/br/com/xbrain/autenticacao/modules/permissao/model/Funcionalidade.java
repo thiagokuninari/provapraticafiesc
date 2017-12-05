@@ -36,4 +36,19 @@ public class Funcionalidade {
             foreignKey = @ForeignKey(name = "FK_FUNCIONALIDADE_APLICACAO"), nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Aplicacao aplicacao;
+
+    @Transient
+    private boolean especial;
+
+    public Funcionalidade() { }
+
+    public Funcionalidade(Integer id) {
+        this.id = id;
+    }
+
+    public Funcionalidade(Integer id, String nome, String role) {
+        this.id = id;
+        this.nome = nome;
+        this.role = role;
+    }
 }
