@@ -126,6 +126,13 @@ public class Usuario {
         return id == null;
     }
 
+    public Usuario() {
+    }
+
+    public Usuario(Integer id) {
+        this.id = id;
+    }
+
     public List<Integer> getEmpresasId() {
         return empresas != null && Hibernate.isInitialized(empresas)
                 ? empresas

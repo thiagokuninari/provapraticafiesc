@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -40,6 +42,16 @@ public class CargoDepartamentoFuncionalidade {
             referencedColumnName = "id", updatable = false, nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Funcionalidade funcionalidade;
+
+    @JoinColumn(name = "FK_EMPRESA", foreignKey = @ForeignKey(name = "FK_CARGO_DEPART_FUNC_EMPR"),
+            referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Empresa empresa;
+
+    @JoinColumn(name = "FK_UNIDADE_NEGOCIO", foreignKey = @ForeignKey(name = "FK_CARGO_DEPART_FUNC_UNID"),
+            referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UnidadeNegocio unidadeNegocio;
 
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_CARGO_DEPART_FUNC_USU"),
