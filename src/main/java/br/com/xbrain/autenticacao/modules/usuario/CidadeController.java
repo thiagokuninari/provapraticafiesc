@@ -48,4 +48,9 @@ public class CidadeController {
     public Iterable<Cidade> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return repository.findBySubCluster(subclusterId);
     }
+
+    @RequestMapping("usuario/{usuarioId}")
+    public Iterable<Cidade> getByIdUsuario(@PathVariable("usuarioId") int usuarioId) {
+        return repository.findByUsuarioId(usuarioId);
+    }
 }

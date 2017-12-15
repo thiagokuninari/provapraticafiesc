@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeAutoCompleteDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -121,6 +122,18 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .orderBy(
                         cidade.uf.uf.asc(),
                         cidade.nome.asc())
+                .distinct()
+                .fetch();
+    }
+
+    @Override
+    public List<Cidade> findByUsuarioId(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(cidade)
+                .from(cidade)
+                .join(cidade.cidadeUsuarios, QUsuarioCidade.usuarioCidade)
+                .where(QUsuarioCidade.usuarioCidade.usuario.id.eq(usuarioId))
+                .orderBy(cidade.nome.asc())
                 .distinct()
                 .fetch();
     }
