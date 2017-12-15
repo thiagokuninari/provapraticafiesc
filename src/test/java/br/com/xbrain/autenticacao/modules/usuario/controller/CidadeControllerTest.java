@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,11 +94,10 @@ public class CidadeControllerTest {
 
     @Test
     public void deveRetornarCidadesPorUsuarioId() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cidades/usuario/200")
+        MvcResult result = mvc.perform(get("/api/cidades/usuario/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertThat(result.getResponse().getContentAsString(), containsString("LONDRINA"));
     }
 }
