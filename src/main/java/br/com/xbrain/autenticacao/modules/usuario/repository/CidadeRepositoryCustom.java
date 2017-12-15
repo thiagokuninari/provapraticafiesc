@@ -22,4 +22,6 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> find(Predicate predicate);
 
+    Iterable<Cidade> findByUsuarioId(Integer usuarioId);
+
 }

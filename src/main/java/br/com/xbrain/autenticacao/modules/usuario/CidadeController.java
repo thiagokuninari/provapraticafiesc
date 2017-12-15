@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.jca.cci.core.InteractionCallback;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,5 +48,10 @@ public class CidadeController {
     @RequestMapping("sub-cluster/{subclusterId}")
     public Iterable<Cidade> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return repository.findBySubCluster(subclusterId);
+    }
+
+    @RequestMapping("usuario/{usuarioId}")
+    public Iterable<Cidade> getByIdUsuario(@PathVariable("usuarioId") int usuarioId) {
+        return repository.findByUsuarioId(usuarioId);
     }
 }
