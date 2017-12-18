@@ -1,0 +1,8 @@
+server:
+  port: 6061
+  http-port: 6062
+
+logging:
+  level:
+      org.springframework: 'ERROR'
+      org.hibernate: 'ERROR'
