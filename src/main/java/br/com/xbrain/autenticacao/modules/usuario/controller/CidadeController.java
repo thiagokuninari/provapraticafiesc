@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario;
+package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;

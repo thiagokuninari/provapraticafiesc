@@ -1,17 +1,17 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import com.querydsl.core.types.Predicate;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface CargoRepositoryCustom {
+public interface DepartamentoRepositoryCustom {
 
-    Page<Cargo> findAll(Predicate predicate, Pageable pageable);
+    Page<Departamento> findAll(Predicate predicate, Pageable pageable);
 
     @Cacheable("cargoFindBySituacaoAndNivelId")
-    Iterable<Cargo> findBySituacaoAndNivelId(ESituacao situacao, Integer nivelId);
+    Iterable<Departamento> findBySituacaoAndNivelId(ESituacao situacao, Integer nivelId);
 
 }

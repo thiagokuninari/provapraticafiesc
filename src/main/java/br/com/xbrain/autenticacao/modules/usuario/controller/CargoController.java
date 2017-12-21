@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario;
+package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
