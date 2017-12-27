@@ -39,3 +39,11 @@ logs
 pids
 *.pid
 *.seed
+
+# Eclipse files
+.checkstyle
+.classpath
+.pmd
+.pmdruleset.xml
+.project
+.settings/
