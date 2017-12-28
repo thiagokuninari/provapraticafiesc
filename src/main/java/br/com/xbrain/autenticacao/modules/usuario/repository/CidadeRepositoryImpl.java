@@ -67,6 +67,18 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
+    public Iterable<Cidade> findByUf(Integer ufId) {
+        return new JPAQueryFactory(entityManager)
+                .select(cidade)
+                .from(cidade)
+                .leftJoin(cidade.uf).fetchJoin()
+                .where(cidade.uf.id.eq(ufId))
+                .orderBy(cidade.nome.asc())
+                .distinct()
+                .fetch();
+    }
+
+    @Override
     public Iterable<Cidade> findByGrupo(Integer grupoId) {
         return new JPAQueryFactory(entityManager)
                 .select(cidade)

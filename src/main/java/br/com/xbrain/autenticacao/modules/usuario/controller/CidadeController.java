@@ -29,6 +29,11 @@ public class CidadeController {
         return Collections.emptyList();
     }
 
+    @RequestMapping("uf/{ufId}")
+    public Iterable<Cidade> getByIdUf(@PathVariable("ufId") int ufId) {
+        return repository.findByUf(ufId);
+    }
+
     @RequestMapping("regional/{regionalId}")
     public Iterable<Cidade> getByIdRegional(@PathVariable("regionalId") int regionalId) {
         return repository.findByRegional(regionalId);

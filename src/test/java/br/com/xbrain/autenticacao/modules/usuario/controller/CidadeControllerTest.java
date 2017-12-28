@@ -69,6 +69,15 @@ public class CidadeControllerTest {
     }
 
     @Test
+    public void deveRetornarTodosPorUfId() throws Exception {
+        mvc.perform(get("/api/cidades/uf/1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(399)));
+    }
+
+    @Test
     public void deveRetornarTodosPorGrupoId() throws Exception {
         mvc.perform(get("/api/cidades/grupo/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

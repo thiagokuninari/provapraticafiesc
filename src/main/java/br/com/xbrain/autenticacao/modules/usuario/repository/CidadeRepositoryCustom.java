@@ -18,6 +18,8 @@ public interface CidadeRepositoryCustom {
 
     Iterable<Cidade> findByCluster(Integer clusterId);
 
+    Iterable<Cidade> findByUf(Integer ufId);
+
     List<String> findByUf(String uf);
 
     List<Cidade> find(Predicate predicate);
