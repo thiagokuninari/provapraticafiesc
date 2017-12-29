@@ -43,4 +43,17 @@ public class TestsHelper {
         mapper.registerModule( new JavaTimeModule());
         return mapper.writeValueAsBytes(object);
     }
+
+    public static String convertObjectToString(Object object) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            return mapper.writeValueAsString(object);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return "";
+        }
+    }
+
 }

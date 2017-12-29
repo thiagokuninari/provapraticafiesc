@@ -66,6 +66,15 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .fetch();
     }
 
+    public List<String> findByUf(String uf) {
+        return new JPAQueryFactory(entityManager)
+                .select(cidade.nome)
+                .from(cidade)
+                .where(cidade.uf.uf.endsWithIgnoreCase(uf))
+                .orderBy(cidade.nome.asc())
+                .fetch();
+    }
+
     @Override
     public Iterable<Cidade> findByUf(Integer ufId) {
         return new JPAQueryFactory(entityManager)
@@ -107,16 +116,6 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .where(QCluster.cluster.id.eq(clusterId))
                 .orderBy(cidade.nome.asc())
                 .distinct()
-                .fetch();
-    }
-
-    @Override
-    public List<String> findByUf(String uf) {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade.nome)
-                .from(cidade)
-                .where(cidade.uf.uf.endsWithIgnoreCase(uf))
-                .orderBy(cidade.nome.asc())
                 .fetch();
     }
 

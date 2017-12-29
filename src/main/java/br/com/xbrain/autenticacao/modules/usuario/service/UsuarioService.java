@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -19,8 +20,8 @@ public class UsuarioService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuario não encontrado.");
 
-    @Autowired
     @Getter
+    @Autowired
     private UsuarioRepository repository;
 
     public Usuario findById(int id) {
@@ -33,12 +34,13 @@ public class UsuarioService {
         return repository.findAll(filtros.toPredicate(), pageRequest);
     }
 
-    public Usuario save(Usuario usuario) {
+    public UsuarioDto save(UsuarioDto usuarioDto) {
+        Usuario usuario = Usuario.parse(usuarioDto);
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
             usuario.setSenha("123456");
             usuario.setAlterarSenha(F);
         }
-        return repository.save(usuario);
+        return UsuarioDto.parse(repository.save(usuario));
     }
 }

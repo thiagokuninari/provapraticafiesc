@@ -1,8 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -95,7 +93,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveSalvar() throws Exception {
-        Usuario usuario = umUsuario("JOAO");
+        UsuarioDto usuario = umUsuario("JOAO");
         mvc.perform(post("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +111,7 @@ public class UsuarioControllerTest {
         mvc.perform(post("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(new Usuario())))
+                .content(convertObjectToJsonBytes(new UsuarioDto())))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(8)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -121,19 +119,19 @@ public class UsuarioControllerTest {
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
                         "O campo telefone é obrigatório.",
-                        "O campo unidadeNegocio é obrigatório.",
-                        "O campo empresas é obrigatório.",
-                        "O campo cargo é obrigatório.",
-                        "O campo departamento é obrigatório.")));
+                        "O campo unidadeNegocioId é obrigatório.",
+                        "O campo empresasId é obrigatório.",
+                        "O campo cargoId é obrigatório.",
+                        "O campo departamentoId é obrigatório.")));
     }
 
-    private Usuario umUsuario(String nome) {
-        Usuario usuario = new Usuario();
+    private UsuarioDto umUsuario(String nome) {
+        UsuarioDto usuario = new UsuarioDto();
         usuario.setNome(nome);
-        usuario.setCargo(new Cargo(1));
-        usuario.setDepartamento(new Departamento(1));
+        usuario.setCargoId(1);
+        usuario.setDepartamentoId(1);
         usuario.setCpf("097.238.645-92");
-        usuario.setUnidadeNegocio(new UnidadeNegocio(1));
+        usuario.setUnidadeNegocioId(1);
         usuario.setEmpresasId(singletonList(4));
         usuario.setEmail("usuario@teste.com");
         usuario.setTelefone("43 995565661");

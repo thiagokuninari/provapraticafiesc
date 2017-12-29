@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.Hibernate;
@@ -11,12 +12,14 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,7 +97,7 @@ public class Usuario {
             @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
                     foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
     @ManyToMany
-    private List<Empresa> empresas;
+    private List<Empresa> empresas =  new ArrayList<>();
 
     @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
@@ -149,5 +152,15 @@ public class Usuario {
                     .map(Empresa::new)
                     .collect(Collectors.toList());
         }
+    }
+
+    public static Usuario parse(UsuarioDto usuarioDto) {
+        Usuario usuario = new Usuario();
+        BeanUtils.copyProperties(usuarioDto, usuario);
+        usuario.setEmpresasId(usuarioDto.getEmpresasId());
+        usuario.setUnidadeNegocio(new UnidadeNegocio(usuarioDto.getUnidadeNegocioId()));
+        usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
+        usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
+        return usuario;
     }
 }

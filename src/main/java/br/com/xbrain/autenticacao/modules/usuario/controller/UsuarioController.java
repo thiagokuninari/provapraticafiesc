@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConsultaDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -39,7 +40,7 @@ public class UsuarioController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void save(@Validated @RequestBody Usuario usuario) {
+    public void save(@Validated @RequestBody UsuarioDto usuario) {
         service.save(usuario);
     }
 }
