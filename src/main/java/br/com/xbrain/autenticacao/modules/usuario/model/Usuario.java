@@ -163,4 +163,8 @@ public class Usuario {
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         return usuario;
     }
+
+    public void validarCpf() {
+        this.cpf = this.cpf.replaceAll("[.-]", "");
+    }
 }

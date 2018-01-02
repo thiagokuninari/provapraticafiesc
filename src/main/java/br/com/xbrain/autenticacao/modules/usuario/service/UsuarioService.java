@@ -30,6 +30,13 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    public UsuarioDto findByCpf(String cpf) {
+        Usuario usuario = repository
+                .findByCpf(cpf)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return UsuarioDto.parse(usuario);
+    }
+
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         return repository.findAll(filtros.toPredicate(), pageRequest);
     }
@@ -40,6 +47,7 @@ public class UsuarioService {
             usuario.setDataCadastro(LocalDateTime.now());
             usuario.setSenha("123456");
             usuario.setAlterarSenha(F);
+            usuario.validarCpf();
         }
         return UsuarioDto.parse(repository.save(usuario));
     }

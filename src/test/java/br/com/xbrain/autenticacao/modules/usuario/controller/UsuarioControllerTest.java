@@ -73,12 +73,22 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void deveRetornarPorCpf() throws Exception {
+        mvc.perform(get("/api/usuarios/busca?cpf=13086674776")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(205)))
+                .andExpect(jsonPath("$.nome", is("LUCAS")));
+    }
+
+    @Test
     public void deveRetornarTodos() throws Exception {
         mvc.perform(get("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(9)))
+                .andExpect(jsonPath("$.content", hasSize(15)))
                 .andExpect(jsonPath("$.content[0].nome", is("xbrain_admin")));
     }
 
@@ -104,6 +114,7 @@ public class UsuarioControllerTest {
                 repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
+        assertEquals(usuarios.get(0).getCpf(), "09723864592");
     }
 
     @Test

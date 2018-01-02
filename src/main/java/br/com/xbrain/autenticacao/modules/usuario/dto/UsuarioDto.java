@@ -13,11 +13,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 public class UsuarioDto {
 
+    private Integer id;
     @NotNull
     @Size(max = 80)
     private String nome;
@@ -45,7 +47,7 @@ public class UsuarioDto {
     @NotNull
     private Integer unidadeNegocioId;
     @NotEmpty
-    private List<Integer> empresasId;
+    private List<Integer> empresasId = new ArrayList<>();
     @NotNull
     private Integer cargoId;
     @NotNull
