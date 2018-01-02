@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -69,7 +70,8 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(200)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")));
+                .andExpect(jsonPath("$.nome", is("ADMIN")))
+                .andExpect(jsonPath("$.nivelId", notNullValue()));
     }
 
     @Test
@@ -102,22 +104,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveSalvar() throws Exception {
-        UsuarioDto usuario = umUsuario("JOAO");
-        mvc.perform(post("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(usuario)))
-                .andExpect(status().isOk());
-
-        List<Usuario> usuarios = Lists.newArrayList(
-                repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
-
-        assertEquals(usuarios.get(0).getNome(), usuario.getNome());
-        assertEquals(usuarios.get(0).getCpf(), "09723864592");
-    }
-
-    @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(post("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -134,6 +120,28 @@ public class UsuarioControllerTest {
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
+    }
+
+    @Test
+    public void deveSalvar() throws Exception {
+        UsuarioDto usuario = umUsuario("JOAO");
+        mvc.perform(post("/api/usuarios")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(usuario)))
+                .andExpect(status().isOk());
+
+        List<Usuario> usuarios = Lists.newArrayList(
+                repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
+
+        assertEquals(usuarios.get(0).getNome(), usuario.getNome());
+        assertEquals(usuarios.get(0).getCpf(), "09723864592");
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void deveValidarCamposUnicos() throws Exception {
+        deveSalvar();
+        deveSalvar();
     }
 
     private UsuarioDto umUsuario(String nome) {

@@ -21,13 +21,11 @@ public class UsuarioController {
     @Autowired
     private UsuarioService service;
 
-    //TODO alterar para dto
     @RequestMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
         return UsuarioDto.parse(service.findById(id));
     }
 
-    //TODO verificar se precisa alterar para dto
     @RequestMapping(method = RequestMethod.GET)
     public PageImpl<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         Page<Usuario> page = service.getAll(pageRequest, filtros);
@@ -41,9 +39,14 @@ public class UsuarioController {
                 page.getTotalElements());
     }
 
-    @RequestMapping(value = "/busca", method = RequestMethod.GET)
+    @RequestMapping(value = "/busca", params = "cpf")
     public UsuarioDto getByCpf(@RequestParam String cpf) {
         return service.findByCpf(cpf);
+    }
+
+    @RequestMapping(value = "/busca", params = "email")
+    public UsuarioDto getByEmail(@RequestParam String email) {
+        return service.findByEmail(email);
     }
 
     @RequestMapping(method = RequestMethod.POST)

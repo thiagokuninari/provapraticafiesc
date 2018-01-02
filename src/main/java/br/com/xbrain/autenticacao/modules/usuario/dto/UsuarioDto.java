@@ -46,6 +46,7 @@ public class UsuarioDto {
     private LocalDate nascimento;
     @NotNull
     private Integer unidadeNegocioId;
+    private Integer nivelId;
     @NotEmpty
     private List<Integer> empresasId = new ArrayList<>();
     @NotNull
@@ -54,8 +55,6 @@ public class UsuarioDto {
     private Integer departamentoId;
     private LocalDateTime dataCadastro;
     private LocalDateTime dataInativacao;
-    @Size(max = 80)
-    private String senha;
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
 
@@ -66,6 +65,7 @@ public class UsuarioDto {
         usuarioDto.setDepartamentoId(usuario.getDepartamento().getId());
         usuarioDto.setUnidadeNegocioId(usuario.getUnidadeNegocio().getId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
+        usuarioDto.setNivelId(usuario.getCargo().getNivel().getId());
         return usuarioDto;
     }
 

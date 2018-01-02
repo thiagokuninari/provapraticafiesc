@@ -44,7 +44,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80)
+    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = true)
     private String email;
 
     @Email
@@ -65,7 +65,7 @@ public class Usuario {
 
     @NotNull
     @CPF
-    @Column(name = "CPF", length = 14)
+    @Column(name = "CPF", length = 14, unique = true)
     private String cpf;
 
     @Size(max = 25)

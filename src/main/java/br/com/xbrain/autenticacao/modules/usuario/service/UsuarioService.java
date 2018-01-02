@@ -37,11 +37,18 @@ public class UsuarioService {
         return UsuarioDto.parse(usuario);
     }
 
+    public UsuarioDto findByEmail(String email) {
+        Usuario usuario = repository
+                .findByEmail(email)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return UsuarioDto.parse(usuario);
+    }
+
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         return repository.findAll(filtros.toPredicate(), pageRequest);
     }
 
-    public UsuarioDto save(UsuarioDto usuarioDto) {
+    public void save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
@@ -49,6 +56,6 @@ public class UsuarioService {
             usuario.setAlterarSenha(F);
             usuario.validarCpf();
         }
-        return UsuarioDto.parse(repository.save(usuario));
+        repository.save(usuario);
     }
 }
