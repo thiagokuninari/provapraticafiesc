@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class AppUserDetailsService implements UserDetailsService {
         return usuarioRepository
                 .findByEmail(username.toUpperCase())
                 .map(u -> {
-                    if (u.getDataInativacao() != null) {
+                    if (u.getSituacao() == ESituacao.I) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
                     }
                     return new User(

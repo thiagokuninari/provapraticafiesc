@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -23,6 +25,8 @@ public class UsuarioService {
     @Getter
     @Autowired
     private UsuarioRepository repository;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     public Usuario findById(int id) {
         return repository
@@ -49,13 +53,17 @@ public class UsuarioService {
     }
 
     public void save(UsuarioDto usuarioDto) {
+        Usuario usuarioAutenticado = new Usuario(autenticacaoService.getUsuarioId());
         Usuario usuario = Usuario.parse(usuarioDto);
+        usuario.removerCaracteresDoCpf();
+        usuario.setAlterarSenha(F);
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
             usuario.setSenha("123456");
-            usuario.setAlterarSenha(F);
-            usuario.validarCpf();
+            usuario.setUsuarioCadastro(usuarioAutenticado);
+            usuario.setSituacao(ESituacao.A);
         }
         repository.save(usuario);
     }
+
 }

@@ -53,4 +53,10 @@ public class UsuarioController {
     public void save(@Validated @RequestBody UsuarioDto usuario) {
         service.save(usuario);
     }
+
+    @RequestMapping(method = RequestMethod.PUT)
+    public void alterar(@Validated @RequestBody UsuarioDto usuario) {
+        service.save(usuario);
+    }
+
 }

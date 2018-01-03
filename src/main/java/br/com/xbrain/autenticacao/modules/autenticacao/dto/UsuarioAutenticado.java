@@ -1,10 +1,9 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @JsonIgnoreProperties
@@ -17,7 +16,7 @@ public class UsuarioAutenticado {
     private String departamento;
     private String nivel;
     private String cpf;
-    private LocalDateTime dataInativacao;
+    private ESituacao situacao;
 
     public UsuarioAutenticado(Usuario usuario) {
         this.id = usuario.getId();
@@ -27,6 +26,6 @@ public class UsuarioAutenticado {
         this.departamento = usuario.getDepartamento().getCodigo();
         this.nivel = usuario.getCargo().getNivel().getCodigo();
         this.cpf = usuario.getCpf();
-        this.dataInativacao = usuario.getDataInativacao();
+        this.situacao = usuario.getSituacao();
     }
 }

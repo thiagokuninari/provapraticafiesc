@@ -30,7 +30,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
     private CargoDepartamentoFuncionalidadeRepository repository;
 
     @Test
-    public void testFindFuncionalidadesPorCargoEDepartamento() {
+    public void deveRetornarOsCargosPorDepartamentoEFuncionalidade() {
         List<CargoDepartamentoFuncionalidade> funcionalidades = repository
                 .findFuncionalidadesPorCargoEDepartamento(new Cargo(50), new Departamento(50));
 

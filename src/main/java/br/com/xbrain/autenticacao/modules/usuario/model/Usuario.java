@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -7,8 +8,9 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
@@ -23,18 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Data
 @Entity
 @Table(name = "USUARIO")
-@Data
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class Usuario {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_USUARIO",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_USUARIO")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_USUARIO")
+    @SequenceGenerator(name = "SEQ_USUARIO", sequenceName = "SEQ_USUARIO")
+    @GeneratedValue(generator = "SEQ_USUARIO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull
@@ -89,6 +88,7 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private UnidadeNegocio unidadeNegocio;
 
+    @NotAudited
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "USUARIO_EMPRESA", joinColumns = {
@@ -111,11 +111,16 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Departamento departamento;
 
+    @NotAudited
     @Column(name = "DATA_CADASTRO", updatable = false, nullable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(name = "DATA_INATIVACAO")
-    private LocalDateTime dataInativacao;
+    @NotAudited
+    @JsonIgnore
+    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
+            foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Usuario usuarioCadastro;
 
     @JsonIgnore
     @Column(name = "SENHA", nullable = false, updatable = false, length = 80)
@@ -124,6 +129,15 @@ public class Usuario {
     @Column(name = "ALTERAR_SENHA", nullable = false)
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
+
+    @Column(name = "SITUACAO", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ESituacao situacao;
+
+    @NotAudited
+    @JsonIgnore
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UsuarioHistorico> historicos;
 
     public boolean isNovoCadastro() {
         return id == null;
@@ -164,7 +178,7 @@ public class Usuario {
         return usuario;
     }
 
-    public void validarCpf() {
+    public void removerCaracteresDoCpf() {
         this.cpf = this.cpf.replaceAll("[.-]", "");
     }
 }

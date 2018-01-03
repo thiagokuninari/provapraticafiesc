@@ -21,7 +21,7 @@ spring:
     database: ORACLE
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       javax:
         persistence:
@@ -34,7 +34,8 @@ spring:
             database/organizacional.sql,
             database/sistema.sql,
             database/cidades.sql,
-            database/usuarios.sql
+            database/usuarios.sql,
+            database/motivo-inativacao.sql
 
   datasource:
     jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
