@@ -149,7 +149,15 @@ public class Usuario {
         this.id = id;
     }
 
+    public void forceLoad() {
+        empresas.size();
+        cargo.getId();
+        unidadeNegocio.getId();
+        departamento.getId();
+    }
+
     public List<Integer> getEmpresasId() {
+        forceLoad();
         return empresas != null && Hibernate.isInitialized(empresas)
                 ? empresas
                         .stream()
