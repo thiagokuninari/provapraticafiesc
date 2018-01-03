@@ -28,4 +28,11 @@ public class MotivoInativacao {
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    public MotivoInativacao() {
+    }
+
+    public MotivoInativacao(Integer id) {
+        this.id = id;
+    }
 }

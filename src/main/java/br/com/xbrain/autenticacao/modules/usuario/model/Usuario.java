@@ -19,7 +19,6 @@ import org.springframework.beans.BeanUtils;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +79,7 @@ public class Usuario {
     private String loginNetSales;
 
     @Column(name = "NASCIMENTO")
-    private LocalDate nascimento;
+    private LocalDateTime nascimento;
 
     @NotNull
     @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "ID",

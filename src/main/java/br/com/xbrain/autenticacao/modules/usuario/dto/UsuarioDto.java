@@ -43,7 +43,7 @@ public class UsuarioDto {
     private String orgaoExpeditor;
     @Size(max = 120)
     private String loginNetSales;
-    private LocalDate nascimento;
+    private LocalDateTime nascimento;
     @NotNull
     private Integer unidadeNegocioId;
     private Integer nivelId;

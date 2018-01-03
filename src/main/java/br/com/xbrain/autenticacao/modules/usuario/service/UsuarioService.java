@@ -4,9 +4,14 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,8 @@ public class UsuarioService {
     private UsuarioRepository repository;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private UsuarioHistoricoRepository historicoRepository;
 
     public Usuario findById(int id) {
         return repository
@@ -64,6 +71,35 @@ public class UsuarioService {
             usuario.setSituacao(ESituacao.A);
         }
         repository.save(usuario);
+    }
+
+    public void ativar(UsuarioAtivacaoDto dto) {
+        Usuario usuario = findById(dto.getIdUsuario());
+        usuario.setSituacao(ESituacao.A);
+        repository.save(usuario);
+        UsuarioHistorico historico = UsuarioHistorico.builder()
+                .dataCadastro(LocalDateTime.now())
+                .usuario(usuario)
+                .usuarioInativacao(findById(autenticacaoService.getUsuarioId()))
+                .observacao(dto.getObservacao())
+                .situacao(ESituacao.A)
+                .build();
+        historicoRepository.save(historico);
+    }
+
+    public void inativar(UsuarioInativacaoDto dto) {
+        Usuario usuario = findById(dto.getIdUsuario());
+        usuario.setSituacao(ESituacao.I);
+        repository.save(usuario);
+        UsuarioHistorico historico = UsuarioHistorico.builder()
+                .dataCadastro(dto.getDataCadastro())
+                .motivoInativacao(new MotivoInativacao(dto.getIdMotivoInativacao()))
+                .usuario(usuario)
+                .usuarioInativacao(findById(autenticacaoService.getUsuarioId()))
+                .observacao(dto.getObservacao())
+                .situacao(ESituacao.I)
+                .build();
+        historicoRepository.save(historico);
     }
 
 }

@@ -1,10 +1,14 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -142,6 +147,45 @@ public class UsuarioControllerTest {
     public void deveValidarCamposUnicos() throws Exception {
         deveSalvar();
         deveSalvar();
+    }
+
+    @Test
+    public void deveInativarUmUsuario() throws Exception {
+        mvc.perform(post("/api/usuarios/inativar")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findOne(200);
+        Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
+    }
+
+    @Test
+    public void deveAtivarUmUsuario() throws Exception {
+        deveInativarUmUsuario();
+        mvc.perform(post("/api/usuarios/ativar")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findOne(200);
+        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
+    }
+
+    private UsuarioAtivacaoDto umUsuarioParaAtivar() {
+        UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
+        dto.setIdUsuario(200);
+        dto.setObservacao("Teste ativação");
+        return dto;
+    }
+
+    private UsuarioInativacaoDto umUsuarioParaInativar() {
+        UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
+        dto.setDataCadastro(LocalDateTime.now());
+        dto.setIdUsuario(200);
+        dto.setObservacao("Teste inativação");
+        dto.setIdMotivoInativacao(1);
+        return dto;
     }
 
     private UsuarioDto umUsuario(String nome) {

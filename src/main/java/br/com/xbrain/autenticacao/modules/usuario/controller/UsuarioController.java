@@ -1,9 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConsultaDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,4 +57,13 @@ public class UsuarioController {
         service.save(usuario);
     }
 
+    @RequestMapping(value = "/inativar", method = RequestMethod.POST)
+    public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
+        service.inativar(dto);
+    }
+
+    @RequestMapping(value = "/ativar", method = RequestMethod.POST)
+    public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
+        service.ativar(dto);
+    }
 }
