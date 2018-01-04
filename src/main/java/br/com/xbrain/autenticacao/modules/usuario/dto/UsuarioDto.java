@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
@@ -56,6 +57,8 @@ public class UsuarioDto {
     private LocalDateTime dataInativacao;
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
+    @Enumerated(EnumType.STRING)
+    private ESituacao situacao;
 
     public static UsuarioDto parse(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();

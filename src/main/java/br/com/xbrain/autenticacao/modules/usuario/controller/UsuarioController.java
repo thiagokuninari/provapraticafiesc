@@ -62,7 +62,7 @@ public class UsuarioController {
         service.inativar(dto);
     }
 
-    @RequestMapping(value = "/ativar", method = RequestMethod.POST)
+    @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         service.ativar(dto);
     }

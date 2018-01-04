@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -33,8 +32,7 @@ import static helpers.Usuarios.HELP_DESK;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -143,10 +141,15 @@ public class UsuarioControllerTest {
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
-    public void deveValidarCamposUnicos() throws Exception {
-        deveSalvar();
-        deveSalvar();
+    @Test
+    public void deveEditar() throws Exception {
+        mvc.perform(post("/api/usuarios")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaEditar())))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findOne(200);
+        Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
 
     @Test
@@ -156,25 +159,25 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(200);
+        Usuario usuario = repository.findOne(201);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
     }
 
     @Test
     public void deveAtivarUmUsuario() throws Exception {
         deveInativarUmUsuario();
-        mvc.perform(post("/api/usuarios/ativar")
+        mvc.perform(put("/api/usuarios/ativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(200);
+        Usuario usuario = repository.findOne(201);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
-        dto.setIdUsuario(200);
+        dto.setIdUsuario(201);
         dto.setObservacao("Teste ativação");
         return dto;
     }
@@ -182,10 +185,16 @@ public class UsuarioControllerTest {
     private UsuarioInativacaoDto umUsuarioParaInativar() {
         UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
         dto.setDataCadastro(LocalDateTime.now());
-        dto.setIdUsuario(200);
+        dto.setIdUsuario(201);
         dto.setObservacao("Teste inativação");
         dto.setIdMotivoInativacao(1);
         return dto;
+    }
+
+    private UsuarioDto umUsuarioParaEditar() {
+        Usuario usuario = repository.findComplete(200).get();
+        usuario.setNome("JOAOZINHO");
+        return UsuarioDto.parse(usuario);
     }
 
     private UsuarioDto umUsuario(String nome) {

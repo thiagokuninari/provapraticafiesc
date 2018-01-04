@@ -39,9 +39,9 @@ public class UsuarioHistorico {
     @NotNull
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FK_USUARIO_INATIVACAO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_INATIVACAO"))
-    private Usuario usuarioInativacao;
+    @JoinColumn(name = "FK_USUARIO_ALTERACAO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_ALTERACAO"))
+    private Usuario usuarioAlteracao;
 
     @NotNull
     @Column(name = "DATA_CADASTRO", nullable = false)
@@ -59,11 +59,11 @@ public class UsuarioHistorico {
     }
 
     @Builder
-    public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioInativacao,
+    public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioAlteracao,
                             LocalDateTime dataCadastro, String observacao, ESituacao situacao) {
         this.usuario = usuario;
         this.motivoInativacao = motivoInativacao;
-        this.usuarioInativacao = usuarioInativacao;
+        this.usuarioAlteracao = usuarioAlteracao;
         this.dataCadastro = dataCadastro;
         this.observacao = observacao;
         this.situacao = situacao;

@@ -63,9 +63,9 @@ public class UsuarioService {
         Usuario usuarioAutenticado = new Usuario(autenticacaoService.getUsuarioId());
         Usuario usuario = Usuario.parse(usuarioDto);
         usuario.removerCaracteresDoCpf();
-        usuario.setAlterarSenha(F);
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
+            usuario.setAlterarSenha(F);
             usuario.setSenha("123456");
             usuario.setUsuarioCadastro(usuarioAutenticado);
             usuario.setSituacao(ESituacao.A);
@@ -80,7 +80,7 @@ public class UsuarioService {
         UsuarioHistorico historico = UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuario)
-                .usuarioInativacao(findById(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.A)
                 .build();
@@ -95,7 +95,7 @@ public class UsuarioService {
                 .dataCadastro(dto.getDataCadastro())
                 .motivoInativacao(new MotivoInativacao(dto.getIdMotivoInativacao()))
                 .usuario(usuario)
-                .usuarioInativacao(findById(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build();
