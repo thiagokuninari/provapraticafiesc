@@ -37,12 +37,12 @@ public class UsuarioController {
                 page.getTotalElements());
     }
 
-    @RequestMapping(value = "/busca", params = "cpf")
+    @RequestMapping(params = "cpf")
     public UsuarioDto getByCpf(@RequestParam String cpf) {
         return service.findByCpf(cpf);
     }
 
-    @RequestMapping(value = "/busca", params = "email")
+    @RequestMapping(params = "email")
     public UsuarioDto getByEmail(@RequestParam String email) {
         return service.findByEmail(email);
     }

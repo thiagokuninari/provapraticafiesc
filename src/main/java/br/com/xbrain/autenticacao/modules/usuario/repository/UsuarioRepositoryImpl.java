@@ -37,6 +37,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .join(usuario.cargo, cargo).fetchJoin()
                         .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
+                        .join(usuario.empresas).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .fetchOne()

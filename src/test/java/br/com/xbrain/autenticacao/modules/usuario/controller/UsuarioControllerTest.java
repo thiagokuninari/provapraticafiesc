@@ -79,12 +79,22 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarPorCpf() throws Exception {
-        mvc.perform(get("/api/usuarios/busca?cpf=13086674776")
+        mvc.perform(get("/api/usuarios?cpf=74464932673")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(205)))
-                .andExpect(jsonPath("$.nome", is("LUCAS")));
+                .andExpect(jsonPath("$.id", is(301)))
+                .andExpect(jsonPath("$.nome", is("Teste 1")));
+    }
+
+    @Test
+    public void deveRetornarPorEmail() throws Exception {
+        mvc.perform(get("/api/usuarios?email=teste1@net.com.br")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(301)))
+                .andExpect(jsonPath("$.nome", is("Teste 1")));
     }
 
     @Test
@@ -93,7 +103,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(15)))
+                .andExpect(jsonPath("$.content", hasSize(17)))
                 .andExpect(jsonPath("$.content[0].nome", is("xbrain_admin")));
     }
 
@@ -159,25 +169,24 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(201);
+        Usuario usuario = repository.findOne(301);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
     }
 
     @Test
     public void deveAtivarUmUsuario() throws Exception {
-        deveInativarUmUsuario();
         mvc.perform(put("/api/usuarios/ativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(201);
+        Usuario usuario = repository.findOne(302);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
-        dto.setIdUsuario(201);
+        dto.setIdUsuario(302);
         dto.setObservacao("Teste ativação");
         return dto;
     }
@@ -185,7 +194,7 @@ public class UsuarioControllerTest {
     private UsuarioInativacaoDto umUsuarioParaInativar() {
         UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
         dto.setDataCadastro(LocalDateTime.now());
-        dto.setIdUsuario(201);
+        dto.setIdUsuario(301);
         dto.setObservacao("Teste inativação");
         dto.setIdMotivoInativacao(1);
         return dto;
