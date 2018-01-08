@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +19,8 @@ public class CidadeController {
 
     @Autowired
     private CidadeRepository repository;
+    @Autowired
+    private CidadeService cidadeService;
 
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
@@ -29,9 +33,10 @@ public class CidadeController {
         return Collections.emptyList();
     }
 
-    @RequestMapping("uf/{ufId}")
-    public Iterable<Cidade> getByIdUf(@PathVariable("ufId") int ufId) {
-        return repository.findByUf(ufId);
+    @RequestMapping(value = "uf-cidade/{uf}/{cidade}", method = RequestMethod.GET)
+    public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf,
+                                         @PathVariable("cidade") String cidade) {
+        return CidadeResponse.parse(cidadeService.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
     @RequestMapping("regional/{regionalId}")

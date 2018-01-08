@@ -6,11 +6,13 @@ import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeAutoCompleteDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
@@ -76,18 +78,6 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public Iterable<Cidade> findByUf(Integer ufId) {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade)
-                .from(cidade)
-                .leftJoin(cidade.uf).fetchJoin()
-                .where(cidade.uf.id.eq(ufId))
-                .orderBy(cidade.nome.asc())
-                .distinct()
-                .fetch();
-    }
-
-    @Override
     public Iterable<Cidade> findByGrupo(Integer grupoId) {
         return new JPAQueryFactory(entityManager)
                 .select(cidade)
@@ -135,6 +125,15 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                         cidade.nome.asc())
                 .distinct()
                 .fetch();
+    }
+
+    @Override
+    public Optional<Cidade> findByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+                .select(QCidade.cidade)
+                .from(QCidade.cidade)
+                .where(predicate)
+                .fetchOne());
     }
 
     @Override

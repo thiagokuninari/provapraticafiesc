@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CidadeRepositoryCustom {
 
@@ -18,7 +19,7 @@ public interface CidadeRepositoryCustom {
 
     Iterable<Cidade> findByCluster(Integer clusterId);
 
-    Iterable<Cidade> findByUf(Integer ufId);
+    Optional<Cidade> findByPredicate(Predicate predicate);
 
     List<String> findByUf(String uf);
 

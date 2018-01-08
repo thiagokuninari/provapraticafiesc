@@ -47,6 +47,15 @@ public class CidadeControllerTest {
     }
 
     @Test
+    public void deveRetornarCidadePorUfAndCidadeNome() throws Exception {
+        mvc.perform(get("/api/cidades/uf-cidade/PR/LONDRINA")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome", is("LONDRINA")));
+    }
+
+    @Test
     public void deveRetornarTodosPorSubCluster() throws Exception {
         mvc.perform(get("/api/cidades?idSubCluster=682")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -66,15 +75,6 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void deveRetornarTodosPorUfId() throws Exception {
-        mvc.perform(get("/api/cidades/uf/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(399)));
     }
 
     @Test
