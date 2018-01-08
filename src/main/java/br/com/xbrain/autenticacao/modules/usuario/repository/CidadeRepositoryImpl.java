@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -100,8 +99,8 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public Optional<Cidade> findByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
-                .select(QCidade.cidade)
-                .from(QCidade.cidade)
+                .select(cidade)
+                .from(cidade)
                 .where(predicate)
                 .fetchOne());
     }
