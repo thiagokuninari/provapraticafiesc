@@ -6,18 +6,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.List;
+
 public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Integer>,
         CidadeRepositoryCustom {
 
-    Iterable<Cidade> findCidadeByUfId(Integer idUf, Sort sort);
+    List<Cidade> findCidadeByUfId(Integer idUf, Sort sort);
 
-    Iterable<Cidade> findBySubCluster(Integer subClusterId);
-
-    Iterable<Cidade> findByRegional(Integer regionalId);
-
-    Iterable<Cidade> findByGrupo(Integer grupoId);
-
-    Iterable<Cidade> findByCluster(Integer clusterId);
+    List<Cidade> findBySubCluster(Integer subClusterId);
 
     @Modifying
     @Query("update Cidade c set c.usuarioAprovadorMso.id = ?1 where c.id = ?2")

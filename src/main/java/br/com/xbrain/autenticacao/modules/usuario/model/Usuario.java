@@ -88,6 +88,11 @@ public class Usuario {
     private UnidadeNegocio unidadeNegocio;
 
     @NotAudited
+    @OrderBy("id")
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UsuarioCidade> cidades;
+    
+    @NotAudited
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "USUARIO_EMPRESA", joinColumns = {

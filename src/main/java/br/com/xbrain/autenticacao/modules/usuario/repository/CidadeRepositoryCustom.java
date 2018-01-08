@@ -9,22 +9,16 @@ import java.util.Optional;
 
 public interface CidadeRepositoryCustom {
 
-    List<CidadeAutoCompleteDto> findAllAtivas();
-
     Iterable<Cidade> findBySubCluster(Integer subClusterId);
 
-    Iterable<Cidade> findByRegional(Integer regionalId);
+    List<Cidade> findAllByRegionalId(Integer regionalId);
 
-    Iterable<Cidade> findByGrupo(Integer grupoId);
+    List<Cidade> findAllBySubClusterId(Integer subClusterId);
 
-    Iterable<Cidade> findByCluster(Integer clusterId);
+    List<Cidade> findAllByGrupoId(Integer grupoId);
+
+    List<Cidade> findAllByClusterId(Integer clusterId);
 
     Optional<Cidade> findByPredicate(Predicate predicate);
-
-    List<String> findByUf(String uf);
-
-    List<Cidade> find(Predicate predicate);
-
-    Iterable<Cidade> findByUsuarioId(Integer usuarioId);
 
 }

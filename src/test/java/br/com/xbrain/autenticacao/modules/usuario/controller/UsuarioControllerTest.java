@@ -103,7 +103,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(17)))
+                .andExpect(jsonPath("$.content", hasSize(18)))
                 .andExpect(jsonPath("$.content[0].nome", is("xbrain_admin")));
     }
 

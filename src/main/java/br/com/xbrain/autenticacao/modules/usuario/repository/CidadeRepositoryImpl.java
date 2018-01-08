@@ -3,38 +3,19 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
-import br.com.xbrain.autenticacao.modules.comum.model.QUf;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeAutoCompleteDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 
 public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements CidadeRepositoryCustom {
-
-    @Override
-    public List<CidadeAutoCompleteDto> findAllAtivas() {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade.id, cidade.nome, cidade.uf.uf)
-                .from(cidade)
-                .orderBy(cidade.nome.asc())
-                .fetch()
-                .stream()
-                .map(t -> new CidadeAutoCompleteDto(
-                        t.get(cidade.id),
-                        t.get(cidade.nome),
-                        t.get(cidade.uf.uf)))
-                .collect(Collectors.toList());
-    }
 
     @Override
     public Iterable<Cidade> findBySubCluster(Integer subClusterId) {
@@ -53,7 +34,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public Iterable<Cidade> findByRegional(Integer regionalId) {
+    public List<Cidade> findAllByRegionalId(Integer regionalId) {
         return new JPAQueryFactory(entityManager)
                 .select(cidade)
                 .from(cidade)
@@ -68,17 +49,24 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .fetch();
     }
 
-    public List<String> findByUf(String uf) {
+    @Override
+    public List<Cidade> findAllBySubClusterId(Integer subClusterId) {
         return new JPAQueryFactory(entityManager)
-                .select(cidade.nome)
+                .select(cidade)
                 .from(cidade)
-                .where(cidade.uf.uf.endsWithIgnoreCase(uf))
+                .leftJoin(cidade.uf).fetchJoin()
+                .leftJoin(cidade.subCluster, subCluster).fetchJoin()
+                .leftJoin(subCluster.cluster, QCluster.cluster).fetchJoin()
+                .leftJoin(QCluster.cluster.grupo, grupo).fetchJoin()
+                .leftJoin(grupo.regional, QRegional.regional).fetchJoin()
+                .where(subCluster.id.eq(subClusterId))
                 .orderBy(cidade.nome.asc())
+                .distinct()
                 .fetch();
     }
 
     @Override
-    public Iterable<Cidade> findByGrupo(Integer grupoId) {
+    public List<Cidade> findAllByGrupoId(Integer grupoId) {
         return new JPAQueryFactory(entityManager)
                 .select(cidade)
                 .from(cidade)
@@ -94,7 +82,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public Iterable<Cidade> findByCluster(Integer clusterId) {
+    public List<Cidade> findAllByClusterId(Integer clusterId) {
         return new JPAQueryFactory(entityManager)
                 .select(cidade)
                 .from(cidade)
@@ -110,24 +98,6 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public List<Cidade> find(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade)
-                .from(cidade)
-                .innerJoin(cidade.uf, QUf.uf1).fetchJoin()
-                .innerJoin(cidade.subCluster, subCluster)
-                .innerJoin(subCluster.cluster, QCluster.cluster)
-                .innerJoin(QCluster.cluster.grupo, grupo)
-                .innerJoin(grupo.regional, QRegional.regional)
-                .where(predicate)
-                .orderBy(
-                        cidade.uf.uf.asc(),
-                        cidade.nome.asc())
-                .distinct()
-                .fetch();
-    }
-
-    @Override
     public Optional<Cidade> findByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
                 .select(QCidade.cidade)
@@ -136,15 +106,4 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .fetchOne());
     }
 
-    @Override
-    public List<Cidade> findByUsuarioId(Integer usuarioId) {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade)
-                .from(cidade)
-                .join(cidade.cidadeUsuarios, QUsuarioCidade.usuarioCidade)
-                .where(QUsuarioCidade.usuarioCidade.usuario.id.eq(usuarioId))
-                .orderBy(cidade.nome.asc())
-                .distinct()
-                .fetch();
-    }
 }

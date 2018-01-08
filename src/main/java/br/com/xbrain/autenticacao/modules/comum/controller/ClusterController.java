@@ -24,17 +24,17 @@ public class ClusterController {
     public List<ClusterDto> getAtivosPorGrupo(Integer grupoId) {
         if (grupoId != null) {
             List<Cluster> clusterList =
-                    (List) repository.findBySituacaoAndGrupoId(ESituacao.A, grupoId, new Sort("nome"));
+                    (List<Cluster>) repository.findBySituacaoAndGrupoId(ESituacao.A, grupoId, new Sort("nome"));
 
             return getClusterDtoList(clusterList);
         } else {
-            List<Cluster> clusterList = (List) repository.findBySituacao(ESituacao.A, new Sort("nome"));
+            List<Cluster> clusterList = (List<Cluster>) repository.findBySituacao(ESituacao.A, new Sort("nome"));
 
             return getClusterDtoList(clusterList);
         }
     }
 
-    public List<ClusterDto> getClusterDtoList(List<Cluster> clusterList) {
+    private List<ClusterDto> getClusterDtoList(List<Cluster> clusterList) {
         return clusterList
                 .stream()
                 .map(c -> new ClusterDto(c.getId(), c.getNome()))

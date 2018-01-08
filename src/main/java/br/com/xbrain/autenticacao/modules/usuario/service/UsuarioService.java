@@ -57,14 +57,13 @@ public class UsuarioService {
     }
 
     public void save(UsuarioDto usuarioDto) {
-        Usuario usuarioAutenticado = new Usuario(autenticacaoService.getUsuarioId());
         Usuario usuario = Usuario.parse(usuarioDto);
         usuario.removerCaracteresDoCpf();
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
             usuario.setAlterarSenha(F);
             usuario.setSenha("123456");
-            usuario.setUsuarioCadastro(usuarioAutenticado);
+            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
             usuario.setSituacao(ESituacao.A);
         }
         repository.save(usuario);

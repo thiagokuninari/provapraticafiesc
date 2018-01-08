@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
@@ -101,12 +100,4 @@ public class CidadeControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    public void deveRetornarCidadesPorUsuarioId() throws Exception {
-        MvcResult result = mvc.perform(get("/api/cidades/usuario/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-    }
 }

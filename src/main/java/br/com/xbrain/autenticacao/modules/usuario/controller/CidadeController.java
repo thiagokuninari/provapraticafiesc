@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/cidades")
@@ -19,8 +20,9 @@ public class CidadeController {
 
     @Autowired
     private CidadeRepository repository;
+
     @Autowired
-    private CidadeService cidadeService;
+    private CidadeService service;
 
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
@@ -36,31 +38,26 @@ public class CidadeController {
     @RequestMapping(value = "uf-cidade/{uf}/{cidade}", method = RequestMethod.GET)
     public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf,
                                          @PathVariable("cidade") String cidade) {
-        return CidadeResponse.parse(cidadeService.findByUfNomeAndCidadeNome(uf, cidade));
+        return CidadeResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
     @RequestMapping("regional/{regionalId}")
-    public Iterable<Cidade> getByIdRegional(@PathVariable("regionalId") int regionalId) {
-        return repository.findByRegional(regionalId);
+    public List<Cidade> getByIdRegional(@PathVariable("regionalId") int regionalId) {
+        return service.getAllByRegionalId(regionalId);
     }
 
     @RequestMapping("grupo/{grupoId}")
-    public Iterable<Cidade> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
-        return repository.findByGrupo(grupoId);
+    public List<Cidade> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
+        return service.getAllByGrupoId(grupoId);
     }
 
     @RequestMapping("cluster/{clusterId}")
-    public Iterable<Cidade> getByIdCluster(@PathVariable("clusterId") int clusterId) {
-        return repository.findByCluster(clusterId);
+    public List<Cidade> getByIdCluster(@PathVariable("clusterId") int clusterId) {
+        return service.getAllByClusterId(clusterId);
     }
 
     @RequestMapping("sub-cluster/{subclusterId}")
-    public Iterable<Cidade> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
-        return repository.findBySubCluster(subclusterId);
-    }
-
-    @RequestMapping("usuario/{usuarioId}")
-    public Iterable<Cidade> getByIdUsuario(@PathVariable("usuarioId") int usuarioId) {
-        return repository.findByUsuarioId(usuarioId);
+    public List<Cidade> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
+        return service.getAllBySubClusterId(subclusterId);
     }
 }
