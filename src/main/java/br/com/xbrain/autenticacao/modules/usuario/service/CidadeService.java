@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -17,8 +16,6 @@ public class CidadeService {
     @Getter
     @Autowired
     private CidadeRepository repository;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
     public Cidade findByUfNomeAndCidadeNome(String uf, String cidade) {
         CidadePredicate predicate = new CidadePredicate();
