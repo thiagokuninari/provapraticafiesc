@@ -66,8 +66,18 @@ public class Cidade {
     }
 
     @JsonIgnore
+    public Integer getRegionalId() {
+        return subCluster.getCluster().getGrupo().getRegional().getId();
+    }
+
+    @JsonIgnore
     public String getRegionalNome() {
         return subCluster.getCluster().getGrupo().getRegional().getNome();
+    }
+
+    @JsonIgnore
+    public Integer getGrupoId() {
+        return subCluster.getCluster().getGrupo().getId();
     }
 
     @JsonIgnore
@@ -76,8 +86,18 @@ public class Cidade {
     }
 
     @JsonIgnore
+    public Integer getClusterId() {
+        return subCluster.getCluster().getId();
+    }
+
+    @JsonIgnore
     public String getClusterNome() {
         return subCluster.getCluster().getNome();
+    }
+
+    @JsonIgnore
+    public Integer getSubClusterId() {
+        return subCluster.getId();
     }
 
     @JsonIgnore

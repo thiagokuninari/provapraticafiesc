@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeSaveDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -149,6 +151,18 @@ public class UsuarioControllerTest {
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
+    }
+
+    @Test
+    public void deveSalvarAsCidadesDoUsuario() throws Exception {
+        UsuarioCidadeSaveDto dto = new UsuarioCidadeSaveDto();
+        dto.setUsuarioId(301);
+        dto.setCidadesId(Arrays.asList(736, 2921, 527));
+        mvc.perform(post("/api/usuarios/cidades")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
     }
 
     @Test

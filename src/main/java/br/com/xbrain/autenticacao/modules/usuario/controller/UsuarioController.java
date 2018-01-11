@@ -48,8 +48,13 @@ public class UsuarioController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void save(@Validated @RequestBody UsuarioDto usuario) {
-        service.save(usuario);
+    public UsuarioDto save(@Validated @RequestBody UsuarioDto usuario) {
+        return service.save(usuario);
+    }
+
+    @RequestMapping(value = "/cidades", method = RequestMethod.POST)
+    public UsuarioDto saveUsuarioCidades(@Validated @RequestBody UsuarioCidadeSaveDto dto) {
+        return service.saveUsuarioCidades(dto);
     }
 
     @RequestMapping(method = RequestMethod.PUT)

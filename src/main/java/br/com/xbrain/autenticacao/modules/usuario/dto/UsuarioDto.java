@@ -63,11 +63,11 @@ public class UsuarioDto {
     public static UsuarioDto parse(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
-        usuarioDto.setCargoId(usuario.getCargo().getId());
-        usuarioDto.setDepartamentoId(usuario.getDepartamento().getId());
-        usuarioDto.setUnidadeNegocioId(usuario.getUnidadeNegocio().getId());
+        usuarioDto.setCargoId(usuario.getCargoId());
+        usuarioDto.setDepartamentoId(usuario.getDepartamentoId());
+        usuarioDto.setUnidadeNegocioId(usuario.getUnidadeNegocioId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
-        usuarioDto.setNivelId(usuario.getCargo().getNivel().getId());
+        usuarioDto.setNivelId(usuario.getNivelId());
         return usuarioDto;
     }
 

@@ -7,6 +7,8 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -21,10 +23,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@ToString(of = "id")
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "USUARIO")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
@@ -189,7 +194,36 @@ public class Usuario {
         return usuario;
     }
 
+    public List<UsuarioCidade> getCidades() {
+        return Collections.unmodifiableList(this.cidades);
+    }
+
+    public void adicionarCidade(UsuarioCidade usuarioCidade) {
+        if (!this.cidades.contains(usuarioCidade)) {
+            this.cidades.add(usuarioCidade);
+        }
+    }
+
     public void removerCaracteresDoCpf() {
         this.cpf = this.cpf.replaceAll("[.-]", "");
+    }
+
+    public Integer getCargoId() {
+        return this.cargo != null ? this.cargo.getId() : null;
+    }
+
+    public Integer getDepartamentoId() {
+        return this.departamento != null ? this.departamento.getId() : null;
+    }
+
+    public Integer getUnidadeNegocioId() {
+        return this.unidadeNegocio != null ? this.unidadeNegocio.getId() : null;
+    }
+
+    public Integer getNivelId() {
+        if (this.cargo != null && this.cargo.getNivel() != null) {
+            return this.cargo.getNivel().getId();
+        }
+        return null;
     }
 }

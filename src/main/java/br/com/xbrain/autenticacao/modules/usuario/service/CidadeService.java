@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -24,20 +25,20 @@ public class CidadeService {
     @Autowired
     private CidadeRepository repository;
 
-    public List<Cidade> getAllByRegionalId(Integer regionalId) {
-        return repository.findAllByRegionalId(regionalId);
+    public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
+        return UsuarioCidadeDto.parse(repository.findAllByRegionalId(regionalId));
     }
 
-    public List<Cidade> getAllBySubClusterId(Integer subClusterId) {
-        return repository.findAllBySubClusterId(subClusterId);
+    public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
+        return UsuarioCidadeDto.parse(repository.findAllBySubClusterId(subClusterId));
     }
 
-    public List<Cidade> getAllByGrupoId(Integer grupoId) {
-        return repository.findAllByGrupoId(grupoId);
+    public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
+        return UsuarioCidadeDto.parse(repository.findAllByGrupoId(grupoId));
     }
 
-    public List<Cidade> getAllByClusterId(Integer clusterId) {
-        return repository.findAllByClusterId(clusterId);
+    public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
+        return UsuarioCidadeDto.parse(repository.findAllByClusterId(clusterId));
     }
 
     public List<Cidade> getAllCidadeByUf(Integer idUf) {

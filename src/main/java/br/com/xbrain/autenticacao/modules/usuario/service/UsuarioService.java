@@ -4,13 +4,8 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +51,18 @@ public class UsuarioService {
         return repository.findAll(filtros.toPredicate(), pageRequest);
     }
 
-    public void save(UsuarioDto usuarioDto) {
+    public UsuarioDto saveUsuarioCidades(UsuarioCidadeSaveDto usuarioCidadeSaveDto) {
+        Usuario usuario = findById(usuarioCidadeSaveDto.getUsuarioId());
+        usuarioCidadeSaveDto.getCidadesId().forEach(idCidade -> usuario.adicionarCidade(
+                new UsuarioCidade(new UsuarioCidadePk(usuario.getId(), idCidade),
+                        usuario,
+                        new Cidade(idCidade),
+                        new Usuario(autenticacaoService.getUsuarioId()),
+                        LocalDateTime.now())));
+        return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         usuario.removerCaracteresDoCpf();
         if (usuario.isNovoCadastro()) {
@@ -66,7 +72,7 @@ public class UsuarioService {
             usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
             usuario.setSituacao(ESituacao.A);
         }
-        repository.save(usuario);
+        return UsuarioDto.parse(repository.save(usuario));
     }
 
     public void ativar(UsuarioAtivacaoDto dto) {

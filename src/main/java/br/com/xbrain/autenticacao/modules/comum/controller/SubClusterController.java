@@ -25,11 +25,11 @@ public class SubClusterController {
 
         if (clusterId != null) {
             List<SubCluster> subClusterList =
-                    (List) repository.findBySituacaoAndClusterId(ESituacao.A, clusterId, new Sort("nome"));
+                    (List<SubCluster>) repository.findBySituacaoAndClusterId(ESituacao.A, clusterId, new Sort("nome"));
 
             return getSubClusterDtoList(subClusterList);
         } else {
-            List<SubCluster> subClusterList = (List) repository.findBySituacao(ESituacao.A, new Sort("nome"));
+            List<SubCluster> subClusterList = (List<SubCluster>) repository.findBySituacao(ESituacao.A, new Sort("nome"));
 
             return getSubClusterDtoList(subClusterList);
         }

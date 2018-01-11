@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -42,22 +43,27 @@ public class CidadeController {
     }
 
     @RequestMapping("regional/{regionalId}")
-    public List<Cidade> getByIdRegional(@PathVariable("regionalId") int regionalId) {
+    public List<UsuarioCidadeDto> getByIdRegional(@PathVariable("regionalId") int regionalId) {
         return service.getAllByRegionalId(regionalId);
     }
 
     @RequestMapping("grupo/{grupoId}")
-    public List<Cidade> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
+    public List<UsuarioCidadeDto> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
         return service.getAllByGrupoId(grupoId);
     }
 
     @RequestMapping("cluster/{clusterId}")
-    public List<Cidade> getByIdCluster(@PathVariable("clusterId") int clusterId) {
+    public List<UsuarioCidadeDto> getByIdCluster(@PathVariable("clusterId") int clusterId) {
         return service.getAllByClusterId(clusterId);
     }
 
     @RequestMapping("sub-cluster/{subclusterId}")
-    public List<Cidade> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
+    public List<UsuarioCidadeDto> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return service.getAllBySubClusterId(subclusterId);
+    }
+
+    @RequestMapping(value = "cidade/{cidadeId}")
+    public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
+        return UsuarioCidadeDto.parse(repository.findOne(id));
     }
 }

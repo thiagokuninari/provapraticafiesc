@@ -2,8 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,31 +12,27 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "USUARIO_CIDADE")
 @Data
+@EqualsAndHashCode(of = "usuarioCidadePk")
+@ToString(of = "usuarioCidadePk")
 public class UsuarioCidade {
 
-    @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_USUARIO_CIDADE",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_USUARIO_CIDADE")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_USUARIO_CIDADE")
-    private Integer id;
+    @EmbeddedId
+    private UsuarioCidadePk usuarioCidadePk;
 
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_USUARIO_CIDADE_USUARIO"),
-            referencedColumnName = "ID", nullable = false, updatable = false)
+            referencedColumnName = "ID", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
     @JoinColumn(name = "FK_CIDADE", foreignKey = @ForeignKey(name = "FK_USUARIO_CIDADE"),
-            referencedColumnName = "ID", nullable = false, updatable = false)
+            referencedColumnName = "ID", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Cidade cidade;
 
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO_CADASTRO", foreignKey = @ForeignKey(name = "FK_USUARIO_CIDADE_USUARIO_CAD"),
-            referencedColumnName = "ID", nullable = false, updatable = false)
+            referencedColumnName = "ID", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
 
@@ -56,17 +52,15 @@ public class UsuarioCidade {
     @Transient
     private boolean baixar;
 
-    @JsonIgnore
-    public boolean isNova() {
-        return id == null;
-    }
-
     public UsuarioCidade() {
     }
 
-    public UsuarioCidade(Cidade cidade) {
+    public UsuarioCidade(UsuarioCidadePk usuarioCidadePk, Usuario usuario, Cidade cidade,
+                         Usuario usuarioCadastro, LocalDateTime dataCadastro) {
+        this.usuarioCidadePk = usuarioCidadePk;
+        this.usuario = usuario;
         this.cidade = cidade;
+        this.usuarioCadastro = usuarioCadastro;
+        this.dataCadastro = dataCadastro;
     }
-
-
 }
