@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +53,10 @@ public class UsuarioControllerTest {
     private UsuarioRepository repository;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private UsuarioService usuarioService;
+
+    private static final int ID_USUARIO_HELPDESK = 101;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
@@ -70,33 +75,33 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarPorId() throws Exception {
-        mvc.perform(get("/api/usuarios/200")
+        mvc.perform(get("/api/usuarios/" + ID_USUARIO_HELPDESK)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(200)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
+                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")))
                 .andExpect(jsonPath("$.nivelId", notNullValue()));
     }
 
     @Test
     public void deveRetornarPorCpf() throws Exception {
-        mvc.perform(get("/api/usuarios?cpf=74464932673")
+        mvc.perform(get("/api/usuarios?cpf=65710871036")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(301)))
-                .andExpect(jsonPath("$.nome", is("Teste 1")));
+                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")));
     }
 
     @Test
     public void deveRetornarPorEmail() throws Exception {
-        mvc.perform(get("/api/usuarios?email=teste1@net.com.br")
+        mvc.perform(get("/api/usuarios?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(301)))
-                .andExpect(jsonPath("$.nome", is("Teste 1")));
+                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")));
     }
 
     @Test
@@ -105,8 +110,8 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(18)))
-                .andExpect(jsonPath("$.content[0].nome", is("xbrain_admin")));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
     @Test
@@ -156,7 +161,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveSalvarAsCidadesDoUsuario() throws Exception {
         UsuarioCidadeSaveDto dto = new UsuarioCidadeSaveDto();
-        dto.setUsuarioId(301);
+        dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setCidadesId(Arrays.asList(736, 2921, 527));
         mvc.perform(post("/api/usuarios/cidades")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -172,7 +177,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaEditar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(200);
+        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
     }
 
@@ -183,7 +188,7 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(301);
+        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
     }
 
@@ -194,13 +199,13 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
                 .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(302);
+        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
-        dto.setIdUsuario(302);
+        dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste ativação");
         return dto;
     }
@@ -208,14 +213,14 @@ public class UsuarioControllerTest {
     private UsuarioInativacaoDto umUsuarioParaInativar() {
         UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
         dto.setDataCadastro(LocalDateTime.now());
-        dto.setIdUsuario(301);
+        dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         dto.setIdMotivoInativacao(1);
         return dto;
     }
 
     private UsuarioDto umUsuarioParaEditar() {
-        Usuario usuario = repository.findComplete(200).get();
+        Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
         usuario.setNome("JOAOZINHO");
         return UsuarioDto.parse(usuario);
     }

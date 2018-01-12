@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Sql(scripts = {"classpath:/tests_database.sql"})
 public class AutenticacaoControllerTest {
 
     @Autowired
@@ -33,12 +35,12 @@ public class AutenticacaoControllerTest {
     public void deveAutenticar() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
         assertNotNull(token.getAccessToken());
-        assertEquals("200-ADMIN@XBRAIN.COM.BR", token.getLogin());
+        assertEquals("100-ADMIN@XBRAIN.COM.BR", token.getLogin());
         assertFalse(token.getPermissoes().isEmpty());
         assertEquals("ADMIN", token.getNome());
         assertEquals("X-BRAIN", token.getNivel());
-        assertEquals("Administrativo", token.getDepartamento());
-        assertEquals("ADMINISTRADOR", token.getCargo());
+        assertEquals("Administrador", token.getDepartamento());
+        assertEquals("Administrador", token.getCargo());
     }
 
     @Test
@@ -56,9 +58,9 @@ public class AutenticacaoControllerTest {
                         .param("token", token.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.login", is("200-ADMIN@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.departamento", is("Administrativo")))
-                .andExpect(jsonPath("$.cargo", is("ADMINISTRADOR")));
+                .andExpect(jsonPath("$.login", is("100-ADMIN@XBRAIN.COM.BR")))
+                .andExpect(jsonPath("$.departamento", is("Administrador")))
+                .andExpect(jsonPath("$.cargo", is("Administrador")));
     }
 
     @Test

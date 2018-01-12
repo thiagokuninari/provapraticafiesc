@@ -32,9 +32,8 @@ spring:
           import_files:
             database/estrutura.sql,
             database/organizacional.sql,
-            database/sistema.sql,
+            database/permissoes.sql,
             database/cidades.sql,
-            database/usuarios.sql,
             database/motivo-inativacao.sql
 
   datasource:
