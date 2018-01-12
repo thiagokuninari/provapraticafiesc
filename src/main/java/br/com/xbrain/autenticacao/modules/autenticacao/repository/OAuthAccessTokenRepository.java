@@ -1,6 +1,6 @@
-package br.com.xbrain.autenticacao.modules.permissao.repository;
+package br.com.xbrain.autenticacao.modules.autenticacao.repository;
 
-import br.com.xbrain.autenticacao.modules.permissao.model.OAuthAccessToken;
+import br.com.xbrain.autenticacao.modules.autenticacao.model.OAuthAccessToken;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

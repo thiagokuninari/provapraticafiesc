@@ -1,6 +1,6 @@
-package br.com.xbrain.autenticacao.modules.permissao.logout;
+package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
-import br.com.xbrain.autenticacao.modules.permissao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

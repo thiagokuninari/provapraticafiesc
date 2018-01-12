@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.permissao;
+package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

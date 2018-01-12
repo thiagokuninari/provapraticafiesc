@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.permissao.model;
+package br.com.xbrain.autenticacao.modules.autenticacao.model;
 
 import lombok.Data;
 
