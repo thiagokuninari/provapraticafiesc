@@ -1,14 +1,15 @@
 spring:
   jpa:
-    database: ORACLE
+    database: HSQL
     show-sql: true
     hibernate:
       ddl-auto: create
+
+      hibernate:
+        dialect: org.hibernate.dialect.HSQLDialect
   datasource:
-    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: AUTENTICACAO_TEST
-    password: py12nrk7
-    driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
-
-
+    url:
+    jdbcUrl: jdbc:hsqldb:hsql://localhost/autenticacao
+    username: sa
+    password:
+    driverClassName: org.hsqldb.jdbcDriver
