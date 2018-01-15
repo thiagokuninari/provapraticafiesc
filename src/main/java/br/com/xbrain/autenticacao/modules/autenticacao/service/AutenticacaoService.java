@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -22,9 +23,10 @@ public class AutenticacaoService {
 
     @Autowired
     private OAuthAccessTokenRepository tokenRepository;
-
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private HttpServletRequest request;
 
     public String getLoginUsuario() {
         return getAuthentication().getName();
@@ -61,4 +63,7 @@ public class AutenticacaoService {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
+    public boolean isEmulacao() {
+        return request.getAttribute("emulacao") != null;
+    }
 }

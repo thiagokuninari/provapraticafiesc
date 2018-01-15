@@ -25,6 +25,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/usuarios/**").hasRole("AUT_GER_USUARIO")
+                .antMatchers("/api/emular**").hasRole("AUT_EMULAR_USUARIO")
                 .anyRequest().authenticated();
     }
 
