@@ -108,6 +108,11 @@ public class Usuario {
     @ManyToMany
     private List<Empresa> empresas =  new ArrayList<>();
 
+    @NotAudited
+    @OrderBy("id")
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UsuarioHierarquia> usuariosHierarquia;
+
     @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_CARGO"), nullable = false)
@@ -201,6 +206,12 @@ public class Usuario {
     public void adicionarCidade(UsuarioCidade usuarioCidade) {
         if (!this.cidades.contains(usuarioCidade)) {
             this.cidades.add(usuarioCidade);
+        }
+    }
+
+    public void adicionarHierarquia(UsuarioHierarquia usuarioHierarquia) {
+        if (!this.usuariosHierarquia.contains(usuarioHierarquia)) {
+            this.usuariosHierarquia.add(usuarioHierarquia);
         }
     }
 

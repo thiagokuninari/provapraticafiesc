@@ -3,9 +3,10 @@ spring:
     database: ORACLE
     show-sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
+
   datasource:
-    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    url: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver

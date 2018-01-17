@@ -62,6 +62,17 @@ public class UsuarioService {
         return UsuarioDto.parse(repository.save(usuario));
     }
 
+    public UsuarioDto saveHierarquiaCidades(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto) {
+        Usuario usuario = findById(usuarioHierarquiaSaveDto.getUsuarioId());
+        usuarioHierarquiaSaveDto.getHierarquiasId().forEach(idHierarquia -> usuario.adicionarHierarquia(
+                new UsuarioHierarquia(
+                        usuario,
+                        new Usuario(idHierarquia),
+                        new Usuario(autenticacaoService.getUsuarioId()),
+                        LocalDateTime.now())));
+        return UsuarioDto.parse(repository.save(usuario));
+    }
+
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         usuario.removerCaracteresDoCpf();

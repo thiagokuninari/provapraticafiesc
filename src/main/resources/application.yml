@@ -21,7 +21,7 @@ spring:
     database: ORACLE
     show-sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     properties:
       javax:
         persistence:

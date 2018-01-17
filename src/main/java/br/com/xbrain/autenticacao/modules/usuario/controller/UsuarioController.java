@@ -57,6 +57,11 @@ public class UsuarioController {
         return service.saveUsuarioCidades(dto);
     }
 
+    @RequestMapping(value = "/hierarquias", method = RequestMethod.POST)
+    public UsuarioDto saveUsuarioHierarquia(@Validated @RequestBody UsuarioHierarquiaSaveDto dto) {
+        return service.saveHierarquiaCidades(dto);
+    }
+
     @RequestMapping(method = RequestMethod.PUT)
     public void alterar(@Validated @RequestBody UsuarioDto usuario) {
         service.save(usuario);
