@@ -36,6 +36,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     public void setAdditionalInformation(OAuth2AccessToken token, Usuario usuario, User user) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
+        token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
         token.getAdditionalInformation().put("login", user.getUsername());
         token.getAdditionalInformation().put("nome", usuario.getNome());

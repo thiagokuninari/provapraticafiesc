@@ -11,31 +11,33 @@ import java.util.List;
 public class OAuthToken {
 
     @JsonProperty("access_token")
-    public String accessToken;
+    private String accessToken;
 
-    public String login;
+    private String login;
 
-    public String nome;
+    private String nome;
 
-    public String email;
+    private String email;
 
-    public String usuarioId;
+    private String usuarioId;
 
-    public List<String> authorities;
+    private List<String> authorities;
 
     private String errorDescription;
 
-    public String alterarSenha;
+    private String alterarSenha;
 
-    public String nivel;
+    private String nivel;
 
-    public String nivelCodigo;
+    private String nivelCodigo;
 
-    public String cargo;
+    private String cargo;
 
-    public String cargoCodigo;
+    private String cargoCodigo;
 
-    public String departamento;
+    private String departamento;
 
-    public String departamentoCodigo;
+    private String departamentoCodigo;
+
+    private String cpf;
 }

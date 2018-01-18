@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class TestsHelper {
 
     public static String getAccessToken(MockMvc mvc, String usuario) throws Exception {
-        return "Bearer " + getAccessTokenObject(mvc, usuario).accessToken;
+        return "Bearer " + getAccessTokenObject(mvc, usuario).getAccessToken();
     }
 
     public static OAuthToken getAccessTokenObject(MockMvc mvc, String usuario) {
