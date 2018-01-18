@@ -14,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +43,7 @@ public class CargoControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(11)))
-                .andExpect(jsonPath("$[0].nome", is("ADMINISTRADOR")));
+                .andExpect(jsonPath("$", not(empty())))
+                .andExpect(jsonPath("$[0].nome", is("Administrador")));
     }
 }
