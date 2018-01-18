@@ -59,7 +59,7 @@ public class UsuarioController {
 
     @RequestMapping(value = "/hierarquias", method = RequestMethod.POST)
     public UsuarioDto saveUsuarioHierarquia(@Validated @RequestBody UsuarioHierarquiaSaveDto dto) {
-        return service.saveHierarquiaCidades(dto);
+        return service.saveUsuarioHierarquia(dto);
     }
 
     @RequestMapping(method = RequestMethod.PUT)

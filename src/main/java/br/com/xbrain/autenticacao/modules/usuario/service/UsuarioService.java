@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -30,6 +30,12 @@ public class UsuarioService {
     public Usuario findById(int id) {
         return repository
                 .findComplete(id)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public Usuario findComHierarquia(int id) {
+        return repository
+                .findComHierarquia(id)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
@@ -62,15 +68,21 @@ public class UsuarioService {
         return UsuarioDto.parse(repository.save(usuario));
     }
 
-    public UsuarioDto saveHierarquiaCidades(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto) {
-        Usuario usuario = findById(usuarioHierarquiaSaveDto.getUsuarioId());
-        usuarioHierarquiaSaveDto.getHierarquiasId().forEach(idHierarquia -> usuario.adicionarHierarquia(
-                new UsuarioHierarquia(
-                        usuario,
-                        new Usuario(idHierarquia),
-                        new Usuario(autenticacaoService.getUsuarioId()),
-                        LocalDateTime.now())));
+    public UsuarioDto saveUsuarioHierarquia(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto) {
+        Usuario usuario = findComHierarquia(usuarioHierarquiaSaveDto.getUsuarioId());
+        removerUsuarioSuperior(usuarioHierarquiaSaveDto, usuario);
+        usuarioHierarquiaSaveDto.getHierarquiasId()
+                .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
         return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idHierarquia) {
+        return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
+    }
+
+    private void removerUsuarioSuperior(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto, Usuario usuario) {
+        usuario.getUsuariosHierarquia()
+                .removeIf(h -> !usuarioHierarquiaSaveDto.getHierarquiasId().contains(h.getUsuarioSuperiorId()));
     }
 
     public UsuarioDto save(UsuarioDto usuarioDto) {
