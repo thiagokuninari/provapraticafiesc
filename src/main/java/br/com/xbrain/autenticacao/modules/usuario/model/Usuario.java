@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -95,8 +96,8 @@ public class Usuario {
     @NotAudited
     @OrderBy("id")
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<UsuarioCidade> cidades;
-    
+    private Set<UsuarioCidade> cidades;
+
     @NotAudited
     @JsonIgnore
     @NotEmpty
@@ -106,12 +107,12 @@ public class Usuario {
             @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
                     foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
     @ManyToMany
-    private List<Empresa> empresas =  new ArrayList<>();
+    private List<Empresa> empresas = new ArrayList<>();
 
     @NotAudited
     @OrderBy("id")
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UsuarioHierarquia> usuariosHierarquia;
+    private Set<UsuarioHierarquia> usuariosHierarquia;
 
     @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
@@ -167,9 +168,9 @@ public class Usuario {
     public List<Integer> getEmpresasId() {
         return empresas != null && Hibernate.isInitialized(empresas)
                 ? empresas
-                        .stream()
-                        .map(Empresa::getId)
-                        .collect(Collectors.toList())
+                .stream()
+                .map(Empresa::getId)
+                .collect(Collectors.toList())
                 : null;
     }
 
@@ -199,8 +200,8 @@ public class Usuario {
         return usuario;
     }
 
-    public List<UsuarioCidade> getCidades() {
-        return Collections.unmodifiableList(this.cidades);
+    public Set<UsuarioCidade> getCidades() {
+        return Collections.unmodifiableSet(this.cidades);
     }
 
     public void adicionarCidade(UsuarioCidade usuarioCidade) {

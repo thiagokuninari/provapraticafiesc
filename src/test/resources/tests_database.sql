@@ -1,5 +1,3 @@
-SET DATABASE SQL SYNTAX ORA TRUE;
-
 ALTER TABLE oauth_access_token alter column authentication long raw;
 ALTER TABLE oauth_access_token alter column refresh_token long raw;
 ALTER TABLE oauth_access_token alter column token long raw;

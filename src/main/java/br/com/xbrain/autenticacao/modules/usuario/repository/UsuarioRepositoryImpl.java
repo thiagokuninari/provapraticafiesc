@@ -43,4 +43,19 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .fetchOne()
         );
     }
+
+    public Optional<Usuario> findComHierarquia(Integer id) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .join(usuario.cargo, cargo).fetchJoin()
+                        .join(cargo.nivel).fetchJoin()
+                        .join(usuario.departamento).fetchJoin()
+                        .leftJoin(usuario.usuariosHierarquia).fetchJoin()
+                        .where(usuario.id.eq(id))
+                        .distinct()
+                        .fetchOne()
+        );
+    }
 }

@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,10 +12,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "USUARIO_HIERARQUIA")
 @Data
+@EqualsAndHashCode(of = "usuarioHierarquiaPk")
+@ToString(of = "usuarioHierarquiaPk")
 public class UsuarioHierarquia {
 
     @EmbeddedId
-    private UsuarioCidadePk usuarioCidadePk;
+    private UsuarioHierarquiaPk usuarioHierarquiaPk;
 
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_USUARIO_HIERARQUIA_USUARIO"),
@@ -44,12 +48,16 @@ public class UsuarioHierarquia {
         this.usuarioSuperior = usuarioSuperior;
     }
 
-    public UsuarioHierarquia(Usuario usuario, Usuario usuarioSuperior, Usuario usuarioCadastro,
-                             LocalDateTime dataCadastro) {
+    public static UsuarioHierarquia criar(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
+        return new UsuarioHierarquia(usuario, idHierarquia, idUsuarioAutenticado);
+    }
+
+    private UsuarioHierarquia(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
+        this.usuarioHierarquiaPk = new UsuarioHierarquiaPk(usuario.getId(), idHierarquia);
         this.usuario = usuario;
-        this.usuarioSuperior = usuarioSuperior;
-        this.usuarioCadastro = usuarioCadastro;
-        this.dataCadastro = dataCadastro;
+        this.usuarioSuperior = new Usuario(idHierarquia);
+        this.usuarioCadastro = new Usuario(idUsuarioAutenticado);
+        this.dataCadastro = LocalDateTime.now();
     }
 
     public Integer getUsuarioSuperiorId() {

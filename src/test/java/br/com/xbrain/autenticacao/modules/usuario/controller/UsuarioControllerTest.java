@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeSaveDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -164,6 +161,18 @@ public class UsuarioControllerTest {
         dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setCidadesId(Arrays.asList(736, 2921, 527));
         mvc.perform(post("/api/usuarios/cidades")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deveSalvarAHierarquiaDoUsuario() throws Exception {
+        UsuarioHierarquiaSaveDto dto = new UsuarioHierarquiaSaveDto();
+        dto.setUsuarioId(ID_USUARIO_HELPDESK);
+        dto.setHierarquiasId(Arrays.asList(100));
+        mvc.perform(post("/api/usuarios/hierarquias")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))

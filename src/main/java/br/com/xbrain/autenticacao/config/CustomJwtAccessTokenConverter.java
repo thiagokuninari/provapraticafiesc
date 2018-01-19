@@ -35,17 +35,23 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     public void setAdditionalInformation(OAuth2AccessToken token, Usuario usuario, User user) {
+        token.getAdditionalInformation().put("usuarioId", usuario.getId());
+        token.getAdditionalInformation().put("cpf", usuario.getCpf());
+        token.getAdditionalInformation().put("email", usuario.getEmail());
         token.getAdditionalInformation().put("login", user.getUsername());
-        token.getAdditionalInformation().put("permissoes",
+        token.getAdditionalInformation().put("nome", usuario.getNome());
+        token.getAdditionalInformation().put("alterarSenha", usuario.getAlterarSenha());
+        token.getAdditionalInformation().put("nivel", usuario.getCargo().getNivel().getNome());
+        token.getAdditionalInformation().put("nivelCodigo", usuario.getCargo().getNivel().getCodigo());
+        token.getAdditionalInformation().put("departamento", usuario.getDepartamento().getNome());
+        token.getAdditionalInformation().put("departamentoCodigo", usuario.getDepartamento().getCodigo());
+        token.getAdditionalInformation().put("cargo", usuario.getCargo().getNome());
+        token.getAdditionalInformation().put("cargoCodigo", usuario.getCargo().getCodigo());
+        token.getAdditionalInformation().put("authorities",
                 user.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)
                         .toArray());
-        token.getAdditionalInformation().put("nome", usuario.getNome());
-        token.getAdditionalInformation().put("alterarSenha", usuario.getAlterarSenha());
-        token.getAdditionalInformation().put("nivel", usuario.getCargo().getNivel().getNome());
-        token.getAdditionalInformation().put("departamento", usuario.getDepartamento().getNome());
-        token.getAdditionalInformation().put("cargo", usuario.getCargo().getNome());
     }
 
     @Override
