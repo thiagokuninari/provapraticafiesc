@@ -37,7 +37,7 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<CidadeResponse> findCidadesByUsuarioLogado(int usuarioId) {
+    public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         Usuario usuario = repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_CID_NAO_ENCONTRADO);
         return usuario.getCidades()

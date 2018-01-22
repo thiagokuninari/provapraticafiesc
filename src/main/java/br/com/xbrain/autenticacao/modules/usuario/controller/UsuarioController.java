@@ -54,8 +54,8 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/{id}/cidades", method = RequestMethod.GET)
-    public List<CidadeResponse> getCidadesByUsuarioLogado(@PathVariable("id") int id) {
-        return service.findCidadesByUsuarioLogado(id);
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
+        return service.findCidadesByUsuario(id);
     }
 
     @RequestMapping(value = "/cidades", method = RequestMethod.POST)
