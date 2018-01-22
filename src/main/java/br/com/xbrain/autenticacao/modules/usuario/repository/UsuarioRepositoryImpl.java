@@ -1,11 +1,14 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -53,6 +56,19 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.usuariosHierarquia).fetchJoin()
+                        .where(usuario.id.eq(id))
+                        .distinct()
+                        .fetchOne()
+        );
+    }
+
+    @Override
+    public Optional<Usuario> findComCidade(Integer id) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .join(usuario.cidades).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .fetchOne()

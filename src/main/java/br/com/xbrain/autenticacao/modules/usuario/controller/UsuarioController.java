@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,6 +51,11 @@ public class UsuarioController {
     @RequestMapping(method = RequestMethod.POST)
     public UsuarioDto save(@Validated @RequestBody UsuarioDto usuario) {
         return service.save(usuario);
+    }
+
+    @RequestMapping(value = "/{id}/cidades", method = RequestMethod.GET)
+    public List<CidadeResponse> getCidadesByUsuarioLogado(@PathVariable("id") int id) {
+        return service.findCidadesByUsuarioLogado(id);
     }
 
     @RequestMapping(value = "/cidades", method = RequestMethod.POST)

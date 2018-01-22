@@ -237,7 +237,7 @@ public class UsuarioControllerTest {
     private UsuarioDto umUsuario(String nome) {
         UsuarioDto usuario = new UsuarioDto();
         usuario.setNome(nome);
-        usuario.setCargoId(1);
+        usuario.setCargoId(3);
         usuario.setDepartamentoId(1);
         usuario.setCpf("097.238.645-92");
         usuario.setUnidadeNegocioId(1);
