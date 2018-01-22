@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
+import javax.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -237,8 +237,13 @@ public class UsuarioControllerTest {
     private UsuarioDto umUsuario(String nome) {
         UsuarioDto usuario = new UsuarioDto();
         usuario.setNome(nome);
+<<<<<<< HEAD
         usuario.setCargoId(3);
         usuario.setDepartamentoId(1);
+=======
+        usuario.setCargoId(50);
+        usuario.setDepartamentoId(50);
+>>>>>>> a637618854394d809eaa9536b9e89a0f4f2eda0c
         usuario.setCpf("097.238.645-92");
         usuario.setUnidadeNegocioId(1);
         usuario.setEmpresasId(singletonList(4));
