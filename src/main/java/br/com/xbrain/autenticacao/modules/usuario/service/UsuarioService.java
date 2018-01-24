@@ -38,14 +38,6 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<UsuarioConsultaDto> findUsuarioByFiltro(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtros.toPredicate();
-        return repository.findComFiltro(predicate)
-                .stream()
-                .map(UsuarioConsultaDto::new)
-                .collect(Collectors.toList());
-    }
-
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         Usuario usuario = repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_CID_NAO_ENCONTRADO);
