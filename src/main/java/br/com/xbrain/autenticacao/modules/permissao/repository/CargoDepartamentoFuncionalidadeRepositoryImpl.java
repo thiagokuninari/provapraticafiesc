@@ -10,6 +10,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
+import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 
 public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepartamentoFuncionalidadeRepositoryCustom {
@@ -25,7 +26,8 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepar
                 .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo).fetchJoin()
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(cargoDepartamentoFuncionalidade.departamento).fetchJoin()
-                .leftJoin(cargoDepartamentoFuncionalidade.funcionalidade).fetchJoin()
+                .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade).fetchJoin()
+                .innerJoin(funcionalidade.aplicacao).fetchJoin()
                 .where(cargoDepartamentoFuncionalidade.cargo.id.eq(cargoObj.getId())
                         .and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamento.getId())))
                 .fetch();

@@ -13,5 +13,4 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findComHierarquia(Integer id);
 
     Optional<Usuario> findComCidade(Integer id);
-
 }

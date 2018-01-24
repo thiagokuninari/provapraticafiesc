@@ -40,4 +40,8 @@ public class OAuthToken {
     private String departamentoCodigo;
 
     private String cpf;
+
+    private List<Integer> empresas;
+
+    private List<Integer> unidadesNegocio;
 }

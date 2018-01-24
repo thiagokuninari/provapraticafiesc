@@ -107,7 +107,7 @@ public class Usuario {
             @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
                     foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
     @ManyToMany
-    private List<Empresa> empresas = new ArrayList<>();
+    private List<Empresa> empresas;
 
     @NotAudited
     @OrderBy("id")

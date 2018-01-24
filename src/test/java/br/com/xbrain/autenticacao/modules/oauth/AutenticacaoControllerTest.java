@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,6 +49,8 @@ public class AutenticacaoControllerTest {
         assertEquals("F", token.getAlterarSenha());
         assertEquals("38957979875", token.getCpf());
         assertFalse(token.getAuthorities().isEmpty());
+        assertEquals(singletonList(4), token.getEmpresas());
+        assertEquals(singletonList(3), token.getUnidadesNegocio());
     }
 
     @Test

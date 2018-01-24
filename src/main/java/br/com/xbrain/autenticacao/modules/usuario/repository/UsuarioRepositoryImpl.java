@@ -23,6 +23,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .innerJoin(usuario.cargo, cargo).fetchJoin()
                         .innerJoin(cargo.nivel).fetchJoin()
                         .innerJoin(usuario.departamento).fetchJoin()
+                        .innerJoin(usuario.empresas).fetchJoin()
+                        .innerJoin(usuario.unidadeNegocio).fetchJoin()
                         .where(
                                 usuario.email.equalsIgnoreCase(email)
                         )

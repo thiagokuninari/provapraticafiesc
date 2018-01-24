@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.util.regex.Pattern;
 
+import static java.util.Collections.singletonList;
+
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
         JwtAccessTokenConverterConfigurer {
 
@@ -47,6 +49,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("departamentoCodigo", usuario.getDepartamento().getCodigo());
         token.getAdditionalInformation().put("cargo", usuario.getCargo().getNome());
         token.getAdditionalInformation().put("cargoCodigo", usuario.getCargo().getCodigo());
+        token.getAdditionalInformation().put("empresas", usuario.getEmpresasId());
+        token.getAdditionalInformation().put("unidadesNegocio", singletonList(usuario.getUnidadeNegocioId()));
         token.getAdditionalInformation().put("authorities",
                 user.getAuthorities()
                         .stream()

@@ -11,13 +11,14 @@ import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "EMPRESA")
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(of = {"id"})
-public class Empresa {
+public class Empresa implements Serializable {
 
     @Id
     @Column(name = "ID")

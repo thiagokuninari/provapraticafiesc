@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -49,16 +49,15 @@ public class FuncionalidadeService {
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
                 .findFuncionalidadesPorCargoEDepartamento(usuario.getCargo(), usuario.getDepartamento());
 
-        List<Empresa> empresasUsuario = usuario.getEmpresas();
-        List<UnidadeNegocio> unidadesUsuario = Collections.singletonList(usuario.getUnidadeNegocio());
-
         return Stream.concat(
                 funcionalidades
                         .stream()
                         .filter(semEmpresaEUnidadeDeNegocio
-                                .or(possuiEmpresa(empresasUsuario))
-                                .or(possuiUnidadeNegocio(unidadesUsuario))
-                                .or(possuiEmpresaEUnidadeNegocio(unidadesUsuario, empresasUsuario)))
+                                .or(possuiEmpresa(usuario.getEmpresas()))
+                                .or(possuiUnidadeNegocio(singletonList(usuario.getUnidadeNegocio())))
+                                .or(possuiEmpresaEUnidadeNegocio(
+                                        singletonList(usuario.getUnidadeNegocio()),
+                                        usuario.getEmpresas())))
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
                         .findPorUsuario(usuario.getId()).stream())
