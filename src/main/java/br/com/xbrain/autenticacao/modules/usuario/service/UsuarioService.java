@@ -101,6 +101,14 @@ public class UsuarioService {
                 .removeIf(h -> !usuarioHierarquiaSaveDto.getHierarquiasId().contains(h.getUsuarioSuperiorId()));
     }
 
+    public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, boolean incluirProprio) {
+        List<Integer> usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
+        if (incluirProprio) {
+            usuariosSubordinados.add(usuarioId);
+        }
+        return usuariosSubordinados;
+    }
+
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         usuario.removerCaracteresDoCpf();

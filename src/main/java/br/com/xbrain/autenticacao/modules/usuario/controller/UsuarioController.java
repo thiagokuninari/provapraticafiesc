@@ -77,4 +77,9 @@ public class UsuarioController {
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         service.ativar(dto);
     }
+
+    @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
+    public List<Integer> getSubordinados(@PathVariable("id") int id, @RequestParam boolean incluirProprio) {
+        return service.getIdDosUsuariosSubordinados(id, incluirProprio);
+    }
 }

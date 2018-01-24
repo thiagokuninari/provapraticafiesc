@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepositoryCustom {
@@ -13,4 +14,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findComHierarquia(Integer id);
 
     Optional<Usuario> findComCidade(Integer id);
+
+    List<Integer> getUsuariosSubordinados(int usuarioId);
 }

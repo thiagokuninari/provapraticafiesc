@@ -16,11 +16,8 @@ public class Funcionalidade {
 
     @Id
     @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_FUNCIONALIDADE",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_FUNCIONALIDADE")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_FUNCIONALIDADE")
+    @SequenceGenerator(name = "SEQ_FUNCIONALIDADE", sequenceName = "SEQ_FUNCIONALIDADE")
+    @GeneratedValue(generator = "SEQ_FUNCIONALIDADE", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

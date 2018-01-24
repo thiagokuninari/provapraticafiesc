@@ -5,7 +5,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -73,5 +76,22 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .orderBy(usuario.id.asc())
                         .fetchOne()
         );
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Integer> getUsuariosSubordinados(int usuarioId) {
+        List<BigDecimal> result = entityManager
+                .createNativeQuery(
+                        " SELECT FK_USUARIO" +
+                                " FROM usuario_hierarquia" +
+                                " START WITH FK_USUARIO_SUPERIOR = :_usuarioId " +
+                                " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
+        return result
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
     }
 }
