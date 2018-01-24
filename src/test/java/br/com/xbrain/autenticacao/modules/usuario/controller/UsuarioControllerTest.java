@@ -82,16 +82,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarPorCpf() throws Exception {
-        mvc.perform(get("/api/usuarios?cpf=65710871036")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(ID_USUARIO_HELPDESK)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")));
-    }
-
-    @Test
     public void deveRetornarPorEmail() throws Exception {
         mvc.perform(get("/api/usuarios?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

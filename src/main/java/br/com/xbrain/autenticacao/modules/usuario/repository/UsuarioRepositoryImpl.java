@@ -70,6 +70,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .join(usuario.cidades).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
+                        .orderBy(usuario.id.asc())
                         .fetchOne()
         );
     }
