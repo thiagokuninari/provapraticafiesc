@@ -55,12 +55,15 @@ public class UsuarioCidade {
     public UsuarioCidade() {
     }
 
-    public UsuarioCidade(UsuarioCidadePk usuarioCidadePk, Usuario usuario, Cidade cidade,
-                         Usuario usuarioCadastro, LocalDateTime dataCadastro) {
-        this.usuarioCidadePk = usuarioCidadePk;
+    private UsuarioCidade(Usuario usuario, Integer idCidade, Integer idUsuarioLogado) {
+        this.usuarioCidadePk = new UsuarioCidadePk(usuario.getId(), idCidade);
         this.usuario = usuario;
-        this.cidade = cidade;
-        this.usuarioCadastro = usuarioCadastro;
-        this.dataCadastro = dataCadastro;
+        this.cidade = new Cidade(idCidade);
+        this.usuarioCadastro = new Usuario(idUsuarioLogado);
+        this.dataCadastro = LocalDateTime.now();
+    }
+
+    public static UsuarioCidade criar(Usuario usuario, Integer idCidade, Integer idUsuarioLogado) {
+        return new UsuarioCidade(usuario, idCidade, idUsuarioLogado);
     }
 }

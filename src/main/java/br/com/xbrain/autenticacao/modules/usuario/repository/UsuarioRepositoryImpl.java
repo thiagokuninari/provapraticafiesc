@@ -1,10 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
@@ -70,7 +72,20 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .join(usuario.cidades).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
+                        .orderBy(usuario.id.asc())
                         .fetchOne()
         );
+    }
+
+    @Override
+    public List<Usuario> findComFiltro(UsuarioPredicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .leftJoin(usuario.unidadeNegocio).fetchJoin()
+                .leftJoin(usuario.empresas).fetchJoin()
+                .where(predicate.build())
+                .distinct()
+                .fetch();
     }
 }

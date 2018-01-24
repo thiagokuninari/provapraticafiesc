@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,14 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    public List<UsuarioConsultaDto> findUsuarioByFiltro(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtros.toPredicate();
+        return repository.findComFiltro(predicate)
+                .stream()
+                .map(UsuarioConsultaDto::new)
+                .collect(Collectors.toList());
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         Usuario usuario = repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_CID_NAO_ENCONTRADO);
@@ -52,13 +61,6 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public UsuarioDto findByCpf(String cpf) {
-        Usuario usuario = repository
-                .findByCpf(cpf)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
-        return UsuarioDto.parse(usuario);
-    }
-
     public UsuarioDto findByEmail(String email) {
         Usuario usuario = repository
                 .findByEmail(email)
@@ -67,18 +69,23 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        return repository.findAll(filtros.toPredicate(), pageRequest);
+        UsuarioPredicate predicate = filtros.toPredicate();
+        return repository.findAll(predicate.build(), pageRequest);
     }
 
     public UsuarioDto saveUsuarioCidades(UsuarioCidadeSaveDto usuarioCidadeSaveDto) {
         Usuario usuario = findById(usuarioCidadeSaveDto.getUsuarioId());
-        usuarioCidadeSaveDto.getCidadesId().forEach(idCidade -> usuario.adicionarCidade(
-                new UsuarioCidade(new UsuarioCidadePk(usuario.getId(), idCidade),
-                        usuario,
-                        new Cidade(idCidade),
-                        new Usuario(autenticacaoService.getUsuarioId()),
-                        LocalDateTime.now())));
+        adicionarCidadeParaUsuario(usuarioCidadeSaveDto, usuario);
         return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    private void adicionarCidadeParaUsuario(UsuarioCidadeSaveDto usuarioCidadeSaveDto, Usuario usuario) {
+        usuarioCidadeSaveDto.getCidadesId().forEach(idCidade -> usuario.adicionarCidade(
+                criarUsuarioCidade(usuario, idCidade)));
+    }
+
+    private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {
+        return UsuarioCidade.criar(usuario, idCidade, autenticacaoService.getUsuarioId());
     }
 
     public UsuarioDto saveUsuarioHierarquia(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto) {

@@ -232,6 +232,10 @@ public class Usuario {
         return this.unidadeNegocio != null ? this.unidadeNegocio.getId() : null;
     }
 
+    public String getUnidadeNegocioNome() {
+        return this.unidadeNegocio != null ? this.unidadeNegocio.getNome() : null;
+    }
+
     public Integer getNivelId() {
         if (this.cargo != null && this.cargo.getNivel() != null) {
             return this.cargo.getNivel().getId();
