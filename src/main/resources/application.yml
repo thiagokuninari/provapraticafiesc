@@ -1,13 +1,8 @@
 server:
-  port: 4339
-  http-port: 8096
+  port: 8096
   compression:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
-  ssl:
-    key-store: classpath:xbrain.com.br.jks
-    key-store-password: xbr41nhttps
-    key-alias: myalias
 
 app-config:
   oauth-client: xbrain-app-client
