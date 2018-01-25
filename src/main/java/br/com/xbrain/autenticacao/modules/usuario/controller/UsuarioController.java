@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -71,11 +70,5 @@ public class UsuarioController {
     @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         service.ativar(dto);
-    }
-
-    //FIXME não escrevi testes para esse endpoint, pois a consulta não roda no hsqldb!
-    @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
-    public List<Integer> getSubordinados(@PathVariable("id") int id, @RequestParam boolean incluirProprio) {
-        return service.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 }

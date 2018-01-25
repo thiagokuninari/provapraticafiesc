@@ -1,0 +1,57 @@
+package br.com.xbrain.autenticacao.modules.oauth;
+
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import helpers.Usuarios;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+
+import static helpers.TestsHelper.getAccessToken;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Matchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@Sql(scripts = {"classpath:/tests_database.sql"})
+public class UsuarioAutenticadoControllerUnitTest {
+
+    @Autowired
+    private MockMvc mvc;
+
+    @MockBean
+    private UsuarioService usuarioService;
+
+    @Before
+    public void setup() {
+        Mockito.when(usuarioService.getIdDosUsuariosSubordinados(any(), any()))
+                .thenReturn(Arrays.asList(1, 2, 3));
+    }
+
+    @Test
+    public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
+        mvc.perform(get("/api/usuario-autenticado/101/subordinados?incluirProprio=true")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)));
+    }
+}

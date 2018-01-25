@@ -15,5 +15,5 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findComCidade(Integer id);
 
-    List<Integer> getUsuariosSubordinados(int usuarioId);
+    List<Integer> getUsuariosSubordinados(Integer usuarioId);
 }

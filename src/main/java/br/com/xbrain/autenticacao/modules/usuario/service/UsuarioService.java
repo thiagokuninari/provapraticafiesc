@@ -105,7 +105,7 @@ public class UsuarioService {
                 .removeIf(h -> !usuarioHierarquiaSaveDto.getHierarquiasId().contains(h.getUsuarioSuperiorId()));
     }
 
-    public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, boolean incluirProprio) {
+    public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
         List<Integer> usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
         if (incluirProprio) {
             usuariosSubordinados.add(usuarioId);

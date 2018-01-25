@@ -80,7 +80,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Integer> getUsuariosSubordinados(int usuarioId) {
+    public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
         List<BigDecimal> result = entityManager
                 .createNativeQuery(
                         " SELECT FK_USUARIO"

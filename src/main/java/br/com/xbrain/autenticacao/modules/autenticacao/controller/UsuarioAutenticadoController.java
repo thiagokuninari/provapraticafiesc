@@ -37,4 +37,10 @@ public class UsuarioAutenticadoController {
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
     }
+
+    @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
+    public List<Integer> getSubordinados(@PathVariable("id") int id,
+                                         @RequestParam boolean incluirProprio) {
+        return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
+    }
 }

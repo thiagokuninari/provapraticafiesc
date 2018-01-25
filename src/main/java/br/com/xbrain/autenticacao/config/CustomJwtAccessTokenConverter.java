@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,7 +18,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         JwtAccessTokenConverterConfigurer {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private UsuarioRepository usuarioRepository;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -27,8 +27,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         if (authentication.getUserAuthentication() != null) {
             User user = (User) authentication.getUserAuthentication().getPrincipal();
 
-            usuarioService
-                    .getRepository()
+            usuarioRepository
                     .findComplete(new Integer(user.getUsername().split(Pattern.quote("-"))[0]))
                     .ifPresent(u -> setAdditionalInformation(enhancedToken, u, user));
         }
