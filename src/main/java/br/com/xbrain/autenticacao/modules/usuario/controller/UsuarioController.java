@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping(value = "api/usuarios")
-public class UsuariosController {
+public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;

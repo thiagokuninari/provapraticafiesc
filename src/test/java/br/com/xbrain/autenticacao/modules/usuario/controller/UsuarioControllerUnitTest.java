@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
-public class UsuariosControllerUnitTest {
+public class UsuarioControllerUnitTest {
 
     @Autowired
     private MockMvc mvc;
