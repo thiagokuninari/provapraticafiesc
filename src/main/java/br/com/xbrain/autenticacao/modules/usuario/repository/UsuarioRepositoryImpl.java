@@ -83,10 +83,10 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
     public List<Integer> getUsuariosSubordinados(int usuarioId) {
         List<BigDecimal> result = entityManager
                 .createNativeQuery(
-                        " SELECT FK_USUARIO" +
-                                " FROM usuario_hierarquia" +
-                                " START WITH FK_USUARIO_SUPERIOR = :_usuarioId " +
-                                " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                        " SELECT FK_USUARIO"
+                                + " FROM usuario_hierarquia"
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .getResultList();
         return result
