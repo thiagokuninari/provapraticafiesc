@@ -31,13 +31,32 @@ public class UsuarioAutenticadoControllerTest {
     private MockMvc mvc;
 
     @Test
+    public void deveSolicitarAutenticacao() throws Exception {
+        mvc.perform(get("/api/usuario-autenticado")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/usuario-autenticado/101")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     public void deveRetornarOUsuarioAutenticado() throws Exception {
         mvc.perform(get("/api/usuario-autenticado")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(100)))
                 .andExpect(jsonPath("$.nome", is("ADMIN")))
                 .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")));
+    }
+
+    @Test
+    public void deveRetornarOUsuarioAutenticadoPorId() throws Exception {
+        mvc.perform(get("/api/usuario-autenticado/101")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(101)));
     }
 }

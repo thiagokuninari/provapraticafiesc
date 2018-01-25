@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,6 +22,12 @@ public class UsuarioAutenticadoController {
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
                 usuarioService.findById(getUsuarioId(principal)));
+    }
+
+    @GetMapping("/{id}")
+    public UsuarioAutenticado getUsuarioById(@PathVariable("id") int id) {
+        return new UsuarioAutenticado(
+                usuarioService.findById(id));
     }
 
     private Integer getUsuarioId(Principal principal) {
