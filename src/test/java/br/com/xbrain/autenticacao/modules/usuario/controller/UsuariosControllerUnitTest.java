@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.oauth;
+package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
-public class UsuarioAutenticadoControllerUnitTest {
+public class UsuariosControllerUnitTest {
 
     @Autowired
     private MockMvc mvc;
@@ -48,7 +48,7 @@ public class UsuarioAutenticadoControllerUnitTest {
 
     @Test
     public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado/101/subordinados?incluirProprio=true")
+        mvc.perform(get("/api/usuarios/101/subordinados?incluirProprio=true")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.autenticacao.controller;
+package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
@@ -11,11 +11,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @RestController
-@RequestMapping(value = "api/usuario-autenticado")
-public class UsuarioAutenticadoController {
+@RequestMapping(value = "api/usuarios")
+public class UsuariosController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    private Integer getUsuarioId(Principal principal) {
+        return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
+    }
 
     @GetMapping
     public UsuarioAutenticado getUsuario(Principal principal) {
@@ -32,10 +36,6 @@ public class UsuarioAutenticadoController {
     @GetMapping(value = "/{id}/cidades")
     public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
         return usuarioService.findCidadesByUsuario(id);
-    }
-
-    private Integer getUsuarioId(Principal principal) {
-        return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
     }
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)

@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
-public class UsuarioControllerTest {
+public class UsuarioGerenciaControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -57,14 +57,14 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/usuarios")
+        mvc.perform(get("/api/usuarios/gerencia")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void deveTerPermissaoDeGerenciaDeUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios")
+        mvc.perform(get("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -72,7 +72,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarPorId() throws Exception {
-        mvc.perform(get("/api/usuarios/" + ID_USUARIO_HELPDESK)
+        mvc.perform(get("/api/usuarios/gerencia/" + ID_USUARIO_HELPDESK)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -83,7 +83,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarPorEmail() throws Exception {
-        mvc.perform(get("/api/usuarios?email=HELPDESK@XBRAIN.COM.BR")
+        mvc.perform(get("/api/usuarios/gerencia?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -93,7 +93,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarTodos() throws Exception {
-        mvc.perform(get("/api/usuarios")
+        mvc.perform(get("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveFiltrarPorNome() throws Exception {
-        mvc.perform(get("/api/usuarios?nome=ADMIN")
+        mvc.perform(get("/api/usuarios/gerencia?nome=ADMIN")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -112,7 +112,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
-        mvc.perform(post("/api/usuarios")
+        mvc.perform(post("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
@@ -132,7 +132,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveSalvar() throws Exception {
         UsuarioDto usuario = umUsuario("JOAO");
-        mvc.perform(post("/api/usuarios")
+        mvc.perform(post("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(usuario)))
@@ -150,7 +150,7 @@ public class UsuarioControllerTest {
         UsuarioCidadeSaveDto dto = new UsuarioCidadeSaveDto();
         dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setCidadesId(Arrays.asList(736, 2921, 527));
-        mvc.perform(post("/api/usuarios/cidades")
+        mvc.perform(post("/api/usuarios/gerencia/cidades")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -162,7 +162,7 @@ public class UsuarioControllerTest {
         UsuarioHierarquiaSaveDto dto = new UsuarioHierarquiaSaveDto();
         dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setHierarquiasId(Arrays.asList(100));
-        mvc.perform(post("/api/usuarios/hierarquias")
+        mvc.perform(post("/api/usuarios/gerencia/hierarquias")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -171,7 +171,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveEditar() throws Exception {
-        mvc.perform(post("/api/usuarios")
+        mvc.perform(post("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaEditar())))
@@ -182,7 +182,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveInativarUmUsuario() throws Exception {
-        mvc.perform(post("/api/usuarios/inativar")
+        mvc.perform(post("/api/usuarios/gerencia/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
@@ -193,7 +193,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveAtivarUmUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/ativar")
+        mvc.perform(put("/api/usuarios/gerencia/ativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))

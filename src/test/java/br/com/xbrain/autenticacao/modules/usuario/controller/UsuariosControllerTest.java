@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.oauth;
+package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import helpers.Usuarios;
 import org.junit.Test;
@@ -26,24 +26,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
-public class UsuarioAutenticadoControllerTest {
+public class UsuariosControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado")
+        mvc.perform(get("/api/usuarios")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/usuario-autenticado/101")
+        mvc.perform(get("/api/usuarios/101")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void deveRetornarOUsuarioAutenticado() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado")
+        mvc.perform(get("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -54,7 +54,7 @@ public class UsuarioAutenticadoControllerTest {
 
     @Test
     public void deveRetornarOUsuarioAutenticadoPorId() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado/101")
+        mvc.perform(get("/api/usuarios")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -63,7 +63,7 @@ public class UsuarioAutenticadoControllerTest {
 
     @Test
     public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado/100/cidades")
+        mvc.perform(get("/api/usuarios/100/cidades")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -73,7 +73,7 @@ public class UsuarioAutenticadoControllerTest {
 
     @Test
     public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
-        mvc.perform(get("/api/usuario-autenticado/101/cidades")
+        mvc.perform(get("/api/usuarios/101/cidades")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

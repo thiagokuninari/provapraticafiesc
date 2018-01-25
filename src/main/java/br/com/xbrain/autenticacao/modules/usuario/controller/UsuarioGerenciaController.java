@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "api/usuarios")
-public class UsuarioController {
+@RequestMapping(value = "api/usuarios/gerencia")
+public class UsuarioGerenciaController {
 
     @Autowired
     private UsuarioService service;
