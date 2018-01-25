@@ -24,8 +24,6 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.Eboolean.F;
 public class UsuarioService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
-    private static final ValidacaoException EX_CID_NAO_ENCONTRADO
-            = new ValidacaoException("Usuário não possui nenhuma cidade atrelada.");
 
     @Getter
     @Autowired
