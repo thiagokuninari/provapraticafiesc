@@ -242,4 +242,8 @@ public class Usuario {
         }
         return null;
     }
+
+    public String getLogin() {
+        return id + "-" + email;
+    }
 }

@@ -58,6 +58,12 @@ public class AutenticacaoService {
         tokenRepository.deleteTokenByUsername(login);
     }
 
+    @Transactional
+    public void logout(Integer usuarioId) {
+        Usuario usuario = usuarioService.findById(usuarioId);
+        tokenRepository.deleteTokenByUsername(usuario.getLogin());
+    }
+
     private Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }

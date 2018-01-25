@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
@@ -36,22 +37,37 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveFazerOLogout() throws Exception  {
+    public void deveFazerOLogoutDoUsuarioLogado() throws Exception  {
         String token = getAccessToken(mvc, ADMIN);
 
-        mvc.perform(get("/api/empresas")
-                .header("Authorization", token)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        requestEmpresas(token).andExpect(status().isOk());
 
         mvc.perform(get("/api/logout")
                 .header("Authorization", token)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/api/empresas")
+        requestEmpresas(token).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception  {
+        String token = getAccessToken(mvc, ADMIN);
+
+        requestEmpresas(token).andExpect(status().isOk());
+
+        mvc.perform(get("/api/logout/usuario/100")
                 .header("Authorization", token)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
+
+        requestEmpresas(token).andExpect(status().isUnauthorized());
     }
+
+    private ResultActions requestEmpresas(String token) throws Exception {
+        return mvc.perform(get("/api/empresas")
+                .header("Authorization", token)
+                .accept(MediaType.APPLICATION_JSON));
+    }
+
 }
