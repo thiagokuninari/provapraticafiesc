@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,13 +39,18 @@ public class UsuarioService {
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    //FIXME refatorar esse método
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         Usuario usuario = repository.findComCidade(usuarioId)
-                .orElseThrow(() -> EX_CID_NAO_ENCONTRADO);
-        return usuario.getCidades()
-                .stream()
-                .map(c -> CidadeResponse.parse(c.getCidade()))
-                .collect(Collectors.toList());
+                .orElse(null);
+        if (usuario != null) {
+            return usuario.getCidades()
+                    .stream()
+                    .map(c -> CidadeResponse.parse(c.getCidade()))
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public Usuario findComHierarquia(int id) {

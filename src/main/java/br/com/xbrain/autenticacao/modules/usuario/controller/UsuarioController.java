@@ -78,6 +78,7 @@ public class UsuarioController {
         service.ativar(dto);
     }
 
+    //FIXME não escrevi testes para esse endpoint, pois a consulta não roda no hsqldb!
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id, @RequestParam boolean incluirProprio) {
         return service.getIdDosUsuariosSubordinados(id, incluirProprio);
