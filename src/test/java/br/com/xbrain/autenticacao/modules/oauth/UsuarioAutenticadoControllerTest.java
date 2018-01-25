@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,9 +47,9 @@ public class UsuarioAutenticadoControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(100)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")));
+                .andExpect(jsonPath("$.id", is(101)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
     }
 
     @Test
@@ -58,5 +59,24 @@ public class UsuarioAutenticadoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(101)));
+    }
+
+    @Test
+    public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuario-autenticado/100/cidades")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
+    }
+
+    @Test
+    public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
+        mvc.perform(get("/api/usuario-autenticado/101/cidades")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }

@@ -48,11 +48,6 @@ public class UsuarioController {
         return service.save(usuario);
     }
 
-    @RequestMapping(value = "/{id}/cidades", method = RequestMethod.GET)
-    public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
-        return service.findCidadesByUsuario(id);
-    }
-
     @RequestMapping(value = "/cidades", method = RequestMethod.POST)
     public UsuarioDto saveUsuarioCidades(@Validated @RequestBody UsuarioCidadeSaveDto dto) {
         return service.saveUsuarioCidades(dto);

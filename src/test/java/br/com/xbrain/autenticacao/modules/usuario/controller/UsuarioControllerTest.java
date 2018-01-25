@@ -102,25 +102,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/100/cidades")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
-    }
-
-    @Test
-    public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/101/cidades")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
-
-    @Test
     public void deveFiltrarPorNome() throws Exception {
         mvc.perform(get("/api/usuarios?nome=ADMIN")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
