@@ -29,15 +29,15 @@ public class EmularUsuarioController {
     private UsuarioService usuarioService;
     @Autowired
     private AutenticacaoService autenticacaoService;
-    @Value("${app-config.oauth-client}")
-    private String oauthClient;
-    @Value("${app-config.oauth-client-secret}")
-    private String oauthClientSecret;
+    @Value("${app-config.oauth-clients.front-apps.client}")
+    private String frontAppsClient;
+    @Value("${app-config.oauth-clients.front-apps.secret}")
+    private String frontAppsSecret;
 
     private HashMap<String, String> getParameters(Usuario usuario) {
         HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("client_id", oauthClient);
-        parameters.put("client_secret", oauthClientSecret);
+        parameters.put("client_id", frontAppsClient);
+        parameters.put("client_secret", frontAppsSecret);
         parameters.put("grant_type", "password");
         parameters.put("scope", "app");
         parameters.put("password", "");

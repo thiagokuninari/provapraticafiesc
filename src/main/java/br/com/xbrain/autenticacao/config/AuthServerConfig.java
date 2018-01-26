@@ -21,10 +21,15 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String privateKey;
     @Value("${keys.public}")
     private String publicKey;
-    @Value("${app-config.oauth-client}")
-    private String oauthClient;
-    @Value("${app-config.oauth-client-secret}")
-    private String oauthClientSecret;
+    @Value("${app-config.oauth-clients.front-apps.client}")
+    private String frontAppsClient;
+    @Value("${app-config.oauth-clients.front-apps.secret}")
+    private String frontAppsSecret;
+    @Value("${app-config.oauth-clients.parceiros-online-api.client}")
+    private String parceirosApiClient;
+    @Value("${app-config.oauth-clients.parceiros-online-api.secret}")
+    private String parceirosApiSecret;
+
     @Autowired
     private CustomJdbcTokenStore customJdbcTokenStore;
 
@@ -44,12 +49,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                .withClient(oauthClient)
-                .secret(oauthClientSecret)
-                .authorizedGrantTypes("authorization_code", "refresh_token", "password")
-                .autoApprove(true)
+                .withClient(frontAppsClient)
+                .secret(frontAppsSecret)
+                .authorizedGrantTypes("password")
                 .scopes("app")
-                .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS);
+                .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS)
+                .and()
+                .withClient(parceirosApiClient)
+                .secret(parceirosApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("parceiros-api");
     }
 
     @Override

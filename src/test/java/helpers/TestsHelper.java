@@ -44,15 +44,22 @@ public class TestsHelper {
         return mapper.writeValueAsBytes(object);
     }
 
-    public static String convertObjectToString(Object object) {
+    public static OAuthToken getAccessTokenClientCredentials(MockMvc mvc, String app) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            return mapper.writeValueAsString(object);
+            MockHttpServletResponse response = mvc
+                    .perform(
+                            post("/oauth/token")
+                                    .header("Authorization", "Basic "
+                                            + new String(Base64Utils.encode((app).getBytes())))
+                                    .param("grant_type", "client_credentials"))
+                    .andReturn().getResponse();
+
+            return new ObjectMapper()
+                    .readValue(response.getContentAsByteArray(), OAuthToken.class);
 
         } catch (Exception exception) {
             exception.printStackTrace();
-            return "";
+            return new OAuthToken();
         }
     }
 

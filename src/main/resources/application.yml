@@ -5,8 +5,13 @@ server:
     mime-types: text/html,text/css,application/javascript,application/json
 
 app-config:
-  oauth-client: xbrain-app-client
-  oauth-client-secret: xbrain
+  oauth-clients:
+    front-apps:
+      client: xbrain-app-client
+      secret: xbrain
+    parceiros-online-api:
+      client: parceiros-online-api
+      secret: p4rc31r0s$p1
 
 spring:
   resources:

@@ -88,4 +88,16 @@ public class AutenticacaoControllerTest {
                         .param("token", "teste"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    public void deveAutenticarUsandoClientCredentials() {
+        OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1");
+        assertNotNull(token.getAccessToken());
+    }
+
+    @Test
+    public void deveNaoAutenticarUsandoClientCredentialsQuandoSenhaInvalida() {
+        OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:invalida");
+        assertNull(token.getAccessToken());
+    }
 }
