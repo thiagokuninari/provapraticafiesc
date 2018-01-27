@@ -1,7 +1,7 @@
 spring:
   jpa:
     database: HSQL
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: create
 
