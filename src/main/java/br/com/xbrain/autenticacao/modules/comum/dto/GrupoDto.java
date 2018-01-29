@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.dto;
 import br.com.xbrain.autenticacao.modules.comum.model.Grupo;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +13,9 @@ public class GrupoDto {
 
     private Integer id;
     private String nome;
+
+    public GrupoDto() {
+    }
 
     public GrupoDto(Integer id, String nome) {
         this.id = id;
@@ -24,4 +28,11 @@ public class GrupoDto {
                 .map(c -> new GrupoDto(c.getId(), c.getNome()))
                 .collect(Collectors.toList());
     }
+
+    public static GrupoDto objectToDto(Grupo grupo) {
+        GrupoDto dto = new GrupoDto();
+        BeanUtils.copyProperties(grupo, dto);
+        return dto;
+    }
+
 }

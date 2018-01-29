@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
@@ -43,5 +44,13 @@ public class UsuarioAutenticado {
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
+    }
+
+    public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
+        return permissoes != null
+                && permissoes
+                        .stream()
+                        .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
+                        .count() > 0;
     }
 }

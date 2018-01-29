@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +33,14 @@ public class GrupoControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/grupos")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsGruposAtivosPorRegional() throws Exception  {
+    public void deveRetornarOsGruposAtivosPorRegional() throws Exception {
         mvc.perform(get("/api/grupos?regionalId=7")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -49,7 +50,17 @@ public class GrupoControllerTest {
     }
 
     @Test
-    public void deveRetornarOsGruposAtivos() throws Exception  {
+    public void deveRetornarSomenteOsGruposAtivosPorRegionalGerenteComercial() throws Exception {
+        mvc.perform(get("/api/grupos?regionalId=9")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("NORTE DO PARANÁ")));
+    }
+
+    @Test
+    public void deveRetornarOsGruposAtivos() throws Exception {
         mvc.perform(get("/api/grupos")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
