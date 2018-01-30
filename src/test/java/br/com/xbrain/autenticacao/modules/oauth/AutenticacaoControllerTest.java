@@ -91,8 +91,11 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void deveAutenticarUsandoClientCredentials() {
-        OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1");
-        assertNotNull(token.getAccessToken());
+        assertNotNull(TestsHelper
+                .getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1").getAccessToken());
+
+        assertNotNull(TestsHelper
+                .getAccessTokenClientCredentials(mvc, "vendas-api:v3nd4s4p1").getAccessToken());
     }
 
     @Test
