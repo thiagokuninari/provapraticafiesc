@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,16 @@ public class ClusterControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(6)))
                 .andExpect(jsonPath("$[0].nome", is("BAIXADA/SERRA FLUMINENSE")));
+    }
+
+    @Test
+    public void deveRetornarSomenteOsClustersAtivosPorGrupoGerenteComercial() throws Exception {
+        mvc.perform(get("/api/clusters?grupoId=90")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("NORTE DO PARANÁ")));
     }
 
     @Test

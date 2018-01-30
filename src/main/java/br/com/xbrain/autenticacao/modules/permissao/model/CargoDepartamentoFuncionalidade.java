@@ -7,6 +7,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -16,6 +18,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "CARGO_DEPART_FUNC")
 @Data
+@EqualsAndHashCode(of = "id")
+@ToString(of = "id")
 public class CargoDepartamentoFuncionalidade {
 
     @Id

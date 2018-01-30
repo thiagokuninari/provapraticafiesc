@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +48,15 @@ public class RegionalControllerTest {
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].nome", is("LESTE")));
     }
+
+    @Test
+    public void deveRetornarSomenteAsRegionaisAtivasGerenteComercial() throws Exception {
+        mvc.perform(get("/api/regionais")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("SUL")));
+    }
+
 }

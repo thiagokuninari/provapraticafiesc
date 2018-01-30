@@ -6,11 +6,14 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface SubClusterRepository extends PagingAndSortingRepository<SubCluster, Integer> {
+import java.util.List;
+
+public interface SubClusterRepository extends PagingAndSortingRepository<SubCluster, Integer>,
+        SubClusterRepositoryCustom {
 
     @Cacheable("subclusterFindBySituacaoAndClusterId")
     Iterable<SubCluster> findBySituacaoAndClusterId(ESituacao situacao, Integer clusterId, Sort sort);
 
     @Cacheable("subclusterFindBySituacao")
-    Iterable<SubCluster> findBySituacao(ESituacao situacao, Sort sort);
+    List<SubCluster> findBySituacao(ESituacao situacao, Sort sort);
 }

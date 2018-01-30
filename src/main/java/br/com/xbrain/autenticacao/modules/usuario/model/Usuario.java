@@ -22,10 +22,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -112,7 +109,7 @@ public class Usuario {
     @NotAudited
     @OrderBy("id")
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UsuarioHierarquia> usuariosHierarquia;
+    private Set<UsuarioHierarquia> usuariosHierarquia = new HashSet<>();
 
     @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
@@ -216,6 +213,14 @@ public class Usuario {
         }
     }
 
+    public void tratarEmails() {
+        this.email = this.email.trim().toUpperCase();
+
+        if (this.email02 != null) {
+            this.email02 = this.email02.trim().toUpperCase();
+        }
+    }
+
     public void removerCaracteresDoCpf() {
         this.cpf = this.cpf.replaceAll("[.-]", "");
     }
@@ -246,4 +251,5 @@ public class Usuario {
     public String getLogin() {
         return id + "-" + email;
     }
+
 }

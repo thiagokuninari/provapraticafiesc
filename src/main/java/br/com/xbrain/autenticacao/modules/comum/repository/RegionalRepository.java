@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface RegionalRepository extends PagingAndSortingRepository<Regional, Integer> {
+public interface RegionalRepository extends PagingAndSortingRepository<Regional, Integer>, RegionalRepositoryCustom {
 
     @Cacheable("regionalFindBySituacao")
     Iterable<Regional> findBySituacao(ESituacao situacao);

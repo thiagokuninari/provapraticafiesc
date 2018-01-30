@@ -115,7 +115,10 @@ public class UsuarioService {
 
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
+        validarCpfExistente(usuario);
+        validarEmailExistente(usuario);
         usuario.removerCaracteresDoCpf();
+        usuario.tratarEmails();
         if (usuario.isNovoCadastro()) {
             usuario.setDataCadastro(LocalDateTime.now());
             usuario.setAlterarSenha(F);
@@ -124,6 +127,26 @@ public class UsuarioService {
             usuario.setSituacao(ESituacao.A);
         }
         return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    private void validarCpfExistente(Usuario usuario) {
+        repository
+                .findTop1UsuarioByCpf(usuario.getCpf())
+                .ifPresent(u -> {
+                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                        throw new ValidacaoException("Cpf já cadastrado.");
+                    }
+                });
+    }
+
+    private void validarEmailExistente(Usuario usuario) {
+        repository
+                .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
+                .ifPresent(u -> {
+                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                        throw new ValidacaoException("Email já cadastrado.");
+                    }
+                });
     }
 
     public void ativar(UsuarioAtivacaoDto dto) {
