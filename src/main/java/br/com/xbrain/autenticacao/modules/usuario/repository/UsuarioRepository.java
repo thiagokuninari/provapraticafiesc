@@ -9,6 +9,10 @@ import java.util.Optional;
 public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, Integer>,
         QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
 
+    Optional<Usuario> findTop1UsuarioByEmailIgnoreCase(String email);
+
+    Optional<Usuario> findTop1UsuarioByCpf(String cpf);
+
     Optional<Usuario> findById(Integer id);
 
     Optional<Usuario> findByEmail(String email);

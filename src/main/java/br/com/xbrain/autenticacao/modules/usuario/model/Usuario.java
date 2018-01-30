@@ -213,6 +213,14 @@ public class Usuario {
         }
     }
 
+    public void tratarEmails() {
+        this.email = this.email.trim().toUpperCase();
+
+        if (this.email02 != null) {
+            this.email02 = this.email02.trim().toUpperCase();
+        }
+    }
+
     public void removerCaracteresDoCpf() {
         this.cpf = this.cpf.replaceAll("[.-]", "");
     }
