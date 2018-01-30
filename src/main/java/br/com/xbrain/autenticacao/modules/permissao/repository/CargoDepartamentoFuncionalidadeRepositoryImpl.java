@@ -28,6 +28,8 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepar
                 .innerJoin(cargoDepartamentoFuncionalidade.departamento).fetchJoin()
                 .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade).fetchJoin()
                 .innerJoin(funcionalidade.aplicacao).fetchJoin()
+                .leftJoin(cargoDepartamentoFuncionalidade.empresa).fetchJoin()
+                .leftJoin(cargoDepartamentoFuncionalidade.unidadeNegocio).fetchJoin()
                 .where(cargoDepartamentoFuncionalidade.cargo.id.eq(cargoObj.getId())
                         .and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamento.getId())))
                 .fetch();
