@@ -21,6 +21,9 @@ app-config:
     parceiros-online-api:
       client: parceiros-online-api
       secret: p4rc31r0s$p1
+    vendas-api:
+      client: vendas-api
+      secret: v3nd4s4p1
 
 spring:
   resources:

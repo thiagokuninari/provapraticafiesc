@@ -29,6 +29,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String parceirosApiClient;
     @Value("${app-config.oauth-clients.parceiros-online-api.secret}")
     private String parceirosApiSecret;
+    @Value("${app-config.oauth-clients.vendas-api.client}")
+    private String vendasApiClient;
+    @Value("${app-config.oauth-clients.vendas-api.secret}")
+    private String vendasApiSecret;
 
     @Autowired
     private CustomJdbcTokenStore customJdbcTokenStore;
@@ -58,7 +62,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .withClient(parceirosApiClient)
                 .secret(parceirosApiSecret)
                 .authorizedGrantTypes("client_credentials")
-                .scopes("parceiros-api");
+                .scopes("parceiros-api")
+                .and()
+                .withClient(vendasApiClient)
+                .secret(vendasApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("vendas-api");
     }
 
     @Override
