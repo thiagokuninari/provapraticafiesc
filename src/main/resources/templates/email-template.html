@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${nomeSistema}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" align="center" width="565" style="font-family:Arial,sans-serif;">
+    <tbody >
+    <tr>
+        <td style="padding:20px;"><img th:src="${urlEstatico + '/email/logotipo_parceiros.png'}" width="242" height="30" th:alt="${nomeSistema}" /></td>
+        <td>
+            <div align="right" valign="bottom" style="padding:0px 0px 10px 0px; font-size:15px; color: #999; font-weight: bold;" th:text="${assunto}"></div>
+            <div align="right" valign="bottom" style="padding: 0px 0px 10px 0px; font-size: 13px;color: #999; font-weight: normal;" th:text="${dataEmail}"></div>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <table border="0" cellpadding="0" cellspacing="20" width="100%" style="font-family:Arial,sans-serif;border-top:1px solid #c5c5c5;border-bottom:1px solid #c5c5c5;">
+                <tr>
+                    <td style="font-size:14px;color:#555;">
+
+                        <div th:include="${includeConteudo}">...</div>
+
+                        <img th:src="${urlEstatico + '/imagens/1px.gif'}" width="1" height="5" alt=""/>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center; padding: 15px;" colspan="2">
+            <img th:src="${urlEstatico + '/email/logos.png'}" colspan="2" width="143" height="43" th:alt="${nomeSistema}" />
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center; padding: 0px;" colspan="2">
+            <img th:src="${urlEstatico + '/email/icone_produtos_email.png'}" colspan="2" width="112" height="20" th:alt="${nomeSistema}" />
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center; padding: 10px; font-size:14px; color: #c5c5c5" colspan="2">
+            Este e-mail foi gerado automaticamente. Não é necessário respondê-lo.
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2" style="font-size:11px; color:#999;">
+            <br/>
+            Em caso de dúvidas entre em contato com seu agente autorizado ou utilize nosso Canal de Suporte através do telefone 43 3304-2204 ou pelo e-mail <a href="mailto:atendimento@xbrain.com.br">atendimento@xbrain.com.br</a>, teremos o maior prazer em atendê-lo.
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

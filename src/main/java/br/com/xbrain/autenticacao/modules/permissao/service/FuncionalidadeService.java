@@ -2,9 +2,12 @@ package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.FuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,11 @@ import static java.util.stream.Collectors.toList;
 public class FuncionalidadeService {
 
     @Autowired
+    private FuncionalidadeRepository repository;
+
+    @Autowired
     private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
+
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
 
@@ -46,8 +53,11 @@ public class FuncionalidadeService {
     }
 
     public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuario(Usuario usuario) {
+        FuncionalidadePredicate predicate = new FuncionalidadePredicate()
+                .comCargo(usuario.getCargoId())
+                .comDepartamento(usuario.getDepartamentoId());
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(usuario.getCargo(), usuario.getDepartamento());
+                .findFuncionalidadesPorCargoEDepartamento(predicate);
 
         return Stream.concat(
                 funcionalidades
@@ -72,4 +82,9 @@ public class FuncionalidadeService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(toList());
     }
+
+    public List<FuncionalidadeResponse> getAll() {
+        return FuncionalidadeResponse.convertFrom((List<Funcionalidade>) repository.findAll());
+    }
+
 }

@@ -1,8 +1,7 @@
 package br.com.xbrain.autenticacao.modules.permissao.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,7 +18,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepar
     private EntityManager entityManager;
 
     public List<CargoDepartamentoFuncionalidade> findFuncionalidadesPorCargoEDepartamento(
-            Cargo cargoObj, Departamento departamento) {
+            FuncionalidadePredicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .select(cargoDepartamentoFuncionalidade)
                 .from(cargoDepartamentoFuncionalidade)
@@ -30,8 +29,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepar
                 .innerJoin(funcionalidade.aplicacao).fetchJoin()
                 .leftJoin(cargoDepartamentoFuncionalidade.empresa).fetchJoin()
                 .leftJoin(cargoDepartamentoFuncionalidade.unidadeNegocio).fetchJoin()
-                .where(cargoDepartamentoFuncionalidade.cargo.id.eq(cargoObj.getId())
-                        .and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamento.getId())))
+                .where(predicate.build())
                 .fetch();
     }
 }

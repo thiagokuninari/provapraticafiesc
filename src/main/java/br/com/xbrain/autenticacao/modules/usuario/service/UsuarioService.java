@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -11,25 +13,36 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
-
-import static br.com.xbrain.autenticacao.modules.comum.enums.Eboolean.F;
 
 @Service
 public class UsuarioService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    public static final int QUANTIDADE_CARACTERES_SENHA = 6;
+    public static final int RADIX = 36;
 
     @Getter
     @Autowired
     private UsuarioRepository repository;
+
     @Autowired
     private AutenticacaoService autenticacaoService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     public Usuario findById(int id) {
         return repository
@@ -120,13 +133,35 @@ public class UsuarioService {
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
         if (usuario.isNovoCadastro()) {
+            String senhaDescriptografada = getSenhaRandomica(QUANTIDADE_CARACTERES_SENHA);
+            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
             usuario.setDataCadastro(LocalDateTime.now());
-            usuario.setAlterarSenha(F);
-            usuario.setSenha("123456");
-            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
+            usuario.setAlterarSenha(Eboolean.V);
             usuario.setSituacao(ESituacao.A);
+            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
+            usuario = repository.save(usuario);
+            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            return UsuarioDto.parse(usuario);
         }
         return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    public void enviarEmailDadosDeAcesso(Usuario usuario, String senhaDescriptografada) {
+        Context context = new Context();
+        context.setVariable("nome", usuario.getNome());
+        context.setVariable("email", usuario.getEmail());
+        context.setVariable("senha", senhaDescriptografada);
+
+        emailService.enviarEmailTemplate(
+                Arrays.asList(usuario.getEmail()),
+                "Nova Conta",
+                "confirmacao-cadastro",
+                context);
+    }
+
+    public String getSenhaRandomica(int size) {
+        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
+        return tag.substring(0, size);
     }
 
     private void validarCpfExistente(Usuario usuario) {

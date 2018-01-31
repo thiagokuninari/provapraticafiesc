@@ -2,9 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.Application;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,9 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
     @Test
     public void deveRetornarOsCargosPorDepartamentoEFuncionalidade() {
         List<CargoDepartamentoFuncionalidade> funcionalidades = repository
-                .findFuncionalidadesPorCargoEDepartamento(new Cargo(50), new Departamento(50));
+                .findFuncionalidadesPorCargoEDepartamento(new FuncionalidadePredicate()
+                        .comCargo(50)
+                        .comDepartamento(50));
 
         Assert.assertFalse(funcionalidades.isEmpty());
     }

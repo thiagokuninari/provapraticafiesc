@@ -42,7 +42,7 @@ public class FuncionalidadeServiceTest {
     @Test
     public void deveFiltrarAsFuncionalidadesDeAcordoComAEmpresaEUnidadeDeNegocioDoUsuario() {
         when(cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(any(), any())).thenReturn(
+                .findFuncionalidadesPorCargoEDepartamento(any())).thenReturn(
                 Arrays.asList(
                         funcionalidade(1, "todos", null, null),
                         funcionalidade(2, "somente claroTV", CLARO_TV, null),

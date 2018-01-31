@@ -1,0 +1,13 @@
+<div style="font-size:26px; font-weight:bold;">Cadastro Realizado com Sucesso</div><br/>
+<div>
+    Olá <strong th:text="${nome}"></strong>, seu cadastro foi realizado com sucesso.<br/><br/>
+    Segue abaixo os dados de acesso:<br/><br/>
+    Login: <strong th:text="${email}"></strong><br/>
+    Senha: <strong th:text="${senha}"></strong><br/><br/>
+    Acesso: <strong th:text="${urlSistema}"><a th:href="${urlSistema}"></a></strong>
+    <br/>
+    <br/>
+    <strong>
+        * * No primeiro acesso solicitaremos a alteração da senha para maior segurança e comodidade. * *
+    </strong>
+</div>

@@ -9,4 +9,11 @@ public class FuncionalidadeFiltro {
     private Integer departamentoId;
     private Integer cargoId;
 
+    public FuncionalidadeFiltro() {
+    }
+
+    public FuncionalidadeFiltro(Integer departamentoId, Integer cargoId) {
+        this.departamentoId = departamentoId;
+        this.cargoId = cargoId;
+    }
 }

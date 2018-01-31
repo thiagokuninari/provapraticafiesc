@@ -9,8 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
+import lombok.experimental.Builder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,12 +22,8 @@ import java.time.LocalDateTime;
 public class CargoDepartamentoFuncionalidade {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_CARGO_DEPART_FUNC",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_CARGO_DEPART_FUNC")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_CARGO_DEPART_FUNC")
+    @SequenceGenerator(name = "SEQ_CARGO_DEPART_FUNC", sequenceName = "SEQ_CARGO_DEPART_FUNC")
+    @GeneratedValue(generator = "SEQ_CARGO_DEPART_FUNC", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @JsonIgnore
@@ -65,4 +60,39 @@ public class CargoDepartamentoFuncionalidade {
 
     @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
+
+    public CargoDepartamentoFuncionalidade() {}
+
+    public CargoDepartamentoFuncionalidade(Integer cargoId, Integer departamentoId, Integer funcionalidadeId) {
+        this.cargo = new Cargo(cargoId);
+        this.departamento = new Departamento(departamentoId);
+        this.funcionalidade = new Funcionalidade(funcionalidadeId);
+    }
+
+    @Builder
+    public CargoDepartamentoFuncionalidade(Integer id, Cargo cargo, Departamento departamento,
+                                           Funcionalidade funcionalidade, Empresa empresa,
+                                           UnidadeNegocio unidadeNegocio, Usuario usuario,
+                                           LocalDateTime dataCadastro) {
+        this.id = id;
+        this.cargo = cargo;
+        this.departamento = departamento;
+        this.funcionalidade = funcionalidade;
+        this.empresa = empresa;
+        this.unidadeNegocio = unidadeNegocio;
+        this.usuario = usuario;
+        this.dataCadastro = dataCadastro;
+    }
+
+    public Integer getCargoId() {
+        return this.cargo != null ? this.cargo.getId() : null;
+    }
+
+    public Integer getDepartamentoId() {
+        return this.departamento != null ? this.departamento.getId() : null;
+    }
+
+    public Integer getFuncionalidadeId() {
+        return this.funcionalidade != null ? this.funcionalidade.getId() : null;
+    }
 }
