@@ -27,9 +27,9 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
-        this.cargo = usuario.getCargo().getCodigo();
-        this.departamento = usuario.getDepartamento().getCodigo();
-        this.nivel = usuario.getCargo().getNivel().getCodigo();
+        this.cargo = usuario.getCargo().getCodigo().toString();
+        this.departamento = usuario.getDepartamento().getCodigo().toString();
+        this.nivel = usuario.getCargo().getNivel().getCodigo().toString();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
     }
@@ -38,9 +38,9 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
-        this.cargo = usuario.getCargo().getCodigo();
-        this.departamento = usuario.getDepartamento().getCodigo();
-        this.nivel = usuario.getCargo().getNivel().getCodigo();
+        this.cargo = usuario.getCargo().getCodigo().toString();
+        this.departamento = usuario.getDepartamento().getCodigo().toString();
+        this.nivel = usuario.getCargo().getNivel().getCodigo().toString();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;

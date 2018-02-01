@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -30,7 +31,8 @@ public class Departamento {
     private Nivel nivel;
 
     @Column(name = "CODIGO", length = 80)
-    private String codigo;
+    @Enumerated(EnumType.STRING)
+    private CodigoDepartamento codigo;
 
     @Column(name = "SITUACAO", nullable = false, length = 1)
     @Enumerated(EnumType.STRING)

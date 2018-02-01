@@ -14,6 +14,12 @@ app-config:
       enviar: true
       emails: lucasyoshioka@xbrain.com.br,fernandoalves@xbrain.com.br,rafael@xbrain.com.br
 
+  topic:
+    autenticacao: autenticacao.topic
+
+  queue:
+    contato: contato.queue
+
   oauth-clients:
     front-apps:
       client: xbrain-app-client
@@ -53,6 +59,12 @@ spring:
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
+
+  rabbitmq:
+      host: 192.168.1.11
+      port: 5672
+      username: xbrain
+      password: xbrain
 
   http:
     encoding:

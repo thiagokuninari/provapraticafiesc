@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,6 +30,11 @@ public class UnidadeNegocio {
     @Size(min = 3, max = 100)
     @Column(name = "NOME", length = 100, nullable = false)
     private String nome;
+
+    @NotNull
+    @Column(name = "CODIGO", length = 80)
+    @Enumerated(EnumType.STRING)
+    private CodigoUnidadeNegocio codigo;
 
     @Column(name = "SITUACAO", length = 1, nullable = false)
     @Enumerated(EnumType.STRING)
