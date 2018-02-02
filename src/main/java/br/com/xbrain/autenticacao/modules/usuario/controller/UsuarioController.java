@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosDto;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -42,5 +44,10 @@ public class UsuarioController {
     public List<Integer> getSubordinados(@PathVariable("id") int id,
                                          @RequestParam boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
+    }
+
+    @RequestMapping(value = "api/usuarios/filter", method = RequestMethod.GET)
+    public List<UsuarioDto> getUsuariosFilter(UsuarioFiltrosDto usuarioFiltrosDto) {
+        return usuarioService.getUsuariosFiltros(usuarioFiltrosDto);
     }
 }

@@ -211,4 +211,21 @@ public class UsuarioService {
         repository.save(usuario);
     }
 
+    public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
+        UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
+                .comEmpresas(usuarioFiltrosDto.getEmpresasIds())
+                .comUnidadesNegocio(usuarioFiltrosDto.getUnidadesNegocioIds())
+                .comNivel(usuarioFiltrosDto.getCodigoNivelList())
+                .comCargo(usuarioFiltrosDto.getCodigoCargoList())
+                .comDepartamento(usuarioFiltrosDto.getCodigoDepartamentoList())
+                .comCidade(usuarioFiltrosDto.getCidadesIds())
+                .comIds(usuarioFiltrosDto.getUsuariosAAsNacionais())
+                .isAtivo();
+
+        List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
+
+        return usuarioList.stream()
+                .map(UsuarioDto::parse)
+                .collect(Collectors.toList());
+    }
 }

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,5 +94,13 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 .stream()
                 .map(BigDecimal::intValue)
                 .collect(Collectors.toList());
+    }
+
+    public List<Usuario> getUsuariosFilter(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .where(predicate)
+                .fetch();
     }
 }

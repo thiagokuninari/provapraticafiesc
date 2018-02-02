@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.querydsl.core.types.Predicate;
 
 import java.util.List;
 import java.util.Optional;
+
 
 public interface UsuarioRepositoryCustom {
 
@@ -16,4 +18,6 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findComCidade(Integer id);
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
+
+    List<Usuario> getUsuariosFilter(Predicate predicate);
 }
