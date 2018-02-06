@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -102,6 +103,11 @@ public class UsuarioService {
 
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.parse(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+    }
+
+    public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
+        Usuario usuario = repository.findComplete(idUsuario).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
@@ -332,6 +338,12 @@ public class UsuarioService {
     public void alterarCargoUsuario(Integer id, CodigoCargo codigoCargo) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.setCargo(getCargo(codigoCargo));
+        repository.save(usuario);
+    }
+
+    public void alterarEmailUsuario(Integer id, String email) {
+        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuario.setEmail(email);
         repository.save(usuario);
     }
 }

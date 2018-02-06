@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -70,6 +71,22 @@ public class UsuarioController {
     @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         usuarioService.ativar(dto);
+    }
+
+    @RequestMapping(value = "/{id}/email/{email}", method = RequestMethod.PUT)
+    public void alterarEmailUsuario(@PathVariable("id") int id,
+                                    @PathVariable("email") String email) {
+        usuarioService.alterarEmailUsuario(id, email);
+    }
+
+    @RequestMapping(params = "email", method = RequestMethod.GET)
+    public UsuarioDto getUsuarioByEmail(@RequestParam String email) {
+        return usuarioService.findByEmail(email);
+    }
+
+    @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)
+    public List<EmpresaResponse> getEmpresasDoUsuario(@PathVariable("id") int id) {
+        return usuarioService.findEmpresasDoUsuario(id);
     }
 
 }

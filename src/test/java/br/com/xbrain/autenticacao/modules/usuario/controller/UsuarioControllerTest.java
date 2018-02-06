@@ -128,8 +128,18 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void deveAlterarOEmailDoUsuario() throws Exception {
+        mvc.perform(put("/api/usuarios/100/email/LUCAS@XBRAIN.COM.BR/")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findComplete(100).get();
+        Assert.assertEquals(usuario.getEmail(), "LUCAS@XBRAIN.COM.BR");
+    }
+
+    @Test
     public void deveInativarUmUsuario() throws Exception {
-        mvc.perform(post("/api/usuarios/gerencia/inativar")
+        mvc.perform(post("/api/usuarios/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
@@ -140,13 +150,33 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveAtivarUmUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/ativar")
+        mvc.perform(put("/api/usuarios/ativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
+    }
+
+    @Test
+    public void deveRetornarOUsuarioPorEmail() throws Exception {
+        mvc.perform(get("/api/usuarios?email=ADMIN@XBRAIN.COM.BR")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(100)))
+                .andExpect(jsonPath("$.nome", is("ADMIN")))
+                .andExpect(jsonPath("$.email", is(Usuarios.ADMIN)));
+    }
+
+    @Test
+    public void deveRetornarAsEmpresasDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/100/empresas")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
