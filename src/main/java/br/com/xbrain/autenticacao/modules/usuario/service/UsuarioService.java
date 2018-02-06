@@ -11,12 +11,10 @@ import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +34,12 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+
+    private static final ValidacaoException MOTIVO_INATIVACAO_NAO_ENCONTRADO =
+            new ValidacaoException("Motivo de inativação não encontrado.");
+
     public static final int QUANTIDADE_CARACTERES_SENHA = 6;
+
     public static final int RADIX = 36;
 
     @Getter
@@ -51,6 +54,9 @@ public class UsuarioService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private MotivoInativacaoRepository motivoInativacaoRepository;
 
     @Autowired
     private CargoRepository cargoRepository;
@@ -187,8 +193,12 @@ public class UsuarioService {
     }
 
     private void configurarCargo(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        Cargo cargo = cargoRepository.findByCodigo(usuarioMqRequest.getCargo());
+        Cargo cargo = getCargo(usuarioMqRequest.getCargo());
         usuarioDto.setCargoId(cargo.getId());
+    }
+
+    private Cargo getCargo(CodigoCargo codigoCargo) {
+        return cargoRepository.findByCodigo(codigoCargo);
     }
 
     private void configurarDepartamento(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
@@ -274,15 +284,24 @@ public class UsuarioService {
     public void inativar(UsuarioInativacaoDto dto) {
         Usuario usuario = repository.findComplete(dto.getIdUsuario()).get();
         usuario.setSituacao(ESituacao.I);
+        MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(dto.getDataCadastro())
-                .motivoInativacao(new MotivoInativacao(dto.getIdMotivoInativacao()))
+                .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
                 .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build());
         repository.save(usuario);
+    }
+
+    private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
+        if (dto.getIdMotivoInativacao() != null) {
+            return new MotivoInativacao(dto.getIdMotivoInativacao());
+        }
+        return motivoInativacaoRepository.findByCodigo(dto.getCodigoMotivoInativacao())
+                .orElseThrow(() -> MOTIVO_INATIVACAO_NAO_ENCONTRADO);
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -308,5 +327,11 @@ public class UsuarioService {
         return usuarios.stream()
                 .map(UsuarioResponse::convertFrom)
                 .collect(Collectors.toList());
+    }
+
+    public void alterarCargoUsuario(Integer id, CodigoCargo codigoCargo) {
+        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuario.setCargo(getCargo(codigoCargo));
+        repository.save(usuario);
     }
 }

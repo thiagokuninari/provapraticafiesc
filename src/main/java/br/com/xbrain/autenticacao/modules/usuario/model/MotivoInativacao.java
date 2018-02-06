@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -23,6 +24,10 @@ public class MotivoInativacao {
     @Size(max = 250)
     @Column(name = "DESCRICAO", nullable = false, length = 250)
     private String descricao;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private CodigoMotivoInativacao codigo;
 
     @NotNull
     @Column(name = "SITUACAO", nullable = false)

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -11,10 +12,14 @@ public class UsuarioInativacaoDto {
 
     @NotNull
     private Integer idUsuario;
-    @NotNull
+
     private Integer idMotivoInativacao;
+
+    private CodigoMotivoInativacao codigoMotivoInativacao;
+
     @NotNull
     private LocalDateTime dataCadastro;
+
     @Size(max = 250)
     private String observacao;
 

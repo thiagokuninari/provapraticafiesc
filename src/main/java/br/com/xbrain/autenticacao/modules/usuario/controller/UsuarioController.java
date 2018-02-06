@@ -1,12 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -56,4 +55,21 @@ public class UsuarioController {
     public List<UsuarioResponse> getUsuariosByIds(@RequestParam List<Integer> ids) {
         return usuarioService.getUsuariosByIds(ids);
     }
+
+    @RequestMapping(value = "/{id}/cargo/{cargo}", method = RequestMethod.PUT)
+    public void alterarCargoUsuario(@PathVariable("id") int id,
+                                    @PathVariable("cargo") CodigoCargo codigoCargo) {
+        usuarioService.alterarCargoUsuario(id, codigoCargo);
+    }
+
+    @RequestMapping(value = "/inativar", method = RequestMethod.POST)
+    public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
+        usuarioService.inativar(dto);
+    }
+
+    @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
+    public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
+        usuarioService.ativar(dto);
+    }
+
 }
