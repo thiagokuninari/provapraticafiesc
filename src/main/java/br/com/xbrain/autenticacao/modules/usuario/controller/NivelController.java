@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,6 @@ public class NivelController {
 
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Nivel> getAll(Integer nivelId) {
-        return repository.findBySituacao(ESituacao.A);
+        return repository.findBySituacaoAndExibirCadastroUsuario(ESituacao.A, Eboolean.V);
     }
 }

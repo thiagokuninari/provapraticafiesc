@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {
@@ -24,11 +25,13 @@ public class AppUserDetailsService implements UserDetailsService {
     private AutenticacaoService autenticacaoService;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         return usuarioRepository
                 .findByEmail(username.toUpperCase())
                 .map(u -> {
+                    u.forceLoad();
                     if (u.getSituacao() == ESituacao.I) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
                     }

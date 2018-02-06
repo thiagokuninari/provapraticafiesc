@@ -52,7 +52,7 @@ public class CargoDepartamentoFuncionalidadeService {
                 .funcionalidade(new Funcionalidade(item))
                 .dataCadastro(LocalDateTime.now())
                 .empresa(new Empresa(funcionalidadeSaveRequest.getEmpresaId()))
-                .unidadeNegocio(usuarioAutenticado.getUnidadeNegocio())
+                .unidadeNegocio(usuarioAutenticado.getUnidadesNegocios().get(0))
                 .usuario(usuarioAutenticado)
                 .build();
     }

@@ -5,16 +5,24 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
+import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
@@ -44,6 +52,24 @@ public class UsuarioService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private CargoRepository cargoRepository;
+
+    @Autowired
+    private DepartamentoRepository departamentoRepository;
+
+    @Autowired
+    private NivelRepository nivelRepository;
+
+    @Autowired
+    private UnidadeNegocioRepository unidadeNegocioRepository;
+
+    @Autowired
+    private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private UsuarioMqSender usuarioMqSender;
+
     public Usuario findById(int id) {
         return repository
                 .findComplete(id)
@@ -65,16 +91,11 @@ public class UsuarioService {
     }
 
     public Usuario findComHierarquia(int id) {
-        return repository
-                .findComHierarquia(id)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return repository.findComHierarquia(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public UsuarioDto findByEmail(String email) {
-        Usuario usuario = repository
-                .findByEmail(email)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
-        return UsuarioDto.parse(usuario);
+        return UsuarioDto.parse(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
@@ -128,22 +149,75 @@ public class UsuarioService {
 
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
-        validarCpfExistente(usuario);
-        validarEmailExistente(usuario);
-        usuario.removerCaracteresDoCpf();
-        usuario.tratarEmails();
+        validar(usuario);
         if (usuario.isNovoCadastro()) {
             String senhaDescriptografada = getSenhaRandomica(QUANTIDADE_CARACTERES_SENHA);
-            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
-            usuario.setDataCadastro(LocalDateTime.now());
-            usuario.setAlterarSenha(Eboolean.V);
-            usuario.setSituacao(ESituacao.A);
-            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
+            configurar(usuario, senhaDescriptografada);
             usuario = repository.save(usuario);
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             return UsuarioDto.parse(usuario);
         }
         return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    private void configurar(Usuario usuario, String senhaDescriptografada) {
+        usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+        usuario.setDataCadastro(LocalDateTime.now());
+        usuario.setAlterarSenha(Eboolean.V);
+        usuario.setSituacao(ESituacao.A);
+        if (!usuario.hasUsuarioCadastro()) {
+            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
+        }
+    }
+
+    @Transactional
+    public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
+        UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+        configurarUsuario(usuarioMqRequest, usuarioDto);
+        usuarioDto = save(usuarioDto);
+        usuarioMqSender.send(usuarioDto);
+    }
+
+    private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        configurarCargo(usuarioMqRequest, usuarioDto);
+        configurarDepartamento(usuarioMqRequest, usuarioDto);
+        configurarNivel(usuarioMqRequest, usuarioDto);
+        configurarUnidadesNegocio(usuarioMqRequest, usuarioDto);
+        configurarEmpresas(usuarioMqRequest, usuarioDto);
+    }
+
+    private void configurarCargo(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        Cargo cargo = cargoRepository.findByCodigo(usuarioMqRequest.getCargo());
+        usuarioDto.setCargoId(cargo.getId());
+    }
+
+    private void configurarDepartamento(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        Departamento departamento = departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento());
+        usuarioDto.setDepartamentoId(departamento.getId());
+    }
+
+    private void configurarNivel(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        Nivel nivel = nivelRepository.findByCodigo(usuarioMqRequest.getNivel());
+        usuarioDto.setNivelId(nivel.getId());
+    }
+
+    private void configurarUnidadesNegocio(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        List<UnidadeNegocio> unidadesNegocios = unidadeNegocioRepository
+                .findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
+        usuarioDto.setUnidadesNegociosId(unidadesNegocios.stream()
+                .map(UnidadeNegocio::getId).collect(Collectors.toList()));
+    }
+
+    private void configurarEmpresas(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        List<Empresa> empresas = empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa());
+        usuarioDto.setEmpresasId(empresas.stream().map(Empresa::getId).collect(Collectors.toList()));
+    }
+
+    private void validar(Usuario usuario) {
+        validarCpfExistente(usuario);
+        validarEmailExistente(usuario);
+        usuario.removerCaracteresDoCpf();
+        usuario.tratarEmails();
     }
 
     public void enviarEmailDadosDeAcesso(Usuario usuario, String senhaDescriptografada) {

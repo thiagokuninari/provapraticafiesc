@@ -18,7 +18,8 @@ app-config:
     autenticacao: autenticacao.topic
 
   queue:
-    contato: contato.queue
+    usuario: usuario.queue
+    usuario-aut: usuario-aut.queue
 
   oauth-clients:
     front-apps:
@@ -39,7 +40,7 @@ spring:
     database: ORACLE
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       javax:
         persistence:

@@ -84,11 +84,16 @@ public class Usuario {
     @Column(name = "NASCIMENTO")
     private LocalDateTime nascimento;
 
-    @NotNull
-    @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))
-    @ManyToOne(fetch = FetchType.LAZY)
-    private UnidadeNegocio unidadeNegocio;
+    @NotAudited
+    @JsonIgnore
+    @NotEmpty
+    @JoinTable(name = "USUARIO_UNIDADE_NEGOCIO", joinColumns = {
+            @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))}, inverseJoinColumns = {
+            @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))})
+    @ManyToMany
+    private List<UnidadeNegocio> unidadesNegocios;
 
     @NotAudited
     @OrderBy("id")
@@ -162,6 +167,14 @@ public class Usuario {
         this.id = id;
     }
 
+    public void forceLoad() {
+        empresas.size();
+        usuariosHierarquia.forEach(u -> u.getUsuarioSuperior().getId());
+        cargo.getId();
+        unidadesNegocios.size();
+        departamento.getId();
+    }
+
     public List<Integer> getEmpresasId() {
         return empresas != null && Hibernate.isInitialized(empresas)
                 ? empresas
@@ -180,6 +193,24 @@ public class Usuario {
         }
     }
 
+    public List<Integer> getUnidadesNegociosId() {
+        return unidadesNegocios != null && Hibernate.isInitialized(unidadesNegocios)
+                ? unidadesNegocios
+                .stream()
+                .map(UnidadeNegocio::getId)
+                .collect(Collectors.toList())
+                : null;
+    }
+
+    public void setUnidadesNegociosId(List<Integer> ids) {
+        if (ids != null) {
+            unidadesNegocios = ids
+                    .stream()
+                    .map(UnidadeNegocio::new)
+                    .collect(Collectors.toList());
+        }
+    }
+
     public void adicionar(UsuarioHistorico historico) {
         if (this.historicos == null) {
             this.historicos = new ArrayList<>();
@@ -191,9 +222,10 @@ public class Usuario {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
-        usuario.setUnidadeNegocio(new UnidadeNegocio(usuarioDto.getUnidadeNegocioId()));
+        usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
+        usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         return usuario;
     }
 
@@ -233,14 +265,6 @@ public class Usuario {
         return this.departamento != null ? this.departamento.getId() : null;
     }
 
-    public Integer getUnidadeNegocioId() {
-        return this.unidadeNegocio != null ? this.unidadeNegocio.getId() : null;
-    }
-
-    public String getUnidadeNegocioNome() {
-        return this.unidadeNegocio != null ? this.unidadeNegocio.getNome() : null;
-    }
-
     public Integer getNivelId() {
         if (this.cargo != null && this.cargo.getNivel() != null) {
             return this.cargo.getNivel().getId();
@@ -250,6 +274,14 @@ public class Usuario {
 
     public String getLogin() {
         return id + "-" + email;
+    }
+
+    public boolean isEmpty() {
+        return id == null && nome == null && cpf == null && email == null;
+    }
+
+    public boolean hasUsuarioCadastro() {
+        return usuarioCadastro != null && !usuarioCadastro.isEmpty();
     }
 
 }

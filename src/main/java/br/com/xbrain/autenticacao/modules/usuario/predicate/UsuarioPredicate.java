@@ -45,7 +45,7 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comUnidadesNegocio(List<Integer> unidadesNegocioIds) {
         if (unidadesNegocioIds.size() > 0) {
-            builder.and(usuario.unidadeNegocio.id.in(unidadesNegocioIds));
+            builder.and(usuario.unidadesNegocios.any().id.in(unidadesNegocioIds));
         }
         return this;
     }

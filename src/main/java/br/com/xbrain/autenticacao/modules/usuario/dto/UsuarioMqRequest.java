@@ -19,6 +19,7 @@ public class UsuarioMqRequest {
     private CodigoDepartamento departamento;
     private CodigoCargo cargo;
     private List<CodigoUnidadeNegocio> unidadesNegocio;
-    private CodigoEmpresa empresa;
+    private List<CodigoEmpresa> empresa;
+    private Integer usuarioCadastroId;
 
 }

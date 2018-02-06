@@ -6,5 +6,7 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
 public enum CodigoDepartamento {
 
     AGENTE_AUTORIZADO,
-    COMERCIAL
+    COMERCIAL,
+    HELP_DESK,
+    ADMINISTRADOR
 }

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -64,9 +63,8 @@ public class FuncionalidadeService {
                         .stream()
                         .filter(semEmpresaEUnidadeDeNegocio
                                 .or(possuiEmpresa(usuario.getEmpresas()))
-                                .or(possuiUnidadeNegocio(singletonList(usuario.getUnidadeNegocio())))
-                                .or(possuiEmpresaEUnidadeNegocio(
-                                        singletonList(usuario.getUnidadeNegocio()),
+                                .or(possuiUnidadeNegocio(usuario.getUnidadesNegocios()))
+                                .or(possuiEmpresaEUnidadeNegocio(usuario.getUnidadesNegocios(),
                                         usuario.getEmpresas())))
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository

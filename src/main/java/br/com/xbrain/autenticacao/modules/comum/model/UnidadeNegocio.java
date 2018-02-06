@@ -2,8 +2,10 @@ package br.com.xbrain.autenticacao.modules.comum.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -15,6 +17,8 @@ import javax.validation.constraints.Size;
 @Table(name = "UNIDADE_NEGOCIO")
 @Data
 @EqualsAndHashCode(of = {"id"})
+@ToString(of = "id")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UnidadeNegocio {
 
     @Id

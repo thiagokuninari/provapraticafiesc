@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -11,6 +13,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "DEPARTAMENTO")
 @Data
+@ToString(of = "id")
+@EqualsAndHashCode(of = "id")
 public class Departamento {
 
     @Id

@@ -12,12 +12,13 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class UsuarioDto {
+public class UsuarioDto implements Serializable {
 
     private Integer id;
     @NotNull
@@ -44,8 +45,8 @@ public class UsuarioDto {
     @Size(max = 120)
     private String loginNetSales;
     private LocalDateTime nascimento;
-    @NotNull
-    private Integer unidadeNegocioId;
+    @NotEmpty
+    private List<Integer> unidadesNegociosId = new ArrayList<>();
     private Integer nivelId;
     @NotEmpty
     private List<Integer> empresasId = new ArrayList<>();
@@ -59,15 +60,22 @@ public class UsuarioDto {
     private Eboolean alterarSenha;
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+    private Integer usuarioCadastroId;
 
     public static UsuarioDto parse(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());
         usuarioDto.setDepartamentoId(usuario.getDepartamentoId());
-        usuarioDto.setUnidadeNegocioId(usuario.getUnidadeNegocioId());
+        usuarioDto.setUnidadesNegociosId(usuario.getUnidadesNegociosId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
         usuarioDto.setNivelId(usuario.getNivelId());
+        return usuarioDto;
+    }
+
+    public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
+        UsuarioDto usuarioDto = new UsuarioDto();
+        BeanUtils.copyProperties(usuarioMqRequest, usuarioDto);
         return usuarioDto;
     }
 

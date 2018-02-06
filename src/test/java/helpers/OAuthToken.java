@@ -43,5 +43,5 @@ public class OAuthToken {
 
     private List<Integer> empresas;
 
-    private List<Integer> unidadesNegocio;
+    private List<Integer> unidadesNegocios;
 }

@@ -123,7 +123,7 @@ public class UsuarioGerenciaControllerTest {
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
                         "O campo telefone é obrigatório.",
-                        "O campo unidadeNegocioId é obrigatório.",
+                        "O campo unidadesNegociosId é obrigatório.",
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
@@ -220,6 +220,7 @@ public class UsuarioGerenciaControllerTest {
 
     private UsuarioDto umUsuarioParaEditar() {
         Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
+        usuario.forceLoad();
         usuario.setNome("JOAOZINHO");
         return UsuarioDto.parse(usuario);
     }
@@ -230,7 +231,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCargoId(3);
         usuario.setDepartamentoId(1);
         usuario.setCpf("097.238.645-92");
-        usuario.setUnidadeNegocioId(1);
+        usuario.setUnidadesNegociosId(Arrays.asList(1));
         usuario.setEmpresasId(singletonList(4));
         usuario.setEmail("usuario@teste.com");
         usuario.setTelefone("43 995565661");

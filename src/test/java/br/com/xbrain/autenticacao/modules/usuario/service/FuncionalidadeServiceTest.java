@@ -76,7 +76,7 @@ public class FuncionalidadeServiceTest {
         Usuario usuario = new Usuario(id);
         usuario.setEmpresas(new ArrayList<>());
         usuario.getEmpresas().add(empresa);
-        usuario.setUnidadeNegocio(unidadeNegocio);
+        usuario.setUnidadesNegocios(Arrays.asList(unidadeNegocio));
         return usuario;
     }
 

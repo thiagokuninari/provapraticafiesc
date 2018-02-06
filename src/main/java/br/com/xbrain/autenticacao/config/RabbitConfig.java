@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -14,28 +15,28 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
 
     @Value("${app-config.topic.autenticacao}")
-    private String vendasTopic;
-    @Value("${app-config.queue.contato}")
-    private String contatoQueue;
+    private String autenticacaoTopic;
+
+    @Value("${app-config.queue.usuario-aut}")
+    private String usuarioAutQueue;
 
     @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Bean
     TopicExchange topic() {
-        return new TopicExchange(vendasTopic);
+        return new TopicExchange(autenticacaoTopic);
     }
 
     @Bean
     Queue contatoQueue() {
-        return new Queue(contatoQueue, false);
+        return new Queue(usuarioAutQueue, false);
     }
 
     @Bean
     Binding contatoBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(contatoQueue()).to(exchange).with(contatoQueue);
+        return BindingBuilder.bind(contatoQueue()).to(exchange).with(usuarioAutQueue);
     }
-
 }
