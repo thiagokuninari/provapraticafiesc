@@ -302,4 +302,11 @@ public class UsuarioService {
                 .map(UsuarioDto::parse)
                 .collect(Collectors.toList());
     }
+
+    public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
+        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
+        return usuarios.stream()
+                .map(UsuarioResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
 }
