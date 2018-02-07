@@ -31,8 +31,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public UsuarioAutenticado getUsuarioById(@PathVariable("id") int id) {
-        return new UsuarioAutenticado(
+    public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
+        return UsuarioResponse.convertFrom(
                 usuarioService.findById(id));
     }
 
@@ -80,8 +80,8 @@ public class UsuarioController {
     }
 
     @RequestMapping(params = "email", method = RequestMethod.GET)
-    public UsuarioDto getUsuarioByEmail(@RequestParam String email) {
-        return usuarioService.findByEmail(email);
+    public UsuarioResponse getUsuarioByEmail(@RequestParam String email) {
+        return usuarioService.findByEmailAa(email);
     }
 
     @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)

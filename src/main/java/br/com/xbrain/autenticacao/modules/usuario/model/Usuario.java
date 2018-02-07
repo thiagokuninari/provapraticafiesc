@@ -1,10 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,6 +22,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -261,13 +267,42 @@ public class Usuario {
         return this.cargo != null ? this.cargo.getId() : null;
     }
 
+    public CodigoCargo getCargoCodigo() {
+        return this.cargo != null ? this.cargo.getCodigo() : null;
+    }
+
     public Integer getDepartamentoId() {
         return this.departamento != null ? this.departamento.getId() : null;
+    }
+
+    public CodigoDepartamento getDepartamentoCodigo() {
+        return this.departamento != null ? this.departamento.getCodigo() : null;
     }
 
     public Integer getNivelId() {
         if (this.cargo != null && this.cargo.getNivel() != null) {
             return this.cargo.getNivel().getId();
+        }
+        return null;
+    }
+
+    public CodigoNivel getNivelCodigo() {
+        if (this.cargo != null && this.cargo.getNivel() != null) {
+            return this.cargo.getNivel().getCodigo();
+        }
+        return null;
+    }
+
+    public List<CodigoEmpresa> getCodigosEmpresas() {
+        if (!CollectionUtils.isEmpty(empresas)) {
+            return empresas.stream().map(Empresa::getCodigo).collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    public List<CodigoUnidadeNegocio> getCodigosUnidadesNegocio() {
+        if (!CollectionUtils.isEmpty(unidadesNegocios)) {
+            return unidadesNegocios.stream().map(UnidadeNegocio::getCodigo).collect(Collectors.toList());
         }
         return null;
     }

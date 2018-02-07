@@ -105,6 +105,10 @@ public class UsuarioService {
         return UsuarioDto.parse(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
+    public UsuarioResponse findByEmailAa(String email) {
+        return UsuarioResponse.convertFrom(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+    }
+
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
         Usuario usuario = repository.findComplete(idUsuario).orElseThrow(() -> EX_NAO_ENCONTRADO);
         return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());
