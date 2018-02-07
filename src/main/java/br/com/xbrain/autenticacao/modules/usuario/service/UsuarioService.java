@@ -188,10 +188,23 @@ public class UsuarioService {
 
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-        configurarUsuario(usuarioMqRequest, usuarioDto);
-        usuarioDto = save(usuarioDto);
+        try {
+            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            usuarioDto = save(usuarioDto);
+            enviarParaFilaDeUsuariosSalvos(usuarioDto);
+        } catch (Exception exception) {
+            enviarParaFilaDeErro(usuarioMqRequest);
+            throw exception;
+        }
+    }
+
+    private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.send(usuarioDto);
+    }
+
+    private void enviarParaFilaDeErro(UsuarioMqRequest usuarioMqRequest) {
+        usuarioMqSender.sendWithBug(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {

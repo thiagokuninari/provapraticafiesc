@@ -20,6 +20,7 @@ app-config:
   queue:
     usuario: usuario.queue
     usuario-aut: usuario-aut.queue
+    usuario-aut-bug: usuario-aut-bug
 
   oauth-clients:
     front-apps:
