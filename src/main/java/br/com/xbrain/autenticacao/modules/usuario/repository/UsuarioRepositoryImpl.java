@@ -96,7 +96,6 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 .collect(Collectors.toList());
     }
 
-
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
