@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -13,6 +15,8 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
@@ -22,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
@@ -34,14 +39,10 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioService {
 
+    private static final int RADIX = 36;
+    private static final int POSICAO_ZERO = 0;
+    private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
-
-    private static final ValidacaoException MOTIVO_INATIVACAO_NAO_ENCONTRADO =
-            new ValidacaoException("Motivo de inativação não encontrado.");
-
-    public static final int QUANTIDADE_CARACTERES_SENHA = 6;
-
-    public static final int RADIX = 36;
 
     @Getter
     @Autowired
@@ -167,7 +168,7 @@ public class UsuarioService {
         Usuario usuario = Usuario.parse(usuarioDto);
         validar(usuario);
         if (usuario.isNovoCadastro()) {
-            String senhaDescriptografada = getSenhaRandomica(QUANTIDADE_CARACTERES_SENHA);
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             configurar(usuario, senhaDescriptografada);
             usuario = repository.save(usuario);
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -324,7 +325,7 @@ public class UsuarioService {
             return new MotivoInativacao(dto.getIdMotivoInativacao());
         }
         return motivoInativacaoRepository.findByCodigo(dto.getCodigoMotivoInativacao())
-                .orElseThrow(() -> MOTIVO_INATIVACAO_NAO_ENCONTRADO);
+                .orElseThrow(() -> new ValidacaoException("Motivo de inativação não encontrado."));
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -362,5 +363,44 @@ public class UsuarioService {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.setEmail(email);
         repository.save(usuario);
+    }
+
+    //FIXME O banco em memória não tem suporte para o LISTAGG do oracle. Dar um jeito de testar esse método.
+    public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
+        List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
+        return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
+    }
+
+    private UsuarioResponse criarUsuarioResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioResponse.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cpf(objectToString(param[indice++]))
+                .email(objectToString(param[indice++]))
+                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
+                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
+                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
+                .codigoEmpresas(tratarEmpresas(param[indice++]))
+                .codigoUnidadesNegocio(tratarUnidadesNegocios(param[indice]))
+                .build();
+    }
+
+    private List<CodigoEmpresa> tratarEmpresas(Object arg) {
+        return Arrays.stream(objectToString(arg).split(","))
+                .map(CodigoEmpresa::valueOf).collect(Collectors.toList());
+    }
+
+    private List<CodigoUnidadeNegocio> tratarUnidadesNegocios(Object arg) {
+        return Arrays.stream(objectToString(arg).split(","))
+                .map(CodigoUnidadeNegocio::valueOf).collect(Collectors.toList());
+    }
+
+    private Integer objectToInteger(Object arg) {
+        return NumberUtils.parseNumber(arg.toString(), Integer.class);
+    }
+
+    private String objectToString(Object arg) {
+        return arg != null ? arg.toString() : "";
     }
 }

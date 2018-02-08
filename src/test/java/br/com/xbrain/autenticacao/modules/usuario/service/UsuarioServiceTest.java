@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -20,16 +18,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@ActiveProfiles("test")
+@ActiveProfiles("oracle")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql"})
 public class UsuarioServiceTest {
 
     @MockBean
@@ -56,6 +56,16 @@ public class UsuarioServiceTest {
         }
     }
 
+    @Test
+    public void deveBuscarSuperioresDoUsuario() {
+        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
+        List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
+        Assert.assertEquals(usuariosResponse.size(), 1);
+        Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
+        Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
+        Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
+    }
+
     private UsuarioMqRequest umUsuario() {
         UsuarioMqRequest usuarioMqRequest = new UsuarioMqRequest();
         usuarioMqRequest.setNome("TESTE NOVO USUARIO PARCEIROS ONLINE");
@@ -68,6 +78,15 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setEmpresa(Arrays.asList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         return usuarioMqRequest;
+    }
+
+    private UsuarioFiltrosHierarquia getFiltroHierarquia() {
+        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = new UsuarioFiltrosHierarquia();
+        usuarioFiltrosHierarquia.setUsuarioId(Collections.singletonList(101));
+        usuarioFiltrosHierarquia.setCodigoNivel(CodigoNivel.XBRAIN);
+        usuarioFiltrosHierarquia.setCodigoDepartamento(CodigoDepartamento.COMERCIAL);
+        usuarioFiltrosHierarquia.setCodigoCargo(CodigoCargo.GERENTE_OPERACAO);
+        return usuarioFiltrosHierarquia;
     }
 
 }

@@ -89,4 +89,9 @@ public class UsuarioController {
         return usuarioService.findEmpresasDoUsuario(id);
     }
 
+    @RequestMapping(value = "/hierarquia/supervisores", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuariosSupervisores(UsuarioFiltrosHierarquia filtrosHierarquia) {
+        return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
+    }
+
 }

@@ -7,11 +7,14 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Builder;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class UsuarioResponse {
 
     private Integer id;
@@ -23,6 +26,21 @@ public class UsuarioResponse {
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
+
+    @Builder
+    public UsuarioResponse(Integer id, String nome, String cpf, String email, CodigoNivel codigoNivel,
+                           CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
+                           List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
+        this.id = id;
+        this.nome = nome;
+        this.cpf = cpf;
+        this.email = email;
+        this.codigoNivel = codigoNivel;
+        this.codigoDepartamento = codigoDepartamento;
+        this.codigoCargo = codigoCargo;
+        this.codigoUnidadesNegocio = codigoUnidadesNegocio;
+        this.codigoEmpresas = codigoEmpresas;
+    }
 
     public static UsuarioResponse convertFrom(Usuario usuario) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();

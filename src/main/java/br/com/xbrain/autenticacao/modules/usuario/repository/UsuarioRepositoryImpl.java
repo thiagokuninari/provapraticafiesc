@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -95,11 +96,47 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 .collect(Collectors.toList());
     }
 
+
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
                 .from(usuario)
                 .where(predicate)
                 .fetch();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros) {
+        return entityManager.createNativeQuery(
+                "SELECT U.ID "
+                        + "     , U.NOME "
+                        + "     , U.CPF "
+                        + "     , U.EMAIL_01 "
+                        + "     , N.CODIGO AS NIVEL "
+                        + "     , D.CODIGO AS DEPARTAMENTO "
+                        + "     , C.CODIGO AS CARAGO "
+                        + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS EMPRESAS "
+                        + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS UNIDADES_NEGOCIOS "
+                        + "  FROM USUARIO_HIERARQUIA UH "
+                        + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
+                        + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                        + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                        + "  JOIN NIVEL N ON N.ID = C.FK_NIVEL "
+                        + "  JOIN USUARIO_EMPRESA UE ON UE.FK_USUARIO = U.ID "
+                        + "  JOIN EMPRESA E ON E.ID = UE.FK_EMPRESA "
+                        + "  JOIN USUARIO_UNIDADE_NEGOCIO UNE ON UNE.FK_USUARIO = U.ID "
+                        + "  JOIN UNIDADE_NEGOCIO UN ON UN.ID = UNE.FK_UNIDADE_NEGOCIO "
+                        + " WHERE C.CODIGO = :_codigoCargo "
+                        + "   AND D.CODIGO = :_codigoDepartamento "
+                        + "   AND N.CODIGO = :_codigoNivel "
+                        + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
+                        + "  START WITH UH.FK_USUARIO IN :_idUsuario "
+                        + " CONNECT BY PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
+                .setParameter("_codigoCargo", filtros.getCodigoCargo().toString())
+                .setParameter("_codigoDepartamento", filtros.getCodigoDepartamento().toString())
+                .setParameter("_codigoNivel", filtros.getCodigoNivel().toString())
+                .setParameter("_idUsuario", filtros.getUsuarioId())
+                .getResultList();
     }
 }
