@@ -179,6 +179,17 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @Test
+    public void deveRetornarOSuperiorDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/101/supervisor")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(104)))
+                .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
+    }
+
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
         dto.setIdUsuario(ID_USUARIO_HELPDESK);

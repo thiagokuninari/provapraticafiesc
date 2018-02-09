@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
     List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+
+    Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 }

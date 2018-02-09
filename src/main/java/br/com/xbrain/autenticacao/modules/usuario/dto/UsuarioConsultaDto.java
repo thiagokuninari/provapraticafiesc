@@ -22,7 +22,7 @@ public class UsuarioConsultaDto {
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
         this.unidadeNegocioNome = usuario.getUnidadesNegocios().stream()
-                .map(UnidadeNegocio::toString).collect(Collectors.joining(", "));
+                .map(UnidadeNegocio::getNome).collect(Collectors.joining(", "));
         this.empresaNome = usuario.getEmpresas().stream().map(Empresa::toString).collect(Collectors.joining(", "));
         this.situacao = usuario.getSituacao().toString();
     }

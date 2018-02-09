@@ -202,6 +202,16 @@ public class UsuarioGerenciaControllerTest {
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
+    @Test
+    public void deveRetornarAsPermissoesDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia/100/permissoes")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(28)))
+                .andExpect(jsonPath("$[0].role", is("AUT_GER_USUARIO")));
+    }
+
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
         dto.setIdUsuario(ID_USUARIO_HELPDESK);

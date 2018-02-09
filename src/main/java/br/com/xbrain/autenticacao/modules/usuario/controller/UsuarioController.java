@@ -47,7 +47,7 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
-    @RequestMapping(value = "api/usuarios/filter", method = RequestMethod.GET)
+    @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public List<UsuarioDto> getUsuariosFilter(UsuarioFiltrosDto usuarioFiltrosDto) {
         return usuarioService.getUsuariosFiltros(usuarioFiltrosDto);
     }
@@ -94,4 +94,8 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
+    @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
+    public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
+        return usuarioService.getUsuarioSuperior(idUsuario);
+    }
 }

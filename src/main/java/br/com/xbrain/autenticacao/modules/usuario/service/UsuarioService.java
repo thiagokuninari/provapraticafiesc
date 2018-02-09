@@ -13,6 +13,10 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -30,11 +34,10 @@ import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UsuarioService {
@@ -74,6 +77,12 @@ public class UsuarioService {
 
     @Autowired
     private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
+
+    @Autowired
+    private PermissaoEspecialRepository permissaoEspecialRepository;
 
     @Autowired
     private UsuarioMqSender usuarioMqSender;
@@ -403,4 +412,57 @@ public class UsuarioService {
     private String objectToString(Object arg) {
         return arg != null ? arg.toString() : "";
     }
+
+    public UsuarioResponse getUsuarioSuperior(Integer idUsuario) {
+        UsuarioHierarquia usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
+    }
+
+    public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {
+        //TODO melhorar o código
+        Usuario usuario = repository.findComplete(idUsuario).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        FuncionalidadePredicate predicate = new FuncionalidadePredicate();
+        predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
+        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
+                .findFuncionalidadesPorCargoEDepartamento(predicate);
+
+        List<Empresa> empresasUsuario = usuario.getEmpresas();
+        List<UnidadeNegocio> unidadesUsuario = usuario.getUnidadesNegocios();
+
+        return Stream.concat(
+                funcionalidades
+                        .stream()
+                        .filter(semEmpresaEUnidadeDeNegocio
+                                .or(possuiEmpresa(empresasUsuario))
+                                .or(possuiUnidadeNegocio(unidadesUsuario))
+                                .or(possuiEmpresaEUnidadeNegocio(unidadesUsuario, empresasUsuario)))
+                        .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
+                permissaoEspecialRepository
+                        .findPorUsuario(usuario.getId()).stream())
+                .distinct()
+                .map(FuncionalidadeResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
+
+    private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
+            && f.getUnidadeNegocio() == null;
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresa(List<Empresa> empresasUsuario) {
+        return f -> f.getEmpresa() != null && f.getUnidadeNegocio() == null && empresasUsuario.contains(f.getEmpresa());
+    }
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario) {
+        return f -> f.getUnidadeNegocio() != null
+                && f.getEmpresa() == null
+                && unidadesUsuario.contains(f.getUnidadeNegocio());
+    }
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresaEUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario,
+                                                                                    List<Empresa> empresasUsuario) {
+        return f -> f.getUnidadeNegocio() != null
+                && f.getEmpresa() != null
+                && unidadesUsuario.contains(f.getUnidadeNegocio()) && empresasUsuario.contains(f.getEmpresa());
+    }
+
 }

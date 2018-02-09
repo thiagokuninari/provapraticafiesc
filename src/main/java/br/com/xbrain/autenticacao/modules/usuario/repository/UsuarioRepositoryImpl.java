@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 
 public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
 
@@ -137,5 +139,18 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 .setParameter("_codigoNivel", filtros.getCodigoNivel().toString())
                 .setParameter("_idUsuario", filtros.getUsuarioId())
                 .getResultList();
+    }
+
+    @Override
+    public Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(usuarioHierarquia)
+                        .from(usuarioHierarquia)
+                        .join(usuarioHierarquia.usuario).fetchJoin()
+                        .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
+                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                        .distinct()
+                        .fetchOne());
     }
 }

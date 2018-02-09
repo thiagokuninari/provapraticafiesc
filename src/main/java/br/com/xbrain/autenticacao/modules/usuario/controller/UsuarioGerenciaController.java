@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -70,5 +71,10 @@ public class UsuarioGerenciaController {
     @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         service.ativar(dto);
+    }
+
+    @RequestMapping(value = "/{idUsuario}/permissoes", method = RequestMethod.GET)
+    public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
+        return service.getFuncionalidadeByUsuario(idUsuario);
     }
 }
