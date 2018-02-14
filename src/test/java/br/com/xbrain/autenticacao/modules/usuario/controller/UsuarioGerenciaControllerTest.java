@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -13,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -32,6 +34,10 @@ import static helpers.Usuarios.HELP_DESK;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,6 +58,8 @@ public class UsuarioGerenciaControllerTest {
     private EntityManager entityManager;
     @Autowired
     private UsuarioService usuarioService;
+    @MockBean
+    private EmailService emailService;
 
     private static final int ID_USUARIO_HELPDESK = 101;
 
@@ -200,6 +208,19 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
+    }
+
+    @Test
+    public void deveAlterarASenhaDeUmUsuarioEEnviarPorEmail() throws Exception {
+        Usuario usuario = repository.findOne(100);
+        String senhaAntiga = usuario.getSenha();
+        mvc.perform(put("/api/usuarios/gerencia/100/senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        usuario = repository.findOne(100);
+        assertNotEquals(senhaAntiga, usuario.getSenha());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test

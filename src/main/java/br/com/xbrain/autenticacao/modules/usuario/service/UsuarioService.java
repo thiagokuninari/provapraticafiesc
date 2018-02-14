@@ -34,7 +34,9 @@ import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,24 +89,20 @@ public class UsuarioService {
     @Autowired
     private UsuarioMqSender usuarioMqSender;
 
-    public Usuario findById(int id) {
-        return repository
-                .findComplete(id)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    private Usuario findComplete(Integer id) {
+        return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    //FIXME refatorar esse método
+    public Usuario findById(int id) {
+        return findComplete(id);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
-        Usuario usuario = repository.findComCidade(usuarioId)
-                .orElse(null);
-        if (usuario != null) {
-            return usuario.getCidades()
-                    .stream()
-                    .map(c -> CidadeResponse.parse(c.getCidade()))
-                    .collect(Collectors.toList());
-        } else {
-            return new ArrayList<>();
-        }
+        Usuario usuario = repository.findComCidade(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return usuario.getCidades()
+                .stream()
+                .map(c -> CidadeResponse.parse(c.getCidade()))
+                .collect(Collectors.toList());
     }
 
     public Usuario findComHierarquia(int id) {
@@ -120,7 +118,7 @@ public class UsuarioService {
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
-        Usuario usuario = repository.findComplete(idUsuario).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = findComplete(idUsuario);
         return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());
     }
 
@@ -302,7 +300,7 @@ public class UsuarioService {
     }
 
     public void ativar(UsuarioAtivacaoDto dto) {
-        Usuario usuario = repository.findComplete(dto.getIdUsuario()).get();
+        Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
@@ -315,7 +313,7 @@ public class UsuarioService {
     }
 
     public void inativar(UsuarioInativacaoDto dto) {
-        Usuario usuario = repository.findComplete(dto.getIdUsuario()).get();
+        Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
         usuario.adicionar(UsuarioHistorico.builder()
@@ -363,18 +361,17 @@ public class UsuarioService {
     }
 
     public void alterarCargoUsuario(Integer id, CodigoCargo codigoCargo) {
-        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = findComplete(id);
         usuario.setCargo(getCargo(codigoCargo));
         repository.save(usuario);
     }
 
     public void alterarEmailUsuario(Integer id, String email) {
-        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = findComplete(id);
         usuario.setEmail(email);
         repository.save(usuario);
     }
 
-    //FIXME O banco em memória não tem suporte para o LISTAGG do oracle. Dar um jeito de testar esse método.
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
@@ -419,9 +416,30 @@ public class UsuarioService {
         return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
     }
 
+    public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
+        Usuario usuario = findComplete(idUsuario);
+        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+        usuario.setSenha(passwordEncoder.encode(getSenhaRandomica(MAX_CARACTERES_SENHA)));
+        repository.save(usuario);
+        enviarEmailReenvioSenha(usuario, senhaDescriptografada);
+    }
+
+    public void enviarEmailReenvioSenha(Usuario usuario, String senhaDescriptografada) {
+        Context context = new Context();
+        context.setVariable("nome", usuario.getNome());
+        context.setVariable("email", usuario.getEmail());
+        context.setVariable("senha", senhaDescriptografada);
+
+        emailService.enviarEmailTemplate(
+                Arrays.asList(usuario.getEmail()),
+                "Alteração de Senha",
+                "reenvio-senha",
+                context);
+    }
+
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {
         //TODO melhorar o código
-        Usuario usuario = repository.findComplete(idUsuario).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = findComplete(idUsuario);
         FuncionalidadePredicate predicate = new FuncionalidadePredicate();
         predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository

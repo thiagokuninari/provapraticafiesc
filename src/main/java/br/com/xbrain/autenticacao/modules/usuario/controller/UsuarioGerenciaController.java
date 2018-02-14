@@ -77,4 +77,9 @@ public class UsuarioGerenciaController {
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
         return service.getFuncionalidadeByUsuario(idUsuario);
     }
+
+    @RequestMapping(value = "/{idUsuario}/senha", method = RequestMethod.PUT)
+    public void alterarSenhaEReenviarPorEmail(@PathVariable Integer idUsuario) {
+        service.alterarSenhaEReenviarPorEmail(idUsuario);
+    }
 }

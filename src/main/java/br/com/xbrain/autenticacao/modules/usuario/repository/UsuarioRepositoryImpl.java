@@ -73,7 +73,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .join(usuario.cidades).fetchJoin()
+                        .leftJoin(usuario.cidades).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .orderBy(usuario.id.asc())
