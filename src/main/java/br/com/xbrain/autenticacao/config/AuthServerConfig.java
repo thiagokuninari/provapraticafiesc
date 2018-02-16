@@ -33,6 +33,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String vendasApiClient;
     @Value("${app-config.oauth-clients.vendas-api.secret}")
     private String vendasApiSecret;
+    @Value("${app-config.oauth-clients.mailing-api.client}")
+    private String mailingApiClient;
+    @Value("${app-config.oauth-clients.mailing-api.secret}")
+    private String mailingApiSecret;
 
     @Autowired
     private CustomJdbcTokenStore customJdbcTokenStore;
@@ -67,7 +71,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .withClient(vendasApiClient)
                 .secret(vendasApiSecret)
                 .authorizedGrantTypes("client_credentials")
-                .scopes("vendas-api");
+                .scopes("vendas-api")
+                .and()
+                .withClient(mailingApiClient)
+                .secret(mailingApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("mailing-api");
     }
 
     @Override

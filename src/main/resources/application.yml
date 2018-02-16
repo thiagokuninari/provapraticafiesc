@@ -32,6 +32,9 @@ app-config:
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
+    mailing-api:
+      client: mailing-api
+      secret: m41l1ng4p1
 
 spring:
   resources:
