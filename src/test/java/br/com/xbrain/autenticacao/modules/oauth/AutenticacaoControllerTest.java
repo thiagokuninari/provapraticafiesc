@@ -96,6 +96,9 @@ public class AutenticacaoControllerTest {
 
         assertNotNull(TestsHelper
                 .getAccessTokenClientCredentials(mvc, "vendas-api:v3nd4s4p1").getAccessToken());
+        
+        assertNotNull(TestsHelper
+                .getAccessTokenClientCredentials(mvc, "mailing-api:m41l1ng4p1").getAccessToken());
     }
 
     @Test
