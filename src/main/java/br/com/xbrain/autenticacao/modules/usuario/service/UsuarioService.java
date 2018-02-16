@@ -90,6 +90,26 @@ public class UsuarioService {
     @Autowired
     private UsuarioMqSender usuarioMqSender;
 
+    private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
+            && f.getUnidadeNegocio() == null;
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresa(List<Empresa> empresasUsuario) {
+        return f -> f.getEmpresa() != null && f.getUnidadeNegocio() == null && empresasUsuario.contains(f.getEmpresa());
+    }
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario) {
+        return f -> f.getUnidadeNegocio() != null
+                && f.getEmpresa() == null
+                && unidadesUsuario.contains(f.getUnidadeNegocio());
+    }
+
+    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresaEUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario,
+                                                                                    List<Empresa> empresasUsuario) {
+        return f -> f.getUnidadeNegocio() != null
+                && f.getEmpresa() != null
+                && unidadesUsuario.contains(f.getUnidadeNegocio()) && empresasUsuario.contains(f.getEmpresa());
+    }
+
     private Usuario findComplete(Integer id) {
         return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
@@ -422,10 +442,10 @@ public class UsuarioService {
         Usuario usuario = findComplete(idUsuario);
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
-        enviarEmailReenvioSenha(usuario, senhaDescriptografada);
+        enviarEmailComSenhaNova(usuario, senhaDescriptografada);
     }
 
-    private void enviarEmailReenvioSenha(Usuario usuario, String senhaDescriptografada) {
+    private void enviarEmailComSenhaNova(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
         context.setVariable("email", usuario.getEmail());
@@ -443,7 +463,20 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         confirmarEmailAtual(usuario.getEmail(), usuarioDadosAcessoRequest.getEmailAtual());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
-        //TODO enviar e-mail avisando que trocou de e-mail (não tem template ainda)
+        enviarEmailComEmailNovo(usuario, usuarioDadosAcessoRequest);
+    }
+
+    private void enviarEmailComEmailNovo(Usuario usuario, UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        Context context = new Context();
+        context.setVariable("nome", usuario.getNome());
+        context.setVariable("emailNovo", usuarioDadosAcessoRequest.getEmailNovo());
+        context.setVariable("emailAntigo", usuarioDadosAcessoRequest.getEmailAtual());
+
+        emailService.enviarEmailTemplate(
+                Arrays.asList(usuario.getEmail()),
+                "Alteração de E-mail",
+                "alteracao-email",
+                context);
     }
 
     private void confirmarEmailAtual(String emailAtual, String emailAtualRequest) {
@@ -457,33 +490,27 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         confirmarSenhaAtual(usuario.getSenha(), usuarioDadosAcessoRequest.getSenhaAtual());
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()), usuario.getId());
-        enviarEmailReenvioSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+        enviarEmailComSenhaNova(usuario, usuarioDadosAcessoRequest.getSenhaNova());
     }
 
-    public void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
+    private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
         if (!new BCryptPasswordEncoder().matches(senhaAtualRequest, senhaAtual)) {
             throw new ValidacaoException("A senha atual está incorreta.");
         }
     }
 
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {
-        //TODO melhorar o código
         Usuario usuario = findComplete(idUsuario);
-        FuncionalidadePredicate predicate = new FuncionalidadePredicate();
-        predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
+        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
                 .findFuncionalidadesPorCargoEDepartamento(predicate);
-
-        List<Empresa> empresasUsuario = usuario.getEmpresas();
-        List<UnidadeNegocio> unidadesUsuario = usuario.getUnidadesNegocios();
-
         return Stream.concat(
                 funcionalidades
                         .stream()
                         .filter(semEmpresaEUnidadeDeNegocio
-                                .or(possuiEmpresa(empresasUsuario))
-                                .or(possuiUnidadeNegocio(unidadesUsuario))
-                                .or(possuiEmpresaEUnidadeNegocio(unidadesUsuario, empresasUsuario)))
+                                .or(possuiEmpresa(usuario.getEmpresas()))
+                                .or(possuiUnidadeNegocio(usuario.getUnidadesNegocios()))
+                                .or(possuiEmpresaEUnidadeNegocio(usuario.getUnidadesNegocios(), usuario.getEmpresas())))
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
                         .findPorUsuario(usuario.getId()).stream())
@@ -492,24 +519,10 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
-            && f.getUnidadeNegocio() == null;
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresa(List<Empresa> empresasUsuario) {
-        return f -> f.getEmpresa() != null && f.getUnidadeNegocio() == null && empresasUsuario.contains(f.getEmpresa());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario) {
-        return f -> f.getUnidadeNegocio() != null
-                && f.getEmpresa() == null
-                && unidadesUsuario.contains(f.getUnidadeNegocio());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresaEUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario,
-                                                                                    List<Empresa> empresasUsuario) {
-        return f -> f.getUnidadeNegocio() != null
-                && f.getEmpresa() != null
-                && unidadesUsuario.contains(f.getUnidadeNegocio()) && empresasUsuario.contains(f.getEmpresa());
+    private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {
+        FuncionalidadePredicate predicate = new FuncionalidadePredicate();
+        predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
+        return predicate;
     }
 
 }

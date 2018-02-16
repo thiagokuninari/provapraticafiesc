@@ -22,8 +22,4 @@ public class FuncionalidadeController {
         return service.getAll();
     }
 
-    //TODO endpoint que retorna todas as funcionalidades de  acordo com os filtros selecionados na tela
-    //TODO endpoint que inclui funcionalidades para nivel - departamento - cargo
-    //TODO endpoint que remove funcionalidades de nivel - departamento - cargo
-    //TODO manter histórico de inclusão e remoção
 }
