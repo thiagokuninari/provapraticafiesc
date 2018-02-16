@@ -364,8 +364,8 @@ public class UsuarioService {
                 .comCargo(usuarioFiltrosDto.getCodigoCargoList())
                 .comDepartamento(usuarioFiltrosDto.getCodigoDepartamentoList())
                 .comCidade(usuarioFiltrosDto.getCidadesIds())
-                .comIds(usuarioFiltrosDto.getUsuariosAAsNacionais())
-                .isAtivo();
+                .comIds(usuarioFiltrosDto.getUsuariosIds())
+                .isAtivo(usuarioFiltrosDto.getAtivo());
 
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
@@ -523,6 +523,11 @@ public class UsuarioService {
         FuncionalidadePredicate predicate = new FuncionalidadePredicate();
         predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
         return predicate;
+    }
+
+    public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
+        return repository.getUsuarioByNivel(codigoNivel).stream()
+                .map(UsuarioResponse::convertFrom).collect(Collectors.toList());
     }
 
 }

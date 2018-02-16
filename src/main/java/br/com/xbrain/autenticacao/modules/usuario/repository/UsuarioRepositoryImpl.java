@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
@@ -123,7 +124,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
                         + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
                         + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
-                        + "  JOIN NIVEL N ON N.ID = C.FK_NIVEL "
+                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
                         + "  JOIN USUARIO_EMPRESA UE ON UE.FK_USUARIO = U.ID "
                         + "  JOIN EMPRESA E ON E.ID = UE.FK_EMPRESA "
                         + "  JOIN USUARIO_UNIDADE_NEGOCIO UNE ON UNE.FK_USUARIO = U.ID "
@@ -152,5 +153,16 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                         .where(usuarioHierarquia.usuario.id.eq(usuarioId))
                         .distinct()
                         .fetchOne());
+    }
+
+    @Override
+    public List<Usuario> getUsuarioByNivel(CodigoNivel codigoNivel) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .where(cargo.nivel.codigo.eq(codigoNivel))
+                .orderBy(usuario.nome.asc())
+                .fetch();
     }
 }

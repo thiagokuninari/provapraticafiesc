@@ -44,7 +44,7 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(399)));
+                .andExpect(jsonPath("$", hasSize(401)));
     }
 
     @Test
@@ -58,16 +58,16 @@ public class CidadeControllerTest {
 
     @Test
     public void deveRetornarTodosPorSubCluster() throws Exception {
-        mvc.perform(get("/api/cidades?idSubCluster=682")
+        mvc.perform(get("/api/cidades?idSubCluster=57")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(10)))
-                .andExpect(jsonPath("$[0].nome", is("ANTONINA")))
-                .andExpect(jsonPath("$[0].subCluster.nome", is("BRI - PARANAGUÁ - PR")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("CURITIBA")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("CURITIBA")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("SUL")));
+                .andExpect(jsonPath("$", hasSize(38)))
+                .andExpect(jsonPath("$[0].nome", is("ALHANDRA")))
+                .andExpect(jsonPath("$[0].subCluster.nome", is("JOÃO PESSOA")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("LESTE")));
     }
 
     @Test

@@ -188,6 +188,15 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
     }
 
+    @Test
+    public void deveRetornarUsuariosPorNivelDoCargo() throws Exception {
+        mvc.perform(get("/api/usuarios/nivel/XBRAIN")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)));
+    }
+
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
         dto.setIdUsuario(ID_USUARIO_HELPDESK);

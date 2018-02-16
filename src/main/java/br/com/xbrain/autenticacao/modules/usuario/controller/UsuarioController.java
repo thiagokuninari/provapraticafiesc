@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -34,6 +35,11 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
                 usuarioService.findById(id));
+    }
+
+    @RequestMapping(value = "/nivel/{codigoNivel}", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuarioByNivel(@PathVariable("codigoNivel") CodigoNivel codigoNivel) {
+        return usuarioService.getUsuarioByNivel(codigoNivel);
     }
 
     @GetMapping(value = "/{id}/cidades")

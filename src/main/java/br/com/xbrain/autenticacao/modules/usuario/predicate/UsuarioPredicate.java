@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -50,8 +51,10 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate isAtivo() {
-        builder.and(usuario.situacao.eq(ESituacao.A));
+    public UsuarioPredicate isAtivo(Eboolean ativo) {
+        if (ativo == Eboolean.V) {
+            builder.and(usuario.situacao.eq(ESituacao.A));
+        }
         return this;
     }
 

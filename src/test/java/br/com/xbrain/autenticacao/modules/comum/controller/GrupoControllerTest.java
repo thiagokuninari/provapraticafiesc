@@ -41,7 +41,7 @@ public class GrupoControllerTest {
 
     @Test
     public void deveRetornarOsGruposAtivosPorRegional() throws Exception {
-        mvc.perform(get("/api/grupos?regionalId=7")
+        mvc.perform(get("/api/grupos?regionalId=1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -51,7 +51,7 @@ public class GrupoControllerTest {
 
     @Test
     public void deveRetornarSomenteOsGruposAtivosPorRegionalGerenteComercial() throws Exception {
-        mvc.perform(get("/api/grupos?regionalId=9")
+        mvc.perform(get("/api/grupos?regionalId=3")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

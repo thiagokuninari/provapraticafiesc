@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
@@ -26,4 +27,6 @@ public interface UsuarioRepositoryCustom {
     List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
+
+    List<Usuario> getUsuarioByNivel(CodigoNivel codigoNivel);
 }

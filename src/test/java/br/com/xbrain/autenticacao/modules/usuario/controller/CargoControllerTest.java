@@ -39,7 +39,7 @@ public class CargoControllerTest {
 
     @Test
     public void deveRetornarOsCargosAtivosPorNivel() throws Exception  {
-        mvc.perform(get("/api/cargos?nivelId=1")
+        mvc.perform(get("/api/cargos?nivelId=4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

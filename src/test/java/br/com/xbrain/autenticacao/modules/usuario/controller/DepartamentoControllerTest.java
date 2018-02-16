@@ -40,12 +40,12 @@ public class DepartamentoControllerTest {
 
     @Test
     public void deveRetornarOsCargosAtivosPorNivel() throws Exception  {
-        mvc.perform(get("/api/departamentos?nivelId=1")
+        mvc.perform(get("/api/departamentos?nivelId=4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(12)))
-                .andExpect(jsonPath("$[0].nome", is("Administrativo")));
+                .andExpect(jsonPath("$", hasSize(15)))
+                .andExpect(jsonPath("$[0].nome", is("Administrador")));
     }
 
 }

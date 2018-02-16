@@ -45,7 +45,7 @@ public class NivelControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].nome", is("X-BRAIN")));
+                .andExpect(jsonPath("$[0].nome", is("Operação")));
     }
 
 }
