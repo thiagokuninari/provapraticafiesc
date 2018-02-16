@@ -364,7 +364,7 @@ public class UsuarioService {
                 .comCargo(usuarioFiltrosDto.getCodigoCargoList())
                 .comDepartamento(usuarioFiltrosDto.getCodigoDepartamentoList())
                 .comCidade(usuarioFiltrosDto.getCidadesIds())
-                .comIds(usuarioFiltrosDto.getUsuariosAAsNacionais())
+                .comIds(usuarioFiltrosDto.getUsuariosIds())
                 .isAtivo();
 
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
