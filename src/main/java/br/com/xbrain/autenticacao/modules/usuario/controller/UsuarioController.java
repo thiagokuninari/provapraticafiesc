@@ -98,4 +98,5 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
         return usuarioService.getUsuarioSuperior(idUsuario);
     }
+
 }

@@ -51,7 +51,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = true)
+    @Column(name = "EMAIL_01", nullable = false, updatable = false, length = 80, unique = true)
     private String email;
 
     @Email

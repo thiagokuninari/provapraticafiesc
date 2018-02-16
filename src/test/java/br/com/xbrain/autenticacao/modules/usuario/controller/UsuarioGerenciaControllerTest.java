@@ -34,7 +34,6 @@ import static helpers.Usuarios.HELP_DESK;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -212,14 +211,10 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarASenhaDeUmUsuarioEEnviarPorEmail() throws Exception {
-        Usuario usuario = repository.findOne(100);
-        String senhaAntiga = usuario.getSenha();
         mvc.perform(put("/api/usuarios/gerencia/100/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        usuario = repository.findOne(100);
-        assertNotEquals(senhaAntiga, usuario.getSenha());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
@@ -231,6 +226,63 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(28)))
                 .andExpect(jsonPath("$[0].role", is("AUT_GER_USUARIO")));
+    }
+
+    @Test
+    public void deveAlterarOEmailDoUsuario() throws Exception {
+        mvc.perform(put("/api/usuarios/gerencia/acesso/email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umRequestDadosAcessoEmail())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deveNaoTrocarOEmailDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
+        UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
+        dto.setEmailAtual("EMAILERRADO@XBRAIN.COM.BR");
+        mvc.perform(put("/api/usuarios/gerencia/acesso/email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deveAlterarASenhaDoUsuario() throws Exception {
+        mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
+                .andExpect(status().isOk());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
+    @Test
+    public void deveNaoTrocarASenhaDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
+        UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
+        dto.setSenhaAtual("SENHAINCORRETA");
+        mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
+        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
+        dto.setUsuarioId(101);
+        dto.setEmailAtual("HELPDESK@XBRAIN.COM.BR");
+        dto.setEmailNovo("NOVOEMAIL@XBRAIN.COM.BR");
+        return dto;
+    }
+
+    private UsuarioDadosAcessoRequest umRequestDadosAcessoSenha() {
+        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
+        dto.setUsuarioId(101);
+        dto.setSenhaAtual("123456");
+        dto.setSenhaNova("654321");
+        return dto;
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {

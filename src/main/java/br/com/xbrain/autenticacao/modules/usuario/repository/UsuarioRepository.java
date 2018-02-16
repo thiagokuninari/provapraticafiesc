@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -20,5 +22,13 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     Optional<Usuario> findByEmail(String email);
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
+
+    @Modifying
+    @Query("update Usuario u set u.senha = ?1 where u.id = ?2")
+    void updateSenha(String senha, Integer usuarioId);
+
+    @Modifying
+    @Query("update Usuario u set u.email = ?1 where u.id = ?2")
+    void updateEmail(String email, Integer usuarioId);
 
 }

@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -416,15 +417,15 @@ public class UsuarioService {
         return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
     }
 
+    @Transactional
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        usuario.setSenha(passwordEncoder.encode(getSenhaRandomica(MAX_CARACTERES_SENHA)));
-        repository.save(usuario);
+        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
         enviarEmailReenvioSenha(usuario, senhaDescriptografada);
     }
 
-    public void enviarEmailReenvioSenha(Usuario usuario, String senhaDescriptografada) {
+    private void enviarEmailReenvioSenha(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
         context.setVariable("email", usuario.getEmail());
@@ -435,6 +436,34 @@ public class UsuarioService {
                 "Alteração de Senha",
                 "reenvio-senha",
                 context);
+    }
+
+    @Transactional
+    public void alterarDadosAcessoEmail(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
+        confirmarEmailAtual(usuario.getEmail(), usuarioDadosAcessoRequest.getEmailAtual());
+        repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
+        //TODO enviar e-mail avisando que trocou de e-mail (não tem template ainda)
+    }
+
+    private void confirmarEmailAtual(String emailAtual, String emailAtualRequest) {
+        if (!emailAtual.equalsIgnoreCase(emailAtualRequest)) {
+            throw new ValidacaoException("O e-mail atual está incorreto.");
+        }
+    }
+
+    @Transactional
+    public void alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
+        confirmarSenhaAtual(usuario.getSenha(), usuarioDadosAcessoRequest.getSenhaAtual());
+        repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()), usuario.getId());
+        enviarEmailReenvioSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+    }
+
+    public void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
+        if (!new BCryptPasswordEncoder().matches(senhaAtualRequest, senhaAtual)) {
+            throw new ValidacaoException("A senha atual está incorreta.");
+        }
     }
 
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {

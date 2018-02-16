@@ -82,4 +82,14 @@ public class UsuarioGerenciaController {
     public void alterarSenhaEReenviarPorEmail(@PathVariable Integer idUsuario) {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
+
+    @RequestMapping(value = "/acesso/email", method = RequestMethod.PUT)
+    public void alterarDadosAcessoEmail(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        service.alterarDadosAcessoEmail(usuarioDadosAcessoRequest);
+    }
+
+    @RequestMapping(value = "/acesso/senha", method = RequestMethod.PUT)
+    public void alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
+    }
 }
