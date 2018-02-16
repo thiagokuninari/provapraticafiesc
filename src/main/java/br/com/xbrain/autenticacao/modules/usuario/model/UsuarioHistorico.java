@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class UsuarioHistorico {
 
     @Id
-    @SequenceGenerator(name = "SEQ_USUARIO_HISTORICO", sequenceName = "SEQ_USUARIO_HISTORICO")
+    @SequenceGenerator(name = "SEQ_USUARIO_HISTORICO", sequenceName = "SEQ_USUARIO_HISTORICO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_USUARIO_HISTORICO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 

@@ -3,8 +3,6 @@ package br.com.xbrain.autenticacao.modules.comum.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoMarca;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,12 +13,8 @@ import javax.validation.constraints.NotNull;
 public class Marca {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_MARCA",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_MARCA")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_MARCA")
+    @SequenceGenerator(name = "SEQ_MARCA", sequenceName = "SEQ_MARCA", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_MARCA", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

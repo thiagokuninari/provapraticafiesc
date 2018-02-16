@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -22,12 +20,8 @@ import javax.validation.constraints.Size;
 public class UnidadeNegocio {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_UNIDADE_NEGOCIO",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_UNIDADE_NEGOCIO")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_UNIDADE_NEGOCIO")
+    @SequenceGenerator(name = "SEQ_UNIDADE_NEGOCIO", sequenceName = "SEQ_UNIDADE_NEGOCIO", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_UNIDADE_NEGOCIO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

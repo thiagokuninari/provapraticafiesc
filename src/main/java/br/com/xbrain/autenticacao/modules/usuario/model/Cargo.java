@@ -5,8 +5,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 
@@ -18,12 +16,8 @@ import javax.persistence.*;
 public class Cargo {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_CARGO",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_CARGO")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_CARGO")
+    @SequenceGenerator(name = "SEQ_CARGO", sequenceName = "SEQ_CARGO", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_CARGO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @Column(name = "NOME", length = 80, nullable = false)

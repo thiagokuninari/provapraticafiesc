@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EAreaAtuacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,12 +14,8 @@ import javax.validation.constraints.NotNull;
 public class Cluster implements AreaAtuacao {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_CLUSTERS",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_CLUSTERS")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_CLUSTERS")
+    @SequenceGenerator(name = "SEQ_CLUSTERS", sequenceName = "SEQ_CLUSTERS", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_CLUSTERS", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

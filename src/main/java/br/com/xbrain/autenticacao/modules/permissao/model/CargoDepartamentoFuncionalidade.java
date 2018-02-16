@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 public class CargoDepartamentoFuncionalidade {
 
     @Id
-    @SequenceGenerator(name = "SEQ_CARGO_DEPART_FUNC", sequenceName = "SEQ_CARGO_DEPART_FUNC")
+    @SequenceGenerator(name = "SEQ_CARGO_DEPART_FUNC", sequenceName = "SEQ_CARGO_DEPART_FUNC", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_CARGO_DEPART_FUNC", strategy = GenerationType.SEQUENCE)
     private Integer id;
 

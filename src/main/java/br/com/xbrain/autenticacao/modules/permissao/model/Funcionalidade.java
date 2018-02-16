@@ -14,7 +14,7 @@ public class Funcionalidade {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "SEQ_FUNCIONALIDADE", sequenceName = "SEQ_FUNCIONALIDADE")
+    @SequenceGenerator(name = "SEQ_FUNCIONALIDADE", sequenceName = "SEQ_FUNCIONALIDADE", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_FUNCIONALIDADE", strategy = GenerationType.SEQUENCE)
     private Integer id;
 

@@ -5,8 +5,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 
@@ -18,12 +16,8 @@ import javax.persistence.*;
 public class Departamento {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_DEPARTAMENTO",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_DEPARTAMENTO")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_DEPARTAMENTO")
+    @SequenceGenerator(name = "SEQ_DEPARTAMENTO", sequenceName = "SEQ_DEPARTAMENTO", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_DEPARTAMENTO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @Column(name = "NOME", length = 80, nullable = false)

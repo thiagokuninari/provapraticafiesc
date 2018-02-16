@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class Usuario {
 
     @Id
-    @SequenceGenerator(name = "SEQ_USUARIO", sequenceName = "SEQ_USUARIO")
+    @SequenceGenerator(name = "SEQ_USUARIO", sequenceName = "SEQ_USUARIO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_USUARIO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 

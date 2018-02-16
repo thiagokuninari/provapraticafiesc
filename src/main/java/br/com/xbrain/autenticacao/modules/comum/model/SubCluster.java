@@ -5,8 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -18,12 +16,8 @@ import java.util.List;
 public class SubCluster implements AreaAtuacao {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_SUB_CLUSTER",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_SUB_CLUSTER")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_SUB_CLUSTER")
+    @SequenceGenerator(name = "SEQ_SUB_CLUSTER", sequenceName = "SEQ_SUB_CLUSTER", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_SUB_CLUSTER", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

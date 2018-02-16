@@ -6,8 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 
@@ -19,12 +17,8 @@ import javax.persistence.*;
 public class Nivel {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_NIVEL",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_NIVEL")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_NIVEL")
+    @SequenceGenerator(name = "SEQ_NIVEL", sequenceName = "SEQ_NIVEL", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_NIVEL", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @Column(name = "NOME", length = 80, nullable = false)

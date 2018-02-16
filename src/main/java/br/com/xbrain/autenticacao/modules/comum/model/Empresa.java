@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -21,12 +19,8 @@ import java.io.Serializable;
 public class Empresa implements Serializable {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_EMPRESA",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_EMPRESA")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_EMPRESA")
+    @SequenceGenerator(name = "SEQ_EMPRESA", sequenceName = "SEQ_EMPRESA", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_EMPRESA", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

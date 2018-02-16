@@ -5,8 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -19,12 +17,8 @@ import java.util.List;
 public class Cidade {
 
     @Id
-    @Column(name = "ID")
-    @GenericGenerator(
-            name = "SEQ_CIDADE",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {@Parameter(name = "sequence_name", value = "SEQ_CIDADE")})
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_CIDADE")
+    @SequenceGenerator(name = "SEQ_CIDADE", sequenceName = "SEQ_CIDADE", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_CIDADE", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @NotNull

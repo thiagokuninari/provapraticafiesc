@@ -13,7 +13,7 @@ public class Aplicacao {
 
     @Id
     @Column(name = "ID")
-    @SequenceGenerator(name = "SEQ_APLICACAO", sequenceName = "SEQ_APLICACAO")
+    @SequenceGenerator(name = "SEQ_APLICACAO", sequenceName = "SEQ_APLICACAO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_APLICACAO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
