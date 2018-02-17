@@ -60,7 +60,7 @@ public class UsuarioServiceTest {
     public void deveBuscarSuperioresDoUsuario() {
         UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
         List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
-        Assert.assertEquals(usuariosResponse.size(), 1);
+        Assert.assertEquals(1, usuariosResponse.size());
         Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
         Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
         Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
@@ -83,7 +83,7 @@ public class UsuarioServiceTest {
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
         UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = new UsuarioFiltrosHierarquia();
         usuarioFiltrosHierarquia.setUsuarioId(Collections.singletonList(101));
-        usuarioFiltrosHierarquia.setCodigoNivel(CodigoNivel.XBRAIN);
+        usuarioFiltrosHierarquia.setCodigoNivel(CodigoNivel.OPERACAO);
         usuarioFiltrosHierarquia.setCodigoDepartamento(CodigoDepartamento.COMERCIAL);
         usuarioFiltrosHierarquia.setCodigoCargo(CodigoCargo.GERENTE_OPERACAO);
         return usuarioFiltrosHierarquia;

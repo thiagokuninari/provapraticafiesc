@@ -26,7 +26,7 @@ public class ClusterPredicate extends PredicateBase {
     }
 
     public ClusterPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (usuarioAutenticado.hasPermissao(CodigoFuncionalidade.GERENCIAR_USUARIOS_EXECUTIVO)) {
+        if (usuarioAutenticado.hasPermissao(CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
             daClusterUsuarioPorUsuario(usuarioAutenticado.getId());
         }
         return this;

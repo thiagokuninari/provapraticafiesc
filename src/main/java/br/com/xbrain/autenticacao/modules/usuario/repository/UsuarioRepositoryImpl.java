@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
@@ -156,7 +159,18 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
     }
 
     @Override
-    public List<Usuario> getUsuarioByNivel(CodigoNivel codigoNivel) {
+    public List<PermissaoEspecial> getUsuariosByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
+        return new JPAQueryFactory(entityManager)
+                .select(permissaoEspecial)
+                .from(permissaoEspecial)
+                .innerJoin(permissaoEspecial.usuario).fetchJoin()
+                .innerJoin(permissaoEspecial.funcionalidade).fetchJoin()
+                .where(permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString()))
+                .fetch();
+    }
+
+    @Override
+    public List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
                 .from(usuario)

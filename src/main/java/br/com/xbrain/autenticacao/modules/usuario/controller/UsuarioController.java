@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,11 @@ public class UsuarioController {
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
     public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
         return usuarioService.getUsuarioSuperior(idUsuario);
+    }
+
+    @RequestMapping(value = "/permissao/{codigoFuncionalidade}", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuariosByPermissao(@PathVariable CodigoFuncionalidade codigoFuncionalidade) {
+        return usuarioService.getUsuarioByPermissao(codigoFuncionalidade);
     }
 
 }

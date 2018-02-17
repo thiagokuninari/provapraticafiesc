@@ -30,7 +30,7 @@ public class RegionalPredicate extends PredicateBase {
     }
 
     public RegionalPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (usuarioAutenticado.hasPermissao(CodigoFuncionalidade.GERENCIAR_USUARIOS_EXECUTIVO)) {
+        if (usuarioAutenticado.hasPermissao(CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
             daRegionalGerenteCordenador(usuarioAutenticado.getId());
         }
         return this;

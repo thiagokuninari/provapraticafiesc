@@ -197,6 +197,15 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$", hasSize(3)));
     }
 
+    @Test
+    public void deveRetornarUsuariosPorPermissaoEspecial() throws Exception {
+        mvc.perform(get("/api/usuarios/permissao/POL_AGENTE_AUTORIZADO_APROVACAO_MSO_NOVO_CADASTRO")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
         UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
