@@ -505,6 +505,11 @@ public class UsuarioService {
         enviarEmailComSenhaNova(usuario, usuarioDadosAcessoRequest.getSenhaNova());
     }
 
+    public List<ConfiguracaoResponse> getConfiguracoesByUsuario(Integer idUsuario) {
+        Usuario usuario = findComplete(idUsuario);
+        return usuario.getConfiguracoes().stream().map(ConfiguracaoResponse::convertFrom).collect(Collectors.toList());
+    }
+
     private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
         if (!new BCryptPasswordEncoder().matches(senhaAtualRequest, senhaAtual)) {
             throw new ValidacaoException("A senha atual está incorreta.");

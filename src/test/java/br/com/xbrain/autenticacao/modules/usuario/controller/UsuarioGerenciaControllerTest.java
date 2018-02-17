@@ -238,6 +238,15 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void deveRetornarAsConfiguracoesDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia/100/configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
     public void deveAlterarOEmailDoUsuario() throws Exception {
         mvc.perform(put("/api/usuarios/gerencia/acesso/email")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

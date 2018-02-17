@@ -107,6 +107,10 @@ public class Usuario {
     private Set<UsuarioCidade> cidades;
 
     @NotAudited
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Configuracao> configuracoes;
+
+    @NotAudited
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "USUARIO_EMPRESA", joinColumns = {
@@ -179,6 +183,7 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
+        configuracoes.size();
     }
 
     public List<Integer> getEmpresasId() {

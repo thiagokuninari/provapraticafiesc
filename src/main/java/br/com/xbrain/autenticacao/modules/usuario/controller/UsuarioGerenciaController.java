@@ -97,4 +97,9 @@ public class UsuarioGerenciaController {
     public void alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
     }
+
+    @RequestMapping(value = "/{idUsuario}/configuracao", method = RequestMethod.GET)
+    public List<ConfiguracaoResponse> getConfiguracoesByUsuario(@PathVariable("idUsuario") Integer idUsuario) {
+        return service.getConfiguracoesByUsuario(idUsuario);
+    }
 }
