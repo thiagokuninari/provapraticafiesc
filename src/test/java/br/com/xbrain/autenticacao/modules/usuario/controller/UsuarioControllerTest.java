@@ -194,7 +194,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)));
+                .andExpect(jsonPath("$", hasSize(3)));
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
