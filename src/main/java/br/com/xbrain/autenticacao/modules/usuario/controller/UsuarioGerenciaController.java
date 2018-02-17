@@ -83,6 +83,11 @@ public class UsuarioGerenciaController {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
 
+    @RequestMapping(value = "/{idUsuario}/cidades", method = RequestMethod.GET)
+    public List<CidadeResponse> getCidadesByUsuario(@PathVariable Integer idUsuario) {
+        return service.getCidadeByUsuario(idUsuario);
+    }
+
     @RequestMapping(value = "/acesso/email", method = RequestMethod.PUT)
     public void alterarDadosAcessoEmail(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         service.alterarDadosAcessoEmail(usuarioDadosAcessoRequest);

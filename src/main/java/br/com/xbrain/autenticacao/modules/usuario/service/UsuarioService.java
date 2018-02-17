@@ -113,7 +113,9 @@ public class UsuarioService {
     }
 
     private Usuario findComplete(Integer id) {
-        return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuario.forceLoad();
+        return usuario;
     }
 
     public Usuario findById(int id) {
@@ -538,6 +540,13 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
         return repository.getUsuariosByNivel(codigoNivel).stream()
                 .map(UsuarioResponse::convertFrom).collect(Collectors.toList());
+    }
+
+    public List<CidadeResponse> getCidadeByUsuario(Integer usuarioId) {
+        Usuario usuario = findComplete(usuarioId);
+        return usuario.getCidades().stream()
+                .map(c -> CidadeResponse.parse(c.getCidade()))
+                .collect(Collectors.toList());
     }
 
 }

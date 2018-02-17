@@ -102,12 +102,13 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
-    public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
+    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
         return usuarioService.getUsuarioSuperior(idUsuario);
     }
 
     @RequestMapping(value = "/permissao/{codigoFuncionalidade}", method = RequestMethod.GET)
-    public List<UsuarioResponse> getUsuariosByPermissao(@PathVariable CodigoFuncionalidade codigoFuncionalidade) {
+    public List<UsuarioResponse> getUsuariosByPermissao(
+            @PathVariable("codigoFuncionalidade") CodigoFuncionalidade codigoFuncionalidade) {
         return usuarioService.getUsuarioByPermissao(codigoFuncionalidade);
     }
 
