@@ -437,7 +437,7 @@ public class UsuarioService {
 
     public UsuarioResponse getUsuarioSuperior(Integer idUsuario) {
         UsuarioHierarquia usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+                .orElse(new UsuarioHierarquia());
         return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
     }
 
