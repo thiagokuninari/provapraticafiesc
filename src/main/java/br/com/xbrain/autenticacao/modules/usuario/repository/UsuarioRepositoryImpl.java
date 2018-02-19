@@ -159,6 +159,18 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
     }
 
     @Override
+    public List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                        .select(usuarioHierarquia)
+                        .from(usuarioHierarquia)
+                        .join(usuarioHierarquia.usuario).fetchJoin()
+                        .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
+                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                        .distinct()
+                        .fetch();
+    }
+
+    @Override
     public List<PermissaoEspecial> getUsuariosByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return new JPAQueryFactory(entityManager)
                 .select(permissaoEspecial)

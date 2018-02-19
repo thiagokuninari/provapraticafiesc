@@ -441,6 +441,14 @@ public class UsuarioService {
         return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
     }
 
+    public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
+        List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
+        return usuariosHierarquia
+                .stream()
+                .map(uh -> UsuarioResponse.convertFrom(uh.getUsuarioSuperior()))
+                .collect(Collectors.toList());
+    }
+
     public List<UsuarioResponse> getUsuarioByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(codigoFuncionalidade);
         return permissoes.stream()
@@ -547,10 +555,10 @@ public class UsuarioService {
                 .map(UsuarioResponse::convertFrom).collect(Collectors.toList());
     }
 
-    public List<CidadeResponse> getCidadeByUsuario(Integer usuarioId) {
+    public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
         Usuario usuario = findComplete(usuarioId);
         return usuario.getCidades().stream()
-                .map(c -> CidadeResponse.parse(c.getCidade()))
+                .map(c -> UsuarioCidadeDto.parse(c.getCidade()))
                 .collect(Collectors.toList());
     }
 

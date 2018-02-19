@@ -101,11 +101,6 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
-    @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
-    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
-        return usuarioService.getUsuarioSuperior(idUsuario);
-    }
-
     @RequestMapping(value = "/permissao/{codigoFuncionalidade}", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
             @PathVariable("codigoFuncionalidade") CodigoFuncionalidade codigoFuncionalidade) {

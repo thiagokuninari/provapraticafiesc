@@ -84,7 +84,7 @@ public class UsuarioGerenciaController {
     }
 
     @RequestMapping(value = "/{idUsuario}/cidades", method = RequestMethod.GET)
-    public List<CidadeResponse> getCidadesByUsuario(@PathVariable Integer idUsuario) {
+    public List<UsuarioCidadeDto> getCidadesByUsuario(@PathVariable Integer idUsuario) {
         return service.getCidadeByUsuario(idUsuario);
     }
 
@@ -101,5 +101,15 @@ public class UsuarioGerenciaController {
     @RequestMapping(value = "/{idUsuario}/configuracao", method = RequestMethod.GET)
     public List<ConfiguracaoResponse> getConfiguracoesByUsuario(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getConfiguracoesByUsuario(idUsuario);
+    }
+
+    @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
+    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
+        return service.getUsuarioSuperior(idUsuario);
+    }
+
+    @RequestMapping(value = "{idUsuario}/supervisores", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuarioSuperiores(@PathVariable("idUsuario") Integer idUsuario) {
+        return service.getUsuarioSuperiores(idUsuario);
     }
 }

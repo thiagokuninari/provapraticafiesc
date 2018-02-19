@@ -178,17 +178,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarOSuperiorDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/101/supervisor")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(104)))
-                .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
-    }
-
-    @Test
     public void deveRetornarUsuariosPorNivelDoCargo() throws Exception {
         mvc.perform(get("/api/usuarios/nivel/XBRAIN")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))

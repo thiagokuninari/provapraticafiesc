@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
+import helpers.Usuarios;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -286,6 +287,26 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deveRetornarOSuperiorDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia/101/supervisor")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(104)))
+                .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
+    }
+
+    @Test
+    public void deveRetornarOSuperioresDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia/101/supervisores")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
