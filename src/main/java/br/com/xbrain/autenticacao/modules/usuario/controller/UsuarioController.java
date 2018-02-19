@@ -38,9 +38,9 @@ public class UsuarioController {
                 usuarioService.findById(id));
     }
 
-    @RequestMapping(value = "/nivel/{codigoNivel}", method = RequestMethod.GET)
-    public List<UsuarioResponse> getUsuarioByNivel(@PathVariable("codigoNivel") CodigoNivel codigoNivel) {
-        return usuarioService.getUsuarioByNivel(codigoNivel);
+    @RequestMapping(params = "nivel", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuarioByNivel(@RequestParam CodigoNivel nivel) {
+        return usuarioService.getUsuarioByNivel(nivel);
     }
 
     @GetMapping(value = "/{id}/cidades")
@@ -101,10 +101,10 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
-    @RequestMapping(value = "/permissao/{codigoFuncionalidade}", method = RequestMethod.GET)
+    @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
-            @PathVariable("codigoFuncionalidade") CodigoFuncionalidade codigoFuncionalidade) {
-        return usuarioService.getUsuarioByPermissao(codigoFuncionalidade);
+            @RequestParam CodigoFuncionalidade funcionalidade) {
+        return usuarioService.getUsuarioByPermissao(funcionalidade);
     }
 
 }

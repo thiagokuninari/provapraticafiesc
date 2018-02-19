@@ -179,7 +179,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarUsuariosPorNivelDoCargo() throws Exception {
-        mvc.perform(get("/api/usuarios/nivel/XBRAIN")
+        mvc.perform(get("/api/usuarios?nivel=XBRAIN")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -188,7 +188,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveRetornarUsuariosPorPermissaoEspecial() throws Exception {
-        mvc.perform(get("/api/usuarios/permissao/POL_AGENTE_AUTORIZADO_APROVACAO_MSO_NOVO_CADASTRO")
+        mvc.perform(get("/api/usuarios?funcionalidade=POL_AGENTE_AUTORIZADO_APROVACAO_MSO_NOVO_CADASTRO")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

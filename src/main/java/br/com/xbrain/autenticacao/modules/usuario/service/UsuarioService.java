@@ -139,7 +139,7 @@ public class UsuarioService {
     }
 
     public UsuarioResponse findByEmailAa(String email) {
-        return UsuarioResponse.convertFrom(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return UsuarioResponse.convertFrom(repository.findByEmail(email).orElse(null));
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
