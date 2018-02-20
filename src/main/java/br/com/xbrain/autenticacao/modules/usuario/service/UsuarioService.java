@@ -142,8 +142,9 @@ public class UsuarioService {
     public UsuarioResponse findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        if (usuarioOptional.isPresent())
+        if (usuarioOptional.isPresent()) {
             return UsuarioResponse.convertFrom(usuarioOptional.get());
+        }
 
         return null;
     }
