@@ -39,6 +39,7 @@ import org.thymeleaf.context.Context;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -139,7 +140,12 @@ public class UsuarioService {
     }
 
     public UsuarioResponse findByEmailAa(String email) {
-        return UsuarioResponse.convertFrom(repository.findByEmail(email).orElse(null));
+        Optional<Usuario> usuarioOptional = repository.findByEmail(email);
+
+        if (usuarioOptional.isPresent())
+            return UsuarioResponse.convertFrom(usuarioOptional.get());
+
+        return null;
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
