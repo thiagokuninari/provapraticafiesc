@@ -22,6 +22,7 @@ public class UsuarioFiltros {
                 .comRegional(regionalId)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
-                .comSubCluster(subClusterId);
+                .comSubCluster(subClusterId)
+                .ignorarAa();
     }
 }

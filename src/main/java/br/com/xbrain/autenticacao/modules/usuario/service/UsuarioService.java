@@ -120,7 +120,10 @@ public class UsuarioService {
     }
 
     public Usuario findById(int id) {
-        return findComplete(id);
+        UsuarioPredicate predicate = new UsuarioPredicate();
+        predicate.ignorarAa();
+        predicate.comId(id);
+        return repository.findOne(predicate.build());
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
@@ -178,6 +181,19 @@ public class UsuarioService {
         Usuario usuario = findComHierarquia(usuarioHierarquiaSaveDto.getUsuarioId());
         removerUsuarioSuperior(usuarioHierarquiaSaveDto, usuario);
         adicionarUsuarioSuperior(usuarioHierarquiaSaveDto, usuario);
+        return UsuarioDto.parse(repository.save(usuario));
+    }
+
+    public UsuarioDto saveUsuarioConfiguracao(UsuarioConfiguracaoSaveDto usuarioHierarquiaSaveDto) {
+        Usuario usuario = findComplete(usuarioHierarquiaSaveDto.getUsuarioId());
+        Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        if (usuario.hasConfiguracao()) {
+            usuario.configurarRamal(usuarioHierarquiaSaveDto.getRamal());
+        } else {
+            usuario.setConfiguracao(
+                    new Configuracao(
+                            usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
+        }
         return UsuarioDto.parse(repository.save(usuario));
     }
 
@@ -526,9 +542,9 @@ public class UsuarioService {
         enviarEmailComSenhaNova(usuario, usuarioDadosAcessoRequest.getSenhaNova());
     }
 
-    public List<ConfiguracaoResponse> getConfiguracoesByUsuario(Integer idUsuario) {
+    public ConfiguracaoResponse getConfiguracaoByUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
-        return usuario.getConfiguracoes().stream().map(ConfiguracaoResponse::convertFrom).collect(Collectors.toList());
+        return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
     }
 
     private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {

@@ -186,6 +186,32 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void deveSalvarAConfiguracaoDoUsuario() throws Exception {
+        UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
+        dto.setUsuarioId(ID_USUARIO_HELPDESK);
+        dto.setRamal(1234);
+        mvc.perform(post("/api/usuarios/gerencia/configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deveAlterarAConfiguracaoDoUsuario() throws Exception {
+        UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
+        dto.setUsuarioId(100);
+        dto.setRamal(6666);
+        mvc.perform(post("/api/usuarios/gerencia/configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findComplete(100).orElse(new Usuario());
+        Assert.assertEquals(usuario.getConfiguracao().getRamal(), Integer.valueOf(6666));
+    }
+
+    @Test
     public void deveEditar() throws Exception {
         mvc.perform(post("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -252,7 +278,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.ramal", is(7006)));
     }
 
     @Test

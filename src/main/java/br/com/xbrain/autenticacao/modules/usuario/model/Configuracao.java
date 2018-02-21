@@ -7,24 +7,23 @@ import lombok.ToString;
 import org.hibernate.envers.NotAudited;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@ToString(of = "id")
-@EqualsAndHashCode(of = "id")
+@ToString(of = "usuario")
+@EqualsAndHashCode(of = "usuario")
 @Entity
 @Table(name = "CONFIGURACAO")
-public class Configuracao {
+public class Configuracao implements Serializable {
 
     @Id
     @SequenceGenerator(name = "SEQ_CONFIGURACAO", sequenceName = "SEQ_CONFIGURACAO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_CONFIGURACAO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @JsonIgnore
-    @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_USUARIO_CONFIGURACAO"),
-            referencedColumnName = "ID", insertable = false, updatable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID", unique = true)
     private Usuario usuario;
 
     @JsonIgnore
@@ -34,10 +33,19 @@ public class Configuracao {
     private Usuario usuarioCadastro;
 
     @NotAudited
-    @Column(name = "DATA_CADASTRO", updatable = false, nullable = false)
+    @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime cadastro;
 
-    @Column(name = "RAMAL", nullable = false)
+    @Column(name = "RAMAL")
     private Integer ramal;
 
+    public Configuracao() {
+    }
+
+    public Configuracao(Usuario usuario, Usuario usuarioCadastro, LocalDateTime cadastro, Integer ramal) {
+        this.usuario = usuario;
+        this.usuarioCadastro = usuarioCadastro;
+        this.cadastro = cadastro;
+        this.ramal = ramal;
+    }
 }

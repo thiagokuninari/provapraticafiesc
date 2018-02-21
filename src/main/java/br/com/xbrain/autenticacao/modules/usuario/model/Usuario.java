@@ -107,8 +107,8 @@ public class Usuario {
     private Set<UsuarioCidade> cidades;
 
     @NotAudited
-    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Configuracao> configuracoes;
+    @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Configuracao configuracao;
 
     @NotAudited
     @JsonIgnore
@@ -183,7 +183,6 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
-        configuracoes.size();
     }
 
     public List<Integer> getEmpresasId() {
@@ -256,6 +255,12 @@ public class Usuario {
         }
     }
 
+    public void configurarRamal(Integer ramal) {
+        if (this.configuracao != null) {
+            this.configuracao.setRamal(ramal);
+        }
+    }
+
     public void tratarEmails() {
         this.email = this.email.trim().toUpperCase();
 
@@ -322,6 +327,10 @@ public class Usuario {
 
     public boolean hasUsuarioCadastro() {
         return usuarioCadastro != null && !usuarioCadastro.isEmpty();
+    }
+
+    public boolean hasConfiguracao() {
+        return configuracao != null;
     }
 
 }

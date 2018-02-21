@@ -73,6 +73,11 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate ignorarAa() {
+        builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<CodigoCargo> codigoCargoList) {
         if (codigoCargoList.size() > 0) {
             builder.and(usuario.cargo.codigo.in(codigoCargoList));
@@ -97,6 +102,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
         if (usuariosIds.size() > 0) {
             builder.and(usuario.id.in(usuariosIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comId(Integer usuarioId) {
+        if (usuarioId != null) {
+            builder.and(usuario.id.eq(usuarioId));
         }
         return this;
     }

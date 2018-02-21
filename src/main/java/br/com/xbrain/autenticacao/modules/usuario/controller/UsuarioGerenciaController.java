@@ -58,6 +58,11 @@ public class UsuarioGerenciaController {
         return service.saveUsuarioHierarquia(dto);
     }
 
+    @RequestMapping(value = "/configuracao", method = RequestMethod.POST)
+    public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
+        return service.saveUsuarioConfiguracao(dto);
+    }
+
     @RequestMapping(method = RequestMethod.PUT)
     public void alterar(@Validated @RequestBody UsuarioDto usuario) {
         service.save(usuario);
@@ -99,8 +104,8 @@ public class UsuarioGerenciaController {
     }
 
     @RequestMapping(value = "/{idUsuario}/configuracao", method = RequestMethod.GET)
-    public List<ConfiguracaoResponse> getConfiguracoesByUsuario(@PathVariable("idUsuario") Integer idUsuario) {
-        return service.getConfiguracoesByUsuario(idUsuario);
+    public ConfiguracaoResponse getConfiguracaoByUsuario(@PathVariable("idUsuario") Integer idUsuario) {
+        return service.getConfiguracaoByUsuario(idUsuario);
     }
 
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
