@@ -79,6 +79,14 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void somenteUsuariosComPermissaoDeGerenciaDeUsuariosPodeTerAcesso() throws Exception {
+        mvc.perform(get("/api/usuarios")
+                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     public void deveRetornarPorId() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia/" + ID_USUARIO_HELPDESK)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -105,7 +113,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(5)))
+                .andExpect(jsonPath("$.content", hasSize(6)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
@@ -360,4 +368,5 @@ public class UsuarioGerenciaControllerTest {
         usuario.setTelefone("43 995565661");
         return usuario;
     }
+
 }

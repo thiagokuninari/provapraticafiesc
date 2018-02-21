@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,30 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("LESTE")));
+    }
+
+    @Test
+    public void deveRetornarSomentePorSubClusterGerenteComercial() throws Exception {
+        mvc.perform(get("/api/cidades?idSubCluster=189")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
+                .andExpect(jsonPath("$[0].subCluster.nome", is("LONDRINA")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("SUL")));
+    }
+
+    @Test
+    public void deveRetornarSomentePorRegionalIdGerenteComercial() throws Exception {
+        mvc.perform(get("/api/cidades/regional/3")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nomeCidade", is("LONDRINA")));
     }
 
     @Test

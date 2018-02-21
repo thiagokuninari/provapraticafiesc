@@ -47,7 +47,9 @@ public class AutenticacaoService {
 
         if (details.get("usuarioAutenticado") == null) {
             Usuario usuario = usuarioService.getRepository().findComplete(getUsuarioId()).get();
+            usuario.forceLoad();
             usuarioAutenticado = new UsuarioAutenticado(usuario, authentication.getAuthorities());
+
             details.put("usuarioAutenticado", usuarioAutenticado);
         }
         return usuarioAutenticado;

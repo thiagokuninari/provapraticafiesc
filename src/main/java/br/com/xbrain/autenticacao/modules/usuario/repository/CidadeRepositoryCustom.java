@@ -10,14 +10,14 @@ public interface CidadeRepositoryCustom {
 
     Iterable<Cidade> findBySubCluster(Integer subClusterId);
 
-    List<Cidade> findAllByRegionalId(Integer regionalId);
-
-    List<Cidade> findAllBySubClusterId(Integer subClusterId);
-
-    List<Cidade> findAllByGrupoId(Integer grupoId);
-
-    List<Cidade> findAllByClusterId(Integer clusterId);
-
     Optional<Cidade> findByPredicate(Predicate predicate);
+
+    List<Cidade> findAllByRegionalId(Integer regionalId, Predicate predicate);
+
+    List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate);
+
+    List<Cidade> findAllByGrupoId(Integer grupoId, Predicate predicate);
+
+    List<Cidade> findAllByClusterId(Integer clusterId, Predicate predicate);
 
 }

@@ -142,9 +142,9 @@ public class UsuarioService {
     public UsuarioResponse findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        if (usuarioOptional.isPresent())
+        if (usuarioOptional.isPresent()) {
             return UsuarioResponse.convertFrom(usuarioOptional.get());
-
+        }
         return null;
     }
 
@@ -155,6 +155,7 @@ public class UsuarioService {
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtros.toPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         return repository.findAll(predicate.build(), pageRequest);
     }
 
@@ -192,6 +193,10 @@ public class UsuarioService {
     private void removerUsuarioSuperior(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto, Usuario usuario) {
         usuario.getUsuariosHierarquia()
                 .removeIf(h -> !usuarioHierarquiaSaveDto.getHierarquiasId().contains(h.getUsuarioSuperiorId()));
+    }
+
+    public List<Integer> getIdDosUsuariosPorCidade(Integer usuarioId) {
+        return repository.getUsuariosPorCidade(usuarioId);
     }
 
     public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
@@ -234,7 +239,6 @@ public class UsuarioService {
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception exception) {
             enviarParaFilaDeErro(usuarioMqRequest);
-            throw exception;
         }
     }
 

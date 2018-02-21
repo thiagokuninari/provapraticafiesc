@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,10 +27,10 @@ public class CidadeController {
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
         if (idUf != null) {
-            return repository.findCidadeByUfId(idUf, new Sort("nome"));
+            return service.getAllCidadeByUf(idUf);
         }
         if (idSubCluster != null) {
-            return repository.findBySubCluster(idSubCluster);
+            return service.getAllBySubCluster(idSubCluster);
         }
         return Collections.emptyList();
     }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,16 @@ public class UnidadeNegocioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].nome", is("Pessoal")));
+    }
+
+    @Test
+    public void deveRetornarDoUsuarioLogado() throws Exception {
+        mvc.perform(get("/api/unidades-negocio")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].nome", is("Pessoal")));
     }
 

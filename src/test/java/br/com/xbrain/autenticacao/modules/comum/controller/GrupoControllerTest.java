@@ -55,8 +55,8 @@ public class GrupoControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(16)))
-                .andExpect(jsonPath("$[0].nome", is("BAGÉ")));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("NORTE DO PARANÁ")));
     }
 
     @Test

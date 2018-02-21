@@ -9,7 +9,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.Collection;
 import java.util.List;
 
-public interface UnidadeNegocioRepository extends PagingAndSortingRepository<UnidadeNegocio, Integer> {
+public interface UnidadeNegocioRepository extends PagingAndSortingRepository<UnidadeNegocio, Integer>,
+        UnidadeNegocioRepositoryCustom {
 
     @Cacheable("unidadeNegocioFindAll")
     Iterable<UnidadeNegocio> findAll(Sort var1);

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
@@ -26,19 +27,31 @@ public class CidadeService {
     private CidadeRepository repository;
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
-        return UsuarioCidadeDto.parse(repository.findAllByRegionalId(regionalId));
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        CidadePredicate predicate = new CidadePredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return UsuarioCidadeDto.parse(repository.findAllByRegionalId(regionalId, predicate.build()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
-        return UsuarioCidadeDto.parse(repository.findAllBySubClusterId(subClusterId));
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        CidadePredicate predicate = new CidadePredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return UsuarioCidadeDto.parse(repository.findAllBySubClusterId(subClusterId, predicate.build()));
     }
 
     public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
-        return UsuarioCidadeDto.parse(repository.findAllByGrupoId(grupoId));
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        CidadePredicate predicate = new CidadePredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return UsuarioCidadeDto.parse(repository.findAllByGrupoId(grupoId, predicate.build()));
     }
 
     public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
-        return UsuarioCidadeDto.parse(repository.findAllByClusterId(clusterId));
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        CidadePredicate predicate = new CidadePredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return UsuarioCidadeDto.parse(repository.findAllByClusterId(clusterId, predicate.build()));
     }
 
     public List<Cidade> getAllCidadeByUf(Integer idUf) {

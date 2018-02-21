@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.EmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
@@ -18,12 +19,16 @@ public class EmpresaController {
     @Autowired
     private EmpresaRepository repository;
 
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Empresa> getAll(boolean ignorarXbrain, Integer unidadeNegocioId) {
         return repository.findAll(
                 new EmpresaPredicate()
                         .daUnidadeDeNegocio(unidadeNegocioId)
                         .ignorarXbrain(ignorarXbrain)
+                        .filtrarPermitidos(autenticacaoService.getUsuarioAutenticado())
                         .build(),
                 new Sort(ASC, "nome"));
     }

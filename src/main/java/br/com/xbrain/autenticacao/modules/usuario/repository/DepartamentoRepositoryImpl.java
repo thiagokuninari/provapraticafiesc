@@ -8,11 +8,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 import static br.com.xbrain.autenticacao.infra.JoinDescriptor.innerJoin;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static java.util.Arrays.asList;
 
-public class DepartamentoRepositoryImpl  extends CustomRepository<Departamento>
+public class DepartamentoRepositoryImpl extends CustomRepository<Departamento>
         implements DepartamentoRepositoryCustom {
 
     public Page<Departamento> findAll(Predicate predicate, Pageable pageable) {
@@ -22,6 +24,17 @@ public class DepartamentoRepositoryImpl  extends CustomRepository<Departamento>
                 ),
                 predicate,
                 pageable);
+    }
+
+    @Override
+    public List<Departamento> findAll(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(departamento)
+                .from(departamento)
+                .where(departamento.situacao.eq(ESituacao.A)
+                        .and(predicate))
+                .orderBy(departamento.nome.asc())
+                .fetch();
     }
 
     @Override

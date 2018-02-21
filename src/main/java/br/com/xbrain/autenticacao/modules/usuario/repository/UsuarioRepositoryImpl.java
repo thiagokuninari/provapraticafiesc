@@ -1,14 +1,22 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.infra.JoinDescriptor;
+import br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -16,12 +24,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static java.util.Arrays.asList;
 
-public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
+public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
@@ -31,8 +39,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .innerJoin(usuario.cargo, cargo).fetchJoin()
-                        .innerJoin(cargo.nivel).fetchJoin()
+                        .innerJoin(usuario.cargo, QCargo.cargo).fetchJoin()
+                        .innerJoin(QCargo.cargo.nivel).fetchJoin()
                         .innerJoin(usuario.departamento).fetchJoin()
                         .innerJoin(usuario.empresas).fetchJoin()
                         .where(
@@ -46,8 +54,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .join(usuario.cargo, cargo).fetchJoin()
-                        .join(cargo.nivel).fetchJoin()
+                        .join(usuario.cargo, QCargo.cargo).fetchJoin()
+                        .join(QCargo.cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .join(usuario.empresas).fetchJoin()
                         .where(usuario.id.eq(id))
@@ -61,8 +69,8 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .join(usuario.cargo, cargo).fetchJoin()
-                        .join(cargo.nivel).fetchJoin()
+                        .join(usuario.cargo, QCargo.cargo).fetchJoin()
+                        .join(QCargo.cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.usuariosHierarquia).fetchJoin()
                         .where(usuario.id.eq(id))
@@ -173,11 +181,11 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
     @Override
     public List<PermissaoEspecial> getUsuariosByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return new JPAQueryFactory(entityManager)
-                .select(permissaoEspecial)
-                .from(permissaoEspecial)
-                .innerJoin(permissaoEspecial.usuario).fetchJoin()
-                .innerJoin(permissaoEspecial.funcionalidade).fetchJoin()
-                .where(permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString()))
+                .select(QPermissaoEspecial.permissaoEspecial)
+                .from(QPermissaoEspecial.permissaoEspecial)
+                .innerJoin(QPermissaoEspecial.permissaoEspecial.usuario).fetchJoin()
+                .innerJoin(QPermissaoEspecial.permissaoEspecial.funcionalidade).fetchJoin()
+                .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString()))
                 .fetch();
     }
 
@@ -186,9 +194,36 @@ public class UsuarioRepositoryImpl implements UsuarioRepositoryCustom {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
                 .from(usuario)
-                .innerJoin(usuario.cargo, cargo)
-                .where(cargo.nivel.codigo.eq(codigoNivel))
+                .innerJoin(usuario.cargo, QCargo.cargo)
+                .where(QCargo.cargo.nivel.codigo.eq(codigoNivel))
                 .orderBy(usuario.nome.asc())
                 .fetch();
+    }
+
+    @Override
+    public List<Integer> getUsuariosPorCidade(Integer idUsuario) {
+        QUsuarioCidade usuarioCidadeGeral = new QUsuarioCidade("usuarioCidadeGeral");
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioCidadeGeral.usuario.id)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.cidade.cidadeUsuarios, usuarioCidadeGeral)
+                .where(usuarioCidade.usuario.id.eq(idUsuario)
+                        .and(usuarioCidade.dataBaixa.isNull())
+                        .and(usuarioCidadeGeral.dataBaixa.isNull()))
+                .distinct()
+                .fetch();
+    }
+
+    @Override
+    public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
+        return super.findAll(
+                asList(
+                        JoinDescriptor.innerJoin(usuario.unidadesNegocios, QUnidadeNegocio.unidadeNegocio),
+                        JoinDescriptor.innerJoin(usuario.cargo, QCargo.cargo),
+                        JoinDescriptor.innerJoin(QCargo.cargo.nivel),
+                        JoinDescriptor.innerJoin(usuario.departamento)
+                ),
+                predicate,
+                pageable);
     }
 }

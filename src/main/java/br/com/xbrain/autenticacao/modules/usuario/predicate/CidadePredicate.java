@@ -1,7 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
 public class CidadePredicate {
 
@@ -28,5 +34,22 @@ public class CidadePredicate {
 
     public BooleanBuilder build() {
         return this.builder;
+    }
+
+    private CidadePredicate daEmpresaUsuarioPorUsuario(Integer usuarioId) {
+        builder.and(cidade.id.in(
+                JPAExpressions.select(cidade.id)
+                        .from(usuario)
+                        .leftJoin(usuario.cidades, usuarioCidade)
+                        .leftJoin(usuarioCidade.cidade, cidade)
+                        .where(usuarioCidade.dataBaixa.isNull().and(usuario.id.eq(usuarioId)))));
+        return this;
+    }
+
+    public CidadePredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
+        if (usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
+            daEmpresaUsuarioPorUsuario(usuarioAutenticado.getId());
+        }
+        return this;
     }
 }

@@ -8,6 +8,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 import static br.com.xbrain.autenticacao.infra.JoinDescriptor.innerJoin;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static java.util.Arrays.asList;
@@ -21,6 +23,17 @@ public class CargoRepositoryImpl extends CustomRepository<Cargo> implements Carg
                 ),
                 predicate,
                 pageable);
+    }
+
+    @Override
+    public List<Cargo> findAll(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(cargo)
+                .from(cargo)
+                .where(cargo.situacao.eq(ESituacao.A)
+                        .and(predicate))
+                .orderBy(cargo.nome.asc())
+                .fetch();
     }
 
     @Override

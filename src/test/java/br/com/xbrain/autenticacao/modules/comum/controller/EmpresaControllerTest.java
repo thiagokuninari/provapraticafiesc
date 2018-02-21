@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -60,10 +61,10 @@ public class EmpresaControllerTest {
 
     @Test
     public void deveFiltrarPorUnidadeDeNegocio() throws Exception  {
-        mvc.perform(get("/api/empresas?unidadeNegocioId=2")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+        mvc.perform(get("/api/empresas?unidadeNegocioId=1")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 }

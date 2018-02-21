@@ -9,11 +9,19 @@ public class UsuarioFiltros {
 
     private String nome;
     private String cpf;
+    private Integer regionalId;
+    private Integer grupoId;
+    private Integer clusterId;
+    private Integer subClusterId;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
         return new UsuarioPredicate()
                 .comNome(nome)
-                .comCpf(cpf != null ? cpf.replaceAll("[.-]", "") : null);
+                .comCpf(cpf != null ? cpf.replaceAll("[.-]", "") : null)
+                .comRegional(regionalId)
+                .comGrupo(grupoId)
+                .comCluster(clusterId)
+                .comSubCluster(subClusterId);
     }
 }

@@ -59,26 +59,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarOUsuarioAutenticado() throws Exception {
-        mvc.perform(get("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(101)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
-    }
-
-    @Test
-    public void deveRetornarOUsuarioAutenticadoPorId() throws Exception {
-        mvc.perform(get("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(101)));
-    }
-
-    @Test
     public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/100/cidades")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))

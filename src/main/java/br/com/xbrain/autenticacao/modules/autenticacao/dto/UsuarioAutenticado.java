@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,11 +10,16 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
+import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
 @Data
 @JsonIgnoreProperties
 public class UsuarioAutenticado {
 
+    private Usuario usuario;
     private int id;
     private String nome;
     private String email;
@@ -21,6 +28,7 @@ public class UsuarioAutenticado {
     private String nivel;
     private String cpf;
     private ESituacao situacao;
+    private List<Empresa> empresas;
     private Collection<? extends GrantedAuthority> permissoes;
 
     public UsuarioAutenticado(Usuario usuario) {
@@ -35,6 +43,7 @@ public class UsuarioAutenticado {
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
+        this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
@@ -53,4 +62,24 @@ public class UsuarioAutenticado {
                         .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
                         .count() > 0;
     }
+
+    public boolean isXbrain() {
+        return usuario.getCargo().getNivel().getCodigo().equals(XBRAIN);
+    }
+
+    public boolean isAgenteAutorizado() {
+        return usuario.getCargo().getNivel().getCodigo().equals(AGENTE_AUTORIZADO);
+    }
+
+    public boolean isVendedor() {
+        return usuario.getCargo() != null && usuario.getCargo().getCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR;
+    }
+
+    public List<Empresa> getEmpresasPermitidas() {
+        if (isAgenteAutorizado()) {
+            return empresas;
+        }
+        return usuario.getEmpresas();
+    }
+
 }

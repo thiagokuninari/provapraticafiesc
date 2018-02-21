@@ -1,16 +1,24 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 
 import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 
 public class UsuarioPredicate {
 
@@ -89,6 +97,105 @@ public class UsuarioPredicate {
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
         if (usuariosIds.size() > 0) {
             builder.and(usuario.id.in(usuariosIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comRegional(Integer regionalId) {
+        if (regionalId != null) {
+            builder.and(usuario.cidades.any().cidade.id.in(
+                    JPAExpressions.select(cidade.id)
+                            .from(cidade)
+                            .join(cidade.subCluster, QSubCluster.subCluster)
+                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                            .join(QCluster.cluster.grupo, QGrupo.grupo)
+                            .join(QGrupo.grupo.regional, QRegional.regional)
+                            .where(QRegional.regional.id.eq(regionalId))
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comGrupo(Integer grupoId) {
+        if (grupoId != null) {
+            builder.and(usuario.cidades.any().cidade.id.in(
+                    JPAExpressions.select(cidade.id)
+                            .from(cidade)
+                            .join(cidade.subCluster, QSubCluster.subCluster)
+                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                            .join(QCluster.cluster.grupo, QGrupo.grupo)
+                            .where(QGrupo.grupo.id.eq(grupoId))
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCluster(Integer clusterId) {
+        if (clusterId != null) {
+            builder.and(usuario.cidades.any().cidade.id.in(
+                    JPAExpressions.select(cidade.id)
+                            .from(cidade)
+                            .join(cidade.subCluster, QSubCluster.subCluster)
+                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                            .where(QCluster.cluster.id.eq(clusterId))
+            ));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSubCluster(Integer subClusterId) {
+        if (subClusterId != null) {
+            builder.and(usuario.cidades.any().cidade.id.in(
+                    JPAExpressions.select(cidade.id)
+                            .from(cidade)
+                            .join(cidade.subCluster, QSubCluster.subCluster)
+                            .where(QSubCluster.subCluster.id.eq(subClusterId))
+            ));
+        }
+        return this;
+    }
+
+    private UsuarioPredicate daEmpresaEUnidadeDeNegocio(List<Empresa> empresaList,
+                                                        List<UnidadeNegocio> unidadeNegocios) {
+        builder.and(usuario.empresas.any().in(empresaList)
+                .and(usuario.unidadesNegocios.any().in(unidadeNegocios)));
+        return this;
+    }
+
+    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
+        builder.and(usuario.id.in(
+                JPAExpressions
+                        .select(usuario.id)
+                        .from(usuario)
+                        .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
+                        .where(usuarioHierarquia.usuario.id.in(ids)
+                                .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+        return this;
+    }
+
+    private UsuarioPredicate daCidadeOuUsuarioCadastro(List<Integer> listaUsuario, Integer usuarioAutenticadoId) {
+        builder.and(usuario.id.in(listaUsuario)
+                .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)));
+        return this;
+    }
+
+    public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            if (usuario.hasPermissao(AUT_VISUALIZAR_EMPRESA_UNIDADE)) {
+                daEmpresaEUnidadeDeNegocio(
+                        usuario.getUsuario().getEmpresas(),
+                        usuario.getUsuario().getUnidadesNegocios()
+                );
+
+            } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+                daCarteiraHierarquiaOuUsuarioCadastro(
+                        usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
+                        usuario.getUsuario().getId());
+
+            } else if (usuario.hasPermissao(AUT_VISUALIZAR_CIDADE)) {
+                daCidadeOuUsuarioCadastro(usuarioService.getIdDosUsuariosPorCidade(usuario.getUsuario().getId()),
+                        usuario.getUsuario().getId());
+            }
         }
         return this;
     }
