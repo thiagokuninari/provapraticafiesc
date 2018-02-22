@@ -5,8 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -66,9 +64,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comNivel(List<CodigoNivel> codigoNivelList) {
-        if (codigoNivelList.size() > 0) {
-            builder.and(usuario.cargo.nivel.codigo.in(codigoNivelList));
+    public UsuarioPredicate comNivel(List<Integer> nivelIds) {
+        if (nivelIds.size() > 0) {
+            builder.and(usuario.cargo.nivel.id.in(nivelIds));
         }
         return this;
     }
@@ -78,16 +76,16 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCargo(List<CodigoCargo> codigoCargoList) {
-        if (codigoCargoList.size() > 0) {
-            builder.and(usuario.cargo.codigo.in(codigoCargoList));
+    public UsuarioPredicate comCargo(List<Integer> cargoIds) {
+        if (cargoIds.size() > 0) {
+            builder.and(usuario.cargo.id.in(cargoIds));
         }
         return this;
     }
 
-    public UsuarioPredicate comDepartamento(List<CodigoDepartamento> codigoDepartamentoList) {
-        if (codigoDepartamentoList.size() > 0) {
-            builder.and(usuario.departamento.codigo.in(codigoDepartamentoList));
+    public UsuarioPredicate comDepartamento(List<Integer> departamentoIds) {
+        if (departamentoIds.size() > 0) {
+            builder.and(usuario.departamento.id.in(departamentoIds));
         }
         return this;
     }

@@ -391,9 +391,9 @@ public class UsuarioService {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
                 .comEmpresas(usuarioFiltrosDto.getEmpresasIds())
                 .comUnidadesNegocio(usuarioFiltrosDto.getUnidadesNegocioIds())
-                .comNivel(usuarioFiltrosDto.getCodigoNivelList())
-                .comCargo(usuarioFiltrosDto.getCodigoCargoList())
-                .comDepartamento(usuarioFiltrosDto.getCodigoDepartamentoList())
+                .comNivel(usuarioFiltrosDto.getNivelIds())
+                .comCargo(usuarioFiltrosDto.getCargoIds())
+                .comDepartamento(usuarioFiltrosDto.getDepartamentoIds())
                 .comCidade(usuarioFiltrosDto.getCidadesIds())
                 .comIds(usuarioFiltrosDto.getUsuariosIds())
                 .isAtivo(usuarioFiltrosDto.getAtivo());
