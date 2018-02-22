@@ -368,7 +368,7 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
         usuario.adicionar(UsuarioHistorico.builder()
-                .dataCadastro(dto.getDataCadastro())
+                .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
                 .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
@@ -378,6 +378,7 @@ public class UsuarioService {
         repository.save(usuario);
     }
 
+    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {
             return new MotivoInativacao(dto.getIdMotivoInativacao());

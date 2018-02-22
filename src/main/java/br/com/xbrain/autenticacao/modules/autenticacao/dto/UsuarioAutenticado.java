@@ -26,6 +26,7 @@ public class UsuarioAutenticado {
     private String cargo;
     private String departamento;
     private String nivel;
+    private Integer nivelId;
     private String cpf;
     private ESituacao situacao;
     private List<Empresa> empresas;
@@ -35,9 +36,10 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
-        this.cargo = usuario.getCargo().getCodigo().toString();
-        this.departamento = usuario.getDepartamento().getCodigo().toString();
-        this.nivel = usuario.getCargo().getNivel().getCodigo().toString();
+        this.cargo = usuario.getCargoCodigo().toString();
+        this.departamento = usuario.getDepartamentoCodigo().toString();
+        this.nivel = usuario.getNivelCodigo().toString();
+        this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
     }
@@ -47,9 +49,10 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
-        this.cargo = usuario.getCargo().getCodigo().toString();
-        this.departamento = usuario.getDepartamento().getCodigo().toString();
-        this.nivel = usuario.getCargo().getNivel().getCodigo().toString();
+        this.cargo = usuario.getCargo().toString();
+        this.departamento = usuario.getDepartamentoCodigo().toString();
+        this.nivel = usuario.getNivelCodigo().toString();
+        this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
@@ -64,15 +67,15 @@ public class UsuarioAutenticado {
     }
 
     public boolean isXbrain() {
-        return usuario.getCargo().getNivel().getCodigo().equals(XBRAIN);
+        return usuario.getNivelCodigo() == XBRAIN;
     }
 
     public boolean isAgenteAutorizado() {
-        return usuario.getCargo().getNivel().getCodigo().equals(AGENTE_AUTORIZADO);
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO;
     }
 
     public boolean isVendedor() {
-        return usuario.getCargo() != null && usuario.getCargo().getCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR;
+        return usuario.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR;
     }
 
     public List<Empresa> getEmpresasPermitidas() {

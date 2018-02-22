@@ -17,7 +17,6 @@ public class UsuarioInativacaoDto {
 
     private CodigoMotivoInativacao codigoMotivoInativacao;
 
-    @NotNull
     private LocalDateTime dataCadastro;
 
     @Size(max = 250)
