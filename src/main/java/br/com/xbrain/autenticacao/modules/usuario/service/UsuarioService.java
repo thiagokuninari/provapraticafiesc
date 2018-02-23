@@ -126,6 +126,12 @@ public class UsuarioService {
         return repository.findOne(predicate.build());
     }
 
+    public Usuario findByIdComAa(int id) {
+        UsuarioPredicate predicate = new UsuarioPredicate();
+        predicate.comId(id);
+        return repository.findOne(predicate.build());
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         Usuario usuario = repository.findComCidade(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
         return usuario.getCidades()
