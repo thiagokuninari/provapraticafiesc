@@ -7,5 +7,6 @@ public enum CodigoNivel {
     AGENTE_AUTORIZADO,
     MSO,
     OPERACAO,
-    XBRAIN
+    XBRAIN,
+    VAREJO
 }
