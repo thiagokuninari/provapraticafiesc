@@ -6,7 +6,7 @@ spring:
       ddl-auto: none
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
