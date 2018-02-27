@@ -128,7 +128,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         + "     , U.EMAIL_01 "
                         + "     , N.CODIGO AS NIVEL "
                         + "     , D.CODIGO AS DEPARTAMENTO "
-                        + "     , C.CODIGO AS CARAGO "
+                        + "     , C.CODIGO AS CARGO "
                         + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS EMPRESAS "
                         + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS UNIDADES_NEGOCIOS "
                         + "  FROM USUARIO_HIERARQUIA UH "
@@ -169,13 +169,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
-                        .select(usuarioHierarquia)
-                        .from(usuarioHierarquia)
-                        .join(usuarioHierarquia.usuario).fetchJoin()
-                        .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
-                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
-                        .distinct()
-                        .fetch();
+                .select(usuarioHierarquia)
+                .from(usuarioHierarquia)
+                .join(usuarioHierarquia.usuario).fetchJoin()
+                .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .distinct()
+                .fetch();
     }
 
     @Override

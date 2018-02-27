@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ import java.util.List;
 @Table(name = "CIDADE")
 @Data
 @EqualsAndHashCode(of = {"id"})
+@ToString(of = "id")
 public class Cidade {
 
     @Id

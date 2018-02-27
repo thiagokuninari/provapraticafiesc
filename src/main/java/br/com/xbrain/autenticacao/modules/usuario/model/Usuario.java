@@ -45,7 +45,7 @@ public class Usuario {
     private Integer id;
 
     @NotNull
-    @Column(name = "NOME", length = 80, nullable = false)
+    @Column(name = "NOME", length = 100, nullable = false)
     private String nome;
 
     @NotNull

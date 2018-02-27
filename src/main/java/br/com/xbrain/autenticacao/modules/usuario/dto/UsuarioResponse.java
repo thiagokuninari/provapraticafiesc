@@ -27,6 +27,7 @@ public class UsuarioResponse {
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
+    private List<FuncionalidadeResponse> permissoes;
 
     @Builder
     public UsuarioResponse(Integer id, String nome, String cpf, String email, CodigoNivel codigoNivel,
@@ -41,6 +42,7 @@ public class UsuarioResponse {
         this.codigoCargo = codigoCargo;
         this.codigoUnidadesNegocio = codigoUnidadesNegocio;
         this.codigoEmpresas = codigoEmpresas;
+        this.permissoes = permissoes;
     }
 
     public static UsuarioResponse convertFrom(Usuario usuario) {
@@ -51,6 +53,18 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+        return usuarioResponse;
+    }
+
+    public static UsuarioResponse convertFrom(Usuario usuario, List<FuncionalidadeResponse> permissoes) {
+        UsuarioResponse usuarioResponse = new UsuarioResponse();
+        BeanUtils.copyProperties(usuario, usuarioResponse);
+        usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+        usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
+        usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
+        usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
+        usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+        usuarioResponse.setPermissoes(permissoes);
         return usuarioResponse;
     }
 

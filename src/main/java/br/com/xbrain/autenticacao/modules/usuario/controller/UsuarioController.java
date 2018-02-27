@@ -35,7 +35,7 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
-                usuarioService.findByIdComAa(id));
+                usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
