@@ -21,6 +21,10 @@ app-config:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
+    usuario-alterar-email: usuario-alterar-email.queue
+    usuario-alterar-cargo: usuario-alterar-cargo.queue
+    usuario-ativar: usuario-ativar.queue
+    usuario-inativar: usuario-inativar.queue
 
   oauth-clients:
     front-apps:

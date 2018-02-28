@@ -18,13 +18,25 @@ public class RabbitConfig {
     private String autenticacaoTopic;
 
     @Value("${app-config.queue.usuario-cadastro}")
-    private String usuarioCadastroQueue;
+    private String usuarioCadastroMq;
 
     @Value("${app-config.queue.usuario-cadastro-success}")
-    private String usuarioCadastroSuccessQueue;
+    private String usuarioCadastroSuccessMq;
 
     @Value("${app-config.queue.usuario-cadastro-failure}")
-    private String usuarioCadastroFailureQueue;
+    private String usuarioCadastroFailureMq;
+
+    @Value("${app-config.queue.usuario-alterar-email}")
+    private String usuarioAlterarEmailMq;
+
+    @Value("${app-config.queue.usuario-alterar-cargo}")
+    private String usuarioAlterarCargoMq;
+
+    @Value("${app-config.queue.usuario-ativar}")
+    private String usuarioAtivarMq;
+
+    @Value("${app-config.queue.usuario-inativar}")
+    private String usuarioInativarMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -37,32 +49,72 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioCadastroQueue() {
-        return new Queue(usuarioCadastroQueue, false);
+    Queue usuarioCadastroMq() {
+        return new Queue(usuarioCadastroMq, false);
     }
 
     @Bean
-    Queue usuarioCadastroSuccessQueue() {
-        return new Queue(usuarioCadastroSuccessQueue, false);
+    Queue usuarioCadastroSuccessMq() {
+        return new Queue(usuarioCadastroSuccessMq, false);
     }
 
     @Bean
-    Queue usuarioCadastroFailureQueue() {
-        return new Queue(usuarioCadastroFailureQueue, false);
+    Queue usuarioCadastroFailureMq() {
+        return new Queue(usuarioCadastroFailureMq, false);
+    }
+
+    @Bean
+    Queue usuarioAlterarEmailMq() {
+        return new Queue(usuarioAlterarEmailMq, false);
+    }
+
+    @Bean
+    Queue usuarioAlterarCargoMq() {
+        return new Queue(usuarioAlterarCargoMq, false);
+    }
+
+    @Bean
+    Queue usuarioAtivarMq() {
+        return new Queue(usuarioAtivarMq, false);
+    }
+
+    @Bean
+    Queue usuarioInativarMq() {
+        return new Queue(usuarioInativarMq, false);
     }
 
     @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioCadastroQueue()).to(exchange).with(usuarioCadastroQueue);
+        return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
 
     @Bean
     public Binding usuarioCadastroSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioCadastroSuccessQueue()).to(exchange).with(usuarioCadastroSuccessQueue);
+        return BindingBuilder.bind(usuarioCadastroSuccessMq()).to(exchange).with(usuarioCadastroSuccessMq);
     }
 
     @Bean
-    public Binding usuarioCadastroSuccessFailure(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioCadastroFailureQueue()).to(exchange).with(usuarioCadastroFailureQueue);
+    public Binding usuarioCadastroSuccessFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroFailureMq()).to(exchange).with(usuarioCadastroFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioAlterarEmailBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAlterarEmailMq()).to(exchange).with(usuarioAlterarEmailMq);
+    }
+
+    @Bean
+    public Binding usuarioAlterarCargoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAlterarCargoMq()).to(exchange).with(usuarioAlterarCargoMq);
+    }
+
+    @Bean
+    public Binding usuarioAtivarBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAtivarMq()).to(exchange).with(usuarioAtivarMq);
+    }
+
+    @Bean
+    public Binding usuarioInativarBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioInativarMq()).to(exchange).with(usuarioInativarMq);
     }
 }
