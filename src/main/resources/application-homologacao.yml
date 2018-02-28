@@ -12,8 +12,13 @@ spring:
     driverClassName: oracle.jdbc.OracleDriver
     maximumPoolSize: 2
 
+  rabbitmq:
+    host: 192.168.1.240
+    port: 5672
+    username: xbrain
+    password: xbrain
+
 logging:
-  file: /var/log/autenticacao/application.log
   level:
       org.springframework: 'ERROR'
       org.hibernate: 'ERROR'

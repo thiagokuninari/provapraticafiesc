@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.verify;
 public class UsuarioServiceTest {
 
     @MockBean
-    private UsuarioMqSender sender;
+    private UsuarioCadastroMqSender sender;
 
     @Autowired
     private UsuarioService service;
@@ -44,15 +45,15 @@ public class UsuarioServiceTest {
         service.saveFromQueue(usuarioMqRequest);
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
-        verify(sender, times(1)).send(any());
+        verify(sender, times(1)).sendSuccess(any());
     }
 
     @Test
-    public void deveNaoSalvarUsuarioEEnviarParaFilaDeBug() {
+    public void deveNaoSalvarUsuarioEEnviarParaFilaDeFalha() {
         try {
             service.saveFromQueue(new UsuarioMqRequest());
         } catch (Exception exception) {
-            verify(sender, times(1)).sendWithBug(any());
+            verify(sender, times(1)).sendWithFailure(any());
         }
     }
 

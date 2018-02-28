@@ -17,8 +17,14 @@ public class RabbitConfig {
     @Value("${app-config.topic.autenticacao}")
     private String autenticacaoTopic;
 
-    @Value("${app-config.queue.usuario-aut}")
-    private String usuarioAutQueue;
+    @Value("${app-config.queue.usuario-cadastro}")
+    private String usuarioCadastroQueue;
+
+    @Value("${app-config.queue.usuario-cadastro-success}")
+    private String usuarioCadastroSuccessQueue;
+
+    @Value("${app-config.queue.usuario-cadastro-failure}")
+    private String usuarioCadastroFailureQueue;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -26,17 +32,37 @@ public class RabbitConfig {
     }
 
     @Bean
-    TopicExchange topic() {
+    public TopicExchange topic() {
         return new TopicExchange(autenticacaoTopic);
     }
 
     @Bean
-    Queue contatoQueue() {
-        return new Queue(usuarioAutQueue, false);
+    Queue usuarioCadastroQueue() {
+        return new Queue(usuarioCadastroQueue, false);
     }
 
     @Bean
-    Binding contatoBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(contatoQueue()).to(exchange).with(usuarioAutQueue);
+    Queue usuarioCadastroSuccessQueue() {
+        return new Queue(usuarioCadastroSuccessQueue, false);
+    }
+
+    @Bean
+    Queue usuarioCadastroFailureQueue() {
+        return new Queue(usuarioCadastroFailureQueue, false);
+    }
+
+    @Bean
+    public Binding usuarioCadastroBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroQueue()).to(exchange).with(usuarioCadastroQueue);
+    }
+
+    @Bean
+    public Binding usuarioCadastroSuccessBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroSuccessQueue()).to(exchange).with(usuarioCadastroSuccessQueue);
+    }
+
+    @Bean
+    public Binding usuarioCadastroSuccessFailure(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroFailureQueue()).to(exchange).with(usuarioCadastroFailureQueue);
     }
 }
