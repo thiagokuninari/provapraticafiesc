@@ -60,6 +60,13 @@ public class UsuarioHierarquia {
         this.dataCadastro = LocalDateTime.now();
     }
 
+    public String getUsuarioSuperiorIdAsString() {
+        if (this.usuarioSuperior != null) {
+            return this.usuarioSuperior.toString();
+        }
+        return null;
+    }
+
     public Integer getUsuarioSuperiorId() {
         return usuarioSuperior != null ? usuarioSuperior.getId() : null;
     }

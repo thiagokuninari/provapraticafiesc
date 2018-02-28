@@ -3,10 +3,14 @@ package br.com.xbrain.autenticacao.modules.importacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioCidadeImportacao;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioHierarquiaImportacao;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioImportacao;
+import br.com.xbrain.autenticacao.modules.importacao.dto.*;
 import br.com.xbrain.autenticacao.modules.importacao.repository.UsuarioImportacaoRepository;
+import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.FuncionalidadeRepository;
+import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 //@AutoConfigureMockMvc
 //@Transactional
 //@Rollback(false)
+//@ActiveProfiles("importacao")
 public class UsuarioImportacaoTest {
 
     @Autowired
@@ -36,16 +41,21 @@ public class UsuarioImportacaoTest {
     @Autowired
     private CidadeRepository cidadeRepository;
 
-    /*
-    * datasource:
-      url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-      username: AUTENTICACAO
-      password: py12nrk7
+    @Autowired
+    private FuncionalidadeRepository funcionalidadeRepository;
 
-      datasource-parceiros:
-      jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-      username: homologacao
-      password: c1t1gu1zes
+    @Autowired
+    private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
+
+    @Autowired
+    private PermissaoEspecialRepository permissaoEspecialRepository;
+
+    /*
+    * PARA RODAR A IMPORTAÇÃO:
+    *
+    * 1. UTILIZE O PROFILE DE IMPORTAÇÃO (APPLICATION-IMPORTACAO.YML)
+    * 2. VERIFIQUE SE AS BASES ESTÃO CONFIGURADAS CORRETAMENTE
+    * 3. COMENTE AS ANOTAÇÕES DE SEQUENCE DO USUÁRIO ID
     * */
 
     //@Test
@@ -56,7 +66,8 @@ public class UsuarioImportacaoTest {
             Usuario usuario = new Usuario();
             BeanUtils.copyProperties(dado, usuario);
 
-            //ignorar cargo 50 depart 50
+            usuario.removerCaracteresDoCpf();
+
             if (dado.getCargoId() != null && dado.getCargoId() != 0) {
                 usuario.setCargo(new Cargo(dado.getCargoId()));
             }
@@ -81,7 +92,9 @@ public class UsuarioImportacaoTest {
 
             usuario = repository.save(usuario);
 
-            System.out.println(">>> Registro importado com sucesso: \nID: " + usuario + "\nNOME: " + usuario.getNome());
+            System.out.println(">>> Registro importado com sucesso: \nID: "
+                    + usuario.getId() + "\nNOME: "
+                    + usuario.getNome());
         }
     }
 
@@ -94,6 +107,12 @@ public class UsuarioImportacaoTest {
             if (!CollectionUtils.isEmpty(cidades)) {
                 usuario.setCidades(convertCidades(cidades, usuario));
                 repository.save(usuario);
+            } else {
+                System.out.println("CIDADE DO USUÁRIO NÃO IMPORTADO: \nusuarioId: "
+                        + usuario.getId()
+                        + "\ncidadeId: "
+                        + usuario.getCidades().stream()
+                                .map(UsuarioCidade::getCidadeIdAsString).collect(Collectors.joining(",")));
             }
         }
     }
@@ -107,8 +126,92 @@ public class UsuarioImportacaoTest {
             if (!CollectionUtils.isEmpty(hierarquias)) {
                 convertHierarquias(hierarquias, usuario);
                 repository.save(usuario);
+            } else {
+                System.out.println("HIERARQUIA DO USUÁRIO NÃO IMPORTADO: \nusuarioId: "
+                        + usuario.getId()
+                        + "\nusuarioSuperiorId: "
+                        + usuario.getUsuariosHierarquia().stream()
+                                .map(UsuarioHierarquia::getUsuarioSuperiorIdAsString).collect(Collectors.joining(",")));
             }
         }
+    }
+
+    //@Test
+    public void importarCargoDepartamentoFuncionalidade() {
+        List<CargoDepartamentoFuncionalidadeImportacao> dtos
+                = parceirosRepository.getAllPermissoesPorCargoDepartamento();
+        for (CargoDepartamentoFuncionalidadeImportacao dto : dtos) {
+            Funcionalidade funcionalidade = funcionalidadeRepository.findByRole(dto.getRole()).orElse(null);
+
+            if (funcionalidade != null) {
+                CargoDepartamentoFuncionalidade cargoDepartamentoFuncionalidade = new CargoDepartamentoFuncionalidade();
+
+                if (dto.getEmpresaId() != null && dto.getEmpresaId() != 0) {
+                    cargoDepartamentoFuncionalidade.setEmpresa(new Empresa(dto.getEmpresaId()));
+                }
+
+                cargoDepartamentoFuncionalidade.setFuncionalidade(funcionalidade);
+
+                if (dto.getUnidadeNegocioId() != null && dto.getUnidadeNegocioId() != 0) {
+                    cargoDepartamentoFuncionalidade.setUnidadeNegocio(new UnidadeNegocio(dto.getUnidadeNegocioId()));
+                }
+
+                cargoDepartamentoFuncionalidade.setCargo(new Cargo(dto.getCargoId()));
+                cargoDepartamentoFuncionalidade.setDepartamento(new Departamento(dto.getDepartamentoId()));
+
+                if (dto.getUsuarioId() != null && dto.getUsuarioId() != 0) {
+                    cargoDepartamentoFuncionalidade.setUsuario(new Usuario(dto.getUsuarioId()));
+                } else {
+                    cargoDepartamentoFuncionalidade.setUsuario(null);
+                }
+
+                cargoDepartamentoFuncionalidade.setDataCadastro(dto.getDataCadastro());
+                cargoDepartamentoFuncionalidadeRepository.save(cargoDepartamentoFuncionalidade);
+            } else {
+                System.out.println("FUNCIONALIDADE (CARG_DEPART) NÃO IMPORTADA: funcionalidadeRole:"
+                        + dto.getRole());
+            }
+        }
+    }
+
+    //@Test
+    public void importarPermissoesEspeciais() {
+        List<PermissaoEspecialImportacao> permissoes = parceirosRepository.getAllPermissoesEspeciais();
+
+        for (PermissaoEspecialImportacao permissao : permissoes) {
+            Funcionalidade funcionalidade = funcionalidadeRepository.findByRole(permissao.getRole()).orElse(null);
+
+            if (funcionalidade != null) {
+
+                PermissaoEspecial permissaoEspecial = new PermissaoEspecial();
+                permissaoEspecial.setDataCadastro(permissao.getDataCadastro());
+                permissaoEspecial.setDataBaixa(permissao.getDataBaixa());
+                permissaoEspecial.setFuncionalidade(funcionalidade);
+
+                if (permissao.getUsuarioId() != null && permissao.getUsuarioId() != 0) {
+                    permissaoEspecial.setUsuario(new Usuario(permissao.getUsuarioId()));
+                } else {
+                    permissaoEspecial.setUsuario(null);
+                }
+
+                if (permissao.getUsuarioBaixaId() != null && permissao.getUsuarioBaixaId() != 0) {
+                    permissaoEspecial.setUsuarioBaixa(new Usuario(permissao.getUsuarioBaixaId()));
+                } else {
+                    permissaoEspecial.setUsuarioBaixa(null);
+                }
+
+                if (permissao.getUsuarioCadastroId() != null && permissao.getUsuarioCadastroId() != 0) {
+                    permissaoEspecial.setUsuarioCadastro(new Usuario(permissao.getUsuarioCadastroId()));
+                } else {
+                    permissaoEspecial.setUsuarioCadastro(null);
+                }
+                permissaoEspecialRepository.save(permissaoEspecial);
+            } else {
+                System.out.println("PERMISSÃO ESPECIAL NÃO IMPORTADA: funcionalidadeRole:"
+                        + permissao.getRole());
+            }
+        }
+
     }
 
     private void convertHierarquias(List<UsuarioHierarquiaImportacao> dados, Usuario usuario) {
