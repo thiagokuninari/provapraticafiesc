@@ -27,7 +27,7 @@ public class UsuarioResponse {
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
-    private List<FuncionalidadeResponse> permissoes;
+    private List<String> permissoes;
 
     @Builder
     public UsuarioResponse(Integer id, String nome, String cpf, String email, CodigoNivel codigoNivel,
@@ -56,7 +56,7 @@ public class UsuarioResponse {
         return usuarioResponse;
     }
 
-    public static UsuarioResponse convertFrom(Usuario usuario, List<FuncionalidadeResponse> permissoes) {
+    public static UsuarioResponse convertFrom(Usuario usuario, List<String> permissoes) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/usuarios")
@@ -35,7 +36,8 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
-                usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id));
+                usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
+                        .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
