@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.importacao.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioCidadeImportacao;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioHierarquiaImportacao;
-import br.com.xbrain.autenticacao.modules.importacao.dto.UsuarioImportacao;
+import br.com.xbrain.autenticacao.modules.importacao.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -20,12 +18,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@Profile(value = "!test")
+@Profile(value = "importacao")
 public class UsuarioImportacaoRepository {
 
     @Autowired
     @Qualifier("parceiros")
     private NamedParameterJdbcTemplate jdbcTemplate;
+
+    public List<PermissaoEspecialImportacao> getAllPermissoesEspeciais() {
+
+        return jdbcTemplate.query("SELECT PE.DATA_BAIXA "
+                        + "     , PE.DATA_CADASTRO "
+                        + "     , PE.FK_FUNCIONALIDADE "
+                        + "     , F.ROLE "
+                        + "     , PE.FK_USUARIO "
+                        + "     , PE.FK_USUARIO_BAIXA "
+                        + "     , PE.FK_USUARIO_CADASTRO "
+                        + "  FROM PERMISSAO_ESPECIAL PE "
+                        + "  JOIN FUNCIONALIDADE F ON F.ID = PE.FK_FUNCIONALIDADE ",
+                new MapSqlParameterSource(),
+                this::mapRowPermissaoEspecial);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<CargoDepartamentoFuncionalidadeImportacao> getAllPermissoesPorCargoDepartamento() {
+        return jdbcTemplate.query("SELECT CDF.ID "
+                        + "     , CDF.DATA_CADASTRO "
+                        + "     , CDF.FK_CARGO "
+                        + "     , CDF.FK_DEPARTAMENTO "
+                        + "     , CDF.FK_EMPRESA "
+                        + "     , CDF.FK_FUNCIONALIDADE "
+                        + "     , F.ROLE "
+                        + "     , CDF.FK_UNIDADE_NEGOCIO "
+                        + "     , CDF.FK_USUARIO "
+                        + "  FROM CARGO_DEPART_FUNC CDF "
+                        + "  JOIN FUNCIONALIDADE F ON F.ID = CDF.FK_FUNCIONALIDADE "
+                        + " ORDER BY ID ",
+                new MapSqlParameterSource(),
+                this::mapRowPermissoes);
+    }
 
     @SuppressWarnings("unchecked")
     public List<UsuarioCidadeImportacao> getAllCidadesUsuariosParceirosOnline(Integer usuarioId) {
@@ -51,28 +83,6 @@ public class UsuarioImportacaoRepository {
                         + " WHERE UH.FK_USUARIO = :_usuarioId",
                 new MapSqlParameterSource("_usuarioId", usuarioId),
                 this::mapRowHierarquias);
-    }
-
-    private UsuarioHierarquiaImportacao mapRowHierarquias(ResultSet rs, int rowNumber) throws SQLException {
-        System.out.println(rowNumber);
-        UsuarioHierarquiaImportacao usuarioHierarquiaImportacao = new UsuarioHierarquiaImportacao();
-        usuarioHierarquiaImportacao.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
-        usuarioHierarquiaImportacao.setUsuarioId(rs.getInt("fk_usuario"));
-        usuarioHierarquiaImportacao.setUsuarioCadastroId(rs.getInt("fk_usuario_cadastro"));
-        usuarioHierarquiaImportacao.setUsuarioSuperiorId(rs.getInt("fk_usuario_superior"));
-        return usuarioHierarquiaImportacao;
-    }
-
-    private UsuarioCidadeImportacao mapRowCidades(ResultSet rs, int rowNumber) throws SQLException {
-        System.out.println(rowNumber);
-        UsuarioCidadeImportacao usuarioCidadeImportacao = new UsuarioCidadeImportacao();
-        usuarioCidadeImportacao.setDataBaixa(toLocalDateTime(rs.getTimestamp("data_baixa")));
-        usuarioCidadeImportacao.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
-        usuarioCidadeImportacao.setCidadeId(rs.getInt("fk_cidade"));
-        usuarioCidadeImportacao.setUsuarioId(rs.getInt("fk_usuario"));
-        usuarioCidadeImportacao.setUsuarioBaixaId(rs.getInt("fk_usuario_baixa"));
-        usuarioCidadeImportacao.setUsuarioCadastroId(rs.getInt("fk_usuario_cadastro"));
-        return usuarioCidadeImportacao;
     }
 
     @SuppressWarnings("unchecked")
@@ -104,7 +114,7 @@ public class UsuarioImportacaoRepository {
                         + "     , ALTERAR_SENHA "
                         + "     , CASE WHEN DATA_INATIVACAO IS NULL THEN 'A' ELSE 'I' END AS SITUACAO "
                         + "  FROM USUARIO U "
-                        + " WHERE U.FK_CARGO != 50 AND U.FK_DEPARTAMENTO != 50 "
+                        //+ " WHERE U.FK_CARGO != 50 AND U.FK_DEPARTAMENTO != 50 "
                         + "GROUP BY U.ID "
                         + "       , U.NOME "
                         + "       , U.EMAIL_01 "
@@ -132,7 +142,7 @@ public class UsuarioImportacaoRepository {
     }
 
     private UsuarioImportacao mapRow(ResultSet rs, int rowNumber) throws SQLException {
-        System.out.println(rowNumber);
+        rowNumber = rowNumber;
         UsuarioImportacao usuarioImportacao = new UsuarioImportacao();
         usuarioImportacao.setId(rs.getInt("id"));
         usuarioImportacao.setNome(rs.getString("nome"));
@@ -157,6 +167,58 @@ public class UsuarioImportacaoRepository {
         usuarioImportacao.setAlterarSenha(valueOf(rs.getString("alterar_senha")));
         usuarioImportacao.setSituacao(ESituacao.valueOf(rs.getString("situacao")));
         return usuarioImportacao;
+    }
+
+    private UsuarioHierarquiaImportacao mapRowHierarquias(ResultSet rs, int rowNumber) throws SQLException {
+        rowNumber = rowNumber;
+        UsuarioHierarquiaImportacao usuarioHierarquiaImportacao = new UsuarioHierarquiaImportacao();
+        usuarioHierarquiaImportacao.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
+        usuarioHierarquiaImportacao.setUsuarioId(rs.getInt("fk_usuario"));
+        usuarioHierarquiaImportacao.setUsuarioCadastroId(rs.getInt("fk_usuario_cadastro"));
+        usuarioHierarquiaImportacao.setUsuarioSuperiorId(rs.getInt("fk_usuario_superior"));
+        return usuarioHierarquiaImportacao;
+    }
+
+    private UsuarioCidadeImportacao mapRowCidades(ResultSet rs, int rowNumber) throws SQLException {
+        rowNumber = rowNumber;
+        UsuarioCidadeImportacao usuarioCidadeImportacao = new UsuarioCidadeImportacao();
+        usuarioCidadeImportacao.setDataBaixa(toLocalDateTime(rs.getTimestamp("data_baixa")));
+        usuarioCidadeImportacao.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
+        usuarioCidadeImportacao.setCidadeId(rs.getInt("fk_cidade"));
+        usuarioCidadeImportacao.setUsuarioId(rs.getInt("fk_usuario"));
+        usuarioCidadeImportacao.setUsuarioBaixaId(rs.getInt("fk_usuario_baixa"));
+        usuarioCidadeImportacao.setUsuarioCadastroId(rs.getInt("fk_usuario_cadastro"));
+        return usuarioCidadeImportacao;
+    }
+
+    private CargoDepartamentoFuncionalidadeImportacao mapRowPermissoes(ResultSet rs, int rowNumber)
+            throws SQLException {
+        rowNumber = rowNumber;
+        CargoDepartamentoFuncionalidadeImportacao dto = new CargoDepartamentoFuncionalidadeImportacao();
+        dto.setId(rs.getInt("id"));
+        dto.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
+        dto.setCargoId(rs.getInt("fk_cargo"));
+        dto.setDepartamentoId(rs.getInt("fk_departamento"));
+        dto.setEmpresaId(rs.getInt("fk_empresa"));
+        dto.setFuncionalidadeId(rs.getInt("fk_funcionalidade"));
+        dto.setRole("POL_" + rs.getString("role"));
+        dto.setUnidadeNegocioId(rs.getInt("fk_unidade_negocio"));
+        dto.setUsuarioId(rs.getInt("fk_usuario"));
+        return dto;
+    }
+
+    private PermissaoEspecialImportacao mapRowPermissaoEspecial(ResultSet rs, int rowNumber)
+            throws SQLException {
+        rowNumber = rowNumber;
+        PermissaoEspecialImportacao dto = new PermissaoEspecialImportacao();
+        dto.setDataBaixa(toLocalDateTime(rs.getTimestamp("data_baixa")));
+        dto.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
+        dto.setFuncionalidadeId(rs.getInt("fk_funcionalidade"));
+        dto.setRole("POL_" + rs.getString("role"));
+        dto.setUsuarioId(rs.getInt("fk_usuario"));
+        dto.setUsuarioBaixaId(rs.getInt("fk_usuario_baixa"));
+        dto.setUsuarioCadastroId(rs.getInt("fk_usuario_cadastro"));
+        return dto;
     }
 
     private List<Integer> getIntegerList(String empresasIds) {

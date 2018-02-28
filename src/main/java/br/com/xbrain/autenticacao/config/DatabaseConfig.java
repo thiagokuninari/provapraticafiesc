@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 
 @Configuration
-@Profile(value = "!test")
+@Profile(value = "importacao")
 public class DatabaseConfig {
 
     @Bean

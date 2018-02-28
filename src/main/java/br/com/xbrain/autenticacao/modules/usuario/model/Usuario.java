@@ -270,7 +270,9 @@ public class Usuario {
     }
 
     public void removerCaracteresDoCpf() {
-        this.cpf = this.cpf.replaceAll("[.-]", "");
+        if (this.cpf != null) {
+            this.cpf = this.cpf.replaceAll("[.-]", "");
+        }
     }
 
     public Integer getCargoId() {
