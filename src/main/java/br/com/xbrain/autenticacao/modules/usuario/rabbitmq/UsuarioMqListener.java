@@ -1,5 +1,6 @@
-package br.com.xbrain.autenticacao.modules.usuario.dto;
+package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ public class UsuarioMqListener {
     @Autowired
     private UsuarioService service;
 
-    @RabbitListener(queues = "${app-config.queue.usuario}")
+    @RabbitListener(queues = "${app-config.queue.usuario-cadastro}" )
     public void save(UsuarioMqRequest usuarioMqRequest) {
         service.saveFromQueue(usuarioMqRequest);
     }

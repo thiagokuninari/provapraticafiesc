@@ -8,5 +8,6 @@ public enum CodigoDepartamento {
     AGENTE_AUTORIZADO,
     COMERCIAL,
     HELP_DESK,
-    ADMINISTRADOR
+    ADMINISTRADOR,
+    VAREJO
 }

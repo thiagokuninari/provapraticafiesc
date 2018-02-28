@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class UsuarioService {
     private PermissaoEspecialRepository permissaoEspecialRepository;
 
     @Autowired
-    private UsuarioMqSender usuarioMqSender;
+    private UsuarioCadastroMqSender usuarioMqSender;
 
     private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
             && f.getUnidadeNegocio() == null;
@@ -265,11 +266,11 @@ public class UsuarioService {
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
-        usuarioMqSender.send(usuarioDto);
+        usuarioMqSender.sendSuccess(usuarioDto);
     }
 
     private void enviarParaFilaDeErro(UsuarioMqRequest usuarioMqRequest) {
-        usuarioMqSender.sendWithBug(usuarioMqRequest);
+        usuarioMqSender.sendWithFailure(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {

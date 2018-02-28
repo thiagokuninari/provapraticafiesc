@@ -11,16 +11,16 @@ app-config:
   url-mensagemws: http://192.168.2.28:8183/MensagemWsService/MensagemWs
 
   email:
-      enviar: true
-      emails: lucasyoshioka@xbrain.com.br,fernandoalves@xbrain.com.br,rafael@xbrain.com.br
+    enviar: true
+    emails: lucasyoshioka@xbrain.com.br,fernandoalves@xbrain.com.br,rafael@xbrain.com.br
 
   topic:
     autenticacao: autenticacao.topic
 
   queue:
-    usuario: usuario.queue
-    usuario-aut: usuario-aut.queue
-    usuario-aut-bug: usuario-aut-bug
+    usuario-cadastro: usuario-cadastro.queue
+    usuario-cadastro-success: usuario-cadastro-success.queue
+    usuario-cadastro-failure: usuario-cadastro-failure.queue
 
   oauth-clients:
     front-apps:
@@ -35,6 +35,9 @@ app-config:
     mailing-api:
       client: mailing-api
       secret: m41l1ng4p1
+    varejo-api:
+      client: varejo-api
+      secret: v4r3j04p1
 
 spring:
   resources:

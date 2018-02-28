@@ -1,4 +1,12 @@
+spring:
+  jpa:
+    database: ORACLE
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+
 logging:
+  file: /home/xbrain/dev/autenticacao/dev.log
   level:
       org.springframework: 'ERROR'
       org.hibernate: 'ERROR'
