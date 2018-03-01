@@ -90,6 +90,18 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void deveRetornarUsuarioPorIdEVerificarPermissoes() throws Exception {
+        mvc.perform(get("/api/usuarios/100")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(100)))
+                .andExpect(jsonPath("$.nome", is("ADMIN")))
+                .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
+                .andExpect(jsonPath("$.permissoes[0]", is("ROLE_AUT_GER_USUARIO")));
+    }
+
+    @Test
     public void deveRetornarOUsuarioPorEmail() throws Exception {
         mvc.perform(get("/api/usuarios?email=ADMIN@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
