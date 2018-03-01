@@ -1,14 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import helpers.Usuarios;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -93,48 +87,6 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
-    }
-
-    @Test
-    public void deveAlterarOCargoDoUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/100/cargo/AGENTE_AUTORIZADO_SUPERVISOR")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findComplete(100).get();
-        Assert.assertEquals(usuario.getCargo().getCodigo(), CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR);
-    }
-
-    @Test
-    public void deveAlterarOEmailDoUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/100/email/LUCAS@XBRAIN.COM.BR/")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findComplete(100).get();
-        Assert.assertEquals(usuario.getEmail(), "LUCAS@XBRAIN.COM.BR");
-    }
-
-    @Test
-    public void deveInativarUmUsuario() throws Exception {
-        mvc.perform(post("/api/usuarios/inativar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
-    }
-
-    @Test
-    public void deveAtivarUmUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/ativar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     @Test

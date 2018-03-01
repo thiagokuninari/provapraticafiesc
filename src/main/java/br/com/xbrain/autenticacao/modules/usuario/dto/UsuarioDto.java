@@ -41,7 +41,7 @@ public class UsuarioDto implements Serializable {
     @Size(max = 25)
     private String rg;
     @Size(max = 30)
-    private String orgaoExpeditor;
+    private String orgaoExpedidor;
     @Size(max = 120)
     private String loginNetSales;
     private LocalDateTime nascimento;

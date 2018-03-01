@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -15,6 +16,13 @@ public class UsuarioMqRequest {
     private String cpf;
     private String nome;
     private String email;
+    private String email02;
+    private String telefone;
+    private String telefone02;
+    private String telefone03;
+    private String rg;
+    private String orgaoExpedidor;
+    private LocalDateTime nascimento;
     private CodigoNivel nivel;
     private CodigoDepartamento departamento;
     private CodigoCargo cargo;

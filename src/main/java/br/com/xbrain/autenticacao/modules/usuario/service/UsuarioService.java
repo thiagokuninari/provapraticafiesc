@@ -419,15 +419,15 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public void alterarCargoUsuario(Integer id, CodigoCargo codigoCargo) {
-        Usuario usuario = findComplete(id);
-        usuario.setCargo(getCargo(codigoCargo));
+    public void alterarCargoUsuario(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
+        Usuario usuario = findComplete(usuarioAlteracaoRequest.getId());
+        usuario.setCargo(getCargo(usuarioAlteracaoRequest.getCargo()));
         repository.save(usuario);
     }
 
-    public void alterarEmailUsuario(Integer id, String email) {
-        Usuario usuario = findComplete(id);
-        usuario.setEmail(email);
+    public void alterarEmailUsuario(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
+        Usuario usuario = findComplete(usuarioAlteracaoRequest.getId());
+        usuario.setEmail(usuarioAlteracaoRequest.getEmail());
         repository.save(usuario);
     }
 

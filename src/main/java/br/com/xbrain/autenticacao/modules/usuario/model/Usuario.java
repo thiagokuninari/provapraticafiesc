@@ -81,7 +81,7 @@ public class Usuario {
 
     @Size(max = 30)
     @Column(name = "ORGAO_EXPEDIDOR", length = 30)
-    private String orgaoExpeditor;
+    private String orgaoExpedidor;
 
     @Size(max = 120)
     @Column(name = "LOGIN_NET_SALES", length = 120)

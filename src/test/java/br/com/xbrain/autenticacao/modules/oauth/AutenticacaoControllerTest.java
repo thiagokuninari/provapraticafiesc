@@ -44,7 +44,7 @@ public class AutenticacaoControllerTest {
         assertEquals("Administrador", token.getDepartamento());
         assertEquals("Administrador", token.getCargo());
         assertEquals("XBRAIN", token.getNivelCodigo());
-        assertEquals("EXECUTIVO", token.getCargoCodigo());
+        assertEquals("ADMINISTRADOR", token.getCargoCodigo());
         assertEquals("ADMINISTRADOR", token.getDepartamentoCodigo());
         assertEquals("F", token.getAlterarSenha());
         assertEquals("38957979875", token.getCpf());
@@ -74,7 +74,7 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.nivel", is("X-BRAIN")))
                 .andExpect(jsonPath("$.departamento", is("Administrador")))
                 .andExpect(jsonPath("$.cargo", is("Administrador")))
-                .andExpect(jsonPath("$.cargoCodigo", is("EXECUTIVO")))
+                .andExpect(jsonPath("$.cargoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.departamentoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.nivelCodigo", is("XBRAIN")))
                 .andExpect(jsonPath("$.authorities", not(empty())))

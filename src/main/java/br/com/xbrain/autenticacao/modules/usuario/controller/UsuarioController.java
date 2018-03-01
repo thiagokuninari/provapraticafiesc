@@ -3,12 +3,10 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -64,28 +62,6 @@ public class UsuarioController {
     @RequestMapping(params = "ids", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByIds(@RequestParam List<Integer> ids) {
         return usuarioService.getUsuariosByIds(ids);
-    }
-
-    @RequestMapping(value = "/{id}/cargo/{cargo}", method = RequestMethod.PUT)
-    public void alterarCargoUsuario(@PathVariable("id") int id,
-                                    @PathVariable("cargo") CodigoCargo codigoCargo) {
-        usuarioService.alterarCargoUsuario(id, codigoCargo);
-    }
-
-    @RequestMapping(value = "/inativar", method = RequestMethod.POST)
-    public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
-        usuarioService.inativar(dto);
-    }
-
-    @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
-    public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
-        usuarioService.ativar(dto);
-    }
-
-    @RequestMapping(value = "/{id}/email/{email}", method = RequestMethod.PUT)
-    public void alterarEmailUsuario(@PathVariable("id") int id,
-                                    @PathVariable("email") String email) {
-        usuarioService.alterarEmailUsuario(id, email);
     }
 
     @RequestMapping(params = "email", method = RequestMethod.GET)
