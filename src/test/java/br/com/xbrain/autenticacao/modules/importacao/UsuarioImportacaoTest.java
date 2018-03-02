@@ -101,7 +101,14 @@ public class UsuarioImportacaoTest {
 
                     }
                 }
+            }
 
+            if (dado.getDepartamentoId() == 50 && dado.getCargoId() == 50) {
+                if (CollectionUtils.isEmpty(usuario.getEmpresas())) {
+                    usuario.setEmpresas(Collections.singletonList(new Empresa(4)));
+                } else {
+                    usuario.getEmpresas().add(new Empresa(4));
+                }
             }
 
             if (usuario.getAlterarSenha() == null) {
