@@ -85,4 +85,9 @@ public class UsuarioController {
         return usuarioService.getUsuarioByPermissao(funcionalidade);
     }
 
+    @RequestMapping(value = "/configuracao", method = RequestMethod.GET)
+    public ConfiguracaoResponse getConfiguracaoByUsuario() {
+        return usuarioService.getConfiguracaoByUsuario();
+    }
+
 }

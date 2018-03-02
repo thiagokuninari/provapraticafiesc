@@ -102,12 +102,7 @@ public class UsuarioGerenciaController {
     public void alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
     }
-
-    @RequestMapping(value = "/{idUsuario}/configuracao", method = RequestMethod.GET)
-    public ConfiguracaoResponse getConfiguracaoByUsuario(@PathVariable("idUsuario") Integer idUsuario) {
-        return service.getConfiguracaoByUsuario(idUsuario);
-    }
-
+    
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
     public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);

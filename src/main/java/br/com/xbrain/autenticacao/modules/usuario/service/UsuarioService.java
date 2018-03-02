@@ -550,8 +550,8 @@ public class UsuarioService {
         enviarEmailComSenhaNova(usuario, usuarioDadosAcessoRequest.getSenhaNova());
     }
 
-    public ConfiguracaoResponse getConfiguracaoByUsuario(Integer idUsuario) {
-        Usuario usuario = findComplete(idUsuario);
+    public ConfiguracaoResponse getConfiguracaoByUsuario() {
+        Usuario usuario = findComplete(autenticacaoService.getUsuarioId());
         return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
     }
 

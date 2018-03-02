@@ -1,15 +1,19 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import helpers.Usuarios;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -20,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static helpers.TestsHelper.getAccessToken;
+import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,6 +46,15 @@ public class UsuarioControllerTest {
 
     @Autowired
     private UsuarioRepository repository;
+
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+
+    @Before
+    public void setup() {
+        Mockito.when(autenticacaoService.getUsuarioId())
+                .thenReturn(100);
+    }
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
@@ -137,6 +151,15 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    public void deveRetornarAsConfiguracoesDoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ramal", is(7006)));
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
