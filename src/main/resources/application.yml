@@ -39,6 +39,9 @@ app-config:
     mailing-api:
       client: mailing-api
       secret: m41l1ng4p1
+    call-api:
+      client: call-api
+      secret: c4ll4p1
     varejo-api:
       client: varejo-api
       secret: v4r3j04p1
