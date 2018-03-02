@@ -6,14 +6,34 @@ spring:
       ddl-auto: none
 
   datasource:
+#   autenticacao dev
     jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
 
+#    autenticação homologação
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+#    username: AUTENTICACAO
+#    password: py12nrk7
+#    driverClassName: oracle.jdbc.OracleDriver
+
+#    autenticação test
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+#    username: AUTENTICACAO_TEST
+#    password: py12nrk7
+#    driverClassName: oracle.jdbc.OracleDriver
+
   datasource-parceiros:
+#    parceiros hml
     jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
     username: homologacao
     password: c1t1gu1zes
     driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 1
+
+#    parceiros hml-prd
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+#    username: net_parceiros
+#    password: p4rc31r0sh0m0l0g
+#    driverClassName: oracle.jdbc.OracleDriver
+#    maximumPoolSize: 1

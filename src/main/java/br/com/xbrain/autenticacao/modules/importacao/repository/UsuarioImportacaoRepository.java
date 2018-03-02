@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.importacao.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.importacao.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +25,22 @@ public class UsuarioImportacaoRepository {
     @Autowired
     @Qualifier("parceiros")
     private NamedParameterJdbcTemplate jdbcTemplate;
+
+    public List<Empresa> getEmpresasAa(Integer usuarioId) {
+        return jdbcTemplate.query("SELECT E.ID "
+                        + "  FROM USUARIO U "
+                        + "  JOIN AA_USUARIO AU ON AU.FK_USUARIO = U.ID "
+                        + "  JOIN AGENTE_AUTORIZADO AA ON AA.ID = AU.FK_AGENTE_AUTORIZADO "
+                        + "  JOIN AA_EMPRESA AE ON AE.FK_AGENTE_AUTORIZADO = AA.ID "
+                        + "  JOIN EMPRESA E ON E.ID = AE.FK_EMPRESA "
+                        + " WHERE U.ID = :_usuarioId ",
+                new MapSqlParameterSource("_usuarioId", usuarioId),
+                this::getEmpresas);
+    }
+
+    public Empresa getEmpresas(ResultSet rs, int rownum) throws SQLException {
+        return new Empresa(rs.getInt("id"));
+    }
 
     public List<PermissaoEspecialImportacao> getAllPermissoesEspeciais() {
 

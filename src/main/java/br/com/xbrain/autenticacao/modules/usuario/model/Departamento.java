@@ -42,4 +42,8 @@ public class Departamento {
     public Departamento(Integer id) {
         this.id = id;
     }
+
+    public void forceLoad() {
+        nivel.getId();
+    }
 }

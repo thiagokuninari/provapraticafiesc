@@ -11,8 +11,10 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.FuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,8 @@ public class UsuarioImportacaoTest {
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
 
+    @Autowired
+    private DepartamentoRepository departamentoRepository;
     /*
     * PARA RODAR A IMPORTAÇÃO:
     *
@@ -72,7 +76,10 @@ public class UsuarioImportacaoTest {
                 usuario.setCargo(new Cargo(dado.getCargoId()));
             }
 
+            Departamento departamento = null;
             if (dado.getDepartamentoId() != null && dado.getDepartamentoId() != 0) {
+                departamento = departamentoRepository.findOne(dado.getDepartamentoId());
+                departamento.forceLoad();
                 usuario.setDepartamento(new Departamento(dado.getDepartamentoId()));
             }
 
@@ -84,6 +91,17 @@ public class UsuarioImportacaoTest {
             if (!CollectionUtils.isEmpty(dado.getEmpresasId())) {
                 usuario.setEmpresas(dado.getEmpresasId().stream().map(Empresa::new)
                         .collect(Collectors.toList()));
+            } else {
+                if (departamento != null) {
+                    if (departamento.getNivel().getCodigo() == CodigoNivel.AGENTE_AUTORIZADO) {
+                        List<Empresa> empresasAa = parceirosRepository.getEmpresasAa(usuario.getId());
+                        if (!CollectionUtils.isEmpty(empresasAa)) {
+                            usuario.setEmpresas(empresasAa);
+                        }
+
+                    }
+                }
+
             }
 
             if (usuario.getAlterarSenha() == null) {
