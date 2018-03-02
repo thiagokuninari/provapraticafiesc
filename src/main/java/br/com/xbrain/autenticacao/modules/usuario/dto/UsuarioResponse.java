@@ -12,6 +12,7 @@ import lombok.experimental.Builder;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -64,7 +65,7 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
-        usuarioResponse.setPermissoes(permissoes);
+        usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
         return usuarioResponse;
     }
 
