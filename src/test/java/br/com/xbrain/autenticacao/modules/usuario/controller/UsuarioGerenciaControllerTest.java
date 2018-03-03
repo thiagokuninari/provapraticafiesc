@@ -260,7 +260,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(28)))
-                .andExpect(jsonPath("$[0].role", is("AUT_GER_USUARIO")));
+                .andExpect(jsonPath("$[0].role", is("POL_AGENTE_AUTORIZADO_APROVACAO_MSO")));
     }
 
     @Test
