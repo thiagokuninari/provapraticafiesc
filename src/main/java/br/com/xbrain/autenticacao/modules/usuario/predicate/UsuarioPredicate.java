@@ -29,7 +29,7 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comNome(String nome) {
         if (nome != null) {
-            builder.and(usuario.nome.likeIgnoreCase(nome));
+            builder.and(usuario.nome.likeIgnoreCase("%" + nome + "%"));
         }
         return this;
     }

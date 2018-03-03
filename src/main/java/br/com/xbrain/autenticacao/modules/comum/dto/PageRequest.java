@@ -5,42 +5,38 @@ import org.springframework.data.domain.Sort;
 
 public class PageRequest implements Pageable {
 
-    private static final int DEFAULT_OFFSET = 0;
-    private static final int DEFAULT_LIMIT = 102;
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE_PAGE = 10;
 
-    private int offset;
-    private int limit;
+    private int page;
+    private int size;
     private String orderBy;
     private String orderDirection;
 
     public PageRequest() {
-        this.offset = DEFAULT_OFFSET;
-        this.limit = DEFAULT_LIMIT;
+        this.page = DEFAULT_PAGE;
+        this.size = DEFAULT_SIZE_PAGE;
         this.orderBy = "id";
         this.orderDirection = "ASC";
     }
 
-    public PageRequest(int offset, int limit, String orderBy, String orderDirection) {
-        this.offset = offset;
-        this.limit = limit;
+    public PageRequest(int page, int size, String orderBy, String orderDirection) {
+        this.page = page;
+        this.size = size;
         this.orderBy = orderBy;
         this.orderDirection = orderDirection;
     }
 
-    public int getOffset() {
-        return offset;
+    public void setPage(int page) {
+        this.page = page;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public int getSize() {
+        return size;
     }
 
-    public int getLimit() {
-        return limit;
-    }
-
-    public void setLimit(int limit) {
-        this.limit = limit;
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public String getOrderBy() {
@@ -60,13 +56,18 @@ public class PageRequest implements Pageable {
     }
 
     @Override
+    public int getOffset() {
+        return page * size;
+    }
+
+    @Override
     public int getPageNumber() {
-        return offset;
+        return page;
     }
 
     @Override
     public int getPageSize() {
-        return limit;
+        return size;
     }
 
     @Override

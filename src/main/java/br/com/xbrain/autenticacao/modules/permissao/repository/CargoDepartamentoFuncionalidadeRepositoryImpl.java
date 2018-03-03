@@ -30,6 +30,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl implements CargoDepar
                 .leftJoin(cargoDepartamentoFuncionalidade.empresa).fetchJoin()
                 .leftJoin(cargoDepartamentoFuncionalidade.unidadeNegocio).fetchJoin()
                 .where(predicate.build())
+                .orderBy(funcionalidade.nome.asc())
                 .fetch();
     }
 }
