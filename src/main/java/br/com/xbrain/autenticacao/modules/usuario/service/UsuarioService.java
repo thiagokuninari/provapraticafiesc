@@ -560,8 +560,12 @@ public class UsuarioService {
     }
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
-        Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(new Usuario());
-        return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
+        Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(null);
+        if (usuario != null) {
+            return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
+        } else {
+            return new ConfiguracaoResponse();
+        }
     }
 
     private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
