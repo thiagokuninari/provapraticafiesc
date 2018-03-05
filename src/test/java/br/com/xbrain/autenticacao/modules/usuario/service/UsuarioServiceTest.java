@@ -49,7 +49,7 @@ public class UsuarioServiceTest {
 
     @Before
     public void setUp() {
-        when(autenticacaoService.getUsuarioId()).thenReturn(1);
+        when(autenticacaoService.getUsuarioId()).thenReturn(101);
     }
 
     @Test

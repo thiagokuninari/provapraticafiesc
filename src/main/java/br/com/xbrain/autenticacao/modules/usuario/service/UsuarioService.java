@@ -120,11 +120,14 @@ public class UsuarioService {
         return usuario;
     }
 
+    @Transactional
     public Usuario findById(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
         predicate.ignorarAa();
         predicate.comId(id);
-        return repository.findOne(predicate.build());
+        Usuario usuario = repository.findOne(predicate.build());
+        usuario.forceLoad();
+        return usuario;
     }
 
     public Usuario findByIdComAa(int id) {
@@ -357,19 +360,21 @@ public class UsuarioService {
                 });
     }
 
+    @Transactional
     public void ativar(UsuarioAtivacaoDto dto) {
         Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuario)
-                .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(new Usuario(autenticacaoService.getUsuarioId()))
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.A)
                 .build());
         repository.save(usuario);
     }
 
+    @Transactional
     public void inativar(UsuarioInativacaoDto dto) {
         Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
@@ -378,7 +383,7 @@ public class UsuarioService {
                 .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
-                .usuarioAlteracao(findById(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(new Usuario(autenticacaoService.getUsuarioId()))
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build());
@@ -561,11 +566,9 @@ public class UsuarioService {
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
         Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(null);
-        if (usuario != null) {
-            return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
-        } else {
-            return new ConfiguracaoResponse();
-        }
+        return usuario != null
+                ? ConfiguracaoResponse.convertFrom(usuario.getConfiguracao())
+                : new ConfiguracaoResponse();
     }
 
     private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
