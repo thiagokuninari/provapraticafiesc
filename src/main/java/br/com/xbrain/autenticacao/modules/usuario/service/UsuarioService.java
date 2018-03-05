@@ -148,6 +148,7 @@ public class UsuarioService {
         return repository.findComHierarquia(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    @Transactional
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.parse(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
@@ -242,14 +243,15 @@ public class UsuarioService {
             usuario = repository.save(usuario);
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }
-        saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
+        if (usuarioDto.getHierarquiasId() != null) {
+            saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
+        }
         return UsuarioDto.parse(repository.save(usuario));
     }
 
     private void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setDataCadastro(LocalDateTime.now());
-        usuario.setUsuarioCadastro(autenticacaoService.getUsuarioAutenticado().getUsuario());
         usuario.setAlterarSenha(Eboolean.V);
         usuario.setSituacao(ESituacao.A);
         if (!usuario.hasUsuarioCadastro()) {

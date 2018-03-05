@@ -174,7 +174,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
     }
 
-
     @Test
     public void deveSalvarAConfiguracaoDoUsuario() throws Exception {
         UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
