@@ -394,6 +394,15 @@ public class UsuarioService {
                 .orElseThrow(() -> new ValidacaoException("Motivo de inativação não encontrado."));
     }
 
+    public List<UsuarioConsultaDto> getUsuariosHierarquia() {
+        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
+                .stream()
+                .map(UsuarioConsultaDto::new)
+                .collect(Collectors.toList());
+    }
+
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
                 .comEmpresas(usuarioFiltrosDto.getEmpresasIds())

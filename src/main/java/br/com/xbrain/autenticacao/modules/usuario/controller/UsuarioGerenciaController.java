@@ -38,6 +38,11 @@ public class UsuarioGerenciaController {
                 page.getTotalElements());
     }
 
+    @RequestMapping(value = "/hierarquia", method = RequestMethod.GET)
+    public List<UsuarioConsultaDto> getUsuariosHierarquia() {
+        return service.getUsuariosHierarquia();
+    }
+
     @RequestMapping(params = "email")
     public UsuarioDto getByEmail(@RequestParam String email) {
         return service.findByEmail(email);
