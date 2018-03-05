@@ -226,4 +226,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 predicate,
                 pageable);
     }
+
+    @Override
+    public Optional<Usuario> findComConfiguracao(Integer usuarioId) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .join(usuario.configuracao).fetchJoin()
+                        .where(usuario.id.eq(usuarioId))
+                        .fetchOne());
+    }
 }

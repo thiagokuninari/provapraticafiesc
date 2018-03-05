@@ -560,7 +560,7 @@ public class UsuarioService {
     }
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
-        Usuario usuario = findComplete(autenticacaoService.getUsuarioId());
+        Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(new Usuario());
         return ConfiguracaoResponse.convertFrom(usuario.getConfiguracao());
     }
 

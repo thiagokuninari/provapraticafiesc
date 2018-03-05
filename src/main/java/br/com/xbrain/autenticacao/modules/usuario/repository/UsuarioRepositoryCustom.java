@@ -42,4 +42,6 @@ public interface UsuarioRepositoryCustom {
 
     Page<Usuario> findAll(Predicate predicate, Pageable pageable);
 
+    Optional<Usuario> findComConfiguracao(Integer usuarioId);
+
 }
