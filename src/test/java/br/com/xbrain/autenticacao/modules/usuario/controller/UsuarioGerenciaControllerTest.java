@@ -133,7 +133,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(8)))
+                .andExpect(jsonPath("$", hasSize(9)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
                         "O campo cpf é obrigatório.",
@@ -142,7 +142,8 @@ public class UsuarioGerenciaControllerTest {
                         "O campo unidadesNegociosId é obrigatório.",
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
-                        "O campo departamentoId é obrigatório.")));
+                        "O campo departamentoId é obrigatório.",
+                        "O campo hierarquiasId é obrigatório.")));
     }
 
     @Test
@@ -173,17 +174,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    public void deveSalvarAHierarquiaDoUsuario() throws Exception {
-        UsuarioHierarquiaSaveDto dto = new UsuarioHierarquiaSaveDto();
-        dto.setUsuarioId(ID_USUARIO_HELPDESK);
-        dto.setHierarquiasId(Arrays.asList(100));
-        mvc.perform(post("/api/usuarios/gerencia/hierarquias")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isOk());
-    }
 
     @Test
     public void deveSalvarAConfiguracaoDoUsuario() throws Exception {
@@ -383,6 +373,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setEmpresasId(singletonList(4));
         usuario.setEmail("usuario@teste.com");
         usuario.setTelefone("43 995565661");
+        usuario.setHierarquiasId(Arrays.asList(100));
         return usuario;
     }
 

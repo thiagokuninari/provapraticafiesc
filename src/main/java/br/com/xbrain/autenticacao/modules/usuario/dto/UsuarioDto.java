@@ -3,10 +3,12 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,6 +18,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class UsuarioDto implements Serializable {
@@ -47,6 +50,7 @@ public class UsuarioDto implements Serializable {
     private LocalDateTime nascimento;
     @NotEmpty
     private List<Integer> unidadesNegociosId = new ArrayList<>();
+    private Integer unidadeNegocioId;
     private Integer nivelId;
     @NotEmpty
     private List<Integer> empresasId = new ArrayList<>();
@@ -61,6 +65,8 @@ public class UsuarioDto implements Serializable {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
     private Integer usuarioCadastroId;
+    @NotNull
+    private List<Integer> hierarquiasId;
 
     public static UsuarioDto parse(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();
@@ -70,6 +76,10 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setUnidadesNegociosId(usuario.getUnidadesNegociosId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
         usuarioDto.setNivelId(usuario.getNivelId());
+        usuarioDto.setHierarquiasId(usuario.getUsuariosHierarquia().stream()
+                .map(UsuarioHierarquia::getUsuarioSuperiorId)
+                .collect(Collectors.toList()));
+        usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         return usuarioDto;
     }
 
@@ -79,4 +89,8 @@ public class UsuarioDto implements Serializable {
         return usuarioDto;
     }
 
+    private static Integer obterUnidadeNegocioId(Usuario usuario) {
+        return !CollectionUtils.isEmpty(usuario.getUnidadesNegociosId())
+                ? usuario.getUnidadesNegociosId().get(0) : 0;
+    }
 }

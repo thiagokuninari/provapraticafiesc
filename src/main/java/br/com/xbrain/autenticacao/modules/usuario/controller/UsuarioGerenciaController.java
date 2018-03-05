@@ -58,11 +58,6 @@ public class UsuarioGerenciaController {
         return service.saveUsuarioCidades(dto);
     }
 
-    @RequestMapping(value = "/hierarquias", method = RequestMethod.POST)
-    public UsuarioDto saveUsuarioHierarquia(@Validated @RequestBody UsuarioHierarquiaSaveDto dto) {
-        return service.saveUsuarioHierarquia(dto);
-    }
-
     @RequestMapping(value = "/configuracao", method = RequestMethod.POST)
     public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
         return service.saveUsuarioConfiguracao(dto);

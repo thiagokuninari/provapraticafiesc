@@ -235,7 +235,6 @@ public class Usuario {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
-        usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         return usuario;
     }
 

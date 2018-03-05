@@ -187,10 +187,10 @@ public class UsuarioService {
         return UsuarioCidade.criar(usuario, idCidade, autenticacaoService.getUsuarioId());
     }
 
-    public UsuarioDto saveUsuarioHierarquia(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto) {
-        Usuario usuario = findComHierarquia(usuarioHierarquiaSaveDto.getUsuarioId());
-        removerUsuarioSuperior(usuarioHierarquiaSaveDto, usuario);
-        adicionarUsuarioSuperior(usuarioHierarquiaSaveDto, usuario);
+    public UsuarioDto saveUsuarioHierarquia(Integer usuarioId, List<Integer> hierarquiasId) {
+        Usuario usuario = findComHierarquia(usuarioId);
+        removerUsuarioSuperior(hierarquiasId, usuario);
+        adicionarUsuarioSuperior(hierarquiasId, usuario);
         return UsuarioDto.parse(repository.save(usuario));
     }
 
@@ -207,8 +207,8 @@ public class UsuarioService {
         return UsuarioDto.parse(repository.save(usuario));
     }
 
-    private void adicionarUsuarioSuperior(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto, Usuario usuario) {
-        usuarioHierarquiaSaveDto.getHierarquiasId()
+    private void adicionarUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
+        hierarquiasId
                 .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
     }
 
@@ -216,9 +216,9 @@ public class UsuarioService {
         return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
     }
 
-    private void removerUsuarioSuperior(UsuarioHierarquiaSaveDto usuarioHierarquiaSaveDto, Usuario usuario) {
+    private void removerUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
         usuario.getUsuariosHierarquia()
-                .removeIf(h -> !usuarioHierarquiaSaveDto.getHierarquiasId().contains(h.getUsuarioSuperiorId()));
+                .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
     }
 
     public List<Integer> getIdDosUsuariosPorCidade(Integer usuarioId) {
@@ -241,14 +241,15 @@ public class UsuarioService {
             configurar(usuario, senhaDescriptografada);
             usuario = repository.save(usuario);
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-            return UsuarioDto.parse(usuario);
         }
+        saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
         return UsuarioDto.parse(repository.save(usuario));
     }
 
     private void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setDataCadastro(LocalDateTime.now());
+        usuario.setUsuarioCadastro(autenticacaoService.getUsuarioAutenticado().getUsuario());
         usuario.setAlterarSenha(Eboolean.V);
         usuario.setSituacao(ESituacao.A);
         if (!usuario.hasUsuarioCadastro()) {
