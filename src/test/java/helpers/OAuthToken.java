@@ -39,6 +39,10 @@ public class OAuthToken {
 
     private String departamentoCodigo;
 
+    private Integer cargoId;
+
+    private Integer departamentoId;
+
     private String cpf;
 
     private List<Integer> empresas;
