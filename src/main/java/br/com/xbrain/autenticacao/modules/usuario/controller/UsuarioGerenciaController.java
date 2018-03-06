@@ -53,11 +53,6 @@ public class UsuarioGerenciaController {
         return service.save(usuario);
     }
 
-    @RequestMapping(value = "/cidades", method = RequestMethod.POST)
-    public UsuarioDto saveUsuarioCidades(@Validated @RequestBody UsuarioCidadeSaveDto dto) {
-        return service.saveUsuarioCidades(dto);
-    }
-
     @RequestMapping(value = "/configuracao", method = RequestMethod.POST)
     public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
         return service.saveUsuarioConfiguracao(dto);

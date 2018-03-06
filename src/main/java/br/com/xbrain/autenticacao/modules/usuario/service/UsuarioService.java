@@ -174,25 +174,21 @@ public class UsuarioService {
         return repository.findAll(predicate.build(), pageRequest);
     }
 
-    public UsuarioDto saveUsuarioCidades(UsuarioCidadeSaveDto usuarioCidadeSaveDto) {
-        Usuario usuario = findById(usuarioCidadeSaveDto.getUsuarioId());
-        adicionarCidadeParaUsuario(usuarioCidadeSaveDto, usuario);
-        return UsuarioDto.parse(repository.save(usuario));
-    }
-
-    private void adicionarCidadeParaUsuario(UsuarioCidadeSaveDto usuarioCidadeSaveDto, Usuario usuario) {
-        usuarioCidadeSaveDto.getCidadesId().forEach(idCidade -> usuario.adicionarCidade(
-                criarUsuarioCidade(usuario, idCidade)));
+    private void adicionarCidadeParaUsuario(Usuario usuario, List<Integer> cidadesId) {
+        if (!CollectionUtils.isEmpty(cidadesId)) {
+            cidadesId.forEach(idCidade -> usuario.adicionarCidade(
+                    criarUsuarioCidade(usuario, idCidade)));
+        }
     }
 
     private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {
         return UsuarioCidade.criar(usuario, idCidade, autenticacaoService.getUsuarioId());
     }
 
-    private void saveUsuarioHierarquia(Integer usuarioId, List<Integer> hierarquiasId) {
-        Usuario usuario = findComHierarquia(usuarioId);
-        removerUsuarioSuperior(hierarquiasId, usuario);
-        adicionarUsuarioSuperior(hierarquiasId, usuario);
+    private void adicionarUsuarioHierarquia(Usuario usuario, List<Integer> hierarquiasId) {
+        //Usuario usuario = findComHierarquia(usuarioId);
+        removerUsuarioSuperior(usuario, hierarquiasId);
+        adicionarUsuarioSuperior(usuario, hierarquiasId);
     }
 
     public UsuarioDto saveUsuarioConfiguracao(UsuarioConfiguracaoSaveDto usuarioHierarquiaSaveDto) {
@@ -208,7 +204,7 @@ public class UsuarioService {
         return UsuarioDto.parse(repository.save(usuario));
     }
 
-    private void adicionarUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
+    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
         if (!CollectionUtils.isEmpty(hierarquiasId)) {
             hierarquiasId
                     .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
@@ -219,7 +215,7 @@ public class UsuarioService {
         return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
     }
 
-    private void removerUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
+    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
         if (CollectionUtils.isEmpty(hierarquiasId)) {
             usuario.getUsuariosHierarquia().clear();
         } else {
@@ -250,8 +246,9 @@ public class UsuarioService {
             usuario = repository.save(usuario);
             enviarEmail = true;
         }
+        adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
+        adicionarUsuarioHierarquia(usuario, usuarioDto.getHierarquiasId());
         usuario = repository.save(usuario);
-        saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
         if (enviarEmail) {
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }

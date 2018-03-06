@@ -65,8 +65,8 @@ public class UsuarioDto implements Serializable {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
     private Integer usuarioCadastroId;
-    @NotNull
     private List<Integer> hierarquiasId;
+    private List<Integer> cidadesId;
 
     public static UsuarioDto parse(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();

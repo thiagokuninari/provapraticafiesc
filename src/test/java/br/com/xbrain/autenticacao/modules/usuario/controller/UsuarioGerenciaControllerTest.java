@@ -133,7 +133,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(9)))
+                .andExpect(jsonPath("$", hasSize(8)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
                         "O campo cpf é obrigatório.",
@@ -142,8 +142,7 @@ public class UsuarioGerenciaControllerTest {
                         "O campo unidadesNegociosId é obrigatório.",
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
-                        "O campo departamentoId é obrigatório.",
-                        "O campo hierarquiasId é obrigatório.")));
+                        "O campo departamentoId é obrigatório.")));
     }
 
     @Test
@@ -160,18 +159,6 @@ public class UsuarioGerenciaControllerTest {
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
-    }
-
-    @Test
-    public void deveSalvarAsCidadesDoUsuario() throws Exception {
-        UsuarioCidadeSaveDto dto = new UsuarioCidadeSaveDto();
-        dto.setUsuarioId(ID_USUARIO_HELPDESK);
-        dto.setCidadesId(Arrays.asList(736, 2921, 527));
-        mvc.perform(post("/api/usuarios/gerencia/cidades")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isOk());
     }
 
     @Test
@@ -373,6 +360,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setEmail("usuario@teste.com");
         usuario.setTelefone("43 995565661");
         usuario.setHierarquiasId(Arrays.asList(100));
+        usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         return usuario;
     }
 

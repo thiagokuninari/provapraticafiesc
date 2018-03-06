@@ -103,8 +103,8 @@ public class Usuario {
 
     @NotAudited
     @OrderBy("id")
-    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<UsuarioCidade> cidades;
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
@@ -179,6 +179,7 @@ public class Usuario {
 
     public void forceLoad() {
         empresas.size();
+        cidades.size();
         usuariosHierarquia.forEach(u -> u.getUsuarioSuperior().getId());
         cargo.getId();
         unidadesNegocios.size();
@@ -243,6 +244,9 @@ public class Usuario {
     }
 
     public void adicionarCidade(UsuarioCidade usuarioCidade) {
+        if (CollectionUtils.isEmpty(this.cidades)) {
+            this.cidades = new HashSet<>();
+        }
         if (!this.cidades.contains(usuarioCidade)) {
             this.cidades.add(usuarioCidade);
         }
