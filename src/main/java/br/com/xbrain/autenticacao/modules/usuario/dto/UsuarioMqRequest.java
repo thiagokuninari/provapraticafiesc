@@ -29,5 +29,6 @@ public class UsuarioMqRequest {
     private List<CodigoUnidadeNegocio> unidadesNegocio;
     private List<CodigoEmpresa> empresa;
     private Integer usuarioCadastroId;
+    private String exception;
 
 }

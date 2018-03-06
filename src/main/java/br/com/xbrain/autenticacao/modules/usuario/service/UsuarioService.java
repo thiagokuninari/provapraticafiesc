@@ -28,6 +28,8 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,6 +53,8 @@ public class UsuarioService {
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+
+    private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
     @Getter
     @Autowired
@@ -269,8 +273,10 @@ public class UsuarioService {
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(usuarioDto);
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
-        } catch (Exception exception) {
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErro(usuarioMqRequest);
+            log.error("Erro ao salvar usuário da fila.", ex);
         }
     }
 
