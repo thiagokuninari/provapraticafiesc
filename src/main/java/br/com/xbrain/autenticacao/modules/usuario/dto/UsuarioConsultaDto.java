@@ -26,5 +26,4 @@ public class UsuarioConsultaDto {
         this.empresaNome = usuario.getEmpresas().stream().map(Empresa::toString).collect(Collectors.joining(", "));
         this.situacao = usuario.getSituacao().toString();
     }
-
 }

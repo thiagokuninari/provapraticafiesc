@@ -39,10 +39,7 @@ import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -408,12 +405,13 @@ public class UsuarioService {
                 .orElseThrow(() -> new ValidacaoException("Motivo de inativação não encontrado."));
     }
 
-    public List<UsuarioConsultaDto> getUsuariosHierarquia() {
+    public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.comNivel(Collections.singletonList(nivelId));
         return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
                 .stream()
-                .map(UsuarioConsultaDto::new)
+                .map(UsuarioHierarquiaResponse::new)
                 .collect(Collectors.toList());
     }
 

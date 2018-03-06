@@ -38,9 +38,9 @@ public class UsuarioGerenciaController {
                 page.getTotalElements());
     }
 
-    @RequestMapping(value = "/hierarquia", method = RequestMethod.GET)
-    public List<UsuarioConsultaDto> getUsuariosHierarquia() {
-        return service.getUsuariosHierarquia();
+    @RequestMapping(value = "/hierarquia/{nivelId}", method = RequestMethod.GET)
+    public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(@PathVariable int nivelId) {
+        return service.getUsuariosHierarquia(nivelId);
     }
 
     @RequestMapping(params = "email")
