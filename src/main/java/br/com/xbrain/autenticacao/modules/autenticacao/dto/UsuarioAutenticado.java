@@ -23,7 +23,9 @@ public class UsuarioAutenticado {
     private int id;
     private String nome;
     private String email;
+    private Integer cargoId;
     private String cargo;
+    private Integer departamentoId;
     private String departamento;
     private String nivel;
     private Integer nivelId;
@@ -36,6 +38,8 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
+        this.cargoId = usuario.getCargoId();
+        this.departamentoId = usuario.getDepartamentoId();
         this.cargo = usuario.getCargoCodigo().toString();
         this.departamento = usuario.getDepartamentoCodigo().toString();
         this.nivel = usuario.getNivelCodigo().toString();
@@ -49,6 +53,8 @@ public class UsuarioAutenticado {
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
+        this.cargoId = usuario.getCargoId();
+        this.departamentoId = usuario.getDepartamentoId();
         this.cargo = usuario.getCargo().toString();
         this.departamento = usuario.getDepartamentoCodigo().toString();
         this.nivel = usuario.getNivelCodigo().toString();
