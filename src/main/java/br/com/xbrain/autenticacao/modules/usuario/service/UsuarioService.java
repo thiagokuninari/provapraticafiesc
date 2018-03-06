@@ -353,6 +353,7 @@ public class UsuarioService {
     }
 
     private void validarCpfExistente(Usuario usuario) {
+        usuario.removerCaracteresDoCpf();
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
