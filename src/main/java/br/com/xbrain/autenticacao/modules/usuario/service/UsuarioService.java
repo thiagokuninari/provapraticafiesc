@@ -179,6 +179,7 @@ public class UsuarioService {
         if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
+            repository.save(usuario);
         }
     }
 
@@ -187,9 +188,9 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioHierarquia(Usuario usuario, List<Integer> hierarquiasId) {
-        //Usuario usuario = findComHierarquia(usuarioId);
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
+        repository.save(usuario);
     }
 
     public UsuarioDto saveUsuarioConfiguracao(UsuarioConfiguracaoSaveDto usuarioHierarquiaSaveDto) {
@@ -237,6 +238,7 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         validar(usuario);
@@ -244,12 +246,11 @@ public class UsuarioService {
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         if (usuario.isNovoCadastro()) {
             configurar(usuario, senhaDescriptografada);
-            usuario = repository.save(usuario);
             enviarEmail = true;
         }
-        adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
-        adicionarUsuarioHierarquia(usuario, usuarioDto.getHierarquiasId());
         usuario = repository.save(usuario);
+        adicionarUsuarioHierarquia(usuario, usuarioDto.getHierarquiasId());
+        adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
         if (enviarEmail) {
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }

@@ -9,8 +9,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -35,10 +35,8 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCpf(String cpf) {
-        if (cpf != null) {
-            builder.and(
-                    Expressions.stringTemplate("REGEXP_REPLACE({0}, '[^0-9]+', '')", usuario.cpf)
-                            .like("%" + StringUtil.getOnlyNumbers(cpf) + "%"));
+        if (!StringUtils.isEmpty(cpf)) {
+            builder.and(usuario.cpf.eq(StringUtil.getOnlyNumbers(cpf)));
         }
         return this;
     }
