@@ -34,6 +34,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
@@ -188,11 +189,10 @@ public class UsuarioService {
         return UsuarioCidade.criar(usuario, idCidade, autenticacaoService.getUsuarioId());
     }
 
-    public UsuarioDto saveUsuarioHierarquia(Integer usuarioId, List<Integer> hierarquiasId) {
+    private void saveUsuarioHierarquia(Integer usuarioId, List<Integer> hierarquiasId) {
         Usuario usuario = findComHierarquia(usuarioId);
         removerUsuarioSuperior(hierarquiasId, usuario);
         adicionarUsuarioSuperior(hierarquiasId, usuario);
-        return UsuarioDto.parse(repository.save(usuario));
     }
 
     public UsuarioDto saveUsuarioConfiguracao(UsuarioConfiguracaoSaveDto usuarioHierarquiaSaveDto) {
@@ -209,8 +209,10 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
-        hierarquiasId
-                .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+            hierarquiasId
+                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        }
     }
 
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idHierarquia) {
@@ -218,8 +220,12 @@ public class UsuarioService {
     }
 
     private void removerUsuarioSuperior(List<Integer> hierarquiasId, Usuario usuario) {
-        usuario.getUsuariosHierarquia()
-                .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
+            usuario.getUsuariosHierarquia().clear();
+        } else {
+            usuario.getUsuariosHierarquia()
+                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        }
     }
 
     public List<Integer> getIdDosUsuariosPorCidade(Integer usuarioId) {
@@ -237,16 +243,19 @@ public class UsuarioService {
     public UsuarioDto save(UsuarioDto usuarioDto) {
         Usuario usuario = Usuario.parse(usuarioDto);
         validar(usuario);
+        boolean enviarEmail = false;
+        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         if (usuario.isNovoCadastro()) {
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             configurar(usuario, senhaDescriptografada);
             usuario = repository.save(usuario);
+            enviarEmail = true;
+        }
+        usuario = repository.save(usuario);
+        saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
+        if (enviarEmail) {
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }
-        if (usuarioDto.getHierarquiasId() != null) {
-            saveUsuarioHierarquia(usuario.getId(), usuarioDto.getHierarquiasId());
-        }
-        return UsuarioDto.parse(repository.save(usuario));
+        return UsuarioDto.parse(usuario);
     }
 
     private void configurar(Usuario usuario, String senhaDescriptografada) {
