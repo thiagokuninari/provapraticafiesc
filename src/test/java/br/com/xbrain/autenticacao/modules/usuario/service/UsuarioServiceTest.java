@@ -49,6 +49,7 @@ public class UsuarioServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private EmailService emailService;
+
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
