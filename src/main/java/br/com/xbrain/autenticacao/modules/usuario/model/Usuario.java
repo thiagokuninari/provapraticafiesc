@@ -195,6 +195,15 @@ public class Usuario {
                 : null;
     }
 
+    public List<String> getEmpresasNome() {
+        return empresas != null && Hibernate.isInitialized(empresas)
+                ? empresas
+                .stream()
+                .map(Empresa::getNome)
+                .collect(Collectors.toList())
+                : null;
+    }
+
     public void setEmpresasId(List<Integer> ids) {
         if (ids != null) {
             empresas = ids

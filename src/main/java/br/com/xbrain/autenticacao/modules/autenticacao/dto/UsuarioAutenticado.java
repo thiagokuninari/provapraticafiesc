@@ -31,6 +31,7 @@ public class UsuarioAutenticado {
     private Integer nivelId;
     private String cpf;
     private ESituacao situacao;
+    private List<String> empresasNome;
     private List<Empresa> empresas;
     private Collection<? extends GrantedAuthority> permissoes;
 
@@ -46,6 +47,7 @@ public class UsuarioAutenticado {
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
+        this.empresasNome = usuario.getEmpresasNome();
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
@@ -62,6 +64,7 @@ public class UsuarioAutenticado {
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
+        this.empresasNome = usuario.getEmpresasNome();
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
