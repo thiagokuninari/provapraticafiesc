@@ -68,8 +68,8 @@ public class StringUtil {
         if (StringUtils.isEmpty(nome)) {
             return "SN";
         }
-        String nomeSingleSpaced = nome.replaceAll("[ ]+", " ");
-        String array[] = nomeSingleSpaced.split(" ");
+        String nomeSingleSpaced = nome.replaceAll("[ ] +", " ");
+        String[] array = nomeSingleSpaced.split(" ");
         int size = array.length;
 
         if (size <= 1) {
