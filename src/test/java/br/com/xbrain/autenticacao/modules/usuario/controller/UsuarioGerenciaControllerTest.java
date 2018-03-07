@@ -154,6 +154,8 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(usuario)))
                 .andExpect(status().isOk());
 
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+
         List<Usuario> usuarios = Lists.newArrayList(
                 repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
 

@@ -13,3 +13,7 @@ spring:
     username: sa
     password:
     driverClassName: org.hsqldb.jdbcDriver
+
+pp-config:
+  email:
+    enviar: false

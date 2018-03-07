@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -46,7 +47,8 @@ public class UsuarioServiceTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
-
+    @MockBean
+    private EmailService emailService;
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
@@ -59,6 +61,7 @@ public class UsuarioServiceTest {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
