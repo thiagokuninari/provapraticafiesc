@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("email", usuario.getEmail());
         token.getAdditionalInformation().put("login", user.getUsername());
         token.getAdditionalInformation().put("nome", usuario.getNome());
+        token.getAdditionalInformation().put("nomeAbreviado", StringUtil.getNomeAbreviado(usuario.getNome()));
         token.getAdditionalInformation().put("alterarSenha", usuario.getAlterarSenha());
         token.getAdditionalInformation().put("nivel", usuario.getCargo().getNivel().getNome());
         token.getAdditionalInformation().put("nivelCodigo", usuario.getCargo().getNivel().getCodigo());

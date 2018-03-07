@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.util;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -63,4 +64,20 @@ public class StringUtil {
         return valorFormatado.replaceAll("[;|,|\t]", "");
     }
 
+    public static String getNomeAbreviado(String nome) {
+        if (StringUtils.isEmpty(nome)) {
+            return "SN";
+        }
+        String nomeSingleSpaced = nome.replaceAll("[ ]+", " ");
+        String array[] = nomeSingleSpaced.split(" ");
+        int size = array.length;
+
+        if (size <= 1) {
+            return String.valueOf(nome.charAt(0));
+        }
+
+        String firstName = String.valueOf(array[0].charAt(0));
+        String lastName = String.valueOf(array[size - 1].charAt(0));
+        return firstName + "" + lastName;
+    }
 }
