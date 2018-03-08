@@ -14,6 +14,6 @@ spring:
     password:
     driverClassName: org.hsqldb.jdbcDriver
 
-pp-config:
+app-config:
   email:
     enviar: false

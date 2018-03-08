@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.repository;
+package br.com.xbrain.autenticacao.modules.permissao.controller;
 
 import br.com.xbrain.autenticacao.Application;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;

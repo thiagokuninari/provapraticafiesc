@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.service;
+package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
