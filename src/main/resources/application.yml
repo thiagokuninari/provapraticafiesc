@@ -25,6 +25,7 @@ app-config:
     usuario-alterar-cargo: usuario-alterar-cargo.queue
     usuario-ativar: usuario-ativar.queue
     usuario-inativar: usuario-inativar.queue
+    usuario-alterar-senha: usuario-alterar-senha.queue
 
   oauth-clients:
     front-apps:

@@ -531,6 +531,16 @@ public class UsuarioService {
         enviarEmailComSenhaNova(usuario, senhaDescriptografada);
     }
 
+    @Transactional
+    public void alterarSenhaAa(UsuarioAlterarSenhaDto usuarioAlterarSenhaDto) {
+        Usuario usuario = findComplete(usuarioAlterarSenhaDto.getUsuarioId());
+        usuario.setAlterarSenha(usuarioAlterarSenhaDto.getAlterarSenha());
+        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
+        repository.save(usuario);
+        enviarEmailComSenhaNova(usuario, senhaDescriptografada);
+    }
+
     private void enviarEmailComSenhaNova(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
