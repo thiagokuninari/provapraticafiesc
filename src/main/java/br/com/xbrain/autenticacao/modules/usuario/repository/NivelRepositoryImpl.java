@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,6 +19,7 @@ public class NivelRepositoryImpl extends CustomRepository<Nivel> implements Nive
                 .select(nivel)
                 .from(nivel)
                 .where(nivel.situacao.eq(ESituacao.A)
+                        .and(nivel.exibirCadastroUsuario.eq(Eboolean.V))
                         .and(predicate))
 
                 .orderBy(nivel.nome.asc())
