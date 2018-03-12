@@ -76,8 +76,8 @@ spring:
     driverClassName: oracle.jdbc.OracleDriver
 
   rabbitmq:
-      host: 192.168.1.11
-      port: 5672
+      host: 192.168.1.240
+      port: 5671
       username: xbrain
       password: xbrain
 

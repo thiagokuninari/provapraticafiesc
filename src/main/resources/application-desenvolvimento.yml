@@ -3,3 +3,10 @@ logging:
   level:
       org.springframework: 'ERROR'
       org.hibernate: 'ERROR'
+
+spring:
+  rabbitmq:
+      host: 172.10.10.70
+      port: 5671
+      username: xbrain
+      password: xbrain
