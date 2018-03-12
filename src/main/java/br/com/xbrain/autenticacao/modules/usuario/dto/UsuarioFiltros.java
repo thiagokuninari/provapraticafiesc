@@ -18,7 +18,7 @@ public class UsuarioFiltros {
     public UsuarioPredicate toPredicate() {
         return new UsuarioPredicate()
                 .comNome(nome)
-                .comCpf(cpf != null ? cpf.replaceAll("[.-]", "") : null)
+                .comCpf(cpf)
                 .comRegional(regionalId)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)

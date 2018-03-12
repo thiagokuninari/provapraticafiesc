@@ -1,9 +1,9 @@
-package br.com.xbrain.autenticacao.modules.usuario.controller;
+package br.com.xbrain.autenticacao.modules.permissao.controller;
 
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeFiltro;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.FuncionalidadeSaveRequest;
-import br.com.xbrain.autenticacao.modules.usuario.service.CargoDepartamentoFuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.permissao.service.CargoDepartamentoFuncionalidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;

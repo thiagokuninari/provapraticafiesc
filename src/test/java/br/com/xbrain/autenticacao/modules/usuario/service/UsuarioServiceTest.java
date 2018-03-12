@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -46,6 +48,8 @@ public class UsuarioServiceTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private EmailService emailService;
 
     @Before
     public void setUp() {
@@ -59,6 +63,7 @@ public class UsuarioServiceTest {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
@@ -120,6 +125,16 @@ public class UsuarioServiceTest {
         service.ativar(usuarioAtivacaoDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
+    }
+
+    @Test
+    public void deveAlterarSenhaUsuario() throws Exception {
+        UsuarioAlterarSenhaDto usuarioAlterarSenhaDto = new UsuarioAlterarSenhaDto();
+        usuarioAlterarSenhaDto.setUsuarioId(100);
+        usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
+        service.alterarSenhaAa(usuarioAlterarSenhaDto);
+        Usuario usuario = service.findById(100);
+        Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
 
     private UsuarioMqRequest umUsuario() {

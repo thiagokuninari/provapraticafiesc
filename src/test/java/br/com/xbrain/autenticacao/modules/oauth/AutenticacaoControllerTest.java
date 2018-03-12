@@ -77,6 +77,8 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.cargoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.departamentoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.nivelCodigo", is("XBRAIN")))
+                .andExpect(jsonPath("$.empresas", not(empty())))
+                .andExpect(jsonPath("$.empresasNome", not(empty())))
                 .andExpect(jsonPath("$.authorities", not(empty())))
                 .andExpect(jsonPath("$.cpf", is("38957979875")));
     }
