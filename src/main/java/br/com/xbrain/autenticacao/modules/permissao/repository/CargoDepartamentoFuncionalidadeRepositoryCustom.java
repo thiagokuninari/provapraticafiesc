@@ -1,12 +1,15 @@
 package br.com.xbrain.autenticacao.modules.permissao.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
+import com.querydsl.core.types.Predicate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface CargoDepartamentoFuncionalidadeRepositoryCustom  {
 
-    List<CargoDepartamentoFuncionalidade> findFuncionalidadesPorCargoEDepartamento(
-            FuncionalidadePredicate predicate);
+    List<CargoDepartamentoFuncionalidade> findFuncionalidadesPorCargoEDepartamento(Predicate predicate);
+
+    Page<CargoDepartamentoFuncionalidade> findAll(Predicate predicate, Pageable pageable);
 }

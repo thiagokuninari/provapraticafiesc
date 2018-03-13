@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.util.stream.Collectors;
 
@@ -17,13 +18,20 @@ public class UsuarioConsultaDto {
     private String empresaNome;
     private String situacao;
 
-    public UsuarioConsultaDto(Usuario usuario) {
-        this.id = usuario.getId();
-        this.nome = usuario.getNome();
-        this.email = usuario.getEmail();
-        this.unidadeNegocioNome = usuario.getUnidadesNegocios().stream()
-                .map(UnidadeNegocio::getNome).collect(Collectors.joining(", "));
-        this.empresaNome = usuario.getEmpresas().stream().map(Empresa::toString).collect(Collectors.joining(", "));
-        this.situacao = usuario.getSituacao().toString();
+    public UsuarioConsultaDto() { }
+
+    public UsuarioConsultaDto(Usuario objRequest) {
+        BeanUtils.copyProperties(convertFrom(objRequest), this);
+    }
+
+    public static UsuarioConsultaDto convertFrom(Usuario usuario) {
+        UsuarioConsultaDto response = new UsuarioConsultaDto();
+        BeanUtils.copyProperties(usuario, response);
+        response.setSituacao(usuario.getSituacao().toString());
+        response.setUnidadeNegocioNome(usuario.getUnidadesNegocios().stream()
+                .map(UnidadeNegocio::getNome).collect(Collectors.joining(", ")));
+        response.setEmpresaNome(usuario.getEmpresas().stream()
+                .map(Empresa::toString).collect(Collectors.joining(", ")));
+        return response;
     }
 }

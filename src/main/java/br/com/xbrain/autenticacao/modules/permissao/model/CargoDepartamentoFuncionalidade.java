@@ -91,8 +91,4 @@ public class CargoDepartamentoFuncionalidade {
     public Integer getDepartamentoId() {
         return this.departamento != null ? this.departamento.getId() : null;
     }
-
-    public Integer getFuncionalidadeId() {
-        return this.funcionalidade != null ? this.funcionalidade.getId() : null;
-    }
 }

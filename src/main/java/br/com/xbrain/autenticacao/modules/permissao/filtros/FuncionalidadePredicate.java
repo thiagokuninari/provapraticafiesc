@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.permissao.predicate;
+package br.com.xbrain.autenticacao.modules.permissao.filtros;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade;
 import com.querydsl.core.BooleanBuilder;
