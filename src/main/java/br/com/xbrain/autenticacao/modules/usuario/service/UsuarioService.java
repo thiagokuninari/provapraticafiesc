@@ -13,9 +13,9 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.permissao.predicate.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -606,7 +606,7 @@ public class UsuarioService {
         Usuario usuario = findComplete(idUsuario);
         FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(predicate);
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
                 funcionalidades
                         .stream()
