@@ -31,7 +31,7 @@ public class CargoDepartamentoFuncionalidadeController {
         return CargoDepartamentoFuncionalidadeResponse.convertFrom(lista);
     }
 
-    @RequestMapping(name = "/pages", method = RequestMethod.GET)
+    @RequestMapping(value = "/pages", method = RequestMethod.GET)
     public PageImpl<CargoDepartamentoFuncionalidadeResponse> getAll(PageRequest pageRequest,
                                                                     CargoDepartamentoFuncionalidadeFiltros filtros) {
         Page<CargoDepartamentoFuncionalidade> page = service.getAll(pageRequest, filtros);
