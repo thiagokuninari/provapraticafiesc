@@ -12,7 +12,7 @@ app-config:
 
   email:
     enviar: true
-    emails: andre@xbrain.com.br
+    emails: fernandoalves@xbrain.com.br
 
   topic:
     autenticacao: autenticacao.topic
