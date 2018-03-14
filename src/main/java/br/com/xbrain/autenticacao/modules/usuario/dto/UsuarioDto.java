@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import lombok.Data;
@@ -56,6 +57,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> empresasId = new ArrayList<>();
     @NotNull
     private Integer cargoId;
+    private CodigoCargo cargoCodigo;
     @NotNull
     private Integer departamentoId;
     private LocalDateTime dataCadastro;
@@ -72,6 +74,7 @@ public class UsuarioDto implements Serializable {
         UsuarioDto usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());
+        usuarioDto.setCargoCodigo(usuario.getCargoCodigo());
         usuarioDto.setDepartamentoId(usuario.getDepartamentoId());
         usuarioDto.setUnidadesNegociosId(usuario.getUnidadesNegociosId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
