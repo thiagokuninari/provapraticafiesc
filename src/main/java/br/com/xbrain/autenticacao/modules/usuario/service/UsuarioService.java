@@ -448,16 +448,14 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void alterarCargoUsuario(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
-        Usuario usuario = findComplete(usuarioAlteracaoRequest.getId());
-        usuario.setCargo(getCargo(usuarioAlteracaoRequest.getCargo()));
-        repository.save(usuario);
+        repository.updateCargo(getCargo(usuarioAlteracaoRequest.getCargo()), usuarioAlteracaoRequest.getId());
     }
 
+    @Transactional
     public void alterarEmailUsuario(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
-        Usuario usuario = findComplete(usuarioAlteracaoRequest.getId());
-        usuario.setEmail(usuarioAlteracaoRequest.getEmail());
-        repository.save(usuario);
+        repository.updateEmail(usuarioAlteracaoRequest.getEmail(), usuarioAlteracaoRequest.getId());
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {

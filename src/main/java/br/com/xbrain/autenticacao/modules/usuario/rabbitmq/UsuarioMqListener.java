@@ -19,12 +19,12 @@ public class UsuarioMqListener {
 
     @RabbitListener(queues = "${app-config.queue.usuario-alterar-email}")
     public void alterarEmail(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
-        service.alterarCargoUsuario(usuarioAlteracaoRequest);
+        service.alterarEmailUsuario(usuarioAlteracaoRequest);
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-alterar-cargo}")
     public void alterarCargo(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
-        service.alterarEmailUsuario(usuarioAlteracaoRequest);
+        service.alterarCargoUsuario(usuarioAlteracaoRequest);
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-ativar}")
