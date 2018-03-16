@@ -76,7 +76,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .withClient(mailingApiClient)
                 .secret(mailingApiSecret)
                 .authorizedGrantTypes("client_credentials")
-                .scopes("mailing-api");
+                .scopes("mailing-api")
+                .authorities("ROLE_APPLICATION");
     }
 
     @Override
