@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
@@ -95,6 +96,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
+
+    @Autowired
+    private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
 
     private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
             && f.getUnidadeNegocio() == null;
@@ -219,8 +223,6 @@ public class UsuarioService {
             enviarEmail = true;
         }
         usuario = repository.save(usuario);
-        atualizaUsuarioEmpresas(usuario, usuarioDto.getEmpresasId());
-        atualizarUsuarioUnidadesNegocio(usuario, usuarioDto.getUnidadesNegociosId());
         adicionarUsuarioHierarquia(usuario, usuarioDto.getHierarquiasId());
         adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
         repository.save(usuario);
@@ -230,28 +232,10 @@ public class UsuarioService {
         return UsuarioDto.parse(usuario);
     }
 
-    private void atualizaUsuarioEmpresas(Usuario usuario, List<Integer> empresasIds) {
-        if (CollectionUtils.isEmpty(empresasIds)) {
-            usuario.getEmpresas().clear();
-        } else {
-            usuario.getEmpresas()
-                    .removeIf(e -> !empresasIds.contains(e.getId()));
-        }
-    }
-
-    private void atualizarUsuarioUnidadesNegocio(Usuario usuario, List<Integer> unidadesIds) {
-        if (CollectionUtils.isEmpty(unidadesIds)) {
-            usuario.getUnidadesNegocios().clear();
-        } else {
-            usuario.getUnidadesNegocios()
-                    .removeIf(un -> !unidadesIds.contains(un.getId()));
-        }
-    }
-
     private void adicionarUsuarioHierarquia(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
-        //repository.save(usuario);
+        repository.save(usuario);
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
@@ -274,7 +258,7 @@ public class UsuarioService {
         if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
-            //repository.save(usuario);
+            repository.save(usuario);
         }
     }
 
@@ -300,6 +284,37 @@ public class UsuarioService {
             enviarParaFilaDeErro(usuarioMqRequest);
             log.error("Erro ao salvar usuário da fila.", ex);
         }
+    }
+
+    @Transactional
+    public void atualizarUsuariosAgentesAutorizados(UsuarioMqAtualizacaoRequest usuariosAtualizacao) {
+        try {
+            usuariosAtualizacao.getUsuariosIds().forEach(u -> {
+                Optional<Usuario> usuarioOptional = repository.findById(u);
+                if (usuarioOptional.isPresent()) {
+                    Usuario usuario = usuarioOptional.get();
+                    atualizarEmpresas(usuario, usuariosAtualizacao.getEmpresasIds());
+                    atualizarUnidadesNegocio(usuario, usuariosAtualizacao.getUnidadeId());
+                } else {
+                    log.error("Não foi possível atualizar o usuário: " + u + " - não encontrado");
+                }
+            });
+        } catch (Exception ex) {
+            enviarParaFiladeErrosUsuariosAtualizados(usuariosAtualizacao);
+            log.error("Erro ao atualizar usuários da fila.", ex);
+        }
+    }
+
+    private void atualizarEmpresas(Usuario usuario, List<Integer> empresasIds) {
+        usuario.setEmpresas(empresasIds.stream().map(e -> empresaRepository.findOne(e)).collect(Collectors.toList()));
+    }
+
+    private void atualizarUnidadesNegocio(Usuario usuario, Integer unidadeId) {
+        usuario.setUnidadesNegocios(Collections.singletonList(unidadeNegocioRepository.findOne(unidadeId)));
+    }
+
+    private void enviarParaFiladeErrosUsuariosAtualizados(UsuarioMqAtualizacaoRequest usuariosAtualizacao) {
+        usuarioAtualizacaoMqSender.sendWithFailure(usuariosAtualizacao);
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {

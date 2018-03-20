@@ -17,6 +17,11 @@ public class UsuarioMqListener {
         service.saveFromQueue(usuarioMqRequest);
     }
 
+    @RabbitListener(queues = "${app-config.queue.usuario-atualizacao}")
+    public void atualizar(UsuarioMqAtualizacaoRequest usuarioAtualizacaoRequest) {
+        service.atualizarUsuariosAgentesAutorizados(usuarioAtualizacaoRequest);
+    }
+
     @RabbitListener(queues = "${app-config.queue.usuario-alterar-email}")
     public void alterarEmail(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
