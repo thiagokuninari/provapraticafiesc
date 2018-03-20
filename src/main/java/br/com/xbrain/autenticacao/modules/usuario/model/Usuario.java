@@ -214,7 +214,11 @@ public class Usuario {
     }
 
     public List<Integer> getUnidadesNegociosId() {
-        return unidadesNegocios != null && Hibernate.isInitialized(unidadesNegocios)
+        if (!Hibernate.isInitialized(unidadesNegocios)) {
+            Hibernate.initialize(unidadesNegocios);
+        }
+
+        return unidadesNegocios != null
                 ? unidadesNegocios
                 .stream()
                 .map(UnidadeNegocio::getId)
