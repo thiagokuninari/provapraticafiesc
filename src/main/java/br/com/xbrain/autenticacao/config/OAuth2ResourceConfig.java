@@ -18,12 +18,14 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        String[] permitAll = {"/api/usuarios/gerencia/{idUsuario}/supervisor"};
         http
                 .addFilterBefore(new CorsConfigFilter(), ChannelProcessingFilter.class)
                 .requestMatchers()
                 .antMatchers("/api/**")
                 .and()
                 .authorizeRequests()
+                .antMatchers(permitAll).permitAll()
                 .antMatchers("/api/usuarios/gerencia/**")
                 .hasAnyRole("AUT_GER_USUARIO", "POL_GERENCIAR_USUARIOS_EXECUTIVO")
                 .antMatchers("/api/emular**").hasRole("AUT_EMULAR_USUARIO")
