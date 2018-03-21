@@ -68,14 +68,10 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioAtualizacaoMq() {
-        return new Queue(usuarioAtualizacaoMq, false);
-    }
+    Queue usuarioAtualizacaoMq() { return new Queue(usuarioAtualizacaoMq, false); }
 
     @Bean
-    Queue usuarioAtualizacaoFailureMq() {
-        return new Queue(usuarioAtualizacaoFailureMq, false);
-    }
+    Queue usuarioAtualizacaoFailureMq() { return new Queue(usuarioAtualizacaoFailureMq, false); }
 
     @Bean
     Queue usuarioCadastroFailureMq() {
@@ -120,6 +116,16 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioCadastroSuccessFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroFailureMq()).to(exchange).with(usuarioCadastroFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioAtualizcaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAtualizacaoMq()).to(exchange).with(usuarioAtualizacaoMq);
+    }
+
+    @Bean
+    public Binding usuarioAtualizacaoFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAtualizacaoFailureMq()).to(exchange).with(usuarioAtualizacaoFailureMq);
     }
 
     @Bean
