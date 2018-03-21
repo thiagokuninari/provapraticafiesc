@@ -68,10 +68,14 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioAtualizacaoMq() { return new Queue(usuarioAtualizacaoMq, false); }
+    Queue usuarioAtualizacaoMq() {
+        return new Queue(usuarioAtualizacaoMq, false);
+    }
 
     @Bean
-    Queue usuarioAtualizacaoFailureMq() { return new Queue(usuarioAtualizacaoFailureMq, false); }
+    Queue usuarioAtualizacaoFailureMq() {
+        return new Queue(usuarioAtualizacaoFailureMq, false);
+    }
 
     @Bean
     Queue usuarioCadastroFailureMq() {

@@ -127,7 +127,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarOUsuarioPorCPF() throws Exception {
+    public void deveRetornarUsuarioPorCpf() throws Exception {
         mvc.perform(get("/api/usuarios?cpf=65710871036")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
