@@ -21,6 +21,8 @@ app-config:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
+    usuario-atualizacao: usuario-atualizacao.queue
+    usuario-atualizacao-failure: usuario-atualizacao-failure.queue
     usuario-alterar-email: usuario-alterar-email.queue
     usuario-alterar-cargo: usuario-alterar-cargo.queue
     usuario-ativar: usuario-ativar.queue

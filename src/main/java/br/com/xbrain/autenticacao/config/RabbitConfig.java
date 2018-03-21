@@ -26,6 +26,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-failure}")
     private String usuarioCadastroFailureMq;
 
+    @Value("${app-config.queue.usuario-atualizacao}")
+    private String usuarioAtualizacaoMq;
+
     @Value("${app-config.queue.usuario-atualizacao-failure}")
     private String usuarioAtualizacaoFailureMq;
 
@@ -62,6 +65,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroSuccessMq() {
         return new Queue(usuarioCadastroSuccessMq, false);
+    }
+
+    @Bean
+    Queue usuarioAtualizacaoMq() {
+        return new Queue(usuarioAtualizacaoMq, false);
     }
 
     @Bean
