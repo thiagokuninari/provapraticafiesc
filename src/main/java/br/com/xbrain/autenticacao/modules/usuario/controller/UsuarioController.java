@@ -69,6 +69,11 @@ public class UsuarioController {
         return usuarioService.findByEmailAa(email);
     }
 
+    @RequestMapping(params = "cpf", method = RequestMethod.GET)
+    public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf) {
+        return usuarioService.findByCpfAa(cpf);
+    }
+
     @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)
     public List<EmpresaResponse> getEmpresasDoUsuario(@PathVariable("id") int id) {
         return usuarioService.findEmpresasDoUsuario(id);

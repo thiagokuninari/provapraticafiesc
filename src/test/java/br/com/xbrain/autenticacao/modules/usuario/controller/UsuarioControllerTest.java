@@ -127,6 +127,17 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void deveRetornarOUsuarioPorCPF() throws Exception {
+        mvc.perform(get("/api/usuarios?cpf=65710871036")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(101)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
+    }
+
+    @Test
     public void deveRetornarAsEmpresasDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/100/empresas")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))

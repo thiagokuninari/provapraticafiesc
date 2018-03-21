@@ -168,6 +168,15 @@ public class UsuarioService {
         return null;
     }
 
+    public UsuarioResponse findByCpfAa(String cpf) {
+        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpf);
+
+        if (usuarioOptional.isPresent()) {
+            return UsuarioResponse.convertFrom(usuarioOptional.get());
+        }
+        return null;
+    }
+
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
         return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());
