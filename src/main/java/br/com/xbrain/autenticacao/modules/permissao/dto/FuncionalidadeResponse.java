@@ -17,7 +17,7 @@ public class FuncionalidadeResponse {
     private String aplicacao;
     private boolean especial;
 
-    private static FuncionalidadeResponse convertFrom(Funcionalidade funcionalidade) {
+    public static FuncionalidadeResponse convertFrom(Funcionalidade funcionalidade) {
         FuncionalidadeResponse funcionalidadeResponse = new FuncionalidadeResponse();
         BeanUtils.copyProperties(funcionalidade, funcionalidadeResponse);
         funcionalidadeResponse.setAplicacao(funcionalidade.getAplicacao().getNome());
@@ -25,7 +25,7 @@ public class FuncionalidadeResponse {
     }
 
     public static List<FuncionalidadeResponse> convertFrom(List<Funcionalidade> funcionalidades) {
-        return funcionalidades.stream().map(f -> convertFrom(f)).collect(Collectors.toList());
+        return funcionalidades.stream().map(FuncionalidadeResponse::convertFrom).collect(Collectors.toList());
     }
 
     public static List<FuncionalidadeResponse> convertFromCargoDepartamentoFuncionalidade(

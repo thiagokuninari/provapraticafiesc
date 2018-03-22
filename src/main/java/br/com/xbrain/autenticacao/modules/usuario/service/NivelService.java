@@ -20,12 +20,17 @@ public class NivelService {
 
     public List<Nivel> getAll() {
         NivelPredicate predicate = new NivelPredicate();
+        predicate.ativo();
+        return nivelRepository.getAll(predicate.build());
+    }
+
+    public List<Nivel> getAllByPermitidos() {
+        NivelPredicate predicate = new NivelPredicate();
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         predicate.filtrarPermitidos(usuarioAutenticado);
         if (!usuarioAutenticado.isXbrain()) {
             predicate.withoutXbrain();
         }
-        return nivelRepository.getAll(predicate.build());
+        return nivelRepository.getAllByPermitidos(predicate.build());
     }
-
 }

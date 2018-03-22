@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 

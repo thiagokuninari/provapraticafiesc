@@ -171,15 +171,7 @@ public class UsuarioImportacaoTest {
             if (funcionalidade != null) {
                 CargoDepartamentoFuncionalidade cargoDepartamentoFuncionalidade = new CargoDepartamentoFuncionalidade();
 
-                if (dto.getEmpresaId() != null && dto.getEmpresaId() != 0) {
-                    cargoDepartamentoFuncionalidade.setEmpresa(new Empresa(dto.getEmpresaId()));
-                }
-
                 cargoDepartamentoFuncionalidade.setFuncionalidade(funcionalidade);
-
-                if (dto.getUnidadeNegocioId() != null && dto.getUnidadeNegocioId() != 0) {
-                    cargoDepartamentoFuncionalidade.setUnidadeNegocio(new UnidadeNegocio(dto.getUnidadeNegocioId()));
-                }
 
                 cargoDepartamentoFuncionalidade.setCargo(new Cargo(dto.getCargoId()));
                 cargoDepartamentoFuncionalidade.setDepartamento(new Departamento(dto.getDepartamentoId()));

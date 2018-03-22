@@ -3,16 +3,17 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -43,7 +44,6 @@ import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,26 +99,6 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
-
-    private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
-            && f.getUnidadeNegocio() == null;
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresa(List<Empresa> empresasUsuario) {
-        return f -> f.getEmpresa() != null && f.getUnidadeNegocio() == null && empresasUsuario.contains(f.getEmpresa());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario) {
-        return f -> f.getUnidadeNegocio() != null
-                && f.getEmpresa() == null
-                && unidadesUsuario.contains(f.getUnidadeNegocio());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresaEUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario,
-                                                                                    List<Empresa> empresasUsuario) {
-        return f -> f.getUnidadeNegocio() != null
-                && f.getEmpresa() != null
-                && unidadesUsuario.contains(f.getUnidadeNegocio()) && empresasUsuario.contains(f.getEmpresa());
-    }
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -653,10 +633,6 @@ public class UsuarioService {
         return Stream.concat(
                 funcionalidades
                         .stream()
-                        .filter(semEmpresaEUnidadeDeNegocio
-                                .or(possuiEmpresa(usuario.getEmpresas()))
-                                .or(possuiUnidadeNegocio(usuario.getUnidadesNegocios()))
-                                .or(possuiEmpresaEUnidadeNegocio(usuario.getUnidadesNegocios(), usuario.getEmpresas())))
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
                         .findPorUsuario(usuario.getId()).stream())

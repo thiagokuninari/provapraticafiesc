@@ -216,10 +216,8 @@ public class UsuarioImportacaoRepository {
         dto.setDataCadastro(toLocalDateTime(rs.getTimestamp("data_cadastro")));
         dto.setCargoId(rs.getInt("fk_cargo"));
         dto.setDepartamentoId(rs.getInt("fk_departamento"));
-        dto.setEmpresaId(rs.getInt("fk_empresa"));
         dto.setFuncionalidadeId(rs.getInt("fk_funcionalidade"));
         dto.setRole("POL_" + rs.getString("role"));
-        dto.setUnidadeNegocioId(rs.getInt("fk_unidade_negocio"));
         dto.setUsuarioId(rs.getInt("fk_usuario"));
         return dto;
     }

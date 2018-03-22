@@ -17,10 +17,6 @@ public class CargoDepartamentoFuncionalidadeImportacao {
 
     private String role;
 
-    private Integer empresaId;
-
-    private Integer unidadeNegocioId;
-
     private Integer usuarioId;
 
     private LocalDateTime dataCadastro;
