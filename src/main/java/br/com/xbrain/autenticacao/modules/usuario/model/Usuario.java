@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -150,7 +151,7 @@ public class Usuario {
     private Usuario usuarioCadastro;
 
     @JsonIgnore
-    @Column(name = "SENHA", nullable = false, updatable = false, length = 80)
+    @Column(name = "SENHA", nullable = false, length = 80)
     private String senha;
 
     @Column(name = "ALTERAR_SENHA", nullable = false)
@@ -250,6 +251,13 @@ public class Usuario {
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
+        return usuario;
+    }
+
+    public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
+        Usuario usuario = new Usuario();
+        BeanUtils.copyProperties(usuarioMqRequest, usuario);
+        usuario.setUsuarioCadastro(new Usuario(usuarioMqRequest.getUsuarioCadastroId()));
         return usuario;
     }
 

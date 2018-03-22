@@ -22,6 +22,11 @@ public class UsuarioMqListener {
         service.atualizarUsuariosAgentesAutorizados(usuarioAtualizacaoRequest);
     }
 
+    @RabbitListener(queues = "${app-config.queue.usuario-recuperacao}")
+    public void recuperar(UsuarioMqRequest usuarioMqRequest) {
+        service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
+    }
+
     @RabbitListener(queues = "${app-config.queue.usuario-alterar-email}")
     public void alterarEmail(UsuarioAlteracaoRequest usuarioAlteracaoRequest) {
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
