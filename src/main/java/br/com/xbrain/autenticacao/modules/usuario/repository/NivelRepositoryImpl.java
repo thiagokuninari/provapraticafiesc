@@ -18,6 +18,16 @@ public class NivelRepositoryImpl extends CustomRepository<Nivel> implements Nive
         return new JPAQueryFactory(entityManager)
                 .select(nivel)
                 .from(nivel)
+                .where(predicate)
+                .orderBy(nivel.nome.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<Nivel> getAllByPermitidos(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(nivel)
+                .from(nivel)
                 .where(nivel.situacao.eq(ESituacao.A)
                         .and(nivel.exibirCadastroUsuario.eq(Eboolean.V))
                         .and(predicate))
@@ -25,5 +35,4 @@ public class NivelRepositoryImpl extends CustomRepository<Nivel> implements Nive
                 .orderBy(nivel.nome.asc())
                 .fetch();
     }
-
 }

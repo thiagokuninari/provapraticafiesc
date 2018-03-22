@@ -1,19 +1,16 @@
 package br.com.xbrain.autenticacao.modules.permissao.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.CargoDepartamentoFuncionalidadeService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.FuncionalidadeSaveRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +21,11 @@ public class CargoDepartamentoFuncionalidadeController {
 
     @Autowired
     private CargoDepartamentoFuncionalidadeService service;
+
+    @RequestMapping(method = RequestMethod.POST)
+    public void save(@Validated @RequestBody CargoDepartamentoFuncionalidadeRequest request) {
+        service.save(request);
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     public List<CargoDepartamentoFuncionalidadeResponse> getAll(CargoDepartamentoFuncionalidadeFiltros filtro) {
@@ -45,8 +47,13 @@ public class CargoDepartamentoFuncionalidadeController {
                 page.getTotalElements());
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public void save(@Validated @RequestBody FuncionalidadeSaveRequest request) {
-        service.save(request);
+    @PutMapping(value = "remover/{id}")
+    public void remover(@PathVariable("id") int id) {
+        service.remover(id);
+    }
+
+    @PutMapping(value = "deslogar/{cargoId}/{departamentoId}")
+    public void deslogarUsuarios(@PathVariable("cargoId") int cargoId, @PathVariable("departamentoId") int departamentoId) {
+        service.deslogar(cargoId, departamentoId);
     }
 }

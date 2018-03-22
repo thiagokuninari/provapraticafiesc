@@ -7,6 +7,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -29,8 +30,6 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
                 .innerJoin(cargoDepartamentoFuncionalidade.departamento).fetchJoin()
                 .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade).fetchJoin()
                 .innerJoin(funcionalidade.aplicacao).fetchJoin()
-                .leftJoin(cargoDepartamentoFuncionalidade.empresa).fetchJoin()
-                .leftJoin(cargoDepartamentoFuncionalidade.unidadeNegocio).fetchJoin()
                 .where(predicate)
                 .orderBy(funcionalidade.nome.asc())
                 .fetch();
@@ -41,14 +40,11 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
         return super.findAll(
                 asList(
                         JoinDescriptor.innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo),
-                        JoinDescriptor.innerJoin(cargo.nivel),
                         JoinDescriptor.innerJoin(cargoDepartamentoFuncionalidade.departamento),
-                        JoinDescriptor.innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade),
-                        JoinDescriptor.innerJoin(funcionalidade.aplicacao),
-                        JoinDescriptor.leftJoin(cargoDepartamentoFuncionalidade.empresa),
-                        JoinDescriptor.leftJoin(cargoDepartamentoFuncionalidade.unidadeNegocio)
+                        JoinDescriptor.innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
                 ),
                 predicate,
-                pageable);
+                pageable,
+                new Sort(Sort.Direction.ASC, funcionalidade.nome.toString()));
     }
 }

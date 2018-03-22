@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.PermissaoException;
-import br.com.xbrain.autenticacao.modules.comum.dto.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;

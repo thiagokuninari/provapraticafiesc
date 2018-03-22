@@ -19,4 +19,9 @@ public class NivelController {
         return service.getAll();
     }
 
+    @RequestMapping(value = "/permitidos", method = RequestMethod.GET)
+    public Iterable<Nivel> getAllByPermitidos() {
+        return service.getAllByPermitidos();
+    }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
@@ -15,6 +16,7 @@ import java.util.Arrays;
 
 @EntityScan(
         basePackageClasses = { Application.class, Jsr310JpaConverters.class })
+@EnableZuulProxy
 @SpringBootApplication
 public class Application {
 
