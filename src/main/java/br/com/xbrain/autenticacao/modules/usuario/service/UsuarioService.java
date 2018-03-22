@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
@@ -98,7 +100,13 @@ public class UsuarioService {
     private UsuarioCadastroMqSender usuarioMqSender;
 
     @Autowired
+    private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
+
+    @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
+
+    @Autowired
+    private EntityManager entityManager;
 
     private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
             && f.getUnidadeNegocio() == null;
@@ -324,6 +332,33 @@ public class UsuarioService {
 
     private void enviarParaFiladeErrosUsuariosAtualizados(UsuarioMqAtualizacaoRequest usuariosAtualizacao) {
         usuarioAtualizacaoMqSender.sendWithFailure(usuariosAtualizacao);
+    }
+
+    @Transactional
+    public void recuperarUsuariosAgentesAutorizados(UsuarioMqRequest usuarioMqRequest) {
+        try {
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+
+            Usuario usuario = repository.findOne(usuarioMqRequest.getId());
+            usuario = usuario.parse(usuarioMqRequest);
+            usuario.setEmpresas(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa()));
+            usuario.setUnidadesNegocios(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()));
+            usuario.setCargo(cargoRepository.findByCodigo(usuarioMqRequest.getCargo()));
+            usuario.setDepartamento(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento()));
+            usuario.setAlterarSenha(Eboolean.V);
+            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+
+            repository.save(usuario);
+
+            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+        } catch (Exception ex) {
+            enviarParaFiladeErrosUsuariosRecuperacao(usuarioMqRequest);
+            log.error("Erro ao recuperar usuário da fila.", ex);
+        }
+    }
+
+    private void enviarParaFiladeErrosUsuariosRecuperacao(UsuarioMqRequest usuarioMqRequest) {
+        usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
