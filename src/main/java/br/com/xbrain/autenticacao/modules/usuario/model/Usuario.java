@@ -104,7 +104,7 @@ public class Usuario {
 
     @NotAudited
     @OrderBy("id")
-    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited

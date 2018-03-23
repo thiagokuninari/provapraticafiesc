@@ -18,6 +18,12 @@ spring:
 #    password: py12nrk7
 #    driverClassName: oracle.jdbc.OracleDriver
 
+#    autenticação prod
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.205:1521/xprod12
+#    username: AUTENTICACAO
+#    password: 4ut3nt1c4c40
+#    driverClassName: oracle.jdbc.OracleDriver
+
 #    autenticação test
     jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
     username: AUTENTICACAO_TEST
