@@ -1,22 +1,5 @@
 
-
-app-config:
-  url: https://autenticacao.conexaoclarobrasil.com.br
-  url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
-  upload-dir: ${app-config.estatico-dir}/producao/autenticacao
-
-  email:
-    enviar: true
-    emails:
-
-  services:
-    call:
-      url: https://call.conexaoclarobrasil.com.br
-
 spring:
-  resources:
-    chain:
-      cache: false
   jpa:
     database: ORACLE
     show-sql: false
@@ -31,7 +14,21 @@ spring:
     maximumPoolSize: 2
 
   rabbitmq:
-      host: 192.168.1.240
-      port: 5671
-      username: xbrain
-      password: xbrain
+    host: 192.168.1.240
+    port: 5671
+    username: xbrain
+    password: xbrain
+
+app-config:
+  url: https://autenticacao.conexaoclarobrasil.com.br
+  url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
+  upload-dir: ${app-config.estatico-dir}/producao/autenticacao
+
+  email:
+    enviar: true
+    emails:
+
+  services:
+    call:
+      url: https://call.conexaoclarobrasil.com.br
+

@@ -1,60 +1,158 @@
-<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <title th:text="${nomeSistema}"></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0;"/>
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-width: 100%;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    body,
+    table,
+    td,
+    div,
+    p,
+    a {
+      -webkit-font-smoothing: antialiased;
+      text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+      line-height: 100%;
+    }
+
+    table,
+    td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+      border-collapse: collapse !important;
+      border-spacing: 0;
+    }
+
+    img {
+      border: 0;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    #outlook a {
+      padding: 0;
+    }
+
+    .ReadMsgBody {
+      width: 100%;
+    }
+
+    .ExternalClass {
+      width: 100%;
+    }
+
+    .ExternalClass,
+    .ExternalClass p,
+    .ExternalClass span,
+    .ExternalClass font,
+    .ExternalClass td,
+    .ExternalClass div {
+      line-height: 100%;
+    }
+
+    @media all and (min-width: 560px) {
+      .container {
+        border-radius: 8px;
+        -webkit-border-radius: 8px;
+        -moz-border-radius: 8px;
+        -khtml-border-radius: 8px;
+      }
+    }
+
+    a,
+    a:hover {
+      color: #127DB3;
+    }
+
+    .footer a,
+    .footer a:hover {
+      color: #999999;
+    }
+
+  </style>
+    <title>Conex&atilde;o Claro Brasil</title>
 </head>
-<body>
-<table border="0" cellpadding="0" cellspacing="0" align="center" width="565" style="font-family:Arial,sans-serif;">
-    <tbody >
-    <tr>
-        <td style="padding:20px;"><img th:src="${urlEstatico + '/email/logotipo_parceiros.png'}" width="242" height="30" th:alt="${nomeSistema}" /></td>
-        <td>
-            <div align="right" valign="bottom" style="padding:0px 0px 10px 0px; font-size:15px; color: #999; font-weight: bold;" th:text="${assunto}"></div>
-            <div align="right" valign="bottom" style="padding: 0px 0px 10px 0px; font-size: 13px;color: #999; font-weight: normal;" th:text="${dataEmail}"></div>
-        </td>
-    </tr>
 
+<body topmargin="0" rightmargin="0" bottommargin="0" leftmargin="0" marginwidth="0"
+      marginheight="0" width="100%" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; height: 100%; -webkit-font-smoothing: antialiased; text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; line-height: 100%;
+      background-color: #f3f6f7;
+      color: #546e7a;" bgcolor="#f3f6f7" text="#546e7a">
+<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%;"
+       class="background">
     <tr>
-        <td colspan="2">
-            <table border="0" cellpadding="0" cellspacing="20" width="100%" style="font-family:Arial,sans-serif;border-top:1px solid #c5c5c5;border-bottom:1px solid #c5c5c5;">
+        <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;"
+            bgcolor="#f3f6f7">
+            <table border="0" cellpadding="0" cellspacing="0" align="center" width="560" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit;
+                  max-width: 560px;" class="wrapper">
                 <tr>
-                    <td style="font-size:14px;color:#555;">
+                    <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%;
+                        padding-top: 20px;
+                        padding-bottom: 20px;">
+                        <a target="_blank" style="text-decoration: none;" href="http://conexaoclarobrasil.com.br/">
+                            <img border="0" vspace="0" hspace="0" src="https://estatico.xbrain.com.br/conexao_claro_brasil/arquivos/emails/assets/logo-conexao-claro-brasil.png"
+                                 width="150" height="33" alt="Conex&atilde;o Claro Brasil" style="
+                                           color: #546e7a;
+                                           font-size: 10px; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"
+                            />
+                        </a>
+                    </td>
+                </tr>
+            </table>
 
-                        <div th:include="${includeConteudo}">...</div>
+            <table border="0" cellpadding="0" cellspacing="0" align="center" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit; max-width: 560px;" class="container">
+                <tr>
+                    <td th:include="${includeConteudo}" align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;font-family: sans-serif;">
+                    </td>
+                </tr>
+            </table>
 
-                        <img th:src="${urlEstatico + '/imagens/1px.gif'}" width="1" height="5" alt=""/>
+            <table border="0" cellpadding="0" cellspacing="0" align="center" width="560" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit;
+                  max-width: 560px;" class="wrapper">
+                <tr>
+                    <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 14px; font-weight: 400; line-height: 160%;
+                        padding-top: 20px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+                        Copyright &reg; 2018 Conex&atilde;o Claro Brasil. v.1.0
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%;padding-bottom: 25px; width: 87.5%; font-size: 14px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+                        Todos os direitos reservados.
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%;padding-bottom: 25px; width: 87.5%; font-size: 14px; font-weight: 400; line-height: 160%;
+                                color: #546e7a;
+                                font-family: sans-serif;" class="paragraph">
+                        <img border="0" vspace="0" hspace="0" src="https://estatico.xbrain.com.br/conexao_claro_brasil/arquivos/emails/assets/logo-xbrain.png"
+                             alt="Ative a exibi&ccedil;&atilde;o de imagens para visualiz&aacute;-la"
+                             width="254" style="
+                               width: 100%;
+                               max-width: 105px;
+                               color: #546e7a; font-size: 13px; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"
+                        />
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
-
-    <tr>
-        <td style="text-align: center; padding: 15px;" colspan="2">
-            <img th:src="${urlEstatico + '/email/logos.png'}" colspan="2" width="143" height="43" th:alt="${nomeSistema}" />
-        </td>
-    </tr>
-
-    <tr>
-        <td style="text-align: center; padding: 0px;" colspan="2">
-            <img th:src="${urlEstatico + '/email/icone_produtos_email.png'}" colspan="2" width="112" height="20" th:alt="${nomeSistema}" />
-        </td>
-    </tr>
-
-    <tr>
-        <td style="text-align: center; padding: 10px; font-size:14px; color: #c5c5c5" colspan="2">
-            Este e-mail foi gerado automaticamente. Não é necessário respondê-lo.
-        </td>
-    </tr>
-
-    <tr>
-        <td colspan="2" style="font-size:11px; color:#999;">
-            <br/>
-            Em caso de dúvidas entre em contato com seu agente autorizado ou utilize nosso Canal de Suporte através do telefone 43 3304-2204 ou pelo e-mail <a href="mailto:atendimento@xbrain.com.br">atendimento@xbrain.com.br</a>, teremos o maior prazer em atendê-lo.
-        </td>
-    </tr>
-    </tbody>
 </table>
 </body>
+
 </html>

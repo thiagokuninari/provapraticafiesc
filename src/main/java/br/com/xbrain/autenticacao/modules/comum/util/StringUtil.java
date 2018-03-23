@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 
 public class StringUtil {
@@ -17,6 +19,11 @@ public class StringUtil {
             return "";
         }
         return value.replaceAll("[^0-9]", "");
+    }
+
+    public static String getDataAtualEmail() {
+        SimpleDateFormat formatter = new SimpleDateFormat("EEEE',' d 'de' MMMM 'de' yyyy", new Locale("pt", "BR"));
+        return formatter.format(Calendar.getInstance().getTime());
     }
 
     public static String removerAcentos(String str) {

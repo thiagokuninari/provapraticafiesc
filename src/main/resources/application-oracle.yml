@@ -3,7 +3,7 @@ spring:
     database: ORACLE
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV

@@ -4,6 +4,49 @@ server:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
 
+spring:
+  resources:
+    chain:
+      cache: false
+  jpa:
+    database: ORACLE
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
+      hibernate:
+        hbm2ddl:
+          import_files:
+            database/estrutura.sql,
+            database/organizacional.sql,
+            database/permissoes.sql,
+            database/cidades.sql,
+            database/motivo-inativacao.sql
+
+  datasource:
+    url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+    username: AUTENTICACAO
+    password: py12nrk7
+    driverClassName: oracle.jdbc.OracleDriver
+    maximumPoolSize: 2
+
+  rabbitmq:
+      host: 192.168.1.240
+      port: 5671
+      username: xbrain
+      password: xbrain
+
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+  messages:
+    encoding: UTF-8
+
 app-config:
   nome: Colaboradores
   url: http://localhost:3100
@@ -57,49 +100,6 @@ app-config:
   services:
     call:
       url: http://localhost:8094
-
-spring:
-  resources:
-    chain:
-      cache: false
-  jpa:
-    database: ORACLE
-    show-sql: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      javax:
-        persistence:
-          validation:
-            mode: none
-      hibernate:
-        hbm2ddl:
-          import_files:
-            database/estrutura.sql,
-            database/organizacional.sql,
-            database/permissoes.sql,
-            database/cidades.sql,
-            database/motivo-inativacao.sql
-
-  datasource:
-    url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: AUTENTICACAO
-    password: py12nrk7
-    driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
-
-  rabbitmq:
-      host: 192.168.1.240
-      port: 5671
-      username: xbrain
-      password: xbrain
-
-  http:
-    encoding:
-      charset: UTF-8
-      force: true
-  messages:
-    encoding: UTF-8
     
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin

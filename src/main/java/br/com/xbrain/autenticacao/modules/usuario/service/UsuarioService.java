@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -600,8 +601,9 @@ public class UsuarioService {
     private void enviarEmailComSenhaNova(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
-        context.setVariable("email", usuario.getEmail());
+        context.setVariable("email", usuario.getEmail().toLowerCase());
         context.setVariable("senha", senhaDescriptografada);
+        context.setVariable("dataAtual", StringUtil.getDataAtualEmail());
 
         emailService.enviarEmailTemplate(
                 Arrays.asList(usuario.getEmail()),
