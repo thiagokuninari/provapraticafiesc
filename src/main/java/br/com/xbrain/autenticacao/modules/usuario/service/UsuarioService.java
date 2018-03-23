@@ -43,7 +43,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.thymeleaf.context.Context;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -323,6 +322,9 @@ public class UsuarioService {
             usuario.setCargo(cargoRepository.findByCodigo(usuarioMqRequest.getCargo()));
             usuario.setDepartamento(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento()));
             usuario.setAlterarSenha(Eboolean.V);
+
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
 
             repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
             repository.updateEmail(usuario.getEmail(), usuario.getId());
