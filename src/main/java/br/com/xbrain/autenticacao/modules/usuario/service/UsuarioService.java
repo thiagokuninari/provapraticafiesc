@@ -322,13 +322,13 @@ public class UsuarioService {
             usuario.setAlterarSenha(Eboolean.V);
 
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+
+            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
 
             repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
             repository.updateEmail(usuario.getEmail(), usuario.getId());
 
             repository.save(usuario);
-            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         } catch (Exception ex) {
             enviarParaFiladeErrosUsuariosRecuperacao(usuarioMqRequest);
             log.error("Erro ao recuperar usuário da fila.", ex);
