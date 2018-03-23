@@ -151,7 +151,7 @@ public class Usuario {
     private Usuario usuarioCadastro;
 
     @JsonIgnore
-    @Column(name = "SENHA", nullable = false, length = 80)
+    @Column(name = "SENHA", nullable = false, updatable = false, length = 80)
     private String senha;
 
     @Column(name = "ALTERAR_SENHA", nullable = false)

@@ -323,10 +323,11 @@ public class UsuarioService {
             usuario.setCargo(cargoRepository.findByCodigo(usuarioMqRequest.getCargo()));
             usuario.setDepartamento(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento()));
             usuario.setAlterarSenha(Eboolean.V);
-            usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+
+            repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
+            repository.updateEmail(usuario.getEmail(), usuario.getId());
 
             repository.save(usuario);
-
             enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         } catch (Exception ex) {
             enviarParaFiladeErrosUsuariosRecuperacao(usuarioMqRequest);
