@@ -313,8 +313,6 @@ public class UsuarioService {
     @Transactional
     public void recuperarUsuariosAgentesAutorizados(UsuarioMqRequest usuarioMqRequest) {
         try {
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-
             Usuario usuario = repository.findOne(usuarioMqRequest.getId());
             usuario = usuario.parse(usuarioMqRequest);
             usuario.setEmpresas(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa()));
