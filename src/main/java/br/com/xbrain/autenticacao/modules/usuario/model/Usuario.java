@@ -104,7 +104,7 @@ public class Usuario {
 
     @NotAudited
     @OrderBy("id")
-    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited
@@ -151,7 +151,7 @@ public class Usuario {
     private Usuario usuarioCadastro;
 
     @JsonIgnore
-    @Column(name = "SENHA", nullable = false, length = 80)
+    @Column(name = "SENHA", nullable = false, updatable = false, length = 80)
     private String senha;
 
     @Column(name = "ALTERAR_SENHA", nullable = false)

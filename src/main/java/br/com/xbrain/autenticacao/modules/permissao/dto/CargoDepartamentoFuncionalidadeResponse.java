@@ -15,6 +15,7 @@ public class CargoDepartamentoFuncionalidadeResponse {
     private String nivelNome;
     private String cargoNome;
     private String departamentoNome;
+    private Integer funcionalidadeId;
     private String funcionalidadeNome;
     private String aplicacaoNome;
 
@@ -39,6 +40,7 @@ public class CargoDepartamentoFuncionalidadeResponse {
         response.setNivelNome(request.getCargo().getNivel().getNome());
         response.setCargoNome(request.getCargo().getNome());
         response.setDepartamentoNome(request.getDepartamento().getNome());
+        response.setFuncionalidadeId(request.getFuncionalidade().getId());
         response.setFuncionalidadeNome(request.getFuncionalidade().getNome());
         response.setAplicacaoNome(request.getFuncionalidade().getAplicacao().getNome());
         return response;

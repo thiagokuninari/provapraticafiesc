@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
+import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
@@ -43,11 +44,12 @@ public class CargoDepartamentoFuncionalidadeService {
         return repository.findFuncionalidadesPorCargoEDepartamento(filtros.toPredicate());
     }
 
-    public void save(CargoDepartamentoFuncionalidadeRequest funcionalidadeSaveRequest) {
+    public void save(CargoDepartamentoFuncionalidadeRequest request) {
         Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
-        List<CargoDepartamentoFuncionalidade> itens = funcionalidadeSaveRequest.getFuncionalidadesIds()
+        List<Integer> funcionalidadesIds = tratarPermissoesExistentes(request);
+        List<CargoDepartamentoFuncionalidade> itens = funcionalidadesIds
                 .stream()
-                .map(item -> criarCargoDepartamentoFuncionalidade(funcionalidadeSaveRequest, usuarioAutenticado, item))
+                .map(item -> criarCargoDepartamentoFuncionalidade(request, usuarioAutenticado, item))
                 .collect(Collectors.toList());
         repository.save(itens);
     }
@@ -64,6 +66,18 @@ public class CargoDepartamentoFuncionalidadeService {
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuarioAutenticado)
                 .build();
+    }
+
+    private List<Integer> tratarPermissoesExistentes(CargoDepartamentoFuncionalidadeRequest request) {
+        CargoDepartamentoFuncionalidadePredicate predicate = new CargoDepartamentoFuncionalidadePredicate();
+        predicate.comCargo(request.getCargoId());
+        predicate.comDepartamento(request.getDepartamentoId());
+        List<CargoDepartamentoFuncionalidade> lista = repository
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+
+        return request.getFuncionalidadesIds().stream().filter(x ->
+                !lista.stream().map(y -> y.getFuncionalidade().getId()).collect(Collectors.toList()).contains(x)
+        ).collect(Collectors.toList());
     }
 
     public void remover(int id) {
