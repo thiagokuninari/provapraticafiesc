@@ -29,7 +29,7 @@ app-config:
 
   services:
     call:
-      url: https://call-hom.conexaoclarobrasil.com.br
+      url: http://172.10.10.78:8094
 
 logging:
   level:

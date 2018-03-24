@@ -8,8 +8,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class StringUtil {
@@ -22,8 +22,8 @@ public class StringUtil {
     }
 
     public static String getDataAtualEmail() {
-        SimpleDateFormat formatter = new SimpleDateFormat("EEEE',' d 'de' MMMM 'de' yyyy", new Locale("pt", "BR"));
-        return formatter.format(Calendar.getInstance().getTime());
+        return LocalDate.now().format(DateTimeFormatter
+                .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt","BR")));
     }
 
     public static String removerAcentos(String str) {
