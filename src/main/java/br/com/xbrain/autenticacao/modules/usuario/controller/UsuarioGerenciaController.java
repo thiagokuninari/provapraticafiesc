@@ -26,7 +26,7 @@ public class UsuarioGerenciaController {
         return UsuarioDto.parse(service.findById(id));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public PageImpl<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         Page<Usuario> page = service.getAll(pageRequest, filtros);
         return new PageImpl<>(

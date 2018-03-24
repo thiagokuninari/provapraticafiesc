@@ -35,7 +35,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCpf(String cpf) {
-        if (!StringUtils.isEmpty(cpf)) {
+        if (!StringUtils.isEmpty(StringUtil.getOnlyNumbers(cpf))) {
             builder.and(usuario.cpf.eq(StringUtil.getOnlyNumbers(cpf)));
         }
         return this;
