@@ -52,6 +52,8 @@ app-config:
   services:
     call:
       url: http://localhost:8094
+    parceiros-online:
+      url: http://localhost:8099
 
 spring:
   resources:
@@ -102,6 +104,9 @@ zuul:
     call:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.call.url}
+    parceiros:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.parceiros-online.url}
 
 keys:
     public: |

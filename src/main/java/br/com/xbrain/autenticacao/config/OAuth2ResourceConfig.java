@@ -18,7 +18,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        String[] permitAll = {"/call/**", "/api/usuarios/gerencia/{idUsuario}/supervisor"};
+        String[] permitAll = {"/call/**", "/parceiros-online/**", "/api/usuarios/gerencia/{idUsuario}/supervisor"};
 
         http
                 .addFilterBefore(new CorsConfigFilter(), ChannelProcessingFilter.class)
