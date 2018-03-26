@@ -102,49 +102,6 @@ app-config:
       url: http://localhost:8094
     parceiros-online:
       url: http://localhost:8099
-
-spring:
-  resources:
-    chain:
-      cache: false
-  jpa:
-    database: ORACLE
-    show-sql: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      javax:
-        persistence:
-          validation:
-            mode: none
-      hibernate:
-        hbm2ddl:
-          import_files:
-            database/estrutura.sql,
-            database/organizacional.sql,
-            database/permissoes.sql,
-            database/cidades.sql,
-            database/motivo-inativacao.sql
-
-  datasource:
-    url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: AUTENTICACAO
-    password: py12nrk7
-    driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
-
-  rabbitmq:
-      host: 192.168.1.240
-      port: 5671
-      username: xbrain
-      password: xbrain
-
-  http:
-    encoding:
-      charset: UTF-8
-      force: true
-  messages:
-    encoding: UTF-8
     
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin
@@ -194,3 +151,4 @@ keys:
         rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
         I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
         -----END RSA PRIVATE KEY-----
+        
