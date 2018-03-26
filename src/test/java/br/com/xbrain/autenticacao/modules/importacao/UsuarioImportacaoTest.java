@@ -26,34 +26,29 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest
-//@AutoConfigureMockMvc
-//@Transactional
-//@Rollback(false)
-//@ActiveProfiles("importacao")
+/*@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@Rollback(false)
+@ActiveProfiles("importacao")*/
 public class UsuarioImportacaoTest {
 
     @Autowired
     private UsuarioImportacaoRepository parceirosRepository;
-
     @Autowired
     private UsuarioRepository repository;
-
     @Autowired
     private CidadeRepository cidadeRepository;
-
     @Autowired
     private FuncionalidadeRepository funcionalidadeRepository;
-
     @Autowired
     private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
-
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
-
     @Autowired
     private DepartamentoRepository departamentoRepository;
+
     /*
     * PARA RODAR A IMPORTAÇÃO:
     *
@@ -98,7 +93,6 @@ public class UsuarioImportacaoTest {
                         if (!CollectionUtils.isEmpty(empresasAa)) {
                             usuario.setEmpresas(empresasAa);
                         }
-
                     }
                 }
             }
@@ -171,15 +165,7 @@ public class UsuarioImportacaoTest {
             if (funcionalidade != null) {
                 CargoDepartamentoFuncionalidade cargoDepartamentoFuncionalidade = new CargoDepartamentoFuncionalidade();
 
-                if (dto.getEmpresaId() != null && dto.getEmpresaId() != 0) {
-                    cargoDepartamentoFuncionalidade.setEmpresa(new Empresa(dto.getEmpresaId()));
-                }
-
                 cargoDepartamentoFuncionalidade.setFuncionalidade(funcionalidade);
-
-                if (dto.getUnidadeNegocioId() != null && dto.getUnidadeNegocioId() != 0) {
-                    cargoDepartamentoFuncionalidade.setUnidadeNegocio(new UnidadeNegocio(dto.getUnidadeNegocioId()));
-                }
 
                 cargoDepartamentoFuncionalidade.setCargo(new Cargo(dto.getCargoId()));
                 cargoDepartamentoFuncionalidade.setDepartamento(new Departamento(dto.getDepartamentoId()));
@@ -236,7 +222,6 @@ public class UsuarioImportacaoTest {
                         + permissao.getRole());
             }
         }
-
     }
 
     private void convertHierarquias(List<UsuarioHierarquiaImportacao> dados, Usuario usuario) {

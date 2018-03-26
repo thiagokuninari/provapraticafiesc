@@ -237,7 +237,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(28)))
+                .andExpect(jsonPath("$", hasSize(29)))
                 .andExpect(jsonPath("$[0].role", is("POL_AGENTE_AUTORIZADO_APROVACAO_MSO")));
     }
 

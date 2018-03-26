@@ -1,13 +1,14 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
+import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
-import br.com.xbrain.autenticacao.modules.usuario.dto.FuncionalidadeSaveRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -15,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,12 +27,12 @@ public class CargoDepartamentoFuncionalidadeService {
 
     @Autowired
     private CargoDepartamentoFuncionalidadeRepository repository;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+    @Autowired
+    private OAuthAccessTokenRepository tokenRepository;
 
     public Page<CargoDepartamentoFuncionalidade> getAll(PageRequest pageRequest,
                                                         CargoDepartamentoFuncionalidadeFiltros filtros) {
@@ -42,18 +44,18 @@ public class CargoDepartamentoFuncionalidadeService {
         return repository.findFuncionalidadesPorCargoEDepartamento(filtros.toPredicate());
     }
 
-    public void save(FuncionalidadeSaveRequest funcionalidadeSaveRequest) {
-        Usuario usuarioAutenticado = usuarioRepository.findComplete(autenticacaoService.getUsuarioId()).get();
-        List<CargoDepartamentoFuncionalidade> itens = funcionalidadeSaveRequest.getFuncionalidadesIds()
+    public void save(CargoDepartamentoFuncionalidadeRequest request) {
+        Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        List<Integer> funcionalidadesIds = tratarPermissoesExistentes(request);
+        List<CargoDepartamentoFuncionalidade> itens = funcionalidadesIds
                 .stream()
-                .map(item -> criarCargoDepartamentoFuncionalidade(funcionalidadeSaveRequest, usuarioAutenticado, item))
+                .map(item -> criarCargoDepartamentoFuncionalidade(request, usuarioAutenticado, item))
                 .collect(Collectors.toList());
-        repository.deleteAll();
         repository.save(itens);
     }
 
     private CargoDepartamentoFuncionalidade criarCargoDepartamentoFuncionalidade(
-            FuncionalidadeSaveRequest funcionalidadeSaveRequest,
+            CargoDepartamentoFuncionalidadeRequest funcionalidadeSaveRequest,
             Usuario usuarioAutenticado,
             Integer item) {
         return CargoDepartamentoFuncionalidade.builder()
@@ -62,9 +64,30 @@ public class CargoDepartamentoFuncionalidadeService {
                 .departamento(new Departamento(funcionalidadeSaveRequest.getDepartamentoId()))
                 .funcionalidade(new Funcionalidade(item))
                 .dataCadastro(LocalDateTime.now())
-                .empresa(new Empresa(funcionalidadeSaveRequest.getEmpresaId()))
-                .unidadeNegocio(usuarioAutenticado.getUnidadesNegocios().get(0))
                 .usuario(usuarioAutenticado)
                 .build();
+    }
+
+    private List<Integer> tratarPermissoesExistentes(CargoDepartamentoFuncionalidadeRequest request) {
+        CargoDepartamentoFuncionalidadePredicate predicate = new CargoDepartamentoFuncionalidadePredicate();
+        predicate.comCargo(request.getCargoId());
+        predicate.comDepartamento(request.getDepartamentoId());
+        List<CargoDepartamentoFuncionalidade> lista = repository
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+
+        return request.getFuncionalidadesIds().stream().filter(x ->
+                !lista.stream().map(y -> y.getFuncionalidade().getId()).collect(Collectors.toList()).contains(x)
+        ).collect(Collectors.toList());
+    }
+
+    public void remover(int id) {
+        repository.delete(id);
+    }
+
+    @Transactional
+    public void deslogar(Integer cargoId, Integer departamentoId) {
+        List<Usuario> usuarios = usuarioRepository.findAllByCargoAndDepartamento(
+                new Cargo(cargoId), new Departamento(departamentoId));
+        usuarios.forEach(x -> tokenRepository.deleteTokenByUsername(x.getLogin()));
     }
 }

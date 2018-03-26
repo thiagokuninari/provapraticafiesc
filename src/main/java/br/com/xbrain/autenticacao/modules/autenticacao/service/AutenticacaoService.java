@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,8 @@ public class AutenticacaoService {
     private UsuarioService usuarioService;
     @Autowired
     private HttpServletRequest request;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public String getLoginUsuario() {
         return getAuthentication().getName();
@@ -62,7 +65,7 @@ public class AutenticacaoService {
 
     @Transactional
     public void logout(Integer usuarioId) {
-        Usuario usuario = usuarioService.findById(usuarioId);
+        Usuario usuario = usuarioRepository.findOne(usuarioId);
         tokenRepository.deleteTokenByUsername(usuario.getLogin());
     }
 

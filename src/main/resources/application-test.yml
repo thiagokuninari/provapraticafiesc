@@ -16,4 +16,5 @@ spring:
 
 app-config:
   email:
-    enviar: false
+    enviar: true
+    emails: andre@xbrain.com.br

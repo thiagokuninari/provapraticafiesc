@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.support.Querydsl;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
@@ -73,6 +74,27 @@ public class CustomRepository<T> {
 
         final JPAQuery<Object> countQuery = createQuery(predicate);
         final JPAQuery query = (JPAQuery) querydsl.applyPagination(pageable, createQuery(predicate));
+
+        joinDescriptors.forEach(join -> {
+            join(join, query);
+            join(join, countQuery);
+        });
+
+        final long total = countQuery.fetchCount();
+        final List<T> content = pageable == null || total > pageable.getOffset() ? query.fetch() : emptyList();
+
+        return new PageImpl<T>(content, pageable, total);
+    }
+
+    public Page<T> findAll(List<JoinDescriptor> joinDescriptors, Predicate predicate, Pageable pageable, Sort... sorts) {
+
+        final JPAQuery<Object> countQuery = createQuery(predicate);
+        Sort sort = pageable.getSort();
+        for (Sort orders : sorts) {
+            sort = sort.and(orders);
+        }
+        final JPAQuery querySort = (JPAQuery) querydsl.applySorting(sort, createQuery(predicate));
+        final JPAQuery query = (JPAQuery) querydsl.applyPagination(pageable, querySort);
 
         joinDescriptors.forEach(join -> {
             join(join, query);

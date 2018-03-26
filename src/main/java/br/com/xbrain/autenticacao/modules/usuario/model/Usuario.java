@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -103,7 +104,7 @@ public class Usuario {
 
     @NotAudited
     @OrderBy("id")
-    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited
@@ -250,6 +251,13 @@ public class Usuario {
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
+        return usuario;
+    }
+
+    public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
+        Usuario usuario = new Usuario();
+        BeanUtils.copyProperties(usuarioMqRequest, usuario);
+        usuario.setUsuarioCadastro(new Usuario(usuarioMqRequest.getUsuarioCadastroId()));
         return usuario;
     }
 

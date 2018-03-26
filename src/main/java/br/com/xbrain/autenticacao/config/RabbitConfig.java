@@ -32,6 +32,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-atualizacao-failure}")
     private String usuarioAtualizacaoFailureMq;
 
+    @Value("${app-config.queue.usuario-recuperacao}")
+    private String usuarioRecuperacaoMq;
+
+    @Value("${app-config.queue.usuario-recuperacao-failure}")
+    private String usuarioRecuperacaoFailureMq;
+
     @Value("${app-config.queue.usuario-alterar-email}")
     private String usuarioAlterarEmailMq;
 
@@ -75,6 +81,16 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAtualizacaoFailureMq() {
         return new Queue(usuarioAtualizacaoFailureMq, false);
+    }
+
+    @Bean
+    Queue usuarioRecuperacaoMq() {
+        return new Queue(usuarioRecuperacaoMq, false);
+    }
+
+    @Bean
+    Queue usuarioRecuperacaoFailureMq() {
+        return new Queue(usuarioRecuperacaoFailureMq, false);
     }
 
     @Bean
@@ -130,6 +146,16 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAtualizacaoFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAtualizacaoFailureMq()).to(exchange).with(usuarioAtualizacaoFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioRecuperacaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRecuperacaoMq()).to(exchange).with(usuarioRecuperacaoMq);
+    }
+
+    @Bean
+    public Binding usuarioRecuperacaoFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRecuperacaoFailureMq()).to(exchange).with(usuarioRecuperacaoFailureMq);
     }
 
     @Bean

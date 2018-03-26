@@ -1,10 +1,100 @@
-<div style="font-size:26px; font-weight:bold;">Alteração de Dados de Acesso</div><br/>
-<div>
-    Olá <strong th:text="${nome}"></strong>, seu e-mail foi alterado com sucesso..<br/><br/>
-
-    E-mail antigo: <strong th:text="${emailAntigo}"></strong><br/><br/>
-    E-mail novo: <strong th:text="${emailNovo}"></strong><br/>
-    Acesso: <strong th:text="${urlSistema}"><a th:href="${urlSistema}"></a></strong>
-    <br/>
-    <br/>
-</div>
+<table border="0" cellpadding="0" cellspacing="0" align="center" bgcolor="#FFFFFF"
+       width="560" style="border-collapse: collapse; border-spacing: 0; padding: 0; width: inherit;
+                  max-width: 560px;" class="container">
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: bold; line-height: 130%;
+                        padding-top: 40px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="header">
+            Ol&aacute; <span th:text="${nome}"/>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-bottom: 3px; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 300; line-height: 150%;
+                        padding-top: 5px;padding-bottom: 40px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="subheader" th:text="${dataEmail}">
+        </td>
+    </tr>
+    <tr>
+        <td align="center" valign="top" bgcolor="#eceff1" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;
+                        padding-top: 42px;padding-bottom: 42px;" class="hero">
+            <img border="0" vspace="0" hspace="0" src="https://estatico.xbrain.com.br/conexao_claro_brasil/arquivos/emails/assets/alteracao-email-hero.png"
+                 alt="Ative a exibi&ccedil;&atilde;o de imagens para visualiz&aacute;-la" width="254"
+                 style="
+                           width: 100%;
+                           max-width: 254px;
+                           color: #546e7a; font-size: 13px; margin: 0; padding: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: none; display: block;"
+            />
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 24px; font-weight: bold; line-height: 160%;
+                        padding-top: 25px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            Seu e-mail foi alterado com sucesso
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        padding-top: 15px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            Voc&ecirc; solicitou a alteração do seu e-mail de acesso ao
+            <b style="color: #546e7a;">Conex&atilde;o Claro Brasil</b>. Segue abaixo os dados de acesso:
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        padding-top: 15px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            E-mail antigo:
+            <a th:href= "'mailto:' + ${emailAntigo}" th:text="${emailAntigo}" target="_blank" style="color: #2196f3; font-family: sans-serif; font-size: 16px; font-weight: 400; line-height: 160%;"></a>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            E-mail novo:
+            <a th:href= "'mailto:' + ${emailNovo}" th:text="${emailNovo}" target="_blank" style="color: #2196f3; font-family: sans-serif; font-size: 16px; font-weight: 400; line-height: 160%;"></a>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        padding-top: 15px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            Acesso:
+            <a th:href="${urlSistema}" th:text="${urlSistema}" target="_blank" style="color: #2196f3; font-family: sans-serif; font-size: 17px; font-weight: 400; line-height: 160%;"></a>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        padding-top: 25px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            <div style="text-align: center;font-family: sans-serif;font-size: 16px;color: #3b8ad8;background-color: #ddeefd; border-width: 1px; border-style: solid; border-color: #b1d2ee; border-radius: 2px; -webkit-border-radius: 2px; -moz-border-radius: 2px; -khtml-border-radius: 2px; padding: 16px; padding-top: 8px; padding-bottom: 8px; font-weight: 400; line-height: 160%;">
+                A qualquer momento, fa&ccedil;a login em sua conta com seu endere&ccedil;o de email.
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%;
+                        padding-top: 25px;" class="line">
+            <hr color="#E0E0E0" align="center" width="100%" size="1" noshade="noshade" style="margin: 0; padding: 0;"/>
+        </td>
+    </tr>
+    <tr>
+        <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 14px; font-weight: 400; line-height: 160%;
+                        padding-top: 20px;
+                        padding-bottom: 25px;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+            D&uacute;vidas?
+            <a href="mailto:atendimento@xbrain.com.br" target="_blank" style="color: #2196f3; font-family: sans-serif; font-size: 14px; font-weight: 400; line-height: 160%;">atendimento@xbrain.com.br</a>
+        </td>
+    </tr>
+</table>

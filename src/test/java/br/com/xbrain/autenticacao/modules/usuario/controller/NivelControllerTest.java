@@ -41,8 +41,18 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisAtivos() throws Exception  {
+    public void deveRetornarOsNiveis() throws Exception  {
         mvc.perform(get("/api/niveis")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$[0].nome", is("Agente Autorizado")));
+    }
+
+    @Test
+    public void deveRetornarOsNiveisAtivos() throws Exception  {
+        mvc.perform(get("/api/niveis/permitidos")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -52,7 +62,7 @@ public class NivelControllerTest {
 
     @Test
     public void deveRetornarOsNiveisSemXbrain() throws Exception  {
-        mvc.perform(get("/api/niveis")
+        mvc.perform(get("/api/niveis/permitidos")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -62,7 +72,7 @@ public class NivelControllerTest {
 
     @Test
     public void deveRetornarTodosComFiltroUsuarioOperacaoGerente() throws Exception {
-        mvc.perform(get("/api/niveis")
+        mvc.perform(get("/api/niveis/permitidos")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

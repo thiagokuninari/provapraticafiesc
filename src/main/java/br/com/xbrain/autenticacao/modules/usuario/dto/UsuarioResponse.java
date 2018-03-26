@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -23,6 +24,7 @@ public class UsuarioResponse {
     private String cpf;
     private String email;
     private String telefone;
+    private ESituacao situacao;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
     private CodigoCargo codigoCargo;
@@ -31,13 +33,15 @@ public class UsuarioResponse {
     private List<String> permissoes;
 
     @Builder
-    public UsuarioResponse(Integer id, String nome, String cpf, String email, CodigoNivel codigoNivel,
-                           CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
-                           List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
+    public UsuarioResponse(Integer id, String nome, String cpf, String email, String telefone, ESituacao situacao,
+                   CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
+                   List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         this.email = email;
+        this.telefone = telefone;
+        this.situacao = situacao;
         this.codigoNivel = codigoNivel;
         this.codigoDepartamento = codigoDepartamento;
         this.codigoCargo = codigoCargo;

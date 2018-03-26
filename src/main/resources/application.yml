@@ -4,11 +4,57 @@ server:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
 
+spring:
+  resources:
+    chain:
+      cache: false
+  jpa:
+    database: ORACLE
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
+      hibernate:
+        hbm2ddl:
+          import_files:
+            database/estrutura.sql,
+            database/organizacional.sql,
+            database/permissoes.sql,
+            database/cidades.sql,
+            database/motivo-inativacao.sql
+
+  datasource:
+    url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+    username: AUTENTICACAO
+    password: py12nrk7
+    driverClassName: oracle.jdbc.OracleDriver
+    maximumPoolSize: 2
+
+  rabbitmq:
+      host: 192.168.1.240
+      port: 5671
+      username: xbrain
+      password: xbrain
+
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+  messages:
+    encoding: UTF-8
+
 app-config:
   nome: Colaboradores
   url: http://localhost:3100
-  url-estatico: https://estatico.xbrain.com.br/portal-agente-autorizado
   url-mensagemws: http://192.168.2.28:8183/MensagemWsService/MensagemWs
+  url-estatico: https://estatico.xbrain.com.br/conexao_claro_brasil
+  url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
+  estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
+  upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
 
   email:
     enviar: true
@@ -23,6 +69,8 @@ app-config:
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
+    usuario-recuperacao: usuario-recuperacao.queue
+    usuario-recuperacao-failure: usuario-recuperacao-failure.queue
     usuario-alterar-email: usuario-alterar-email.queue
     usuario-alterar-cargo: usuario-alterar-cargo.queue
     usuario-ativar: usuario-ativar.queue

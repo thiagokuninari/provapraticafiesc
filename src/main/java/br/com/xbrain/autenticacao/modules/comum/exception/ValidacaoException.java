@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.comum.dto;
+package br.com.xbrain.autenticacao.modules.comum.exception;
 
 /**
  * Created by xbrain on 22/09/15.

@@ -1,7 +1,5 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -15,7 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -32,40 +29,15 @@ public class FuncionalidadeService {
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
 
-    private Predicate<CargoDepartamentoFuncionalidade> semEmpresaEUnidadeDeNegocio = f -> f.getEmpresa() == null
-            && f.getUnidadeNegocio() == null;
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresa(List<Empresa> empresasUsuario) {
-        return f -> f.getEmpresa() != null && f.getUnidadeNegocio() == null
-                && empresasUsuario.contains(f.getEmpresa());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario) {
-        return f -> f.getUnidadeNegocio() != null && f.getEmpresa() == null
-                && unidadesUsuario.contains(f.getUnidadeNegocio());
-    }
-
-    private Predicate<CargoDepartamentoFuncionalidade> possuiEmpresaEUnidadeNegocio(List<UnidadeNegocio> unidadesUsuario,
-                                                                                    List<Empresa> empresasUsuario) {
-        return f -> f.getUnidadeNegocio() != null && f.getEmpresa() != null
-                && unidadesUsuario.contains(f.getUnidadeNegocio()) && empresasUsuario.contains(f.getEmpresa());
-    }
-
     public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuario(Usuario usuario) {
         FuncionalidadePredicate predicate = new FuncionalidadePredicate()
                 .comCargo(usuario.getCargoId())
                 .comDepartamento(usuario.getDepartamentoId());
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
                 .findFuncionalidadesPorCargoEDepartamento(predicate.build());
-
         return Stream.concat(
                 funcionalidades
                         .stream()
-                        .filter(semEmpresaEUnidadeDeNegocio
-                                .or(possuiEmpresa(usuario.getEmpresas()))
-                                .or(possuiUnidadeNegocio(usuario.getUnidadesNegocios()))
-                                .or(possuiEmpresaEUnidadeNegocio(usuario.getUnidadesNegocios(),
-                                        usuario.getEmpresas())))
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
                         .findPorUsuario(usuario.getId()).stream())
@@ -82,7 +54,7 @@ public class FuncionalidadeService {
     }
 
     public List<FuncionalidadeResponse> getAll() {
-        return FuncionalidadeResponse.convertFrom((List<Funcionalidade>) repository.findAll());
+        return FuncionalidadeResponse.convertFrom(repository.findAllByOrderByNome());
     }
 
 }

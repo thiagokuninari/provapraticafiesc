@@ -57,8 +57,8 @@ public class UsuarioAutenticado {
         this.email = usuario.getEmail();
         this.cargoId = usuario.getCargoId();
         this.departamentoId = usuario.getDepartamentoId();
-        this.cargo = usuario.getCargo().toString();
-        this.departamento = usuario.getDepartamentoCodigo().toString();
+        this.cargo = usuario.getCargo().getNome();
+        this.departamento = usuario.getDepartamento().getNome();
         this.nivel = usuario.getNivelCodigo().toString();
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();

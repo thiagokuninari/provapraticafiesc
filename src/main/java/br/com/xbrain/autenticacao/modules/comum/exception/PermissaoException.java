@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.comum.dto;
+package br.com.xbrain.autenticacao.modules.comum.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

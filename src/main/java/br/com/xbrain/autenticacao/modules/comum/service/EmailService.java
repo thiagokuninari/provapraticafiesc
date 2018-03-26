@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 public class EmailService {
@@ -59,8 +57,7 @@ public class EmailService {
         context.setVariable("urlSistema", urlSistema);
         context.setVariable("assunto", assunto);
         context.setVariable("urlSistemaLoginDireto", "teste");
-        context.setVariable("dataEmail", LocalDate.now()
-                .format(DateTimeFormatter.ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt","BR"))));
+        context.setVariable("dataEmail", StringUtil.getDataAtualEmail() );
         context.setVariable("includeConteudo", template);
 
         String htmlContent = templateEngine.process("email-template", context);
