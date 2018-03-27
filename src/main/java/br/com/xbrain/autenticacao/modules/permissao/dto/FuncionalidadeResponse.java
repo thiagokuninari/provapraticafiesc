@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.permissao.dto;
 
-import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -12,6 +11,7 @@ import java.util.stream.Collectors;
 public class FuncionalidadeResponse {
 
     private Integer id;
+    private Integer funcionalidadeId;
     private String nome;
     private String role;
     private String aplicacao;
@@ -20,6 +20,7 @@ public class FuncionalidadeResponse {
     public static FuncionalidadeResponse convertFrom(Funcionalidade funcionalidade) {
         FuncionalidadeResponse funcionalidadeResponse = new FuncionalidadeResponse();
         BeanUtils.copyProperties(funcionalidade, funcionalidadeResponse);
+        funcionalidadeResponse.setFuncionalidadeId(funcionalidade.getId());
         funcionalidadeResponse.setAplicacao(funcionalidade.getAplicacao().getNome());
         return funcionalidadeResponse;
     }
@@ -27,10 +28,4 @@ public class FuncionalidadeResponse {
     public static List<FuncionalidadeResponse> convertFrom(List<Funcionalidade> funcionalidades) {
         return funcionalidades.stream().map(FuncionalidadeResponse::convertFrom).collect(Collectors.toList());
     }
-
-    public static List<FuncionalidadeResponse> convertFromCargoDepartamentoFuncionalidade(
-            List<CargoDepartamentoFuncionalidade> funcionalidades) {
-        return funcionalidades.stream().map(f -> convertFrom(f.getFuncionalidade())).collect(Collectors.toList());
-    }
-
 }

@@ -12,11 +12,13 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -42,7 +44,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
-import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -70,7 +71,7 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailService emailService;
+    private NotificacaoService notificacaoService;
 
     @Autowired
     private MotivoInativacaoRepository motivoInativacaoRepository;
@@ -222,7 +223,7 @@ public class UsuarioService {
         adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
         repository.save(usuario);
         if (enviarEmail) {
-            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }
         return UsuarioDto.parse(usuario);
     }
@@ -325,7 +326,7 @@ public class UsuarioService {
 
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
 
-            enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
 
             repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
             repository.updateEmail(usuario.getEmail(), usuario.getId());
@@ -393,19 +394,6 @@ public class UsuarioService {
         validarEmailExistente(usuario);
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
-    }
-
-    public void enviarEmailDadosDeAcesso(Usuario usuario, String senhaDescriptografada) {
-        Context context = new Context();
-        context.setVariable("nome", usuario.getNome());
-        context.setVariable("email", usuario.getEmail());
-        context.setVariable("senha", senhaDescriptografada);
-
-        emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
-                "Nova Conta",
-                "confirmacao-cadastro",
-                context);
     }
 
     public String getSenhaRandomica(int size) {
@@ -586,7 +574,7 @@ public class UsuarioService {
         Usuario usuario = findComplete(idUsuario);
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
-        enviarEmailComSenhaNova(usuario, senhaDescriptografada);
+        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 
     @Transactional
@@ -596,20 +584,7 @@ public class UsuarioService {
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
         repository.save(usuario);
-        enviarEmailComSenhaNova(usuario, senhaDescriptografada);
-    }
-
-    private void enviarEmailComSenhaNova(Usuario usuario, String senhaDescriptografada) {
-        Context context = new Context();
-        context.setVariable("nome", usuario.getNome());
-        context.setVariable("email", usuario.getEmail());
-        context.setVariable("senha", senhaDescriptografada);
-
-        emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
-                "Alteração de Senha",
-                "reenvio-senha",
-                context);
+        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 
     @Transactional
@@ -617,20 +592,7 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         confirmarEmailAtual(usuario.getEmail(), usuarioDadosAcessoRequest.getEmailAtual());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
-        enviarEmailComEmailNovo(usuario, usuarioDadosAcessoRequest);
-    }
-
-    private void enviarEmailComEmailNovo(Usuario usuario, UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
-        Context context = new Context();
-        context.setVariable("nome", usuario.getNome());
-        context.setVariable("emailNovo", usuarioDadosAcessoRequest.getEmailNovo());
-        context.setVariable("emailAntigo", usuarioDadosAcessoRequest.getEmailAtual());
-
-        emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
-                "Alteração de E-mail",
-                "alteracao-email",
-                context);
+        notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
     }
 
     private void confirmarEmailAtual(String emailAtual, String emailAtualRequest) {
@@ -644,7 +606,7 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         confirmarSenhaAtual(usuario.getSenha(), usuarioDadosAcessoRequest.getSenhaAtual());
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()), usuario.getId());
-        enviarEmailComSenhaNova(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+        notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
     }
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
@@ -674,6 +636,19 @@ public class UsuarioService {
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
+    }
+
+    public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
+        Usuario usuario = findComplete(idUsuario);
+        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
+        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+        List<Funcionalidade> permissoesEspeciais = permissaoEspecialRepository.findPorUsuario(usuario.getId());
+
+        UsuarioPermissaoResponse response = new UsuarioPermissaoResponse();
+        response.setPermissoesCargoDepartamento(funcionalidades);
+        response.setPermissoesEspeciais(permissoesEspeciais);
+        return response;
     }
 
     private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {

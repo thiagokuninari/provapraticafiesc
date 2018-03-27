@@ -1,3 +1,10 @@
+app-config:
+  services:
+    parceiros-online:
+      url: http://172.10.10.36:8099
+    call:
+      url: http://172.10.10.38:8094
+
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
   level:

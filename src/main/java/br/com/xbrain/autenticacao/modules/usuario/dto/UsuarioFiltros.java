@@ -17,11 +17,11 @@ public class UsuarioFiltros {
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
         return new UsuarioPredicate()
-                .comNome(nome)
                 .comCpf(cpf)
-                .comRegional(regionalId)
+                .comNome(nome)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
+                .comRegional(regionalId)
                 .comSubCluster(subClusterId)
                 .ignorarAa();
     }

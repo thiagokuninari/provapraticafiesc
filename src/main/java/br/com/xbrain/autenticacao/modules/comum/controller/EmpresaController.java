@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.EmpresaPredicate;
+import br.com.xbrain.autenticacao.modules.comum.filtros.EmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;

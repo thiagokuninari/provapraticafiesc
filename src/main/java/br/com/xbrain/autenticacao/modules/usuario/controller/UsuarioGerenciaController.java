@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -26,7 +25,7 @@ public class UsuarioGerenciaController {
         return UsuarioDto.parse(service.findById(id));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public PageImpl<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         Page<Usuario> page = service.getAll(pageRequest, filtros);
         return new PageImpl<>(
@@ -75,8 +74,8 @@ public class UsuarioGerenciaController {
     }
 
     @RequestMapping(value = "/{idUsuario}/permissoes", method = RequestMethod.GET)
-    public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
-        return service.getFuncionalidadeByUsuario(idUsuario);
+    public UsuarioPermissaoResponse getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
+        return service.findPermissoesByUsuario(idUsuario);
     }
 
     @RequestMapping(value = "/{idUsuario}/senha", method = RequestMethod.PUT)

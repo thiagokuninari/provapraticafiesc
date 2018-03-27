@@ -26,34 +26,29 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest
-//@AutoConfigureMockMvc
-//@Transactional
-//@Rollback(false)
-//@ActiveProfiles("importacao")
+/*@RunWith(SpringRunner.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@Rollback(false)
+@ActiveProfiles("importacao")*/
 public class UsuarioImportacaoTest {
 
     @Autowired
     private UsuarioImportacaoRepository parceirosRepository;
-
     @Autowired
     private UsuarioRepository repository;
-
     @Autowired
     private CidadeRepository cidadeRepository;
-
     @Autowired
     private FuncionalidadeRepository funcionalidadeRepository;
-
     @Autowired
     private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
-
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
-
     @Autowired
     private DepartamentoRepository departamentoRepository;
+
     /*
     * PARA RODAR A IMPORTAÇÃO:
     *
@@ -98,7 +93,6 @@ public class UsuarioImportacaoTest {
                         if (!CollectionUtils.isEmpty(empresasAa)) {
                             usuario.setEmpresas(empresasAa);
                         }
-
                     }
                 }
             }
@@ -228,7 +222,6 @@ public class UsuarioImportacaoTest {
                         + permissao.getRole());
             }
         }
-
     }
 
     private void convertHierarquias(List<UsuarioHierarquiaImportacao> dados, Usuario usuario) {
