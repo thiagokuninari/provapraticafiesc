@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.permissao.controller;
 
-import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
+import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import helpers.TestsHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,8 +19,7 @@ import java.util.Arrays;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,14 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = "classpath:/tests_database.sql")
-public class CargoDepartamentoFuncionalidadeControllerTest {
+public class PermissaoEspecialControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Test
     public void deveSalvar() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.post("/api/cargo-departamento-funcionalidade")
+        mvc.perform(MockMvcRequestBuilders.post("/api/permissoes-especiais")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
@@ -46,45 +45,18 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
     }
 
     @Test
-    public void deveBuscarPermissoes() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/api/cargo-departamento-funcionalidade")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(142)));
-    }
-
-    @Test
-    public void devePaginarPermissoes() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/api/cargo-departamento-funcionalidade/pages?page=0&size=10")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.totalPages", is(15)))
-                .andExpect(jsonPath("$.totalElements", is(142)));
-    }
-
-    @Test
     public void deveRemoverUmaPermissao() throws Exception {
-        mvc.perform(put("/api/cargo-departamento-funcionalidade/remover/1")
+        mvc.perform(put("/api/permissoes-especiais/remover/101/26")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dataBaixa", notNullValue()))
+                .andExpect(jsonPath("$.usuarioBaixa", notNullValue()));
     }
 
-    @Test
-    public void deveDeslogarUsuarios() throws Exception {
-        mvc.perform(put("/api/cargo-departamento-funcionalidade/deslogar/50/50")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    private CargoDepartamentoFuncionalidadeRequest novasPermissoes() {
-        CargoDepartamentoFuncionalidadeRequest res = new CargoDepartamentoFuncionalidadeRequest();
-        res.setCargoId(1);
-        res.setDepartamentoId(1);
+    private PermissaoEspecialRequest novasPermissoes() {
+        PermissaoEspecialRequest res = new PermissaoEspecialRequest();
+        res.setUsuarioId(1);
         res.setFuncionalidadesIds(Arrays.asList(1, 2, 3, 4));
         return res;
     }

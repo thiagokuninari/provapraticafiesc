@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_USUARIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
 
 public class UnidadeNegocioPredicate extends PredicateBase {
@@ -24,7 +24,7 @@ public class UnidadeNegocioPredicate extends PredicateBase {
     }
 
     public UnidadeNegocioPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (!usuarioAutenticado.hasPermissao(AUT_GER_USUARIO)
+        if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_USUARIO)
                 && usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
             daUnidadeUsuarioPorUsuario(usuarioAutenticado.getUsuario());
         }

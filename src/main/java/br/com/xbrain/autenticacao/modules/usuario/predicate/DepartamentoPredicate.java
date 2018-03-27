@@ -26,7 +26,7 @@ public class DepartamentoPredicate {
     }
 
     public DepartamentoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_GER_USUARIO)
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO)
                 && usuarioAutenticado.hasPermissao(CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
             daComercial();
         }

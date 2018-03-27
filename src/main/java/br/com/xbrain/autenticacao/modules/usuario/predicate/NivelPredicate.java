@@ -6,7 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QNivel;
 import com.querydsl.core.BooleanBuilder;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_USUARIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
 
 public class NivelPredicate {
@@ -34,7 +34,7 @@ public class NivelPredicate {
     }
 
     public NivelPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (!usuarioAutenticado.hasPermissao(AUT_GER_USUARIO)
+        if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_USUARIO)
                 && usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
             doNivel();
         }
