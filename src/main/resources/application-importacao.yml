@@ -25,10 +25,10 @@ spring:
 #    driverClassName: oracle.jdbc.OracleDriver
 
 #    autenticação test
-#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-#    username: AUTENTICACAO_TEST
-#    password: py12nrk7
-#    driverClassName: oracle.jdbc.OracleDriver
+    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+    username: AUTENTICACAO_TEST
+    password: py12nrk7
+    driverClassName: oracle.jdbc.OracleDriver
 
   datasource-parceiros:
 #    parceiros hml

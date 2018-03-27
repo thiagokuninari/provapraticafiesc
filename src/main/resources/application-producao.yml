@@ -7,15 +7,16 @@ spring:
       ddl-auto: none
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.205:1521/xprod12
+    #TODO por enquanto vai rodar apontando pro banco de homologação, até o prod ficar pronto
+    url: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
     username: AUTENTICACAO
-    password: 4ut3nt1c4c40
+    password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
+    maximumPoolSize: 2 #TODO quando entrar o banco de prod, setar 30
 
   rabbitmq:
-    host: 192.168.1.240
-    port: 5671
+    host: 172.10.10.60
+    port: 5672
     username: xbrain
     password: xbrain
 
@@ -30,5 +31,11 @@ app-config:
 
   services:
     call:
-      url: https://call.conexaoclarobrasil.com.br
+      url: http://172.10.10.78:8094
+    parceiros-online:
+      url: http://172.10.10.76:8099
 
+logging:
+  level:
+      org.springframework: 'OFF'
+      org.hibernate: 'OFF'
