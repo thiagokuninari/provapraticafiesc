@@ -15,7 +15,7 @@ spring:
     maximumPoolSize: 2 #TODO quando entrar o banco de prod, setar 30
 
   rabbitmq:
-    host: 170.10.10.60
+    host: 172.10.10.60
     port: 5672
     username: xbrain
     password: xbrain
