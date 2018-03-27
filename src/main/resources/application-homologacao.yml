@@ -31,7 +31,7 @@ app-config:
 
   email:
     enviar: true
-    emails:
+    emails: fernandoalves@xbrain.com.br,ivan@xbrain.com.br,jessicaoliveira@xbrain.com.br,iuri@xbrain.com.br
 
 logging:
   level:
