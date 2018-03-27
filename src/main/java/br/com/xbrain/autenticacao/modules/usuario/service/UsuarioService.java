@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -632,6 +633,19 @@ public class UsuarioService {
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
+    }
+
+    public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
+        Usuario usuario = findComplete(idUsuario);
+        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
+        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+        List<Funcionalidade> permissoesEspeciais = permissaoEspecialRepository.findPorUsuario(usuario.getId());
+
+        UsuarioPermissaoResponse response = new UsuarioPermissaoResponse();
+        response.setPermissoesCargoDepartamento(funcionalidades);
+        response.setPermissoesEspeciais(permissoesEspeciais);
+        return response;
     }
 
     private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {

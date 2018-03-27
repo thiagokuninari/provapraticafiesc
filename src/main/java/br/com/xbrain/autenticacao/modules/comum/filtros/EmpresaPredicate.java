@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.comum;
+package br.com.xbrain.autenticacao.modules.comum.filtros;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.model.QEmpresa;
