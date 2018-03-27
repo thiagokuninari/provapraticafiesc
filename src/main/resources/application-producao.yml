@@ -17,6 +17,8 @@ spring:
   rabbitmq:
     host: 170.10.10.60
     port: 5672
+    username: xbrain
+    password: xbrain
 
 app-config:
   url: https://autenticacao.conexaoclarobrasil.com.br
