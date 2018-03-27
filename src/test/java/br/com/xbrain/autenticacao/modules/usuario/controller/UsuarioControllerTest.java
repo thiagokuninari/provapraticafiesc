@@ -112,7 +112,7 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$.id", is(100)))
                 .andExpect(jsonPath("$.nome", is("ADMIN")))
                 .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.permissoes[0]", is("ROLE_POL_AGENTE_AUTORIZADO_APROVACAO_MSO")));
+                .andExpect(jsonPath("$.permissoes[0]", is("ROLE_AUT_EMULAR_USUARIO")));
     }
 
     @Test
