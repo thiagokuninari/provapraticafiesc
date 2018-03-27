@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -153,7 +154,8 @@ public class UsuarioService {
     }
 
     public UsuarioResponse findByCpfAa(String cpf) {
-        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpf);
+        String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
+        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
         if (usuarioOptional.isPresent()) {
             return UsuarioResponse.convertFrom(usuarioOptional.get());
