@@ -99,9 +99,11 @@ app-config:
 
   services:
     call:
-      url: http://localhost:8094
+      url: http://call-api-dev.conexaoclarobrasil.com.br/
+      #url: http://localhost:8094
     parceiros-online:
-      url: http://localhost:8099
+      url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      #url: http://localhost:8099
     
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin
