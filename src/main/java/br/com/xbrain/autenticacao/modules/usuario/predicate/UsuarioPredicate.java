@@ -28,7 +28,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comNome(String nome) {
-        if (nome != null) {
+        if (!StringUtils.isEmpty(nome)) {
             builder.and(usuario.nome.likeIgnoreCase("%" + nome + "%"));
         }
         return this;

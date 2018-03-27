@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,6 +63,9 @@ public class UsuarioImportacaoTest {
         List<UsuarioImportacao> dados = parceirosRepository.getAllUsuariosParceirosOnline();
 
         for (UsuarioImportacao dado : dados) {
+            dado.trimProperties();
+            dado.toUpperCaseProperties();
+
             Usuario usuario = new Usuario();
             BeanUtils.copyProperties(dado, usuario);
 
@@ -162,7 +166,9 @@ public class UsuarioImportacaoTest {
         for (CargoDepartamentoFuncionalidadeImportacao dto : dtos) {
             Funcionalidade funcionalidade = funcionalidadeRepository.findByRole(dto.getRole()).orElse(null);
 
-            if (funcionalidade != null) {
+            if (!ObjectUtils.isEmpty(funcionalidade)) {
+                //validarRole(funcionalidade);
+
                 CargoDepartamentoFuncionalidade cargoDepartamentoFuncionalidade = new CargoDepartamentoFuncionalidade();
 
                 cargoDepartamentoFuncionalidade.setFuncionalidade(funcionalidade);
@@ -192,7 +198,8 @@ public class UsuarioImportacaoTest {
         for (PermissaoEspecialImportacao permissao : permissoes) {
             Funcionalidade funcionalidade = funcionalidadeRepository.findByRole(permissao.getRole()).orElse(null);
 
-            if (funcionalidade != null) {
+            if (!ObjectUtils.isEmpty(funcionalidade)) {
+                //validarRole(funcionalidade);
 
                 PermissaoEspecial permissaoEspecial = new PermissaoEspecial();
                 permissaoEspecial.setDataCadastro(permissao.getDataCadastro());
@@ -270,5 +277,16 @@ public class UsuarioImportacaoTest {
             usuariosCidades.add(usuarioCidade);
         }
         return usuariosCidades;
+    }
+
+    private void validarRole(Funcionalidade funcionalidade) {
+        String role = funcionalidade.getRole()
+                .replaceAll("EXTRACAO", "EXT")
+                .replaceAll("VISUALIZAR", "VIS")
+                .replaceAll("GERENCIAR", "GER")
+                .replaceAll("APROVACAO", "APROV")
+                .replaceAll("AGENTE_AUTORIZADO", "AA")
+                .replaceAll("DESCREDENCIAMENTO", "DESCRED");
+        funcionalidade.setRole(role);
     }
 }

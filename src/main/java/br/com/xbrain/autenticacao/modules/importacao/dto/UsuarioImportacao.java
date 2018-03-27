@@ -46,4 +46,15 @@ public class UsuarioImportacao {
             this.setEmail03(this.getEmail03().trim());
         }
     }
+
+    public void toUpperCaseProperties() {
+        this.setNome(this.getNome().toUpperCase());
+        this.setEmail(this.getEmail().toUpperCase());
+        if (!StringUtils.isEmpty(this.getEmail02())) {
+            this.setEmail02(this.getEmail02().toUpperCase());
+        }
+        if (!StringUtils.isEmpty(this.getEmail03())) {
+            this.setEmail03(this.getEmail03().toUpperCase());
+        }
+    }
 }
