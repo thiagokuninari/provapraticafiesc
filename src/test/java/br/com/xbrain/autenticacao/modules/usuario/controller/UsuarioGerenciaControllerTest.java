@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import helpers.Usuarios;
-import javax.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -237,8 +237,8 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(53)))
-                .andExpect(jsonPath("$[0].role", is("POL_AGENTE_AUTORIZADO_APROVACAO_MSO")));
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(58)))
+                .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 
     @Test

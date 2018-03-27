@@ -12,10 +12,12 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -152,7 +154,8 @@ public class UsuarioService {
     }
 
     public UsuarioResponse findByCpfAa(String cpf) {
-        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpf);
+        String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
+        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
         if (usuarioOptional.isPresent()) {
             return UsuarioResponse.convertFrom(usuarioOptional.get());
@@ -632,6 +635,19 @@ public class UsuarioService {
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
+    }
+
+    public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
+        Usuario usuario = findComplete(idUsuario);
+        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
+        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
+                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+        List<Funcionalidade> permissoesEspeciais = permissaoEspecialRepository.findPorUsuario(usuario.getId());
+
+        UsuarioPermissaoResponse response = new UsuarioPermissaoResponse();
+        response.setPermissoesCargoDepartamento(funcionalidades);
+        response.setPermissoesEspeciais(permissoesEspeciais);
+        return response;
     }
 
     private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {

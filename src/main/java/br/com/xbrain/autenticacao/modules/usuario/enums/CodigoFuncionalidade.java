@@ -4,7 +4,7 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
  * Created by rafaelzeffa on 03/11/16.
  */
 public enum CodigoFuncionalidade {
-    AUT_GER_USUARIO,
+    AUT_VISUALIZAR_USUARIO,
     AUT_VISUALIZAR_GERAL,
     AUT_VISUALIZAR_EMPRESA_UNIDADE,
     AUT_VISUALIZAR_CARTEIRA_HIERARQUIA,

@@ -13,6 +13,10 @@ spring:
     password: py12nrk7
 
 app-config:
+  services:
+    parceiros-online:
+      url: https://parceiros-dev.conexaoclarobrasil.com.br/
+
   email:
     enviar: true
     emails: andre@xbrain.com.br

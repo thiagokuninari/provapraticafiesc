@@ -31,7 +31,8 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
                 .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade).fetchJoin()
                 .innerJoin(funcionalidade.aplicacao).fetchJoin()
                 .where(predicate)
-                .orderBy(funcionalidade.nome.asc())
+                .orderBy(funcionalidade.aplicacao.nome.asc(),
+                        funcionalidade.nome.asc())
                 .fetch();
     }
 
