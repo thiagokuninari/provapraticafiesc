@@ -33,10 +33,6 @@ app-config:
     enviar: true
     emails:
 
-  services:
-    call:
-      url: http://172.10.10.78:8094
-
 logging:
   level:
       org.springframework: 'ERROR'
