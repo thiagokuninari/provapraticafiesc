@@ -7,12 +7,12 @@ spring:
       ddl-auto: none
 
   datasource:
-    #TODO por enquanto vai rodar apontando pro banco de homologação, até o prod ficar pronto
-    url: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    url: jdbc:oracle:thin:@//192.168.2.38:1521/xprod
     username: AUTENTICACAO
-    password: py12nrk7
+    password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2 #TODO quando entrar o banco de prod, setar 30
+    hikari:
+      maximumPoolSize: 30
 
   rabbitmq:
     host: 172.10.10.60
@@ -37,5 +37,5 @@ app-config:
 
 logging:
   level:
-      org.springframework: 'OFF'
-      org.hibernate: 'OFF'
+      org.springframework: 'ERROR'
+      org.hibernate: 'ERROR'
