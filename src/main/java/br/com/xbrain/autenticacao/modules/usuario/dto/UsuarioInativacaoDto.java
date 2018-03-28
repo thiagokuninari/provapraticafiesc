@@ -15,6 +15,8 @@ public class UsuarioInativacaoDto {
 
     private Integer idMotivoInativacao;
 
+    private Integer idUsuarioInativacao;
+
     private CodigoMotivoInativacao codigoMotivoInativacao;
 
     private LocalDateTime dataCadastro;
