@@ -29,15 +29,15 @@ app-config:
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
   upload-dir: ${app-config.estatico-dir}/producao/autenticacao
 
-  email:
-    enviar: true
-    emails:
-
   services:
     call:
       url: http://172.10.10.78:8094
     parceiros-online:
       url: http://172.10.10.76:8099
+
+  email:
+    enviar: true
+    emails:
 
 logging:
   level:

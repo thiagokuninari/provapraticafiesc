@@ -56,6 +56,9 @@ public class UsuarioService {
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
+    private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION =
+            new ValidacaoException("O email atual está incorreto.");
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
@@ -593,15 +596,20 @@ public class UsuarioService {
     @Transactional
     public void alterarDadosAcessoEmail(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
-        confirmarEmailAtual(usuario.getEmail(), usuarioDadosAcessoRequest.getEmailAtual());
+        validarEmail(usuario, usuarioDadosAcessoRequest.getEmailAtual(), usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
     }
 
-    private void confirmarEmailAtual(String emailAtual, String emailAtualRequest) {
-        if (!emailAtual.equalsIgnoreCase(emailAtualRequest)) {
-            throw new ValidacaoException("O e-mail atual está incorreto.");
+    private void validarEmail(Usuario usuario, String emailAtual, String emailNovo) {
+        if (!usuario.getEmail().equalsIgnoreCase(emailAtual)) {
+            throw EMAIL_ATUAL_INCORRETO_EXCEPTION;
         }
+        repository.findAllUsuarioByEmailIgnoreCase(emailNovo).forEach(u -> {
+            if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                throw EMAIL_CADASTRADO_EXCEPTION;
+            }
+        });
     }
 
     @Transactional

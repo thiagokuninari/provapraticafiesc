@@ -27,6 +27,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);
 
+    List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
+
     @Modifying
     @Query("update Usuario u set u.senha = ?1 where u.id = ?2")
     void updateSenha(String senha, Integer usuarioId);
