@@ -40,6 +40,6 @@ public class AppUserDetailsService implements UserDetailsService {
                             autenticacaoService.isEmulacao() ? new BCryptPasswordEncoder().encode("") : u.getSenha(),
                             funcionalidadeService.getPermissoes(u));
                 }).orElseThrow(() ->
-                        new UsernameNotFoundException("Erro ao autenticar."));
+                        new UsernameNotFoundException("Email ou senha inválidos."));
     }
 }
