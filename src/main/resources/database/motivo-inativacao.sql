@@ -1,3 +1,4 @@
-insert into motivo_inativacao (id, descricao, codigo, situacao) values (1, 'FÉRIAS', 'FERIAS', 'A');
-insert into motivo_inativacao (id, descricao, codigo, situacao) values (2, 'AFASTAMENTO', 'AFASTAMENTO', 'A');
-insert into motivo_inativacao (id, descricao, codigo, situacao) values (3, 'DEMISSÃO', 'DEMISSAO', 'A');
+INSERT INTO MOTIVO_INATIVACAO (ID, DESCRICAO, CODIGO, SITUACAO) VALUES (1, 'FÉRIAS', 'FERIAS', 'A');
+INSERT INTO MOTIVO_INATIVACAO (ID, DESCRICAO, CODIGO, SITUACAO) VALUES (2, 'AFASTAMENTO', 'AFASTAMENTO', 'A');
+INSERT INTO MOTIVO_INATIVACAO (ID, DESCRICAO, CODIGO, SITUACAO) VALUES (3, 'DEMISSÃO', 'DEMISSAO', 'A');
+INSERT INTO MOTIVO_INATIVACAO (ID, DESCRICAO, CODIGO, SITUACAO) VALUES (4, 'DESCREDENCIADO', 'DESCREDENCIADO', 'A');
