@@ -19,7 +19,7 @@ spring:
 #    driverClassName: oracle.jdbc.OracleDriver
 
 #    autenticação prod
-#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.205:1521/xprod12
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.2.38:1521/xprod
 #    username: AUTENTICACAO
 #    password: 4ut3nt1c4c40
 #    driverClassName: oracle.jdbc.OracleDriver
@@ -32,14 +32,20 @@ spring:
 
   datasource-parceiros:
 #    parceiros hml
-    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: homologacao
-    password: c1t1gu1zes
-    driverClassName: oracle.jdbc.OracleDriver
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+#    username: homologacao
+#    password: c1t1gu1zes
+#    driverClassName: oracle.jdbc.OracleDriver
 
 #    parceiros hml-prd
-#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
-#    username: net_parceiros
-#    password: p4rc31r0sh0m0l0g
+    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    username: net_parceiros
+    password: p4rc31r0sh0m0l0g
+    driverClassName: oracle.jdbc.OracleDriver
+    maximumPoolSize: 1
+
+#    parceiros prod
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.2.16:1521/XPROD
+#    username: parceiros_online
+#    password: jtr4ovhw
 #    driverClassName: oracle.jdbc.OracleDriver
-#    maximumPoolSize: 1
