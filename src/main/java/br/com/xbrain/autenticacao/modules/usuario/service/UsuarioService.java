@@ -440,11 +440,15 @@ public class UsuarioService {
         Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
+
+        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao()) :
+                new Usuario(autenticacaoService.getUsuarioId());
+
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
-                .usuarioAlteracao(new Usuario(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(usuarioInativacao)
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build());
