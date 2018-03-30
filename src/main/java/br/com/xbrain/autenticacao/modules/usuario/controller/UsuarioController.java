@@ -36,7 +36,7 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
                 usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
-                        .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
+                .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
@@ -51,7 +51,7 @@ public class UsuarioController {
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
-                                         @RequestParam boolean incluirProprio) {
+            @RequestParam boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
@@ -96,4 +96,13 @@ public class UsuarioController {
         return usuarioService.getConfiguracaoByUsuario();
     }
 
+    @RequestMapping(value = "/adicionar-configuracao", method = RequestMethod.POST)
+    public ConfiguracaoResponse adicionarConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
+        return usuarioService.adicionarConfiguracao(dto);
+    }
+
+    @RequestMapping(value = "/remover-configuracao", method = RequestMethod.PUT)
+    public void removerConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
+        usuarioService.removerConfiguracao(dto);
+    }
 }

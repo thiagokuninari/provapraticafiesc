@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -104,6 +105,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
+
+    @Autowired
+    private ConfiguracaoRepository configuracaoRepository;
 
     @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
@@ -640,10 +644,10 @@ public class UsuarioService {
                 .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
                 funcionalidades
-                        .stream()
-                        .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
+                .stream()
+                .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
-                        .findPorUsuario(usuario.getId()).stream())
+                .findPorUsuario(usuario.getId()).stream())
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
@@ -680,4 +684,22 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ConfiguracaoResponse adicionarConfiguracao(UsuarioConfiguracaoDto dto) {
+        Configuracao configuracao = configuracaoRepository
+                .findByUsuario(new Usuario(dto.getUsuario()))
+                .orElse(new Configuracao());
+        configuracao.configurar(dto);
+        configuracao = configuracaoRepository.save(configuracao);
+        return ConfiguracaoResponse.convertFrom(configuracao);
+    }
+
+    @Transactional
+    public void removerConfiguracao(UsuarioConfiguracaoDto dto) {
+        Configuracao configuracao = configuracaoRepository
+                .findByRamal(dto.getRamal()).get();
+        if (!ObjectUtils.isEmpty(configuracao)) {
+            configuracaoRepository.delete(configuracao);
+        }
+    }
 }
