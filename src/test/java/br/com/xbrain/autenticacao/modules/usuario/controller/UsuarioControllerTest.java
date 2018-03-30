@@ -2,10 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import helpers.Usuarios;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +53,9 @@ public class UsuarioControllerTest {
     @Autowired
     private UsuarioRepository repository;
 
+    @Autowired
+    private ConfiguracaoRepository configuracaoRepository;
+    
     @MockBean
     private AutenticacaoService autenticacaoService;
 
@@ -171,6 +180,38 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ramal", is(7006)));
+    }
+    
+    @Test
+    public void deveAdicionarConfiguracaoAoUsuario() throws Exception {
+        mvc.perform(post("/api/usuarios/adicionar-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ramal", is(1000)));
+    }
+    
+    @Test
+    public void deveRemoverConfiguracaoAoUsuario() throws Exception {
+        long quantidadeAntes = configuracaoRepository.count();
+        
+        mvc.perform(put("/api/usuarios/remover-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
+                .andExpect(status().isOk());
+        
+        long quantidadeDepois = configuracaoRepository.count();
+        
+        Assert.assertTrue(quantidadeAntes > quantidadeDepois);
+    }
+
+    private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {
+        UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
+        dto.setRamal(1000);
+        dto.setUsuario(100);
+        return dto;
     }
 
     private UsuarioAtivacaoDto umUsuarioParaAtivar() {
