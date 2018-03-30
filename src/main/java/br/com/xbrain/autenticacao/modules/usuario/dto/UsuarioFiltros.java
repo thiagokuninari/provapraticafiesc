@@ -3,6 +3,9 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
+
+import java.util.Collections;
 
 @Data
 public class UsuarioFiltros {
@@ -12,7 +15,11 @@ public class UsuarioFiltros {
     private Integer regionalId;
     private Integer grupoId;
     private Integer clusterId;
+    private Integer unidadeNegocioId;
     private Integer subClusterId;
+    private Integer nivelId;
+    private Integer departamentoId;
+    private Integer cargoId;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -23,6 +30,12 @@ public class UsuarioFiltros {
                 .comCluster(clusterId)
                 .comRegional(regionalId)
                 .comSubCluster(subClusterId)
+                .comUnidadeNegocio(unidadeNegocioId)
+                .comNivel(nivelId)
+                .comCargo(!ObjectUtils.isEmpty(cargoId)
+                        ? Collections.singletonList(cargoId) : null)
+                .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
+                        ? Collections.singletonList(departamentoId) : null)
                 .ignorarAa();
     }
 }

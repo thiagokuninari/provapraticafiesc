@@ -10,6 +10,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -74,16 +76,30 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comNivel(Integer nivelId) {
+        if (!ObjectUtils.isEmpty(nivelId)) {
+            builder.and(usuario.cargo.nivel.id.eq(nivelId));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
-        if (cargoIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
         }
         return this;
     }
 
     public UsuarioPredicate comDepartamento(List<Integer> departamentoIds) {
-        if (departamentoIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(departamentoIds)) {
             builder.and(usuario.departamento.id.in(departamentoIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comUnidadeNegocio(Integer unidadeNegocioId) {
+        if (!ObjectUtils.isEmpty(unidadeNegocioId)) {
+            builder.and(usuario.unidadesNegocios.any().id.eq(unidadeNegocioId));
         }
         return this;
     }

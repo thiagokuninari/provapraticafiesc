@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/*@RunWith(SpringRunner.class)
+/*@Transactional
 @SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
 @Rollback(false)
+@AutoConfigureMockMvc
+@RunWith(SpringRunner.class)
 @ActiveProfiles("importacao")*/
 public class UsuarioImportacaoTest {
 
@@ -56,6 +56,7 @@ public class UsuarioImportacaoTest {
     * 1. UTILIZE O PROFILE DE IMPORTAÇÃO (APPLICATION-IMPORTACAO.YML)
     * 2. VERIFIQUE SE AS BASES ESTÃO CONFIGURADAS CORRETAMENTE
     * 3. COMENTE AS ANOTAÇÕES DE SEQUENCE DO USUÁRIO ID
+    * 4. QUANDO FINALIZAR, ALTERAR SEQUENCE DE USUARIO: SEQ_USUARIO
     * */
 
     //@Test
@@ -85,13 +86,22 @@ public class UsuarioImportacaoTest {
             if (dado.getUnidadeNegocioId() != null && dado.getUnidadeNegocioId() != 0) {
                 usuario.setUnidadesNegocios(
                         Collections.singletonList(new UnidadeNegocio(dado.getUnidadeNegocioId())));
+            } else {
+                if (!ObjectUtils.isEmpty(departamento)) {
+                    if (departamento.getNivel().getCodigo() == CodigoNivel.AGENTE_AUTORIZADO) {
+                        List<UnidadeNegocio> unidades = parceirosRepository.getUnidadesNegociosAa(usuario.getId());
+                        if (!CollectionUtils.isEmpty(unidades)) {
+                            usuario.setUnidadesNegocios(unidades);
+                        }
+                    }
+                }
             }
 
             if (!CollectionUtils.isEmpty(dado.getEmpresasId())) {
                 usuario.setEmpresas(dado.getEmpresasId().stream().map(Empresa::new)
                         .collect(Collectors.toList()));
             } else {
-                if (departamento != null) {
+                if (!ObjectUtils.isEmpty(departamento)) {
                     if (departamento.getNivel().getCodigo() == CodigoNivel.AGENTE_AUTORIZADO) {
                         List<Empresa> empresasAa = parceirosRepository.getEmpresasAa(usuario.getId());
                         if (!CollectionUtils.isEmpty(empresasAa)) {

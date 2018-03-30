@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.importacao.repository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.importacao.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,8 +39,23 @@ public class UsuarioImportacaoRepository {
                 this::getEmpresas);
     }
 
+    public List<UnidadeNegocio> getUnidadesNegociosAa(Integer usuarioId) {
+        return jdbcTemplate.query("SELECT DISTINCT UN.ID UNIDADE_NEGOCIO_ID "
+                        + "FROM AA_USUARIO AAU "
+                        + "JOIN USUARIO U ON U.ID = AAU.FK_USUARIO "
+                        + "JOIN AGENTE_AUTORIZADO AA ON AA.ID = AAU.FK_AGENTE_AUTORIZADO "
+                        + "JOIN UNIDADE_NEGOCIO UN ON UN.ID = AA.FK_UNIDADE_NEGOCIO "
+                        + "WHERE AAU.FK_USUARIO = :_usuarioId ",
+                new MapSqlParameterSource("_usuarioId", usuarioId),
+                this::getUnidadesNegocios);
+    }
+
     public Empresa getEmpresas(ResultSet rs, int rownum) throws SQLException {
         return new Empresa(rs.getInt("id"));
+    }
+
+    public UnidadeNegocio getUnidadesNegocios(ResultSet rs, int rownum) throws SQLException {
+        return new UnidadeNegocio(rs.getInt("UNIDADE_NEGOCIO_ID"));
     }
 
     public List<PermissaoEspecialImportacao> getAllPermissoesEspeciais() {

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.permissao.filtros;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.StringUtils;
 
 public class CargoDepartamentoFuncionalidadePredicate {
 
@@ -28,6 +29,22 @@ public class CargoDepartamentoFuncionalidadePredicate {
     public CargoDepartamentoFuncionalidadePredicate comCargo(Integer cargoId) {
         if (cargoId != null) {
             builder.and(cargoDepartamentoFuncionalidade.cargo.id.eq(cargoId));
+        }
+        return this;
+    }
+
+    public CargoDepartamentoFuncionalidadePredicate comFuncionalidadeNome(String funcionalidadeNome) {
+        if (!StringUtils.isEmpty(funcionalidadeNome)) {
+            builder.and(cargoDepartamentoFuncionalidade.funcionalidade.nome
+                    .likeIgnoreCase("%" + funcionalidadeNome + "%"));
+        }
+        return this;
+    }
+
+    public CargoDepartamentoFuncionalidadePredicate comAplicacaoNome(String aplicacaoNome) {
+        if (!StringUtils.isEmpty(aplicacaoNome)) {
+            builder.and(cargoDepartamentoFuncionalidade.funcionalidade.aplicacao.nome
+                    .likeIgnoreCase("%" + aplicacaoNome + "%"));
         }
         return this;
     }
