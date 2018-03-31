@@ -31,6 +31,11 @@ public class AutenticacaoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    public static boolean hasAuthentication() {
+        OAuth2Authentication authentication = getAuthentication();
+        return authentication != null && authentication.getUserAuthentication() != null;
+    }
+
     public String getLoginUsuario() {
         return getAuthentication().getName();
     }
@@ -69,11 +74,19 @@ public class AutenticacaoService {
         tokenRepository.deleteTokenByUsername(usuario.getLogin());
     }
 
-    private Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
+    public static OAuth2Authentication getAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication instanceof OAuth2Authentication ? (OAuth2Authentication) authentication : null;
     }
 
     public boolean isEmulacao() {
         return request.getAttribute("emulacao") != null;
+    }
+
+    public static Integer getUsuarioEmuladorId(HttpServletRequest request) {
+        if (request.getHeader(HEADER_USUARIO_EMULADOR) != null) {
+            return Integer.parseInt(request.getHeader(HEADER_USUARIO_EMULADOR));
+        }
+        return null;
     }
 }
