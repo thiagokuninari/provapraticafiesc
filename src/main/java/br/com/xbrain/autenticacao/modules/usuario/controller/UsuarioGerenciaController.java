@@ -94,8 +94,8 @@ public class UsuarioGerenciaController {
     }
 
     @RequestMapping(value = "/acesso/senha", method = RequestMethod.PUT)
-    public void alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
-        service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
+    public Integer alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        return service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
     }
     
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)

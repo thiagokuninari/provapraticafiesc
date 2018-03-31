@@ -583,7 +583,7 @@ public class UsuarioService {
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
+        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 
@@ -617,11 +617,18 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
-        Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
+    public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
+        Usuario usuario;
+        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+            usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        } else {
+            usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
+        }
         confirmarSenhaAtual(usuario.getSenha(), usuarioDadosAcessoRequest.getSenhaAtual());
-        repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()), usuario.getId());
+        repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
+                usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+        return usuario.getId();
     }
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {

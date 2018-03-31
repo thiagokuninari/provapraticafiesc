@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -30,6 +31,10 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);
 
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
+
+    @Modifying
+    @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2 where u.id = ?3")
+    void updateSenha(String senha, Eboolean alterarSenha, Integer usuarioId);
 
     @Modifying
     @Query("update Usuario u set u.senha = ?1 where u.id = ?2")

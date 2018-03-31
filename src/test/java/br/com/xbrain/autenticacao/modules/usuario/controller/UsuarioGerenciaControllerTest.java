@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -323,6 +324,7 @@ public class UsuarioGerenciaControllerTest {
     private UsuarioDadosAcessoRequest umRequestDadosAcessoSenha() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
+        dto.setAlterarSenha(Eboolean.V);
         dto.setSenhaAtual("123456");
         dto.setSenhaNova("654321");
         return dto;
