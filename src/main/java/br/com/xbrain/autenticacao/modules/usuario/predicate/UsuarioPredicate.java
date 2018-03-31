@@ -65,7 +65,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comNivel(List<Integer> nivelIds) {
-        if (nivelIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(nivelIds)) {
             builder.and(usuario.cargo.nivel.id.in(nivelIds));
         }
         return this;
@@ -73,13 +73,6 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate ignorarAa() {
         builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
-        return this;
-    }
-
-    public UsuarioPredicate comNivel(Integer nivelId) {
-        if (!ObjectUtils.isEmpty(nivelId)) {
-            builder.and(usuario.cargo.nivel.id.eq(nivelId));
-        }
         return this;
     }
 

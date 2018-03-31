@@ -39,6 +39,10 @@ public class UsuarioImportacaoRepository {
                 this::getEmpresas);
     }
 
+    public Empresa getEmpresas(ResultSet rs, int rownum) throws SQLException {
+        return new Empresa(rs.getInt("id"));
+    }
+
     public List<UnidadeNegocio> getUnidadesNegociosAa(Integer usuarioId) {
         return jdbcTemplate.query("SELECT DISTINCT UN.ID UNIDADE_NEGOCIO_ID "
                         + "FROM AA_USUARIO AAU "
@@ -50,12 +54,21 @@ public class UsuarioImportacaoRepository {
                 this::getUnidadesNegocios);
     }
 
-    public Empresa getEmpresas(ResultSet rs, int rownum) throws SQLException {
-        return new Empresa(rs.getInt("id"));
-    }
-
     public UnidadeNegocio getUnidadesNegocios(ResultSet rs, int rownum) throws SQLException {
         return new UnidadeNegocio(rs.getInt("UNIDADE_NEGOCIO_ID"));
+    }
+
+    public List<String> getCpfUsuario(Integer usuarioId) {
+        return jdbcTemplate.query("SELECT CPF "
+                        + "FROM COLABORADOR_VENDAS "
+                        + "WHERE FK_USUARIO =  :_usuarioId "
+                        + "AND CPF IS NOT NULL",
+                new MapSqlParameterSource("_usuarioId", usuarioId),
+                this::getCpf);
+    }
+
+    public String getCpf(ResultSet rs, int rownum) throws SQLException {
+        return rs.getString("CPF");
     }
 
     public List<PermissaoEspecialImportacao> getAllPermissoesEspeciais() {

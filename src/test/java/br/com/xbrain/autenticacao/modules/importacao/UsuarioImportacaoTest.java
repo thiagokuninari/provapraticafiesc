@@ -132,6 +132,21 @@ public class UsuarioImportacaoTest {
     }
 
     //@Test
+    public void importarCpfsUsuarios() {
+        List<Usuario> usuarios = repository.findAllByCpfIsNull();
+        for (Usuario usuario : usuarios) {
+            List<String> cpfs = parceirosRepository.getCpfUsuario(usuario.getId());
+            if (!CollectionUtils.isEmpty(cpfs)) {
+                usuario.setCpf(cpfs.get(0));
+                repository.save(usuario);
+            } else {
+                System.out.println("CPF DO USUÁRIO NÃO IMPORTADO: \nusuarioId: "
+                        + usuario.getId());
+            }
+        }
+    }
+
+    //@Test
     public void importarCidadesUsuario() {
         List<Usuario> usuarios = (List<Usuario>) repository.findAll();
         for (Usuario usuario : usuarios) {
