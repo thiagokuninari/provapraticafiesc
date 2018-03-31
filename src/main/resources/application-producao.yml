@@ -25,7 +25,8 @@ spring:
     password: xbrain
 
 app-config:
-  url: https://autenticacao.conexaoclarobrasil.com.br
+  # TODO: Quando permitido, alterar novamente para Conexão Claro Brasil
+  url: https://parceirosonline.com.br
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
   upload-dir: ${app-config.estatico-dir}/producao/autenticacao
 
