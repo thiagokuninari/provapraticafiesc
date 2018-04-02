@@ -16,6 +16,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("importacao")*/
 public class UsuarioImportacaoTest {
+
+    private final Logger log = LoggerFactory.getLogger(UsuarioImportacaoTest.class);
 
     @Autowired
     private UsuarioImportacaoRepository parceirosRepository;
@@ -138,7 +142,13 @@ public class UsuarioImportacaoTest {
             List<String> cpfs = parceirosRepository.getCpfUsuario(usuario.getId());
             if (!CollectionUtils.isEmpty(cpfs)) {
                 usuario.setCpf(cpfs.get(0));
-                repository.save(usuario);
+                usuario.removerCaracteresDoCpf();
+                System.out.println(usuario.getId());
+                try {
+                    repository.save(usuario);
+                } catch (Exception exception) {
+                    log.error("Erro ao importar CPF do usuário: ", exception);
+                }
             } else {
                 System.out.println("CPF DO USUÁRIO NÃO IMPORTADO: \nusuarioId: "
                         + usuario.getId());
