@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QNivel;
 import com.querydsl.core.BooleanBuilder;
@@ -28,8 +29,23 @@ public class NivelPredicate {
         return this;
     }
 
+    public NivelPredicate withoutAgenteAutoriazado() {
+        builder.and(nivel.codigo.ne(CodigoNivel.AGENTE_AUTORIZADO));
+        return this;
+    }
+
+    public NivelPredicate withoutVarejo() {
+        builder.and(nivel.codigo.ne(CodigoNivel.VAREJO));
+        return this;
+    }
+
     public NivelPredicate ativo() {
         builder.and(nivel.situacao.eq(ESituacao.A));
+        return this;
+    }
+
+    public NivelPredicate deveExibirCadastro() {
+        builder.and(nivel.exibirCadastroUsuario.eq(Eboolean.V));
         return this;
     }
 

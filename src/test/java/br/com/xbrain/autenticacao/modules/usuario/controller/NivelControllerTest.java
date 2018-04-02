@@ -51,8 +51,8 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisAtivos() throws Exception  {
-        mvc.perform(get("/api/niveis/permitidos")
+    public void deveRetornarOsNiveisAtivosCadastro() throws Exception  {
+        mvc.perform(get("/api/niveis/permitidos-cadastro-usuario")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -61,8 +61,18 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisSemXbrain() throws Exception  {
-        mvc.perform(get("/api/niveis/permitidos")
+    public void deveRetornarOsNiveisAtivosLista() throws Exception  {
+        mvc.perform(get("/api/niveis/permitidos-lista-usuarios")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].nome", is("MSO")));
+    }
+
+    @Test
+    public void deveRetornarOsNiveisSemXbrainCadastro() throws Exception  {
+        mvc.perform(get("/api/niveis/permitidos-cadastro-usuario")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -71,8 +81,18 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosComFiltroUsuarioOperacaoGerente() throws Exception {
-        mvc.perform(get("/api/niveis/permitidos")
+    public void deveRetornarOsNiveisSemXbrainLista() throws Exception  {
+        mvc.perform(get("/api/niveis/permitidos-lista-usuarios")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("Operação")));
+    }
+
+    @Test
+    public void deveRetornarTodosComFiltroUsuarioOperacaoGerenteCadastro() throws Exception {
+        mvc.perform(get("/api/niveis/permitidos-cadastro-usuario")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -80,4 +100,13 @@ public class NivelControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("Operação")));
     }
 
+    @Test
+    public void deveRetornarTodosComFiltroUsuarioOperacaoGerenteLista() throws Exception {
+        mvc.perform(get("/api/niveis/permitidos-lista-usuarios")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome", is("Operação")));
+    }
 }

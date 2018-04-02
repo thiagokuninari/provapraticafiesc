@@ -34,8 +34,8 @@ public class UsuarioResponse {
 
     @Builder
     public UsuarioResponse(Integer id, String nome, String cpf, String email, String telefone, ESituacao situacao,
-                   CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
-                   List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
+                           CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
+                           List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
         this.id = id;
         this.nome = nome;
         this.cpf = cpf;

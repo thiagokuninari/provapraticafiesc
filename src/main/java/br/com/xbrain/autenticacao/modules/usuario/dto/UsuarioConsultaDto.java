@@ -17,6 +17,7 @@ public class UsuarioConsultaDto {
     private String unidadeNegocioNome;
     private String empresaNome;
     private String situacao;
+    private String nivelCodigo;
 
     public UsuarioConsultaDto() { }
 
@@ -28,6 +29,7 @@ public class UsuarioConsultaDto {
         UsuarioConsultaDto response = new UsuarioConsultaDto();
         BeanUtils.copyProperties(usuario, response);
         response.setSituacao(usuario.getSituacao().toString());
+        response.setNivelCodigo(usuario.getCargo().getNivel().getCodigo().name());
         response.setUnidadeNegocioNome(usuario.getUnidadesNegocios().stream()
                 .map(UnidadeNegocio::getNome).collect(Collectors.joining(", ")));
         response.setEmpresaNome(usuario.getEmpresas().stream()

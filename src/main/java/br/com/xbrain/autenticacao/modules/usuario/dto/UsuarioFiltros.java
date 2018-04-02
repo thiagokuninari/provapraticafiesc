@@ -36,7 +36,6 @@ public class UsuarioFiltros {
                 .comCargo(!ObjectUtils.isEmpty(cargoId)
                         ? Collections.singletonList(cargoId) : null)
                 .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
-                        ? Collections.singletonList(departamentoId) : null)
-                .ignorarAa();
+                        ? Collections.singletonList(departamentoId) : null);
     }
 }

@@ -197,6 +197,10 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        if (!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA)) {
+            ignorarAa();
+        }
+
         if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             if (usuario.hasPermissao(AUT_VISUALIZAR_EMPRESA_UNIDADE)) {
                 daEmpresaEUnidadeDeNegocio(
