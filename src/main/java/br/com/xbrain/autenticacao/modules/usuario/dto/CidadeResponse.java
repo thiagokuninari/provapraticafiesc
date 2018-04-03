@@ -9,6 +9,7 @@ public class CidadeResponse {
 
     private Integer id;
     private String nome;
+    private String codigoIbge;
     private UfResponse uf;
 
     public static CidadeResponse parse(Cidade request) {

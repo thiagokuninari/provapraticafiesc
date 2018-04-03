@@ -65,4 +65,9 @@ public class CidadeController {
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
         return UsuarioCidadeDto.parse(repository.findOne(id));
     }
+
+    @RequestMapping(value = "{cidadeId}")
+    public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
+        return CidadeResponse.parse(repository.findOne(id));
+    }
 }
