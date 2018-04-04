@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -241,17 +240,6 @@ public class Usuario {
             this.historicos = new ArrayList<>();
         }
         this.historicos.add(historico);
-    }
-
-    public static Usuario parse(UsuarioDto usuarioDto) {
-        Usuario usuario = new Usuario();
-        BeanUtils.copyProperties(usuarioDto, usuario);
-        usuario.setEmpresasId(usuarioDto.getEmpresasId());
-        usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
-        usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
-        usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
-        usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
-        return usuario;
     }
 
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {

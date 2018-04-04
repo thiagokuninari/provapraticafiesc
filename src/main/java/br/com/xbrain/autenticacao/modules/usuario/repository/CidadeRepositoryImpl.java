@@ -43,7 +43,10 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .leftJoin(QCluster.cluster.grupo, grupo).fetchJoin()
                 .leftJoin(grupo.regional, QRegional.regional).fetchJoin()
                 .where(QRegional.regional.id.eq(regionalId).and(predicate))
-                .orderBy(cidade.nome.asc())
+                .orderBy(grupo.nome.asc(),
+                        QCluster.cluster.nome.asc(),
+                        subCluster.nome.asc(),
+                        cidade.nome.asc())
                 .distinct()
                 .fetch();
     }
@@ -59,7 +62,10 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .leftJoin(QCluster.cluster.grupo, grupo).fetchJoin()
                 .leftJoin(grupo.regional, QRegional.regional).fetchJoin()
                 .where(subCluster.id.eq(subClusterId).and(predicate))
-                .orderBy(cidade.nome.asc())
+                .orderBy(grupo.nome.asc(),
+                        QCluster.cluster.nome.asc(),
+                        subCluster.nome.asc(),
+                        cidade.nome.asc())
                 .distinct()
                 .fetch();
     }
@@ -75,7 +81,10 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .leftJoin(QCluster.cluster.grupo, grupo).fetchJoin()
                 .leftJoin(grupo.regional, QRegional.regional).fetchJoin()
                 .where(grupo.id.eq(grupoId).and(predicate))
-                .orderBy(cidade.nome.asc())
+                .orderBy(grupo.nome.asc(),
+                        QCluster.cluster.nome.asc(),
+                        subCluster.nome.asc(),
+                        cidade.nome.asc())
                 .distinct()
                 .fetch();
     }
@@ -91,7 +100,10 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .leftJoin(QCluster.cluster.grupo, grupo).fetchJoin()
                 .leftJoin(grupo.regional, QRegional.regional).fetchJoin()
                 .where(QCluster.cluster.id.eq(clusterId).and(predicate))
-                .orderBy(cidade.nome.asc())
+                .orderBy(grupo.nome.asc(),
+                        QCluster.cluster.nome.asc(),
+                        subCluster.nome.asc(),
+                        cidade.nome.asc())
                 .distinct()
                 .fetch();
     }

@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import lombok.Data;
@@ -10,6 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -70,7 +73,20 @@ public class UsuarioDto implements Serializable {
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
 
-    public static UsuarioDto parse(Usuario usuario) {
+    public static Usuario convertFrom(UsuarioDto usuarioDto) {
+        Usuario usuario = new Usuario();
+        BeanUtils.copyProperties(usuarioDto, usuario);
+        usuario.setEmpresasId(usuarioDto.getEmpresasId());
+        usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
+        usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
+        usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
+        if (!ObjectUtils.isEmpty(usuarioDto.getUsuarioCadastroId())) {
+            usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
+        }
+        return usuario;
+    }
+
+    public static UsuarioDto convertTo(Usuario usuario) {
         UsuarioDto usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());

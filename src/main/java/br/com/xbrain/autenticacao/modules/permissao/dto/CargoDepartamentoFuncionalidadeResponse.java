@@ -17,6 +17,7 @@ public class CargoDepartamentoFuncionalidadeResponse {
     private String departamentoNome;
     private Integer funcionalidadeId;
     private String funcionalidadeNome;
+    private String funcionalidadeRole;
     private String aplicacaoNome;
 
     public CargoDepartamentoFuncionalidadeResponse() {
@@ -42,6 +43,7 @@ public class CargoDepartamentoFuncionalidadeResponse {
         response.setDepartamentoNome(request.getDepartamento().getNome());
         response.setFuncionalidadeId(request.getFuncionalidade().getId());
         response.setFuncionalidadeNome(request.getFuncionalidade().getNome());
+        response.setFuncionalidadeRole(request.getFuncionalidade().getRole());
         response.setAplicacaoNome(request.getFuncionalidade().getAplicacao().getNome());
         return response;
     }

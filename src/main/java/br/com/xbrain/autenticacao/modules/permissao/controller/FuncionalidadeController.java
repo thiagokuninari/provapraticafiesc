@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.permissao.controller;
 
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
-import br.com.xbrain.autenticacao.modules.permissao.filtros.CargoDepartamentoFuncionalidadeFiltros;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +17,7 @@ public class FuncionalidadeController {
     private FuncionalidadeService service;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<FuncionalidadeResponse> getAll(CargoDepartamentoFuncionalidadeFiltros filtro) {
+    public List<FuncionalidadeResponse> getAll() {
         return service.getAll();
     }
-
 }

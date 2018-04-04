@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +11,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -24,8 +23,6 @@ public class AutenticacaoService {
 
     @Autowired
     private OAuthAccessTokenRepository tokenRepository;
-    @Autowired
-    private UsuarioService usuarioService;
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -54,7 +51,7 @@ public class AutenticacaoService {
         UsuarioAutenticado usuarioAutenticado = null;
 
         if (details.get("usuarioAutenticado") == null) {
-            Usuario usuario = usuarioService.getRepository().findComplete(getUsuarioId()).get();
+            Usuario usuario = usuarioRepository.findComplete(getUsuarioId()).get();
             usuario.forceLoad();
             usuarioAutenticado = new UsuarioAutenticado(usuario, authentication.getAuthorities());
 

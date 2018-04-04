@@ -20,9 +20,19 @@ public class UsuarioGerenciaController {
     @Autowired
     private UsuarioService service;
 
+    @RequestMapping(method = RequestMethod.POST)
+    public UsuarioDto save(@Validated @RequestBody UsuarioDto usuario) {
+        return service.save(usuario);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT)
+    public void alterar(@Validated @RequestBody UsuarioDto usuario) {
+        service.save(usuario);
+    }
+
     @RequestMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
-        return UsuarioDto.parse(service.findById(id));
+        return UsuarioDto.convertTo(service.findById(id));
     }
 
     @GetMapping
@@ -48,19 +58,9 @@ public class UsuarioGerenciaController {
         return service.findByEmail(email);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public UsuarioDto save(@Validated @RequestBody UsuarioDto usuario) {
-        return service.save(usuario);
-    }
-
     @RequestMapping(value = "/configuracao", method = RequestMethod.POST)
     public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
         return service.saveUsuarioConfiguracao(dto);
-    }
-
-    @RequestMapping(method = RequestMethod.PUT)
-    public void alterar(@Validated @RequestBody UsuarioDto usuario) {
-        service.save(usuario);
     }
 
     @RequestMapping(value = "/inativar", method = RequestMethod.POST)

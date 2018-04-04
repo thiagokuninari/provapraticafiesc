@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import helpers.Usuarios;
-import javax.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -350,7 +350,7 @@ public class UsuarioGerenciaControllerTest {
         Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
         usuario.forceLoad();
         usuario.setNome("JOAOZINHO");
-        return UsuarioDto.parse(usuario);
+        return UsuarioDto.convertTo(usuario);
     }
 
     private UsuarioDto umUsuario(String nome) {

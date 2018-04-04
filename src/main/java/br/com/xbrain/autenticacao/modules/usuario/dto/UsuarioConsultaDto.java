@@ -14,10 +14,14 @@ public class UsuarioConsultaDto {
     private int id;
     private String nome;
     private String email;
+    private String cpf;
     private String unidadeNegocioNome;
     private String empresaNome;
     private String situacao;
     private String nivelCodigo;
+    private String nivelNome;
+    private String cargoNome;
+    private String departamentoNome;
 
     public UsuarioConsultaDto() { }
 
@@ -29,7 +33,10 @@ public class UsuarioConsultaDto {
         UsuarioConsultaDto response = new UsuarioConsultaDto();
         BeanUtils.copyProperties(usuario, response);
         response.setSituacao(usuario.getSituacao().toString());
+        response.setNivelNome(usuario.getCargo().getNivel().getNome());
         response.setNivelCodigo(usuario.getCargo().getNivel().getCodigo().name());
+        response.setCargoNome(usuario.getCargo().getNome());
+        response.setDepartamentoNome(usuario.getDepartamento().getNome());
         response.setUnidadeNegocioNome(usuario.getUnidadesNegocios().stream()
                 .map(UnidadeNegocio::getNome).collect(Collectors.joining(", ")));
         response.setEmpresaNome(usuario.getEmpresas().stream()

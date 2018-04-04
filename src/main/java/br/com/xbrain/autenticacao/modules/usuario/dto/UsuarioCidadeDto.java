@@ -1,10 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +19,6 @@ public class UsuarioCidadeDto {
     private String nomeSubCluster;
     private Integer idCidade;
     private String nomeCidade;
-    private LocalDateTime dataAtual;
-    private ESituacao situacao;
 
     public static UsuarioCidadeDto parse(Cidade cidade) {
         UsuarioCidadeDto dto = new UsuarioCidadeDto();
@@ -36,8 +32,6 @@ public class UsuarioCidadeDto {
         dto.setNomeGrupo(cidade.getGrupoNome());
         dto.setIdRegional(cidade.getRegionalId());
         dto.setNomeRegional(cidade.getRegionalNome());
-        dto.setDataAtual(LocalDateTime.now());
-        dto.setSituacao(ESituacao.A);
         return dto;
     }
 

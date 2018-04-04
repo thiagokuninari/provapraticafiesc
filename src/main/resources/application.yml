@@ -36,7 +36,7 @@ spring:
       maximumPoolSize: 2
 
   rabbitmq:
-      host: 192.168.1.240
+      host: 192.168.1.40
       port: 5671
       username: xbrain
       password: xbrain

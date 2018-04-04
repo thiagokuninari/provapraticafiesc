@@ -32,7 +32,6 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqS
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,52 +62,38 @@ public class UsuarioService {
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
-    @Getter
     @Autowired
     private UsuarioRepository repository;
-
     @Autowired
     private AutenticacaoService autenticacaoService;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private NotificacaoService notificacaoService;
-
     @Autowired
     private MotivoInativacaoRepository motivoInativacaoRepository;
-
     @Autowired
     private CargoRepository cargoRepository;
-
     @Autowired
     private DepartamentoRepository departamentoRepository;
-
+    @Autowired
+    private UsuarioCidadeRepository usuarioCidadeRepository;
     @Autowired
     private NivelRepository nivelRepository;
-
     @Autowired
     private UnidadeNegocioRepository unidadeNegocioRepository;
-
     @Autowired
     private EmpresaRepository empresaRepository;
-
     @Autowired
     private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
-
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
-
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
-
     @Autowired
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
-
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
-
     @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
 
@@ -148,7 +133,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto findByEmail(String email) {
-        return UsuarioDto.parse(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return UsuarioDto.convertTo(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
     public UsuarioResponse findByEmailAa(String email) {
@@ -195,7 +180,7 @@ public class UsuarioService {
                     new Configuracao(
                             usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
         }
-        return UsuarioDto.parse(repository.save(usuario));
+        return UsuarioDto.convertTo(repository.save(usuario));
     }
 
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idHierarquia) {
@@ -216,8 +201,9 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
-        Usuario usuario = Usuario.parse(usuarioDto);
+        Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
         validar(usuario);
+
         boolean enviarEmail = false;
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         if (usuario.isNovoCadastro()) {
@@ -225,16 +211,23 @@ public class UsuarioService {
             enviarEmail = true;
         }
         usuario = repository.save(usuario);
-        adicionarUsuarioHierarquia(usuario, usuarioDto.getHierarquiasId());
-        adicionarCidadeParaUsuario(usuario, usuarioDto.getCidadesId());
-        repository.save(usuario);
+        tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
+        tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+
         if (enviarEmail) {
             notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }
-        return UsuarioDto.parse(usuario);
+        return UsuarioDto.convertTo(usuario);
     }
 
-    private void adicionarUsuarioHierarquia(Usuario usuario, List<Integer> hierarquiasId) {
+    private void validar(Usuario usuario) {
+        validarCpfExistente(usuario);
+        validarEmailExistente(usuario);
+        usuario.removerCaracteresDoCpf();
+        usuario.tratarEmails();
+    }
+
+    private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         repository.save(usuario);
@@ -256,7 +249,25 @@ public class UsuarioService {
         }
     }
 
-    private void adicionarCidadeParaUsuario(Usuario usuario, List<Integer> cidadesId) {
+    private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
+        removerUsuarioCidade(usuario, cidadesId);
+        adicionarUsuarioCidade(usuario, cidadesId);
+    }
+
+    private void removerUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
+        if (CollectionUtils.isEmpty(cidadesId) && !CollectionUtils.isEmpty(usuario.getCidades())) {
+            usuarioCidadeRepository.deleteByUsuario(usuario.getId());
+
+        } else if (!CollectionUtils.isEmpty(usuario.getCidades())) {
+            usuario.getCidades().forEach(c -> {
+                if (!cidadesId.contains(c.getCidade().getId())) {
+                    usuarioCidadeRepository.deleteByCidadeAndUsuario(c.getCidade().getId(), usuario.getId());
+                }
+            });
+        }
+    }
+
+    private void adicionarUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
         if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
@@ -395,13 +406,6 @@ public class UsuarioService {
         usuarioDto.setEmpresasId(empresas.stream().map(Empresa::getId).collect(Collectors.toList()));
     }
 
-    private void validar(Usuario usuario) {
-        validarCpfExistente(usuario);
-        validarEmailExistente(usuario);
-        usuario.removerCaracteresDoCpf();
-        usuario.tratarEmails();
-    }
-
     public String getSenhaRandomica(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
@@ -495,7 +499,7 @@ public class UsuarioService {
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
         return usuarioList.stream()
-                .map(UsuarioDto::parse)
+                .map(UsuarioDto::convertTo)
                 .collect(Collectors.toList());
     }
 

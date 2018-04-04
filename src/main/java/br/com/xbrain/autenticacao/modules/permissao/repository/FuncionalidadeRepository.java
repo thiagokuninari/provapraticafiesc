@@ -11,5 +11,4 @@ public interface FuncionalidadeRepository extends PagingAndSortingRepository<Fun
     Optional<Funcionalidade> findByRole(String role);
 
     List<Funcionalidade> findAllByOrderByNome();
-
 }
