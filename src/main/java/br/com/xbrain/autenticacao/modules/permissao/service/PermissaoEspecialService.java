@@ -45,7 +45,7 @@ public class PermissaoEspecialService {
     }
 
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
-        PermissaoEspecial permissaoEspecial = repository.findOneByUsuarioIdAndFuncionalidadeId(
+        PermissaoEspecial permissaoEspecial = repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
                 usuarioId, funcionalidadeId).orElseThrow(() -> EX_NAO_ENCONTRADO);
         permissaoEspecial.baixar(autenticacaoService.getUsuarioId());
         repository.save(permissaoEspecial);
