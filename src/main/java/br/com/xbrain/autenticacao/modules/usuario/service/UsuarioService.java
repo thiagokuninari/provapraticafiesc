@@ -436,10 +436,14 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
+
+        Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao()) :
+                new Usuario(autenticacaoService.getUsuarioId());
+
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuario)
-                .usuarioAlteracao(new Usuario(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(usuarioInativacao)
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.A)
                 .build());

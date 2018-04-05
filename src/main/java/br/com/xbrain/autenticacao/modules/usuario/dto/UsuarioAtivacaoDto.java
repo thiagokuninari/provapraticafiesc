@@ -12,5 +12,6 @@ public class UsuarioAtivacaoDto {
     private Integer idUsuario;
     @Size(max = 250)
     private String observacao;
+    private Integer idUsuarioAtivacao;
 
 }
