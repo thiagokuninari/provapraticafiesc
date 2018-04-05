@@ -61,7 +61,7 @@ public class UsuarioImportacaoRepository {
     public List<String> getCpfUsuario(Integer usuarioId) {
         return jdbcTemplate.query("SELECT CPF "
                         + "FROM COLABORADOR_VENDAS "
-                        + "WHERE FK_USUARIO =  :_usuarioId "
+                        + "WHERE USUARIO_ID =  :_usuarioId "
                         + "AND CPF IS NOT NULL",
                 new MapSqlParameterSource("_usuarioId", usuarioId),
                 this::getCpf);

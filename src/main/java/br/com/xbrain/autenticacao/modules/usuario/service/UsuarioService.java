@@ -707,10 +707,15 @@ public class UsuarioService {
 
     @Transactional
     public void removerConfiguracao(UsuarioConfiguracaoDto dto) {
-        Configuracao configuracao = configuracaoRepository
-                .findByRamal(dto.getRamal()).get();
-        if (!ObjectUtils.isEmpty(configuracao)) {
-            configuracaoRepository.delete(configuracao);
-        }
+        Optional<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        configuracao.ifPresent(c ->  configuracaoRepository.delete(c));
+    }
+
+    @Transactional
+    public void esqueceuSenhaPorEmail(String email) {
+        Usuario usuario = repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
+        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 }

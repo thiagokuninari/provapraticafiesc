@@ -1,10 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
+import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import helpers.Usuarios;
@@ -24,13 +23,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,15 +47,14 @@ public class UsuarioControllerTest {
 
     @Autowired
     private MockMvc mvc;
-
     @Autowired
     private UsuarioRepository repository;
-
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
-    
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private EmailService emailService;
 
     @Before
     public void setup() {
@@ -205,6 +204,16 @@ public class UsuarioControllerTest {
         Assert.assertTrue(quantidadeAntes > quantidadeDepois);
     }
 
+    @Test
+    public void deveDefinirEEnviarNovaSenhaDoUsuario() throws Exception {
+        mvc.perform(put("/api/usuarios/esqueci-senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umEsqueciSenha())))
+                .andExpect(status().isOk());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
     private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {
         UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
         dto.setRamal(1000);
@@ -212,19 +221,9 @@ public class UsuarioControllerTest {
         return dto;
     }
 
-    private UsuarioAtivacaoDto umUsuarioParaAtivar() {
-        UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
-        dto.setIdUsuario(ID_USUARIO_HELPDESK);
-        dto.setObservacao("Teste ativação");
-        return dto;
-    }
-
-    private UsuarioInativacaoDto umUsuarioParaInativar() {
-        UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
-        dto.setDataCadastro(LocalDateTime.now());
-        dto.setIdUsuario(ID_USUARIO_HELPDESK);
-        dto.setObservacao("Teste inativação");
-        dto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+    private UsuarioDadosAcessoRequest umEsqueciSenha() {
+        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
+        dto.setEmailAtual("HELPDESK@XBRAIN.COM.BR");
         return dto;
     }
 }
