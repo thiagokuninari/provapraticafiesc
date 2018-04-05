@@ -36,7 +36,6 @@ public class UsuarioDto implements Serializable {
     private String email;
     @Size(max = 80)
     private String email02;
-    @NotNull
     @Size(max = 100)
     private String telefone;
     private String telefone02;
