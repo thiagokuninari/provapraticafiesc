@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -55,6 +56,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> unidadesNegociosId = new ArrayList<>();
     private Integer unidadeNegocioId;
     private Integer nivelId;
+    private CodigoNivel nivelCodigo;
     @NotEmpty
     private List<Integer> empresasId = new ArrayList<>();
     @NotNull
@@ -94,6 +96,7 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setUnidadesNegociosId(usuario.getUnidadesNegociosId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());
         usuarioDto.setNivelId(usuario.getNivelId());
+        usuarioDto.setNivelCodigo(usuario.getNivelCodigo());
         usuarioDto.setHierarquiasId(usuario.getUsuariosHierarquia().stream()
                 .map(UsuarioHierarquia::getUsuarioSuperiorId)
                 .collect(Collectors.toList()));

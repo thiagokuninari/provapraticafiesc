@@ -406,7 +406,7 @@ public class UsuarioService {
         usuarioDto.setEmpresasId(empresas.stream().map(Empresa::getId).collect(Collectors.toList()));
     }
 
-    public String getSenhaRandomica(int size) {
+    private String getSenhaRandomica(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
     }
@@ -417,7 +417,7 @@ public class UsuarioService {
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
                     if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
-                        throw new ValidacaoException("Cpf já cadastrado.");
+                        throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
     }

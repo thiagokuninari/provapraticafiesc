@@ -40,11 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         String[] permitAll = {
-                "/*",
-                "/static/**",
-                "/api/usuarios/esqueci-senha",
-                "/oauth/authorize",
-                "/oauth/confirm_access"
+            "/*",
+            "/static/**",
+            "/api/usuarios/esqueci-senha",
+            "/oauth/authorize",
+            "/oauth/confirm_access"
         };
 
         http
