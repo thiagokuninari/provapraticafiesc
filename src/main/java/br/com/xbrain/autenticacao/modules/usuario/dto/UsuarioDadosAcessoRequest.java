@@ -12,4 +12,5 @@ public class UsuarioDadosAcessoRequest {
     private String senhaAtual;
     private String senhaNova;
     private Eboolean alterarSenha;
+    private Boolean ignorarSenhaAtual;
 }

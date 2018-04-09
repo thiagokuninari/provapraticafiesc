@@ -237,7 +237,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(58)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(59)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 
@@ -277,6 +277,20 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
+                .andExpect(status().isOk());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
+    @Test
+    public void deveAlterarASenhaDoUsuarioIgnorandoSenhaAtual() throws Exception {
+        UsuarioDadosAcessoRequest objTest = umRequestDadosAcessoSenha();
+        objTest.setIgnorarSenhaAtual(Boolean.TRUE);
+        objTest.setSenhaAtual("");
+
+        mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(objTest)))
                 .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
@@ -326,6 +340,7 @@ public class UsuarioGerenciaControllerTest {
         dto.setAlterarSenha(Eboolean.V);
         dto.setSenhaAtual("123456");
         dto.setSenhaNova("654321");
+        dto.setIgnorarSenhaAtual(Boolean.FALSE);
         return dto;
     }
 
