@@ -101,6 +101,11 @@ public class UsuarioController {
         return usuarioService.adicionarConfiguracao(dto);
     }
 
+    @RequestMapping(value= "usuarios-hierarquias-save", method = RequestMethod.POST)
+    public void saveUsuarioHierarquia(@RequestBody List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
+        usuarioService.saveUsuarioHierarquia(novasHierarquias);
+    }
+
     @RequestMapping(value = "/remover-configuracao", method = RequestMethod.PUT)
     public void removerConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
         usuarioService.removerConfiguracao(dto);

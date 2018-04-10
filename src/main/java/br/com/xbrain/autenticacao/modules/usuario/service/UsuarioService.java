@@ -96,6 +96,8 @@ public class UsuarioService {
     private ConfiguracaoRepository configuracaoRepository;
     @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
+    @Autowired
+    private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -724,5 +726,32 @@ public class UsuarioService {
         String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
+    }
+
+    @Transactional
+    public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
+        List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
+        System.out.println(novasHierarquiasValidas);
+        novasHierarquiasValidas.forEach(u -> {
+            UsuarioHierarquia usuarioHierarquia =
+                    UsuarioHierarquia.criar(new Usuario(u.getUsuarioId()), u.getUsuarioSuperiorId(), u.getUsuarioCadastroId());
+            usuarioHierarquiaRepository.save(usuarioHierarquia);
+        });
+    }
+
+    private List<UsuarioHierarquiaCarteiraDto> validaUsuarioHierarquiaExistente(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
+        List<UsuarioHierarquia> usuarioHierarquiasExistentes = (List) usuarioHierarquiaRepository.findAll();
+        return novasHierarquias
+                .stream()
+                .filter(c -> !validaUsuarioHierarquiaExistente(usuarioHierarquiasExistentes, c))
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes, UsuarioHierarquiaCarteiraDto novaHierarquia) {
+        return hierarquiasExistentes
+                .stream()
+                .anyMatch(e -> (e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
+                        && e.getUsuario().getId().equals(novaHierarquia.getUsuarioId())));
     }
 }
