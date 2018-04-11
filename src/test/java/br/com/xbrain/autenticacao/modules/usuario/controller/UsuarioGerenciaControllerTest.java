@@ -257,7 +257,7 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoEmail())))
                 .andExpect(status().isOk());
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(emailService, times(2)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
