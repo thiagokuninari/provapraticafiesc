@@ -62,12 +62,12 @@ public class NotificacaoService {
 
         // TODO: Quando permitido, alterar novamente para Conexão Claro Brasil
         /*emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
+                Arrays.asList(usuarioDadosAcessoRequest.getEmailAtual()),
                 "Conexão Claro Brasil - Alteração de dados de acesso",
                 "alteracao-email",
                 context);*/
         emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
+                Arrays.asList(usuarioDadosAcessoRequest.getEmailAtual()),
                 "Parceiros Online - Alteração de dados de acesso",
                 "alteracao-email",
                 context);

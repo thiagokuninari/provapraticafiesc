@@ -592,27 +592,31 @@ public class UsuarioService {
     @Transactional
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
-        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
+        updateSenha(usuario, Eboolean.V);
     }
 
     @Transactional
     public void alterarSenhaAa(UsuarioAlterarSenhaDto usuarioAlterarSenhaDto) {
         Usuario usuario = findComplete(usuarioAlterarSenhaDto.getUsuarioId());
         usuario.setAlterarSenha(usuarioAlterarSenhaDto.getAlterarSenha());
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
+        updateSenha(usuario, usuarioAlterarSenhaDto.getAlterarSenha());
         repository.save(usuario);
-        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 
     @Transactional
     public void alterarDadosAcessoEmail(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         validarEmail(usuario, usuarioDadosAcessoRequest.getEmailAtual(), usuarioDadosAcessoRequest.getEmailNovo());
+        usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
+        updateSenha(usuario, Eboolean.V);
+    }
+
+    private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
+        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
+        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
 
     private void validarEmail(Usuario usuario, String emailAtual, String emailNovo) {
