@@ -737,7 +737,7 @@ public class UsuarioService {
     @Transactional
     public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
         List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
-        System.out.println(novasHierarquiasValidas);
+
         novasHierarquiasValidas.forEach(u -> {
             UsuarioHierarquia usuarioHierarquia =
                     UsuarioHierarquia.criar(new Usuario(u.getUsuarioId()), u.getUsuarioSuperiorId(), u.getUsuarioCadastroId());
