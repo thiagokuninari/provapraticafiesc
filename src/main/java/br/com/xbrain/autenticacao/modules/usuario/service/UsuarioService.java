@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +58,9 @@ public class UsuarioService {
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION =
-            new ValidacaoException("O email atual está incorreto.");
+            new ValidacaoException("Email atual está incorreto.");
+    private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION =
+            new ValidacaoException("Senha atual está incorreta.");
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
@@ -638,9 +640,9 @@ public class UsuarioService {
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (!ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
-                && !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
-            confirmarSenhaAtual(usuario.getSenha(), usuarioDadosAcessoRequest.getSenhaAtual());
+        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+                || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
+            validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
                 usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
@@ -648,17 +650,17 @@ public class UsuarioService {
         return usuario.getId();
     }
 
+    private void validarSenhaAtual(Usuario usuario, final String senhaAtual) {
+        if (!BCrypt.checkpw(senhaAtual, usuario.getSenha())) {
+            throw SENHA_ATUAL_INCORRETA_EXCEPTION;
+        }
+    }
+
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
         Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(null);
         return usuario != null
                 ? ConfiguracaoResponse.convertFrom(usuario.getConfiguracao())
                 : new ConfiguracaoResponse();
-    }
-
-    private void confirmarSenhaAtual(String senhaAtual, String senhaAtualRequest) {
-        if (!new BCryptPasswordEncoder().matches(senhaAtualRequest, senhaAtual)) {
-            throw new ValidacaoException("A senha atual está incorreta.");
-        }
     }
 
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {
