@@ -58,11 +58,14 @@ public class UsuarioImportacaoRepository {
         return new UnidadeNegocio(rs.getInt("UNIDADE_NEGOCIO_ID"));
     }
 
-    public List<String> getCpfUsuario(Integer usuarioId) {
-        return jdbcTemplate.query("SELECT CPF "
-                        + "FROM COLABORADOR_VENDAS "
-                        + "WHERE USUARIO_ID =  :_usuarioId "
-                        + "AND CPF IS NOT NULL",
+    public List<String> getCpfUsuarioColaboradorVendas(Integer usuarioId) {
+        String query = "SELECT CV.CPF "
+                + "FROM COLABORADOR_VENDAS CV "
+                + "INNER JOIN USUARIO U ON U.ID = CV.FK_USUARIO "
+                + "WHERE USUARIO_ID =  :_usuarioId "
+                + "AND CV.CPF IS NOT NULL";
+
+        return jdbcTemplate.query(query,
                 new MapSqlParameterSource("_usuarioId", usuarioId),
                 this::getCpf);
     }

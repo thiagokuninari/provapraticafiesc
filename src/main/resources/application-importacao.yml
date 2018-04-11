@@ -1,22 +1,22 @@
 spring:
   jpa:
     database: ORACLE
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: none
 
   datasource:
 #   autenticacao dev
-    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: AUTENTICACAO
-    password: py12nrk7
-    driverClassName: oracle.jdbc.OracleDriver
-
-#    autenticação homologação
-#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
 #    username: AUTENTICACAO
 #    password: py12nrk7
 #    driverClassName: oracle.jdbc.OracleDriver
+
+#    autenticação homologação
+    jdbcUrl: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    username: AUTENTICACAO
+    password: py12nrk7
+    driverClassName: oracle.jdbc.OracleDriver
 
 #    autenticação prod
 #    jdbcUrl: jdbc:oracle:thin:@//192.168.2.38:1521/xprod

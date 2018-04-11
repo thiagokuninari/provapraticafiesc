@@ -101,7 +101,7 @@ public class UsuarioController {
         return usuarioService.adicionarConfiguracao(dto);
     }
 
-    @RequestMapping(value= "usuarios-hierarquias-save", method = RequestMethod.POST)
+    @RequestMapping(value = "usuarios-hierarquias-save", method = RequestMethod.POST)
     public void saveUsuarioHierarquia(@RequestBody List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
         usuarioService.saveUsuarioHierarquia(novasHierarquias);
     }

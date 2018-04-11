@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*@Transactional
@@ -136,18 +133,22 @@ public class UsuarioImportacaoTest {
     }
 
     //@Test
+    //@Transactional(propagation = Propagation.NEVER)
     public void importarCpfsUsuarios() {
         List<Usuario> usuarios = repository.findAllByCpfIsNull();
+        //List<Usuario> usuariosUpdate = new ArrayList<>();
         for (Usuario usuario : usuarios) {
-            List<String> cpfs = parceirosRepository.getCpfUsuario(usuario.getId());
+            List<String> cpfs = parceirosRepository.getCpfUsuarioColaboradorVendas(usuario.getId());
+
             if (!CollectionUtils.isEmpty(cpfs)) {
                 usuario.setCpf(cpfs.get(0));
                 usuario.removerCaracteresDoCpf();
-                System.out.println(usuario.getId());
-                try {
-                    repository.save(usuario);
-                } catch (Exception exception) {
-                    log.error("Erro ao importar CPF do usuário: ", exception);
+
+                Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(usuario.getCpf());
+                if (!usuarioOptional.isPresent()) {
+                    repository.save(usuarios);
+                } else {
+                    System.out.println("CPF DO USUÁRIO JÁ IMPORTADO: \nusuarioId: " + usuario.getId());
                 }
             } else {
                 System.out.println("CPF DO USUÁRIO NÃO IMPORTADO: \nusuarioId: "

@@ -739,8 +739,10 @@ public class UsuarioService {
         });
     }
 
-    private List<UsuarioHierarquiaCarteiraDto> validaUsuarioHierarquiaExistente(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
-        List<UsuarioHierarquia> usuarioHierarquiasExistentes = (List) usuarioHierarquiaRepository.findAll();
+    private List<UsuarioHierarquiaCarteiraDto> validaUsuarioHierarquiaExistente(
+            List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
+        List<UsuarioHierarquia> usuarioHierarquiasExistentes =
+                (List<UsuarioHierarquia>)usuarioHierarquiaRepository.findAll();
         return novasHierarquias
                 .stream()
                 .filter(c -> !validaUsuarioHierarquiaExistente(usuarioHierarquiasExistentes, c))
@@ -748,10 +750,11 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes, UsuarioHierarquiaCarteiraDto novaHierarquia) {
+    private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes,
+                                                         UsuarioHierarquiaCarteiraDto novaHierarquia) {
         return hierarquiasExistentes
                 .stream()
-                .anyMatch(e -> (e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
-                        && e.getUsuario().getId().equals(novaHierarquia.getUsuarioId())));
+                .anyMatch(e -> e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
+                        && e.getUsuario().getId().equals(novaHierarquia.getUsuarioId()));
     }
 }
