@@ -36,6 +36,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comEmail(String email) {
+        if (!StringUtils.isEmpty(email)) {
+            builder.and(usuario.email.likeIgnoreCase("%" + email + "%"));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comCpf(String cpf) {
         if (!StringUtils.isEmpty(StringUtil.getOnlyNumbers(cpf))) {
             builder.and(usuario.cpf.eq(StringUtil.getOnlyNumbers(cpf)));
@@ -105,7 +112,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
-        if (usuariosIds.size() > 0) {
+        if (!CollectionUtils.isEmpty(usuariosIds)) {
             builder.and(usuario.id.in(usuariosIds));
         }
         return this;

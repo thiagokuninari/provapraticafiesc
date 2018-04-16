@@ -3,6 +3,9 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -13,6 +16,7 @@ import helpers.Usuarios;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,8 +42,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,6 +65,8 @@ public class UsuarioGerenciaControllerTest {
     private UsuarioService usuarioService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private AgenteAutorizadoClient agenteAutorizadoClient;
 
     private static final int ID_USUARIO_HELPDESK = 101;
 
@@ -115,6 +121,19 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(6)))
+                .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+    }
+
+    @Test
+    public void deveRetornarTodosByCnpjAa() throws Exception {
+        mockResponseAgenteAutorizado();
+        mockResponseUsuariosAgenteAutorizado();
+
+        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
@@ -380,6 +399,25 @@ public class UsuarioGerenciaControllerTest {
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         return usuario;
+    }
+
+    private void mockResponseAgenteAutorizado() {
+        AgenteAutorizadoResponse response = new AgenteAutorizadoResponse();
+        response.setId("100");
+        response.setCnpj("09.489.617/0001-97");
+
+        when(agenteAutorizadoClient.getAaByCpnj(Matchers.anyMap()))
+                .thenReturn(response);
+    }
+
+    private void mockResponseUsuariosAgenteAutorizado() {
+        List<UsuarioAgenteAutorizadoResponse> response = new ArrayList<>();
+        response.add(new UsuarioAgenteAutorizadoResponse(100));
+        response.add(new UsuarioAgenteAutorizadoResponse(101));
+        response.add(new UsuarioAgenteAutorizadoResponse(104));
+
+        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt()))
+                .thenReturn(response);
     }
 
 }

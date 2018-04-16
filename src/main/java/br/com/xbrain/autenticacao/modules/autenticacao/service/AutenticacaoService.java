@@ -16,7 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
 @Service
-@SuppressWarnings("unchecked")
 public class AutenticacaoService {
 
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";

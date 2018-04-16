@@ -11,7 +11,9 @@ import java.util.Collections;
 public class UsuarioFiltros {
 
     private String nome;
+    private String emailUsuario;
     private String cpf;
+    private String cnpjAa;
     private Integer regionalId;
     private Integer grupoId;
     private Integer clusterId;
@@ -26,6 +28,7 @@ public class UsuarioFiltros {
         return new UsuarioPredicate()
                 .comCpf(cpf)
                 .comNome(nome)
+                .comEmail(emailUsuario)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
                 .comRegional(regionalId)

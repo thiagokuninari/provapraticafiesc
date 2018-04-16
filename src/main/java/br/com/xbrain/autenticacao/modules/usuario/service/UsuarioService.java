@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -100,6 +102,8 @@ public class UsuarioService {
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -167,7 +171,17 @@ public class UsuarioService {
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
+            obterUsuariosAa(filtros.getCnpjAa(), predicate);
+        }
         return repository.findAll(predicate.build(), pageRequest);
+    }
+
+    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
+        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
+        if (!CollectionUtils.isEmpty(lista)) {
+            predicate.comIds(lista);
+        }
     }
 
     private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {
