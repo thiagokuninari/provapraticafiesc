@@ -105,6 +105,8 @@ app-config:
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
+    vendas:
+      url: http://localhost:8097
 
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin
@@ -112,6 +114,9 @@ zuul:
     call:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.call.url}
+    vendas:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.vendas.url}
     parceiros:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.parceiros-online.url}

@@ -24,6 +24,8 @@ app-config:
   upload-dir: ${app-config.estatico-dir}/homologacao/autenticacao
   
   services:
+    vendas:
+      url: http://172.10.10.74:8097
     parceiros-online:
       url: http://172.10.10.76:8099
     call:

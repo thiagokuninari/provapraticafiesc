@@ -4,6 +4,8 @@ app-config:
       url: http://172.10.10.36:8099
     call:
       url: http://172.10.10.38:8094
+    vendas:
+      url: http://172.10.10.38:8097
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
