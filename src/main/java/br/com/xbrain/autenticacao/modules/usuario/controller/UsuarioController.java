@@ -55,6 +55,11 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
+    @RequestMapping(value = "/{id}/subordinados/vendas", method = RequestMethod.GET)
+    public List<Integer> getSubordinadosVendas(@PathVariable("id") int id) {
+        return usuarioService.getIdDosUsuariosSubordinados(id, true);
+    }
+
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public List<UsuarioDto> getUsuariosFilter(UsuarioFiltrosDto usuarioFiltrosDto) {
         return usuarioService.getUsuariosFiltros(usuarioFiltrosDto);
