@@ -16,6 +16,6 @@ logging:
 spring:
   rabbitmq:
       host: 172.10.10.30
-      port: 5671
+      port: 5672
       username: xbrain
       password: xbrain
