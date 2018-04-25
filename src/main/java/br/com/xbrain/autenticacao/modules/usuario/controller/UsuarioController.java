@@ -116,6 +116,11 @@ public class UsuarioController {
         usuarioService.removerConfiguracao(dto);
     }
 
+    @RequestMapping(value = "/remover-ramal-configuracao", method = RequestMethod.PUT)
+    public void removerRamalConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
+        usuarioService.removerRamalConfiguracao(dto);
+    }
+
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
     public void esqueceuSenhaPorEmail(@RequestBody UsuarioDadosAcessoRequest dto) {
         usuarioService.esqueceuSenhaPorEmail(dto.getEmailAtual());

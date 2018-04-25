@@ -178,7 +178,7 @@ public class UsuarioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ramal", is(7006)));
     }
-    
+
     @Test
     public void deveAdicionarConfiguracaoAoUsuario() throws Exception {
         mvc.perform(post("/api/usuarios/adicionar-configuracao")
@@ -188,20 +188,34 @@ public class UsuarioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ramal", is(1000)));
     }
-    
+
     @Test
     public void deveRemoverConfiguracaoAoUsuario() throws Exception {
         long quantidadeAntes = configuracaoRepository.count();
-        
+
         mvc.perform(put("/api/usuarios/remover-configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
                 .andExpect(status().isOk());
-        
+
         long quantidadeDepois = configuracaoRepository.count();
-        
+
         Assert.assertTrue(quantidadeAntes > quantidadeDepois);
+    }
+
+    @Test
+    public void deveRemoverRamalConfiguracaoAoUsuario() throws Exception {
+        UsuarioConfiguracaoDto dto = umUsuarioConfiguracaoDto();
+        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isPresent());
+
+        mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
+
+        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isPresent());
     }
 
     @Test
