@@ -64,7 +64,7 @@ public class UsuarioService {
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static int MAXIMO_PARAMETROS_IN = 1000;
+    private static final int MAXIMO_PARAMETROS_IN = 1000;
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
@@ -532,7 +532,7 @@ public class UsuarioService {
 
         List<List<Integer>> listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), MAXIMO_PARAMETROS_IN);
 
-        listaPartes.forEach(lista -> { predicate.comCidade(lista); });
+        listaPartes.forEach(lista ->  predicate.comCidade(lista));
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
