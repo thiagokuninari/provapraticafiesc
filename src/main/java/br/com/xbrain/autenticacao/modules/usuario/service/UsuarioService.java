@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -63,6 +64,7 @@ public class UsuarioService {
             new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION =
             new ValidacaoException("Senha atual está incorreta.");
+    private static int MAXIMO_PARAMETROS_IN = 1000;
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
@@ -514,15 +516,23 @@ public class UsuarioService {
                 .comNivel(usuarioFiltrosDto.getNivelIds())
                 .comCargo(usuarioFiltrosDto.getCargoIds())
                 .comDepartamento(usuarioFiltrosDto.getDepartamentoIds())
-                .comCidade(usuarioFiltrosDto.getCidadesIds())
                 .comIds(usuarioFiltrosDto.getUsuariosIds())
                 .isAtivo(usuarioFiltrosDto.getAtivo());
+
+        montarPredicateComCidade(usuarioPredicate, usuarioFiltrosDto);
 
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
         return usuarioList.stream()
                 .map(UsuarioDto::convertTo)
                 .collect(Collectors.toList());
+    }
+
+    private void montarPredicateComCidade(UsuarioPredicate predicate, UsuarioFiltrosDto filtro) {
+
+        List<List<Integer>> listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), MAXIMO_PARAMETROS_IN);
+
+        listaPartes.forEach(lista -> { predicate.comCidade(lista); });
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {

@@ -3,6 +3,7 @@ server:
   compression:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
+  max-http-header-size: 10000000
 
 spring:
   resources:
