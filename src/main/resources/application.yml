@@ -46,6 +46,9 @@ spring:
     encoding:
       charset: UTF-8
       force: true
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   messages:
     encoding: UTF-8
 
@@ -121,6 +124,18 @@ zuul:
     parceiros:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.parceiros-online.url}
+
+  host:
+    connect-timeout-millis: 1800000
+    socket-timeout-millis: 1800000
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 300000
 
 keys:
     public: |

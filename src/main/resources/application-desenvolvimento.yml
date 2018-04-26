@@ -5,7 +5,7 @@ app-config:
     call:
       url: http://172.10.10.38:8094
     vendas:
-      url: http://172.10.10.38:8097
+      url: http://172.10.10.34:8097
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
@@ -16,6 +16,6 @@ logging:
 spring:
   rabbitmq:
       host: 172.10.10.30
-      port: 5671
+      port: 5672
       username: xbrain
       password: xbrain

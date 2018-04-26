@@ -60,10 +60,10 @@ public class UsuarioService {
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
-    private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION =
-            new ValidacaoException("Email atual está incorreto.");
-    private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION =
-            new ValidacaoException("Senha atual está incorreta.");
+    private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
+            = new ValidacaoException("Email atual está incorreto.");
+    private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
+            = new ValidacaoException("Senha atual está incorreta.");
     private static int MAXIMO_PARAMETROS_IN = 1000;
 
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
@@ -457,8 +457,8 @@ public class UsuarioService {
         Usuario usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao()) :
-                new Usuario(autenticacaoService.getUsuarioId());
+        Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
+                : new Usuario(autenticacaoService.getUsuarioId());
 
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
@@ -476,8 +476,8 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao()) :
-                new Usuario(autenticacaoService.getUsuarioId());
+        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao())
+                : new Usuario(autenticacaoService.getUsuarioId());
 
         usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
@@ -747,7 +747,16 @@ public class UsuarioService {
     @Transactional
     public void removerConfiguracao(UsuarioConfiguracaoDto dto) {
         Optional<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
-        configuracao.ifPresent(c ->  configuracaoRepository.delete(c));
+        configuracao.ifPresent(c -> configuracaoRepository.delete(c));
+    }
+
+    @Transactional
+    public void removerRamalConfiguracao(UsuarioConfiguracaoDto dto) {
+        Optional<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        configuracao.ifPresent((c) -> {
+            c.removerRamal();
+            configuracaoRepository.save(c);
+        });
     }
 
     @Transactional
@@ -763,16 +772,16 @@ public class UsuarioService {
         List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
 
         novasHierarquiasValidas.forEach(u -> {
-            UsuarioHierarquia usuarioHierarquia =
-                    UsuarioHierarquia.criar(new Usuario(u.getUsuarioId()), u.getUsuarioSuperiorId(), u.getUsuarioCadastroId());
+            UsuarioHierarquia usuarioHierarquia
+                    = UsuarioHierarquia.criar(new Usuario(u.getUsuarioId()), u.getUsuarioSuperiorId(), u.getUsuarioCadastroId());
             usuarioHierarquiaRepository.save(usuarioHierarquia);
         });
     }
 
     private List<UsuarioHierarquiaCarteiraDto> validaUsuarioHierarquiaExistente(
             List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
-        List<UsuarioHierarquia> usuarioHierarquiasExistentes =
-                (List<UsuarioHierarquia>)usuarioHierarquiaRepository.findAll();
+        List<UsuarioHierarquia> usuarioHierarquiasExistentes
+                = (List<UsuarioHierarquia>) usuarioHierarquiaRepository.findAll();
         return novasHierarquias
                 .stream()
                 .filter(c -> !validaUsuarioHierarquiaExistente(usuarioHierarquiasExistentes, c))
@@ -781,7 +790,7 @@ public class UsuarioService {
     }
 
     private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes,
-                                                         UsuarioHierarquiaCarteiraDto novaHierarquia) {
+            UsuarioHierarquiaCarteiraDto novaHierarquia) {
         return hierarquiasExistentes
                 .stream()
                 .anyMatch(e -> e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
