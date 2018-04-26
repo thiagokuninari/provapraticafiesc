@@ -15,6 +15,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -98,7 +100,7 @@ public class Usuario {
                     foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))}, inverseJoinColumns = {
             @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "id",
                     foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))})
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<UnidadeNegocio> unidadesNegocios;
 
     @NotAudited
@@ -107,6 +109,7 @@ public class Usuario {
     private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited
+    @LazyToOne(LazyToOneOption.NO_PROXY)
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
     private Configuracao configuracao;
 
@@ -118,7 +121,7 @@ public class Usuario {
                     foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_USUARIO"))}, inverseJoinColumns = {
             @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
                     foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<Empresa> empresas;
 
     @NotAudited
