@@ -185,7 +185,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .from(QPermissaoEspecial.permissaoEspecial)
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.usuario).fetchJoin()
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.funcionalidade).fetchJoin()
-                .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString()))
+                .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString())
+                    .and(QPermissaoEspecial.permissaoEspecial.dataBaixa.isNull()))
                 .fetch();
     }
 
