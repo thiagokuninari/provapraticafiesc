@@ -30,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAAAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
@@ -96,6 +97,8 @@ public class UsuarioService {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
+    @Autowired
+    private UsuarioAAAtualizacaoMqSender usuarioAAAtualizacaoMqSender;
     @Autowired
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
     @Autowired
@@ -229,6 +232,8 @@ public class UsuarioService {
         if (usuario.isNovoCadastro()) {
             configurar(usuario, senhaDescriptografada);
             enviarEmail = true;
+        } else {
+            usuario.setAlterarSenha(Eboolean.F);
         }
         usuario = repository.save(usuario);
         tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
@@ -314,8 +319,21 @@ public class UsuarioService {
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErro(usuarioMqRequest);
+            enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
             log.error("Erro ao salvar usuário da fila.", ex);
+        }
+    }
+
+    @Transactional
+    public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
+        try {
+            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            save(usuarioDto);
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
+            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+            log.error("erro ao atualizar usuário da fila.", ex);
         }
     }
 
@@ -383,8 +401,12 @@ public class UsuarioService {
         usuarioMqSender.sendSuccess(usuarioDto);
     }
 
-    private void enviarParaFilaDeErro(UsuarioMqRequest usuarioMqRequest) {
+    private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioMqSender.sendWithFailure(usuarioMqRequest);
+    }
+
+    private void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
+        usuarioAAAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
