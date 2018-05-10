@@ -33,10 +33,10 @@ public class RabbitConfig {
     private String usuarioAtualizacaoFailureMq;
 
     @Value("${app-config.queue.usuario-aa-atualizacao}")
-    private String usuarioAAAtualizacaoMq;
+    private String usuarioAaAtualizacaoMq;
 
     @Value("${app-config.queue.usuario-aa-atualizacao-failure}")
-    private String usuarioAAAtualizacaoFailureMq;
+    private String usuarioAaAtualizacaoFailureMq;
 
     @Value("${app-config.queue.usuario-recuperacao}")
     private String usuarioRecuperacaoMq;
@@ -90,13 +90,13 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioAAAtualizacaoMq() {
-        return new Queue(usuarioAAAtualizacaoMq, false);
+    Queue usuarioAaAtualizacaoMq() {
+        return new Queue(usuarioAaAtualizacaoMq, false);
     }
 
     @Bean
-    Queue usuarioAAAtualizacaoFailureMq() {
-        return new Queue(usuarioAAAtualizacaoFailureMq, false);
+    Queue usuarioAaAtualizacaoFailureMq() {
+        return new Queue(usuarioAaAtualizacaoFailureMq, false);
     }
 
     @Bean
@@ -165,13 +165,13 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding usuarioAAAtualizcaoBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioAAAtualizacaoMq()).to(exchange).with(usuarioAAAtualizacaoMq);
+    public Binding usuarioAaAtualizcaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAaAtualizacaoMq()).to(exchange).with(usuarioAaAtualizacaoMq);
     }
 
     @Bean
-    public Binding usuarioAAAtualizacaoFailureBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioAAAtualizacaoFailureMq()).to(exchange).with(usuarioAAAtualizacaoFailureMq);
+    public Binding usuarioAaAtualizacaoFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAaAtualizacaoFailureMq()).to(exchange).with(usuarioAaAtualizacaoFailureMq);
     }
 
     @Bean

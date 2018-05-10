@@ -26,7 +26,7 @@ public class UsuarioMqListener {
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-aa-atualizacao}")
-    public void atualizarUsuariosAA(UsuarioMqAtualizacaoRequest usuarioAtualizacaoRequest) {
+    public void atualizarUsuariosAa(UsuarioMqAtualizacaoRequest usuarioAtualizacaoRequest) {
         service.atualizarUsuariosAgentesAutorizados(usuarioAtualizacaoRequest);
     }
 

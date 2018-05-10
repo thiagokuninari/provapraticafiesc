@@ -30,7 +30,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAAAtualizacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
@@ -98,7 +98,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
     @Autowired
-    private UsuarioAAAtualizacaoMqSender usuarioAAAtualizacaoMqSender;
+    private UsuarioAaAtualizacaoMqSender usuarioAaAtualizacaoMqSender;
     @Autowired
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
     @Autowired
@@ -406,7 +406,7 @@ public class UsuarioService {
     }
 
     private void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
-        usuarioAAAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
+        usuarioAaAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {

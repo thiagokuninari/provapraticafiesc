@@ -7,15 +7,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UsuarioAAAtualizacaoMqSender {
+public class UsuarioAaAtualizacaoMqSender {
 
     @Value("${app-config.queue.usuario-aa-atualizacao-failure}")
-    private String usuarioAAAtualizacaoFailureQueue;
+    private String usuarioAaAtualizacaoFailureQueue;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
     public void sendWithFailure(UsuarioMqRequest usuarioMqRequest) {
-        rabbitTemplate.convertAndSend(usuarioAAAtualizacaoFailureQueue, usuarioMqRequest);
+        rabbitTemplate.convertAndSend(usuarioAaAtualizacaoFailureQueue, usuarioMqRequest);
     }
 }
