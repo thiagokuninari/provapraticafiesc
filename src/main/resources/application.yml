@@ -74,6 +74,8 @@ app-config:
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
+    usuario-aa-atualizacao: usuario-aa-atualizacao.queue
+    usuario-aa-atualizacao-failure: usuario-aa-atualizacao-failure.queue
     usuario-recuperacao: usuario-recuperacao.queue
     usuario-recuperacao-failure: usuario-recuperacao-failure.queue
     usuario-alterar-email: usuario-alterar-email.queue
