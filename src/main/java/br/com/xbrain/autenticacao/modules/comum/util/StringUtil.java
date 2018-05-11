@@ -75,12 +75,12 @@ public class StringUtil {
         if (StringUtils.isEmpty(nome)) {
             return "SN";
         }
-        String nomeSingleSpaced = nome.replaceAll("[ ] +", " ");
+        String nomeSingleSpaced = nome.trim().replaceAll("[ ] +", " ");
         String[] array = nomeSingleSpaced.split(" ");
         int size = array.length;
 
         if (size <= 1) {
-            return String.valueOf(nome.charAt(0));
+            return String.valueOf(nome.trim().charAt(0));
         }
 
         String firstName = String.valueOf(array[0].charAt(0));
