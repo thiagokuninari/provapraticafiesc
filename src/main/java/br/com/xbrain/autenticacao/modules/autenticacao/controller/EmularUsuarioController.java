@@ -47,7 +47,7 @@ public class EmularUsuarioController {
     public ResponseEntity<OAuth2AccessToken> emularUsuario(Principal principal, Integer id) throws Exception {
         validarReemulacao();
         request.setAttribute("emulacao", true);
-        return tokenEndpoint.postAccessToken(principal, getParameters(usuarioService.findById(id)));
+        return tokenEndpoint.postAccessToken(principal, getParameters(usuarioService.findByIdEmulacao(id)));
     }
 
     private void validarReemulacao() {

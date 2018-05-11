@@ -126,6 +126,15 @@ public class UsuarioService {
         return usuario;
     }
 
+    @Transactional
+    public Usuario findByIdEmulacao(int id) {
+        UsuarioPredicate predicate = new UsuarioPredicate();
+        predicate.comId(id);
+        Usuario usuario = repository.findOne(predicate.build());
+        usuario.forceLoad();
+        return usuario;
+    }
+
     public Usuario findByIdComAa(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
         predicate.comId(id);
