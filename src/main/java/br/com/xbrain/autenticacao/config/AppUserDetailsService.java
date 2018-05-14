@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class AppUserDetailsService implements UserDetailsService {
+public class AppUserDetailsService implements UserDetailsService {git
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -32,7 +32,7 @@ public class AppUserDetailsService implements UserDetailsService {
                 .findByEmail(username.toUpperCase())
                 .map(u -> {
                     u.forceLoad();
-                    if (u.getSituacao() == ESituacao.I) {
+                    if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.I) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
                     }
                     return new User(
