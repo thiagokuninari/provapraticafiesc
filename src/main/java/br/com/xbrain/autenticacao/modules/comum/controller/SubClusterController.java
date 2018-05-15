@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.service.SubClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class SubClusterController {
     private SubClusterService service;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<SubClusterDto> getAtivosPorCluster(Integer clusterId) {
+    public List<SubClusterDto> getAtivosPorCluster(@RequestParam(required = false) Integer clusterId) {
         if (clusterId != null) {
             return service.getAllByClusterId(clusterId);
         } else {
