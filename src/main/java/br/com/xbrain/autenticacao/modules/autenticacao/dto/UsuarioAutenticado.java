@@ -83,10 +83,6 @@ public class UsuarioAutenticado {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO;
     }
 
-    public boolean isVendedor() {
-        return usuario.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR;
-    }
-
     public List<Empresa> getEmpresasPermitidas() {
         if (isAgenteAutorizado()) {
             return empresas;
