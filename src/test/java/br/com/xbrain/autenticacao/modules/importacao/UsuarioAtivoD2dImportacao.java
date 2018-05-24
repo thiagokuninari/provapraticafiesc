@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -66,6 +66,7 @@ public class UsuarioAtivoD2dImportacao {
     private CargoRepository cargoRepository;
 
     @Test
+    @Ignore
     public void importarUsuariosXls() {
         log.info("Lendo arquivo no formato XLS");
         try {
@@ -82,22 +83,31 @@ public class UsuarioAtivoD2dImportacao {
                 Usuario usuario = new Usuario();
                 while (celulas.hasNext()) {
                     HSSFCell celula = (HSSFCell) celulas.next();
-                    int z = celula.getColumnIndex();
-                    switch (z) {
+                    int celulasIndex = celula.getColumnIndex();
+                    switch (celulasIndex) {
                         case 0:
-                            System.out.println(celula.toString());// nivel // celula.toString()
+                            System.out.println(celula.toString());
+                            break;// nivel // celula.toString()
                         case 1:
-                            System.out.println(celula.toString());// cargo
+                            System.out.println(celula.toString());
+                            break;// cargo
                         case 2:
-                            System.out.println(celula.toString());// nome
+                            System.out.println(celula.toString());
+                            break;// nome
                         case 3:
-                            System.out.println(celula.toString());// cpf
+                            System.out.println(celula.toString());
+                            break;// cpf
                         case 4:
-                            System.out.println(celula.toString());// email
+                            System.out.println(celula.toString());
+                            break;// email
                         case 5:
-                            System.out.println(celula.toString());// data nascimento
+                            System.out.println(celula.toString());
+                            break;// data nascimento
                         case 6:
-                            System.out.println(celula.toString());// telefone
+                            System.out.println(celula.toString());
+                            break;// telefone
+                        default:
+                            System.out.println("Acaou");
                     }
                     //salvar o usuario.
 
@@ -108,12 +118,13 @@ public class UsuarioAtivoD2dImportacao {
                 }
             }
             log.info("Leitura do arquivo concluído com sucesso.");
-        } catch (Exception e) {
+        } catch (Exception ex) {
             log.info("Leitura do arquivo deu erro.");
         }
     }
 
     @Test
+    @Ignore
     public void lerArqXlxs() {
         log.info("Lendo arquivo no formato XLXS");
         try {
@@ -130,36 +141,45 @@ public class UsuarioAtivoD2dImportacao {
                 Nivel nivel = new Nivel();
                 while (celulas.hasNext()) {
                     XSSFCell celula = (XSSFCell) celulas.next();
-                    int z = celula.getColumnIndex();
-                    switch (z) {
+                    int celulasIndex = celula.getColumnIndex();
+                    switch (celulasIndex) {
                         case 0:
                             nivel.setId(recuperarIdNivel(celula.toString()));
-                            System.out.println(celula.toString());break;// nivel
+                            System.out.println(celula.toString());
+                            break;// nivel
                         case 1:
                             usuario.setCargo(recuperarCargo(nivel, celula.toString()));
-                            System.out.println(celula.toString());break;// cargo
+                            System.out.println(celula.toString());
+                            break;// cargo
                         case 2:
                             usuario.setNome(celula.toString());
-                            System.out.println(celula.toString());break;// nome
+                            System.out.println(celula.toString());
+                            break;// nome
                         case 3:
                             usuario.setCpf(celula.getRawValue());
-                            System.out.println(celula.getRawValue());break;// cpf
+                            System.out.println(celula.getRawValue());
+                            break;// cpf
                         case 4:
                             usuario.setEmail(celula.toString());
-                            System.out.println(celula.toString());break;// email
+                            System.out.println(celula.toString());
+                            break;// email
                         case 5:
                             usuario.setNascimento(formatarDataNascimento(celula.toString()));
-                            System.out.println(formatarDataNascimento(celula.toString()));break;// data nascimento
+                            System.out.println(formatarDataNascimento(celula.toString()));
+                            break;// data nascimento
                         case 6:
                             usuario.setTelefone(celula.getRawValue());
-                            System.out.println(celula.getRawValue());break;// telefone
+                            System.out.println(celula.getRawValue());
+                            break;// telefone
+                        default:
+                            System.out.println("Acaou");
                     }
                 }
                 usuario = salvarUsuario(usuario);
                 System.out.println("Usuario salvo com sucesso: " + usuario);
             }
             log.info("Leitura do arquivo no formato XLXS concluído com sucesso.");
-        } catch (Exception e) {
+        } catch (Exception ex) {
             log.info("Leitura do arquivo deu erro.");
         }
     }
@@ -194,6 +214,8 @@ public class UsuarioAtivoD2dImportacao {
                     return cargoRepository.findOne(65);
                 case 10:
                     return cargoRepository.findOne(67);
+                default:
+                    return new Cargo();
             }
         } else if (codigoCargo.equals("SUPERVISOR")) {
             switch (nivel.getId()) {
@@ -207,6 +229,8 @@ public class UsuarioAtivoD2dImportacao {
                     return cargoRepository.findOne(66);
                 case 10:
                     return cargoRepository.findOne(68);
+                default:
+                    return new Cargo();
             }
         }
         return new Cargo();
@@ -218,8 +242,8 @@ public class UsuarioAtivoD2dImportacao {
                 return null;
             }
             if (!dataNascimento.equals("DATA NASCIMENTO")) {
-                DateTimeFormatter dTF = DateTimeFormatter.ofPattern("dd-MMM-uuuu");
-                LocalDate data = LocalDate.parse(dataNascimento, dTF);
+                DateTimeFormatter dataForm = DateTimeFormatter.ofPattern("dd-MMM-uuuu");
+                LocalDate data = LocalDate.parse(dataNascimento, dataForm);
                 return data.atStartOfDay();
             }
         } catch (Exception ex) {
@@ -227,6 +251,7 @@ public class UsuarioAtivoD2dImportacao {
         }
         return null;
     }
+
     private Usuario gerarNovoUsuario() {
         Usuario usuario = new Usuario();
         usuario.setUnidadesNegociosId(Arrays.asList(1, 2)); //PESSOAL - RESIDENCIAL_COMBOS

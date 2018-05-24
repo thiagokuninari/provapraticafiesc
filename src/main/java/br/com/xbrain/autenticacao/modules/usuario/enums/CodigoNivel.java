@@ -5,5 +5,11 @@ public enum CodigoNivel {
     MSO,
     OPERACAO,
     XBRAIN,
-    VAREJO
+    VAREJO,
+    ATP,
+    LOJAS,
+    RECEPTIVO,
+    ATIVO_LOCAL_PROPRIO,
+    ATIVO_LOCAL_TERCEIRO;
+
 }

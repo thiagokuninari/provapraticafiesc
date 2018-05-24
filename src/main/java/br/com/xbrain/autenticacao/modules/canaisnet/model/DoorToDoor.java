@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.modules.canaisnet.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
+@Data
 public class DoorToDoor {
 
     @Id
@@ -24,9 +26,9 @@ public class DoorToDoor {
 
     @JsonIgnore
     @JoinTable(name = "USUARIO_D2D", joinColumns = {
-            @JoinColumn(name = "FK_D2D", foreignKey = @ForeignKey(name="FK_USUARIO_D2D"),
+            @JoinColumn(name = "FK_D2D", foreignKey = @ForeignKey(name = "FK_USUARIO_D2D"),
                     referencedColumnName = "id")}, inverseJoinColumns = {
-            @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name="FK_D2D_USR"),
+            @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_D2D_USR"),
                     referencedColumnName = "id")})
     @ManyToMany
     private List<Usuario> usuarios;

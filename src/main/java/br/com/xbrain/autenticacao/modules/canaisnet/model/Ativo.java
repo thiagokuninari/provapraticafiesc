@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.modules.canaisnet.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
+@Data
 public class Ativo {
 
     @Id
@@ -24,9 +26,9 @@ public class Ativo {
 
     @JsonIgnore
     @JoinTable(name = "USUARIO_ATIVO", joinColumns = {
-            @JoinColumn(name = "FK_ATIVO", foreignKey = @ForeignKey(name="FK_ATV_USR"),
+            @JoinColumn(name = "FK_ATIVO", foreignKey = @ForeignKey(name = "FK_ATV_USR"),
                     referencedColumnName = "id")}, inverseJoinColumns = {
-            @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name="FK_USR_ATV"),
+            @JoinColumn(name = "FK_USUARIO", foreignKey = @ForeignKey(name = "FK_USR_ATV"),
                     referencedColumnName = "id")})
     @ManyToMany
     private List<Usuario> usuarios;
