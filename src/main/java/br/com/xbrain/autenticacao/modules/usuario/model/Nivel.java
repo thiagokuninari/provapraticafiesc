@@ -35,4 +35,11 @@ public class Nivel {
     @Column(name = "EXIBIR_CAD_USUARIO", nullable = false, length = 1)
     @Enumerated(EnumType.STRING)
     private Eboolean exibirCadastroUsuario;
+
+    public Nivel() {
+    }
+
+    public Nivel(Integer id) {
+        this.id = id;
+    }
 }
