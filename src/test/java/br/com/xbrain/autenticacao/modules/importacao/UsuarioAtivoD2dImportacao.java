@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 @Rollback(false)
 @AutoConfigureMockMvc
 @RunWith(SpringRunner.class)
-//@ActiveProfiles("test")
+//@ActiveProfiles("homologacao")
 public class UsuarioAtivoD2dImportacao {
 
     private Logger log = Logger.getLogger("principal");
@@ -107,14 +107,8 @@ public class UsuarioAtivoD2dImportacao {
                             System.out.println(celula.toString());
                             break;// telefone
                         default:
-                            System.out.println("Acaou");
+                            System.out.println("Acabou");
                     }
-                    //salvar o usuario.
-
-                    //if (analista.getFunc().toLowerCase().contentEquals("apuração")) {
-                    //    log.info("Analista da apuração: "+analista);
-                    //    listaAnalistas.add(analista);
-                    //}
                 }
             }
             log.info("Leitura do arquivo concluído com sucesso.");
@@ -149,6 +143,7 @@ public class UsuarioAtivoD2dImportacao {
                             break;// nivel
                         case 1:
                             usuario.setCargo(recuperarCargo(nivel, celula.toString()));
+                            usuario.setDepartamento(recuperarDepartamento(nivel));
                             System.out.println(celula.toString());
                             break;// cargo
                         case 2:
@@ -172,7 +167,7 @@ public class UsuarioAtivoD2dImportacao {
                             System.out.println(celula.getRawValue());
                             break;// telefone
                         default:
-                            System.out.println("Acaou");
+                            System.out.println("Acabou");
                     }
                 }
                 usuario = salvarUsuario(usuario);
@@ -236,6 +231,23 @@ public class UsuarioAtivoD2dImportacao {
         return new Cargo();
     }
 
+    private Departamento recuperarDepartamento(Nivel nivel) {
+        switch (nivel.getId()) {
+            case 6:
+                return new Departamento(55);
+            case 7:
+                return new Departamento(56);
+            case 8:
+                return new Departamento(57);
+            case 9:
+                return new Departamento(58);
+            case 10:
+                return new Departamento(59);
+            default:
+                return new Departamento();
+        }
+    }
+
     private LocalDateTime formatarDataNascimento(String dataNascimento) {
         try {
             if (StringUtils.isEmpty(dataNascimento)) {
@@ -256,7 +268,6 @@ public class UsuarioAtivoD2dImportacao {
         Usuario usuario = new Usuario();
         usuario.setUnidadesNegociosId(Arrays.asList(1, 2)); //PESSOAL - RESIDENCIAL_COMBOS
         usuario.setEmpresasId(Arrays.asList(1, 2, 3)); // CLARO_MOVEL - CLARO_TV - NET
-        usuario.setDepartamento(new Departamento(3));
         return usuario;
     }
 
