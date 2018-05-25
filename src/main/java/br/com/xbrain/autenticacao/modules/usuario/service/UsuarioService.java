@@ -193,9 +193,7 @@ public class UsuarioService {
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
         List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
-        if (!CollectionUtils.isEmpty(lista)) {
-            predicate.comIds(lista);
-        }
+        predicate.comIds(lista);
     }
 
     private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {

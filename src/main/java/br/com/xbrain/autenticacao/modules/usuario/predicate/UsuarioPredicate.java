@@ -112,9 +112,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
-        if (!CollectionUtils.isEmpty(usuariosIds)) {
-            builder.and(usuario.id.in(usuariosIds));
-        }
+        builder.and(usuario.id.in(usuariosIds));
         return this;
     }
 
