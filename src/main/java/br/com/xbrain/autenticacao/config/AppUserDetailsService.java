@@ -32,7 +32,7 @@ public class AppUserDetailsService implements UserDetailsService {
                 .findByEmail(username.toUpperCase())
                 .map(u -> {
                     u.forceLoad();
-                    if (u.getSituacao() == ESituacao.I) {
+                    if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.I) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
                     }
                     return new User(

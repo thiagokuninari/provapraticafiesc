@@ -63,17 +63,6 @@ public class EmularUsuarioControllerTest {
     }
 
     @Test
-    public void deveNaoEmularMesmoUsuario() throws Exception {
-        mvc.perform(get("/api/emular/usuario?id=100")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "Não é possível realizar a emulação do seu próprio usuário."
-                )));
-    }
-
-    @Test
     public void deveNaoPermitirEmularUmUsuarioAPartirDeOutraEmulacao() throws Exception {
         mvc.perform(get("/api/emular/usuario?id=102")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

@@ -144,7 +144,7 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setCpf("76696512616");
         usuarioMqRequest.setUnidadesNegocio(Arrays.asList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
         usuarioMqRequest.setNivel(CodigoNivel.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR);
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setEmpresa(Arrays.asList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);

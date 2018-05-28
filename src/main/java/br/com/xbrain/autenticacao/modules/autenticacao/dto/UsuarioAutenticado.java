@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -81,10 +80,6 @@ public class UsuarioAutenticado {
 
     public boolean isAgenteAutorizado() {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO;
-    }
-
-    public boolean isVendedor() {
-        return usuario.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR;
     }
 
     public List<Empresa> getEmpresasPermitidas() {

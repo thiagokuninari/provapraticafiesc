@@ -30,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
@@ -97,6 +98,8 @@ public class UsuarioService {
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
     @Autowired
+    private UsuarioAaAtualizacaoMqSender usuarioAaAtualizacaoMqSender;
+    @Autowired
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
@@ -117,6 +120,15 @@ public class UsuarioService {
     public Usuario findById(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
         predicate.ignorarAa();
+        predicate.comId(id);
+        Usuario usuario = repository.findOne(predicate.build());
+        usuario.forceLoad();
+        return usuario;
+    }
+
+    @Transactional
+    public Usuario findByIdEmulacao(int id) {
+        UsuarioPredicate predicate = new UsuarioPredicate();
         predicate.comId(id);
         Usuario usuario = repository.findOne(predicate.build());
         usuario.forceLoad();
@@ -181,9 +193,7 @@ public class UsuarioService {
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
         List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
-        if (!CollectionUtils.isEmpty(lista)) {
-            predicate.comIds(lista);
-        }
+        predicate.comIds(lista);
     }
 
     private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {
@@ -229,6 +239,8 @@ public class UsuarioService {
         if (usuario.isNovoCadastro()) {
             configurar(usuario, senhaDescriptografada);
             enviarEmail = true;
+        } else {
+            usuario.setAlterarSenha(Eboolean.F);
         }
         usuario = repository.save(usuario);
         tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
@@ -314,8 +326,21 @@ public class UsuarioService {
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErro(usuarioMqRequest);
+            enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
             log.error("Erro ao salvar usuário da fila.", ex);
+        }
+    }
+
+    @Transactional
+    public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
+        try {
+            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            save(usuarioDto);
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
+            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+            log.error("erro ao atualizar usuário da fila.", ex);
         }
     }
 
@@ -383,8 +408,12 @@ public class UsuarioService {
         usuarioMqSender.sendSuccess(usuarioDto);
     }
 
-    private void enviarParaFilaDeErro(UsuarioMqRequest usuarioMqRequest) {
+    private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
         usuarioMqSender.sendWithFailure(usuarioMqRequest);
+    }
+
+    private void enviarParaFilaDeErroAtualizacaoUsuarios(UsuarioMqRequest usuarioMqRequest) {
+        usuarioAaAtualizacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
     private void configurarUsuario(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
