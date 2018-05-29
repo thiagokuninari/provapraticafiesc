@@ -18,19 +18,19 @@ spring:
 #    password: py12nrk7
 #    driverClassName: oracle.jdbc.OracleDriver
 
-#####     AUTENTICAÇÃO PROD
+####    AUTENTICAÇÃO PROD
 #    jdbcUrl: jdbc:oracle:thin:@//192.168.2.38:1521/xprod
 #    username: AUTENTICACAO
 #    password: 4ut3nt1c4c40
 #    driverClassName: oracle.jdbc.OracleDriver
 
 #####     AUTENTICAÇÃO TEST
-    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
-    username: AUTENTICACAO_TEST
-    password: py12nrk7
-    driverClassName: oracle.jdbc.OracleDriver
+#    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+#    username: AUTENTICACAO_TEST
+#    password: py12nrk7
+#    driverClassName: oracle.jdbc.OracleDriver
 
-  datasource-parceiros:
+#  datasource-parceiros:
 #####     PARCEIROS HML
 #    jdbcUrl: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
 #    username: homologacao

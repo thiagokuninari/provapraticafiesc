@@ -27,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -42,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -50,7 +52,7 @@ import java.util.logging.Logger;
 @Rollback(false)
 @AutoConfigureMockMvc
 @RunWith(SpringRunner.class)
-//@ActiveProfiles("homologacao")
+@ActiveProfiles("importacao")
 public class UsuarioAtivoD2dImportacao {
 
     private Logger log = Logger.getLogger("principal");
@@ -70,7 +72,7 @@ public class UsuarioAtivoD2dImportacao {
     public void importarUsuariosXls() {
         log.info("Lendo arquivo no formato XLS");
         try {
-            BufferedInputStream buf = new BufferedInputStream(getFileInputStream("arquivo_usuario/usuarios.xlsx"));
+            BufferedInputStream buf = new BufferedInputStream(getFileInputStream("arquivo_usuario/usarios.xlsx"));
             POIFSFileSystem fileSystem = new POIFSFileSystem(buf);
             HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
             HSSFSheet sheet = workbook.getSheetAt(0);
@@ -122,7 +124,7 @@ public class UsuarioAtivoD2dImportacao {
     public void lerArqXlxs() {
         log.info("Lendo arquivo no formato XLXS");
         try {
-            InputStream excelFile = new FileInputStream("src/test/resources/arquivo_usuario/usuarios.xlsx");
+            InputStream excelFile = new FileInputStream("src/test/resources/arquivo_usuario/plailha1.xlsx");
             XSSFWorkbook wb = new XSSFWorkbook(excelFile);
             Sheet sheet = wb.getSheetAt(0);
             Iterator linhas = sheet.rowIterator();
@@ -279,11 +281,15 @@ public class UsuarioAtivoD2dImportacao {
     }
 
     public Usuario salvarUsuario(Usuario usuario) {
-        String senhaDescriptografada = getSenhaRandomica(6);
-        configurar(usuario, senhaDescriptografada);
-        usuario = repository.save(usuario);
-        notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-        return usuario;
+        Optional<Usuario> usuarioExistente = repository.findByCpf(usuario.getCpf());
+        if (!usuarioExistente.isPresent()) {
+            String senhaDescriptografada = getSenhaRandomica(6);
+            configurar(usuario, senhaDescriptografada);
+            usuario = repository.save(usuario);
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            return usuario;
+        }
+        return new Usuario();
     }
 
     private void configurar(Usuario usuario, String senhaDescriptografada) {
