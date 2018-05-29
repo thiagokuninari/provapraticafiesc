@@ -23,6 +23,7 @@ public class UsuarioMqRequest {
     private String telefone02;
     private String telefone03;
     private String rg;
+    private String loginNetSales;
     private String orgaoExpedidor;
     private ESituacao situacao;
     private LocalDateTime nascimento;

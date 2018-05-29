@@ -9,6 +9,7 @@ public enum CodigoNivel {
     ATP,
     LOJAS,
     RECEPTIVO,
+    RECEPTIVO_SEGMENTADO,
     ATIVO_LOCAL_PROPRIO,
     ATIVO_LOCAL_TERCEIRO;
 
