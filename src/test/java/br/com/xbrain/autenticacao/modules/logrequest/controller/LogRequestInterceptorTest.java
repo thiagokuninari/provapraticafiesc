@@ -61,14 +61,12 @@ public class LogRequestInterceptorTest {
                 .get();
 
         assertNotNull(logRequest.getId());
-        assertNotNull(logRequest.getIp());
         assertNotNull(logRequest.getUrl());
         assertNotNull(logRequest.getUsuario().getId());
         assertNotNull(logRequest.getDataCadastro());
 
         assertEquals("GET", logRequest.getMethod());
         assertEquals("104", logRequest.getUsuario().getId().toString());
-        assertEquals("127.0.0.1", logRequest.getIp());
         assertNull(logRequest.getUsuarioEmulador());
     }
 
@@ -110,7 +108,6 @@ public class LogRequestInterceptorTest {
                 .get();
 
         assertNotNull(logRequest.getId());
-        assertNotNull(logRequest.getIp());
         assertNotNull(logRequest.getUrl());
         assertNotNull(logRequest.getUsuario().getId());
         assertNotNull(logRequest.getDataCadastro());
