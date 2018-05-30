@@ -10,6 +10,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,12 +26,14 @@ public class ReCaptchaFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
 
-        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null && servletRequest.getRemoteAddr() != null) {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+
+        if (servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM) != null && request.getHeader("X-Real-IP") != null) {
 
             PostMethod method = new PostMethod(RECAPTCHA_URL);
             method.addParameter("secret", RECAPTCHA_SECRET);
             method.addParameter("response", servletRequest.getParameter(RECAPTCHA_RESPONSE_PARAM));
-            method.addParameter("remoteip", servletRequest.getRemoteAddr());
+            method.addParameter("remoteip", request.getHeader("X-Real-IP"));
 
             HttpClient client = new HttpClient();
             client.executeMethod(method);

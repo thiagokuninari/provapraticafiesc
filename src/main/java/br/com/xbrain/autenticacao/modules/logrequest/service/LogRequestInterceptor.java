@@ -44,7 +44,7 @@ public class LogRequestInterceptor implements HandlerInterceptor {
                     usuarioId,
                     usuarioEmail,
                     AutenticacaoService.getUsuarioEmuladorId(request),
-                    request.getRemoteAddr()
+                    request.getHeader("X-Real-IP")
             );
         }
     }
