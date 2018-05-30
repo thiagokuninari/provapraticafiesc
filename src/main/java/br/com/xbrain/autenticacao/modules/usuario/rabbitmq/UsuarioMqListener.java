@@ -60,5 +60,10 @@ public class UsuarioMqListener {
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
     }
 
+    @RabbitListener(queues = "${app-config.queue.usuario-alterar-situacao}")
+    public void alterarSituacao(UsuarioMqRequest usuario) {
+        service.alterarSituacao(usuario);
+    }
+
 }
 

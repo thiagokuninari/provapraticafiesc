@@ -825,4 +825,9 @@ public class UsuarioService {
                 .anyMatch(e -> e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
                         && e.getUsuario().getId().equals(novaHierarquia.getUsuarioId()));
     }
+
+    @Transactional
+    public void alterarSituacao(UsuarioMqRequest usuario) {
+        repository.updateSituacao(usuario.getSituacao(), usuario.getId());
+    }
 }

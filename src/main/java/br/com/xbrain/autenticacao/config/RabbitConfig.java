@@ -59,6 +59,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-alterar-senha}")
     private String usuarioAlterarSenhaMq;
 
+    @Value("${app-config.queue.usuario-alterar-situacao}")
+    private String usuarioAlterarSituacaoMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -140,6 +143,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioAlterarSituacaoMq() {
+        return new Queue(usuarioAlterarSituacaoMq, false);
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -207,5 +215,10 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAlterarSenhaBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAlterarSenhaMq()).to(exchange).with(usuarioAlterarSenhaMq);
+    }
+
+    @Bean
+    public Binding usuarioAlterarSituacaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioAlterarSituacaoMq()).to(exchange).with(usuarioAlterarSituacaoMq);
     }
 }

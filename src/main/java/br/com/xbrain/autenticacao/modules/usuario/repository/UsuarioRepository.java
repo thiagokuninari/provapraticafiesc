@@ -49,4 +49,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     @Modifying
     @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")
     void updateCargo(Cargo cargo, Integer usuarioId);
+
+    @Modifying
+    @Query("update Usuario u set u.situacao = ?1 where u.id = ?2")
+    void updateSituacao(ESituacao situacao, Integer usuarioId);
 }
