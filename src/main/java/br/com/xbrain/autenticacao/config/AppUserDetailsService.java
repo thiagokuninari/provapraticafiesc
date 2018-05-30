@@ -35,6 +35,9 @@ public class AppUserDetailsService implements UserDetailsService {
                     if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.I) {
                         throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável");
                     }
+                    if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.P) {
+                        throw new ValidacaoException("Agente Autorizado com aceite de contrato pendente.");
+                    }
                     return new User(
                             u.getId().toString() + "-" + u.getEmail(),
                             autenticacaoService.isEmulacao() ? new BCryptPasswordEncoder().encode("") : u.getSenha(),
