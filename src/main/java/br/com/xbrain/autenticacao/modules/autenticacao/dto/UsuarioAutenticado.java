@@ -11,7 +11,6 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
 @Data
@@ -35,6 +34,7 @@ public class UsuarioAutenticado {
     private Collection<? extends GrantedAuthority> permissoes;
 
     public UsuarioAutenticado(Usuario usuario) {
+        this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
         this.email = usuario.getEmail();
@@ -77,16 +77,4 @@ public class UsuarioAutenticado {
     public boolean isXbrain() {
         return usuario.getNivelCodigo() == XBRAIN;
     }
-
-    public boolean isAgenteAutorizado() {
-        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO;
-    }
-
-    public List<Empresa> getEmpresasPermitidas() {
-        if (isAgenteAutorizado()) {
-            return empresas;
-        }
-        return usuario.getEmpresas();
-    }
-
 }

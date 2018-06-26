@@ -149,8 +149,8 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public Usuario findComHierarquia(int id) {
-        return repository.findComHierarquia(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    public Usuario findCompleteById(int id) {
+        return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     @Transactional

@@ -32,6 +32,12 @@ public class UsuarioController {
                 usuarioService.findById(getUsuarioId(principal)));
     }
 
+    @GetMapping("/autenticado/{id}")
+    public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
+        return new UsuarioAutenticado(
+                usuarioService.findCompleteById(id));
+    }
+
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(

@@ -23,6 +23,7 @@ public class Configuracao implements Serializable {
     @GeneratedValue(generator = "SEQ_CONFIGURACAO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID", unique = true)
     private Usuario usuario;

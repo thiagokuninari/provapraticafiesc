@@ -122,6 +122,17 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void deveRetornarUsuarioAutenticadoPorId() throws Exception {
+        mvc.perform(get("/api/usuarios/autenticado/101")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(101)))
+                .andExpect(jsonPath("$.nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.email", is("HELPDESK@XBRAIN.COM.BR")));
+    }
+
+    @Test
     public void deveRetornarOUsuarioPorEmail() throws Exception {
         mvc.perform(get("/api/usuarios?email=ADMIN@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
