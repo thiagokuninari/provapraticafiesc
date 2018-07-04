@@ -2,5 +2,5 @@ package br.com.xbrain.autenticacao.modules.permissao.enums;
 
 public enum CodigoAplicacao {
 
-    INT, AUT, POL, VDS, MLG, SML, FCP, VAR;
+    INT, AUT, POL, VDS, MLG, SML, FCP, VAR, IND;
 }
