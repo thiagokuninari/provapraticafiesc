@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.notificacao.service;
 
 import br.com.xbrain.autenticacao.modules.comum.service.EmailService;
+import br.com.xbrain.autenticacao.modules.notificacao.dto.BoaVindaAgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,19 @@ public class NotificacaoService {
                 Arrays.asList(usuarioDadosAcessoRequest.getEmailAtual()),
                 "Parceiros Online - Alteração de dados de acesso",
                 "alteracao-email",
+                context);
+    }
+
+    public void enviarEmailBoaVindaAgenteAutorizado(BoaVindaAgenteAutorizadoRequest request) {
+        Context context = new Context();
+        context.setVariable("nome", request.getAgenteAutorizadoRazaoSocial());
+        context.setVariable("link", request.getLink());
+        context.setVariable("senha", request.getSenha());
+
+        emailService.enviarEmailTemplate(
+                request.getEmails(),
+                "Parceiros Online - Seja bem-vindo(a)",
+                "boas-vindas-aa",
                 context);
     }
 }
