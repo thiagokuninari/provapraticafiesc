@@ -15,8 +15,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -109,7 +107,7 @@ public class Usuario {
     private Set<UsuarioCidade> cidades = new HashSet<>();
 
     @NotAudited
-    @LazyToOne(LazyToOneOption.NO_PROXY)
+    @Basic(optional = false)
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
     private Configuracao configuracao;
 

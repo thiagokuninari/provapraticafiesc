@@ -2,7 +2,7 @@ spring:
 
   jpa:
     database: ORACLE
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: none
 
