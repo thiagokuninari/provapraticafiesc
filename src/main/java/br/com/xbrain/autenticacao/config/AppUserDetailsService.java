@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
@@ -27,22 +28,30 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         return usuarioRepository
                 .findByEmail(username.toUpperCase())
                 .map(u -> {
                     u.forceLoad();
-                    if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.P) {
-                        throw new ValidacaoException("Agente Autorizado com aceite de contrato pendente.");
-                    }
-                    if (!autenticacaoService.isEmulacao() && u.getSituacao() == ESituacao.I) {
-                        throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável.");
-                    }
+                    validarUsuarioPendente(u);
+                    validarUsuarioInativo(u);
+
                     return new User(
                             u.getId().toString() + "-" + u.getEmail(),
                             autenticacaoService.isEmulacao() ? new BCryptPasswordEncoder().encode("") : u.getSenha(),
                             funcionalidadeService.getPermissoes(u));
                 }).orElseThrow(() ->
                         new UsernameNotFoundException("Email ou senha inválidos."));
+    }
+
+    private void validarUsuarioPendente(Usuario usuario) {
+        if (!autenticacaoService.isEmulacao() && usuario.getSituacao() == ESituacao.P) {
+            throw new ValidacaoException("Agente Autorizado com aceite de contrato pendente.");
+        }
+    }
+
+    private void validarUsuarioInativo(Usuario usuario) {
+        if (!autenticacaoService.isEmulacao() && usuario.getSituacao() == ESituacao.I) {
+            throw new ValidacaoException("Usuário Inativo, solicite a ativação ao seu responsável.");
+        }
     }
 }

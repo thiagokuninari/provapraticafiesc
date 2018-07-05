@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -107,5 +108,23 @@ public class AutenticacaoControllerTest {
     public void deveNaoAutenticarUsandoClientCredentialsQuandoSenhaInvalida() {
         OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:invalida");
         assertNull(token.getAccessToken());
+    }
+
+    @Test
+    public void deveRetornarErroQuandoOUsuarioEstiverInativo() throws Exception {
+        MockHttpServletResponse response = TestsHelper.getTokenResponse(mvc, Usuarios.INATIVO);
+
+        assertEquals(401, response.getStatus());
+        assertTrue(response.getContentAsString().contains(
+                "Usu&aacute;rio Inativo, solicite a ativa&ccedil;&atilde;o ao seu respons&aacute;vel."));
+    }
+
+    @Test
+    public void deveRetornarErroQuandoOUsuarioEstiverPendente() throws Exception {
+        MockHttpServletResponse response = TestsHelper.getTokenResponse(mvc, Usuarios.PENDENTE);
+
+        assertEquals(401, response.getStatus());
+        assertTrue(response.getContentAsString().contains(
+                "Agente Autorizado com aceite de contrato pendente."));
     }
 }
