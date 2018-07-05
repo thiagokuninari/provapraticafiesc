@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.oauth;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import helpers.OAuthToken;
 import helpers.TestsHelper;
 import helpers.Usuarios;
@@ -8,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -18,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +37,8 @@ public class AutenticacaoControllerTest {
 
     @Autowired
     private MockMvc mvc;
+    @MockBean
+    private OAuthAccessTokenRepository tokenRepository;
 
     @Test
     public void deveAutenticar() {
@@ -126,5 +133,11 @@ public class AutenticacaoControllerTest {
         assertEquals(401, response.getStatus());
         assertTrue(response.getContentAsString().contains(
                 "Agente Autorizado com aceite de contrato pendente."));
+    }
+
+    @Test
+    public void deveDeslogarUsuariosLogadosComOMesmoLogin() {
+        TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
+        verify(tokenRepository, times(1)).deleteTokenByUsername(eq("100-ADMIN@XBRAIN.COM.BR"));
     }
 }
