@@ -17,18 +17,21 @@ public class TestsHelper {
         return "Bearer " + getAccessTokenObject(mvc, usuario).getAccessToken();
     }
 
+    public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) throws Exception {
+        return mvc
+                .perform(
+                        post("/oauth/token")
+                                .header("Authorization", "Basic "
+                                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
+                                .param("username", usuario)
+                                .param("password", "123456")
+                                .param("grant_type", "password"))
+                .andReturn().getResponse();
+    }
+
     public static OAuthToken getAccessTokenObject(MockMvc mvc, String usuario) {
         try {
-            MockHttpServletResponse response = mvc
-                    .perform(
-                            post("/oauth/token")
-                                    .header("Authorization", "Basic "
-                                            + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
-                                    .param("username", usuario)
-                                    .param("password", "123456")
-                                    .param("grant_type", "password"))
-                    .andReturn().getResponse();
-
+            MockHttpServletResponse response = getTokenResponse(mvc, usuario);
             return new ObjectMapper()
                     .readValue(response.getContentAsByteArray(), OAuthToken.class);
 
