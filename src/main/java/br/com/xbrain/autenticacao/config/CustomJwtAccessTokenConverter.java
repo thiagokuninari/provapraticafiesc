@@ -12,11 +12,16 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
         JwtAccessTokenConverterConfigurer {
+
+    private static final Integer TRINTA_DIAS = 30;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -25,6 +30,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         DefaultOAuth2AccessToken defaultOAuth2AccessToken = new DefaultOAuth2AccessToken(accessToken);
         defaultOAuth2AccessToken.setAdditionalInformation(new LinkedHashMap<>(accessToken.getAdditionalInformation()));
+        defaultOAuth2AccessToken.setExpiration(
+                Date.from(LocalDate.now().plusDays(TRINTA_DIAS).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
         if (authentication.getUserAuthentication() != null) {
             User user = (User) authentication.getUserAuthentication().getPrincipal();
 
