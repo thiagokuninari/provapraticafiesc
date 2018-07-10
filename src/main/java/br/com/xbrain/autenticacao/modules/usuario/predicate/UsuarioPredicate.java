@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -39,6 +40,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate comEmail(String email) {
         if (!StringUtils.isEmpty(email)) {
             builder.and(usuario.email.likeIgnoreCase("%" + email + "%"));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSituacao(ESituacao situacao) {
+        if (Objects.nonNull(situacao)) {
+            builder.and(usuario.situacao.eq(situacao));
         }
         return this;
     }
