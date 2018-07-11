@@ -51,6 +51,7 @@ public class EmailService {
         }
     }
 
+    // TODO: Quando permitido, alterar template para o do Conexão Claro Brasil
     public void enviarEmailTemplate(List<String> emailsDestino, String assunto, String template, Context context) {
         context.setVariable("urlEstatico", urlEstatico);
         context.setVariable("nomeSistema", nomeSistema);
@@ -61,6 +62,19 @@ public class EmailService {
         context.setVariable("includeConteudo", template);
 
         String htmlContent = templateEngine.process("email-template", context);
+        enviarEmail(emailsDestino, assunto, htmlContent);
+    }
+
+    public void enviarEmailConexaoClaroBrasil(List<String> emailsDestino, String assunto, String template, Context context) {
+        context.setVariable("urlEstatico", urlEstatico);
+        context.setVariable("nomeSistema", nomeSistema);
+        context.setVariable("urlSistema", urlSistema);
+        context.setVariable("assunto", assunto);
+        context.setVariable("urlSistemaLoginDireto", "teste");
+        context.setVariable("dataEmail", StringUtil.getDataAtualEmail() );
+        context.setVariable("includeConteudo", template);
+
+        String htmlContent = templateEngine.process("email-template-conexao", context);
         enviarEmail(emailsDestino, assunto, htmlContent);
     }
 
