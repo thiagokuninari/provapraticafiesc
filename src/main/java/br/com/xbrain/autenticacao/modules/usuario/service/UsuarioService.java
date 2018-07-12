@@ -188,7 +188,18 @@ public class UsuarioService {
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate);
         }
-        return repository.findAll(predicate.build(), pageRequest);
+        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        if (!CollectionUtils.isEmpty(pages.getContent())) {
+            popularUsuario(pages.getContent());
+        }
+        return pages;
+    }
+
+    private void popularUsuario(List<Usuario> usuarios) {
+        usuarios.forEach(c -> {
+            c.setEmpresas(repository.findEmpresasById(c.getId()));
+            c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
+        });
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
