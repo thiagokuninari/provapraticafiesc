@@ -1,6 +1,10 @@
 package br.com.xbrain.autenticacao.infra;
 
+import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
@@ -103,6 +107,21 @@ public class CustomRepository<T> {
 
         final long total = countQuery.fetchCount();
         final List<T> content = pageable == null || total > pageable.getOffset() ? query.fetch() : emptyList();
+
+        return new PageImpl<T>(content, pageable, total);
+    }
+
+    public Page<T> findAllUsuarios(Expression<T> columns, Predicate predicate, Pageable pageable) {
+
+        final JPAQuery<?> countQuery = createQuery(predicate)
+                .select(columns);
+        final JPAQuery<?> query = (JPAQuery<?>) querydsl.applyPagination(pageable, createQuery(predicate))
+                .select(columns)
+                .innerJoin(QUsuario.usuario.cargo, QCargo.cargo)
+                .innerJoin(QUsuario.usuario.departamento, QDepartamento.departamento);
+
+        final long total = countQuery.fetchCount();
+        final List<T> content = pageable == null || total > pageable.getOffset() ? (List<T>) query.fetch() : emptyList();
 
         return new PageImpl<T>(content, pageable, total);
     }
