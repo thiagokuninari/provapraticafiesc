@@ -80,9 +80,9 @@ public class NotificacaoService {
         context.setVariable("link", request.getLink().toLowerCase());
         context.setVariable("senha", request.getSenha());
 
-        emailService.enviarEmailTemplate(
+        emailService.enviarEmailConexaoClaroBrasil(
                 request.getEmails(),
-                "Parceiros Online - Seja bem-vindo(a)",
+                "Conexão Claro Brasil - Seja bem-vindo(a)",
                 "boas-vindas-aa",
                 context);
     }
