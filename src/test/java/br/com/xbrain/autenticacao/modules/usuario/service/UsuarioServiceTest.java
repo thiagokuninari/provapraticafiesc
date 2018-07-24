@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -48,9 +49,13 @@ public class UsuarioServiceTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
+    
     @MockBean
     private EmailService emailService;
-
+    
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
+    
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
@@ -135,6 +140,35 @@ public class UsuarioServiceTest {
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+    }
+    
+    @Test
+    public void deveBuscarOsUsuarioComInatividade() throws Exception {
+        List<Usuario> usuarios = service.getUsuariosSemAcesso();
+        Assert.assertEquals(2, usuarios
+                .stream()
+                .filter(u -> Arrays.asList(104,101).contains(u.getId()))
+                .collect(Collectors.toList())
+                .size());
+    }
+    
+    @Test
+    public void deveInativarOsUsuarioComInatividade() throws Exception {
+        service.inativarUsuariosSemAcesso();
+        List<Usuario> usuarios = service.getUsuariosSemAcesso();
+        Assert.assertEquals(0, usuarios.size());
+                
+        Assert.assertEquals(ESituacao.I, service.findById(101).getSituacao());
+        Assert.assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        
+        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
+                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
+        
+        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
+                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
+        
+        Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
+        Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());        
     }
 
     private UsuarioMqRequest umUsuario() {
