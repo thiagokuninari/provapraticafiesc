@@ -20,8 +20,6 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findComplete(Integer id);
 
-    Optional<Usuario> findComHierarquia(Integer id);
-
     Optional<Usuario> findComCidade(Integer id);
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);

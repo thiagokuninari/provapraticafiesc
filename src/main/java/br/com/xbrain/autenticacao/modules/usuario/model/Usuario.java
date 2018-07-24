@@ -178,6 +178,11 @@ public class Usuario {
         this.id = id;
     }
 
+    public Usuario(Collection<Empresa> empresas, Collection<UnidadeNegocio> unidadeNegocios) {
+        this.empresas = new ArrayList<>(empresas);
+        this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
+    }
+
     public void forceLoad() {
         empresas.size();
         cidades.size();
