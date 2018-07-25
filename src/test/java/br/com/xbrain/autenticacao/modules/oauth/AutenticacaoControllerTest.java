@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.oauth;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import helpers.OAuthToken;
 import helpers.TestsHelper;
 import helpers.Usuarios;
@@ -16,6 +19,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
@@ -39,6 +43,10 @@ public class AutenticacaoControllerTest {
     private MockMvc mvc;
     @MockBean
     private OAuthAccessTokenRepository tokenRepository;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private UsuarioHistoricoRepository usuarioHistoricoRepository;
 
     @Test
     public void deveAutenticar() {
@@ -139,5 +147,21 @@ public class AutenticacaoControllerTest {
     public void deveDeslogarUsuariosLogadosComOMesmoLogin() {
         TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
         verify(tokenRepository, times(1)).deleteTokenByUsername(eq("100-ADMIN@XBRAIN.COM.BR"));
+    }
+    
+    @Test
+    public void deveGerarUltimoAcessoAposAutenticar() throws Exception {
+        deveAutenticar();
+        List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(100);
+        assertTrue(!historico.isEmpty());
+        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
+    }
+    
+    @Test
+    public void naoDeveGerarUltimoAcessoAposAutenticar() throws Exception {
+        long totalRegistroAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        deveNaoAutenticar();
+        long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        assertTrue(totalRegistroAntes == totalRegistroApos);
     }
 }
