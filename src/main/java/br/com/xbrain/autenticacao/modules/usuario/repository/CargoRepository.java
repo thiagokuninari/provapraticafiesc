@@ -11,5 +11,8 @@ public interface CargoRepository extends PagingAndSortingRepository<Cargo, Integ
     Cargo findByCodigo(CodigoCargo codigo);
 
     Optional<Cargo> findByNomeAndNivelId(String nome, int nivelId);
+
+    Optional<Cargo> findById(Integer id);
+
 }
 

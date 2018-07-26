@@ -2,14 +2,20 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CargoService {
+
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não "
+            + "encontrado.");
 
     @Autowired
     private CargoRepository repository;
@@ -24,6 +30,29 @@ public class CargoService {
         predicate.filtrarPermitidos(usuarioAutenticado);
 
         return repository.findAll(predicate.build());
+    }
+
+    public Cargo findById(Integer id) {
+        return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public Cargo save(Cargo cargo) {
+        return repository.save(cargo);
+    }
+
+    public Cargo update(Cargo cargo) {
+        if (!validaCargoExiste(cargo)) {
+            throw new ValidacaoException("Cargo não existente.");
+        }
+
+        Cargo cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        BeanUtils.copyProperties(cargo, cargoToUpdate);
+
+        return repository.save(cargoToUpdate);
+    }
+
+    public boolean validaCargoExiste(Cargo cargo) {
+        return repository.exists(cargo.getId());
     }
 
 }
