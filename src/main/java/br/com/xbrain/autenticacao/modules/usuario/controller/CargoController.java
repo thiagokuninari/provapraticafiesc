@@ -1,13 +1,19 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cargos")
@@ -16,9 +22,24 @@ public class CargoController {
     @Autowired
     private CargoService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Cargo> getAll(Integer nivelId) {
         return service.getAll(nivelId);
+    }
+
+    @GetMapping("/gerencia")
+    public PageImpl<CargoResponse> getAll(PageRequest pageRequest, CargoFiltros filtros) {
+        Page<Cargo> cargo = service.getAll(pageRequest, filtros);
+
+        PageImpl obj = new PageImpl<>(
+                cargo
+                        .getContent()
+                        .stream()
+                        .map(CargoResponse::new)
+                        .collect(Collectors.toList()),
+                pageRequest,
+                cargo.getTotalElements());
+        return obj;
     }
 
     @GetMapping("/{id}")

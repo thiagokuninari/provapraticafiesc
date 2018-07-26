@@ -1,12 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
 import com.querydsl.core.BooleanBuilder;
 
-public class CargoPredicate {
+public class CargoPredicate extends PredicateBase {
 
     private QCargo cargo = QCargo.cargo;
     private BooleanBuilder builder;

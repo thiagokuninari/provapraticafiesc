@@ -64,7 +64,8 @@ public class CargoControllerTest {
     public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/cargos")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andDo(MockMvcResultHandlers.print());
     }
 
     @Test
@@ -88,6 +89,25 @@ public class CargoControllerTest {
     }
 
     @Test
+    public void deveRetornarOsCargosAtivosPorNivelPaginacao() throws Exception {
+        mvc.perform(get("/api/cargos/gerencia?nivelId=4")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", not(empty())))
+                .andExpect(jsonPath("$.content[0].nome", is("Administrador")));
+    }
+
+    @Test
+    public void deveRetornarSomenteNivelUmPaginacao() throws Exception {
+        mvc.perform(get("/api/cargos/gerencia?nivelId=1")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..content[?(@.nivel != 1)]", empty()));
+    }
+
+    @Test
     public void deveRetornarUmCargo() throws Exception {
         mvc.perform(get("/api/cargos/" + testObjectId)
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
@@ -103,7 +123,7 @@ public class CargoControllerTest {
         cargoForTests.setNome("Cargo teste");
 
         mvc.perform(post("/api/cargos")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(cargoForTests)))
                 .andExpect(status().isCreated())
@@ -149,6 +169,78 @@ public class CargoControllerTest {
         Assert.assertEquals(cargoAfter.getNome(), cargoForTests.getNome());
     }
 
+    @Test
+    public void deveRetornarUmResultadoPaginacao() throws Exception {
+        mvc.perform(get("/api/cargos/gerencia?page=0&size=1")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()", is(1)))
+                .andExpect(jsonPath("$.size", is(1)))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void deveRetornarDezResultadosPaginacao() throws Exception {
+        mvc.perform(get("/api/cargos/gerencia?page=0&size=10")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()", is(10)))
+                .andExpect(jsonPath("$.size", is(10)))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void devePermitirCriarUmCargo() throws Exception {
+        CargoRequest cargoForTests = getCargoForTests();
+        cargoForTests.setId(null);
+        cargoForTests.setNome("Cargo teste");
+
+        mvc.perform(post("/api/cargos")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(cargoForTests)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void devePermitirAtualizarUmCargo() throws Exception {
+        CargoRequest cargoForTests = getCargoForTests(); // get default object using class variables
+        cargoForTests.setNome("Analista Xbrain"); // change the name
+
+        mvc.perform(put("/api/cargos/" + cargoForTests.getId())
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(cargoForTests)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deveNaoPermitirCriarUmCargo() throws Exception {
+        CargoRequest cargoForTests = getCargoForTests();
+        cargoForTests.setId(null);
+        cargoForTests.setNome("Cargo teste");
+
+        mvc.perform(post("/api/cargos")
+                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(cargoForTests)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void deveNaoPermitirAtualizarUmCargo() throws Exception {
+        CargoRequest cargoForTests = getCargoForTests(); // get default object using class variables
+        cargoForTests.setNome("Analista Xbrain"); // change the name
+
+        mvc.perform(put("/api/cargos/" + cargoForTests.getId())
+                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(cargoForTests)))
+                .andExpect(status().isUnauthorized());
+    }
+
     public CargoRequest getCargoForTests() {
         return this.umCargo(testObjectId, testObjectCodigo, testObjectNome, testObjectSituacao, testObjectNivel);
     }
@@ -163,9 +255,8 @@ public class CargoControllerTest {
         return request;
     }
 
-    public boolean refresh() {
+    public void refresh() {
         entityManager.flush();
         entityManager.clear();
-        return true;
     }
 }

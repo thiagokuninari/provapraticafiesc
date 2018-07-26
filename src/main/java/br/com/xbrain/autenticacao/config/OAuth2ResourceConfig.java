@@ -35,6 +35,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers(permitAll).permitAll()
                 .antMatchers("/api/usuarios/gerencia/**").hasAnyRole("AUT_VISUALIZAR_USUARIO", "POL_GERENCIAR_USUARIOS_EXECUTIVO")
                 .antMatchers("/api/emular**").hasRole("AUT_EMULAR_USUARIO")
+                .antMatchers(HttpMethod.POST, "/api/cargos").hasRole("AUT_2023")
+                .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole("AUT_2023")
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated();
     }

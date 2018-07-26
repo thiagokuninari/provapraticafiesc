@@ -17,6 +17,14 @@ public class CargoResponse {
     private String codigo;
     private ESituacao situacao;
 
+    public CargoResponse() {
+
+    }
+
+    public CargoResponse(Cargo cargo) {
+        BeanUtils.copyProperties(convertFrom(cargo), this);
+    }
+
     public static CargoResponse convertFrom(Cargo model) {
         CargoResponse response = new CargoResponse();
         BeanUtils.copyProperties(model, response);
