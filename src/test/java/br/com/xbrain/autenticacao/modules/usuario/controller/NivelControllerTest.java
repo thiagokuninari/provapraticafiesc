@@ -46,7 +46,7 @@ public class NivelControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(13)))
+                .andExpect(jsonPath("$", hasSize(14)))
                 .andExpect(jsonPath("$[0].nome", is("Agente Autorizado")));
     }
 
@@ -56,7 +56,7 @@ public class NivelControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(11)))
+                .andExpect(jsonPath("$", hasSize(12)))
                 .andExpect(jsonPath("$[0].nome", is("Atendimento Pessoal")));
     }
 
@@ -66,7 +66,7 @@ public class NivelControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(11)))
+                .andExpect(jsonPath("$", hasSize(12)))
                 .andExpect(jsonPath("$[0].nome", is("Atendimento Pessoal")));
     }
 

@@ -77,7 +77,7 @@ public class NotificacaoService {
     public void enviarEmailBoaVindaAgenteAutorizado(BoaVindaAgenteAutorizadoRequest request) {
         Context context = new Context();
         context.setVariable("nome", request.getAgenteAutorizadoRazaoSocial());
-        context.setVariable("link", request.getLink().toLowerCase());
+        context.setVariable("link", request.getLink());
         context.setVariable("senha", request.getSenha());
 
         emailService.enviarEmailConexaoClaroBrasil(
