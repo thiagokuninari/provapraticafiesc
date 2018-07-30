@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -109,6 +110,8 @@ public class UsuarioService {
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private UsuarioHistoricoRepository usuarioHistoricoRepository;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -528,6 +531,29 @@ public class UsuarioService {
                 .situacao(ESituacao.I)
                 .build());
         repository.save(usuario);
+    }
+    
+    @Transactional
+    public void inativarUsuariosSemAcesso() {
+        MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
+        List<Usuario> usuarios = getUsuariosSemAcesso();
+        usuarios.forEach(usuario -> {
+            usuario = findComplete(usuario.getId());
+            usuario.setSituacao(ESituacao.I);
+            usuario.adicionar(UsuarioHistorico.builder()
+                    .dataCadastro(LocalDateTime.now())
+                    .motivoInativacao(motivo)
+                    .usuario(usuario)
+                    .usuarioAlteracao(usuario)
+                    .observacao("Inativado por falta de acesso")
+                    .situacao(ESituacao.I)
+                    .build());
+            repository.save(usuario);            
+        });                     
+    }
+    
+    public List<Usuario> getUsuariosSemAcesso() {
+        return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
     //TODO melhorar código

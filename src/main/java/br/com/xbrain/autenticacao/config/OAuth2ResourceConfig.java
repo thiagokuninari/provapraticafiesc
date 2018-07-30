@@ -23,7 +23,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/parceiros-online/**",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
-            "/api/cidades/{cidadeId}"
+            "/api/cidades/{cidadeId}",
+            "/api/public/disparar-timer-inativar-usuarios"
         };
 
         http
