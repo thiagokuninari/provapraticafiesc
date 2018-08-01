@@ -147,6 +147,16 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void deveFiltrarPorInativo() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia?situacao=I")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nome", is("INATIVO")));
+    }
+
+    @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(post("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -256,7 +266,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(72)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(74)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 

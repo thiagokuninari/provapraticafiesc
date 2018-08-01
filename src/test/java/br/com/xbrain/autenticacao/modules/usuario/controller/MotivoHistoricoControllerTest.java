@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
-public class MotivoInativacaoControllerTest {
+public class MotivoHistoricoControllerTest {
 
     @Autowired
     private MockMvc mvc;

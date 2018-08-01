@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -9,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,4 +56,10 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     @Modifying
     @Query("update Usuario u set u.situacao = ?1 where u.id = ?2")
     void updateSituacao(ESituacao situacao, Integer usuarioId);
+
+    @Query("SELECT x.empresas FROM Usuario x WHERE x.id = :id")
+    List<Empresa> findEmpresasById(@Param("id") Integer id);
+
+    @Query("SELECT x.unidadesNegocios FROM Usuario x WHERE x.id = :id")
+    List<UnidadeNegocio> findUnidadesNegociosById(@Param("id") Integer id);
 }

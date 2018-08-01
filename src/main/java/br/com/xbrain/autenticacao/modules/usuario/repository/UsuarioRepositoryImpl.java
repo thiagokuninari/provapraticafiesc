@@ -1,18 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
-import br.com.xbrain.autenticacao.infra.JoinDescriptor;
-import br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,7 +24,6 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static java.util.Arrays.asList;
 
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
@@ -217,13 +213,32 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
-        return super.findAll(
-                asList(
-                        JoinDescriptor.innerJoin(usuario.unidadesNegocios, QUnidadeNegocio.unidadeNegocio),
-                        JoinDescriptor.innerJoin(usuario.cargo, QCargo.cargo),
-                        JoinDescriptor.innerJoin(QCargo.cargo.nivel),
-                        JoinDescriptor.innerJoin(usuario.departamento)
-                ),
+
+        Expression<Cargo> expressionCargo = Projections.fields(Cargo.class,
+                QCargo.cargo.id,
+                QCargo.cargo.nome,
+                QCargo.cargo.codigo,
+                QCargo.cargo.situacao,
+                QCargo.cargo.nivel
+        ).as("cargo");
+
+        Expression<Departamento> expressionDepartamento = Projections.fields(Departamento.class,
+                QDepartamento.departamento.id,
+                QDepartamento.departamento.nome,
+                QDepartamento.departamento.codigo,
+                QDepartamento.departamento.situacao
+        ).as("departamento");
+
+        Expression<Usuario> expressionUsuario = Projections.fields(Usuario.class,
+                QUsuario.usuario.id,
+                QUsuario.usuario.nome,
+                QUsuario.usuario.email,
+                QUsuario.usuario.situacao,
+                expressionCargo,
+                expressionDepartamento);
+
+        return super.findAllUsuarios(
+                expressionUsuario,
                 predicate,
                 pageable);
     }
