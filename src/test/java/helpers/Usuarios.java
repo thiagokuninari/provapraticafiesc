@@ -8,5 +8,5 @@ public class Usuarios {
     public static String MSO_ANALISTAADM_CLAROMOVEL_PESSOAL = "mso_analistaadm_claromovel_pessoal@net.com.br";
     public static final String INATIVO = "INATIVO@XBRAIN.COM.BR";
     public static final String PENDENTE = "PENDENTE@XBRAIN.COM.BR";
-
+    public static final String SOCIO_AA = "SOCIOAA@GMAIL.COM";
 }
