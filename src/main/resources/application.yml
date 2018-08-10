@@ -86,6 +86,9 @@ app-config:
     usuario-alterar-situacao: usuario-alterar-situacao.queue
 
   oauth-clients:
+    autenticacao-api:
+      client: autenticacao-api
+      secret: 4ut3nt1c4c404p1
     front-apps:
       client: xbrain-app-client
       secret: xbrain
@@ -106,12 +109,14 @@ app-config:
       secret: v4r3j04p1
 
   services:
+    autenticacao:
+      url: http://localhost:8096
     call:
-      url: http://call-api-dev.conexaoclarobrasil.com.br/
+      url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
     parceiros-online:
-      url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      #url: http://localhost:8099
+      #url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      url: http://localhost:8099
     vendas:
       url: http://localhost:8097
 

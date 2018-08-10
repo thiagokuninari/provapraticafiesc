@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.oauth;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
@@ -9,6 +10,7 @@ import helpers.TestsHelper;
 import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -39,10 +43,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class AutenticacaoControllerTest {
 
+    private static final int USUARIO_SOCIO_ID = 226;
+
     @Autowired
     private MockMvc mvc;
     @MockBean
     private OAuthAccessTokenRepository tokenRepository;
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -96,7 +104,23 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.empresas", not(empty())))
                 .andExpect(jsonPath("$.empresasNome", not(empty())))
                 .andExpect(jsonPath("$.authorities", not(empty())))
-                .andExpect(jsonPath("$.cpf", is("38957979875")));
+                .andExpect(jsonPath("$.cpf", is("38957979875")))
+                .andExpect(jsonPath("$.agentesAutorizados", is(empty())));
+    }
+
+    @Test
+    public void deveIncluirOsAAsPermitidosNaoTokenQuandoForNivelAgenteAutorizado() throws Exception {
+        Mockito.when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
+
+        OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
+
+        mvc.perform(
+                post("/oauth/check_token")
+                        .param("token", token.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
+                .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")))
+                .andExpect(jsonPath("$.agentesAutorizados", is(Arrays.asList(1, 2))));
     }
 
     @Test
@@ -150,7 +174,7 @@ public class AutenticacaoControllerTest {
     }
     
     @Test
-    public void deveGerarUltimoAcessoAposAutenticar() throws Exception {
+    public void deveGerarUltimoAcessoAposAutenticar() {
         deveAutenticar();
         List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(100);
         assertTrue(!historico.isEmpty());
@@ -158,7 +182,7 @@ public class AutenticacaoControllerTest {
     }
     
     @Test
-    public void naoDeveGerarUltimoAcessoAposAutenticar() throws Exception {
+    public void naoDeveGerarUltimoAcessoAposAutenticar() {
         long totalRegistroAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
         deveNaoAutenticar();
         long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
