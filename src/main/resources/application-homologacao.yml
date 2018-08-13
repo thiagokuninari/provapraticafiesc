@@ -10,7 +10,7 @@ spring:
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
+    maximumPoolSize: 10
 
   rabbitmq:
     host: 172.10.10.70
