@@ -16,6 +16,7 @@ app-config:
   services:
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      #url: http://localhost:8099
 
   email:
     enviar: true
