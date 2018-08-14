@@ -33,11 +33,10 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
     }    
 
     private void registrarUltimoAcesso(AuthenticationSuccessEvent event) {
-        if (event.getAuthentication().isAuthenticated()) {
+        if (event.getAuthentication().isAuthenticated() && event.getAuthentication().getPrincipal() instanceof User) {
             String login = ((User)event.getAuthentication().getPrincipal()).getUsername();
             Integer usuarioId =  new Integer(login.split("-")[0]);
             usuarioHistoricoService.registrarHistoricoUltimoAcessoAsync(usuarioId);    
         }
-        
     }
 }
