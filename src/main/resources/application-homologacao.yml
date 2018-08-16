@@ -10,7 +10,8 @@ spring:
     username: AUTENTICACAO
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
-    maximumPoolSize: 2
+    hikari:
+      maximumPoolSize: 10
 
   rabbitmq:
     host: 172.10.10.70
@@ -24,6 +25,8 @@ app-config:
   upload-dir: ${app-config.estatico-dir}/homologacao/autenticacao
   
   services:
+    autenticacao:
+      url: http://172.10.10.73:8096
     vendas:
       url: http://172.10.10.74:8097
     parceiros-online:

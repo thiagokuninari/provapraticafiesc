@@ -21,6 +21,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String privateKey;
     @Value("${keys.public}")
     private String publicKey;
+    @Value("${app-config.oauth-clients.autenticacao-api.client}")
+    private String autenticacaoApiClient;
+    @Value("${app-config.oauth-clients.autenticacao-api.secret}")
+    private String autenticacaoApiSecret;
     @Value("${app-config.oauth-clients.front-apps.client}")
     private String frontAppsClient;
     @Value("${app-config.oauth-clients.front-apps.secret}")
@@ -62,6 +66,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .authorizedGrantTypes("password")
                 .scopes("app")
                 .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS)
+                .and()
+                .withClient(autenticacaoApiClient)
+                .secret(autenticacaoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("autenticacao-api")
                 .and()
                 .withClient(parceirosApiClient)
                 .secret(parceirosApiSecret)
