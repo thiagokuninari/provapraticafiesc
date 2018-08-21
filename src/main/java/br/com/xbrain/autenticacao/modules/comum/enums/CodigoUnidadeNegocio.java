@@ -4,6 +4,6 @@ public enum CodigoUnidadeNegocio {
 
     PESSOAL,
     RESIDENCIAL_COMBOS,
+    CLARO_RESIDENCIAL,
     XBRAIN,
-
 }
