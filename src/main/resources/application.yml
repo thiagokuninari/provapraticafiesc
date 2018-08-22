@@ -115,8 +115,8 @@ app-config:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
     parceiros-online:
-      #url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      url: http://localhost:8099
+      url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      #url: http://localhost:8099
     vendas:
       url: http://localhost:8097
 
