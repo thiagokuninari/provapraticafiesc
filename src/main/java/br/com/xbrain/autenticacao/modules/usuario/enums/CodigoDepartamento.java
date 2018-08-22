@@ -7,5 +7,6 @@ public enum CodigoDepartamento {
     HELP_DESK,
     ADMINISTRADOR,
     VAREJO,
-    ATENDIMENTO_JEC;
+    ATENDIMENTO_JEC,
+    OUVIDORIA;
 }
