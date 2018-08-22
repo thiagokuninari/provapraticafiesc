@@ -13,8 +13,3 @@ spring:
     username: sa
     password:
     driverClassName: org.hsqldb.jdbcDriver
-
-app-config:
-  email:
-    enviar: true
-    emails: andre@xbrain.com.br
