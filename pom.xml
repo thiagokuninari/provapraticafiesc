@@ -108,6 +108,12 @@
             <version>${ojdbc6.version}</version>
         </dependency>
 
+        <!-- Flyway -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- lombok  -->
         <dependency>
             <groupId>org.projectlombok</groupId>
