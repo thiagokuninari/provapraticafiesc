@@ -120,6 +120,10 @@ app-config:
     vendas:
       url: http://localhost:8097
 
+flyway:
+  enabled: true
+  baseline-on-migrate: true
+
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin
   routes:
