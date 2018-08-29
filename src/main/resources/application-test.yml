@@ -13,3 +13,6 @@ spring:
     username: sa
     password:
     driverClassName: org.hsqldb.jdbcDriver
+
+flyway:
+  enabled: false
