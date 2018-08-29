@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
@@ -18,4 +19,10 @@ public class EmpresaResponse {
         return empresaResponse;
     }
 
+    @JsonIgnore
+    public Empresa convertTo() {
+        Empresa empresa = new Empresa();
+        BeanUtils.copyProperties(this, empresa);
+        return empresa;
+    }
 }

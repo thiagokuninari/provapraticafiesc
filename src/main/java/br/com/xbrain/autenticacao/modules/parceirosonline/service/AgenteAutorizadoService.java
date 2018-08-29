@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -73,6 +75,20 @@ public class AgenteAutorizadoService {
             return agenteAutorizadoClient.getAasPermitidos(usuarioId);
         } catch (Exception ex) {
             logger.warn("Erro ao consultar agentes autorizados do usuário", ex);
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Empresa> getEmpresasPermitidas(int usuarioId) {
+        try {
+            return agenteAutorizadoClient
+                    .getEmpresasPermitidas(usuarioId)
+                    .stream()
+                    .map(EmpresaResponse::convertTo)
+                    .collect(Collectors.toList());
+
+        } catch (Exception ex) {
+            logger.warn("Erro ao consultar empresas do usuário", ex);
             return Collections.emptyList();
         }
     }
