@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -31,5 +32,10 @@ public interface AgenteAutorizadoClient {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "api/agentes-autorizados-permitidos/{usuarioId}")
-    List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer agenteAutorizadoId);
+    List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/agente-autorizado/empresas-matriz-filiais/{usuarioId}")
+    List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 }

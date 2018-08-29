@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.oauth;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -24,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -102,8 +105,9 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.cargoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.departamentoCodigo", is("ADMINISTRADOR")))
                 .andExpect(jsonPath("$.nivelCodigo", is("XBRAIN")))
-                .andExpect(jsonPath("$.empresas", not(empty())))
-                .andExpect(jsonPath("$.empresasNome", not(empty())))
+                .andExpect(jsonPath("$.empresas", is(Collections.singletonList(4))))
+                .andExpect(jsonPath("$.empresasNome", is(Collections.singletonList("Xbrain"))))
+                .andExpect(jsonPath("$.empresasCodigo", is(Collections.singletonList("XBRAIN"))))
                 .andExpect(jsonPath("$.authorities", not(empty())))
                 .andExpect(jsonPath("$.cpf", is("38957979875")))
                 .andExpect(jsonPath("$.agentesAutorizados", is(empty())));
@@ -122,6 +126,26 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
                 .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")))
                 .andExpect(jsonPath("$.agentesAutorizados", is(Arrays.asList(1, 2))));
+    }
+
+    @Test
+    public void deveIncluirAsEmpresasDoAaQuandoForNivelAgenteAutorizado() throws Exception {
+        Mockito.when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
+                .thenReturn(Arrays.asList(
+                        new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
+                        new Empresa(2, "NET", CodigoEmpresa.NET)
+                ));
+
+        OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
+
+        mvc.perform(
+                post("/oauth/check_token")
+                        .param("token", token.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
+                .andExpect(jsonPath("$.empresas", is(Arrays.asList(1, 2))))
+                .andExpect(jsonPath("$.empresasNome", is(Arrays.asList("CLARO MOVEL", "NET"))))
+                .andExpect(jsonPath("$.empresasCodigo", is(Arrays.asList("CLARO_MOVEL", "NET"))));
     }
 
     @Test
