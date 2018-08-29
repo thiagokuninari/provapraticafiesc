@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -16,9 +17,12 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+import static org.springframework.util.StringUtils.isEmpty;
 
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
         JwtAccessTokenConverterConfigurer {
@@ -41,7 +45,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                             defaultOAuth2AccessToken,
                             usuario,
                             userAuth,
-                            getAgentesAutorizadosPermitidos(usuario)));
+                            getAgentesAutorizadosPermitidos(usuario),
+                            getEmpresasDoUsuario(usuario)));
         }
 
         return defaultOAuth2AccessToken;
@@ -53,7 +58,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 : Collections.emptyList();
     }
 
-    private void setAdditionalInformation(OAuth2AccessToken token, Usuario usuario, User user, List<Integer> agentesAutorizados) {
+    private List<Empresa> getEmpresasDoUsuario(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+                ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
+                : usuario.getEmpresas();
+
+    }
+
+    private void setAdditionalInformation(OAuth2AccessToken token,
+                                          Usuario usuario,
+                                          User user,
+                                          List<Integer> agentesAutorizados,
+                                          List<Empresa> empresas) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
@@ -70,8 +86,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("cargoId", usuario.getCargoId());
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
-        token.getAdditionalInformation().put("empresas", usuario.getEmpresasId());
-        token.getAdditionalInformation().put("empresasNome", usuario.getEmpresasNome());
+
+        if (!isEmpty(empresas)) {
+            token.getAdditionalInformation()
+                    .put("empresas", getListaEmpresaPorCampo(empresas, Empresa::getId));
+
+            token.getAdditionalInformation()
+                    .put("empresasNome", getListaEmpresaPorCampo(empresas, Empresa::getNome));
+
+            token.getAdditionalInformation()
+                    .put("empresasCodigo", getListaEmpresaPorCampo(empresas, Empresa::getCodigo));
+        }
+
         token.getAdditionalInformation().put("unidadesNegocios", usuario.getUnidadesNegociosId());
         token.getAdditionalInformation().put("agentesAutorizados", agentesAutorizados);
         token.getAdditionalInformation().put("active", true);
@@ -82,8 +108,16 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                         .toArray());
     }
 
+    private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
+        return empresas
+                .stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public void configure(JwtAccessTokenConverter converter) {
         converter.setAccessTokenConverter(this);
     }
+
 }

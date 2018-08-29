@@ -60,6 +60,12 @@ public class Empresa implements Serializable {
         this.nome = nome;
     }
 
+    public Empresa(Integer id, String nome, CodigoEmpresa codigo) {
+        this.id = id;
+        this.nome = nome;
+        this.codigo = codigo;
+    }
+
     @Override
     public String toString() {
         return nome;
