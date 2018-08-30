@@ -11,3 +11,6 @@ spring:
     password: py12nrk7
     driverClassName: oracle.jdbc.OracleDriver
     maximumPoolSize: 2
+
+flyway:
+  enabled: false

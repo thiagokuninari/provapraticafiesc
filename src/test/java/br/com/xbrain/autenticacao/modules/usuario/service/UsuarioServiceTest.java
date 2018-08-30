@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("oracle")
+@ActiveProfiles("oracle-test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
