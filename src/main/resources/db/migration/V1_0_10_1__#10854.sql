@@ -23,6 +23,7 @@ INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3020);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3021);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3015);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3029);
 
 INSERT INTO cargo (id, nome, situacao, FK_NIVEL) values (82, 'Gerente Temporário', 'A', 3);
 
@@ -55,6 +56,8 @@ INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3027);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3028);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3015);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3029);
+
 
 INSERT INTO cargo (id, nome, situacao, FK_NIVEL) values (83, 'Vendedor Temporário', 'A', 3);
 
@@ -98,6 +101,7 @@ INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3027);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3028);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3015);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3029);
 
 INSERT INTO cargo (id, nome, situacao, FK_NIVEL) values (85, 'Vendedor BackOffice Temporário', 'A', 3);
 
@@ -123,3 +127,4 @@ INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3028);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3015);
 INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 2021);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, FK_FUNCIONALIDADE) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3029);
