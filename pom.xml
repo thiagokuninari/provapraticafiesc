@@ -142,12 +142,6 @@
             <version>1</version>
         </dependency>
 
-        <!-- Flyway -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-
         <!-- JsonWebToken -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
