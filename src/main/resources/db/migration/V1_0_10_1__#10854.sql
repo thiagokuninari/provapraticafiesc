@@ -1,0 +1,133 @@
+INSERT INTO cargo (id, nome, codigo, situacao, fk_nivel) values (81, 'Supervisor*', 'AGENTE_AUTORIZADO_SUPERVISOR_TEMP', 'A', 3);
+
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 2015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3007, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3008, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3009, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3010, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 4, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 11, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 5, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 32, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3014, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3019, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3020, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 81, 40, 3029, 1);
+
+INSERT INTO cargo (id, nome, codigo, situacao, fk_nivel) values (82, 'Gerente*', 'AGENTE_AUTORIZADO_GERENTE_TEMP', 'A', 3);
+
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3016, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3017, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3022, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3007, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3008, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3009, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3010, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 4, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 11, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 5, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 32, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3014, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 2015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3019, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3020, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3027, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3028, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3029, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 82, 40, 3013, 1);
+
+
+INSERT INTO cargo (id, nome, codigo, situacao, fk_nivel) values (83, 'Vendedor*', 'AGENTE_AUTORIZADO_VENDEDOR_TEMP', 'A', 3);
+
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3007, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3009, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3010, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 11, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 32, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3013, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3014, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 2021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3019, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3020, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 83, 40, 3015, 1);
+
+INSERT INTO cargo (id, nome, codigo, situacao, fk_nivel) values (84, 'BackOffice*', 'AGENTE_AUTORIZADO_BACKOFFICE_TEMP', 'A', 3);
+
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 32, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 11, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3008, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3022, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3013, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3016, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3014, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3019, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3020, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3017, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 2015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3027, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3028, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3029, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 84, 40, 3007, 1);
+
+
+INSERT INTO cargo (id, nome, codigo, situacao, fk_nivel) values (85, 'Vendedor BackOffice*', 'AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TEMP', 'A', 3);
+
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 32, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 11, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3000, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3008, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3022, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3004, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3013, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3001, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3002, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3016, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3014, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3019, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3020, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3003, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3017, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 2015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3027, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3028, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3015, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 2021, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3029, 1);
+INSERT INTO CARGO_DEPART_FUNC (id, data_cadastro, fk_cargo, fk_departamento, fk_funcionalidade, fk_usuario) values (SEQ_CARGO_DEPART_FUNC.nextval, sysdate, 85, 40, 3007, 1);
+
