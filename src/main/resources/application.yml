@@ -55,7 +55,7 @@ spring:
 app-config:
   nome: Colaboradores
   url: http://localhost:3100
-  url-mensagemws: http://192.168.2.28:8183/MensagemWsService/MensagemWs
+  url-servico-email: http://192.168.1.40:6541/emails/
   url-estatico: https://estatico.xbrain.com.br/conexao_claro_brasil
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
@@ -63,7 +63,8 @@ app-config:
 
   email:
     enviar: true
-    emails: diegovieira@xbrain.com.br
+    empresa-alias: XBRAIN
+    emails: luisdias@xbrain.com.br
 
   topic:
     autenticacao: autenticacao.topic

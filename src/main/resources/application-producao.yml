@@ -27,6 +27,7 @@ spring:
 app-config:
   # TODO: Quando permitido, alterar novamente para Conexão Claro Brasil
   url: https://parceirosonline.com.br
+  url-servico-email: http://172.10.10.41:8080/emails/
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
   upload-dir: ${app-config.estatico-dir}/producao/autenticacao
 
@@ -42,6 +43,7 @@ app-config:
 
   email:
     enviar: true
+    empresa-alias: XBRAIN
     emails:
 
 logging:
