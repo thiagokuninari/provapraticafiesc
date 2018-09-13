@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.ImportacaoUsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,14 +25,13 @@ public class ImportacaoUsuarioController {
     private ObjectMapper objectMapper;
 
     @PostMapping
-    public List<UsuarioImportacaoResponse> uploadUsuario(@RequestParam MultipartFile file,
-                                                    @RequestParam("senhaPadrao") String senhaPadrao) {
-        Boolean isSenhaPadrao;
-        try {
-            isSenhaPadrao = objectMapper.readValue(senhaPadrao, Boolean.class);
-        } catch (IOException ex) {
-            isSenhaPadrao = false;
-        }
-        return importacaoUsuarioService.salvarUsuarioFile(file, isSenhaPadrao);
+    public List<UsuarioImportacaoResponse> uploadUsuario(
+            @RequestParam MultipartFile file,
+            @RequestParam("usuarioImportacaoJson") String usuarioImportacaoJson) throws IOException {
+
+        UsuarioImportacaoRequest request = objectMapper.readValue(
+                usuarioImportacaoJson, UsuarioImportacaoRequest.class);
+
+        return importacaoUsuarioService.salvarUsuarioFile(file, request);
     }
 }

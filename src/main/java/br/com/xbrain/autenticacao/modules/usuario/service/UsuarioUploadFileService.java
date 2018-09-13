@@ -40,14 +40,15 @@ public class UsuarioUploadFileService {
     DepartamentoRepository departamentoRepository;
 
     public UsuarioImportacaoRequest build(Row row, boolean senhaPadrao) {
-        Nivel nivelCanal;
+        Nivel nivelCanal = null;
         UsuarioImportacaoRequest usuario = new UsuarioImportacaoRequest();
         try {
-            CodigoNivel codigoNivel = CodigoNivel.valueOf(
-                    validaCampo(row.getCell(NumeroCelulaUtil.CELULA_ZERO), usuario).replaceAll(" ", "_"));
+            String codigoNivelStr = validaCampo(row.getCell(NumeroCelulaUtil.CELULA_ZERO), usuario).replaceAll(" ", "_");
+            if (!codigoNivelStr.isEmpty()) {
+                CodigoNivel codigoNivel = CodigoNivel.valueOf(codigoNivelStr);
 
-            nivelCanal = nivelRepository.findByCodigo(codigoNivel);
-
+                nivelCanal = nivelRepository.findByCodigo(codigoNivel);
+            }
             if (nivelCanal != null) {
                 cargoRepository.findByNomeIgnoreCaseContainingAndNivelId(
                         validaCampo(row.getCell(NumeroCelulaUtil.CELULA_UM), usuario), nivelCanal.getId())
@@ -91,7 +92,7 @@ public class UsuarioUploadFileService {
         }
         usuarioImportacaoRequest.getMotivoNaoImportacao()
                 .add("O campo " + cell.getSheet().getRow(NumeroCelulaUtil.CELULA_ZERO).getCell(cell.getColumnIndex())
-                .getRichStringCellValue()
+                        .getRichStringCellValue()
                         .toString()
                         .toLowerCase() + " esta incorreto.");
         return "";

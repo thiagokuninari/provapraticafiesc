@@ -21,6 +21,7 @@ public class UsuarioImportacaoRequest {
     private String nome;
     private String cpf;
     private String email;
+    private boolean senhaPadrao;
     private LocalDateTime nascimento;
     private String telefone;
     private String senha;

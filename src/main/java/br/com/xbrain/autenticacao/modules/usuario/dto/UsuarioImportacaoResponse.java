@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +12,6 @@ public class UsuarioImportacaoResponse {
     private String cpf;
     private String email;
     private String telefone;
-    private LocalDateTime dataCadastro;
     private List<String> motivoNaoImportacao;
 
     public UsuarioImportacaoResponse() {
