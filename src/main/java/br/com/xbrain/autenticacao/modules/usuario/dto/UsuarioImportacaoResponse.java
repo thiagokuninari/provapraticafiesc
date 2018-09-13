@@ -17,10 +17,6 @@ public class UsuarioImportacaoResponse {
     public UsuarioImportacaoResponse() {
     }
 
-    public UsuarioImportacaoResponse(UsuarioImportacaoRequest usuario) {
-        BeanUtils.copyProperties(convertFrom(usuario), this);
-    }
-
     public static List<UsuarioImportacaoResponse> convertFrom(List<UsuarioImportacaoRequest> models) {
         return models.stream()
                 .map(UsuarioImportacaoResponse::convertFrom)

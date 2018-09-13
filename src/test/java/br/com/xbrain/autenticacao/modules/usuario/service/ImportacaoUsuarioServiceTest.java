@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.util.FileUtil.getFile;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 
 @ActiveProfiles("test")
@@ -62,36 +58,6 @@ public class ImportacaoUsuarioServiceTest {
     }
 
     @Test
-    public void removerUsuariosJaSalvos() {
-        List<Usuario> usuarios = buildUsuarios();
-        assertEquals(usuarios.size(), 4);
-        usuarios = importacaoUsuarioService.removerUsuariosJaSalvos(usuarios);
-        assertEquals(usuarios.size(), 2);
-    }
-
-    @Test
-    public void validarUsuarioExistente() {
-        Usuario usuario = new Usuario();
-
-        usuario.setEmail("ADMIN@XBRAIN.COM.BR");
-        importacaoUsuarioService.validarUsuarioExistente(usuario);
-        assertFalse(importacaoUsuarioService.validarUsuarioExistente(usuario));
-
-        usuario.setEmail("ADMINTESTE@XBRAIN.COM.BR");
-        importacaoUsuarioService.validarUsuarioExistente(usuario);
-        assertTrue(importacaoUsuarioService.validarUsuarioExistente(usuario));
-
-        usuario.setCpf("38957979875");
-        importacaoUsuarioService.validarUsuarioExistente(usuario);
-        assertFalse(importacaoUsuarioService.validarUsuarioExistente(usuario));
-
-        usuario.setCpf("9612473633");
-        importacaoUsuarioService.validarUsuarioExistente(usuario);
-        assertTrue(importacaoUsuarioService.validarUsuarioExistente(usuario));
-
-    }
-
-    @Test
     public void salvarUsuarioFile() {
         UsuarioImportacaoRequest usuarioImportacaoRequest = new UsuarioImportacaoRequest();
         usuarioImportacaoRequest.setSenhaPadrao(true);
@@ -100,21 +66,4 @@ public class ImportacaoUsuarioServiceTest {
         assertEquals(usuarioUploadFiles.size(), 15);
     }
 
-    private List<Usuario> buildUsuarios() {
-        List<Usuario> usuarios = new ArrayList<>();
-        Usuario usuario = new Usuario();
-        usuario.setEmail("ADMIN@XBRAIN.COM.BR");
-        usuarios.add(usuario);
-        usuario = new Usuario();
-        usuario.setEmail("ADMINTESTE@XBRAIN.COM.BR");
-        usuarios.add(usuario);
-        usuario = new Usuario();
-        usuario.setCpf("38957979875");
-        usuarios.add(usuario);
-        usuario = new Usuario();
-        usuario.setCpf("9612473633");
-        usuarios.add(usuario);
-
-        return usuarios;
-    }
 }

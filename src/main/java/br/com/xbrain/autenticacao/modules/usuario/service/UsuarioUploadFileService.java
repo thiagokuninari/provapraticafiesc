@@ -2,18 +2,23 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.util.EmailUtil;
 import br.com.xbrain.autenticacao.modules.usuario.util.NumeroCelulaUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,12 +43,37 @@ public class UsuarioUploadFileService {
     NivelRepository nivelRepository;
     @Autowired
     DepartamentoRepository departamentoRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    public UsuarioImportacaoRequest build(Row row, boolean senhaPadrao) {
-        Nivel nivelCanal = null;
+    @Autowired
+    private NotificacaoService notificacaoService;
+
+    @Autowired
+    UsuarioRepository usuarioRepository;
+
+    public UsuarioImportacaoRequest processarUsuarios(Row row, boolean senhaPadrao) {
+
+        String senhaDescriptografada = senhaPadrao ? SENHA_PADRAO : getSenhaRandomica(QNT_SENHA);
+        UsuarioImportacaoRequest usuario = buildUsuario(row, senhaDescriptografada);
+        validarUsuarioExistente(usuario);
+
+        if (usuario.getMotivoNaoImportacao().isEmpty()) {
+            Usuario usuarioSalvo = salvarUsuario(usuario);
+            if (usuarioSalvo != null && usuarioSalvo.getId() != null) {
+                notificacaoService.enviarEmailDadosDeAcesso(usuarioSalvo, senhaDescriptografada);
+            }
+        }
+        return usuario;
+    }
+
+    private UsuarioImportacaoRequest buildUsuario(Row row, String senha) {
         UsuarioImportacaoRequest usuario = new UsuarioImportacaoRequest();
+        Nivel nivelCanal = null;
+
         try {
-            String codigoNivelStr = validaCampo(row.getCell(NumeroCelulaUtil.CELULA_ZERO), usuario).replaceAll(" ", "_");
+            String codigoNivelStr = validaCampo(row.getCell(NumeroCelulaUtil.CELULA_ZERO),
+                    usuario).replaceAll(" ", "_");
             if (!codigoNivelStr.isEmpty()) {
                 CodigoNivel codigoNivel = CodigoNivel.valueOf(codigoNivelStr);
 
@@ -59,24 +89,43 @@ public class UsuarioUploadFileService {
             } else {
                 usuario.getMotivoNaoImportacao().add("Falha ao recuperar cargo/nivel");
             }
-            usuario.setNome(validaCampo(row.getCell(NumeroCelulaUtil.CELULA_DOIS), usuario));
-            usuario.setCpf(validarCpf(row.getCell(NumeroCelulaUtil.CELULA_TRES).getStringCellValue(), usuario));
-            usuario.setEmail(validarEmail(row.getCell(NumeroCelulaUtil.CELULA_QUATRO).getStringCellValue(), usuario));
-            usuario.setNascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_CINCO).getDateCellValue(), usuario));
-            usuario.setTelefone(validaCampo(row.getCell(NumeroCelulaUtil.CELULA_SEIS), usuario));
+            usuario.setNome(
+                    validaCampo(
+                            row.getCell(
+                                    NumeroCelulaUtil.CELULA_DOIS), usuario));
+            usuario.setCpf(
+                    validarCpf(
+                            row.getCell(
+                                    NumeroCelulaUtil.CELULA_TRES).getStringCellValue(), usuario));
+            usuario.setEmail(
+                    validarEmail(
+                            row.getCell(
+                                    NumeroCelulaUtil.CELULA_QUATRO).getStringCellValue(), usuario));
+            usuario.setNascimento(
+                    trataData(
+                            row.getCell(
+                                    NumeroCelulaUtil.CELULA_CINCO).getDateCellValue(), usuario));
+            usuario.setTelefone(
+                    validaCampo(
+                            row.getCell(
+                                    NumeroCelulaUtil.CELULA_SEIS), usuario));
 
-            usuario.setSenha(senhaPadrao ? SENHA_PADRAO : getSenhaRandomica(QNT_SENHA));
+            usuario.setSenha(
+                    passwordEncoder.encode(senha));
             usuario.setAlterarSenha(Eboolean.V);
             usuario.setDataCadastro(LocalDateTime.now());
 
             usuario.setSituacao(ESituacao.A);
-
             return usuario;
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (ValidacaoException vex) {
             return usuario;
         }
+
+    }
+
+    public Usuario salvarUsuario(UsuarioImportacaoRequest usuario) {
+        Usuario usuarioConvertido = UsuarioImportacaoRequest.convertTo(usuario);
+        return usuarioRepository.save(usuarioConvertido);
     }
 
     private static String getSenhaRandomica(int size) {
@@ -84,7 +133,15 @@ public class UsuarioUploadFileService {
         return tag.substring(PRIMEIRA_POSICAO, size);
     }
 
-    private String validaCampo(Cell cell, UsuarioImportacaoRequest usuarioImportacaoRequest) {
+    public UsuarioImportacaoRequest validarUsuarioExistente(UsuarioImportacaoRequest usuario) {
+        Integer qntUsuariosSalvos = usuarioRepository.countByEmailOrCpf(usuario.getEmail(), usuario.getCpf());
+        if (qntUsuariosSalvos != 0) {
+            usuario.getMotivoNaoImportacao().add("Usuário já salvo no banco");
+        }
+        return usuario;
+    }
+
+    public String validaCampo(Cell cell, UsuarioImportacaoRequest usuarioImportacaoRequest) {
 
         String valor = cell.getStringCellValue();
         if (valor != null && !valor.isEmpty()) {
@@ -99,7 +156,7 @@ public class UsuarioUploadFileService {
 
     }
 
-    private String validarEmail(String email, UsuarioImportacaoRequest usuarioImportacaoRequest) {
+    public String validarEmail(String email, UsuarioImportacaoRequest usuarioImportacaoRequest) {
 
         if (EmailUtil.validar(email)) {
             return email;
@@ -123,7 +180,6 @@ public class UsuarioUploadFileService {
         } catch (Exception ex) {
             usuarioImportacaoRequest.getMotivoNaoImportacao().add("O campo data de nascimento esta invalida.");
             return LocalDateTime.now();
-
         }
 
     }

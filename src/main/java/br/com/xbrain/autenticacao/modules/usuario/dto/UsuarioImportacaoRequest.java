@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 public class UsuarioImportacaoRequest {
@@ -34,16 +33,6 @@ public class UsuarioImportacaoRequest {
     private final List empresasId = Arrays.asList(1, 2, 3);
 
     public UsuarioImportacaoRequest() {
-    }
-
-    public UsuarioImportacaoRequest(UsuarioImportacaoRequest usuario) {
-        BeanUtils.copyProperties(convertTo(usuario), this);
-    }
-
-    public static List<Usuario> convertTo(List<UsuarioImportacaoRequest> usuarios) {
-        return usuarios.stream()
-                .map(UsuarioImportacaoRequest::convertTo)
-                .collect(Collectors.toList());
     }
 
     public static Usuario convertTo(UsuarioImportacaoRequest usuario) {

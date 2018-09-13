@@ -3,8 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.util.NumeroCelulaUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -26,8 +24,6 @@ public class ImportacaoUsuarioService {
     private PlanilhaService planilhaService;
     @Autowired
     private UsuarioUploadFileService usuarioUploadFile;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
     public List<UsuarioImportacaoRequest> readFile(MultipartFile file, boolean isSenhaPadrao) {
         try {
@@ -41,7 +37,7 @@ public class ImportacaoUsuarioService {
                     .filter(row -> row.getRowNum() > NumeroCelulaUtil.CELULA_ZERO)
                     .filter(this::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
-                    .map(row -> usuarioUploadFile.build(row, isSenhaPadrao))
+                    .map(row -> usuarioUploadFile.processarUsuarios(row, isSenhaPadrao))
                     .collect(Collectors.toList());
         } catch (ValidacaoException ex) {
             ex.printStackTrace();
@@ -67,93 +63,26 @@ public class ImportacaoUsuarioService {
     }
 
     private boolean validarColunas(Row row) {
-        return row.getCell(
-                NumeroCelulaUtil.CELULA_ZERO)
-                .getRichStringCellValue()
+        return compararColunas(row.getCell(NumeroCelulaUtil.CELULA_ZERO), "NIVEL/CANAL")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_UM), "CARGO")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_DOIS), "NOME")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_TRES), "CPF")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_QUATRO), "E-MAIL")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_CINCO), "DATANASCIMENTO")
+                && compararColunas(row.getCell(NumeroCelulaUtil.CELULA_SEIS), "TELEFONE");
+    }
+
+    private boolean compararColunas(Cell cell, String valorColuna) {
+        return cell.getRichStringCellValue()
                 .toString()
                 .trim()
-                .toUpperCase()
-                .equals("NIVEL/CANAL")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_UM)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("CARGO")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_DOIS)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("NOME")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_TRES)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("CPF")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_QUATRO)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("E-MAIL")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_CINCO)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("DATANASCIMENTO")
-                &&
-                row.getCell(
-                        NumeroCelulaUtil.CELULA_SEIS)
-                        .getRichStringCellValue()
-                        .toString()
-                        .trim()
-                        .toUpperCase()
-                        .equals("TELEFONE");
+                .toUpperCase().equals(valorColuna);
     }
 
-    public boolean validarUsuarioExistente(Usuario usuario) {
-        return usuarioRepository.countByEmailOrCpf(usuario.getEmail(), usuario.getCpf()) == 0;
-    }
-
-    public List<Usuario> removerUsuariosJaSalvos(List<Usuario> usuarios) {
-        return usuarios.stream()
-                .filter(this::validarUsuarioExistente)
-                .collect(Collectors.toList());
-    }
-
-    public List<UsuarioImportacaoResponse> salvarUsuarioFile(MultipartFile file,
-                                                             UsuarioImportacaoRequest usuarioImportacaoRequest) {
-
+    public List<UsuarioImportacaoResponse> salvarUsuarioFile(MultipartFile file,UsuarioImportacaoRequest usuario) {
         List<UsuarioImportacaoRequest> usuarioUploadFiles = readFile(
-                file, usuarioImportacaoRequest.isSenhaPadrao());
-
-        List<Usuario> usuariosToSave = filtrarUsuariosParaSalvar(usuarioUploadFiles);
-
-        List<Usuario> usuarios = removerUsuariosJaSalvos(usuariosToSave);
-
-        usuarioRepository.save(usuarios);
+                file, usuario.isSenhaPadrao());
 
         return UsuarioImportacaoResponse.convertFrom(usuarioUploadFiles);
     }
-
-    private List<Usuario> filtrarUsuariosParaSalvar(List<UsuarioImportacaoRequest> usuarioUploadFiles) {
-        return usuarioUploadFiles.stream()
-                .filter(user -> user.getMotivoNaoImportacao().isEmpty())
-                .map(UsuarioImportacaoRequest::convertTo)
-                .collect(Collectors.toList());
-    }
-
 }
