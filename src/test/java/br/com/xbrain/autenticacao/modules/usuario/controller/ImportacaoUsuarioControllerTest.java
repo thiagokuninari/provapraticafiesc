@@ -34,9 +34,12 @@ public class ImportacaoUsuarioControllerTest {
 
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload("/api/importacao-usuarios")
-                .file(new MockMultipartFile("file", "planilha1.xlsx",
-                        "application/vnd.ms-excel", getFile("arquivo_usuario/planilha1.xlsx")))
-                .param("senhaPadrao", "true")
+                .file(new MockMultipartFile("file", "planilha.xlsx",
+                        "application/vnd.ms-excel", getFile("arquivo_usuario/planilha.xlsx")))
+                .param("usuarioImportacaoJson",
+                        "{\"file\":[{\"preview\":"
+                                + "\"blob:http://localhost:3100/5fa6d20c-8b61-4500-a0e9-5c9184e2c36d\"}],"
+                                + "\"senhaPadrao\":true}")
                 .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
                 .accept(MediaType.ALL_VALUE))
                 .andExpect(status().isOk());

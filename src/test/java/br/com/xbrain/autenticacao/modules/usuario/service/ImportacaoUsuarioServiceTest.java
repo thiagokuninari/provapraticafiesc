@@ -58,7 +58,7 @@ public class ImportacaoUsuarioServiceTest {
     public void readFile() {
         List<UsuarioImportacaoRequest> usuarioUploadFiles = importacaoUsuarioService
                 .readFile(mockMultipartFile, true);
-        assertEquals(usuarioUploadFiles.size(), 43);
+        assertEquals(usuarioUploadFiles.size(), 15);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ImportacaoUsuarioServiceTest {
         usuarioImportacaoRequest.setSenhaPadrao(true);
         List<UsuarioImportacaoResponse> usuarioUploadFiles = importacaoUsuarioService
                 .salvarUsuarioFile(mockMultipartFile, usuarioImportacaoRequest);
-        assertEquals(usuarioUploadFiles.size(), 43);
+        assertEquals(usuarioUploadFiles.size(), 15);
     }
 
     private List<Usuario> buildUsuarios() {
