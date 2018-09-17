@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.util;
+package br.com.xbrain.autenticacao.modules.importacaousuario.util;
 
 public class NumeroCelulaUtil {
     public static final int CELULA_ZERO = 0;

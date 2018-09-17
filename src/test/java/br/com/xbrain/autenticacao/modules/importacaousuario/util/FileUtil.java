@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.util;
+package br.com.xbrain.autenticacao.modules.importacaousuario.util;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.dto;
+package br.com.xbrain.autenticacao.modules.importacaousuario.dto;
 
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -17,13 +17,13 @@ public class UsuarioImportacaoResponse {
     public UsuarioImportacaoResponse() {
     }
 
-    public static List<UsuarioImportacaoResponse> convertFrom(List<UsuarioImportacaoRequest> models) {
+    public static List<UsuarioImportacaoResponse> convertFrom(List<UsuarioImportacaoPlanilha> models) {
         return models.stream()
                 .map(UsuarioImportacaoResponse::convertFrom)
                 .collect(Collectors.toList());
     }
 
-    public static UsuarioImportacaoResponse convertFrom(UsuarioImportacaoRequest model) {
+    public static UsuarioImportacaoResponse convertFrom(UsuarioImportacaoPlanilha model) {
         UsuarioImportacaoResponse response = new UsuarioImportacaoResponse();
         BeanUtils.copyProperties(model, response);
         return response;

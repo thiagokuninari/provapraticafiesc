@@ -1,7 +1,9 @@
-package br.com.xbrain.autenticacao.modules.usuario.service;
+package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioImportacaoResponse;
+import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
+import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
+import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoResponse;
+import br.com.xbrain.autenticacao.modules.importacaousuario.service.ImportacaoUsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.util.FileUtil.getFile;
+import static br.com.xbrain.autenticacao.modules.importacaousuario.util.FileUtil.getFile;
 import static org.junit.Assert.assertEquals;
 
 
@@ -52,13 +54,14 @@ public class ImportacaoUsuarioServiceTest {
 
     @Test
     public void readFile() {
-        List<UsuarioImportacaoRequest> usuarioUploadFiles = importacaoUsuarioService
-                .readFile(mockMultipartFile, true);
+        UsuarioImportacaoRequest usuarioImportacaoRequest = new UsuarioImportacaoRequest(true);
+        List<UsuarioImportacaoPlanilha> usuarioUploadFiles = importacaoUsuarioService
+                .readFile(mockMultipartFile, usuarioImportacaoRequest);
         assertEquals(usuarioUploadFiles.size(), 15);
     }
 
     @Test
-    public void salvarUsuarioFile() {
+    public void deveRetornarOResultadoDaImportacaoQuandoErroOuSucesso() {
         UsuarioImportacaoRequest usuarioImportacaoRequest = new UsuarioImportacaoRequest();
         usuarioImportacaoRequest.setSenhaPadrao(true);
         List<UsuarioImportacaoResponse> usuarioUploadFiles = importacaoUsuarioService

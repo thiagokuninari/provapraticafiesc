@@ -1,6 +1,9 @@
-package br.com.xbrain.autenticacao.modules.usuario.service;
+package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -9,11 +12,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static org.apache.poi.ss.usermodel.Cell.CELL_TYPE_STRING;
-
 @Component
 public class PlanilhaService {
     String tipoArquivo = ".xlsx";
+
+    public static boolean compararColunas(Cell cell, String valorColuna) {
+        return cell != null && cell.getRichStringCellValue()
+                .toString()
+                .replaceAll("\\s+","")
+                .toUpperCase()
+                .equals(valorColuna);
+    }
 
     public Sheet getSheet(MultipartFile file) throws ValidacaoException {
         try {
@@ -34,7 +43,7 @@ public class PlanilhaService {
     public static Row converterTipoCelulaParaString(Row linha) {
         linha.forEach(cell -> {
             if (cell == null) {
-                linha.createCell(cell.getColumnIndex(), CELL_TYPE_STRING);
+                linha.createCell(cell.getColumnIndex(), CellType.STRING);
             } else if (cell.getSheet().getRow(0).getCell(cell.getColumnIndex())
                     .getRichStringCellValue()
                     .toString()
@@ -46,9 +55,25 @@ public class PlanilhaService {
                     .toString()
                     .trim()
                     .equals("TELEFONE")) {
-                cell.setCellType(CELL_TYPE_STRING);
+                cell.setCellType(CellType.STRING);
             }
         });
         return linha;
+    }
+
+    public static boolean checkIfNotRowIsEmpty(Row row) {
+        if (row == null) {
+            return false;
+        }
+        if (row.getLastCellNum() <= 0) {
+            return false;
+        }
+        for (int cellNum = row.getFirstCellNum(); cellNum < row.getLastCellNum(); cellNum++) {
+            Cell cell = row.getCell(cellNum);
+            if (cell != null && cell.getCellTypeEnum() != CellType.BLANK && StringUtils.isNotBlank(cell.toString())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
