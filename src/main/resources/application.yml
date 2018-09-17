@@ -143,6 +143,9 @@ zuul:
     parceiros:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.parceiros-online.url}
+    equipe-venda:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.equipe-venda.url}
 
   host:
     connect-timeout-millis: 1800000

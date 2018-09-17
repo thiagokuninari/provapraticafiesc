@@ -21,6 +21,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         String[] permitAll = {
             "/call/**",
             "/parceiros-online/**",
+            "/equipe-venda/**",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
