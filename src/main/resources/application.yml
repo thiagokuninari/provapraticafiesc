@@ -108,6 +108,9 @@ app-config:
     varejo-api:
       client: varejo-api
       secret: v4r3j04p1
+    equipe-venda-api:
+      client: equipe-venda-api
+      secret: 3qu1p3V3nD4xbr41n
 
   services:
     autenticacao:
@@ -120,6 +123,9 @@ app-config:
       #url: http://localhost:8099
     vendas:
       url: http://localhost:8097
+    equipe-venda:
+      #url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      url: http://localhost:8093
 
 flyway:
   enabled: true
