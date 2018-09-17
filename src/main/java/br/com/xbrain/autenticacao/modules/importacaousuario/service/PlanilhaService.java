@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -19,7 +20,7 @@ public class PlanilhaService {
     public static boolean compararColunas(Cell cell, String valorColuna) {
         return cell != null && cell.getRichStringCellValue()
                 .toString()
-                .replaceAll("\\s+","")
+                .replaceAll("\\s+", "")
                 .toUpperCase()
                 .equals(valorColuna);
     }
@@ -62,18 +63,16 @@ public class PlanilhaService {
     }
 
     public static boolean checkIfNotRowIsEmpty(Row row) {
-        if (row == null) {
-            return false;
-        }
-        if (row.getLastCellNum() <= 0) {
-            return false;
-        }
-        for (int cellNum = row.getFirstCellNum(); cellNum < row.getLastCellNum(); cellNum++) {
+        boolean linhaVazia = false;
+        for (int cellNum = row.getFirstCellNum(); cellNum < NumeroCelulaUtil.QNT_COL; cellNum++) {
             Cell cell = row.getCell(cellNum);
-            if (cell != null && cell.getCellTypeEnum() != CellType.BLANK && StringUtils.isNotBlank(cell.toString())) {
-                return true;
+            if (!linhaVazia
+                    && cell != null
+                    && cell.getCellTypeEnum() != CellType.BLANK
+                    && StringUtils.isNotBlank(cell.toString())) {
+                linhaVazia = true;
             }
         }
-        return false;
+        return linhaVazia;
     }
 }

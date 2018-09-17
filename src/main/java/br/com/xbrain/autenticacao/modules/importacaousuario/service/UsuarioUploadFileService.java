@@ -54,7 +54,6 @@ public class UsuarioUploadFileService {
     private UsuarioRepository usuarioRepository;
 
     public UsuarioImportacaoPlanilha processarUsuarios(Row row, boolean senhaPadrao) {
-
         String senhaDescriptografada = tratarSenha(senhaPadrao);
         UsuarioImportacaoPlanilha usuario = buildUsuario(row, senhaDescriptografada);
         validarUsuarioExistente(usuario);
@@ -196,6 +195,7 @@ public class UsuarioUploadFileService {
 
     public String validarNascimento(UsuarioImportacaoPlanilha usuario) {
         return usuario.getNascimento() == null
+                || usuario.getNascimento().isAfter(LocalDateTime.now().minusHours(1L))
                 ? "Usuário está com nascimento inválido" : "";
     }
 
@@ -203,7 +203,7 @@ public class UsuarioUploadFileService {
         try {
             return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
-            return null;
+            return LocalDateTime.now();
         }
     }
 }
