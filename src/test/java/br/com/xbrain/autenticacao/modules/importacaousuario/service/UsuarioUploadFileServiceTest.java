@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -36,7 +35,7 @@ import static org.mockito.Mockito.*;
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioUploadFileServiceTest {
-    MockMultipartFile mockMultipartFile;
+
     @Autowired
     UsuarioUploadFileService usuarioUploadFileService;
 
@@ -50,7 +49,6 @@ public class UsuarioUploadFileServiceTest {
         InputStream excelFile = new FileInputStream("src/test/resources/arquivo_usuario/planilha.xlsx");
         XSSFWorkbook wb = new XSSFWorkbook(excelFile);
         sheet = wb.getSheetAt(0);
-        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
     }
 
     @Test
@@ -233,6 +231,8 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void deveEnviarOsDadosDeAcessoQuandoPassadoOParametroSenhaPadraoFalse() {
+        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
+
         Usuario usuario = new Usuario();
         usuario.setId(1);
         usuario.setEmail("Joao@mail.com");
@@ -244,6 +244,8 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void deveEnviarOsDadosDeAcessoQuandoPassadoOParametroSenhaPadraoTrue() {
+        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
+
         Usuario usuario = new Usuario();
         usuario.setId(1);
         usuario.setEmail("Joao@mail.com");
