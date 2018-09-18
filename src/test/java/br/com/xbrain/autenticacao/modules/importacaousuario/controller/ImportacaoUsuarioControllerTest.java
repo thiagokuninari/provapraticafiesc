@@ -49,6 +49,23 @@ public class ImportacaoUsuarioControllerTest {
     }
 
     @Test
+    public void deveRetornarQuantidadeDeItensIndiferenteSePossuiLinhasEmBrancoEntreItens() throws Exception {
+
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/importacao-usuarios")
+                .file(new MockMultipartFile("file", "planilha.xlsx",
+                        "application/vnd.ms-excel", getFile("arquivo_usuario/planilha.xlsx")))
+                .param("usuarioImportacaoJson",
+                        "{\"file\":[{\"preview\":"
+                                + "\"blob:http://localhost:3100/5fa6d20c-8b61-4500-a0e9-5c9184e2c36d\"}],"
+                                + "\"senhaPadrao\":true}")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.ALL_VALUE))
+                .andExpect(jsonPath("$", hasSize(15)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void deveValidarAQuantidadeDeColunasDaPlanilha() throws Exception {
 
         mvc.perform(MockMvcRequestBuilders
@@ -85,5 +102,4 @@ public class ImportacaoUsuarioControllerTest {
                 .andExpect(jsonPath("$[*].message",
                         containsInAnyOrder("Erro. Arquivo Inválido.")));
     }
-
 }

@@ -15,12 +15,11 @@ import java.io.IOException;
 
 @Component
 public class PlanilhaService {
-    String tipoArquivo = ".xlsx";
 
     public static boolean compararColunas(Cell cell, String valorColuna) {
         return cell != null && cell.getRichStringCellValue()
                 .toString()
-                .replaceAll("\\s+", "")
+                .trim()
                 .toUpperCase()
                 .equals(valorColuna);
     }
@@ -30,7 +29,8 @@ public class PlanilhaService {
             Sheet sheet = null;
             String extensao = file.getOriginalFilename().substring(file.getOriginalFilename().indexOf("."));
 
-            if (extensao.equals(tipoArquivo)) {
+            String arquivoXlsx = ".xlsx";
+            if (extensao.equals(arquivoXlsx)) {
                 sheet = new XSSFWorkbook(file.getInputStream()).getSheetAt(0);
             } else {
                 throw new ValidacaoException("Não foi possivel reconhecer o formato do arquivo");
@@ -43,7 +43,7 @@ public class PlanilhaService {
 
     public static Row converterTipoCelulaParaString(Row linha) {
         linha.forEach(cell -> {
-            if (cell == null) {
+            if (cell == null ) {
                 linha.createCell(cell.getColumnIndex(), CellType.STRING);
             } else if (cell.getSheet().getRow(0).getCell(cell.getColumnIndex())
                     .getRichStringCellValue()

@@ -7,6 +7,8 @@ import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportaca
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,35 +25,38 @@ public class ImportacaoUsuarioService {
     @Autowired
     private UsuarioUploadFileService usuarioUploadFile;
 
+    private final Logger log = LoggerFactory.getLogger(ImportacaoUsuarioService.class);
+
     public List<UsuarioImportacaoPlanilha> readFile(MultipartFile file, UsuarioImportacaoRequest usuario) {
         try {
             Sheet sheet = planilhaService.getSheet(file);
-            if (sheet.getRow(NumeroCelulaUtil.CELULA_ZERO).getLastCellNum() < NumeroCelulaUtil.QNT_COL
-                    || !validarColunas(sheet.getRow(NumeroCelulaUtil.CELULA_ZERO))) {
+            if (sheet.getRow(NumeroCelulaUtil.CELULA_NIVEL).getLastCellNum() < NumeroCelulaUtil.QNT_COL
+                    || !validarColunas(sheet.getRow(NumeroCelulaUtil.CELULA_NIVEL))) {
                 throw new ValidacaoException("Erro. Arquivo Inválido.");
             }
             return StreamSupport
                     .stream(sheet.spliterator(), false)
-                    .filter(row -> row.getRowNum() > NumeroCelulaUtil.CELULA_ZERO)
+                    .filter(row -> row.getRowNum() > NumeroCelulaUtil.CELULA_NIVEL)
                     .filter(PlanilhaService::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
                     .map(row -> usuarioUploadFile.processarUsuarios(row, usuario.isSenhaPadrao()))
                     .collect(Collectors.toList());
         } catch (ValidacaoException ex) {
-            ex.printStackTrace();
+            log.error("Erro. Arquivo Inválido.", ex);
             throw new ValidacaoException("Erro. Arquivo Inválido.");
 
         }
     }
 
     private boolean validarColunas(Row row) {
-        return PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_ZERO), "NIVEL/CANAL")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_UM), "CARGO")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_DOIS), "NOME")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_TRES), "CPF")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_QUATRO), "E-MAIL")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_CINCO), "DATANASCIMENTO")
-                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_SEIS), "TELEFONE");
+        return PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_NIVEL), "NIVEL/CANAL")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_CARGO), "CARGO")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_NOME), "NOME")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_DEPARTAMENTO), "DEPARTAMENTO")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_CPF), "CPF")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_EMAIL), "E-MAIL")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO), "DATA NASCIMENTO")
+                && PlanilhaService.compararColunas(row.getCell(NumeroCelulaUtil.CELULA_TELEFONE), "TELEFONE");
     }
 
     public List<UsuarioImportacaoResponse> salvarUsuarioFile(MultipartFile file, UsuarioImportacaoRequest usuario) {

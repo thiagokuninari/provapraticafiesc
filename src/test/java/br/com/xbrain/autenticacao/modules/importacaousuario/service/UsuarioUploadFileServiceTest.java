@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
-import br.com.xbrain.autenticacao.modules.importacaousuario.service.PlanilhaService;
-import br.com.xbrain.autenticacao.modules.importacaousuario.service.UsuarioUploadFileService;
-import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -57,15 +54,14 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void processarUsuarios() {
-        Row row = PlanilhaService.converterTipoCelulaParaString(sheet.getRow(NumeroCelulaUtil.CELULA_DOIS));
+    public void deveProcessarRowERetornarErroDeCpfInvalido() {
+        Row row = PlanilhaService.converterTipoCelulaParaString(sheet.getRow(2));
 
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
                 .processarUsuarios(row, true);
         assertNotNull(usuarioImportacaoRequest);
         assertNotNull(usuarioImportacaoRequest.getCpf());
         assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().size(), 1);
-
     }
 
     @Test
@@ -76,7 +72,6 @@ public class UsuarioUploadFileServiceTest {
                 .build();
         String msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
         assertEquals("O campo cpf está incorreto.", msgErro);
-
     }
 
     @Test
@@ -88,7 +83,6 @@ public class UsuarioUploadFileServiceTest {
 
         String msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
         assertNotEquals("O campo cpf está incorreto.", msgErro);
-
     }
 
     @Test
@@ -128,7 +122,7 @@ public class UsuarioUploadFileServiceTest {
                 .builder()
                 .cpf("9612473633").build();
 
-        String msgErro = (String) usuarioUploadFileService
+        String msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuario);
         assertNotEquals("Usuário já salvo no banco", msgErro);
     }
@@ -155,7 +149,6 @@ public class UsuarioUploadFileServiceTest {
         String msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuarioImportacaoRequest);
         assertNotEquals("Usuário já salvo no banco", msgErro);
-
     }
 
     @Test
@@ -203,7 +196,7 @@ public class UsuarioUploadFileServiceTest {
         UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
                 .buildUsuario(PlanilhaService
                         .converterTipoCelulaParaString(sheet.getRow(3)), "102030");
-        assertEquals(usuario.getMotivoNaoImportacao().get(0),"Falha ao recuperar cargo/nivel");
+        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nivel");
     }
 
     @Test
@@ -247,7 +240,6 @@ public class UsuarioUploadFileServiceTest {
         usuarioUploadFileService.notificarUsuario(usuario, "204050", false);
 
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
-
     }
 
     @Test
@@ -259,7 +251,6 @@ public class UsuarioUploadFileServiceTest {
         usuarioUploadFileService.notificarUsuario(usuario, "204050", true);
 
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
-
     }
 
 }

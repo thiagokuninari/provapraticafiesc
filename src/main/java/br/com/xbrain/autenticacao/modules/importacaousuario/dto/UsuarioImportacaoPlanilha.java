@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import lombok.experimental.Builder;
@@ -27,6 +28,7 @@ public class UsuarioImportacaoPlanilha {
     private String telefone;
     private String senha;
     private Departamento departamento;
+    private Nivel nivel;
 
     private Eboolean alterarSenha;
     private LocalDateTime dataCadastro;
@@ -50,7 +52,8 @@ public class UsuarioImportacaoPlanilha {
             String telefone,
             String senha,
             List<String> motivoNaoImportacao,
-            Departamento departamento
+            Departamento departamento,
+            Nivel nivel
     ) {
         this.cargo = cargo;
         this.nome = nome;
@@ -59,6 +62,7 @@ public class UsuarioImportacaoPlanilha {
         this.senhaPadrao = senhaPadrao;
         this.nascimento = nascimento;
         this.telefone = telefone;
+        this.nivel = nivel;
         this.senha = senha;
         this.departamento = departamento;
         this.alterarSenha = Eboolean.V;
