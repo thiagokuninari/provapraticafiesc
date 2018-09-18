@@ -124,8 +124,8 @@ app-config:
     vendas:
       url: http://localhost:8097
     equipe-venda:
-      #url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
-      url: http://localhost:8093
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8089
 
 flyway:
   enabled: true
