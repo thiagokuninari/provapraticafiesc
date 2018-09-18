@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.util;
 
 public class NumeroCelulaUtil {
+    public static final int PRIMEIRA_LINHA = 0;
     public static final int CELULA_NIVEL = 0;
     public static final int CELULA_CARGO = 1;
     public static final int CELULA_DEPARTAMENTO = 2;

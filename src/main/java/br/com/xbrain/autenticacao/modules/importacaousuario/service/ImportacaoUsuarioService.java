@@ -30,13 +30,13 @@ public class ImportacaoUsuarioService {
     public List<UsuarioImportacaoPlanilha> readFile(MultipartFile file, UsuarioImportacaoRequest usuario) {
         try {
             Sheet sheet = planilhaService.getSheet(file);
-            if (sheet.getRow(NumeroCelulaUtil.CELULA_NIVEL).getLastCellNum() < NumeroCelulaUtil.QNT_COL
-                    || !validarColunas(sheet.getRow(NumeroCelulaUtil.CELULA_NIVEL))) {
+            if (sheet.getRow(NumeroCelulaUtil.PRIMEIRA_LINHA).getLastCellNum() < NumeroCelulaUtil.QNT_COL
+                    || !validarColunas(sheet.getRow(NumeroCelulaUtil.PRIMEIRA_LINHA))) {
                 throw new ValidacaoException("Erro. Arquivo Inválido.");
             }
             return StreamSupport
                     .stream(sheet.spliterator(), false)
-                    .filter(row -> row.getRowNum() > NumeroCelulaUtil.CELULA_NIVEL)
+                    .filter(row -> row.getRowNum() > NumeroCelulaUtil.PRIMEIRA_LINHA)
                     .filter(PlanilhaService::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
                     .map(row -> usuarioUploadFile.processarUsuarios(row, usuario.isSenhaPadrao()))
