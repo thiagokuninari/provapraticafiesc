@@ -17,18 +17,17 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.permissao.exception.ExceedMaxTriesResetPassException;
+import br.com.xbrain.autenticacao.modules.permissao.exception.InvalidTokenResetPassException;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
@@ -36,9 +35,13 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqS
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,14 +64,17 @@ public class UsuarioService {
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    private static final int MAXIMO_PARAMETROS_IN = 1000;
+    private static final Integer MAXIMO_TENTATIVAS_RESETAR_SENHA = 3;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final int MAXIMO_PARAMETROS_IN = 1000;
-
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
+
+    @Value("${app-config.url}")
+    private String projetoUrl;
 
     @Autowired
     private UsuarioRepository repository;
@@ -112,6 +118,8 @@ public class UsuarioService {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
+    private JsonWebTokenService jsonWebTokenService;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -532,7 +540,7 @@ public class UsuarioService {
                 .build());
         repository.save(usuario);
     }
-    
+
     @Transactional
     public void inativarUsuariosSemAcesso() {
         MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
@@ -826,11 +834,71 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void esqueceuSenhaPorEmail(String email) {
+    public void enviarConfirmacaoResetarSenha(String email) {
         Usuario usuario = repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
-        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
+
+        String hash = usuario.getRecuperarSenhaHash();
+        if (hash == null) {
+            hash = jsonWebTokenService.createJsonWebTokenResetSenha(
+                    usuario.getEmail(),
+                    usuario.getId());
+            repository.updateRecuperarSenhaHash(hash, usuario.getId());
+
+            String link = projetoUrl + "/resetar-senha?hash=" + hash;
+            notificacaoService.enviarEmailResetSenha(usuario, link);
+        } else {
+            try {
+                if (usuario.getRecuperarSenhaTentativa() < MAXIMO_TENTATIVAS_RESETAR_SENHA) {
+                    if (usuario.getRecuperarSenhaTentativa() == 0) {
+                        repository.updateRecuperarSenhaHash(jsonWebTokenService.createJsonWebTokenResetSenha(
+                                usuario.getEmail(),
+                                usuario.getId()), usuario.getId());
+                    } else {
+                        try {
+                            jsonWebTokenService.validateTokenPasswordReset(hash);
+                        } catch (Exception e) {
+                            repository.updateRecuperarSenhaHash(jsonWebTokenService.createJsonWebTokenResetSenha(
+                                    usuario.getEmail(),
+                                    usuario.getId()), usuario.getId());
+                        }
+                    }
+
+                    repository.updateRecuperarSenhaTentativa(usuario.getRecuperarSenhaTentativa() + 1, usuario.getId());
+                    String link = projetoUrl + "/resetar-senha?hash=" + hash;
+                    notificacaoService.enviarEmailResetSenha(usuario, link);
+                } else {
+                    throw new ExceedMaxTriesResetPassException("Excedido o número de pedidos para resetar a sua senha. " +
+                            "Aguarde 20 minutos para realizar outra tentativa.");
+                }
+            } catch (ExpiredJwtException e) {
+                // usuario requisitou a token, mas não realizou a etapa de resetar a senha (que remove o token)
+                // nesse caso o token existe mas expirou
+                // podemos excluir o token e criar outra
+                hash = jsonWebTokenService.createJsonWebTokenResetSenha(
+                        usuario.getEmail(),
+                        usuario.getId());
+            }
+        }
+    }
+
+    @Transactional
+    public void resetarSenha(String hash) {
+        try {
+            // criar hash e data e salvar no banco
+            // criar end point com a hash para realizar a mudança
+            // não pode recuperar a senha mais de 3x em 60 minutos
+            Claims deserialized = jsonWebTokenService.validateTokenPasswordReset(hash).getBody();
+            Usuario usuario = repository.findByEmail(deserialized.get("email").toString()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+            if (usuario.getRecuperarSenhaHash().contentEquals(hash)) {
+                String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+                repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
+                notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
+            } else {
+                throw new InvalidTokenResetPassException("Token inválida ou expirada.");
+            }
+        } catch (JwtException e) {
+            throw new InvalidTokenResetPassException("Token inválida ou expirada.");
+        }
     }
 
     @Transactional
