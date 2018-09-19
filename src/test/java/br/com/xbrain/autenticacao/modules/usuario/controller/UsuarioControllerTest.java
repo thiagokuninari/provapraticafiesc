@@ -218,7 +218,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRemoverRamalConfiguracaoAoUsuario() throws Exception {
         UsuarioConfiguracaoDto dto = umUsuarioConfiguracaoDto();
-        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isPresent());
+        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
 
         mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -226,7 +226,21 @@ public class UsuarioControllerTest {
                 .content(convertObjectToJsonBytes(dto)))
                 .andExpect(status().isOk());
 
-        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isPresent());
+        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+    }
+
+    @Test
+    public void deveRemoverRamalConfiguracaoUsuarioRamalDuplicado() throws Exception {
+        UsuarioConfiguracaoDto dto = umUsuarioComRamalDuplicado();
+        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+
+        mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(dto)))
+                .andExpect(status().isOk());
+
+        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
     }
 
     @Test
@@ -249,6 +263,13 @@ public class UsuarioControllerTest {
     private UsuarioDadosAcessoRequest umEsqueciSenha() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setEmailAtual("HELPDESK@XBRAIN.COM.BR");
+        return dto;
+    }
+
+    private UsuarioConfiguracaoDto umUsuarioComRamalDuplicado() {
+        UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
+        dto.setRamal(1008);
+        dto.setUsuario(105);
         return dto;
     }
 }
