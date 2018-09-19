@@ -1,8 +1,9 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
-import br.com.xbrain.autenticacao.modules.permissao.exception.ExceedMaxTriesResetPassException;
-import br.com.xbrain.autenticacao.modules.permissao.exception.InvalidTokenResetPassException;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -38,6 +39,15 @@ public class JsonWebTokenService {
                 .claim("id", id)
                 .claim("email", email)
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRACAO_EM_VINTE_MINUTOS))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .signWith(SignatureAlgorithm.HS256, getSecretKey()).compact();
+    }
+
+    public String createJsonWebTokenResetSenha(String email, Integer id, Long exp) {
+        return Jwts.builder()
+                .claim("id", id)
+                .claim("email", email)
+                .setExpiration(new Date(exp + EXPIRACAO_EM_VINTE_MINUTOS))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .signWith(SignatureAlgorithm.HS256, getSecretKey()).compact();
     }

@@ -38,7 +38,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
 
     @Modifying
-    @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, recuperarSenhaTentativa = 0 where u.id = ?3")
+    @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
+            + "recuperarSenhaTentativa = 0 where u.id = ?3")
     void updateSenha(String senha, Eboolean alterarSenha, Integer usuarioId);
 
     @Modifying

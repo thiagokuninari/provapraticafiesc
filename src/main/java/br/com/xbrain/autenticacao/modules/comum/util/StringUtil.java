@@ -11,8 +11,11 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Random;
 
 public class StringUtil {
+
+    private static final int RADIX = 36;
 
     public static String getOnlyNumbers(String value) {
         if (value == null) {
@@ -86,5 +89,10 @@ public class StringUtil {
         String firstName = String.valueOf(array[0].charAt(0));
         String lastName = String.valueOf(array[size - 1].charAt(0));
         return firstName + "" + lastName;
+    }
+
+    public static String getSenhaRandomica(int size) {
+        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
+        return tag.substring(0, size);
     }
 }

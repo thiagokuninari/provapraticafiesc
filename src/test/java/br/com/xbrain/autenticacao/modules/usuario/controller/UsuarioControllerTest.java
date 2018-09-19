@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
@@ -55,6 +56,8 @@ public class UsuarioControllerTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private EmailService emailService;
+    @Autowired
+    private JsonWebTokenService jsonWebTokenService;
 
     @Before
     public void setup() {
@@ -230,8 +233,27 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveDefinirEEnviarNovaSenhaDoUsuario() throws Exception {
+    public void deveEnviarConfirmacaoDeResetDeSenhaEmail() throws Exception {
         mvc.perform(put("/api/usuarios/esqueci-senha")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umEsqueciSenha())))
+                .andExpect(status().isOk());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
+    @Test
+    public void deveNaoResetarSenhaDoUsuarioComToken() throws Exception {
+        mvc.perform(put("/api/usuarios/esqueci-senha")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deveResetarSenhaDoUsuarioComToken() throws Exception {
+        String hash = jsonWebTokenService.createJsonWebTokenResetSenha("teste@xbrain.com.br",2);
+
+        mvc.perform(put("/api/usuarios/esqueci-senha?hash=" + hash)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umEsqueciSenha())))
