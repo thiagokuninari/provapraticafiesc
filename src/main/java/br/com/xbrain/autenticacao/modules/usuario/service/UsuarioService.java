@@ -24,11 +24,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
@@ -50,24 +46,25 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class UsuarioService {
 
-    private static final int RADIX = 36;
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final int MAXIMO_PARAMETROS_IN = 1000;
-
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
 
     @Autowired
@@ -470,8 +467,7 @@ public class UsuarioService {
     }
 
     private String getSenhaRandomica(int size) {
-        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
-        return tag.substring(0, size);
+        return StringUtil.getSenhaRandomica(size);
     }
 
     private void validarCpfExistente(Usuario usuario) {
@@ -532,7 +528,7 @@ public class UsuarioService {
                 .build());
         repository.save(usuario);
     }
-    
+
     @Transactional
     public void inativarUsuariosSemAcesso() {
         MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
@@ -548,10 +544,10 @@ public class UsuarioService {
                     .observacao("Inativado por falta de acesso")
                     .situacao(ESituacao.I)
                     .build());
-            repository.save(usuario);            
-        });                     
+            repository.save(usuario);
+        });
     }
-    
+
     public List<Usuario> getUsuariosSemAcesso() {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
@@ -598,7 +594,7 @@ public class UsuarioService {
 
         List<List<Integer>> listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), MAXIMO_PARAMETROS_IN);
 
-        listaPartes.forEach(lista ->  predicate.comCidade(lista));
+        listaPartes.forEach(lista -> predicate.comCidade(lista));
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
@@ -760,10 +756,10 @@ public class UsuarioService {
                 .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
                 funcionalidades
-                .stream()
-                .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
+                        .stream()
+                        .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
-                .findPorUsuario(usuario.getId()).stream())
+                        .findPorUsuario(usuario.getId()).stream())
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
@@ -826,14 +822,6 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void esqueceuSenhaPorEmail(String email) {
-        Usuario usuario = repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
-        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
-    }
-
-    @Transactional
     public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
         List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
 
@@ -856,7 +844,7 @@ public class UsuarioService {
     }
 
     private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes,
-            UsuarioHierarquiaCarteiraDto novaHierarquia) {
+                                                         UsuarioHierarquiaCarteiraDto novaHierarquia) {
         return hierarquiasExistentes
                 .stream()
                 .anyMatch(e -> e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())
