@@ -812,14 +812,14 @@ public class UsuarioService {
 
     @Transactional
     public void removerConfiguracao(UsuarioConfiguracaoDto dto) {
-        Optional<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
-        configuracao.ifPresent(c -> configuracaoRepository.delete(c));
+        List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        configuracao.forEach(c -> configuracaoRepository.delete(c));
     }
 
     @Transactional
     public void removerRamalConfiguracao(UsuarioConfiguracaoDto dto) {
-        Optional<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
-        configuracao.ifPresent((c) -> {
+        List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        configuracao.forEach((c) -> {
             c.removerRamal();
             configuracaoRepository.save(c);
         });
