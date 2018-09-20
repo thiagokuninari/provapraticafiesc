@@ -45,6 +45,8 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -109,6 +111,8 @@ public class UsuarioService {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -242,25 +246,35 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
-        Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
-        validar(usuario);
+        try {
+            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
+            validar(usuario);
 
-        boolean enviarEmail = false;
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        if (usuario.isNovoCadastro()) {
-            configurar(usuario, senhaDescriptografada);
-            enviarEmail = true;
-        } else {
-            usuario.setAlterarSenha(Eboolean.F);
-        }
-        usuario = repository.save(usuario);
-        tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
-        tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+            boolean enviarEmail = false;
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            if (usuario.isNovoCadastro()) {
+                configurar(usuario, senhaDescriptografada);
+                enviarEmail = true;
+            } else {
+                usuario.setAlterarSenha(Eboolean.F);
+            }
+            usuario = repository.save(usuario);
+            entityManager.flush();
+            entityManager.clear();
 
-        if (enviarEmail) {
-            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
+            tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+
+            if (enviarEmail) {
+                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            }
+            return UsuarioDto.convertTo(usuario);
+        } catch (PersistenceException ex) {
+            log.error("Erro de persistência ao salvar o Usuario.", ex);
+            throw new ValidacaoException("Erro ao cadastrar usuário.");
+        } catch (Exception ex) {
+            throw ex;
         }
-        return UsuarioDto.convertTo(usuario);
     }
 
     private void validar(Usuario usuario) {
