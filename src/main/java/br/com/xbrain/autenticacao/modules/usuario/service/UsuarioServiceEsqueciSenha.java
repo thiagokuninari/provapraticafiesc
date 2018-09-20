@@ -84,7 +84,7 @@ public class UsuarioServiceEsqueciSenha {
         }
         tentativa = tentativa != null ? tentativa : usuario.getRecuperarSenhaTentativa();
         repository.updateRecuperarSenhaTentativa(tentativa + 1, usuario.getId());
-        String link = projetoUrl + "/resetar-senha?token=" + hash;
+        String link = projetoUrl + "/login?token=" + hash;
         notificacaoService.enviarEmailResetSenha(usuario, link);
     }
 
@@ -94,7 +94,7 @@ public class UsuarioServiceEsqueciSenha {
             Claims deserializedHash = jsonWebTokenService.validateTokenPasswordReset(hash).getBody();
             Usuario usuario = repository.findByEmail(deserializedHash.get("email").toString())
                     .orElseThrow(() -> EX_NAO_ENCONTRADO);
-            if (usuario.getRecuperarSenhaHash().contentEquals(hash)) {
+            if (usuario.getRecuperarSenhaHash() != null && usuario.getRecuperarSenhaHash().contentEquals(hash)) {
                 String senhaDescriptografada = StringUtil.getSenhaRandomica(MAX_CARACTERES_SENHA);
                 repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
                 notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
