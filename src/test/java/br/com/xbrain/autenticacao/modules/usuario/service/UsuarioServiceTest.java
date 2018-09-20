@@ -62,6 +62,15 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setCpf("2292929292929292929229292929");
+        service.saveFromQueue(usuarioMqRequest);
+        verify(sender, times(0)).sendSuccess(any());
+        verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
+    @Test
     public void deveSalvarUsuarioEEnviarParaFila() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         service.saveFromQueue(usuarioMqRequest);

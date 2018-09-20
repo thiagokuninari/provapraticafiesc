@@ -73,6 +73,7 @@ public class UsuarioDto implements Serializable {
     private Integer usuarioCadastroId;
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
+    private Integer recuperarSenhaTentativa = 0;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
