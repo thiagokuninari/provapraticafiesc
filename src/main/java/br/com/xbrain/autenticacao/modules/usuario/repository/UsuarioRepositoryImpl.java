@@ -141,7 +141,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         + "   AND N.CODIGO = :_codigoNivel "
                         + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
                         + "  START WITH UH.FK_USUARIO IN :_idUsuario "
-                        + " CONNECT BY PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
+                        + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
                 .setParameter("_codigoCargo", filtros.getCodigoCargo().toString())
                 .setParameter("_codigoDepartamento", filtros.getCodigoDepartamento().toString())
                 .setParameter("_codigoNivel", filtros.getCodigoNivel().toString())
