@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.permissao.exception.InvalidTokenResetP
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import io.jsonwebtoken.JwtException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
