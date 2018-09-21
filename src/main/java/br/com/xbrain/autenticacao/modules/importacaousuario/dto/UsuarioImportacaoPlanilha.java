@@ -30,6 +30,7 @@ public class UsuarioImportacaoPlanilha {
     private Departamento departamento;
     private Nivel nivel;
 
+    private Integer recuperarSenhaTentativa;
     private Eboolean alterarSenha;
     private LocalDateTime dataCadastro;
     private ESituacao situacao;
@@ -68,6 +69,7 @@ public class UsuarioImportacaoPlanilha {
         this.alterarSenha = Eboolean.V;
         this.dataCadastro = LocalDateTime.now();
         this.situacao = ESituacao.A;
+        this.recuperarSenhaTentativa = 0;
         this.motivoNaoImportacao = motivoNaoImportacao;
     }
 }
