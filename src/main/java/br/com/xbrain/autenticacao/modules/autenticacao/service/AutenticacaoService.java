@@ -66,8 +66,7 @@ public class AutenticacaoService {
 
     @Transactional
     public void logout(Integer usuarioId) {
-        Usuario usuario = usuarioRepository.findOne(usuarioId);
-        tokenRepository.deleteTokenByUsername(usuario.getLogin());
+        usuarioRepository.findById(usuarioId).ifPresent(e -> tokenRepository.deleteTokenByUsername(e.getLogin()));
     }
 
     public static OAuth2Authentication getAuthentication() {
