@@ -39,6 +39,7 @@ public class UsuarioImportacaoPlanilha {
     public static Usuario convertFrom(UsuarioImportacaoPlanilha usuario) {
         Usuario response = new Usuario();
         BeanUtils.copyProperties(usuario, response);
+        response.setRecuperarSenhaTentativa(usuario.getRecuperarSenhaTentativa());
         return response;
     }
 
