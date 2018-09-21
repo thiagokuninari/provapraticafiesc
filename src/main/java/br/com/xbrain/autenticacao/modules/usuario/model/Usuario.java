@@ -159,9 +159,11 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
 
+    @NotAudited
     @Column(name = "RECUPERAR_SENHA_HASH")
     private String recuperarSenhaHash;
 
+    @NotAudited
     @Column(name = "RECUPERAR_SENHA_TENTATIVA")
     @ColumnDefault("0")
     private Integer recuperarSenhaTentativa;

@@ -182,13 +182,7 @@ public class UsuarioUploadFileService {
 
     protected Usuario salvarUsuario(UsuarioImportacaoPlanilha usuario) {
         Usuario usuarioConvertido = UsuarioImportacaoPlanilha.convertFrom(usuario);
-        try {
-            usuarioConvertido = usuarioRepository.save(usuarioConvertido);
-        } catch (Exception ex) {
-            log.error("Não foi possivel importar usuário", ex);
-        }
-
-        return usuarioConvertido;
+        return usuarioRepository.save(usuarioConvertido);
     }
 
     protected static String getSenhaRandomica() {
