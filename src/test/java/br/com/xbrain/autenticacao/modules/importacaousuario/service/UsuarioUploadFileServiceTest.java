@@ -59,7 +59,19 @@ public class UsuarioUploadFileServiceTest {
                 .processarUsuarios(row, true);
         assertNotNull(usuarioImportacaoRequest);
         assertNotNull(usuarioImportacaoRequest.getCpf());
-        assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().size(), 1);
+        assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(1),
+                "O campo cpf está incorreto.");
+    }
+
+    @Test
+    public void deveProcessarRowERetornarErroDeNivelInvalido() {
+        Row row = PlanilhaService.converterTipoCelulaParaString(sheet.getRow(2));
+
+        UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
+                .processarUsuarios(row, true);
+        assertNotNull(usuarioImportacaoRequest);
+        assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(0),
+                "O nível AGENTE_AUTORIZADO não é possivel importar via arquivo.");
     }
 
     @Test
@@ -90,7 +102,19 @@ public class UsuarioUploadFileServiceTest {
                 .email("ADMINTESTE.XBRAIN.COM.BR")
                 .build();
         String msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
-        assertEquals("O campo email está incorreto.", msgErro);
+        assertEquals("O campo email está inválido.", msgErro);
+    }
+
+    @Test
+    public void deveRetornarErroCasoOEmailComQuantidadeDeCaracteresEstejaInvalido() {
+        UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
+                .builder()
+                .email("Beatriz_Laura_Maria_Júlia_Ana_Alice_Sofia_Maria_Eduarda_Larissa"
+                        + "_Mariana_Isabela_Camila_Valentina_Lara_Letícia_Helena_Amanda_"
+                        + "Luana_Yasmin@Mail.com")
+                .build();
+        String msgErro = usuarioUploadFileService.validarEmail(usuarioImportacaoRequest);
+        assertEquals("O campo email está inválido.", msgErro);
     }
 
     @Test
@@ -153,7 +177,8 @@ public class UsuarioUploadFileServiceTest {
     public void deveValidarONome() {
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
-                .nome("")
+                .nome("Beatriz Laura Maria Júlia Ana Alice Sofia Maria Eduarda Larissa "
+                        + "Mariana Isabela Camila Valentina Lara Letícia Helena Amanda Luana Yasmin")
                 .build();
         String msgErro = usuarioUploadFileService.validarNome(usuarioImportacaoRequest);
         assertEquals("Usuário está com nome inválido", msgErro);
