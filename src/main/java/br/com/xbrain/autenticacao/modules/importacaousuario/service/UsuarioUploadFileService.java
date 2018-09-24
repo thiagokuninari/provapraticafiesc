@@ -38,6 +38,8 @@ public class UsuarioUploadFileService {
     private static final String SENHA_PADRAO = "102030";
     private static final int PRIMEIRA_POSICAO = 0;
     private static final int QNT_SENHA = 6;
+    private static final int TAMANHO_MAX_EMAIL = 80;
+    private static final int TAMANHO_MAX_NOME = 100;
     private static final int RADIX_LONG = 36;
 
     @Autowired
@@ -158,7 +160,7 @@ public class UsuarioUploadFileService {
         Cargo cargo = null;
         if (nivel != null) {
             Optional<Cargo> optionalCargo = cargoRepository
-                    .findByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
+                    .findFirstByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
             if (optionalCargo.isPresent()) {
                 cargo = optionalCargo.get();
             } else {
@@ -198,13 +200,24 @@ public class UsuarioUploadFileService {
     }
 
     private String validarNivel(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNivel() == null
-                ? "Falha ao recuperar cargo/nivel" : "";
+        Nivel nivel = usuario.getNivel();
+        return nivel == null
+                ? "Falha ao recuperar cargo/nivel"
+                : isNivelImportavel(nivel.getCodigo())
+                ? ""
+                : "O nível " + nivel.getCodigo() + " não é possivel importar via arquivo.";
+    }
+
+    private boolean isNivelImportavel(CodigoNivel nivel) {
+        return !nivel.equals(CodigoNivel.MSO)
+                && !nivel.equals(CodigoNivel.OPERACAO)
+                && !nivel.equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
     protected String validarEmail(UsuarioImportacaoPlanilha usuarioImportacaoPlanilha) {
         return !EmailUtil.validar(usuarioImportacaoPlanilha.getEmail())
-                ? "O campo email está incorreto." : "";
+                || usuarioImportacaoPlanilha.getEmail().length() > TAMANHO_MAX_EMAIL
+                ? "O campo email está inválido." : "";
     }
 
     protected String validarCpf(UsuarioImportacaoPlanilha usuarioImportacaoPlanilha) {
@@ -223,7 +236,9 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarNome(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNome() == null || usuario.getNome().isEmpty()
+        return usuario.getNome() == null
+                || usuario.getNome().isEmpty()
+                || usuario.getNome().length() > TAMANHO_MAX_NOME
                 ? "Usuário está com nome inválido" : "";
     }
 
