@@ -30,7 +30,7 @@ public class FeriadoService {
         return  repository.save(feriado);
     }
 
-    public Iterable<Feriado> findAll() {
-        return repository.findAll();
+    public Iterable<Feriado> findAllByAnoAtual() {
+        return repository.findAllByAnoAtual();
     }
 }

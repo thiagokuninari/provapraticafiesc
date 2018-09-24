@@ -32,8 +32,8 @@ public class FeriadoController {
         return FeriadoResponse.convertFrom(service.save(request));
     }
 
-    @GetMapping
-    public Iterable<Feriado> getAll() {
-        return service.findAll();
+    @GetMapping()
+    public Iterable<Feriado> findAllByAnoAtual() {
+        return service.findAllByAnoAtual();
     }
 }
