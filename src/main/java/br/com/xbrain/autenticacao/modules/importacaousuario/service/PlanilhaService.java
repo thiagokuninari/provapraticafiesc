@@ -33,18 +33,30 @@ public class PlanilhaService {
             if (extensao.equals(arquivoXlsx)) {
                 sheet = new XSSFWorkbook(file.getInputStream()).getSheetAt(0);
             } else {
-                throw new ValidacaoException("Não foi possivel reconhecer o formato do arquivo");
+                throw new ValidacaoException("Não foi possível reconhecer o formato do arquivo");
             }
             return sheet;
         } catch (ValidacaoException | IOException ex) {
-            throw new ValidacaoException("Não foi possivel recuperar o sheet");
+            throw new ValidacaoException("Não foi possível recuperar o sheet");
         }
     }
 
     public static Row converterTipoCelulaParaString(Row linha) {
-        linha.forEach(cell -> {
-            if (cell == null ) {
-                linha.createCell(cell.getColumnIndex(), CellType.STRING);
+        for (int i = 0; i < NumeroCelulaUtil.QNT_COL; i++) {
+            Cell cell = linha.getCell(i);
+            if (cell == null) {
+                if (linha.getSheet()
+                        .getRow(0)
+                        .getCell(i)
+                        .getRichStringCellValue()
+                        .toString()
+                        .trim()
+                        .equals("DATA NASCIMENTO")) {
+                    linha.createCell(NumeroCelulaUtil.CELULA_NACIMENTO, CellType.NUMERIC);
+
+                } else {
+                    linha.createCell(i, CellType.STRING);
+                }
             } else if (cell.getSheet().getRow(0).getCell(cell.getColumnIndex())
                     .getRichStringCellValue()
                     .toString()
@@ -58,13 +70,13 @@ public class PlanilhaService {
                     .equals("TELEFONE")) {
                 cell.setCellType(CellType.STRING);
             }
-        });
+        }
         return linha;
     }
 
     public static boolean checkIfNotRowIsEmpty(Row row) {
         boolean linhaVazia = false;
-        for (int cellNum = row.getFirstCellNum(); cellNum < NumeroCelulaUtil.QNT_COL; cellNum++) {
+        for (int cellNum = 0; cellNum < NumeroCelulaUtil.QNT_COL; cellNum++) {
             Cell cell = row.getCell(cellNum);
             if (!linhaVazia
                     && cell != null

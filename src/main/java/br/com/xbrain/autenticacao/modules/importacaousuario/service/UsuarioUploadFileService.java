@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
@@ -14,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +103,7 @@ public class UsuarioUploadFileService {
                 .nome(row.getCell(NumeroCelulaUtil.CELULA_NOME).getStringCellValue())
                 .cpf(row.getCell(NumeroCelulaUtil.CELULA_CPF).getStringCellValue())
                 .email(row.getCell(NumeroCelulaUtil.CELULA_EMAIL).getStringCellValue())
-                .nascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO).getDateCellValue()))
+                .nascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO)))
                 .telefone(row.getCell(NumeroCelulaUtil.CELULA_TELEFONE).getStringCellValue())
                 .senha(passwordEncoder.encode(senha))
                 .departamento(departamento)
@@ -130,7 +132,10 @@ public class UsuarioUploadFileService {
     }
 
     private String trataString(String valor) {
-        return valor.trim().replaceAll(" ", "_");
+        return StringUtil.removerAcentos(valor)
+                .trim()
+                .replaceAll("[ -]", "_")
+                .toUpperCase();
     }
 
     protected Departamento recuperarDepartamento(String departamentoStr, Nivel nivel) {
@@ -248,8 +253,9 @@ public class UsuarioUploadFileService {
                 ? "Usuário está com nascimento inválido" : "";
     }
 
-    protected LocalDateTime trataData(Date dataNascimento) {
+    protected LocalDateTime trataData(Cell cellDate) {
         try {
+            Date dataNascimento = cellDate.getDateCellValue();
             return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
             log.error("Erro ao recuperar departamento.", ex);
