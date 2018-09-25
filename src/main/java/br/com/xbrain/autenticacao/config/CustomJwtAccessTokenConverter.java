@@ -3,8 +3,10 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import com.google.common.base.Enums;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +28,9 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
         JwtAccessTokenConverterConfigurer {
+
+    private static final int BEGIN_APP_CODE = 5;
+    private static final int END_APP_CODE = 8;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -106,12 +111,23 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                         .stream()
                         .map(GrantedAuthority::getAuthority)
                         .toArray());
+        token.getAdditionalInformation().put("aplicacoes",
+                getAplicacoes(user));
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
         return empresas
                 .stream()
                 .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    private List getAplicacoes(User user) {
+        return user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(role -> Enums.getIfPresent(CodigoAplicacao.class, role.substring(BEGIN_APP_CODE, END_APP_CODE)).orNull())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
