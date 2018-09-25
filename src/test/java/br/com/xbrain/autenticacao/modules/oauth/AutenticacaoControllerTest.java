@@ -108,6 +108,7 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.empresasNome", is(Collections.singletonList("Xbrain"))))
                 .andExpect(jsonPath("$.empresasCodigo", is(Collections.singletonList("XBRAIN"))))
                 .andExpect(jsonPath("$.authorities", not(empty())))
+                .andExpect(jsonPath("$.aplicacoes", not(empty())))
                 .andExpect(jsonPath("$.cpf", is("38957979875")))
                 .andExpect(jsonPath("$.agentesAutorizados", is(empty())));
     }
