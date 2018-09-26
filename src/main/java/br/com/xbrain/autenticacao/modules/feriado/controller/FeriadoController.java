@@ -32,7 +32,7 @@ public class FeriadoController {
         return FeriadoResponse.convertFrom(service.save(request));
     }
 
-    @GetMapping()
+    @GetMapping
     public Iterable<Feriado> findAllByAnoAtual() {
         return service.findAllByAnoAtual();
     }
