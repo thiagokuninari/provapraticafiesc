@@ -123,12 +123,14 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private List getAplicacoes(User user) {
-        return user.getAuthorities()
+        List permissoes = user.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(role -> Enums.getIfPresent(CodigoAplicacao.class, role.substring(BEGIN_APP_CODE, END_APP_CODE)).orNull())
                 .distinct()
                 .collect(Collectors.toList());
+
+        return (List) permissoes.stream().filter(v -> v != null).collect(Collectors.toList());
     }
 
     @Override
