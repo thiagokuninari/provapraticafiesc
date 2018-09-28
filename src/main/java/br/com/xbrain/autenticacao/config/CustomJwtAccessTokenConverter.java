@@ -3,10 +3,10 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import com.google.common.base.Enums;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,9 +29,8 @@ import static org.springframework.util.StringUtils.isEmpty;
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
         JwtAccessTokenConverterConfigurer {
 
-    private static final int BEGIN_APP_CODE = 5;
-    private static final int END_APP_CODE = 8;
-
+    @Autowired
+    private FuncionalidadeService funcionalidadeService;
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
@@ -67,7 +66,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
                 ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
                 : usuario.getEmpresas();
-
     }
 
     private void setAdditionalInformation(OAuth2AccessToken token,
@@ -112,7 +110,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                         .map(GrantedAuthority::getAuthority)
                         .toArray());
         token.getAdditionalInformation().put("aplicacoes",
-                getAplicacoes(user));
+                getAplicacoes(usuario));
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
@@ -122,15 +120,15 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 .collect(Collectors.toList());
     }
 
-    private List getAplicacoes(User user) {
-        List permissoes = user.getAuthorities()
+    // TODO cachear getFuncionalidadesPermitidasAoUsuario
+    private List getAplicacoes(Usuario user) {
+        List<Funcionalidade> funcionalidade = funcionalidadeService.getFuncionalidadesPermitidasAoUsuario(user);
+        return funcionalidade
                 .stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(role -> Enums.getIfPresent(CodigoAplicacao.class, role.substring(BEGIN_APP_CODE, END_APP_CODE)).orNull())
+                .filter(f -> f.getPermissaoTela() == null)
+                .map(f -> f.getAplicacao().getCodigo())
                 .distinct()
                 .collect(Collectors.toList());
-
-        return (List) permissoes.stream().filter(v -> v != null).collect(Collectors.toList());
     }
 
     @Override
