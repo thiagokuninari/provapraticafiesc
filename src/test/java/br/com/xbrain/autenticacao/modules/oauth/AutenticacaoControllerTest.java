@@ -76,6 +76,7 @@ public class AutenticacaoControllerTest {
         assertEquals("F", token.getAlterarSenha());
         assertEquals("38957979875", token.getCpf());
         assertFalse(token.getAuthorities().isEmpty());
+        assertFalse(token.getAplicacoes().isEmpty());
         assertEquals(singletonList(4), token.getEmpresas());
         assertEquals(singletonList(3), token.getUnidadesNegocios());
     }

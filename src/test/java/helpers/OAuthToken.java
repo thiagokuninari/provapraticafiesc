@@ -23,6 +23,8 @@ public class OAuthToken {
 
     private List<String> authorities;
 
+    private List<String> aplicacoes;
+
     private String errorDescription;
 
     private String alterarSenha;
