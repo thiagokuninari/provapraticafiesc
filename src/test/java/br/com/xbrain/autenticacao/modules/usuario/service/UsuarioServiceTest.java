@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -12,10 +13,14 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +43,7 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioServiceTest {
 
     @MockBean
@@ -55,6 +60,12 @@ public class UsuarioServiceTest {
 
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -152,6 +163,33 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior, "
+                + "pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+        Usuario usuario = umUsuarioComLoopNaHierarquia();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
+    public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como seu superior,"
+                + " pois ele não pode ser superior a ele mesmo.");
+        Usuario usuario = umUsuarioComProprioUsuarioComoSuperior();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
+    public void deveEditarHierarquiaSemExceptions() throws Exception {
+        Usuario usuario = umUsuarioComHierarquia();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
     public void deveBuscarOsUsuarioComInatividade() throws Exception {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(2, usuarios
@@ -180,16 +218,44 @@ public class UsuarioServiceTest {
         Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
     }
 
+    private Usuario umUsuarioComHierarquia() {
+        Usuario usuario = usuarioRepository.findOne(110);
+        Usuario usuarioSuperior = usuarioRepository.findOne(113);
+        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia
+                .criar(
+                        usuario,
+                        usuarioSuperior.getId(),
+                        usuario.getId()
+                );
+        usuario.getUsuariosHierarquia().add(usuarioHierarquia);
+        return usuario;
+    }
+
+    private Usuario umUsuarioComProprioUsuarioComoSuperior() {
+        Usuario usuario = usuarioRepository.findOne(110);
+        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuario, usuario.getId(), usuario.getId());
+        usuario.getUsuariosHierarquia().add(usuarioHierarquia);
+        return usuario;
+    }
+
+    private Usuario umUsuarioComLoopNaHierarquia() {
+        Usuario usuario = usuarioRepository.findOne(110);
+        Usuario usuarioSuperior = usuarioRepository.findOne(114);
+        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuarioSuperior, usuario.getId(), usuarioSuperior.getId());
+        usuarioSuperior.getUsuariosHierarquia().add(usuarioHierarquia);
+        return usuarioSuperior;
+    }
+
     private UsuarioMqRequest umUsuario() {
         UsuarioMqRequest usuarioMqRequest = new UsuarioMqRequest();
         usuarioMqRequest.setNome("TESTE NOVO USUARIO PARCEIROS ONLINE");
         usuarioMqRequest.setEmail("novousuarioparceirosonline@xbrain.com.br");
         usuarioMqRequest.setCpf("76696512616");
-        usuarioMqRequest.setUnidadesNegocio(Arrays.asList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
+        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
         usuarioMqRequest.setNivel(CodigoNivel.AGENTE_AUTORIZADO);
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setEmpresa(Arrays.asList(CodigoEmpresa.CLARO_MOVEL));
+        usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         return usuarioMqRequest;
     }

@@ -48,10 +48,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +65,7 @@ public class UsuarioService {
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
+
 
     @Autowired
     private UsuarioRepository repository;
@@ -165,20 +163,14 @@ public class UsuarioService {
     public UsuarioResponse findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        if (usuarioOptional.isPresent()) {
-            return UsuarioResponse.convertFrom(usuarioOptional.get());
-        }
-        return null;
+        return usuarioOptional.map(UsuarioResponse::convertFrom).orElse(null);
     }
 
     public UsuarioResponse findByCpfAa(String cpf) {
         String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
         Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
-        if (usuarioOptional.isPresent()) {
-            return UsuarioResponse.convertFrom(usuarioOptional.get());
-        }
-        return null;
+        return usuarioOptional.map(UsuarioResponse::convertFrom).orElse(null);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -287,7 +279,82 @@ public class UsuarioService {
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
+        hierarquiaIsValida(usuario);
+
         repository.save(usuario);
+    }
+
+    public void hierarquiaIsValida(Usuario usuario) {
+        if (!ObjectUtils.isEmpty(usuario)
+                && !ObjectUtils.isEmpty(usuario.getUsuariosHierarquia())) {
+
+            usuario.getUsuariosHierarquia()
+                    .forEach(user -> processarHierarquia(usuario, user, new ArrayList<>()));
+        }
+    }
+
+    private boolean processarHierarquia(final Usuario usuarioParaAchar,
+                                        UsuarioHierarquia usuario,
+                                        ArrayList<Usuario> valores) {
+        boolean existeId = false;
+
+        if (!ObjectUtils.isEmpty(usuarioParaAchar)
+                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+                && !ObjectUtils.isEmpty(usuario)
+                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior())) {
+
+            existeId = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            if (!existeId) {
+                List<Integer> superiores = getIdSuperiores(usuario.getUsuario());
+                Set<UsuarioHierarquia> usuarios = getUsuariosSuperioresPorId(superiores);
+
+                existeId = validarHierarquia(usuarioParaAchar, usuarios, valores);
+            }
+        }
+        if (existeId) {
+            String mensagem = valores.isEmpty()
+                    ? "Não é possivel adicionar o usuário "
+                    + usuarioParaAchar.getNome()
+                    + " como seu superior, pois ele não pode ser superior a ele mesmo."
+                    : "Não é possivel adicionar o usuário "
+                    + valores.get(0).getNome()
+                    + " como superior, pois o usuário "
+                    + usuarioParaAchar.getNome()
+                    + " é superior a ele em sua hierarquia.";
+
+            throw new ValidacaoException(mensagem);
+        }
+        return existeId;
+    }
+
+    private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
+        return usuarioParaAchar.getId().equals(usuario.getUsuarioSuperiorId());
+    }
+
+    private List<Integer> getIdSuperiores(Usuario usuario) {
+
+        return usuario.getUsuariosHierarquia()
+                .stream()
+                .map(UsuarioHierarquia::getUsuarioSuperiorId)
+                .filter(item -> !ObjectUtils.isEmpty(item))
+                .collect(Collectors.toList());
+    }
+
+    private Set<UsuarioHierarquia> getUsuariosSuperioresPorId(List<Integer> hierarquiasId) {
+        return usuarioHierarquiaRepository.findByUsuarioIdIn(hierarquiasId);
+    }
+
+    private boolean validarHierarquia(Usuario usuarioParaAchar,
+                                      Set<UsuarioHierarquia> usuarios,
+                                      ArrayList<Usuario> valores) {
+        return usuarios.stream().anyMatch(usuario -> {
+            boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            if (!existe && !valores.contains(usuario.getUsuario().getId())) {
+                valores.add(usuario.getUsuario());
+                existe = processarHierarquia(usuarioParaAchar, usuario, valores);
+            }
+            return existe;
+        });
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
