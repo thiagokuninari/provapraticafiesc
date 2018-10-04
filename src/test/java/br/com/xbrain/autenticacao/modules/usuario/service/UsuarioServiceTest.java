@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -163,8 +164,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
-        thrown.expect(Exception.class);
-        thrown.expectMessage("O próprio usuario está em sua hierarquia de superiores.");
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior, "
+                + "pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
 
@@ -172,8 +174,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
-        thrown.expect(Exception.class);
-        thrown.expectMessage("O próprio usuario está em sua hierarquia de superiores.");
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como seu superior,"
+                + " pois ele não pode ser superior a ele mesmo.");
         Usuario usuario = umUsuarioComProprioUsuarioComoSuperior();
         service.hierarquiaIsValida(usuario);
 
@@ -220,9 +223,9 @@ public class UsuarioServiceTest {
         Usuario usuarioSuperior = usuarioRepository.findOne(113);
         UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia
                 .criar(
-                        usuarioSuperior,
+                        usuario,
                         usuarioSuperior.getId(),
-                        usuarioSuperior.getId()
+                        usuario.getId()
                 );
         usuario.getUsuariosHierarquia().add(usuarioHierarquia);
         return usuario;
@@ -238,7 +241,7 @@ public class UsuarioServiceTest {
     private Usuario umUsuarioComLoopNaHierarquia() {
         Usuario usuario = usuarioRepository.findOne(110);
         Usuario usuarioSuperior = usuarioRepository.findOne(114);
-        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuario, usuario.getId(), usuario.getId());
+        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuarioSuperior, usuario.getId(), usuarioSuperior.getId());
         usuarioSuperior.getUsuariosHierarquia().add(usuarioHierarquia);
         return usuarioSuperior;
     }
