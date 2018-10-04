@@ -252,7 +252,6 @@ public class UsuarioService {
             }
             usuario = repository.save(usuario);
             entityManager.flush();
-            entityManager.clear();
 
             tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
