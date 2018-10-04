@@ -303,6 +303,8 @@ public class UsuarioService {
                 && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior())) {
 
             existeId = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            valores.add(usuario.getUsuario());
+
             if (!existeId) {
                 List<Integer> superiores = getIdSuperiores(usuario.getUsuario());
                 Set<UsuarioHierarquia> usuarios = getUsuariosSuperioresPorId(superiores);
@@ -310,13 +312,14 @@ public class UsuarioService {
                 existeId = validarHierarquia(usuarioParaAchar, usuarios, valores);
             }
         }
-        if (existeId) {
-            String mensagem = valores.isEmpty()
+        if (existeId && valores.size() > 0) {
+            String mensagem = valores.size() == 1
+                    && valores.contains(usuarioParaAchar)
                     ? "Não é possivel adicionar o usuário "
                     + usuarioParaAchar.getNome()
                     + " como seu superior, pois ele não pode ser superior a ele mesmo."
                     : "Não é possivel adicionar o usuário "
-                    + valores.get(0).getNome()
+                    + valores.get(1).getNome()
                     + " como superior, pois o usuário "
                     + usuarioParaAchar.getNome()
                     + " é superior a ele em sua hierarquia.";
@@ -348,7 +351,7 @@ public class UsuarioService {
                                       ArrayList<Usuario> valores) {
         return usuarios.stream().anyMatch(usuario -> {
             boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
-            if (!existe && !valores.contains(usuario.getUsuario().getId())) {
+            if (!existe && !valores.contains(usuario.getUsuario())) {
                 valores.add(usuario.getUsuario());
                 existe = processarHierarquia(usuarioParaAchar, usuario, valores);
             }

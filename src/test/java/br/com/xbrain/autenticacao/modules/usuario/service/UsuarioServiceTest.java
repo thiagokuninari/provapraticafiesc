@@ -165,8 +165,8 @@ public class UsuarioServiceTest {
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior, "
-                + "pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior,"
+                + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
 
