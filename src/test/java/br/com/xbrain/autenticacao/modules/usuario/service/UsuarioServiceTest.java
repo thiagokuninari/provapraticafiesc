@@ -165,8 +165,8 @@ public class UsuarioServiceTest {
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior, "
-                + "pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior,"
+                + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
 
@@ -220,30 +220,27 @@ public class UsuarioServiceTest {
 
     private Usuario umUsuarioComHierarquia() {
         Usuario usuario = usuarioRepository.findOne(110);
-        Usuario usuarioSuperior = usuarioRepository.findOne(113);
-        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia
-                .criar(
-                        usuario,
-                        usuarioSuperior.getId(),
-                        usuario.getId()
-                );
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(usuario, 113);
         usuario.getUsuariosHierarquia().add(usuarioHierarquia);
         return usuario;
     }
 
     private Usuario umUsuarioComProprioUsuarioComoSuperior() {
         Usuario usuario = usuarioRepository.findOne(110);
-        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuario, usuario.getId(), usuario.getId());
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(usuario, usuario.getId());
         usuario.getUsuariosHierarquia().add(usuarioHierarquia);
         return usuario;
     }
 
+    private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idUsuarioSuperior) {
+        return UsuarioHierarquia.criar(usuario, idUsuarioSuperior, usuario.getId());
+    }
+
     private Usuario umUsuarioComLoopNaHierarquia() {
-        Usuario usuario = usuarioRepository.findOne(110);
-        Usuario usuarioSuperior = usuarioRepository.findOne(114);
-        UsuarioHierarquia usuarioHierarquia = UsuarioHierarquia.criar(usuarioSuperior, usuario.getId(), usuarioSuperior.getId());
-        usuarioSuperior.getUsuariosHierarquia().add(usuarioHierarquia);
-        return usuarioSuperior;
+        Usuario user = usuarioRepository.findOne(114);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(user, 110);
+        user.getUsuariosHierarquia().add(usuarioHierarquia);
+        return user;
     }
 
     private UsuarioMqRequest umUsuario() {
