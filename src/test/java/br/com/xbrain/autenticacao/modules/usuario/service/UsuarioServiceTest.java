@@ -173,6 +173,16 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior,"
+                + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
+        Usuario usuario = umUsuarioComProximoUsuarioComoSuperior();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
     public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como seu superior,"
@@ -238,6 +248,13 @@ public class UsuarioServiceTest {
 
     private Usuario umUsuarioComLoopNaHierarquia() {
         Usuario user = usuarioRepository.findOne(114);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(user, 110);
+        user.getUsuariosHierarquia().add(usuarioHierarquia);
+        return user;
+    }
+
+    private Usuario umUsuarioComProximoUsuarioComoSuperior() {
+        Usuario user = usuarioRepository.findOne(112);
         UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(user, 110);
         user.getUsuariosHierarquia().add(usuarioHierarquia);
         return user;

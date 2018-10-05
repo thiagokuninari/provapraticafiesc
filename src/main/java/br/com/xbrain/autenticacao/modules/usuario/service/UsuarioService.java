@@ -316,7 +316,8 @@ public class UsuarioService {
     }
 
     private String montarMensagemDeErro(ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
-        return valores.size() == 1
+        return valores.size() == 2
+                && valores.get(1).equals(usuarioParaAchar)
                 && valores.contains(usuarioParaAchar)
                 ? "Não é possivel adicionar o usuário "
                 + usuarioParaAchar.getNome()
@@ -357,8 +358,8 @@ public class UsuarioService {
                                       ArrayList<Usuario> valores) {
         return usuarios.stream().anyMatch(usuario -> {
             boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
-            if (!existe && !valores.contains(usuario.getUsuario())) {
-                valores.add(usuario.getUsuario());
+            valores.add(usuario.getUsuario());
+            if (!existe && !valores.contains(usuario.getUsuarioSuperior())) {
                 existe = processarHierarquia(usuarioParaAchar, usuario, valores);
             }
             return existe;
