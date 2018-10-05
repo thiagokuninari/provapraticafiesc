@@ -316,9 +316,9 @@ public class UsuarioService {
     }
 
     private String montarMensagemDeErro(ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
-        return valores.size() == 2
-                && valores.get(1).equals(usuarioParaAchar)
-                && valores.contains(usuarioParaAchar)
+        return validarUsuario(1, 0, valores, usuarioParaAchar)
+                || validarUsuario(2, 1, valores, usuarioParaAchar)
+
                 ? "Não é possivel adicionar o usuário "
                 + usuarioParaAchar.getNome()
                 + " como seu superior, pois ele não pode ser superior a ele mesmo."
@@ -327,6 +327,12 @@ public class UsuarioService {
                 + " como superior, pois o usuário "
                 + usuarioParaAchar.getNome()
                 + " é superior a ele em sua hierarquia.";
+    }
+
+    private boolean validarUsuario(int i, int posicaoUser, ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
+        return valores.size() == i
+                && valores.get(posicaoUser).equals(usuarioParaAchar)
+                && valores.contains(usuarioParaAchar);
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
