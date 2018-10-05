@@ -160,17 +160,17 @@ public class UsuarioService {
         return UsuarioDto.convertTo(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
-    public UsuarioResponse findByEmailAa(String email) {
+    public Optional<UsuarioResponse> findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        return usuarioOptional.map(UsuarioResponse::convertFrom).orElse(null);
+        return usuarioOptional.map(UsuarioResponse::convertFrom);
     }
 
-    public UsuarioResponse findByCpfAa(String cpf) {
+    public Optional<UsuarioResponse> findByCpfAa(String cpf) {
         String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
         Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
-        return usuarioOptional.map(UsuarioResponse::convertFrom).orElse(null);
+        return usuarioOptional.map(UsuarioResponse::convertFrom);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -297,33 +297,43 @@ public class UsuarioService {
                                         ArrayList<Usuario> valores) {
         boolean existeId = false;
 
-        if (!ObjectUtils.isEmpty(usuarioParaAchar)
-                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-                && !ObjectUtils.isEmpty(usuario)
-                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior())) {
-
+        if (validarUsuarios(usuarioParaAchar, usuario)) {
             existeId = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            valores.add(usuario.getUsuario());
+
             if (!existeId) {
                 List<Integer> superiores = getIdSuperiores(usuario.getUsuario());
                 Set<UsuarioHierarquia> usuarios = getUsuariosSuperioresPorId(superiores);
-
                 existeId = validarHierarquia(usuarioParaAchar, usuarios, valores);
             }
-        }
-        if (existeId) {
-            String mensagem = valores.isEmpty()
-                    ? "Não é possivel adicionar o usuário "
-                    + usuarioParaAchar.getNome()
-                    + " como seu superior, pois ele não pode ser superior a ele mesmo."
-                    : "Não é possivel adicionar o usuário "
-                    + valores.get(0).getNome()
-                    + " como superior, pois o usuário "
-                    + usuarioParaAchar.getNome()
-                    + " é superior a ele em sua hierarquia.";
+            if (existeId) {
+                String mensagem = montarMensagemDeErro(valores, usuarioParaAchar);
+                throw new ValidacaoException(mensagem);
+            }
 
-            throw new ValidacaoException(mensagem);
         }
         return existeId;
+    }
+
+    private String montarMensagemDeErro(ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
+        return valores.size() == 2
+                && valores.get(1).equals(usuarioParaAchar)
+                && valores.contains(usuarioParaAchar)
+                ? "Não é possivel adicionar o usuário "
+                + usuarioParaAchar.getNome()
+                + " como seu superior, pois ele não pode ser superior a ele mesmo."
+                : "Não é possivel adicionar o usuário "
+                + valores.get(1).getNome()
+                + " como superior, pois o usuário "
+                + usuarioParaAchar.getNome()
+                + " é superior a ele em sua hierarquia.";
+    }
+
+    private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
+        return !ObjectUtils.isEmpty(usuarioParaAchar)
+                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+                && !ObjectUtils.isEmpty(usuario)
+                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -348,8 +358,8 @@ public class UsuarioService {
                                       ArrayList<Usuario> valores) {
         return usuarios.stream().anyMatch(usuario -> {
             boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
-            if (!existe && !valores.contains(usuario.getUsuario().getId())) {
-                valores.add(usuario.getUsuario());
+            valores.add(usuario.getUsuario());
+            if (!existe && !valores.contains(usuario.getUsuarioSuperior())) {
                 existe = processarHierarquia(usuarioParaAchar, usuario, valores);
             }
             return existe;
