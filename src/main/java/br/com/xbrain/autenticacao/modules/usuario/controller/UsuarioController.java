@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -85,20 +84,14 @@ public class UsuarioController {
     @GetMapping(params = "email")
     public UsuarioResponse getUsuarioByEmail(@RequestParam String email) {
         Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email);
-        if (emailAaOptional.isPresent()) {
-            return emailAaOptional.get();
-        }
-        throw new ValidacaoException("Email do AA não foi encontrado");
+        return emailAaOptional.orElse(null);
 
     }
 
     @GetMapping(params = "cpf")
     public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf) {
         Optional<UsuarioResponse> cpfAaOpt = usuarioService.findByCpfAa(cpf);
-        if (cpfAaOpt.isPresent()) {
-            return cpfAaOpt.get();
-        }
-        throw new ValidacaoException("Cpf do AA não foi encontrado");
+        return cpfAaOpt.orElse(null);
     }
 
     @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)
