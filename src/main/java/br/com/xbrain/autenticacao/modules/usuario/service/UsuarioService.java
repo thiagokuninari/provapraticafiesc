@@ -319,10 +319,8 @@ public class UsuarioService {
         return validarUsuario(1, 0, valores, usuarioParaAchar)
                 || validarUsuario(2, 1, valores, usuarioParaAchar)
 
-                ? "Não é possivel adicionar o usuário "
-                + usuarioParaAchar.getNome()
-                + " como seu superior, pois ele não pode ser superior a ele mesmo."
-                : "Não é possivel adicionar o usuário "
+                ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
+                : "Não é possível adicionar o usuário "
                 + valores.get(1).getNome()
                 + " como superior, pois o usuário "
                 + usuarioParaAchar.getNome()
