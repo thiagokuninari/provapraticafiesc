@@ -73,7 +73,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 : usuario.getEmpresas();
     }
 
-
     private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
                 ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
