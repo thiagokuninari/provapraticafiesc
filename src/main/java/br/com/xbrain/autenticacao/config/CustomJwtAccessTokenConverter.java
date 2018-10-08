@@ -73,9 +73,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 : usuario.getEmpresas();
     }
 
-    private List<EquipeVendasSupervisionadasResponse> getEquipesSupervisionadas(Usuario usuario) {
+
+    private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
                 ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
+                .stream()
+                .map(EquipeVendasSupervisionadasResponse::getId)
+                .collect(Collectors.toList())
                 : Collections.emptyList();
     }
 
@@ -84,7 +88,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                                           User user,
                                           List<Integer> agentesAutorizados,
                                           List<Empresa> empresas,
-                                          List<EquipeVendasSupervisionadasResponse> equipesSupervisionadas) {
+                                          List<Integer> equipesSupervisionadas) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
