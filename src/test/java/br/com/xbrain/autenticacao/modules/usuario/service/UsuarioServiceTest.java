@@ -165,7 +165,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior,"
+        thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
                 + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
@@ -175,7 +175,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() throws Exception {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como superior,"
+        thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
                 + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComProximoUsuarioComoSuperior();
         service.hierarquiaIsValida(usuario);
@@ -185,8 +185,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Não é possivel adicionar o usuário ADMIN como seu superior,"
-                + " pois ele não pode ser superior a ele mesmo.");
+        thrown.expectMessage("Não é possível atrelar o próprio usuário em sua Hierarquia.");
         Usuario usuario = umUsuarioComProprioUsuarioComoSuperior();
         service.hierarquiaIsValida(usuario);
 
