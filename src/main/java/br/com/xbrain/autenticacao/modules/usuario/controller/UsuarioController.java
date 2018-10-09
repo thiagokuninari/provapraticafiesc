@@ -7,11 +7,13 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -42,7 +47,7 @@ public class UsuarioController {
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
                 usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
-                .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
+                        .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
@@ -57,7 +62,7 @@ public class UsuarioController {
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
-            @RequestParam boolean incluirProprio) {
+                                         @RequestParam boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
@@ -76,14 +81,17 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
-    @RequestMapping(params = "email", method = RequestMethod.GET)
+    @GetMapping(params = "email")
     public UsuarioResponse getUsuarioByEmail(@RequestParam String email) {
-        return usuarioService.findByEmailAa(email);
+        Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email);
+        return emailAaOptional.orElse(null);
+
     }
 
-    @RequestMapping(params = "cpf", method = RequestMethod.GET)
+    @GetMapping(params = "cpf")
     public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf) {
-        return usuarioService.findByCpfAa(cpf);
+        Optional<UsuarioResponse> cpfAaOpt = usuarioService.findByCpfAa(cpf);
+        return cpfAaOpt.orElse(null);
     }
 
     @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)
@@ -128,7 +136,12 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
-    public void esqueceuSenhaPorEmail(@RequestBody UsuarioDadosAcessoRequest dto) {
-        usuarioService.esqueceuSenhaPorEmail(dto.getEmailAtual());
+    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
+        usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
+    }
+
+    @GetMapping(value = "/resetar-senha")
+    public void resetarSenha(@RequestParam String token) {
+        usuarioServiceEsqueciSenha.resetarSenha(token);
     }
 }

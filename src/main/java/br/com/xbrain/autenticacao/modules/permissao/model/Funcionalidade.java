@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -32,6 +33,10 @@ public class Funcionalidade {
     @ManyToOne(fetch = FetchType.LAZY)
     private Aplicacao aplicacao;
 
+    @Column(name = "PERMISSAO_TELA", length = 1)
+    @Enumerated(EnumType.STRING)
+    private Eboolean permissaoTela;
+
     @Transient
     private boolean especial;
 
@@ -45,5 +50,12 @@ public class Funcionalidade {
         this.id = id;
         this.nome = nome;
         this.role = role;
+    }
+
+    public Funcionalidade(Integer id, String nome, String role, Eboolean permissaoTela) {
+        this.id = id;
+        this.nome = nome;
+        this.role = role;
+        this.permissaoTela = permissaoTela;
     }
 }

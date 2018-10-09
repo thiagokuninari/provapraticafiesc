@@ -54,6 +54,19 @@ public class NotificacaoService {
                 context);
     }
 
+    public void enviarEmailResetSenha(Usuario usuario, String link) {
+        Context context = new Context();
+        context.setVariable("nome", usuario.getNome());
+        context.setVariable("email", usuario.getEmail().toLowerCase());
+        context.setVariable("link", link);
+
+        emailService.enviarEmailTemplate(
+                Arrays.asList(usuario.getEmail()),
+                "Parceiros Online - Confirmação de Alterar a Senha",
+                "confirmar-reset-senha",
+                context);
+    }
+
     public void enviarEmailAtualizacaoEmail(Usuario usuario,
                                             UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Context context = new Context();

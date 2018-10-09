@@ -1,5 +1,6 @@
 package helpers;
 
+import br.com.xbrain.autenticacao.modules.equipevendas.dto.EquipeVendasSupervisionadasResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -22,6 +23,8 @@ public class OAuthToken {
     private String usuarioId;
 
     private List<String> authorities;
+
+    private List<String> aplicacoes;
 
     private String errorDescription;
 
@@ -50,4 +53,6 @@ public class OAuthToken {
     private List<Integer> unidadesNegocios;
 
     private List<String> empresasNome;
+
+    private List<EquipeVendasSupervisionadasResponse> equipesSupervisionadas;
 }

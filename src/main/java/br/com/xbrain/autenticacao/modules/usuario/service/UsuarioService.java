@@ -24,11 +24,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
@@ -49,6 +45,8 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,18 +55,17 @@ import java.util.stream.Stream;
 @Service
 public class UsuarioService {
 
-    private static final int RADIX = 36;
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
+    private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final int MAXIMO_PARAMETROS_IN = 1000;
-
     private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
+
 
     @Autowired
     private UsuarioRepository repository;
@@ -112,6 +109,8 @@ public class UsuarioService {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -161,23 +160,17 @@ public class UsuarioService {
         return UsuarioDto.convertTo(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
-    public UsuarioResponse findByEmailAa(String email) {
+    public Optional<UsuarioResponse> findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        if (usuarioOptional.isPresent()) {
-            return UsuarioResponse.convertFrom(usuarioOptional.get());
-        }
-        return null;
+        return usuarioOptional.map(UsuarioResponse::convertFrom);
     }
 
-    public UsuarioResponse findByCpfAa(String cpf) {
+    public Optional<UsuarioResponse> findByCpfAa(String cpf) {
         String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
         Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
-        if (usuarioOptional.isPresent()) {
-            return UsuarioResponse.convertFrom(usuarioOptional.get());
-        }
-        return null;
+        return usuarioOptional.map(UsuarioResponse::convertFrom);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -245,25 +238,34 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
-        Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
-        validar(usuario);
+        try {
+            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
+            validar(usuario);
 
-        boolean enviarEmail = false;
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        if (usuario.isNovoCadastro()) {
-            configurar(usuario, senhaDescriptografada);
-            enviarEmail = true;
-        } else {
-            usuario.setAlterarSenha(Eboolean.F);
-        }
-        usuario = repository.save(usuario);
-        tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
-        tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+            boolean enviarEmail = false;
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            if (usuario.isNovoCadastro()) {
+                configurar(usuario, senhaDescriptografada);
+                enviarEmail = true;
+            } else {
+                usuario.setAlterarSenha(Eboolean.F);
+            }
+            usuario = repository.save(usuario);
+            entityManager.flush();
 
-        if (enviarEmail) {
-            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
+            tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+
+            if (enviarEmail) {
+                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            }
+            return UsuarioDto.convertTo(usuario);
+        } catch (PersistenceException ex) {
+            log.error("Erro de persistência ao salvar o Usuario.", ex);
+            throw new ValidacaoException("Erro ao cadastrar usuário.");
+        } catch (Exception ex) {
+            throw ex;
         }
-        return UsuarioDto.convertTo(usuario);
     }
 
     private void validar(Usuario usuario) {
@@ -276,7 +278,96 @@ public class UsuarioService {
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
+        hierarquiaIsValida(usuario);
+
         repository.save(usuario);
+    }
+
+    public void hierarquiaIsValida(Usuario usuario) {
+        if (!ObjectUtils.isEmpty(usuario)
+                && !ObjectUtils.isEmpty(usuario.getUsuariosHierarquia())) {
+
+            usuario.getUsuariosHierarquia()
+                    .forEach(user -> processarHierarquia(usuario, user, new ArrayList<>()));
+        }
+    }
+
+    private boolean processarHierarquia(final Usuario usuarioParaAchar,
+                                        UsuarioHierarquia usuario,
+                                        ArrayList<Usuario> valores) {
+        boolean existeId = false;
+
+        if (validarUsuarios(usuarioParaAchar, usuario)) {
+            existeId = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            valores.add(usuario.getUsuario());
+
+            if (!existeId) {
+                List<Integer> superiores = getIdSuperiores(usuario.getUsuario());
+                Set<UsuarioHierarquia> usuarios = getUsuariosSuperioresPorId(superiores);
+                existeId = validarHierarquia(usuarioParaAchar, usuarios, valores);
+            }
+            if (existeId) {
+                String mensagem = montarMensagemDeErro(valores, usuarioParaAchar);
+                throw new ValidacaoException(mensagem);
+            }
+
+        }
+        return existeId;
+    }
+
+    private String montarMensagemDeErro(ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
+        return validarUsuario(1, 0, valores, usuarioParaAchar)
+                || validarUsuario(2, 1, valores, usuarioParaAchar)
+
+                ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
+                : "Não é possível adicionar o usuário "
+                + valores.get(1).getNome()
+                + " como superior, pois o usuário "
+                + usuarioParaAchar.getNome()
+                + " é superior a ele em sua hierarquia.";
+    }
+
+    private boolean validarUsuario(int i, int posicaoUser, ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
+        return valores.size() == i
+                && valores.get(posicaoUser).equals(usuarioParaAchar)
+                && valores.contains(usuarioParaAchar);
+    }
+
+    private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
+        return !ObjectUtils.isEmpty(usuarioParaAchar)
+                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+                && !ObjectUtils.isEmpty(usuario)
+                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
+    }
+
+    private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
+        return usuarioParaAchar.getId().equals(usuario.getUsuarioSuperiorId());
+    }
+
+    private List<Integer> getIdSuperiores(Usuario usuario) {
+
+        return usuario.getUsuariosHierarquia()
+                .stream()
+                .map(UsuarioHierarquia::getUsuarioSuperiorId)
+                .filter(item -> !ObjectUtils.isEmpty(item))
+                .collect(Collectors.toList());
+    }
+
+    private Set<UsuarioHierarquia> getUsuariosSuperioresPorId(List<Integer> hierarquiasId) {
+        return usuarioHierarquiaRepository.findByUsuarioIdIn(hierarquiasId);
+    }
+
+    private boolean validarHierarquia(Usuario usuarioParaAchar,
+                                      Set<UsuarioHierarquia> usuarios,
+                                      ArrayList<Usuario> valores) {
+        return usuarios.stream().anyMatch(usuario -> {
+            boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
+            valores.add(usuario.getUsuario());
+            if (!existe && !valores.contains(usuario.getUsuarioSuperior())) {
+                existe = processarHierarquia(usuarioParaAchar, usuario, valores);
+            }
+            return existe;
+        });
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
@@ -470,8 +561,7 @@ public class UsuarioService {
     }
 
     private String getSenhaRandomica(int size) {
-        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
-        return tag.substring(0, size);
+        return StringUtil.getSenhaRandomica(size);
     }
 
     private void validarCpfExistente(Usuario usuario) {
@@ -532,7 +622,7 @@ public class UsuarioService {
                 .build());
         repository.save(usuario);
     }
-    
+
     @Transactional
     public void inativarUsuariosSemAcesso() {
         MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
@@ -548,10 +638,10 @@ public class UsuarioService {
                     .observacao("Inativado por falta de acesso")
                     .situacao(ESituacao.I)
                     .build());
-            repository.save(usuario);            
-        });                     
+            repository.save(usuario);
+        });
     }
-    
+
     public List<Usuario> getUsuariosSemAcesso() {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
@@ -598,7 +688,7 @@ public class UsuarioService {
 
         List<List<Integer>> listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), MAXIMO_PARAMETROS_IN);
 
-        listaPartes.forEach(lista ->  predicate.comCidade(lista));
+        listaPartes.forEach(lista -> predicate.comCidade(lista));
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
@@ -760,10 +850,10 @@ public class UsuarioService {
                 .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
                 funcionalidades
-                .stream()
-                .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
+                        .stream()
+                        .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
-                .findPorUsuario(usuario.getId()).stream())
+                        .findPorUsuario(usuario.getId()).stream())
                 .distinct()
                 .map(FuncionalidadeResponse::convertFrom)
                 .collect(Collectors.toList());
@@ -826,14 +916,6 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void esqueceuSenhaPorEmail(String email) {
-        Usuario usuario = repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-        repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), Eboolean.V, usuario.getId());
-        notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
-    }
-
-    @Transactional
     public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
         List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
 
@@ -856,7 +938,7 @@ public class UsuarioService {
     }
 
     private <T> boolean validaUsuarioHierarquiaExistente(List<UsuarioHierarquia> hierarquiasExistentes,
-            UsuarioHierarquiaCarteiraDto novaHierarquia) {
+                                                         UsuarioHierarquiaCarteiraDto novaHierarquia) {
         return hierarquiasExistentes
                 .stream()
                 .anyMatch(e -> e.getUsuarioSuperior().getId().equals(novaHierarquia.getUsuarioSuperiorId())

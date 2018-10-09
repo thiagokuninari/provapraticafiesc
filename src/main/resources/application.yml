@@ -26,7 +26,8 @@ spring:
             database/organizacional.sql,
             database/permissoes.sql,
             database/cidades.sql,
-            database/motivo-inativacao.sql
+            database/motivo-inativacao.sql,
+            database/feriados.sql
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV

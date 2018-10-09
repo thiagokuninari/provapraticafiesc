@@ -76,6 +76,7 @@ public class AutenticacaoControllerTest {
         assertEquals("F", token.getAlterarSenha());
         assertEquals("38957979875", token.getCpf());
         assertFalse(token.getAuthorities().isEmpty());
+        assertFalse(token.getAplicacoes().isEmpty());
         assertEquals(singletonList(4), token.getEmpresas());
         assertEquals(singletonList(3), token.getUnidadesNegocios());
     }
@@ -108,8 +109,10 @@ public class AutenticacaoControllerTest {
                 .andExpect(jsonPath("$.empresasNome", is(Collections.singletonList("Xbrain"))))
                 .andExpect(jsonPath("$.empresasCodigo", is(Collections.singletonList("XBRAIN"))))
                 .andExpect(jsonPath("$.authorities", not(empty())))
+                .andExpect(jsonPath("$.aplicacoes", not(empty())))
                 .andExpect(jsonPath("$.cpf", is("38957979875")))
-                .andExpect(jsonPath("$.agentesAutorizados", is(empty())));
+                .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
+                .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())));
     }
 
     @Test

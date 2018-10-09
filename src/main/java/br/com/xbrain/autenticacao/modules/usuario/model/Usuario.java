@@ -15,6 +15,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -157,6 +158,15 @@ public class Usuario {
     @Column(name = "ALTERAR_SENHA", nullable = false)
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
+
+    @NotAudited
+    @Column(name = "RECUPERAR_SENHA_HASH")
+    private String recuperarSenhaHash;
+
+    @NotAudited
+    @Column(name = "RECUPERAR_SENHA_TENTATIVA")
+    @ColumnDefault("0")
+    private Integer recuperarSenhaTentativa;
 
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -352,6 +362,10 @@ public class Usuario {
 
     public boolean hasConfiguracao() {
         return configuracao != null;
+    }
+
+    public Integer getRecuperarSenhaTentativa() {
+        return recuperarSenhaTentativa == null ? 0 : recuperarSenhaTentativa;
     }
 
 }
