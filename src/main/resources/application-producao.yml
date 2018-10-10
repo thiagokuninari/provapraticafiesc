@@ -16,7 +16,7 @@ spring:
     password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
-      maximumPoolSize: 30
+      maximumPoolSize: 100
 
   rabbitmq:
     host: 172.10.10.60
