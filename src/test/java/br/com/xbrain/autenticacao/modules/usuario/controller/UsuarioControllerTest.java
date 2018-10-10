@@ -236,6 +236,7 @@ public class UsuarioControllerTest {
     public void deveRemoverRamalConfiguracaoUsuarioRamalDuplicado() throws Exception {
         UsuarioConfiguracaoDto dto = umUsuarioComRamalDuplicado();
         Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
 
         mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
