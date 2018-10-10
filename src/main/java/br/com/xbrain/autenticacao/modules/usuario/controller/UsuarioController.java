@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -132,14 +136,12 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
-    public String esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
-        return "ok";
+    public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
         //usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
     }
 
     @GetMapping(value = "/resetar-senha")
-    public String resetarSenha(@RequestParam String token) {
-        return "ok";
+    public void resetarSenha(@RequestParam String token) {
         //usuarioServiceEsqueciSenha.resetarSenha(token);
     }
 }
