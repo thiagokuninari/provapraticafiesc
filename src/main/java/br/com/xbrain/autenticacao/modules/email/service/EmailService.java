@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.thymeleaf.context.Context;
@@ -92,6 +93,7 @@ public class EmailService {
                 && enviarEmail;
     }
 
+    @Async
     public void enviarEmail(List<String> emailsDestino, String assunto, String conteudo, String empresaAlias) {
         if (validaCampos(emailsDestino, empresaAlias)) {
             Email email = obterEmail(getEmails(emailsDestino), assunto, formataCorpo(conteudo));

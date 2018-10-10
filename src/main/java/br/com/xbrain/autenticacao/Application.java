@@ -6,12 +6,14 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @EntityScan(
         basePackageClasses = { Application.class, Jsr310JpaConverters.class })
 @EnableZuulProxy
 @EnableFeignClients
 @SpringBootApplication
+@EnableAsync
 public class Application {
 
     public static void main(String[] args) {
