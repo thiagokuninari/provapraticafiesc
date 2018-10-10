@@ -137,11 +137,11 @@ public class UsuarioController {
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
     public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
-        //usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
+        usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
     }
 
     @GetMapping(value = "/resetar-senha")
     public void resetarSenha(@RequestParam String token) {
-        //usuarioServiceEsqueciSenha.resetarSenha(token);
+        usuarioServiceEsqueciSenha.resetarSenha(token);
     }
 }
