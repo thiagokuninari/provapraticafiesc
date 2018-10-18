@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

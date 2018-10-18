@@ -251,10 +251,11 @@ public class UsuarioService {
                 usuario.setAlterarSenha(Eboolean.F);
             }
             usuario = repository.save(usuario);
-            entityManager.flush();
 
             tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+
+            entityManager.flush();
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -492,13 +493,13 @@ public class UsuarioService {
             usuario.setAlterarSenha(Eboolean.V);
 
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
+            repository.updateEmail(usuario.getEmail(), usuario.getId());
+            repository.save(usuario);
+            entityManager.flush();
 
             notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
 
-            repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
-            repository.updateEmail(usuario.getEmail(), usuario.getId());
-
-            repository.save(usuario);
         } catch (Exception ex) {
             enviarParaFiladeErrosUsuariosRecuperacao(usuarioMqRequest);
             log.error("Erro ao recuperar usuário da fila.", ex);
