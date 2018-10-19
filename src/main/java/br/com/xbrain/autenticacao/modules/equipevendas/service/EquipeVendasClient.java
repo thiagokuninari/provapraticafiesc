@@ -16,7 +16,7 @@ public interface EquipeVendasClient {
 
     @RequestMapping(
             method = RequestMethod.GET,
-            value = "api/equipe-vendas/obter-equipes-por-supervisor/{supervisorId}")
+            value = "api/equipe-vendas/obter-equipes-supervisionadas/{supervisorId}")
     List<EquipeVendasSupervisionadasResponse> getEquipesPorSupervisor(@PathVariable("supervisorId") Integer supervisorId);
 
 }
