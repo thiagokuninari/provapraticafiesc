@@ -6,9 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
-import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -56,40 +53,28 @@ import static org.mockito.Mockito.*;
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioServiceTest {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
     @MockBean
     private UsuarioCadastroMqSender sender;
-
     @MockBean
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
-
     @Autowired
     private UsuarioService service;
-
     @MockBean
     private AutenticacaoService autenticacaoService;
-
     @MockBean
     private EmailService emailService;
-
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @MockBean
-    private EmpresaRepository empresaRepository;
-    @MockBean
-    private UnidadeNegocioRepository unidadeNegocioRepository;
     @MockBean
     private CargoRepository cargoRepository;
     @MockBean
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -252,14 +237,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveOcorrerErroAoRecuperarUsuariosAgentesAutorizados() {
-        when(empresaRepository.findByCodigoIn(Matchers.anyCollection())).thenReturn(Arrays.asList(new Empresa(1, "NET")));
-        when(unidadeNegocioRepository.findByCodigoIn(Matchers.anyCollection())).thenReturn(Arrays.asList("PESSOAL"));
+    public void deveEnviarAFilaDeErrosAoRecuperarUsuariosAgentesAutorizados() {
         when(cargoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Cargo(1));
         when(departamentoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Departamento(2));
 
         UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(1);
+        usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("2292929292929292929229292929");
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
 
