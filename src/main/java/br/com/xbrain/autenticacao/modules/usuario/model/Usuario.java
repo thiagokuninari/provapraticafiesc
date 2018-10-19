@@ -15,7 +15,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -165,8 +164,8 @@ public class Usuario {
 
     @NotAudited
     @Column(name = "RECUPERAR_SENHA_TENTATIVA")
-    @ColumnDefault("0")
-    private Integer recuperarSenhaTentativa;
+    @NotNull
+    private Integer recuperarSenhaTentativa = 0;
 
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)

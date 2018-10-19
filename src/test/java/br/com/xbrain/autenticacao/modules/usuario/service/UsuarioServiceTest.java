@@ -7,14 +7,20 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -46,26 +53,28 @@ import static org.mockito.Mockito.*;
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioServiceTest {
 
-    @MockBean
-    private UsuarioCadastroMqSender sender;
-
-    @Autowired
-    private UsuarioService service;
-
-    @MockBean
-    private AutenticacaoService autenticacaoService;
-
-    @MockBean
-    private EmailService emailService;
-
-    @Autowired
-    private UsuarioHistoricoService usuarioHistoricoService;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+    @MockBean
+    private UsuarioCadastroMqSender sender;
+    @MockBean
+    private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
+    @Autowired
+    private UsuarioService service;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+    @MockBean
+    private EmailService emailService;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @MockBean
+    private CargoRepository cargoRepository;
+    @MockBean
+    private DepartamentoRepository departamentoRepository;
+    @MockBean
+    private NotificacaoService notificacaoService;
 
     @Before
     public void setUp() {
@@ -225,6 +234,19 @@ public class UsuarioServiceTest {
 
         Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
         Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
+    }
+
+    @Test
+    public void deveEnviarAFilaDeErrosAoRecuperarUsuariosAgentesAutorizados() {
+        when(cargoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Cargo(1));
+        when(departamentoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Departamento(2));
+
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("2292929292929292929229292929");
+        service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
+
+        verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
     }
 
     private Usuario umUsuarioComHierarquia() {
