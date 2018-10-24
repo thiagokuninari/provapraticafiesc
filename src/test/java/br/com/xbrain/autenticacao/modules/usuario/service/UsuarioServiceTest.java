@@ -13,8 +13,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
@@ -28,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -69,9 +66,9 @@ public class UsuarioServiceTest {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
-    @MockBean
+    @Autowired
     private CargoRepository cargoRepository;
-    @MockBean
+    @Autowired
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
@@ -97,7 +94,6 @@ public class UsuarioServiceTest {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
@@ -120,7 +116,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveAlterarOCargoDoUsuario() throws Exception {
+    public void deveAlterarOCargoDoUsuario() {
         UsuarioAlteracaoRequest usuarioAlteracaoRequest = new UsuarioAlteracaoRequest();
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setCargo(CodigoCargo.EXECUTIVO);
@@ -238,12 +234,11 @@ public class UsuarioServiceTest {
 
     @Test
     public void deveEnviarAFilaDeErrosAoRecuperarUsuariosAgentesAutorizados() {
-        when(cargoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Cargo(1));
-        when(departamentoRepository.findByCodigo(Matchers.anyObject())).thenReturn(new Departamento(2));
-
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("2292929292929292929229292929");
+        usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
 
         verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
