@@ -251,11 +251,9 @@ public class UsuarioService {
                 usuario.setAlterarSenha(Eboolean.F);
             }
             usuario = repository.save(usuario);
-
+            entityManager.flush();
             tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
-
-            entityManager.flush();
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
