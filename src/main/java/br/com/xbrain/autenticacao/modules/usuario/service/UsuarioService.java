@@ -314,22 +314,15 @@ public class UsuarioService {
         return existeId;
     }
 
-    private String montarMensagemDeErro(ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
-        return validarUsuario(1, 0, valores, usuarioParaAchar)
-                || validarUsuario(2, 1, valores, usuarioParaAchar)
-
-                ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
-                : "Não é possível adicionar o usuário "
-                + valores.get(1).getNome()
-                + " como superior, pois o usuário "
-                + usuarioParaAchar.getNome()
-                + " é superior a ele em sua hierarquia.";
-    }
-
-    private boolean validarUsuario(int i, int posicaoUser, ArrayList<Usuario> valores, Usuario usuarioParaAchar) {
-        return valores.size() == i
-                && valores.get(posicaoUser).equals(usuarioParaAchar)
-                && valores.contains(usuarioParaAchar);
+    private String montarMensagemDeErro(ArrayList<Usuario> usuarios, Usuario usuarioParaAchar) {
+        List<Usuario> valores = usuarios.stream().distinct().collect(Collectors.toList());
+        return valores.size() == 1
+                        ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
+                        : "Não é possível adicionar o usuário "
+                        + valores.get(1).getNome()
+                        + " como superior, pois o usuário "
+                        + usuarioParaAchar.getNome()
+                        + " é superior a ele em sua hierarquia.";
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -361,10 +354,14 @@ public class UsuarioService {
                                       ArrayList<Usuario> valores) {
         return usuarios.stream().anyMatch(usuario -> {
             boolean existe = verificarUsuariosHierarquia(usuarioParaAchar, usuario);
-            valores.add(usuario.getUsuario());
-            if (!existe && !valores.contains(usuario.getUsuarioSuperior())) {
+            if (!existe && !valores.contains(usuario.getUsuario())) {
+                valores.add(usuario.getUsuario());
+
                 existe = processarHierarquia(usuarioParaAchar, usuario, valores);
             }
+
+            valores.add(usuario.getUsuario());
+
             return existe;
         });
     }
