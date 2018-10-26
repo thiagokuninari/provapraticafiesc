@@ -156,13 +156,22 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveRetornarErroCasoOEmailJaExista() {
+    public void deveRetornarErroCasoOEmailJaExistaIndiferenteDoCase() {
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
                 .email("ADMIN@XBRAIN.COM.BR")
                 .build();
 
         String msgErro = usuarioUploadFileService
+                .validarUsuarioExistente(usuarioImportacaoRequest, false);
+        assertEquals("Usuário já salvo no banco", msgErro);
+
+        usuarioImportacaoRequest = UsuarioImportacaoPlanilha
+                .builder()
+                .email("ADMIN@XBRAIN.COM.BR".toLowerCase())
+                .build();
+
+        msgErro = usuarioUploadFileService
                 .validarUsuarioExistente(usuarioImportacaoRequest, false);
         assertEquals("Usuário já salvo no banco", msgErro);
     }
@@ -299,7 +308,7 @@ public class UsuarioUploadFileServiceTest {
         UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(48),
                 new UsuarioImportacaoRequest(true, true));
         assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco,"
-               + " sua senha foi resetada para a padrão.");
+                + " sua senha foi resetada para a padrão.");
         usuario = getUsuario(100);
         assertEquals(usuario.getAlterarSenha(), Eboolean.V);
         assertEquals(usuario.getEmail(), usuarioImportacaoPlanilha.getEmail());

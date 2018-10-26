@@ -203,7 +203,7 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
-        Optional<Usuario> usuariosSalvo = usuarioRepository.findByEmailOrCpf(usuario.getEmail(), usuario.getCpf());
+        Optional<Usuario> usuariosSalvo = usuarioRepository.findByEmailIgnoreCaseOrCpf(usuario.getEmail(), usuario.getCpf());
         StringBuilder msgErro = new StringBuilder();
         if (usuariosSalvo.isPresent()) {
             msgErro.append("Usuário já salvo no banco");
@@ -280,7 +280,7 @@ public class UsuarioUploadFileService {
             Date dataNascimento = cellDate.getDateCellValue();
             return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
-            log.error("Erro ao recuperar departamento.", ex);
+            log.error("Erro ao tratar data.", ex);
             return LocalDateTime.now();
         }
     }
