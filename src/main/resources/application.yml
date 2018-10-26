@@ -6,6 +6,10 @@ server:
   max-http-header-size: 10000000
 
 spring:
+  redis:
+    host: 192.168.1.40
+    port: 6379
+
   resources:
     chain:
       cache: false
