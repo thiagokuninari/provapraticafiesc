@@ -69,5 +69,4 @@ public class LogoutControllerTest {
                 .header("Authorization", token)
                 .accept(MediaType.APPLICATION_JSON));
     }
-
 }
