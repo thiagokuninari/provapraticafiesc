@@ -55,8 +55,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
 
     @Autowired
-    private CustomJdbcTokenStore customJdbcTokenStore;
-    @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
     private Environment environment;
