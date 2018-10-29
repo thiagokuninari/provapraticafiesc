@@ -11,11 +11,14 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @Configuration
 @EnableAuthorizationServer
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
+
+    public static String APP_CLIENT = "xbrain-app-client";
 
     @Value("${keys.private}")
     private String privateKey;
@@ -42,13 +45,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Value("${app-config.oauth-clients.mailing-api.secret}")
     private String mailingApiSecret;
 
-    @Autowired
-    private CustomJdbcTokenStore customJdbcTokenStore;
-
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
 
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private TokenStore tokenStore;
 
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
@@ -90,16 +92,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+    public void configure(AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("permitAll()");
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
-                .tokenStore(customJdbcTokenStore)
+                .tokenStore(tokenStore)
                 .accessTokenConverter(jwtAccessTokenConverter())
                 .authenticationManager(authenticationManager);
     }

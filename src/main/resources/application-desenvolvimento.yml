@@ -17,6 +17,10 @@ logging:
       org.hibernate: 'ERROR'
 
 spring:
+  redis:
+    host: 172.10.10.40
+    port: 6379
+
   rabbitmq:
       host: 172.10.10.30
       port: 5672
