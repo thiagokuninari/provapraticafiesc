@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 @Configuration
@@ -14,7 +16,7 @@ import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
-    public CustomJdbcTokenStore customJdbcTokenStore;
+    private RedisConnectionFactory redisConnectionFactory;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -25,7 +27,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
-            "/api/public/disparar-timer-inativar-usuarios"
+            "/api/public/disparar-timer-inativar-usuarios",
+            "/api/usuarios/resetar-senha/**"
         };
 
         http
@@ -43,8 +46,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     }
 
     @Override
-    public void configure(ResourceServerSecurityConfigurer resources)
-            throws Exception {
-        resources.tokenStore(customJdbcTokenStore);
+    public void configure(ResourceServerSecurityConfigurer resources) {
+        resources.tokenStore(new RedisTokenStore(redisConnectionFactory));
     }
 }

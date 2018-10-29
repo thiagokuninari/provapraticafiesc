@@ -1,9 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -41,8 +39,7 @@ public class UsuarioHierarquia {
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    public UsuarioHierarquia() {
-    }
+    public UsuarioHierarquia() { }
 
     public UsuarioHierarquia(Usuario usuarioSuperior) {
         this.usuarioSuperior = usuarioSuperior;

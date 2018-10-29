@@ -2,7 +2,11 @@ package br.com.xbrain.autenticacao.config;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevendas.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +32,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         JwtAccessTokenConverterConfigurer {
 
     @Autowired
+    private FuncionalidadeService funcionalidadeService;
+    @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private EquipeVendasService equipeVendasService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -46,6 +54,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                             usuario,
                             userAuth,
                             getAgentesAutorizadosPermitidos(usuario),
+                            getEmpresasDoUsuario(usuario),
+                            getEquipesSupervisionadas(usuario)));
                             getEmpresasDoUsuario(usuario)));
         } else {
             defaultOAuth2AccessToken.getAdditionalInformation().put("active", true);
@@ -64,14 +74,23 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
                 ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
                 : usuario.getEmpresas();
+    }
 
+    private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+                ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
+                .stream()
+                .map(EquipeVendasSupervisionadasResponse::getId)
+                .collect(Collectors.toList())
+                : Collections.emptyList();
     }
 
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
                                           List<Integer> agentesAutorizados,
-                                          List<Empresa> empresas) {
+                                          List<Empresa> empresas,
+                                          List<Integer> equipesSupervisionadas) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
@@ -108,12 +127,27 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                         .stream()
                         .map(GrantedAuthority::getAuthority)
                         .toArray());
+        token.getAdditionalInformation().put("aplicacoes",
+                getAplicacoes(usuario));
+        token.getAdditionalInformation().put("equipesSupervisionadas",
+                equipesSupervisionadas);
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
         return empresas
                 .stream()
                 .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    // TODO cachear getFuncionalidadesPermitidasAoUsuario
+    private List getAplicacoes(Usuario user) {
+        List<Funcionalidade> funcionalidade = funcionalidadeService.getFuncionalidadesPermitidasAoUsuario(user);
+        return funcionalidade
+                .stream()
+                .filter(f -> f.getPermissaoTela() == null)
+                .map(f -> f.getAplicacao().getCodigo())
+                .distinct()
                 .collect(Collectors.toList());
     }
 

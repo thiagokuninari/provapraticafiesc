@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
@@ -14,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,8 @@ public class UsuarioUploadFileService {
     private static final String SENHA_PADRAO = "102030";
     private static final int PRIMEIRA_POSICAO = 0;
     private static final int QNT_SENHA = 6;
+    private static final int TAMANHO_MAX_EMAIL = 80;
+    private static final int TAMANHO_MAX_NOME = 100;
     private static final int RADIX_LONG = 36;
 
     @Autowired
@@ -99,7 +103,7 @@ public class UsuarioUploadFileService {
                 .nome(row.getCell(NumeroCelulaUtil.CELULA_NOME).getStringCellValue())
                 .cpf(row.getCell(NumeroCelulaUtil.CELULA_CPF).getStringCellValue())
                 .email(row.getCell(NumeroCelulaUtil.CELULA_EMAIL).getStringCellValue())
-                .nascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO).getDateCellValue()))
+                .nascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO)))
                 .telefone(row.getCell(NumeroCelulaUtil.CELULA_TELEFONE).getStringCellValue())
                 .senha(passwordEncoder.encode(senha))
                 .departamento(departamento)
@@ -128,7 +132,10 @@ public class UsuarioUploadFileService {
     }
 
     private String trataString(String valor) {
-        return valor.trim().replaceAll(" ", "_");
+        return StringUtil.removerAcentos(valor)
+                .trim()
+                .replaceAll("[ -]", "_")
+                .toUpperCase();
     }
 
     protected Departamento recuperarDepartamento(String departamentoStr, Nivel nivel) {
@@ -158,7 +165,7 @@ public class UsuarioUploadFileService {
         Cargo cargo = null;
         if (nivel != null) {
             Optional<Cargo> optionalCargo = cargoRepository
-                    .findByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
+                    .findFirstByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
             if (optionalCargo.isPresent()) {
                 cargo = optionalCargo.get();
             } else {
@@ -198,13 +205,24 @@ public class UsuarioUploadFileService {
     }
 
     private String validarNivel(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNivel() == null
-                ? "Falha ao recuperar cargo/nivel" : "";
+        Nivel nivel = usuario.getNivel();
+        return nivel == null
+                ? "Falha ao recuperar cargo/nivel"
+                : isNivelImportavel(nivel.getCodigo())
+                ? ""
+                : "O nível " + nivel.getCodigo() + " não é possivel importar via arquivo.";
+    }
+
+    private boolean isNivelImportavel(CodigoNivel nivel) {
+        return !nivel.equals(CodigoNivel.MSO)
+                && !nivel.equals(CodigoNivel.OPERACAO)
+                && !nivel.equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
     protected String validarEmail(UsuarioImportacaoPlanilha usuarioImportacaoPlanilha) {
         return !EmailUtil.validar(usuarioImportacaoPlanilha.getEmail())
-                ? "O campo email está incorreto." : "";
+                || usuarioImportacaoPlanilha.getEmail().length() > TAMANHO_MAX_EMAIL
+                ? "O campo email está inválido." : "";
     }
 
     protected String validarCpf(UsuarioImportacaoPlanilha usuarioImportacaoPlanilha) {
@@ -223,7 +241,9 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarNome(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNome() == null || usuario.getNome().isEmpty()
+        return usuario.getNome() == null
+                || usuario.getNome().isEmpty()
+                || usuario.getNome().length() > TAMANHO_MAX_NOME
                 ? "Usuário está com nome inválido" : "";
     }
 
@@ -233,8 +253,9 @@ public class UsuarioUploadFileService {
                 ? "Usuário está com nascimento inválido" : "";
     }
 
-    protected LocalDateTime trataData(Date dataNascimento) {
+    protected LocalDateTime trataData(Cell cellDate) {
         try {
+            Date dataNascimento = cellDate.getDateCellValue();
             return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
             log.error("Erro ao recuperar departamento.", ex);

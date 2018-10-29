@@ -1,15 +1,15 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
+import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
@@ -21,11 +21,11 @@ public class AutenticacaoService {
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
 
     @Autowired
-    private OAuthAccessTokenRepository tokenRepository;
-    @Autowired
     private HttpServletRequest request;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private TokenStore tokenStore;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -59,14 +59,22 @@ public class AutenticacaoService {
         return usuarioAutenticado;
     }
 
-    @Transactional
     public void logout(String login) {
-        tokenRepository.deleteTokenByUsername(login);
+        tokenStore
+                .findTokensByClientIdAndUserName(
+                        AuthServerConfig.APP_CLIENT,
+                        login)
+                .forEach(token -> tokenStore.removeAccessToken(token));
     }
 
-    @Transactional
     public void logout(Integer usuarioId) {
-        usuarioRepository.findById(usuarioId).ifPresent(e -> tokenRepository.deleteTokenByUsername(e.getLogin()));
+        logout(usuarioRepository.findOne(usuarioId).getLogin());
+    }
+
+    public void logoutAllUsers() {
+        tokenStore
+                .findTokensByClientId(AuthServerConfig.APP_CLIENT)
+                .forEach(token -> tokenStore.removeAccessToken(token));
     }
 
     public static OAuth2Authentication getAuthentication() {

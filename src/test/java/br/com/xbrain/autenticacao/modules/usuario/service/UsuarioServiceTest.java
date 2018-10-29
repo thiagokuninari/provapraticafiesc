@@ -5,17 +5,26 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,27 +47,44 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioServiceTest {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
     @MockBean
     private UsuarioCadastroMqSender sender;
-
+    @MockBean
+    private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
     @Autowired
     private UsuarioService service;
-
     @MockBean
     private AutenticacaoService autenticacaoService;
-    
     @MockBean
     private EmailService emailService;
-    
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
-    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private CargoRepository cargoRepository;
+    @Autowired
+    private DepartamentoRepository departamentoRepository;
+    @MockBean
+    private NotificacaoService notificacaoService;
+
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
+    }
+
+    @Test
+    public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setCpf("2292929292929292929229292929");
+        service.saveFromQueue(usuarioMqRequest);
+        verify(sender, times(0)).sendSuccess(any());
+        verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
@@ -68,7 +94,6 @@ public class UsuarioServiceTest {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
@@ -91,7 +116,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveAlterarOCargoDoUsuario() throws Exception {
+    public void deveAlterarOCargoDoUsuario() {
         UsuarioAlteracaoRequest usuarioAlteracaoRequest = new UsuarioAlteracaoRequest();
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setCargo(CodigoCargo.EXECUTIVO);
@@ -141,34 +166,114 @@ public class UsuarioServiceTest {
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
-    
+
+    @Test
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
+                + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+        Usuario usuario = umUsuarioComLoopNaHierarquia();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
+                + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
+        Usuario usuario = umUsuarioComProximoUsuarioComoSuperior();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
+    public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Não é possível atrelar o próprio usuário em sua Hierarquia.");
+        Usuario usuario = umUsuarioComProprioUsuarioComoSuperior();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
+    @Test
+    public void deveEditarHierarquiaSemExceptions() throws Exception {
+        Usuario usuario = umUsuarioComHierarquia();
+        service.hierarquiaIsValida(usuario);
+
+    }
+
     @Test
     public void deveBuscarOsUsuarioComInatividade() throws Exception {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(2, usuarios
                 .stream()
-                .filter(u -> Arrays.asList(104,101).contains(u.getId()))
+                .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
                 .collect(Collectors.toList())
                 .size());
     }
-    
+
     @Test
     public void deveInativarOsUsuarioComInatividade() throws Exception {
         service.inativarUsuariosSemAcesso();
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(0, usuarios.size());
-                
+
         Assert.assertEquals(ESituacao.I, service.findById(101).getSituacao());
         Assert.assertEquals(ESituacao.I, service.findById(104).getSituacao());
-        
+
         Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
                 .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-        
+
         Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
                 .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-        
+
         Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
-        Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());        
+        Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
+    }
+
+    @Test
+    public void deveEnviarAFilaDeErrosAoRecuperarUsuariosAgentesAutorizados() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("2292929292929292929229292929");
+        usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
+        service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
+
+        verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
+    }
+
+    private Usuario umUsuarioComHierarquia() {
+        Usuario usuario = usuarioRepository.findOne(110);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(usuario, 113);
+        usuario.getUsuariosHierarquia().add(usuarioHierarquia);
+        return usuario;
+    }
+
+    private Usuario umUsuarioComProprioUsuarioComoSuperior() {
+        Usuario usuario = usuarioRepository.findOne(110);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(usuario, usuario.getId());
+        usuario.getUsuariosHierarquia().add(usuarioHierarquia);
+        return usuario;
+    }
+
+    private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idUsuarioSuperior) {
+        return UsuarioHierarquia.criar(usuario, idUsuarioSuperior, usuario.getId());
+    }
+
+    private Usuario umUsuarioComLoopNaHierarquia() {
+        Usuario user = usuarioRepository.findOne(114);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(user, 110);
+        user.getUsuariosHierarquia().add(usuarioHierarquia);
+        return user;
+    }
+
+    private Usuario umUsuarioComProximoUsuarioComoSuperior() {
+        Usuario user = usuarioRepository.findOne(112);
+        UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(user, 110);
+        user.getUsuariosHierarquia().add(usuarioHierarquia);
+        return user;
     }
 
     private UsuarioMqRequest umUsuario() {
@@ -176,11 +281,11 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setNome("TESTE NOVO USUARIO PARCEIROS ONLINE");
         usuarioMqRequest.setEmail("novousuarioparceirosonline@xbrain.com.br");
         usuarioMqRequest.setCpf("76696512616");
-        usuarioMqRequest.setUnidadesNegocio(Arrays.asList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
+        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
         usuarioMqRequest.setNivel(CodigoNivel.AGENTE_AUTORIZADO);
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setEmpresa(Arrays.asList(CodigoEmpresa.CLARO_MOVEL));
+        usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         return usuarioMqRequest;
     }

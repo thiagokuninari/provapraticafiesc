@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.notificacao.dto.BoaVindaAgenteAutoriza
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
@@ -16,6 +17,7 @@ public class NotificacaoService {
     @Autowired
     private EmailService emailService;
 
+    @Async
     public void enviarEmailDadosDeAcesso(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
@@ -35,6 +37,7 @@ public class NotificacaoService {
                 context);
     }
 
+    @Async
     public void enviarEmailAtualizacaoSenha(Usuario usuario, String senhaDescriptografada) {
         Context context = new Context();
         context.setVariable("nome", usuario.getNome());
@@ -54,6 +57,21 @@ public class NotificacaoService {
                 context);
     }
 
+    @Async
+    public void enviarEmailResetSenha(Usuario usuario, String link) {
+        Context context = new Context();
+        context.setVariable("nome", usuario.getNome());
+        context.setVariable("email", usuario.getEmail().toLowerCase());
+        context.setVariable("link", link);
+
+        emailService.enviarEmailTemplate(
+                Arrays.asList(usuario.getEmail()),
+                "Parceiros Online - Confirmação de Alterar a Senha",
+                "confirmar-reset-senha",
+                context);
+    }
+
+    @Async
     public void enviarEmailAtualizacaoEmail(Usuario usuario,
                                             UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Context context = new Context();
@@ -74,6 +92,7 @@ public class NotificacaoService {
                 context);
     }
 
+    @Async
     public void enviarEmailBoaVindaAgenteAutorizado(BoaVindaAgenteAutorizadoRequest request) {
         Context context = new Context();
         context.setVariable("nome", request.getAgenteAutorizadoRazaoSocial());

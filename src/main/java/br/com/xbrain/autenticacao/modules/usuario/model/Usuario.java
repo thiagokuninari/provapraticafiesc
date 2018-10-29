@@ -158,6 +158,15 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Eboolean alterarSenha;
 
+    @NotAudited
+    @Column(name = "RECUPERAR_SENHA_HASH")
+    private String recuperarSenhaHash;
+
+    @NotAudited
+    @Column(name = "RECUPERAR_SENHA_TENTATIVA")
+    @NotNull
+    private Integer recuperarSenhaTentativa = 0;
+
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
@@ -352,6 +361,10 @@ public class Usuario {
 
     public boolean hasConfiguracao() {
         return configuracao != null;
+    }
+
+    public Integer getRecuperarSenhaTentativa() {
+        return recuperarSenhaTentativa == null ? 0 : recuperarSenhaTentativa;
     }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import java.util.Collections;
@@ -20,7 +21,7 @@ import java.util.Collections;
 @EnableAuthorizationServer
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private static final int UM_MES_EM_SEGUNDOS = 2592000;
+    public static String APP_CLIENT = "xbrain-app-client";
 
     @Value("${keys.private}")
     private String privateKey;
@@ -51,6 +52,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Value("${app-config.oauth-clients.equipe-venda-api.secret}")
     private String equipeVendaApiSecret;
 
+    private static final int UM_MES_EM_SEGUNDOS = 2592000;
+
     @Autowired
     private CustomJdbcTokenStore customJdbcTokenStore;
     @Autowired
@@ -59,6 +62,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private Environment environment;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private TokenStore tokenStore;
 
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
@@ -105,7 +110,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+    public void configure(AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("permitAll()");
@@ -115,9 +120,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
-                .tokenStore(customJdbcTokenStore)
+                .tokenStore(tokenStore)
                 .accessTokenConverter(jwtAccessTokenConverter())
                 .authenticationManager(authenticationManager);
     }

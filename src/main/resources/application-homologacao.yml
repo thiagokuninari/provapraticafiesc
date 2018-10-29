@@ -13,6 +13,10 @@ spring:
     hikari:
       maximumPoolSize: 10
 
+  redis:
+    host: 172.10.10.80
+    port: 6379
+
   rabbitmq:
     host: 172.10.10.70
     port: 5672

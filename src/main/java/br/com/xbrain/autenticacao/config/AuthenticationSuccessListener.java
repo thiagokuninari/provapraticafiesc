@@ -7,8 +7,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 public class AuthenticationSuccessListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     @Autowired
@@ -20,7 +21,7 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         deslogaUsuariosAutenticadosComOMesmoLogin(event);
-        registrarUltimoAcesso(event);
+        //registrarUltimoAcesso(event);
     }
 
     private void deslogaUsuariosAutenticadosComOMesmoLogin(AuthenticationSuccessEvent event) {
@@ -29,9 +30,9 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
                     event.getSource()).getPrincipal()).getUsername();
             autenticacaoService.logout(login);
         }
-    }    
+    }
 
-    private void registrarUltimoAcesso(AuthenticationSuccessEvent event) {
+    public void registrarUltimoAcesso(AuthenticationSuccessEvent event) {
         if (event.getAuthentication().isAuthenticated() && event.getAuthentication().getPrincipal() instanceof User) {
             String login = ((User)event.getAuthentication().getPrincipal()).getUsername();
             Integer usuarioId =  new Integer(login.split("-")[0]);

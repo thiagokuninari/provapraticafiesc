@@ -1,4 +1,5 @@
 app-config:
+  url-servico-email: http://172.10.10.41:8080/emails/
   services:
     autenticacao:
       url: http://172.10.10.33:8096
@@ -16,6 +17,10 @@ logging:
       org.hibernate: 'ERROR'
 
 spring:
+  redis:
+    host: 172.10.10.40
+    port: 6379
+
   rabbitmq:
       host: 172.10.10.30
       port: 5672
