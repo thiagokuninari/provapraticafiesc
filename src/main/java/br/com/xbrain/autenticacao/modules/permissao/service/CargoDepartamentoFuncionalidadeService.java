@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.repository.OAuthAccessTokenRepository;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
@@ -31,8 +30,6 @@ public class CargoDepartamentoFuncionalidadeService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
-    @Autowired
-    private OAuthAccessTokenRepository tokenRepository;
 
     public Page<CargoDepartamentoFuncionalidade> getAll(PageRequest pageRequest,
                                                         CargoDepartamentoFuncionalidadeFiltros filtros) {
@@ -86,8 +83,8 @@ public class CargoDepartamentoFuncionalidadeService {
 
     @Transactional
     public void deslogar(Integer cargoId, Integer departamentoId) {
-        List<Usuario> usuarios = usuarioRepository.findAllByCargoAndDepartamento(
-                new Cargo(cargoId), new Departamento(departamentoId));
-        usuarios.forEach(x -> tokenRepository.deleteTokenByUsername(x.getLogin()));
+        usuarioRepository
+                .findAllByCargoAndDepartamento(new Cargo(cargoId), new Departamento(departamentoId))
+                .forEach(u -> autenticacaoService.logout(u.getLogin()));
     }
 }
