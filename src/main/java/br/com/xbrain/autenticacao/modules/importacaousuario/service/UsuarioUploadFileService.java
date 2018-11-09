@@ -203,15 +203,14 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
-        Optional<Usuario> usuariosSalvo = usuarioRepository.findByEmailIgnoreCaseOrCpf(usuario.getEmail(), usuario.getCpf());
         StringBuilder msgErro = new StringBuilder();
-        if (usuariosSalvo.isPresent()) {
+
+        usuarioRepository.findByEmailIgnoreCaseOrCpf(usuario.getEmail(), usuario.getCpf()).ifPresent( usuarioSalvo -> {
             msgErro.append("Usuário já salvo no banco");
             if (resetarSenhaUsuarioSalvo) {
-                msgErro.append(tratarUsuarioSalvo(usuariosSalvo.get()));
+                msgErro.append(tratarUsuarioSalvo(usuarioSalvo));
             }
-        }
-
+        } );
         return msgErro.toString();
     }
 
