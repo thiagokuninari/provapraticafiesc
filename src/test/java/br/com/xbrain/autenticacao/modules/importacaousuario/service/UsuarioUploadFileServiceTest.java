@@ -77,7 +77,7 @@ public class UsuarioUploadFileServiceTest {
                 .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
         assertNotNull(usuarioImportacaoRequest);
         assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(0),
-                "O nível AGENTE_AUTORIZADO não é possivel importar via arquivo.");
+                "O nível AGENTE_AUTORIZADO não é possível importar via arquivo.");
     }
 
     @Test
@@ -233,7 +233,7 @@ public class UsuarioUploadFileServiceTest {
     public void deveRetornarErroCasoNaoLocalizeONivel() {
         UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
                 .buildUsuario(umaLinha(3), "102030", false);
-        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nivel");
+        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nível");
     }
 
     @Test

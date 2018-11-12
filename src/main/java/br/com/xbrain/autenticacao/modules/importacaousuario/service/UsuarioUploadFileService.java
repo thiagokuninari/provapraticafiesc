@@ -228,10 +228,10 @@ public class UsuarioUploadFileService {
     private String validarNivel(UsuarioImportacaoPlanilha usuario) {
         Nivel nivel = usuario.getNivel();
         return nivel == null
-                ? "Falha ao recuperar cargo/nivel"
+                ? "Falha ao recuperar cargo/nível"
                 : isNivelImportavel(nivel.getCodigo())
                 ? ""
-                : "O nível " + nivel.getCodigo() + " não é possivel importar via arquivo.";
+                : "O nível " + nivel.getCodigo() + " não é possível importar via arquivo.";
     }
 
     private boolean isNivelImportavel(CodigoNivel nivel) {
