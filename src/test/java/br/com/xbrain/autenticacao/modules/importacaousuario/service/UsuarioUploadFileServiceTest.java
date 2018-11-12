@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
+import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -37,7 +40,10 @@ import static org.mockito.Mockito.*;
 public class UsuarioUploadFileServiceTest {
 
     @Autowired
-    UsuarioUploadFileService usuarioUploadFileService;
+    private UsuarioUploadFileService usuarioUploadFileService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -53,10 +59,10 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void deveProcessarRowERetornarErroDeCpfInvalido() {
-        Row row = PlanilhaService.converterTipoCelulaParaString(sheet.getRow(2));
+        Row row = umaLinha(2);
 
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
-                .processarUsuarios(row, true);
+                .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
         assertNotNull(usuarioImportacaoRequest);
         assertNotNull(usuarioImportacaoRequest.getCpf());
         assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(1),
@@ -65,13 +71,13 @@ public class UsuarioUploadFileServiceTest {
 
     @Test
     public void deveProcessarRowERetornarErroDeNivelInvalido() {
-        Row row = PlanilhaService.converterTipoCelulaParaString(sheet.getRow(2));
+        Row row = umaLinha(2);
 
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
-                .processarUsuarios(row, true);
+                .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
         assertNotNull(usuarioImportacaoRequest);
         assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(0),
-                "O nível AGENTE_AUTORIZADO não é possivel importar via arquivo.");
+                "O nível AGENTE_AUTORIZADO não é possível importar via arquivo.");
     }
 
     @Test
@@ -134,7 +140,7 @@ public class UsuarioUploadFileServiceTest {
                 .cpf("38957979875").build();
 
         String msgErro = usuarioUploadFileService
-                .validarUsuarioExistente(usuario);
+                .validarUsuarioExistente(usuario, false);
         assertEquals("Usuário já salvo no banco", msgErro);
     }
 
@@ -145,19 +151,28 @@ public class UsuarioUploadFileServiceTest {
                 .cpf("9612473633").build();
 
         String msgErro = usuarioUploadFileService
-                .validarUsuarioExistente(usuario);
+                .validarUsuarioExistente(usuario, false);
         assertNotEquals("Usuário já salvo no banco", msgErro);
     }
 
     @Test
-    public void deveRetornarErroCasoOEmailJaExista() {
+    public void deveRetornarErroCasoOEmailJaExistaIndiferenteDoCase() {
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
                 .builder()
                 .email("ADMIN@XBRAIN.COM.BR")
                 .build();
 
         String msgErro = usuarioUploadFileService
-                .validarUsuarioExistente(usuarioImportacaoRequest);
+                .validarUsuarioExistente(usuarioImportacaoRequest, false);
+        assertEquals("Usuário já salvo no banco", msgErro);
+
+        usuarioImportacaoRequest = UsuarioImportacaoPlanilha
+                .builder()
+                .email("ADMIN@XBRAIN.COM.BR".toLowerCase())
+                .build();
+
+        msgErro = usuarioUploadFileService
+                .validarUsuarioExistente(usuarioImportacaoRequest, false);
         assertEquals("Usuário já salvo no banco", msgErro);
     }
 
@@ -169,7 +184,7 @@ public class UsuarioUploadFileServiceTest {
                 .build();
 
         String msgErro = usuarioUploadFileService
-                .validarUsuarioExistente(usuarioImportacaoRequest);
+                .validarUsuarioExistente(usuarioImportacaoRequest, false);
         assertNotEquals("Usuário já salvo no banco", msgErro);
     }
 
@@ -217,9 +232,8 @@ public class UsuarioUploadFileServiceTest {
     @Test
     public void deveRetornarErroCasoNaoLocalizeONivel() {
         UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
-                .buildUsuario(PlanilhaService
-                        .converterTipoCelulaParaString(sheet.getRow(3)), "102030");
-        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nivel");
+                .buildUsuario(umaLinha(3), "102030", false);
+        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nível");
     }
 
     @Test
@@ -255,29 +269,57 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveEnviarOsDadosDeAcessoQuandoPassadoOParametroSenhaPadraoFalse() {
+    public void deveEnviarEmailQuandoSenhaPadraoFalse() {
         when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
 
-        Usuario usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setEmail("Joao@mail.com");
-        usuario.setNome("Joao");
-        usuarioUploadFileService.notificarUsuario(usuario, "204050", false);
+        usuarioUploadFileService.processarUsuarios(umaLinha(4),
+                new UsuarioImportacaoRequest(false, false));
 
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
     }
 
     @Test
-    public void deveEnviarOsDadosDeAcessoQuandoPassadoOParametroSenhaPadraoTrue() {
+    public void deveEnviarEmailSomenteQuandoSenhaPadraoFalse() {
         when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
 
-        Usuario usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setEmail("Joao@mail.com");
-        usuario.setNome("Joao");
-        usuarioUploadFileService.notificarUsuario(usuario, "204050", true);
-
+        usuarioUploadFileService.processarUsuarios(umaLinha(4),
+                new UsuarioImportacaoRequest(true, false));
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
+    }
+
+    @Test
+    public void deveResetarSenhaQuandoResetarSenhaForTrue() {
+        Usuario usuario = getUsuario(366);
+
+        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
+        UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(18),
+                new UsuarioImportacaoRequest(false, false));
+        assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco");
+        usuario = getUsuario(366);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
+        assertEquals(usuario.getCpf(), usuarioImportacaoPlanilha.getCpf());
+    }
+
+    @Test
+    public void deveResetarSenhaSomenteQuandoResetarSenhaForTrue() {
+        Usuario usuario = getUsuario(100);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.F);
+
+        UsuarioImportacaoPlanilha usuarioImportacaoPlanilha = usuarioUploadFileService.processarUsuarios(umaLinha(48),
+                new UsuarioImportacaoRequest(true, true));
+        assertEquals(usuarioImportacaoPlanilha.getMotivoNaoImportacao().get(0), "Usuário já salvo no banco,"
+                + " sua senha foi resetada para a padrão.");
+        usuario = getUsuario(100);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+        assertEquals(usuario.getEmail(), usuarioImportacaoPlanilha.getEmail());
+    }
+
+    private Usuario getUsuario(Integer id) {
+        return usuarioRepository.findOne(id);
+    }
+
+    private Row umaLinha(int i) {
+        return PlanilhaService.converterTipoCelulaParaString(sheet.getRow(i));
     }
 
 }

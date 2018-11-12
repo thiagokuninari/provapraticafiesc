@@ -39,7 +39,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
 
-    Integer countByEmailOrCpf(String email, String cpf);
+    Optional<Usuario> findByEmailIgnoreCaseOrCpf(String email, String cpf);
 
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
@@ -75,4 +75,5 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     @Query("SELECT x.unidadesNegocios FROM Usuario x WHERE x.id = :id")
     List<UnidadeNegocio> findUnidadesNegociosById(@Param("id") Integer id);
+
 }
