@@ -29,6 +29,7 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -205,12 +206,17 @@ public class UsuarioUploadFileService {
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
         StringBuilder msgErro = new StringBuilder();
 
-        usuarioRepository.findByEmailIgnoreCaseOrCpf(usuario.getEmail(), usuario.getCpf()).ifPresent( usuarioSalvo -> {
+        List<Usuario> listaUsuariosPresentes = usuarioRepository.findAllByEmailIgnoreCaseOrCpf(usuario.getEmail(),
+                usuario.getCpf());
+
+        if (listaUsuariosPresentes.size() > 0) {
             msgErro.append("Usuário já salvo no banco");
-            if (resetarSenhaUsuarioSalvo) {
-                msgErro.append(tratarUsuarioSalvo(usuarioSalvo));
-            }
-        } );
+            listaUsuariosPresentes.forEach(usuarioSalvo -> {
+                if (resetarSenhaUsuarioSalvo) {
+                    msgErro.append(tratarUsuarioSalvo(usuarioSalvo));
+                }
+            });
+        }
         return msgErro.toString();
     }
 
