@@ -62,7 +62,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.totalPages", is(56)))
-                .andExpect(jsonPath("$.totalElements", is(550)));
+                .andExpect(jsonPath("$.totalElements", is(551)));
     }
 
     @Test
