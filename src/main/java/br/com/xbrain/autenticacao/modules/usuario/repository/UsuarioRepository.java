@@ -39,7 +39,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
 
-    Optional<Usuario> findByEmailIgnoreCaseOrCpf(String email, String cpf);
+    List<Usuario> findAllByEmailIgnoreCaseOrCpf(String email, String cpf);
 
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
