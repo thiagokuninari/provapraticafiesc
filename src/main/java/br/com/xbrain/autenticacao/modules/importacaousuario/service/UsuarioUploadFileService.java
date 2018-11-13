@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoReposit
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -211,19 +213,17 @@ public class UsuarioUploadFileService {
 
         if (listaUsuariosPresentes.size() > 0) {
             msgErro.append("Usuário já salvo no banco");
-            listaUsuariosPresentes.forEach(usuarioSalvo -> {
-                if (resetarSenhaUsuarioSalvo) {
-                    msgErro.append(tratarUsuarioSalvo(usuarioSalvo));
-                }
-            });
+            if (resetarSenhaUsuarioSalvo) {
+                listaUsuariosPresentes.parallelStream().forEach(this::tratarUsuarioSalvo);
+                msgErro.append(", sua senha foi resetada para a padrão.");
+            }
         }
         return msgErro.toString();
     }
 
-    private String tratarUsuarioSalvo(Usuario usuario) {
+    private void tratarUsuarioSalvo(Usuario usuario) {
         resetarSenhaUsuario(usuario);
         usuarioRepository.save(usuario);
-        return ", sua senha foi resetada para a padrão.";
     }
 
     private void resetarSenhaUsuario(Usuario usuario) {
@@ -233,7 +233,7 @@ public class UsuarioUploadFileService {
 
     private String validarNivel(UsuarioImportacaoPlanilha usuario) {
         Nivel nivel = usuario.getNivel();
-        return nivel == null
+        return ObjectUtils.isEmpty(nivel)
                 ? "Falha ao recuperar cargo/nível"
                 : isNivelImportavel(nivel.getCodigo())
                 ? ""
@@ -258,32 +258,34 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarCargo(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getCargo() == null
+        return ObjectUtils.isEmpty(usuario.getCargo())
                 ? "Usuário está com cargo inválido" : "";
     }
 
     protected String validarDepartamento(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getDepartamento() == null
+        return ObjectUtils.isEmpty(usuario.getDepartamento())
                 ? "Usuário está com departamento inválido" : "";
     }
 
     protected String validarNome(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNome() == null
+        return ObjectUtils.isEmpty(usuario.getNome())
                 || usuario.getNome().isEmpty()
                 || usuario.getNome().length() > TAMANHO_MAX_NOME
                 ? "Usuário está com nome inválido" : "";
     }
 
     protected String validarNascimento(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNascimento() == null
+        return ObjectUtils.isEmpty(usuario.getNascimento())
                 || usuario.getNascimento().isAfter(LocalDateTime.now().minusHours(1L))
                 ? "Usuário está com nascimento inválido" : "";
     }
 
     protected LocalDateTime trataData(Cell cellDate) {
         try {
-            Date dataNascimento = cellDate.getDateCellValue();
-            return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return cellDate.getCellTypeEnum().equals(CellType.STRING)
+                    ? LocalDate.parse(cellDate.getStringCellValue(), formatter).atStartOfDay()
+                    : cellDate.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
             log.error("Erro ao tratar data.", ex);
             return LocalDateTime.now();
