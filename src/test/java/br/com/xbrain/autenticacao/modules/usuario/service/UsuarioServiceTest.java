@@ -15,7 +15,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -55,8 +54,6 @@ public class UsuarioServiceTest {
     public ExpectedException thrown = ExpectedException.none();
     @MockBean
     private UsuarioCadastroMqSender sender;
-    @MockBean
-    private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @MockBean
     private UsuarioRecuperacaoMqSender usuarioRecuperacaoMqSender;
     @Autowired
@@ -245,32 +242,6 @@ public class UsuarioServiceTest {
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
 
         verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
-    }
-
-    @Test
-    public void deveEnviarFilaDeAtualizarUsuariosNoPolQuandoForSocioPrincipal() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setSituacao(ESituacao.A);
-        service.saveFromQueue(usuarioMqRequest);
-
-        verify(atualizarUsuarioMqSender, times(1)).sendSuccess(any());
-    }
-
-    @Test
-    public void naoDeveEnviarFilaDeAtualizarUsuariosNoPolQuandoNaoForSocioPrincipal() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_ACEITE);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setSituacao(ESituacao.A);
-        service.saveFromQueue(usuarioMqRequest);
-
-        verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 
     private Usuario umUsuarioComHierarquia() {

@@ -62,9 +62,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-alterar-situacao}")
     private String usuarioAlterarSituacaoMq;
 
-    @Value("${app-config.queue.atualizar-usuario-pol}")
-    private String atualizarUsuarioPOlMq;
-
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -78,11 +75,6 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroMq() {
         return new Queue(usuarioCadastroMq, false);
-    }
-
-    @Bean
-    Queue atualizarUsuarioPOlMq() {
-        return new Queue(atualizarUsuarioPOlMq, false);
     }
 
     @Bean
@@ -228,10 +220,5 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAlterarSituacaoBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAlterarSituacaoMq()).to(exchange).with(usuarioAlterarSituacaoMq);
-    }
-
-    @Bean
-    public Binding atualizarUsuarioPolBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(atualizarUsuarioPOlMq()).to(exchange).with(usuarioAlterarSituacaoMq);
     }
 }
