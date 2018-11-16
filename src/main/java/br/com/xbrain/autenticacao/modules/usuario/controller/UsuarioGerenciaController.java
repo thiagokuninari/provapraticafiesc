@@ -32,9 +32,7 @@ public class UsuarioGerenciaController {
 
     @RequestMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
-        Usuario aa = service.findByIdComAa(id);
-        aa.forceLoad();
-        return UsuarioDto.convertTo(aa);
+        return UsuarioDto.convertTo(service.findById(id));
     }
 
     @GetMapping
