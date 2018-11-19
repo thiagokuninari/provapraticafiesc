@@ -27,10 +27,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +100,8 @@ public class UsuarioService {
     private ConfiguracaoRepository configuracaoRepository;
     @Autowired
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
+    @Autowired
+    private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
@@ -248,6 +247,7 @@ public class UsuarioService {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             usuario = repository.save(usuario);
@@ -265,6 +265,23 @@ public class UsuarioService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    private void atualizarUsuariosParceiros(Usuario usuario) {
+        cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
+            if (isSocioPrincipal(cargo.getCodigo())) {
+                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuario);
+                try {
+                    enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
+                } catch (Exception ex) {
+                    log.error("Erro ao enviar usuario para atualizar no Parceiros Online", ex.getMessage());
+                }
+            }
+        });
+    }
+
+    private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
+        return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
     private void validar(Usuario usuario) {
@@ -317,12 +334,12 @@ public class UsuarioService {
     private String montarMensagemDeErro(ArrayList<Usuario> usuarios, Usuario usuarioParaAchar) {
         List<Usuario> valores = usuarios.stream().distinct().collect(Collectors.toList());
         return valores.size() == 1
-                        ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
-                        : "Não é possível adicionar o usuário "
-                        + valores.get(1).getNome()
-                        + " como superior, pois o usuário "
-                        + usuarioParaAchar.getNome()
-                        + " é superior a ele em sua hierarquia.";
+                ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
+                : "Não é possível adicionar o usuário "
+                + valores.get(1).getNome()
+                + " como superior, pois o usuário "
+                + usuarioParaAchar.getNome()
+                + " é superior a ele em sua hierarquia.";
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -507,6 +524,10 @@ public class UsuarioService {
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccess(usuarioDto);
+    }
+
+    private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
+        atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
 
     private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
