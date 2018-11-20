@@ -29,21 +29,23 @@ public class LogRequestService {
     @Async
     public void saveAsync(String url,
                           String method,
+                          String urlParam,
                           Integer usuario,
                           String email,
                           Integer usuarioEmulador,
                           String ip) {
-        save(url, method, usuario, email, usuarioEmulador, ip);
+        save(url, method, urlParam, usuario, email, usuarioEmulador, ip);
     }
 
     public LogRequest save(String url,
                            String method,
+                           String urlParam,
                            Integer usuario,
                            String email,
                            Integer usuarioEmulador,
                            String ip) {
         if (deveArmazenarLogUrl(url) && deveLogarUsuarioDominio(email)) {
-            return save(LogRequest.build(usuario, url, method, usuarioEmulador, ip));
+            return save(LogRequest.build(usuario, url, urlParam, method, usuarioEmulador, ip));
         }
         return null;
     }
