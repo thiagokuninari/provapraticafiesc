@@ -129,6 +129,9 @@ app-config:
       #url: http://localhost:8099
     vendas:
       url: http://localhost:8097
+    mailing:
+#      url: http://localhost:8095
+      url: http://mailing-api-dev.conexaoclarobrasil.com.br/
 
 flyway:
   enabled: true
@@ -146,6 +149,9 @@ zuul:
     parceiros:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.parceiros-online.url}
+    mailing:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.mailing.url}
 
   host:
     connect-timeout-millis: 1800000
