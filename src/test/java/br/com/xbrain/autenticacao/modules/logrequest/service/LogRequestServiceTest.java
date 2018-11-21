@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -22,14 +21,19 @@ public class LogRequestServiceTest {
 
     @Autowired
     private LogRequestService service;
+    private static final int TAMANHO_MAXIMO = 255;
+    String urlParamMaior = "?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'"
+            + "?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&"
+            + "?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'&?nome='teste'";
 
     @Test
     public void deveGravarOLog() {
-        LogRequest res = service.save("/api/usuarios/gerencia", "POST",
+        LogRequest res = service.save("/api/usuarios/gerencia", "POST", "?nome='teste'", null,
                 101, OPERACAO_GERENTE_COMERCIAL, 101, "200.0.0.1");
         assertNotNull(res.getId());
         assertNotNull(res.getIp());
         assertNotNull(res.getUrl());
+        assertNotNull(res.getUrlParam());
         assertNotNull(res.getUsuario().getId());
         assertNotNull(res.getDataCadastro());
         assertNotNull(res.getUsuarioEmulador());
@@ -37,14 +41,21 @@ public class LogRequestServiceTest {
 
     @Test
     public void deveNaoGravarOLog() {
-        LogRequest res = service.save("/api/usuarios/gerencia", "POST",
+        LogRequest res = service.save("/api/usuarios/gerencia", "POST",urlParamMaior,null,
                 100, ADMIN, 101, "200.0.0.1");
         assertNull(res);
     }
 
     @Test
+    public void deveValidarTamanhoDaUrlParamComMaisDe255Caracteres() {
+        LogRequest res = service.save("/api/usuarios/gerencia", "POST", urlParamMaior, null,
+                101, OPERACAO_GERENTE_COMERCIAL, 101, "200.0.0.1");
+        assertTrue(res.getUrlParam().length() <= TAMANHO_MAXIMO);
+    }
+
+    @Test
     public void deveNaoArmazenarUrlsNaoMapeadas() {
-        LogRequest res = service.save("/api/teste", "POST",
+        LogRequest res = service.save("/api/teste", "POST","?nome='teste'",null,
                 100, ADMIN, 101, "200.0.0.1");
         assertNull(res);
     }

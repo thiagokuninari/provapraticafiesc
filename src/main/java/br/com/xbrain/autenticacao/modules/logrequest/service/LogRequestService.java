@@ -10,13 +10,14 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class LogRequestService {
 
     @Autowired
     private LogRequestRepository repository;
-
+    private static final int TAMANHO_MAXIMO = 255;
     private static List<String> urlsArmazenar = Arrays.asList(
             "/oauth/token",
             "/api/emular",
@@ -30,22 +31,27 @@ public class LogRequestService {
     public void saveAsync(String url,
                           String method,
                           String urlParam,
+                          String dados,
                           Integer usuario,
                           String email,
                           Integer usuarioEmulador,
                           String ip) {
-        save(url, method, urlParam, usuario, email, usuarioEmulador, ip);
+        save(url, method, urlParam, dados, usuario, email, usuarioEmulador, ip);
     }
 
     public LogRequest save(String url,
                            String method,
                            String urlParam,
+                           String dados,
                            Integer usuario,
                            String email,
                            Integer usuarioEmulador,
                            String ip) {
         if (deveArmazenarLogUrl(url) && deveLogarUsuarioDominio(email)) {
-            return save(LogRequest.build(usuario, url, urlParam, method, usuarioEmulador, ip));
+            if (!Objects.isNull(urlParam) && urlParam.length() > TAMANHO_MAXIMO) {
+                urlParam = urlParam.substring(0,TAMANHO_MAXIMO);
+            }
+            return save(LogRequest.build(usuario, url, method, urlParam, dados, usuarioEmulador, ip));
         }
         return null;
     }
