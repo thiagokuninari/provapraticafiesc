@@ -33,9 +33,17 @@ public class LogRequest {
     private String method;
     private String ip;
 
+    @Column(name = "URL_PARAMETROS")
+    private String urlParam;
+
+    @Column(name = "DADOS")
+    private String dados;
+
     public static LogRequest build(Integer usuarioId,
                                    String url,
                                    String method,
+                                   String urlParam,
+                                   String dados,
                                    Integer usuarioEmulador,
                                    String ip) {
         LogRequest logRequest = new LogRequest();
@@ -44,6 +52,8 @@ public class LogRequest {
         logRequest.setMethod(method);
         logRequest.setUsuarioEmulador(usuarioEmulador);
         logRequest.setIp(ip);
+        logRequest.setUrlParam(urlParam);
+        logRequest.setDados(dados);
         return logRequest;
     }
 }
