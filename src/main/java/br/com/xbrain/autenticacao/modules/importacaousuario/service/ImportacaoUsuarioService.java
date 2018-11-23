@@ -35,7 +35,7 @@ public class ImportacaoUsuarioService {
                 throw new ValidacaoException("Erro. Arquivo Inválido.");
             }
             return StreamSupport
-                    .stream(sheet.spliterator(), true)
+                    .stream(sheet.spliterator(), false)
                     .filter(row -> row.getRowNum() > NumeroCelulaUtil.PRIMEIRA_LINHA)
                     .filter(PlanilhaService::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
