@@ -36,10 +36,11 @@ public class ImportacaoUsuarioService {
             }
             return StreamSupport
                     .stream(sheet.spliterator(), false)
+                    .parallel()
                     .filter(row -> row.getRowNum() > NumeroCelulaUtil.PRIMEIRA_LINHA)
                     .filter(PlanilhaService::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
-                    .map(row -> usuarioUploadFile.processarUsuarios(row, usuario.isSenhaPadrao()))
+                    .map(row -> usuarioUploadFile.processarUsuarios(row, usuario))
                     .collect(Collectors.toList());
         } catch (ValidacaoException ex) {
             log.error("Erro. Arquivo Inválido.", ex);

@@ -40,7 +40,7 @@ public class UsuarioServiceEsqueciSenha {
 
     @Transactional
     public void enviarConfirmacaoResetarSenha(String email) {
-        Usuario usuario = repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = repository.findUsuarioByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         String hash = usuario.getRecuperarSenhaHash();
         if (hash == null) {
@@ -92,7 +92,7 @@ public class UsuarioServiceEsqueciSenha {
     public void resetarSenha(String hash) {
         try {
             Claims deserializedHash = jsonWebTokenService.validateTokenPasswordReset(hash).getBody();
-            Usuario usuario = repository.findByEmail(deserializedHash.get("email").toString())
+            Usuario usuario = repository.findUsuarioByEmail(deserializedHash.get("email").toString())
                     .orElseThrow(() -> EX_NAO_ENCONTRADO);
             if (usuario.getRecuperarSenhaHash() != null && usuario.getRecuperarSenhaHash().contentEquals(hash)) {
                 String senhaDescriptografada = StringUtil.getSenhaRandomica(MAX_CARACTERES_SENHA);

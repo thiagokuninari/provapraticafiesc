@@ -9,6 +9,9 @@ spring:
   redis:
     host: 192.168.1.40
     port: 6379
+    pool:
+      max-active: 120
+      max-idle: 40
 
   resources:
     chain:
@@ -90,6 +93,7 @@ app-config:
     usuario-inativar: usuario-inativar.queue
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
+    atualizar-usuario-pol: atualizar-usuario-pol.queue
 
   oauth-clients:
     autenticacao-api:

@@ -43,7 +43,7 @@ public class ImportacaoUsuarioControllerTest {
                         "{\"file\":[{\"preview\":"
                                 + "\"blob:http://localhost:3100/5fa6d20c-8b61-4500-a0e9-5c9184e2c36d\"}],"
                                 + "\"senhaPadrao\":true}")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.ALL_VALUE))
                 .andExpect(status().isOk());
     }

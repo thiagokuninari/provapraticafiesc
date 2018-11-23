@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
+import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -16,16 +18,20 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoReposit
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -64,20 +70,22 @@ public class UsuarioUploadFileService {
 
     private final Logger log = LoggerFactory.getLogger(UsuarioUploadFileService.class);
 
-    protected UsuarioImportacaoPlanilha processarUsuarios(Row row, boolean senhaPadrao) {
-        String senhaDescriptografada = tratarSenha(senhaPadrao);
-        UsuarioImportacaoPlanilha usuario = buildUsuario(row, senhaDescriptografada);
-        validarUsuarioExistente(usuario);
+    protected UsuarioImportacaoPlanilha processarUsuarios(Row row, UsuarioImportacaoRequest request) {
+        String senhaDescriptografada = tratarSenha(request.isSenhaPadrao());
+        UsuarioImportacaoPlanilha usuario = buildUsuario(row, senhaDescriptografada, request.isResetarSenhaUsuarioSalvo());
+        validarUsuarioExistente(usuario, request.isResetarSenhaUsuarioSalvo());
 
         if (usuario.getMotivoNaoImportacao().isEmpty()) {
             Usuario usuarioSalvo = salvarUsuario(usuario);
-            notificarUsuario(usuarioSalvo, senhaDescriptografada, senhaPadrao);
+            if (!request.isSenhaPadrao()) {
+                notificarUsuario(usuarioSalvo, senhaDescriptografada);
+            }
         }
         return usuario;
     }
 
-    protected void notificarUsuario(Usuario usuarioSalvo, String senhaDescriptografada, boolean senhaPadrao) {
-        if (!senhaPadrao && usuarioSalvo != null && usuarioSalvo.getId() != null) {
+    protected void notificarUsuario(Usuario usuarioSalvo, String senhaDescriptografada) {
+        if (!ObjectUtils.isEmpty(usuarioSalvo) && !ObjectUtils.isEmpty(usuarioSalvo.getId())) {
             notificacaoService.enviarEmailDadosDeAcesso(usuarioSalvo, senhaDescriptografada);
         }
     }
@@ -87,7 +95,7 @@ public class UsuarioUploadFileService {
                 ? SENHA_PADRAO : getSenhaRandomica();
     }
 
-    protected UsuarioImportacaoPlanilha buildUsuario(Row row, String senha) {
+    protected UsuarioImportacaoPlanilha buildUsuario(Row row, String senha, boolean resetarSenhaUsuarioSalvo) {
 
         Nivel nivel = recuperarNivel(row.getCell(NumeroCelulaUtil.CELULA_NIVEL).getStringCellValue());
 
@@ -111,15 +119,15 @@ public class UsuarioUploadFileService {
                 .nivel(nivel)
                 .build();
 
-        return validarUsuario(usuario);
+        return validarUsuario(usuario, resetarSenhaUsuarioSalvo);
     }
 
-    protected UsuarioImportacaoPlanilha validarUsuario(UsuarioImportacaoPlanilha usuario) {
+    protected UsuarioImportacaoPlanilha validarUsuario(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
         usuario.setMotivoNaoImportacao(
                 Stream.of(
                         validarNivel(usuario),
                         validarEmail(usuario),
-                        validarUsuarioExistente(usuario),
+                        validarUsuarioExistente(usuario, resetarSenhaUsuarioSalvo),
                         validarCpf(usuario),
                         validarNome(usuario),
                         validarDepartamento(usuario),
@@ -197,20 +205,39 @@ public class UsuarioUploadFileService {
         return tag.substring(PRIMEIRA_POSICAO, QNT_SENHA);
     }
 
-    protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario) {
-        Integer qntUsuariosSalvos = usuarioRepository.countByEmailOrCpf(usuario.getEmail(), usuario.getCpf());
+    protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
+        StringBuilder msgErro = new StringBuilder();
 
-        return (qntUsuariosSalvos != 0)
-                ? "Usuário já salvo no banco" : "";
+        List<Usuario> listaUsuariosPresentes = usuarioRepository.findAllByEmailIgnoreCaseOrCpf(usuario.getEmail(),
+                usuario.getCpf());
+
+        if (listaUsuariosPresentes.size() > 0) {
+            msgErro.append("Usuário já salvo no banco");
+            if (resetarSenhaUsuarioSalvo) {
+                listaUsuariosPresentes.parallelStream().forEach(this::tratarUsuarioSalvo);
+                msgErro.append(", sua senha foi resetada para a padrão.");
+            }
+        }
+        return msgErro.toString();
+    }
+
+    private void tratarUsuarioSalvo(Usuario usuario) {
+        resetarSenhaUsuario(usuario);
+        usuarioRepository.save(usuario);
+    }
+
+    private void resetarSenhaUsuario(Usuario usuario) {
+        usuario.setAlterarSenha(Eboolean.V);
+        usuario.setSenha(passwordEncoder.encode(SENHA_PADRAO));
     }
 
     private String validarNivel(UsuarioImportacaoPlanilha usuario) {
         Nivel nivel = usuario.getNivel();
-        return nivel == null
-                ? "Falha ao recuperar cargo/nivel"
+        return ObjectUtils.isEmpty(nivel)
+                ? "Falha ao recuperar cargo/nível"
                 : isNivelImportavel(nivel.getCodigo())
                 ? ""
-                : "O nível " + nivel.getCodigo() + " não é possivel importar via arquivo.";
+                : "O nível " + nivel.getCodigo() + " não é possível importar via arquivo.";
     }
 
     private boolean isNivelImportavel(CodigoNivel nivel) {
@@ -231,34 +258,36 @@ public class UsuarioUploadFileService {
     }
 
     protected String validarCargo(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getCargo() == null
+        return ObjectUtils.isEmpty(usuario.getCargo())
                 ? "Usuário está com cargo inválido" : "";
     }
 
     protected String validarDepartamento(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getDepartamento() == null
+        return ObjectUtils.isEmpty(usuario.getDepartamento())
                 ? "Usuário está com departamento inválido" : "";
     }
 
     protected String validarNome(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNome() == null
+        return ObjectUtils.isEmpty(usuario.getNome())
                 || usuario.getNome().isEmpty()
                 || usuario.getNome().length() > TAMANHO_MAX_NOME
                 ? "Usuário está com nome inválido" : "";
     }
 
     protected String validarNascimento(UsuarioImportacaoPlanilha usuario) {
-        return usuario.getNascimento() == null
+        return ObjectUtils.isEmpty(usuario.getNascimento())
                 || usuario.getNascimento().isAfter(LocalDateTime.now().minusHours(1L))
                 ? "Usuário está com nascimento inválido" : "";
     }
 
     protected LocalDateTime trataData(Cell cellDate) {
         try {
-            Date dataNascimento = cellDate.getDateCellValue();
-            return dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return cellDate.getCellTypeEnum().equals(CellType.STRING)
+                    ? LocalDate.parse(cellDate.getStringCellValue(), formatter).atStartOfDay()
+                    : cellDate.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {
-            log.error("Erro ao recuperar departamento.", ex);
+            log.error("Erro ao tratar data.", ex);
             return LocalDateTime.now();
         }
     }

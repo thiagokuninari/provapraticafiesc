@@ -53,7 +53,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         user.setEmail("teste@xbrain.com.br");
         user.setRecuperarSenhaHash(null);
         user.setRecuperarSenhaTentativa(0);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(user));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(user));
 
         service.enviarConfirmacaoResetarSenha("admin@xbrain.com.br");
     }
@@ -65,7 +65,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash(hash);
         usuario.setRecuperarSenhaTentativa(4);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
         service.enviarConfirmacaoResetarSenha("teste@xbrain.com.br");
     }
 
@@ -78,7 +78,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setId(1);
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash(hash);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
         service.notificarCliente(usuario, false, null);
         service.resetarSenha(hash);
     }
@@ -91,7 +91,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setId(1);
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash(hashExpirada);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
         service.resetarSenha(hashExpirada);
     }
 
@@ -101,7 +101,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setId(1);
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash("hashnadahaver");
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
         service.resetarSenha(usuario.getRecuperarSenhaHash());
     }
 
@@ -112,7 +112,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setId(1);
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash(hash);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
 
         String hashDiferenteDoUsuario = jsonWebTokenService.createJsonWebTokenResetSenha("teste@xbrain.com.br",
                 1);
@@ -128,7 +128,7 @@ public class UsuarioServiceEsqueciSenhaTest {
         usuario.setRecuperarSenhaTentativa(4);
         usuario.setEmail("teste@xbrain.com.br");
         usuario.setRecuperarSenhaHash(hashExpirada);
-        when(usuarioRepository.findByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findUsuarioByEmail(Matchers.anyString())).thenReturn(Optional.of(usuario));
         service.enviarConfirmacaoResetarSenha("teste@xbrain.com.br");
     }
 }

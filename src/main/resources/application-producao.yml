@@ -21,6 +21,9 @@ spring:
   redis:
     host: 172.10.10.61
     port: 6379
+    pool:
+      max-active: 120
+      max-idle: 40
 
   rabbitmq:
     host: 172.10.10.60

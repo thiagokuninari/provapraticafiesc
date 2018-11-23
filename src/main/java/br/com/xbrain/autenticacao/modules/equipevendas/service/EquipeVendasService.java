@@ -21,7 +21,7 @@ public class EquipeVendasService {
         try {
             return equipeVendasClient.getEquipesPorSupervisor(supervisorId);
         } catch (Exception ex) {
-            logger.warn("Erro ao equipes de venda do supervisor", ex);
+            logger.warn("Erro ao obter as equipes de venda do supervisor", ex);
             return Collections.emptyList();
         }
     }
