@@ -13,6 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import static br.com.xbrain.autenticacao.modules.importacaousuario.util.FileUtil.getFile;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class ImportacaoUsuarioControllerTest {
     @Autowired
