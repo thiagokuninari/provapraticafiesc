@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-//import org.springframework.beans.factory.annotation.Autowired;
-
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
@@ -16,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("!test")
 @EnableScheduling
 public class UsuarioTimer {
-    
+
     //@Autowired
     //private UsuarioService service;
 
@@ -38,12 +35,7 @@ public class UsuarioTimer {
     @Async
     @Scheduled(cron = EVERY_DAY_AT_MIDNIGHT, zone = TIME_ZONE)
     public void deslogarTodosOsUsuarios() {
-        try {
-            autenticacaoService.logoutAllUsers();
-            return;
-        } catch (Exception e) {
-            throw new PermissaoException();
-        }
+        autenticacaoService.logoutAllUsers();
     }
 
 }
