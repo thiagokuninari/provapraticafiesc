@@ -136,8 +136,8 @@ app-config:
 #      url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
-      #url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
-      url: http://localhost:8089
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8089
 
 flyway:
   enabled: true
@@ -212,4 +212,3 @@ keys:
         rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
         I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
         -----END RSA PRIVATE KEY-----
-        
