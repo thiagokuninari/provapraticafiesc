@@ -132,6 +132,9 @@ app-config:
       #url: http://localhost:8099
     vendas:
       url: http://localhost:8097
+    mailing:
+#      url: http://localhost:8095
+      url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
       url: http://localhost:8089
@@ -152,6 +155,9 @@ zuul:
     parceiros:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.parceiros-online.url}
+    mailing:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.mailing.url}
     equipe-venda:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.equipe-venda.url}

@@ -41,6 +41,8 @@ public class LogRequestInterceptor implements HandlerInterceptor {
             service.saveAsync(
                     request.getRequestURI(),
                     request.getMethod(),
+                    request.getQueryString(),
+                    request.getParameterMap().keySet().toString(),
                     usuarioId,
                     usuarioEmail,
                     AutenticacaoService.getUsuarioEmuladorId(request),
