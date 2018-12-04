@@ -56,6 +56,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                             getAgentesAutorizadosPermitidos(usuario),
                             getEmpresasDoUsuario(usuario),
                             getEquipesSupervisionadas(usuario)));
+        } else {
+            defaultOAuth2AccessToken.getAdditionalInformation().put("active", true);
         }
 
         return defaultOAuth2AccessToken;
