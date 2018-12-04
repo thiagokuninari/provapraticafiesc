@@ -117,6 +117,9 @@ app-config:
     varejo-api:
       client: varejo-api
       secret: v4r3j04p1
+    equipe-venda-api:
+      client: equipe-venda-api
+      secret: 3qu1p3V3nD4xbr41n
 
   services:
     autenticacao:
@@ -132,6 +135,9 @@ app-config:
     mailing:
 #      url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
+    equipe-venda:
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8089
 
 flyway:
   enabled: true
@@ -152,6 +158,9 @@ zuul:
     mailing:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.mailing.url}
+    equipe-venda:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.equipe-venda.url}
 
   host:
     connect-timeout-millis: 1800000
@@ -203,4 +212,3 @@ keys:
         rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
         I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
         -----END RSA PRIVATE KEY-----
-        
