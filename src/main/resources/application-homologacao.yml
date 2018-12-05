@@ -40,6 +40,8 @@ app-config:
       url: http://172.10.10.78:8094
     mailing:
       url: http://172.10.10.77:8095
+    equipe-venda:
+      url: http://172.10.10.82:8089
 
   email:
     enviar: true
