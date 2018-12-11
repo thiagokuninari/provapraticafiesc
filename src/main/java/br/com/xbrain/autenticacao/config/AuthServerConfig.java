@@ -51,6 +51,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String equipeVendaApiClient;
     @Value("${app-config.oauth-clients.equipe-venda-api.secret}")
     private String equipeVendaApiSecret;
+    @Value("${app-config.oauth-clients.call-api.client}")
+    private String callApiClient;
+    @Value("${app-config.oauth-clients.call-api.secret}")
+    private String callApiSecret;
 
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
 
@@ -104,6 +108,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(equipeVendaApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("equipevenda-api")
+                .and()
+                .withClient(callApiClient)
+                .secret(callApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("call-api")
                 .authorities("ROLE_APPLICATION");
     }
 
