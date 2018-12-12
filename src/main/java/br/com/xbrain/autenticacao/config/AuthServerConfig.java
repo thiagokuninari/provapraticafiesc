@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -13,6 +14,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+
+import java.util.Collections;
 
 @Configuration
 @EnableAuthorizationServer
@@ -44,9 +47,21 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String mailingApiClient;
     @Value("${app-config.oauth-clients.mailing-api.secret}")
     private String mailingApiSecret;
+    @Value("${app-config.oauth-clients.equipe-venda-api.client}")
+    private String equipeVendaApiClient;
+    @Value("${app-config.oauth-clients.equipe-venda-api.secret}")
+    private String equipeVendaApiSecret;
+    @Value("${app-config.oauth-clients.call-api.client}")
+    private String callApiClient;
+    @Value("${app-config.oauth-clients.call-api.secret}")
+    private String callApiSecret;
 
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
 
+    @Autowired
+    private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
+    @Autowired
+    private Environment environment;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -88,6 +103,16 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(mailingApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("mailing-api")
+                .and()
+                .withClient(equipeVendaApiClient)
+                .secret(equipeVendaApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("equipevenda-api")
+                .and()
+                .withClient(callApiClient)
+                .secret(callApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("call-api")
                 .authorities("ROLE_APPLICATION");
     }
 
@@ -96,6 +121,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         oauthServer
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("permitAll()");
+        if (environment.acceptsProfiles("!test")) {
+            oauthServer.tokenEndpointAuthenticationFilters(Collections.singletonList(customTokenEndpointAuthenticationFilter));
+        }
     }
 
     @Override
@@ -109,5 +137,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     @Bean
     public TokenEnhancer tokenEnhancer() {
         return new CustomJwtAccessTokenConverter();
+    }
+
+    @Bean
+    public CustomTokenEndpointAuthenticationFilter customFilter() {
+        return new CustomTokenEndpointAuthenticationFilter();
     }
 }

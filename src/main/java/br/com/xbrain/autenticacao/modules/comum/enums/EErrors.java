@@ -13,7 +13,10 @@ public enum EErrors {
             "#002 - Erro ao tentar recuperar o AA por CPNJ."),
     ERRO_OBTER_USUARIOS_AA_BY_ID(
             "#003 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#003 - Erro ao tentar recuperar os Usuários do AA por ID.");
+            "#003 - Erro ao tentar recuperar os Usuários do AA por ID."),
+    ERRO_VERIFICAR_PAUSA(
+            "#004 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#004 - Erro ao verificar as pausas em andamento.");
 
     @Getter
     @Setter

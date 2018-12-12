@@ -36,7 +36,6 @@ public class ImportacaoUsuarioService {
             }
             return StreamSupport
                     .stream(sheet.spliterator(), false)
-                    .parallel()
                     .filter(row -> row.getRowNum() > NumeroCelulaUtil.PRIMEIRA_LINHA)
                     .filter(PlanilhaService::checkIfNotRowIsEmpty)
                     .map(PlanilhaService::converterTipoCelulaParaString)
