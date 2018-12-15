@@ -171,6 +171,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void deveLimparCpfDeUmUsuario() {
+        service.limparCpfUsuario(100);
+        Usuario usuario = service.findById(100);
+        Assert.assertEquals(usuario.getCpf(), null);
+    }
+
+    @Test
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
