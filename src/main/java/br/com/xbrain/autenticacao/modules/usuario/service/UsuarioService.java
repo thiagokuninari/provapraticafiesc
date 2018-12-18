@@ -610,13 +610,23 @@ public class UsuarioService {
         Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        usuario.adicionar(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao)
-                .observacao(dto.getObservacao())
-                .situacao(ESituacao.A)
-                .build());
+        if (!ObjectUtils.isEmpty(usuario.getCpf())) {
+            usuario.adicionar(UsuarioHistorico.builder()
+                    .dataCadastro(LocalDateTime.now())
+                    .usuario(usuario)
+                    .usuarioAlteracao(usuarioInativacao)
+                    .observacao(dto.getObservacao())
+                    .situacao(ESituacao.A)
+                    .build());
+            repository.save(usuario);
+        } else {
+            throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
+        }
+    }
+
+    public void limparCpfUsuario(Integer id) {
+        Usuario usuario = findComplete(id);
+        usuario.setCpf(null);
         repository.save(usuario);
     }
 
