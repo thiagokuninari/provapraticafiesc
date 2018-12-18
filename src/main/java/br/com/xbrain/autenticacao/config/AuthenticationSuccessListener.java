@@ -14,7 +14,7 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
 
     @Autowired
     private AutenticacaoService autenticacaoService;
-    
+
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
 
@@ -28,15 +28,17 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
         if (event.getSource() instanceof UsernamePasswordAuthenticationToken && !autenticacaoService.isEmulacao()) {
             String login = ((User) ((UsernamePasswordAuthenticationToken)
                     event.getSource()).getPrincipal()).getUsername();
-            autenticacaoService.logout(login);
+            if (autenticacaoService.somenteUmLoginPorUsuario(login)) {
+                autenticacaoService.logout(login);
+            }
         }
     }
 
     public void registrarUltimoAcesso(AuthenticationSuccessEvent event) {
         if (event.getAuthentication().isAuthenticated() && event.getAuthentication().getPrincipal() instanceof User) {
-            String login = ((User)event.getAuthentication().getPrincipal()).getUsername();
-            Integer usuarioId =  new Integer(login.split("-")[0]);
-            usuarioHistoricoService.registrarHistoricoUltimoAcessoAsync(usuarioId);    
+            String login = ((User) event.getAuthentication().getPrincipal()).getUsername();
+            Integer usuarioId = new Integer(login.split("-")[0]);
+            usuarioHistoricoService.registrarHistoricoUltimoAcessoAsync(usuarioId);
         }
     }
 }
