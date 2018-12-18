@@ -74,6 +74,9 @@ app-config:
     empresa-alias: XBRAIN
     emails: luisdias@xbrain.com.br
 
+  multiplo-login:
+    emails: colaborador@claro.com.br
+
   topic:
     autenticacao: autenticacao.topic
 
