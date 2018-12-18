@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -13,11 +14,14 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @Service
 public class AutenticacaoService {
 
+    @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
+    private List<String> emailsPermitidosComMultiplosLogins;
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
 
     @Autowired
@@ -60,11 +64,13 @@ public class AutenticacaoService {
     }
 
     public void logout(String login) {
-        tokenStore
-                .findTokensByClientIdAndUserName(
-                        AuthServerConfig.APP_CLIENT,
-                        login)
-                .forEach(token -> tokenStore.removeAccessToken(token));
+        if (somenteUmLoginPorUsuario(login)) {
+            tokenStore
+                    .findTokensByClientIdAndUserName(
+                            AuthServerConfig.APP_CLIENT,
+                            login)
+                    .forEach(token -> tokenStore.removeAccessToken(token));
+        }
     }
 
     public void logout(Integer usuarioId) {
@@ -91,5 +97,11 @@ public class AutenticacaoService {
             return Integer.parseInt(request.getHeader(HEADER_USUARIO_EMULADOR));
         }
         return null;
+    }
+
+    public boolean somenteUmLoginPorUsuario(String login) {
+        return emailsPermitidosComMultiplosLogins
+                .stream()
+                .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
     }
 }
