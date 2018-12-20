@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
+import feign.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +36,16 @@ public class UsuarioController {
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
                 usuarioService.findById(getUsuarioId(principal)));
+    }
+
+    @PutMapping("ativar-socio")
+    public void ativarSocioPrincipal(@RequestParam String email) {
+        usuarioService.ativarSocioPrincipal(email);
+    }
+
+    @PutMapping("inativar-socio")
+    public void inativarSocioPrincipal(@RequestParam String email) {
+        usuarioService.inativarSocioPrincipal(email);
     }
 
     @GetMapping("/autenticado/{id}")
