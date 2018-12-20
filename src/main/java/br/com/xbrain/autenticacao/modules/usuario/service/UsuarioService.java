@@ -56,6 +56,8 @@ public class UsuarioService {
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
     private static final int MAXIMO_PARAMETROS_IN = 1000;
+    private static final ESituacao ATIVO = ESituacao.A;
+    private static final ESituacao INATIVO = ESituacao.I;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -975,5 +977,27 @@ public class UsuarioService {
     @Transactional
     public void alterarSituacao(UsuarioMqRequest usuario) {
         repository.updateSituacao(usuario.getSituacao(), usuario.getId());
+    }
+
+    public void ativarSocioPrincipal(String email) {
+        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        usuario.ifPresent(u -> {
+            Optional<Usuario> usuarioCompleto = repository.findById(u.getId());
+            usuarioCompleto.ifPresent(user -> {
+                user.setSituacao(ATIVO);
+                repository.save(user);
+            });
+        });
+    }
+
+    public void inativarSocioPrincipal(String email) {
+        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        usuario.ifPresent(u -> {
+            Optional<Usuario> usuarioCompleto = repository.findById(usuario.get().getId());
+            usuarioCompleto.ifPresent(user -> {
+                user.setSituacao(INATIVO);
+                repository.save(user);
+            });
+        });
     }
 }

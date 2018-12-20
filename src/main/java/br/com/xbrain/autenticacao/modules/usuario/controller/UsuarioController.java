@@ -37,6 +37,16 @@ public class UsuarioController {
                 usuarioService.findById(getUsuarioId(principal)));
     }
 
+    @PutMapping("ativar-socio")
+    public void ativarSocioPrincipal(@RequestParam String email) {
+        usuarioService.ativarSocioPrincipal(email);
+    }
+
+    @PutMapping("inativar-socio")
+    public void inativarSocioPrincipal(@RequestParam String email) {
+        usuarioService.inativarSocioPrincipal(email);
+    }
+
     @GetMapping("/autenticado/{id}")
     public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
         return new UsuarioAutenticado(
