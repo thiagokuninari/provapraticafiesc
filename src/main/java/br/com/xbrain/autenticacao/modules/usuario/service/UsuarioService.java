@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
@@ -68,6 +69,8 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository repository;
+    @Autowired
+    AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -629,6 +632,7 @@ public class UsuarioService {
     public void limparCpfUsuario(Integer id) {
         Usuario usuario = findComplete(id);
         usuario.setCpf(null);
+        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
         repository.save(usuario);
     }
 
