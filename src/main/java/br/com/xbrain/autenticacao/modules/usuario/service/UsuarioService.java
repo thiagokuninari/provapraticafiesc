@@ -70,7 +70,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repository;
     @Autowired
-    AgenteAutorizadoClient agenteAutorizadoClient;
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -630,10 +630,15 @@ public class UsuarioService {
     }
 
     public void limparCpfUsuario(Integer id) {
+        Usuario usuario = limpaCpf(id);
+        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+    }
+
+    @Transactional
+    public Usuario limpaCpf(Integer id) {
         Usuario usuario = findComplete(id);
         usuario.setCpf(null);
-        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
-        repository.save(usuario);
+        return repository.save(usuario);
     }
 
     @Transactional

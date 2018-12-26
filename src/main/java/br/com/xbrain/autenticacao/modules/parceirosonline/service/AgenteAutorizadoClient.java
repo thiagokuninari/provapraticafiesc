@@ -38,7 +38,7 @@ public interface AgenteAutorizadoClient {
 
     @RequestMapping(
             method = RequestMethod.PUT,
-            value = "api/colaboradores-vendas/limpa-cpf")
+            value = "api/colaboradores-vendas/limpar-cpf-agente-autorizado")
     void limparCpfAgenteAutorizado(@RequestParam("email") String email);
 
 }
