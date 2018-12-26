@@ -36,4 +36,9 @@ public interface AgenteAutorizadoClient {
             value = "api/agente-autorizado/empresas-matriz-filiais/{usuarioId}")
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 
+    @RequestMapping(
+            method = RequestMethod.PUT,
+            value = "api/colaboradores-vendas/limpar-cpf-agente-autorizado")
+    void limparCpfAgenteAutorizado(@RequestParam("email") String email);
+
 }
