@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -65,6 +66,8 @@ public class UsuarioServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
