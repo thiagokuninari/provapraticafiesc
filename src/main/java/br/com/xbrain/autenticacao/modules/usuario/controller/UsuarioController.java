@@ -156,7 +156,7 @@ public class UsuarioController {
     }
 
     @PutMapping("inativar-colaboradores")
-    public void inativarColaboradores(@RequestParam(name = "cnpj") String cnpj) {
+    public void inativarColaboradores(@RequestParam String cnpj) {
         usuarioService.inativarColaboradores(cnpj);
     }
 }

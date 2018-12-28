@@ -48,4 +48,9 @@ public interface AgenteAutorizadoClient {
             method = RequestMethod.GET,
             value = "api/agentes-autorizados-usuario/recupera-emails")
     List<String> recuperarColaboradoresDoAgenteAutorizado(@RequestParam(name = "cnpj") String cnpj);
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/agentes-autorizados-usuario/situacao-agente-autorizado")
+    boolean recuperarSituacaoAgenteAutorizado(@RequestParam(name = "email") String email);
 }

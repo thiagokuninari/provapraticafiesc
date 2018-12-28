@@ -617,14 +617,18 @@ public class UsuarioService {
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         if (!ObjectUtils.isEmpty(usuario.getCpf())) {
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuarioInativacao)
-                    .observacao(dto.getObservacao())
-                    .situacao(ESituacao.A)
-                    .build());
-            repository.save(usuario);
+            if (situacaoAtiva(usuario.getEmail())) {
+                usuario.adicionar(UsuarioHistorico.builder()
+                        .dataCadastro(LocalDateTime.now())
+                        .usuario(usuario)
+                        .usuarioAlteracao(usuarioInativacao)
+                        .observacao(dto.getObservacao())
+                        .situacao(ESituacao.A)
+                        .build());
+                repository.save(usuario);
+            } else {
+                throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
+            }
         } else {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         }
@@ -1019,5 +1023,9 @@ public class UsuarioService {
             usuario.setSituacao(INATIVO);
             repository.save(usuario);
         });
+    }
+
+    public boolean situacaoAtiva(String email) {
+        return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 }
