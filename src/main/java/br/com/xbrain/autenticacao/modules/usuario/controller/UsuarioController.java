@@ -154,4 +154,9 @@ public class UsuarioController {
     public void resetarSenha(@RequestParam String token) {
         usuarioServiceEsqueciSenha.resetarSenha(token);
     }
+
+    @PutMapping("inativar-colaboradores")
+    public void inativarColaboradores(@RequestParam(name = "cnpj") String cnpj) {
+        usuarioService.inativarColaboradores(cnpj);
+    }
 }
