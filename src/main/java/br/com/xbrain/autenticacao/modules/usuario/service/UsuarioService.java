@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -616,14 +617,18 @@ public class UsuarioService {
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         if (!ObjectUtils.isEmpty(usuario.getCpf())) {
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuarioInativacao)
-                    .observacao(dto.getObservacao())
-                    .situacao(ESituacao.A)
-                    .build());
-            repository.save(usuario);
+            if (situacaoAtiva(usuario.getEmail())) {
+                usuario.adicionar(UsuarioHistorico.builder()
+                        .dataCadastro(LocalDateTime.now())
+                        .usuario(usuario)
+                        .usuarioAlteracao(usuarioInativacao)
+                        .observacao(dto.getObservacao())
+                        .situacao(ESituacao.A)
+                        .build());
+                repository.save(usuario);
+            } else {
+                throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
+            }
         } else {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         }
@@ -1008,5 +1013,19 @@ public class UsuarioService {
                 repository.save(user);
             });
         });
+    }
+
+    public void inativarColaboradores(String cnpj) {
+        List<String> emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        emailColaboradores.forEach(colaborador -> {
+            Usuario usuario = repository.findByEmail(colaborador)
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+            usuario.setSituacao(INATIVO);
+            repository.save(usuario);
+        });
+    }
+
+    public boolean situacaoAtiva(String email) {
+        return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 }

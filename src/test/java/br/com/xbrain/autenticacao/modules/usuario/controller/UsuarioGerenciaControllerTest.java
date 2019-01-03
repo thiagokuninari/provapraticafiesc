@@ -241,17 +241,6 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveAtivarUmUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/ativar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
-    }
-
-    @Test
     public void deveAlterarASenhaDeUmUsuarioEEnviarPorEmail() throws Exception {
         mvc.perform(put("/api/usuarios/gerencia/100/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

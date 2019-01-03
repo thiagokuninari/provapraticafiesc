@@ -154,13 +154,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveAtivarUmUsuario() throws Exception {
+    public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
         usuarioAtivacaoDto.setIdUsuario(100);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
-        Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     @Test

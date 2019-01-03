@@ -5,7 +5,10 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -41,4 +44,13 @@ public interface AgenteAutorizadoClient {
             value = "api/colaboradores-vendas/limpar-cpf-agente-autorizado")
     void limparCpfAgenteAutorizado(@RequestParam("email") String email);
 
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/agentes-autorizados-usuario/recupera-emails")
+    List<String> recuperarColaboradoresDoAgenteAutorizado(@RequestParam(name = "cnpj") String cnpj);
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/agentes-autorizados-usuario/situacao-agente-autorizado")
+    boolean recuperarSituacaoAgenteAutorizado(@RequestParam(name = "email") String email);
 }
