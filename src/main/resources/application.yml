@@ -108,6 +108,9 @@ app-config:
     parceiros-online-api:
       client: parceiros-online-api
       secret: p4rc31r0s$p1
+    integracao-vendas-api:
+      client: integracao-vendas-api
+      secret: 1nt3gr4c40v3nd4s4p1
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
@@ -126,7 +129,8 @@ app-config:
 
   services:
     autenticacao:
-      url: http://localhost:8096
+      #url: http://localhost:8096
+      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
@@ -134,13 +138,14 @@ app-config:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
     vendas:
-      url: http://localhost:8097
+      #url: http://localhost:8097
+      url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-#      url: http://localhost:8095
+      #url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
-      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8089
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
 
 flyway:
   enabled: true
@@ -178,40 +183,40 @@ hystrix:
             timeoutInMilliseconds: 300000
 
 keys:
-    public: |
-        -----BEGIN RSA PUBLIC KEY-----
-        MIIBCgKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnzipdI
-        SU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlpthiL
-        8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYTSbkx
-        U5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cFHQGx
-        M0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk+WSw
-        3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQAB
-        -----END RSA PUBLIC KEY-----
-    private: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEpQIBAAKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnz
-        ipdISU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlp
-        thiL8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYT
-        SbkxU5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cF
-        HQGxM0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk
-        +WSw3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQABAoIBADHBUmd4IT6iHUZ2
-        7Rinq7mIgk6DVN3P7glgv1BgT7IpGiu+tDzIeM7WlVTwW9Ho/NX8C9a7GaOFWz2A
-        nmWJdRW53ZkHKQ+ul/26hiOpJ0hDsC99u9JHEEhNyVxX+L5ADgc+x29hcryGGC8f
-        WDbLu5/j8FNAjOb4uq634RGKRYw79p279LoGf+f1HBwCTQmZ3HN8svQi1HoivMi6
-        +aXDgDfnu0+pIvaiBZGkNKpkcGKiF2YC+FFB7Ly3AaF2C36O616MjFAsb0Bk1ge3
-        FIapZsUn1qU0+2CSdez/5kRBjQWpi5moVGMvdR7MOYn8Nvwu9aVc+G2kYW8wmSFo
-        Om2qmr0CgYEA9BTzsEMK4Lk2p3ch8/cjNa4Fl80Jv8+ZotjE3+pC/XCQVEtAWsoe
-        aK0HRgyJBpb05Maw/2TNg1IiWoZXiiSkQHit3zrmlvwZm1zBi5pdHnpuW+tjEwnC
-        WWywHpfI7vMQ2Ydc03JCbDwVGWKa1CleujdSLMZuSzbkNymRTd9wTccCgYEAyls4
-        xw6wtYk78naspIbfQCFSteAqsnXXSv214taNV1SJG+5cfPzPIOGaj+sy2AoOOfSt
-        VlA+/okGjHu/+8c01wR4ANwJIfeWUrUhB5pJv8S2Wn/b/o7AKSLg4AFHv3utZfG6
-        9qwE7HQZt8aVe2RQVEclC5X4CLeoQrwLqn+vy4MCgYEA54fkbWP7MpaeoJaij4D0
-        VlxAE/I8eEXeUBpeDqVybGTVlBBZ+IVX+SWBC9KiPKz/mvBbP7iINjS4P7TF31XI
-        tRuEm4eM6tYzGCwRsHJ6OIocm3ca4RlV0WwHWM3Unc3WQvJjfHQbS/5maVEe23hu
-        0ifd/HkycIieTTFSE1OLfUsCgYEAg1ZBu7DlMG4p4mz0ELUZIV5/eFxOWhXx7lJN
-        QzVN92h+tQo4LUdIiGblEpPtJBsisKsF9gePW1VEUtne+WOKACR+XtBxfQJdJsE4
-        9t5FD5p1YLer6cRtJEXm/nzWPInhOVFzr7ZmW7HfH1BcpQGuwYSLnsFvgvjw1J+I
-        UtkdGFECgYEA4YfAR1eSBmkvaVTqViXmNd2UI5lmo3lm/VvT2AhwOSdg8FIh124Y
-        rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
-        I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
-        -----END RSA PRIVATE KEY-----
+  public: |
+    -----BEGIN RSA PUBLIC KEY-----
+    MIIBCgKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnzipdI
+    SU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlpthiL
+    8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYTSbkx
+    U5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cFHQGx
+    M0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk+WSw
+    3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQAB
+    -----END RSA PUBLIC KEY-----
+  private: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpQIBAAKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnz
+    ipdISU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlp
+    thiL8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYT
+    SbkxU5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cF
+    HQGxM0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk
+    +WSw3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQABAoIBADHBUmd4IT6iHUZ2
+    7Rinq7mIgk6DVN3P7glgv1BgT7IpGiu+tDzIeM7WlVTwW9Ho/NX8C9a7GaOFWz2A
+    nmWJdRW53ZkHKQ+ul/26hiOpJ0hDsC99u9JHEEhNyVxX+L5ADgc+x29hcryGGC8f
+    WDbLu5/j8FNAjOb4uq634RGKRYw79p279LoGf+f1HBwCTQmZ3HN8svQi1HoivMi6
+    +aXDgDfnu0+pIvaiBZGkNKpkcGKiF2YC+FFB7Ly3AaF2C36O616MjFAsb0Bk1ge3
+    FIapZsUn1qU0+2CSdez/5kRBjQWpi5moVGMvdR7MOYn8Nvwu9aVc+G2kYW8wmSFo
+    Om2qmr0CgYEA9BTzsEMK4Lk2p3ch8/cjNa4Fl80Jv8+ZotjE3+pC/XCQVEtAWsoe
+    aK0HRgyJBpb05Maw/2TNg1IiWoZXiiSkQHit3zrmlvwZm1zBi5pdHnpuW+tjEwnC
+    WWywHpfI7vMQ2Ydc03JCbDwVGWKa1CleujdSLMZuSzbkNymRTd9wTccCgYEAyls4
+    xw6wtYk78naspIbfQCFSteAqsnXXSv214taNV1SJG+5cfPzPIOGaj+sy2AoOOfSt
+    VlA+/okGjHu/+8c01wR4ANwJIfeWUrUhB5pJv8S2Wn/b/o7AKSLg4AFHv3utZfG6
+    9qwE7HQZt8aVe2RQVEclC5X4CLeoQrwLqn+vy4MCgYEA54fkbWP7MpaeoJaij4D0
+    VlxAE/I8eEXeUBpeDqVybGTVlBBZ+IVX+SWBC9KiPKz/mvBbP7iINjS4P7TF31XI
+    tRuEm4eM6tYzGCwRsHJ6OIocm3ca4RlV0WwHWM3Unc3WQvJjfHQbS/5maVEe23hu
+    0ifd/HkycIieTTFSE1OLfUsCgYEAg1ZBu7DlMG4p4mz0ELUZIV5/eFxOWhXx7lJN
+    QzVN92h+tQo4LUdIiGblEpPtJBsisKsF9gePW1VEUtne+WOKACR+XtBxfQJdJsE4
+    9t5FD5p1YLer6cRtJEXm/nzWPInhOVFzr7ZmW7HfH1BcpQGuwYSLnsFvgvjw1J+I
+    UtkdGFECgYEA4YfAR1eSBmkvaVTqViXmNd2UI5lmo3lm/VvT2AhwOSdg8FIh124Y
+    rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
+    I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
+    -----END RSA PRIVATE KEY-----
