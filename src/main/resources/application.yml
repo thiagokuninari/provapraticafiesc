@@ -108,6 +108,9 @@ app-config:
     parceiros-online-api:
       client: parceiros-online-api
       secret: p4rc31r0s$p1
+    integracao-vendas-api:
+      client: integracao-vendas-api
+      secret: 1nt3gr4c40v3nd4s4p1
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
@@ -126,7 +129,8 @@ app-config:
 
   services:
     autenticacao:
-      url: http://localhost:8096
+      #url: http://localhost:8096
+      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
@@ -134,13 +138,14 @@ app-config:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
     vendas:
-      url: http://localhost:8097
+      #url: http://localhost:8097
+      url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-#      url: http://localhost:8095
+      #url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
-      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8089
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
 
 flyway:
   enabled: true
