@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
@@ -15,6 +16,8 @@ public class FeriadoService {
 
     @Autowired
     private FeriadoRepository repository;
+    @Autowired
+    private DataHoraAtual dataHoraAtual;
 
     public boolean consulta(String data) {
         return repository.findByDataFeriadoAndFeriadoNacional(DateUtil.parseStringToLocalDate(data), Eboolean.V).isPresent();
@@ -31,6 +34,6 @@ public class FeriadoService {
     }
 
     public Iterable<Feriado> findAllByAnoAtual() {
-        return repository.findAllByAnoAtual();
+        return repository.findAllByAnoAtual(dataHoraAtual.getData());
     }
 }
