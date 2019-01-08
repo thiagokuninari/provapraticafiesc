@@ -13,13 +13,13 @@ import static br.com.xbrain.autenticacao.modules.feriado.model.QFeriado.feriado;
 public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements FeriadoRepositoryCustom {
 
     @Override
-    public List<Feriado> findAllByAnoAtual() {
+    public List<Feriado> findAllByAnoAtual(LocalDate now) {
         return  new JPAQueryFactory(entityManager)
                     .select(feriado)
                     .from(feriado)
                     .where(feriado.dataFeriado.between(
-                            LocalDate.now().with(TemporalAdjusters.firstDayOfYear()),
-                            LocalDate.now().with(TemporalAdjusters.lastDayOfYear())
+                            now.with(TemporalAdjusters.firstDayOfYear()),
+                            now.with(TemporalAdjusters.lastDayOfYear())
                     ))
                     .fetch();
     }
