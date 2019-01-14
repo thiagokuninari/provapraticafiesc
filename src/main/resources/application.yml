@@ -37,9 +37,9 @@ spring:
             database/feriados.sql
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.6:1521/DEV
+    url: jdbc:oracle:thin:@//192.168.1.16:1521/xprod
     username: AUTENTICACAO
-    password: py12nrk7
+    password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
       maximumPoolSize: 2
