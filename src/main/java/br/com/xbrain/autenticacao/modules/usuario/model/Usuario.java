@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -176,6 +177,13 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioHistorico> historicos;
 
+    @NotAudited
+    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
+    @Column(name = "CANAL", nullable = false, length = 20)
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private Set<ECanal> canais;
+
     public boolean isNovoCadastro() {
         return id == null;
     }
@@ -199,6 +207,7 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
+        canais.size();
     }
 
     public List<Integer> getEmpresasId() {

@@ -702,10 +702,7 @@ public class UsuarioService {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
-        return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
-                .stream()
-                .map(UsuarioHierarquiaResponse::new)
-                .collect(Collectors.toList());
+        return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
