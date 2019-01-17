@@ -241,6 +241,10 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<Object[]> getSubordinadosDoUsuario(Integer usuarioId) {
+        return repository.getUsuariosCompletoSubordinados(usuarioId);
+    }
+
     @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
         try {
