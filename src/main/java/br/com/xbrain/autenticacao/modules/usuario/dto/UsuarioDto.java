@@ -4,10 +4,12 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
@@ -23,6 +25,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -74,6 +77,8 @@ public class UsuarioDto implements Serializable {
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
+    @NotEmpty
+    private Set<ECanal> canais = Sets.newHashSet();
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();

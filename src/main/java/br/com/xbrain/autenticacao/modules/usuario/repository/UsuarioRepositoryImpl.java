@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -263,5 +264,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .join(usuario.configuracao).fetchJoin()
                         .where(usuario.id.eq(usuarioId))
                         .fetchOne());
+    }
+
+    @Override
+    public List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(UsuarioHierarquiaResponse.class, usuario.id, usuario.nome))
+                .from(usuario)
+                .where(predicate)
+                .distinct()
+                .orderBy(usuario.nome.asc())
+                .fetch();
     }
 }
