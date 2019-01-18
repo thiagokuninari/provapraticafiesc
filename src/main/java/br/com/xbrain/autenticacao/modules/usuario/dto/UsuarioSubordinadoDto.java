@@ -1,0 +1,23 @@
+package br.com.xbrain.autenticacao.modules.usuario.dto;
+
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.Builder;
+
+@Builder
+@Data
+@AllArgsConstructor
+public class UsuarioSubordinadoDto {
+
+    private Integer id;
+    private String nome;
+    private String cpf;
+    private String email;
+    private CodigoNivel codigoNivel;
+    private CodigoDepartamento codigoDepartamento;
+    private CodigoCargo codigoCargo;
+
+}
