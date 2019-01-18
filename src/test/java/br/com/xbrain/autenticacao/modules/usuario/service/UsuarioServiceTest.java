@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -65,6 +66,8 @@ public class UsuarioServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -151,13 +154,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveAtivarUmUsuario() throws Exception {
+    public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() throws Exception {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
         usuarioAtivacaoDto.setIdUsuario(100);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
-        Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     @Test
@@ -168,6 +171,13 @@ public class UsuarioServiceTest {
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+    }
+
+    @Test
+    public void deveLimparCpfDeUmUsuario() {
+        service.limparCpfUsuario(100);
+        Usuario usuario = service.findById(100);
+        Assert.assertEquals(usuario.getCpf(), null);
     }
 
     @Test

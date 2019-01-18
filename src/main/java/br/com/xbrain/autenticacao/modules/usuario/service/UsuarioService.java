@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -15,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
@@ -56,6 +58,8 @@ public class UsuarioService {
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
     private static final int MAXIMO_PARAMETROS_IN = 1000;
+    private static final ESituacao ATIVO = ESituacao.A;
+    private static final ESituacao INATIVO = ESituacao.I;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -66,6 +70,8 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository repository;
+    @Autowired
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -610,14 +616,34 @@ public class UsuarioService {
         Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        usuario.adicionar(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao)
-                .observacao(dto.getObservacao())
-                .situacao(ESituacao.A)
-                .build());
-        repository.save(usuario);
+        if (!ObjectUtils.isEmpty(usuario.getCpf())) {
+            if (situacaoAtiva(usuario.getEmail())) {
+                usuario.adicionar(UsuarioHistorico.builder()
+                        .dataCadastro(LocalDateTime.now())
+                        .usuario(usuario)
+                        .usuarioAlteracao(usuarioInativacao)
+                        .observacao(dto.getObservacao())
+                        .situacao(ESituacao.A)
+                        .build());
+                repository.save(usuario);
+            } else {
+                throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
+            }
+        } else {
+            throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
+        }
+    }
+
+    public void limparCpfUsuario(Integer id) {
+        Usuario usuario = limpaCpf(id);
+        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+    }
+
+    @Transactional
+    public Usuario limpaCpf(Integer id) {
+        Usuario usuario = findComplete(id);
+        usuario.setCpf(null);
+        return repository.save(usuario);
     }
 
     @Transactional
@@ -676,10 +702,7 @@ public class UsuarioService {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
-        return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
-                .stream()
-                .map(UsuarioHierarquiaResponse::new)
-                .collect(Collectors.toList());
+        return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -965,5 +988,41 @@ public class UsuarioService {
     @Transactional
     public void alterarSituacao(UsuarioMqRequest usuario) {
         repository.updateSituacao(usuario.getSituacao(), usuario.getId());
+    }
+
+    public void ativarSocioPrincipal(String email) {
+        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        usuario.ifPresent(u -> {
+            Optional<Usuario> usuarioCompleto = repository.findById(u.getId());
+            usuarioCompleto.ifPresent(user -> {
+                user.setSituacao(ATIVO);
+                repository.save(user);
+            });
+        });
+    }
+
+    public void inativarSocioPrincipal(String email) {
+        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        usuario.ifPresent(u -> {
+            Optional<Usuario> usuarioCompleto = repository.findById(usuario.get().getId());
+            usuarioCompleto.ifPresent(user -> {
+                user.setSituacao(INATIVO);
+                repository.save(user);
+            });
+        });
+    }
+
+    public void inativarColaboradores(String cnpj) {
+        List<String> emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        emailColaboradores.forEach(colaborador -> {
+            Usuario usuario = repository.findByEmail(colaborador)
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+            usuario.setSituacao(INATIVO);
+            repository.save(usuario);
+        });
+    }
+
+    public boolean situacaoAtiva(String email) {
+        return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 }

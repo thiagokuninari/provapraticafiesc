@@ -7,11 +7,13 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import helpers.Usuarios;
 import org.junit.Assert;
 import org.junit.Test;
@@ -163,9 +165,10 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(7)))
+                .andExpect(jsonPath("$", hasSize(8)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
+                        "O campo canais é obrigatório.",
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
                         "O campo unidadesNegociosId é obrigatório.",
@@ -190,6 +193,7 @@ public class UsuarioGerenciaControllerTest {
 
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
+        assertEquals(usuarios.get(0).getCanais(), Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
     }
 
     @Test
@@ -238,17 +242,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
-    }
-
-    @Test
-    public void deveAtivarUmUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/ativar")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaAtivar())))
-                .andExpect(status().isOk());
-        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.A);
     }
 
     @Test
@@ -408,6 +401,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setTelefone("43 995565661");
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
+        usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
         return usuario;
     }
 
