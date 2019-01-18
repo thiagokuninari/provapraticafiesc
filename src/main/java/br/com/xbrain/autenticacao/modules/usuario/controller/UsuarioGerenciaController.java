@@ -75,6 +75,11 @@ public class UsuarioGerenciaController {
         service.ativar(dto);
     }
 
+    @PutMapping("limpar-cpf/{id}")
+    public void limparCpf(@PathVariable Integer id) {
+        service.limparCpfUsuario(id);
+    }
+
     @RequestMapping(value = "/{idUsuario}/permissoes", method = RequestMethod.GET)
     public UsuarioPermissaoResponse getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
         return service.findPermissoesByUsuario(idUsuario);
