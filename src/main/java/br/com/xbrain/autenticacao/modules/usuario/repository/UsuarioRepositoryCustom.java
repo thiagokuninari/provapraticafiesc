@@ -27,6 +27,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
+    List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
+
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
     List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);

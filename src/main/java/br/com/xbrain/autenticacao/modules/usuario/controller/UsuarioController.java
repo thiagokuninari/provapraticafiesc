@@ -84,6 +84,16 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
     }
 
+    @GetMapping("/hierarquia/subordinados/{id}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @PostMapping("/vincula/hierarquia")
+    public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
+        usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
+    }
+
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public List<UsuarioDto> getUsuariosFilter(UsuarioFiltrosDto usuarioFiltrosDto) {
         return usuarioService.getUsuariosFiltros(usuarioFiltrosDto);

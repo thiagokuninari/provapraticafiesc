@@ -241,6 +241,13 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public UsuarioDto save(UsuarioDto usuarioDto) {
         try {
@@ -271,6 +278,18 @@ public class UsuarioService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        idUsuarioNovo.stream()
+                .map(id -> {
+                    UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                    usuario.setUsuarioSuperior(usuarioSuperior);
+                    usuarioHierarquiaRepository.save(usuario);
+                    return usuario;
+                })
+                .collect(Collectors.toList());
     }
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
@@ -751,6 +770,19 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
+    }
+
+    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioSubordinadoDto.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cpf(objectToString(param[indice++]))
+                .email(objectToString(param[indice++]))
+                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
+                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
+                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
+                .build();
     }
 
     private UsuarioResponse criarUsuarioResponse(Object[] param) {

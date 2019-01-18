@@ -118,6 +118,46 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unchecked")
+    public List<Integer> getUsuariosSubordinadosByCidade(Integer usuarioId) {
+        List<BigDecimal> result = entityManager
+                .createNativeQuery(
+                        " SELECT FK_USUARIO"
+                                + " FROM usuario_hierarquia"
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
+        return result
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId) {
+        return entityManager
+                .createNativeQuery(
+                        " SELECT FK_USUARIO"
+                                + "     , U.NOME "
+                                + "     , U.CPF "
+                                + "     , U.EMAIL_01 "
+                                + "     , N.CODIGO AS NIVEL "
+                                + "     , D.CODIGO AS DEPARTAMENTO "
+                                + "     , C.CODIGO AS CARGO "
+                                + " FROM usuario_hierarquia UH"
+                                + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
+                                + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
+    }
+
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
