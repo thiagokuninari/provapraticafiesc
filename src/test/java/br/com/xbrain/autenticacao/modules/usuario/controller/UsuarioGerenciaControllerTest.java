@@ -165,10 +165,9 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new UsuarioDto())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(8)))
+                .andExpect(jsonPath("$", hasSize(7)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
-                        "O campo canais é obrigatório.",
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
                         "O campo unidadesNegociosId é obrigatório.",

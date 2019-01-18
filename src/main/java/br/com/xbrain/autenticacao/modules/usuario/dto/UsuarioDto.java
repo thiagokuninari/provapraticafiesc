@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import com.google.common.collect.Sets;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
@@ -77,8 +76,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
-    @NotEmpty
-    private Set<ECanal> canais = Sets.newHashSet();
+    private Set<ECanal> canais;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
