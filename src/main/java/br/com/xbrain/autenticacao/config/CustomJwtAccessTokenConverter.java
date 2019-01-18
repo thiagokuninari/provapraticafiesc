@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasServi
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -22,7 +21,10 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
