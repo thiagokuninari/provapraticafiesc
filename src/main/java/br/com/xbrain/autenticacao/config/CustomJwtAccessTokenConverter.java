@@ -7,8 +7,10 @@ import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasServi
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,10 +19,12 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -106,6 +110,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("cargoId", usuario.getCargoId());
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
+        token.getAdditionalInformation().put("canais", getCanais(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -148,6 +153,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 .map(f -> f.getAplicacao().getCodigo())
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private Set<ECanal> getCanais(Usuario usuario) {
+        switch (usuario.getNivelCodigo()) {
+            case XBRAIN:
+            case MSO:
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO);
+            case OPERACAO:
+                return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanais();
+            default:
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO);
+        }
     }
 
     @Override
