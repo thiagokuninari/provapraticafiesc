@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -92,12 +93,13 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId, List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
-                && (agentesAutorizadosIdDoUsuario == null || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
+                && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
+                    || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
     }
 
     public boolean isAgenteAutorizado() {
-        return nivelCodigo != null && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
+        return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 }

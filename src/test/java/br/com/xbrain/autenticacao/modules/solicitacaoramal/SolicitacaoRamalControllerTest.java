@@ -112,14 +112,6 @@ public class SolicitacaoRamalControllerTest {
                         "O campo melhorDataImplantacao é obrigatório.")));
     }
 
-    /*@Test
-    public void deveFalharQuandoUsuarioNaoForSocio() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }*/
-
     @Test
     public void deveFalharQuandoUsuarioForSocioMasNaoTemPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/50")
@@ -150,15 +142,17 @@ public class SolicitacaoRamalControllerTest {
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
-        SolicitacaoRamalRequest request = new SolicitacaoRamalRequest();
-        request.setId(id);
-        request.setQuantidadeRamais(38);
-        request.setUsuarioId(100);
-        request.setAgenteAutorizadoId(1);
-        request.setAgenteAutorizadoNome("Renato");
-        request.setMelhorHorarioImplantacao(LocalTime.of(10, 00, 00));
-        request.setMelhorDataImplantacao(LocalDate.of(2019, 01, 25));
-        request.setDataCadastro(LocalDateTime.now());
+
+        SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
+                .id(id)
+                .quantidadeRamais(38)
+                .usuarioId(100)
+                .agenteAutorizadoId(1)
+                .agenteAutorizadoNome("Renato")
+                .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
+                .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
+                .dataCadastro(LocalDateTime.now())
+                .build();
 
         return request;
     }
