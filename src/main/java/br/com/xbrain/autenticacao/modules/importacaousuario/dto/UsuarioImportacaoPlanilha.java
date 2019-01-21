@@ -6,8 +6,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Builder;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;

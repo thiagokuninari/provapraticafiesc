@@ -9,7 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Builder;
+import lombok.Builder;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;

@@ -5,9 +5,9 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Builder;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;

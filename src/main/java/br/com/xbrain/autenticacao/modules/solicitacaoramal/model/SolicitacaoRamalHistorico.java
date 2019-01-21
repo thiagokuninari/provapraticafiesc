@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 public class SolicitacaoRamalHistorico {
 
     @Id
-    @SequenceGenerator(name = "SEQ_SOLICITACAO_RAMAL_HISTORICO",
-                       sequenceName = "SEQ_SOLICITACAO_RAMAL_HISTORICO", allocationSize = 1)
-    @GeneratedValue(generator = "SEQ_SOLICITACAO_RAMAL_HISTORICO", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "SEQ_SOLIC_RM_HIST",
+                       sequenceName = "SEQ_SOLIC_RM_HIST", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_SOLIC_RM_HIST", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_SOLICITACAO_RAMAL_HISTORICO_USUARIO"))
+            foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
@@ -38,7 +38,7 @@ public class SolicitacaoRamalHistorico {
     private String comentario;
 
     @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "ID",
-                foreignKey = @ForeignKey(name = "FK_SOLICITACAO_RAMAL_HISTORICO_SOLICITACAO_RAMAL"))
+                foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_SOLIC_RAMAL"))
     @ManyToOne(fetch = FetchType.LAZY)
     private SolicitacaoRamal solicitacaoRamal;
 
