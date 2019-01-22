@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.List;
 
 public interface SolicitacaoRamalRepository extends CrudRepository<SolicitacaoRamal, Integer> {
 
-    List<SolicitacaoRamal> findAllByUsuarioId(Integer id);
+    Page<SolicitacaoRamal> findAllByUsuarioId(Pageable pageable, Integer id);
 }

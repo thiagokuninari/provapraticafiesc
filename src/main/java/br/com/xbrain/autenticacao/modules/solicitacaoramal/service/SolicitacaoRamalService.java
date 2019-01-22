@@ -1,15 +1,18 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +21,7 @@ import java.util.stream.Collectors;
 public class SolicitacaoRamalService {
 
     @Autowired
-    private SolicitacaoRamalRepository solicitacaoRamalRepository;
+    private SolicitacaoRamalRepository solicRmRepository;
     @Autowired
     private SolicitacaoRamalHistoricoService historicoService;
     @Autowired
@@ -26,27 +29,37 @@ public class SolicitacaoRamalService {
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
 
-    public List<SolicitacaoRamalResponse> getAll() {
-        List<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(autenticacaoService.getUsuarioId());
+    public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable) {
+        Page<SolicitacaoRamal> solicitacoes = solicRmRepository.findAllByUsuarioId(pageable, autenticacaoService.getUsuarioId());
 
-        return solicitacoes.stream()
-                           .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(solicitacao))
-                           .collect(Collectors.toList());
+        return new PageImpl<>(solicitacoes.getContent()
+                                          .stream()
+                                          .map(SolicitacaoRamalResponse::convertFrom)
+                                          .collect(Collectors.toList()),
+                pageable,
+                solicitacoes.getTotalElements());
     }
 
-    @Transactional
-    public SolicitacaoRamal save(SolicitacaoRamal solicitacaoRamal) {
+    public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
+        SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
-        SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
-        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamalPersistida));
+        SolicitacaoRamal solicitacaoRamalPersistida = solicRmRepository.save(solicitacaoRamal);
 
-        return solicitacaoRamalPersistida;
+        gerarHistorico(solicitacaoRamalPersistida);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    @Transactional
-    public SolicitacaoRamal update(SolicitacaoRamal solicitacaoRamal) {
-        return solicitacaoRamalRepository.save(solicitacaoRamal);
+    private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
+        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal));
+    }
+
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+        SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
+        SolicitacaoRamal solicitacaoRamal1Persistida = solicRmRepository.save(solicitacaoRamal);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamal1Persistida);
     }
 
     public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {

@@ -2,14 +2,18 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(of = "id")
@@ -27,6 +31,17 @@ public class SolicitacaoRamal {
             foreignKey = @ForeignKey(name = "FK_SOLICITACAO_RAMAL_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
+
+    @NotAudited
+    @JsonIgnore
+    @NotEmpty
+    @JoinTable(name = "SOLICITACAO_RAMAL_USUARIO", joinColumns = {
+            @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_SOLIC_RM_USUARIO_SOLIC_RM"))}, inverseJoinColumns = {
+            @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_SOLIC_RM_USUARIO_USUARIO"))})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<Usuario> usuariosSolicitados;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "SITUACAO")
