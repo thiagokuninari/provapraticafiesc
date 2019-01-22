@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -32,14 +31,13 @@ public class SolicitacaoRamal {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
-    @NotAudited
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "SOLICITACAO_RAMAL_USUARIO", joinColumns = {
             @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_SOLIC_RM_USUARIO_SOLIC_RM"))}, inverseJoinColumns = {
+                    foreignKey = @ForeignKey(name = "FK_RAMAL_USUARIO"))}, inverseJoinColumns = {
             @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_SOLIC_RM_USUARIO_USUARIO"))})
+                    foreignKey = @ForeignKey(name = "FK_USUARIO_RAMAL"))})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Usuario> usuariosSolicitados;
 

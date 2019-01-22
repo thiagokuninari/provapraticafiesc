@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class SolicitacaoRamalService {
 
     @Autowired
-    private SolicitacaoRamalRepository solicRmRepository;
+    private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
     private SolicitacaoRamalHistoricoService historicoService;
     @Autowired
@@ -30,7 +30,8 @@ public class SolicitacaoRamalService {
     private AgenteAutorizadoService agenteAutorizadoService;
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable) {
-        Page<SolicitacaoRamal> solicitacoes = solicRmRepository.findAllByUsuarioId(pageable, autenticacaoService.getUsuarioId());
+        Integer idUsuario = autenticacaoService.getUsuarioId();
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(pageable, idUsuario);
 
         return new PageImpl<>(solicitacoes.getContent()
                                           .stream()
@@ -44,7 +45,7 @@ public class SolicitacaoRamalService {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
 
-        SolicitacaoRamal solicitacaoRamalPersistida = solicRmRepository.save(solicitacaoRamal);
+        SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
         gerarHistorico(solicitacaoRamalPersistida);
 
@@ -57,7 +58,7 @@ public class SolicitacaoRamalService {
 
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        SolicitacaoRamal solicitacaoRamal1Persistida = solicRmRepository.save(solicitacaoRamal);
+        SolicitacaoRamal solicitacaoRamal1Persistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamal1Persistida);
     }
