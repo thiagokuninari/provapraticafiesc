@@ -8,12 +8,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Data
@@ -46,9 +49,22 @@ public class SolicitacaoRamalRequest {
 
     private ESituacao situacao;
 
+    @NotNull
+    private List<Integer> usuariosSolicitadosIds;
+
+    @NotEmpty
+    private String telefoneTi;
+
+    @NotEmpty
+    private String emailTi;
+
     public static SolicitacaoRamal convertFrom(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = new SolicitacaoRamal();
         solicitacaoRamal.setUsuario(new Usuario(request.usuarioId));
+
+        solicitacaoRamal.setUsuariosSolicitados(request.getUsuariosSolicitadosIds()
+                .stream()
+                .map(Usuario::new).collect(Collectors.toList()));
 
         BeanUtils.copyProperties(request, solicitacaoRamal);
 

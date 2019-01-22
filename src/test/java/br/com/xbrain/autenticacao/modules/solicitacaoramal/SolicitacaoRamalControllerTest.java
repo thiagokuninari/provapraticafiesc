@@ -22,8 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -71,7 +70,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(2)));
     }
 
     @Test
@@ -109,7 +108,10 @@ public class SolicitacaoRamalControllerTest {
                         "O campo agenteAutorizadoNome é obrigatório.",
                         "O campo melhorHorarioImplantacao é obrigatório.",
                         "O campo quantidadeRamais é obrigatório.",
-                        "O campo melhorDataImplantacao é obrigatório.")));
+                        "O campo melhorDataImplantacao é obrigatório.",
+                        "O campo telefoneTi é obrigatório.",
+                        "O campo emailTi é obrigatório.",
+                        "O campo usuariosSolicitadosIds é obrigatório.")));
     }
 
     @Test
@@ -142,7 +144,6 @@ public class SolicitacaoRamalControllerTest {
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
-
         SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
                 .id(id)
                 .quantidadeRamais(38)
@@ -152,6 +153,9 @@ public class SolicitacaoRamalControllerTest {
                 .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
                 .dataCadastro(LocalDateTime.now())
+                .emailTi("reanto@ti.com.br")
+                .telefoneTi("(18) 3322-2388")
+                .usuariosSolicitadosIds(Arrays.asList(100,101))
                 .build();
 
         return request;
