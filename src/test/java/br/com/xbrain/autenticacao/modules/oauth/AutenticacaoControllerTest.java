@@ -166,7 +166,7 @@ public class AutenticacaoControllerTest {
 
         assertNotNull(TestsHelper
                 .getAccessTokenClientCredentials(mvc, "vendas-api:v3nd4s4p1").getAccessToken());
-        
+
         assertNotNull(TestsHelper
                 .getAccessTokenClientCredentials(mvc, "mailing-api:m41l1ng4p1").getAccessToken());
 
@@ -208,7 +208,7 @@ public class AutenticacaoControllerTest {
 
         assertEquals(1, tokenStore.findTokensByClientId(AuthServerConfig.APP_CLIENT).size());
     }
-    
+
     @Test
     public void deveGerarUltimoAcessoAposAutenticar() {
         deveAutenticar();
@@ -216,7 +216,7 @@ public class AutenticacaoControllerTest {
         assertTrue(!historico.isEmpty());
         assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
     }
-    
+
     @Test
     public void naoDeveGerarUltimoAcessoAposAutenticar() {
         long totalRegistroAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();

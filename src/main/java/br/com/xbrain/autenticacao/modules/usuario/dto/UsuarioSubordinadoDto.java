@@ -4,12 +4,14 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Builder;
+import lombok.NoArgsConstructor;
 
 @Builder
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UsuarioSubordinadoDto {
 
     private Integer id;
@@ -19,5 +21,6 @@ public class UsuarioSubordinadoDto {
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
     private CodigoCargo codigoCargo;
+    private String nomeCargo;
 
 }

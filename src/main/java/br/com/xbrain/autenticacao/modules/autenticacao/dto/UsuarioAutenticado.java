@@ -7,9 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.util.ObjectUtils;
@@ -17,11 +15,14 @@ import org.springframework.util.ObjectUtils;
 import java.util.Collection;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
 @JsonIgnoreProperties
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class UsuarioAutenticado extends OAuth2Request {
 
@@ -84,19 +85,27 @@ public class UsuarioAutenticado extends OAuth2Request {
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return permissoes != null
                 && permissoes
-                        .stream()
-                        .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
-                        .count() > 0;
+                .stream()
+                .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
+                .count() > 0;
     }
 
     public boolean isXbrain() {
-        return usuario.getNivelCodigo() == XBRAIN;
+        return XBRAIN == usuario.getNivelCodigo();
+    }
+
+    public boolean isMso() {
+        return MSO == usuario.getNivelCodigo();
+    }
+
+    public boolean isVendedor() {
+        return hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_VENDEDOR_PROPRIO);
     }
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId, List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
                 && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
-                    || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
+                || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
     }
