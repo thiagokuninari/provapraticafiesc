@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Builder;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
