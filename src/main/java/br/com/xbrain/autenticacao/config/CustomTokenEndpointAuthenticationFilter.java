@@ -47,7 +47,7 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers",
-                "Authorization, Origin, X-Requested-With, Content-Type, Accept, " + HEADER_USUARIO_EMULADOR);
+                "Authorization, Origin, X-Requested-With, Content-Type, Accept, X-Usuario-Canal, " + HEADER_USUARIO_EMULADOR);
         response.sendError(HttpStatus.UNAUTHORIZED.value(), "Acesso negado. Usuário com pausa agendada em andamento.");
     }
 }

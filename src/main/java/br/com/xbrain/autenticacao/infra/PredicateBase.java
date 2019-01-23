@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.infra;
 
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.ObjectUtils;
 
 public class PredicateBase {
 
@@ -14,4 +15,11 @@ public class PredicateBase {
         return this.builder;
     }
 
+    protected boolean isEmpty(Object object) {
+        return ObjectUtils.isEmpty(object);
+    }
+
+    protected boolean isNotEmpty(Object object) {
+        return !isEmpty(object);
+    }
 }

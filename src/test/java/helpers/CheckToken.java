@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 @Data
 public class CheckToken {
@@ -30,6 +31,10 @@ public class CheckToken {
     private String email;
 
     private String cargoCodigo;
+
+    private String nivelCodigo;
+
+    private List<Integer> agentesAutorizados;
 
     public static CheckToken create() {
         return create(100, "ADMIN@XBRAIN.COM.BR");
@@ -70,6 +75,8 @@ public class CheckToken {
         hashMap.put("nome", nome);
         hashMap.put("email", email);
         hashMap.put("cargoCodigo", cargoCodigo);
+        hashMap.put("nivelCodigo", nivelCodigo);
+        hashMap.put("agentesAutorizados", agentesAutorizados);
         return hashMap;
     }
 }

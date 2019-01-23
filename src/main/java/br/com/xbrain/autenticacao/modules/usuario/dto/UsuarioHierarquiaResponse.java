@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 
 @Data
@@ -10,9 +9,9 @@ public class UsuarioHierarquiaResponse {
 
     private String nome;
 
-    public UsuarioHierarquiaResponse(Usuario usuario) {
-        this.id = usuario.getId();
-        this.nome = usuario.getNome();
+    public UsuarioHierarquiaResponse(Integer id, String nome) {
+        this.id = id;
+        this.nome = nome;
     }
 
 }
