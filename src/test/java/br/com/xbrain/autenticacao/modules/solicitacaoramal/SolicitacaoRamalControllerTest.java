@@ -22,7 +22,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -70,15 +71,15 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(6)));
     }
 
     @Test
     public void deveAtualizarUmaSolicitacaoDeRamal() throws Exception {
-        mvc.perform(put(URL_API_SOLICITACAO_RAMAL)
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/5")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(1))))
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamal())))
                 .andExpect(status().isOk());
     }
 
@@ -139,13 +140,62 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(status().isOk());
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal() {
-        return criaSolicitacaoRamal(null);
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoPendente() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PD")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoEmAndamento() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EA")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoRejeitada() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=RJ")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendente() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PD")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019&situacao=EA")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastro() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
+    }
+
+    private SolicitacaoRamalRequest criaSolicitacaoRamal() {
         SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
-                .id(id)
                 .quantidadeRamais(38)
                 .usuarioId(100)
                 .agenteAutorizadoId(1)

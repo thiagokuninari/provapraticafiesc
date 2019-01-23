@@ -22,6 +22,8 @@ public class SolicitacaoRamalResponse {
     private Integer usuarioId;
     private Integer quantidadeRamais;
     private ESituacao situacao;
+
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime dataCadastro;
 
     @JsonFormat(pattern = "HH:mm:ss")

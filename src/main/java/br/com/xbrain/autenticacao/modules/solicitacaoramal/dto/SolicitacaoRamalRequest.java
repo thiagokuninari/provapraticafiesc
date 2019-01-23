@@ -36,12 +36,14 @@ public class SolicitacaoRamalRequest {
     private String agenteAutorizadoNome;
 
     @NotNull
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime melhorHorarioImplantacao;
 
     @NotNull
     private Integer quantidadeRamais;
 
     @NotNull
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate melhorDataImplantacao;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
