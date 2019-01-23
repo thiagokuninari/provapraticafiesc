@@ -84,6 +84,16 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
     }
 
+    @GetMapping("/hierarquia/subordinados/{id}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @PostMapping("/vincula/hierarquia")
+    public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
+        usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
+    }
+
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public List<UsuarioDto> getUsuariosFilter(UsuarioFiltrosDto usuarioFiltrosDto) {
         return usuarioService.getUsuariosFiltros(usuarioFiltrosDto);
@@ -170,5 +180,15 @@ public class UsuarioController {
                 .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
                 .sorted(Comparator.comparing(SelectResponse::getLabel))
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("d2d")
+    public List<ColaboradorResponse> getUsuariosD2d() {
+        return usuarioService.getUsuariosD2d();
+    }
+
+    @GetMapping("d2d-ids")
+    public List<Integer> getUsuariosD2dIds() {
+        return usuarioService.getUsuariosD2dIds();
     }
 }

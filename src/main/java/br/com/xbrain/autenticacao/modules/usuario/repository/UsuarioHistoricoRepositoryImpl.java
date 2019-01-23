@@ -3,14 +3,15 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Optional;
-import com.querydsl.core.types.Projections;
-import java.util.List;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import java.util.stream.Collectors;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHistorico.usuarioHistorico;
 
