@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -76,16 +75,16 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveAtualizarUmaSolicitacaoDeRamal() throws Exception {
-        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/5")
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(criaSolicitacaoRamal())))
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5))))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void deveCriarUmaSolicitacaoDeRamal() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal();
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -169,7 +168,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendente() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PD")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-03&situacao=PD")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -178,7 +177,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019&situacao=EA")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-02&situacao=EA")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -187,22 +186,23 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastro() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-02")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal() {
+    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
         SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
+                .id(id)
                 .quantidadeRamais(38)
                 .usuarioId(100)
                 .agenteAutorizadoId(1)
                 .agenteAutorizadoNome("Renato")
                 .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(id != null ? LocalDateTime.now() : null)
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100,101))
@@ -210,10 +210,4 @@ public class SolicitacaoRamalControllerTest {
 
         return request;
     }
-
-    private String dateFormatter(LocalDate data) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return formatter.format(data);
-    }
-
 }

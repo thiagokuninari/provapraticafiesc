@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
@@ -29,6 +30,9 @@ public class SolicitacaoRamalService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não "
+            + "encontrada.");
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         BooleanBuilder builder = filtros.toPredicate().build();
@@ -59,13 +63,6 @@ public class SolicitacaoRamalService {
         historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal));
     }
 
-    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        SolicitacaoRamal solicitacaoRamal1Persistida = solicitacaoRamalRepository.save(solicitacaoRamal);
-
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamal1Persistida);
-    }
-
     public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
         autenticacaoService.getUsuarioAutenticado()
                            .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
@@ -74,6 +71,18 @@ public class SolicitacaoRamalService {
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
         Usuario usuario = criaUsuario(autenticacaoService.getUsuarioId());
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
+    }
+
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+        SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
+        solicitacaoEncontrada.editar(request);
+
+        SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida);
+    }
+
+    private SolicitacaoRamal findById(Integer id) {
+        return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     private Usuario criaUsuario(int idUsuarioAutenticado) {

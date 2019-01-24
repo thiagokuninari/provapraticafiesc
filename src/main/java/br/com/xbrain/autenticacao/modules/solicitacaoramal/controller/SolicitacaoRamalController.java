@@ -29,9 +29,8 @@ public class SolicitacaoRamalController {
         return service.save(request);
     }
 
-    @PutMapping("/{id}")
-    public SolicitacaoRamalResponse update(@Validated @RequestBody SolicitacaoRamalRequest request, @PathVariable Integer id) {
-        request.setId(id);
+    @PutMapping
+    public SolicitacaoRamalResponse update(@Validated @RequestBody SolicitacaoRamalRequest request) {
         return service.update(request);
     }
 
