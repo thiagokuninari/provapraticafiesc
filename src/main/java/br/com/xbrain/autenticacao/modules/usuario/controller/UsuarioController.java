@@ -75,13 +75,23 @@ public class UsuarioController {
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
-                                         @RequestParam boolean incluirProprio) {
+                                         @RequestParam(required = false, defaultValue = "false") boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
     @RequestMapping(value = "/{id}/subordinados/vendas", method = RequestMethod.GET)
     public List<Integer> getSubordinadosVendas(@PathVariable("id") int id) {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
+    }
+
+    @GetMapping("/hierarquia/subordinados/{id}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @PostMapping("/vincula/hierarquia")
+    public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
+        usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
@@ -170,5 +180,15 @@ public class UsuarioController {
                 .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
                 .sorted(Comparator.comparing(SelectResponse::getLabel))
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("d2d")
+    public List<ColaboradorResponse> getUsuariosD2d() {
+        return usuarioService.getUsuariosD2d();
+    }
+
+    @GetMapping("d2d-ids")
+    public List<Integer> getUsuariosD2dIds() {
+        return usuarioService.getUsuariosD2dIds();
     }
 }

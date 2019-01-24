@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -29,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioD2dGeralPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
@@ -245,6 +247,19 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<ColaboradorResponse> getUsuariosD2dGeral(UsuarioAutenticado usuarioAutenticado) {
+        UsuarioD2dGeralPredicate predicate = new UsuarioD2dGeralPredicate()
+                .comNivel(Collections.singletonList(CodigoNivel.OPERACAO));
+        return repository.getUsuariosD2dGeral(predicate.build());
+    }
+
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public UsuarioDto save(Usuario request, MultipartFile foto) {
         if (!ObjectUtils.isEmpty(foto)) {
@@ -282,6 +297,18 @@ public class UsuarioService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        idUsuarioNovo.stream()
+                .map(id -> {
+                    UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                    usuario.setUsuarioSuperior(usuarioSuperior);
+                    usuarioHierarquiaRepository.save(usuario);
+                    return usuario;
+                })
+                .collect(Collectors.toList());
     }
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
@@ -764,6 +791,20 @@ public class UsuarioService {
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
     }
 
+    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioSubordinadoDto.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cpf(objectToString(param[indice++]))
+                .email(objectToString(param[indice++]))
+                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
+                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
+                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
+                .nomeCargo(objectToString(param[indice++]))
+                .build();
+    }
+
     private UsuarioResponse criarUsuarioResponse(Object[] param) {
         int indice = POSICAO_ZERO;
         return UsuarioResponse.builder()
@@ -1035,5 +1076,20 @@ public class UsuarioService {
 
     public boolean situacaoAtiva(String email) {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
+    }
+
+    public List<ColaboradorResponse> getUsuariosD2d() {
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        if (usuarioAutenticado.isXbrain() || usuarioAutenticado.isMso()) {
+            return getUsuariosD2dGeral(usuarioAutenticado);
+        } else if (usuarioAutenticado.isVendedor()) {
+            return Collections.singletonList(ColaboradorResponse.convertFrom(findComplete(usuarioAutenticado.getId())));
+        } else {
+            return ColaboradorResponse.convertFrom(getSubordinadosDoUsuario(usuarioAutenticado.getId()));
+        }
+    }
+
+    public List<Integer> getUsuariosD2dIds() {
+        return getUsuariosD2d().stream().map(ColaboradorResponse::getId).collect(Collectors.toList());
     }
 }

@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioControllerUnitTest {
 
     @Autowired
@@ -53,5 +53,14 @@ public class UsuarioControllerUnitTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
+    }
+
+    @Test
+    public void deveRetornarUsuariosSubordinadosDoUsuarioSelecionado() throws Exception {
+        mvc.perform(get("/api/usuarios/hierarquia/subordinados/110")
+                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }

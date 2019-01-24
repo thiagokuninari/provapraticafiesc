@@ -395,4 +395,8 @@ public class Usuario {
         return recuperarSenhaTentativa == null ? 0 : recuperarSenhaTentativa;
     }
 
+    @JsonIgnore
+    public Set<String> getCanaisString() {
+        return canais.stream().map(Enum::toString).collect(Collectors.toSet());
+    }
 }

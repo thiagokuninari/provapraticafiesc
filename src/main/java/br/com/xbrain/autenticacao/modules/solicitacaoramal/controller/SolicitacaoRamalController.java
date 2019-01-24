@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
@@ -18,8 +19,8 @@ public class SolicitacaoRamalController {
     private SolicitacaoRamalService service;
 
     @GetMapping
-    public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable) {
-        return service.getAll(pageable);
+    public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return service.getAll(pageable, filtros);
     }
 
     @PostMapping
