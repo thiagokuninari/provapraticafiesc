@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -24,20 +25,27 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.getAccessToken;
+import static com.google.common.io.ByteStreams.toByteArray;
+import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.HELP_DESK;
 import static java.util.Collections.singletonList;
@@ -67,6 +75,8 @@ public class UsuarioGerenciaControllerTest {
     private UsuarioService usuarioService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private FileService fileService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
@@ -160,10 +170,11 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
-        mvc.perform(post("/api/usuarios/gerencia")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(new UsuarioDto())))
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/usuarios/gerencia")
+                .file(umUsuario(new UsuarioDto()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(7)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
@@ -177,15 +188,39 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveSalvar() throws Exception {
+    public void deveSalvarSemFoto() throws Exception {
         UsuarioDto usuario = umUsuario("JOAO");
-        mvc.perform(post("/api/usuarios/gerencia")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(usuario)))
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/usuarios/gerencia")
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk());
 
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(fileService, times(0)).uploadFotoUsuario(any(), any());
+
+        List<Usuario> usuarios = Lists.newArrayList(
+                repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
+
+        assertEquals(usuarios.get(0).getNome(), usuario.getNome());
+        assertEquals(usuarios.get(0).getCpf(), "09723864592");
+        assertEquals(usuarios.get(0).getCanais(), Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
+    }
+
+    @Test
+    public void deveSalvarComFoto() throws Exception {
+        UsuarioDto usuario = umUsuario("JOAO");
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/usuarios/gerencia")
+                .file(umFileFoto())
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk());
+
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(fileService, times(1)).uploadFotoUsuario(any(), any());
 
         List<Usuario> usuarios = Lists.newArrayList(
                 repository.findAll(new UsuarioPredicate().comNome(usuario.getNome()).build()));
@@ -222,11 +257,25 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveEditar() throws Exception {
-        mvc.perform(post("/api/usuarios/gerencia")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioParaEditar())))
+    public void deveEditarSemFoto() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/usuarios/gerencia")
+                .file(umUsuario(umUsuarioParaEditar()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk());
+        Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
+        Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
+    }
+
+    @Test
+    public void deveEditarComFoto() throws Exception {
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload("/api/usuarios/gerencia")
+                .file(umFileFoto())
+                .file(umUsuario(umUsuarioParaEditar()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
@@ -404,6 +453,11 @@ public class UsuarioGerenciaControllerTest {
         return usuario;
     }
 
+    private MockMultipartFile umUsuario(UsuarioDto usuario) throws Exception {
+        byte[] json = convertObjectToJsonString(usuario).getBytes(StandardCharsets.UTF_8);
+        return new MockMultipartFile("usuario", "json", "application/json", json);
+    }
+
     private void mockResponseAgenteAutorizado() {
         AgenteAutorizadoResponse response = new AgenteAutorizadoResponse();
         response.setId("100");
@@ -423,4 +477,18 @@ public class UsuarioGerenciaControllerTest {
                 .thenReturn(response);
     }
 
+    private MockMultipartFile umFileFoto() throws Exception {
+        byte[] bytes = toByteArray(getFileInputStream("foto_usuario/file.png"));
+        return new MockMultipartFile("foto",
+                LocalDateTime.now().toString().concat("file.png"),
+                "image/png",
+                bytes);
+    }
+
+    private InputStream getFileInputStream(String file) throws Exception {
+        return new ByteArrayInputStream(
+                Files.readAllBytes(Paths.get(
+                        getClass().getClassLoader().getResource(file)
+                                .getPath())));
+    }
 }

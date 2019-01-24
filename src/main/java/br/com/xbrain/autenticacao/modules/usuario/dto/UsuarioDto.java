@@ -43,6 +43,7 @@ public class UsuarioDto implements Serializable {
     private String telefone;
     private String telefone02;
     private String telefone03;
+    private Long imei;
     @CPF
     @NotNull
     @Size(max = 14)
@@ -77,6 +78,9 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
+    private String fotoDiretorio;
+    private String fotoNomeOriginal;
+    private String fotoContentType;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
