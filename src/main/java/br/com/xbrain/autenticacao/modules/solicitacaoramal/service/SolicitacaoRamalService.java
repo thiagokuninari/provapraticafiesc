@@ -31,8 +31,7 @@ public class SolicitacaoRamalService {
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
 
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não "
-            + "encontrada.");
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         BooleanBuilder builder = filtros.toPredicate().build();

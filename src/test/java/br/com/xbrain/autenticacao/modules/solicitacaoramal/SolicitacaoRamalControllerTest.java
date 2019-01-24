@@ -17,6 +17,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -202,7 +203,7 @@ public class SolicitacaoRamalControllerTest {
                 .agenteAutorizadoNome("Renato")
                 .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
-                .dataCadastro(id != null ? LocalDateTime.now() : null)
+                .dataCadastro(!ObjectUtils.isEmpty(id) ? LocalDateTime.now() : null)
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100,101))
