@@ -17,12 +17,13 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -70,7 +71,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(6)));
     }
 
     @Test
@@ -78,13 +79,13 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(1))))
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5))))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void deveCriarUmaSolicitacaoDeRamal() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal();
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -139,8 +140,58 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(status().isOk());
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal() {
-        return criaSolicitacaoRamal(null);
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoPendente() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PD")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoEmAndamento() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EA")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesComSituacaoRejeitada() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=RJ")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendente() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-03&situacao=PD")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-02&situacao=EA")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
+    }
+
+    @Test
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastro() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=2019-01-02")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
@@ -152,7 +203,7 @@ public class SolicitacaoRamalControllerTest {
                 .agenteAutorizadoNome("Renato")
                 .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
-                .dataCadastro(LocalDateTime.now())
+                .dataCadastro(!ObjectUtils.isEmpty(id) ? LocalDateTime.now() : null)
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100,101))
@@ -160,10 +211,4 @@ public class SolicitacaoRamalControllerTest {
 
         return request;
     }
-
-    private String dateFormatter(LocalDate data) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return formatter.format(data);
-    }
-
 }

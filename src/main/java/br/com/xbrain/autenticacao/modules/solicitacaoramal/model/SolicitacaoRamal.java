@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @EqualsAndHashCode(of = "id")
@@ -79,6 +81,25 @@ public class SolicitacaoRamal {
 
     private void atualizarSituacaoParaPendente() {
         this.situacao = ESituacao.PD;
+    }
+
+    public void editar(SolicitacaoRamalRequest request) {
+        this.usuario = new Usuario(request.getUsuarioId());
+        this.agenteAutorizadoId = request.getAgenteAutorizadoId();
+        this.agenteAutorizadoNome = request.getAgenteAutorizadoNome();
+        this.agenteAutorizadoCnpj = request.getAgenteAutorizadoCnpj();
+        this.melhorHorarioImplantacao = request.getMelhorHorarioImplantacao();
+        this.quantidadeRamais = request.getQuantidadeRamais();
+        this.melhorDataImplantacao = request.getMelhorDataImplantacao();
+        this.telefoneTi = request.getTelefoneTi();
+        this.emailTi = request.getEmailTi();
+        atualizaUsuariosSolicitados(request);
+    }
+
+    private void atualizaUsuariosSolicitados(SolicitacaoRamalRequest request) {
+        this.usuariosSolicitados = request.getUsuariosSolicitadosIds()
+                                          .stream()
+                                          .map(Usuario::new).collect(Collectors.toList());
     }
 
 }
