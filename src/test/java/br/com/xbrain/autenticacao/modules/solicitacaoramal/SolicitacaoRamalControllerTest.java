@@ -17,17 +17,15 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.SOCIO_AA;
+import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -201,9 +199,8 @@ public class SolicitacaoRamalControllerTest {
                 .usuarioId(100)
                 .agenteAutorizadoId(1)
                 .agenteAutorizadoNome("Renato")
-                .melhorHorarioImplantacao(LocalTime.of(10, 00, 00))
+                .melhorHorarioImplantacao(LocalTime.of(10, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
-                .dataCadastro(!ObjectUtils.isEmpty(id) ? LocalDateTime.now() : null)
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100,101))
