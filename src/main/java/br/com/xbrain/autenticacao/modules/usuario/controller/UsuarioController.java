@@ -75,7 +75,7 @@ public class UsuarioController {
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
-                                         @RequestParam boolean incluirProprio) {
+                                         @RequestParam(required = false, defaultValue = "false") boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
