@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -70,6 +71,9 @@ public class Usuario {
 
     @Column(name = "TELEFONE_03")
     private String telefone03;
+
+    @Column(name = "IMEI")
+    private Long imei;
 
     @NotNull
     @CPF
@@ -172,6 +176,15 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
+    @Column(name = "FOTO_DIRETORIO")
+    private String fotoDiretorio;
+
+    @Column(name = "FOTO_NOME_ORIGINAL")
+    private String fotoNomeOriginal;
+
+    @Column(name = "FOTO_CONTENT_TYPE")
+    private String fotoContentType;
+
     @NotAudited
     @JsonIgnore
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -183,6 +196,12 @@ public class Usuario {
     @ElementCollection
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
+
+    @Transient
+    private List<Integer> hierarquiasId;
+
+    @Transient
+    private List<Integer> cidadesId;
 
     public boolean isNovoCadastro() {
         return id == null;
@@ -301,7 +320,7 @@ public class Usuario {
     public void tratarEmails() {
         this.email = this.email.trim().toUpperCase();
 
-        if (this.email02 != null) {
+        if (!StringUtils.isEmpty(this.email02)) {
             this.email02 = this.email02.trim().toUpperCase();
         }
     }
