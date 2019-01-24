@@ -155,15 +155,15 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 .collect(Collectors.toList());
     }
 
-    private Set<ECanal> getCanais(Usuario usuario) {
+    private Set<String> getCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO);
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name(), ECanal.D2D_PROPRIO.name());
             case OPERACAO:
-                return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanais();
+                return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanaisString();
             default:
-                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO);
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name());
         }
     }
 
