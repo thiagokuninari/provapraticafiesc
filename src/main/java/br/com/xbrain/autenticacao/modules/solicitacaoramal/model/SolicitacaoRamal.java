@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -84,10 +86,7 @@ public class SolicitacaoRamal {
     }
 
     public void editar(SolicitacaoRamalRequest request) {
-        this.usuario = new Usuario(request.getUsuarioId());
         this.agenteAutorizadoId = request.getAgenteAutorizadoId();
-        this.agenteAutorizadoNome = request.getAgenteAutorizadoNome();
-        this.agenteAutorizadoCnpj = request.getAgenteAutorizadoCnpj();
         this.melhorHorarioImplantacao = request.getMelhorHorarioImplantacao();
         this.quantidadeRamais = request.getQuantidadeRamais();
         this.melhorDataImplantacao = request.getMelhorDataImplantacao();
@@ -100,6 +99,20 @@ public class SolicitacaoRamal {
         this.usuariosSolicitados = request.getUsuariosSolicitadosIds()
                                           .stream()
                                           .map(Usuario::new).collect(Collectors.toList());
+    }
+
+    public void atualizarUsuario(Integer idUsuario) {
+        this.usuario = new Usuario(idUsuario);
+    }
+
+    public void atualizarNomeECnpjDoAgenteAutorizado(AgenteAutorizadoResponse agenteAutorizado) {
+        this.agenteAutorizadoNome = agenteAutorizado.getNomeFantasia();
+        this.agenteAutorizadoCnpj = agenteAutorizado.getCnpj();
+    }
+
+    public void retirarMascara() {
+        this.telefoneTi = StringUtil.getOnlyNumbers(this.telefoneTi);
+        this.agenteAutorizadoCnpj = StringUtil.getOnlyNumbers(this.agenteAutorizadoCnpj);
     }
 
 }

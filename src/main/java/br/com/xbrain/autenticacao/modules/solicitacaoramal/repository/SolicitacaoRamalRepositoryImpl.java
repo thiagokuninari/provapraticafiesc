@@ -1,11 +1,14 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
@@ -22,5 +25,16 @@ public class SolicitacaoRamalRepositoryImpl
                 .innerJoin(solicitacaoRamal.usuario)
                 .where(solicitacaoRamal.usuario.id.eq(usuarioId).and(predicate))
                 .fetch();
+    }
+
+    @Override
+    public Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate) {
+        return super.findAll(
+                Arrays.asList(
+                        JoinDescriptor.innerJoin(solicitacaoRamal.usuario)
+                ),
+                predicate,
+                pageable
+        );
     }
 }

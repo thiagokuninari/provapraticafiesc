@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal;
 
 import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
@@ -51,11 +52,56 @@ public class SolicitacaoRamalControllerTest {
     private EquipeVendasService equipeVendasService;
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
+    private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
 
     @Before
     public void setUp() {
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+    }
+
+    @Test
+    public void devePermitirAcessoParaPermissaoHelpDesk() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(10)));
+    }
+
+    @Test
+    public void devePermitirAcessoParaPermissaoAdmin() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(10)));
+    }
+
+    @Test
+    public void devePermitirAcessoParaPermissaoSocioAa() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(6)));
+    }
+
+    @Test
+    public void deveFalharQuandoTentarAcessarUrlGerenciaComPermissaoGerente() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void deveFalharQuandoTentarAcessarUrlGerenciaComPermissaoSocioAa() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -102,9 +148,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo usuarioId é obrigatório.",
-                        "O campo agenteAutorizadoId é obrigatório.",
-                        "O campo agenteAutorizadoNome é obrigatório.",
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo agenteAutorizadoId é obrigatório.",
                         "O campo melhorHorarioImplantacao é obrigatório.",
                         "O campo quantidadeRamais é obrigatório.",
                         "O campo melhorDataImplantacao é obrigatório.",
@@ -196,9 +240,7 @@ public class SolicitacaoRamalControllerTest {
         SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
                 .id(id)
                 .quantidadeRamais(38)
-                .usuarioId(100)
-                .agenteAutorizadoId(1)
-                .agenteAutorizadoNome("Renato")
+                .agenteAutorizadoId(7129)
                 .melhorHorarioImplantacao(LocalTime.of(10, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
                 .emailTi("reanto@ti.com.br")
@@ -207,5 +249,14 @@ public class SolicitacaoRamalControllerTest {
                 .build();
 
         return request;
+    }
+
+    private AgenteAutorizadoResponse criaAa() {
+        AgenteAutorizadoResponse agenteAutorizadoResponse = new AgenteAutorizadoResponse();
+        agenteAutorizadoResponse.setId("303030");
+        agenteAutorizadoResponse.setCnpj("81733187000134");
+        agenteAutorizadoResponse.setNomeFantasia("Fulano");
+
+        return agenteAutorizadoResponse;
     }
 }

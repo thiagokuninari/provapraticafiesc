@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -27,15 +26,7 @@ public class SolicitacaoRamalRequest {
     private Integer id;
 
     @NotNull
-    private Integer usuarioId;
-
-    @NotNull
     private Integer agenteAutorizadoId;
-
-    @NotNull
-    private String agenteAutorizadoNome;
-
-    private String agenteAutorizadoCnpj;
 
     @NotNull
     @JsonFormat(pattern = "HH:mm")
@@ -51,8 +42,6 @@ public class SolicitacaoRamalRequest {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDateTime dataCadastro;
 
-    private ESituacao situacao;
-
     @NotNull
     private List<Integer> usuariosSolicitadosIds;
 
@@ -64,7 +53,6 @@ public class SolicitacaoRamalRequest {
 
     public static SolicitacaoRamal convertFrom(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = new SolicitacaoRamal();
-        solicitacaoRamal.setUsuario(new Usuario(request.usuarioId));
 
         solicitacaoRamal.setUsuariosSolicitados(request.getUsuariosSolicitadosIds()
                 .stream()

@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
@@ -47,10 +48,30 @@ public class SolicitacaoRamalService {
                 solicitacoes.size());
     }
 
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        BooleanBuilder builder = filtros.toPredicate().build();
+
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
+
+        return new PageImpl<>(
+                solicitacoes.getContent()
+                            .stream()
+                            .map(SolicitacaoRamalResponse::convertFrom)
+                            .collect(Collectors.toList()),
+                pageable,
+                solicitacoes.getTotalElements());
+    }
+
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
+        solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
 
+        solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
+                agenteAutorizadoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId())
+        );
+
+        solicitacaoRamal.retirarMascara();
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
         gerarHistorico(solicitacaoRamalPersistida);
@@ -75,7 +96,12 @@ public class SolicitacaoRamalService {
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
         solicitacaoEncontrada.editar(request);
+        solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
+        solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
+                agenteAutorizadoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
+        );
 
+        solicitacaoEncontrada.retirarMascara();
         SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
         return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida);
     }

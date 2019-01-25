@@ -18,6 +18,11 @@ public class SolicitacaoRamalController {
     @Autowired
     private SolicitacaoRamalService service;
 
+    @GetMapping(value = "/gerencia")
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return service.getAllGerencia(pageable, filtros);
+    }
+
     @GetMapping
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return service.getAll(pageable, filtros);
