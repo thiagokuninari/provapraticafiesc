@@ -42,6 +42,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/api/cargos").hasRole("AUT_2023")
                 .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole("AUT_2023")
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .antMatchers("/api/solicitacao-ramal").hasAnyRole("AUT_2033", "AUT_2034")
+                .antMatchers("/api/solicitacao-ramal/gerencia").hasRole("AUT_2034")
                 .anyRequest().authenticated();
     }
 
