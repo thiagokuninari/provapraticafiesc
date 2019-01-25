@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -45,6 +46,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -118,6 +120,8 @@ public class UsuarioService {
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private FileService fileService;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -257,9 +261,16 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(UsuarioDto usuarioDto) {
+    public UsuarioDto save(Usuario request, MultipartFile foto) {
+        if (!ObjectUtils.isEmpty(foto)) {
+            fileService.uploadFotoUsuario(request, foto);
+        }
+        return save(request);
+    }
+
+    @Transactional
+    public UsuarioDto save(Usuario usuario) {
         try {
-            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
             validar(usuario);
 
             boolean enviarEmail = false;
@@ -273,8 +284,8 @@ public class UsuarioService {
             }
             usuario = repository.save(usuario);
             entityManager.flush();
-            tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
-            tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+            tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
+            tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -473,7 +484,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(usuarioDto);
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -487,7 +498,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(usuarioDto);
+            save(UsuarioDto.convertFrom(usuarioDto));
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);

@@ -64,10 +64,14 @@ app-config:
   nome: Colaboradores
   url: http://localhost:3100
   url-servico-email: http://192.168.1.40:6541/emails/
-  url-estatico: https://estatico.xbrain.com.br/conexao_claro_brasil
+  url-estatico: https://estatico.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
   upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
+
+  usuario-foto:
+    dir: ${app-config.upload-dir}/usuario/foto
+    url: ${app-config.url-estatico-upload}/usuario/foto
 
   email:
     enviar: true
