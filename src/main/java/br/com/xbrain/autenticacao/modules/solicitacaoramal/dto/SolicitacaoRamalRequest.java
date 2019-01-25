@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,14 +38,17 @@ public class SolicitacaoRamalRequest {
     private String agenteAutorizadoCnpj;
 
     @NotNull
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime melhorHorarioImplantacao;
 
     @NotNull
     private Integer quantidadeRamais;
 
     @NotNull
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate melhorDataImplantacao;
 
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDateTime dataCadastro;
 
     private ESituacao situacao;

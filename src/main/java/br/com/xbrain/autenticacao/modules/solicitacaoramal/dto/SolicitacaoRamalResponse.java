@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,9 @@ public class SolicitacaoRamalResponse {
     private Integer id;
     private Integer quantidadeRamais;
     private ESituacao situacao;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime horaExpiracao;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
