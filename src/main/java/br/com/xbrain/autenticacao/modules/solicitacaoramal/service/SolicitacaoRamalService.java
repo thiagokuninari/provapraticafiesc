@@ -42,7 +42,9 @@ public class SolicitacaoRamalService {
         List<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(pageable, idUsuario, builder);
 
         return new PageImpl<>(solicitacoes.stream()
-                                          .map(SolicitacaoRamalResponse::convertFrom)
+                                          .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
+                                                  solicitacao,
+                                                  solicitacao.getUsuario().getNome()))
                                           .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.size());
@@ -56,7 +58,9 @@ public class SolicitacaoRamalService {
         return new PageImpl<>(
                 solicitacoes.getContent()
                             .stream()
-                            .map(SolicitacaoRamalResponse::convertFrom)
+                            .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
+                                    solicitacao,
+                                    solicitacao.getUsuario().getNome()))
                             .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
@@ -76,7 +80,7 @@ public class SolicitacaoRamalService {
 
         gerarHistorico(solicitacaoRamalPersistida);
 
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida, getNomeUsuarioLogado());
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
@@ -103,7 +107,7 @@ public class SolicitacaoRamalService {
 
         solicitacaoEncontrada.retirarMascara();
         SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida, getNomeUsuarioLogado());
     }
 
     private SolicitacaoRamal findById(Integer id) {
@@ -112,6 +116,10 @@ public class SolicitacaoRamalService {
 
     private Usuario criaUsuario(int idUsuarioAutenticado) {
         return new Usuario(idUsuarioAutenticado);
+    }
+
+    private String getNomeUsuarioLogado() {
+        return autenticacaoService.getUsuarioAutenticado().getNome();
     }
 
 }

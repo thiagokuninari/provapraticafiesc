@@ -20,14 +20,18 @@ public class SolicitacaoRamalResponse {
 
     private Integer id;
     private Integer quantidadeRamais;
-    private ESituacao situacao;
+    private String situacao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime horaExpiracao;
+    private String usuarioSolicitante;
 
-    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
+    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal, String nome) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
+        response.getNomeUsuarioSolicitante(nome);
+
+        response.getDescricaoEnumSituacao(solicitacaoRamal.getSituacao());
 
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
@@ -36,16 +40,24 @@ public class SolicitacaoRamalResponse {
         return response;
     }
 
-    public void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
+    private void getNomeUsuarioSolicitante(String nome) {
+        this.usuarioSolicitante = nome;
+    }
+
+    private void getDescricaoEnumSituacao(ESituacao situacao) {
+        this.situacao =  situacao.getDescricao();
+    }
+
+    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
+        return dataCadastro.plusHours(HORA_DEFAULT_EXPIRACAO);
+    }
+
+    private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
         LocalDateTime expiracao = getDataExpiracao(dataCadastro);
 
         long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(expiracao);
 
         this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
-    }
-
-    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
-        return dataCadastro.plusHours(HORA_DEFAULT_EXPIRACAO);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {

@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasServi
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,7 +138,7 @@ public class SolicitacaoRamalControllerTest {
                 .content(convertObjectToJsonBytes(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.quantidadeRamais", is(request.getQuantidadeRamais())))
-                .andExpect(jsonPath("$.situacao", is("PD")));
+                .andExpect(jsonPath("$.situacao", is(ESituacao.PD.getDescricao())));
 
         verify(historicoService, times(1)).save(any());
     }
