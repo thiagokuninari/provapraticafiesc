@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -314,23 +313,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(Projections.constructor(UsuarioHierarquiaResponse.class, usuario.id, usuario.nome))
                 .from(usuario)
-                .where(predicate)
-                .distinct()
-                .orderBy(usuario.nome.asc())
-                .fetch();
-    }
-
-    @Override
-    public List<ColaboradorResponse> getUsuariosD2dGeral(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(ColaboradorResponse.class,
-                        usuario.id,
-                        usuario.nome,
-                        usuario.email,
-                        usuario.cargo.nome))
-                .from(usuario)
-                .innerJoin(usuario.cargo, cargo)
-                .innerJoin(cargo.nivel)
                 .where(predicate)
                 .distinct()
                 .orderBy(usuario.nome.asc())

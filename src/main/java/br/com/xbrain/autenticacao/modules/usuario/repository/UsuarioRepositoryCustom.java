@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -49,6 +48,4 @@ public interface UsuarioRepositoryCustom {
     Optional<Usuario> findComConfiguracao(Integer usuarioId);
 
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
-
-    List<ColaboradorResponse> getUsuariosD2dGeral(Predicate predicate);
 }
