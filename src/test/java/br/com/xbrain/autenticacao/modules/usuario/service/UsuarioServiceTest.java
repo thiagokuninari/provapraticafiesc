@@ -79,13 +79,6 @@ public class UsuarioServiceTest {
     @MockBean
     private NotificacaoService notificacaoService;
 
-    private static final Integer ADMIN_ID = 100;
-    private static final Integer GERENTE_OPERACAO_ID = 227;
-    private static final Integer COORDENADOR_OPERACAO_ID = 228;
-    private static final Integer GERENTE_COMERCIAL_OPERACAO_ID = 104;
-    private static final Integer MSO_ID = 366;
-    private static final Integer VENDEDOR_OPERACAO = 229;
-
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
