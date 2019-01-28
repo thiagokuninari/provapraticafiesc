@@ -39,7 +39,7 @@ public class SolicitacaoRamalHistorico {
 
     @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "ID",
                 foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_SOLIC_RAMAL"))
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private SolicitacaoRamal solicitacaoRamal;
 
     public SolicitacaoRamalHistorico gerarHistorico(SolicitacaoRamal solicitacaoRamal) {

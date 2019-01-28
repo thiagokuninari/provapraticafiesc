@@ -9,10 +9,12 @@ public class SolicitacaoRamalFiltros {
 
     private String data;
     private ESituacao situacao;
+    private Integer agenteAutorizadoId;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()
                 .comDataCadastro(data)
-                .comSituacao(this.situacao);
+                .comSituacao(this.situacao)
+                .comAgenteAutorizadoId(agenteAutorizadoId);
     }
 }

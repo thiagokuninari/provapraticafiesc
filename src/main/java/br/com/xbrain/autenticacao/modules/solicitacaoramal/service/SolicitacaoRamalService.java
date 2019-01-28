@@ -5,10 +5,12 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,10 +34,23 @@ public class SolicitacaoRamalService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private SolicitacaoRamalHistoricoRepository historicoRepository;
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
+    public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
+        return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
+                .stream()
+                .map(SolicitacaoRamalHistoricoResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
+
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+        }
+
         BooleanBuilder builder = filtros.toPredicate().build();
 
         Integer idUsuario = autenticacaoService.getUsuarioId();
@@ -46,6 +62,11 @@ public class SolicitacaoRamalService {
                                           .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.size());
+    }
+
+    private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        autenticacaoService.getUsuarioAutenticado()
+                .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
@@ -81,11 +102,6 @@ public class SolicitacaoRamalService {
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
         historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal));
-    }
-
-    public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
-        autenticacaoService.getUsuarioAutenticado()
-                           .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {

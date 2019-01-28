@@ -32,4 +32,12 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
 
         return this;
     }
+
+    public SolicitacaoRamalPredicate comAgenteAutorizadoId(Integer agenteAutorizadoId) {
+        if (!ObjectUtils.isEmpty(agenteAutorizadoId)) {
+            builder.and(solicitacaoRamal.agenteAutorizadoId.eq(agenteAutorizadoId));
+        }
+
+        return this;
+    }
 }

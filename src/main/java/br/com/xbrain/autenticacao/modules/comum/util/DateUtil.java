@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,26 +22,16 @@ public class DateUtil {
 
     public static LocalDate parseStringToLocalDate(String data) {
         LocalDate response = null;
-        if (Objects.nonNull(data)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
-            response = LocalDate.parse(data, formatter);
-        }
-        return response;
-    }
-
-    public static LocalDate parseStringToLocalDateDefault(String data) {
-        LocalDate response = null;
         try {
-            if (!ObjectUtils.isEmpty(data)) {
-                Locale locale = new Locale("pt", "BR");
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", locale);
-
+            if (Objects.nonNull(data)) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
                 response = LocalDate.parse(data, formatter);
             }
         } catch (DateTimeParseException ex) {
-            log.error("Não foi possível converter a data " + data + " para o padrão yyyy-MM-dd");
+            log.error("Não foi possível converter a data " + data + " para o padrão dd/MM/yyyy");
         }
 
         return response;
     }
+
 }

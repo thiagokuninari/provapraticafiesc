@@ -160,7 +160,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveFalharQuandoUsuarioForSocioMasNaoTemPermissaoSobreOAgenteAutorizado() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/50")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=50")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -168,19 +168,10 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveValidarQuandoUsuarioPossuirPermissaoSobreOAgenteAutorizado() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/1")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-    }
-
-    @Test
-    public void deveValidarQuandoUsuarioPossuirPermissaoSobreOAgenteAutorizadoTeste() throws Exception {
-
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/2")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
     }
 
     @Test
@@ -211,8 +202,8 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendente() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PD")
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendenteEAgenteAutorizadoId() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PD&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -254,6 +245,15 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deveRetornarTodosOsHistoricosPeloSolicitacaoId() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/historico/1")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
