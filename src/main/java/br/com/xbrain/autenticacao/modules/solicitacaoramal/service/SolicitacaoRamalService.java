@@ -107,6 +107,10 @@ public class SolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
+    public SolicitacaoRamalResponse getSolicitacaoById(Integer idSolicitacao) {
+        return SolicitacaoRamalResponse.convertFrom(findById(idSolicitacao));
+    }
+
     private SolicitacaoRamal findById(Integer id) {
         return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }

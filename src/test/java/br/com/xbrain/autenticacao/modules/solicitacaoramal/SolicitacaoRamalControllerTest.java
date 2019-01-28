@@ -237,6 +237,25 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
+    @Test
+    public void deveFiltrarPeloIdSolicitacao() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/solicitacao/1")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quantidadeRamais", is(35)))
+                .andExpect(jsonPath("$.situacao", is(ESituacao.PD.getDescricao())))
+                .andExpect(jsonPath("$.id", is(1)));
+    }
+
+    @Test
+    public void deveFalharQuandoIdSolicitacaoNaoExistir() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/solicitacao/9999")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
         SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
                 .id(id)
