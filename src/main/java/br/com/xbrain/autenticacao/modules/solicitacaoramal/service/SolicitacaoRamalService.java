@@ -42,9 +42,7 @@ public class SolicitacaoRamalService {
         List<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(pageable, idUsuario, builder);
 
         return new PageImpl<>(solicitacoes.stream()
-                                          .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
-                                                  solicitacao,
-                                                  solicitacao.getUsuario().getNome()))
+                                          .map(SolicitacaoRamalResponse::convertFrom)
                                           .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.size());
@@ -58,15 +56,13 @@ public class SolicitacaoRamalService {
         return new PageImpl<>(
                 solicitacoes.getContent()
                             .stream()
-                            .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
-                                    solicitacao,
-                                    solicitacao.getUsuario().getNome()))
+                            .map(SolicitacaoRamalResponse::convertFrom)
                             .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
     }
 
-    public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
+    public void save(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -79,8 +75,6 @@ public class SolicitacaoRamalService {
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
         gerarHistorico(solicitacaoRamalPersistida);
-
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida, getNomeUsuarioLogado());
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
@@ -97,7 +91,7 @@ public class SolicitacaoRamalService {
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
-    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+    public void update(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -107,7 +101,6 @@ public class SolicitacaoRamalService {
 
         solicitacaoEncontrada.retirarMascara();
         SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida, getNomeUsuarioLogado());
     }
 
     private SolicitacaoRamal findById(Integer id) {

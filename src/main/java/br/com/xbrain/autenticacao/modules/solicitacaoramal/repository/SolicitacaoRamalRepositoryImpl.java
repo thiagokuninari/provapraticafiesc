@@ -24,6 +24,7 @@ public class SolicitacaoRamalRepositoryImpl
                 .from(solicitacaoRamal)
                 .innerJoin(solicitacaoRamal.usuario)
                 .where(solicitacaoRamal.usuario.id.eq(usuarioId).and(predicate))
+                .orderBy(solicitacaoRamal.id.desc())
                 .fetch();
     }
 

@@ -136,9 +136,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.quantidadeRamais", is(request.getQuantidadeRamais())))
-                .andExpect(jsonPath("$.situacao", is(ESituacao.PD.getDescricao())));
+                .andExpect(status().isCreated());
 
         verify(historicoService, times(1)).save(any());
     }

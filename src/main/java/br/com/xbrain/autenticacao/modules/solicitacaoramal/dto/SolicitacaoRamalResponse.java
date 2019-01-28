@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -27,25 +26,15 @@ public class SolicitacaoRamalResponse {
     private LocalDateTime horaExpiracao;
     private String usuarioSolicitante;
 
-    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal, String nome) {
+    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
-        response.getNomeUsuarioSolicitante(nome);
-
-        response.getDescricaoEnumSituacao(solicitacaoRamal.getSituacao());
-
+        response.usuarioSolicitante = solicitacaoRamal.getUsuario().getNome();
+        response.situacao = solicitacaoRamal.getSituacao().getDescricao();
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
         BeanUtils.copyProperties(solicitacaoRamal, response);
 
         return response;
-    }
-
-    private void getNomeUsuarioSolicitante(String nome) {
-        this.usuarioSolicitante = nome;
-    }
-
-    private void getDescricaoEnumSituacao(ESituacao situacao) {
-        this.situacao =  situacao.getDescricao();
     }
 
     private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
