@@ -30,13 +30,13 @@ public class SolicitacaoRamalController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void save(@Validated @RequestBody SolicitacaoRamalRequest request) {
-        service.save(request);
+    public SolicitacaoRamalResponse save(@Validated @RequestBody SolicitacaoRamalRequest request) {
+        return service.save(request);
     }
 
     @PutMapping
-    public void update(@Validated @RequestBody SolicitacaoRamalRequest request) {
-        service.update(request);
+    public SolicitacaoRamalResponse update(@Validated @RequestBody SolicitacaoRamalRequest request) {
+        return service.update(request);
     }
 
     @GetMapping(value = "/{agenteAutorizadoId}")

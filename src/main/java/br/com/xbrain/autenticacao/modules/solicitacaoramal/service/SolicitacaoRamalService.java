@@ -62,7 +62,7 @@ public class SolicitacaoRamalService {
                 solicitacoes.getTotalElements());
     }
 
-    public void save(SolicitacaoRamalRequest request) {
+    public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -75,6 +75,8 @@ public class SolicitacaoRamalService {
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
         gerarHistorico(solicitacaoRamalPersistida);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
@@ -91,7 +93,7 @@ public class SolicitacaoRamalService {
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
-    public void update(SolicitacaoRamalRequest request) {
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -100,7 +102,9 @@ public class SolicitacaoRamalService {
         );
 
         solicitacaoEncontrada.retirarMascara();
-        solicitacaoRamalRepository.save(solicitacaoEncontrada);
+        SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
     private SolicitacaoRamal findById(Integer id) {
