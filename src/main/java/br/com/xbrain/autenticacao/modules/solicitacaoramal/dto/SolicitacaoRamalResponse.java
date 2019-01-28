@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -20,15 +19,17 @@ public class SolicitacaoRamalResponse {
 
     private Integer id;
     private Integer quantidadeRamais;
-    private ESituacao situacao;
+    private String situacao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime horaExpiracao;
+    private String usuarioSolicitante;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
-
+        response.usuarioSolicitante = solicitacaoRamal.getUsuario().getNome();
+        response.situacao = solicitacaoRamal.getSituacao().getDescricao();
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
         BeanUtils.copyProperties(solicitacaoRamal, response);
@@ -36,16 +37,16 @@ public class SolicitacaoRamalResponse {
         return response;
     }
 
-    public void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
+    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
+        return dataCadastro.plusHours(HORA_DEFAULT_EXPIRACAO);
+    }
+
+    private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
         LocalDateTime expiracao = getDataExpiracao(dataCadastro);
 
         long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(expiracao);
 
         this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
-    }
-
-    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
-        return dataCadastro.plusHours(HORA_DEFAULT_EXPIRACAO);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {

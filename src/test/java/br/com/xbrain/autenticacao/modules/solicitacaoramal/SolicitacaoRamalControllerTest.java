@@ -27,7 +27,8 @@ import java.util.Collections;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -135,9 +136,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.quantidadeRamais", is(request.getQuantidadeRamais())))
-                .andExpect(jsonPath("$.situacao", is("PD")));
+                .andExpect(status().isCreated());
 
         verify(historicoService, times(1)).save(any());
     }
