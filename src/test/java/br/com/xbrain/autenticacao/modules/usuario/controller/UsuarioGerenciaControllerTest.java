@@ -137,6 +137,16 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void deveRetornarTodosByCargoSuperior() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia/cargo-superior/4")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
+    }
+
+    @Test
     public void deveRetornarTodosByCnpjAa() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();

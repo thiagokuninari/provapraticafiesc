@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -28,16 +27,14 @@ public class CargoService {
 
     public Iterable<Cargo> getAll(Integer operacaoId) {
         CargoPredicate predicate = new CargoPredicate();
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         predicate.comNivel(operacaoId);
-        predicate.filtrarPermitidos(usuarioAutenticado);
+        predicate.filtrarPermitidos(autenticacaoService.getUsuarioAutenticado());
         return repository.findAll(predicate.build());
     }
 
     public Page<Cargo> getAll(PageRequest pageRequest, CargoFiltros filtros) {
         CargoPredicate predicate = filtros.toPredicate();
-        Page<Cargo> pages = repository.findAll(predicate.build(), pageRequest);
-        return pages;
+        return repository.findAll(predicate.build(), pageRequest);
     }
 
     public Cargo findById(Integer id) {
