@@ -100,7 +100,7 @@ public class SolicitacaoRamalService {
         );
 
         solicitacaoEncontrada.retirarMascara();
-        SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
+        solicitacaoRamalRepository.save(solicitacaoEncontrada);
     }
 
     private SolicitacaoRamal findById(Integer id) {
@@ -109,10 +109,6 @@ public class SolicitacaoRamalService {
 
     private Usuario criaUsuario(int idUsuarioAutenticado) {
         return new Usuario(idUsuarioAutenticado);
-    }
-
-    private String getNomeUsuarioLogado() {
-        return autenticacaoService.getUsuarioAutenticado().getNome();
     }
 
 }
