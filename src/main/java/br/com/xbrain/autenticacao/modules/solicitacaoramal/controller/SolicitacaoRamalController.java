@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalHistoricoResponse;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
@@ -29,6 +26,11 @@ public class SolicitacaoRamalController {
     @GetMapping(value = "/solicitacao/{idSolicitacao}")
     public SolicitacaoRamalResponse getSolicitacaoById(@PathVariable Integer idSolicitacao) {
         return solicitacaoRamalService.getSolicitacaoById(idSolicitacao);
+    }
+
+    @PostMapping(value = "/gerencia/atualiza-status")
+    public SolicitacaoRamalResponse atualizarSituacao(@Validated @RequestBody SolicitacaoRamalAtualizarStatusRequest request) {
+        return solicitacaoRamalService.atualizarStatus(request);
     }
 
     @GetMapping(value = "/gerencia")

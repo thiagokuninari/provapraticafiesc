@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalHistoricoResponse;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
@@ -95,13 +92,13 @@ public class SolicitacaoRamalService {
         solicitacaoRamal.retirarMascara();
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
 
-        gerarHistorico(solicitacaoRamalPersistida);
+        gerarHistorico(solicitacaoRamalPersistida, null);
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
-        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal));
+    private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
+        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal, comentario));
     }
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
@@ -121,6 +118,16 @@ public class SolicitacaoRamalService {
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+    }
+
+    public SolicitacaoRamalResponse atualizarStatus(SolicitacaoRamalAtualizarStatusRequest request) {
+        SolicitacaoRamal solicitacaoEncontrada = findById(request.getIdSolicitacao());
+        solicitacaoEncontrada.setSituacao(request.getSituacao());
+        gerarHistorico(solicitacaoEncontrada, request.getObservacao());
+
+        SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida);
     }
 
     public SolicitacaoRamalResponse getSolicitacaoById(Integer idSolicitacao) {

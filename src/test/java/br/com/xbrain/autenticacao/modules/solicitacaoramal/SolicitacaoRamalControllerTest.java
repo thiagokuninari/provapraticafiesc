@@ -3,8 +3,8 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal;
 import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +25,8 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao.PD;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao.RJ;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
@@ -138,7 +140,22 @@ public class SolicitacaoRamalControllerTest {
                 .content(convertObjectToJsonBytes(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.quantidadeRamais", is(request.getQuantidadeRamais())))
-                .andExpect(jsonPath("$.situacao", is(ESituacao.PD.getDescricao())));
+                .andExpect(jsonPath("$.situacao", is(PD.getDescricao())));
+
+        verify(historicoService, times(1)).save(any());
+    }
+
+    @Test
+    public void deveAtualizarStatusDaSolicitacaoParaRejeitada() throws Exception {
+        SolicitacaoRamalAtualizarStatusRequest request = criaSolicitacaoRamalAtualizarStatusRequest();
+
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.situacao", is(RJ.getDescricao())));
 
         verify(historicoService, times(1)).save(any());
     }
@@ -235,7 +252,7 @@ public class SolicitacaoRamalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.quantidadeRamais", is(35)))
-                .andExpect(jsonPath("$.situacao", is(ESituacao.PD.getDescricao())))
+                .andExpect(jsonPath("$.situacao", is(PD.getDescricao())))
                 .andExpect(jsonPath("$.id", is(1)));
     }
 
@@ -278,5 +295,13 @@ public class SolicitacaoRamalControllerTest {
         agenteAutorizadoResponse.setNomeFantasia("Fulano");
 
         return agenteAutorizadoResponse;
+    }
+
+    private SolicitacaoRamalAtualizarStatusRequest criaSolicitacaoRamalAtualizarStatusRequest() {
+        return SolicitacaoRamalAtualizarStatusRequest.builder()
+                .idSolicitacao(1)
+                .observacao("Rejeitada teste")
+                .situacao(RJ)
+                .build();
     }
 }

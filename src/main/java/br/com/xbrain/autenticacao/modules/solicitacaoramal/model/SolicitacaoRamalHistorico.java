@@ -42,12 +42,13 @@ public class SolicitacaoRamalHistorico {
     @ManyToOne(fetch = FetchType.EAGER)
     private SolicitacaoRamal solicitacaoRamal;
 
-    public SolicitacaoRamalHistorico gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
+    public SolicitacaoRamalHistorico gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
         SolicitacaoRamalHistorico historico = new SolicitacaoRamalHistorico();
         historico.setUsuario(solicitacaoRamal.getUsuario());
         historico.setSituacao(solicitacaoRamal.getSituacao());
         historico.setSolicitacaoRamal(solicitacaoRamal);
         historico.setDataCadastro(LocalDateTime.now());
+        historico.setComentario(comentario);
 
         return historico;
     }
