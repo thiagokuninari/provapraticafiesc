@@ -62,6 +62,7 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
+    private static final ESituacao REALOCADO = ESituacao.R;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -274,6 +275,7 @@ public class UsuarioService {
                 enviarEmail = true;
             } else {
                 atualizarUsuariosParceiros(usuario);
+                validarRealocacaoDeUsuario(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
@@ -291,6 +293,19 @@ public class UsuarioService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    public Usuario validarRealocacaoDeUsuario(Usuario usuario) {
+        Optional<Usuario> usuarioCpf = repository.findByCpf(usuario.getCpf());
+        if (!ObjectUtils.isEmpty(usuario)) {
+            usuarioCpf.ifPresent(
+                usuarioRealocado -> {
+                    usuarioRealocado.setSituacao(ESituacao.R);
+                    repository.save(usuarioRealocado);
+                }
+            );
+        }
+        return usuarioCpf.get();
     }
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {

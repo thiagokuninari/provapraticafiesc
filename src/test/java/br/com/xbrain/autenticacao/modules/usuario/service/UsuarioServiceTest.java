@@ -154,6 +154,14 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void deveRealocarUmUsuario() throws Exception {
+        Usuario usuarioRealocar = new Usuario();
+        usuarioRealocar.setCpf("38957979875");
+        Usuario usuario = service.validarRealocacaoDeUsuario(usuarioRealocar);
+        Assert.assertEquals(usuario.getSituacao(), ESituacao.R);
+    }
+
+    @Test
     public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() throws Exception {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
