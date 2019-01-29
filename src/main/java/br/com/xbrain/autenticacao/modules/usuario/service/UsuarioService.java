@@ -85,6 +85,8 @@ public class UsuarioService {
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
+    private CargoService cargoService;
+    @Autowired
     private DepartamentoRepository departamentoRepository;
     @Autowired
     private UsuarioCidadeRepository usuarioCidadeRepository;
@@ -274,7 +276,7 @@ public class UsuarioService {
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
-            usuario = repository.save(usuario);
+            repository.save(usuario);
             entityManager.flush();
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
@@ -733,6 +735,14 @@ public class UsuarioService {
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
+    }
+
+    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId) {
+        Cargo cargo = cargoService.findById(cargoId);
+        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.comCargo(Collections.singletonList(cargo.getCargoSuperior().getId()));
+        return repository.getUsuariosFilter(usuarioPredicate.build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {

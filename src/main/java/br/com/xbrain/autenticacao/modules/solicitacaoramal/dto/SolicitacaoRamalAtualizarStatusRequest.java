@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class SolicitacaoRamalAtualizarStatusRequest {
 
+    @NotNull
     private Integer idSolicitacao;
     @NotNull
     private ESituacao situacao;
