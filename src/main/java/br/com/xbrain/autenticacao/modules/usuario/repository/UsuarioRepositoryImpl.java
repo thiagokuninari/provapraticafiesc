@@ -119,6 +119,27 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+        List<BigDecimal> result = entityManager
+                .createNativeQuery(
+                        " SELECT UH.FK_USUARIO"
+                                + " FROM usuario_hierarquia UH"
+                                + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + " WHERE C.CODIGO = :_codigoCargo"
+                                + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .setParameter("_codigoCargo", codigoCargo)
+                .getResultList();
+        return result
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
+    }
+
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinadosByCidade(Integer usuarioId) {
         List<BigDecimal> result = entityManager

@@ -283,6 +283,22 @@ public class UsuarioServiceTest {
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 
+    @Test
+    public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
+        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+    }
+
     private Usuario umUsuarioComHierarquia() {
         Usuario usuario = usuarioRepository.findOne(110);
         UsuarioHierarquia usuarioHierarquia = criarUsuarioHierarquia(usuario, 113);
