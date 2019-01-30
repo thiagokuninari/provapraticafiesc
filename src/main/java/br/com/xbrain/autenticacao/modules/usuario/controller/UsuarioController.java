@@ -181,4 +181,9 @@ public class UsuarioController {
                 .sorted(Comparator.comparing(SelectResponse::getLabel))
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("{id}/vendedores-hierarquia")
+    public List<Integer> getVendedoresDaHierarquia(@PathVariable() Integer id) {
+        return usuarioService.getVendedoresOperacaoDaHierarquia(id);
+    }
 }

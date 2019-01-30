@@ -1079,4 +1079,8 @@ public class UsuarioService {
     public boolean situacaoAtiva(String email) {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
+
+    public List<Integer> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name());
+    }
 }
