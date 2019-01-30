@@ -2,25 +2,20 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 
 public class SolicitacaoRamalPredicate extends PredicateBase {
 
-    public SolicitacaoRamalPredicate comSituacao(String situacao) {
+    public SolicitacaoRamalPredicate comSituacaoSolicitacao(ESituacaoSolicitacao situacao) {
         if (!ObjectUtils.isEmpty(situacao)) {
-            Optional<ESituacao> situacaoEnum = Arrays.stream(ESituacao.values())
-                    .filter(s -> s.getDescricao().equals(situacao)).findFirst();
-
-            builder.and(solicitacaoRamal.situacao.eq(situacaoEnum.get()));
+            builder.and(solicitacaoRamal.situacao.eq(situacao));
         }
 
         return this;

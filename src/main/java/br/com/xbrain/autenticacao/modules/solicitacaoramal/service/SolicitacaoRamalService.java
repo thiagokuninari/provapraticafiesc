@@ -128,19 +128,15 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
         );
 
         solicitacaoEncontrada.retirarMascara();
-        SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
-
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
     }
 
     public SolicitacaoRamalResponse atualizarStatus(SolicitacaoRamalAtualizarStatusRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getIdSolicitacao());
-        solicitacaoEncontrada.setSituacao(request.convertStringSituacaoForEnum());
+        solicitacaoEncontrada.setSituacao(request.getSituacao());
         gerarHistorico(solicitacaoEncontrada, request.getObservacao());
 
-        SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
-
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoPersistida);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
     }
 
     public SolicitacaoRamalResponse getSolicitacaoById(Integer idSolicitacao) {
@@ -156,8 +152,10 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
     }
 
     public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
-        Context context = obterContexto(solicitacaoRamal);
-        emailService.enviarEmailTemplate(DESTINATARIOS, ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, context);
+        if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
+            emailService.enviarEmailTemplate(
+                    DESTINATARIOS, ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
+        }
     }
 
     @Override
@@ -165,7 +163,7 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
         Context context = new Context();
         context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo",  solicitacaoRamal.getId());
-        context.setVariable("situacao", solicitacaoRamal.getSituacao().getDescricao());
+        context.setVariable("situacao", solicitacaoRamal.getSituacao());
         context.setVariable("qtdRamais",  solicitacaoRamal.getQuantidadeRamais());
         context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
         context.setVariable("telefoneTi",  solicitacaoRamal.getTelefoneTi());

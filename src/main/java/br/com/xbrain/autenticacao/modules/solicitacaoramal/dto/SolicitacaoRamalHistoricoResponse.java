@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -14,12 +15,11 @@ public class SolicitacaoRamalHistoricoResponse {
     private String comentario;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
-    private String situacao;
+    private ESituacaoSolicitacao situacao;
     private String usuarioSolicitante;
 
     public static SolicitacaoRamalHistoricoResponse convertFrom(SolicitacaoRamalHistorico historico) {
         SolicitacaoRamalHistoricoResponse response = new SolicitacaoRamalHistoricoResponse();
-        response.situacao = historico.getSituacao().getDescricao();
         response.usuarioSolicitante = historico.getUsuario().getNome();
 
         BeanUtils.copyProperties(historico, response);

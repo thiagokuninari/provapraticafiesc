@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -44,7 +44,8 @@ public class SolicitacaoRamalRepositoryImpl
         return new JPAQueryFactory(entityManager)
                 .select(solicitacaoRamal)
                 .from(solicitacaoRamal)
-                .where(solicitacaoRamal.situacao.eq(ESituacao.PD).or(solicitacaoRamal.situacao.eq(ESituacao.EA))
+                .where(solicitacaoRamal.situacao.eq(ESituacaoSolicitacao.PENDENTE)
+                        .or(solicitacaoRamal.situacao.eq(ESituacaoSolicitacao.EM_ANDAMENTO))
                         .and(solicitacaoRamal.enviouEmailExpiracao.eq(Eboolean.F)))
                 .orderBy(solicitacaoRamal.id.asc())
                 .fetch();

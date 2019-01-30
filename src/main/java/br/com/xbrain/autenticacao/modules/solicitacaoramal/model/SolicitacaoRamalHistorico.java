@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,7 +29,7 @@ public class SolicitacaoRamalHistorico {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "SITUACAO", nullable = false)
-    private ESituacao situacao;
+    private ESituacaoSolicitacao situacao;
 
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
@@ -39,7 +39,7 @@ public class SolicitacaoRamalHistorico {
 
     @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "ID",
                 foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_SOLIC_RAMAL"))
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private SolicitacaoRamal solicitacaoRamal;
 
     public SolicitacaoRamalHistorico gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
