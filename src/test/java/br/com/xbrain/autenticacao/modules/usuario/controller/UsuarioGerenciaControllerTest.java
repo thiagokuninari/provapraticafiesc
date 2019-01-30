@@ -344,6 +344,19 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @Test
+    public void deveRetornarCsvDeUsuarios() throws Exception {
+        String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertEquals("\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;RG;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n", csv);
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);

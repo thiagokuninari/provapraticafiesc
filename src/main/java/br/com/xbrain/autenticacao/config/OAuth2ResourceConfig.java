@@ -21,14 +21,15 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         String[] permitAll = {
-            "/call/**",
-            "/parceiros-online/**",
-            "/equipe-venda/**",
-            "/api/usuarios/gerencia/acesso/senha",
-            "/api/usuarios/gerencia/{idUsuario}/supervisor",
-            "/api/cidades/{cidadeId}",
-            "/api/public/disparar-timer-inativar-usuarios",
-            "/api/usuarios/resetar-senha/**"
+                "/call/**",
+                "/parceiros-online/**",
+                "/equipe-venda/**",
+                "/api/usuarios/gerencia/acesso/senha",
+                "/api/usuarios/gerencia/{idUsuario}/supervisor",
+                "/api/usuarios/gerencia/csv",
+                "/api/cidades/{cidadeId}",
+                "/api/public/disparar-timer-inativar-usuarios",
+                "/api/usuarios/resetar-senha/**"
         };
 
         http

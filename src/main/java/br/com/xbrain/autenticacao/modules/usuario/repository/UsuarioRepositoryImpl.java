@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -10,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,9 +23,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static com.querydsl.jpa.JPAExpressions.select;
 
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
@@ -263,5 +270,39 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .join(usuario.configuracao).fetchJoin()
                         .where(usuario.id.eq(usuarioId))
                         .fetchOne());
+    }
+
+    @Override
+    public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
+        QUsuario usuario1 = new QUsuario("u1");
+        return new JPAQueryFactory(entityManager)
+                .select(
+                        Projections.constructor(UsuarioCsvResponse.class,
+                                usuario.id,
+                                usuario.nome,
+                                usuario.email,
+                                usuario.telefone,
+                                usuario.cpf,
+                                usuario.rg,
+                                cargo.nome,
+                                departamento.nome,
+                                select(Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome))
+                                        .from(usuario1)
+                                        .innerJoin(usuario1.unidadesNegocios, unidadeNegocio)
+                                        .where(usuario1.id.eq(usuario.id)),
+                                select(Expressions.stringTemplate("wm_concat({0})", empresa.nome))
+                                        .from(usuario1)
+                                        .innerJoin(usuario1.empresas, empresa)
+                                        .where(usuario1.id.eq(usuario.id)),
+                                usuario.situacao
+                        )
+                )
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .innerJoin(usuario.departamento, departamento)
+                .where(predicate)
+                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg, cargo.nome, departamento.nome, usuario.situacao)
+                .orderBy(usuario.nome.asc())
+                .fetch();
     }
 }

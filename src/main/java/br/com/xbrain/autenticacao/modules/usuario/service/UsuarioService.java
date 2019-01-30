@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -46,10 +47,14 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 public class UsuarioService {
@@ -184,19 +189,15 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
-            obterUsuariosAa(filtros.getCnpjAa(), predicate);
-        }
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
-        if (!CollectionUtils.isEmpty(pages.getContent())) {
-            popularUsuario(pages.getContent());
+        if (!isEmpty(pages.getContent())) {
+            popularUsuarios(pages.getContent());
         }
         return pages;
     }
 
-    private void popularUsuario(List<Usuario> usuarios) {
+    private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
@@ -1027,5 +1028,39 @@ public class UsuarioService {
 
     public boolean situacaoAtiva(String email) {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
+    }
+
+    public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
+        return repository.getUsuariosCsv(predicate.build());
+    }
+
+    public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(
+                getCsv(usuarios),
+                CsvUtils.createFileName(USUARIOS_CSV),
+                response)) {
+            throw new ValidacaoException("Falhar ao tentar baixar relatório de usuários!");
+        }
+    }
+
+    private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtros.toPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
+            obterUsuariosAa(filtros.getCnpjAa(), predicate);
+        }
+        return predicate;
+    }
+
+    private String getCsv(List<UsuarioCsvResponse> usuarios) {
+        return UsuarioCsvResponse.getCabecalhoCsv()
+                + (!usuarios.isEmpty()
+                ? usuarios
+                .stream()
+                .map(UsuarioCsvResponse::toCsv)
+                .collect(Collectors.joining("\n"))
+                : "Registros não encontrados."
+        );
     }
 }

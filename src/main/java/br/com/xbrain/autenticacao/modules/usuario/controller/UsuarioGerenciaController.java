@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,5 +114,13 @@ public class UsuarioGerenciaController {
     @RequestMapping(value = "{idUsuario}/supervisores", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuarioSuperiores(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperiores(idUsuario);
+    }
+
+    @GetMapping("/csv")
+    public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
+        service.exportUsuariosToCsv(
+                service.getAllForCsv(filtros),
+                response
+        );
     }
 }

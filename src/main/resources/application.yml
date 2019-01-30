@@ -27,6 +27,7 @@ spring:
           validation:
             mode: none
       hibernate:
+        dialect: br.com.xbrain.autenticacao.config.database.CustomOracle10gDialect
         hbm2ddl:
           import_files:
             database/estrutura.sql,
