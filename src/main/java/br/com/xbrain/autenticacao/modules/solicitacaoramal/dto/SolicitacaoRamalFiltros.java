@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate.SolicitacaoRamalPredicate;
 import lombok.Data;
 
@@ -8,12 +7,12 @@ import lombok.Data;
 public class SolicitacaoRamalFiltros {
 
     private String data;
-    private ESituacao situacao;
+    private String situacao;
     private Integer agenteAutorizadoId;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()
-                .comDataCadastro(data)
+                .comDataCadastro(this.data)
                 .comSituacao(this.situacao)
                 .comAgenteAutorizadoId(agenteAutorizadoId);
     }

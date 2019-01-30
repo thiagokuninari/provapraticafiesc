@@ -3,25 +3,33 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
+import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
+import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.TemplateDefaultEnviarEmailSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.thymeleaf.context.Context;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class SolicitacaoRamalService {
+public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitacaoRamal {
 
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
@@ -33,7 +41,11 @@ public class SolicitacaoRamalService {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private SolicitacaoRamalHistoricoRepository historicoRepository;
+    @Autowired
+    private EmailService emailService;
 
+    private static final int DURACAO_DIA_EM_HORAS = 24;
+    private static final int EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL = 72;
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
@@ -91,6 +103,7 @@ public class SolicitacaoRamalService {
 
         solicitacaoRamal.retirarMascara();
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
+        enviarEmailAposCadastro(solicitacaoRamalPersistida);
 
         gerarHistorico(solicitacaoRamalPersistida, null);
 
@@ -122,7 +135,7 @@ public class SolicitacaoRamalService {
 
     public SolicitacaoRamalResponse atualizarStatus(SolicitacaoRamalAtualizarStatusRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getIdSolicitacao());
-        solicitacaoEncontrada.setSituacao(request.getSituacao());
+        solicitacaoEncontrada.setSituacao(request.convertStringSituacaoForEnum());
         gerarHistorico(solicitacaoEncontrada, request.getObservacao());
 
         SolicitacaoRamal solicitacaoPersistida = solicitacaoRamalRepository.save(solicitacaoEncontrada);
@@ -140,6 +153,72 @@ public class SolicitacaoRamalService {
 
     private Usuario criaUsuario(int idUsuarioAutenticado) {
         return new Usuario(idUsuarioAutenticado);
+    }
+
+    public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
+        Context context = obterContexto(solicitacaoRamal);
+        emailService.enviarEmailTemplate(DESTINATARIOS, ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, context);
+    }
+
+    @Override
+    public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
+        Context context = new Context();
+        context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
+        context.setVariable("codigo",  solicitacaoRamal.getId());
+        context.setVariable("situacao", solicitacaoRamal.getSituacao().getDescricao());
+        context.setVariable("qtdRamais",  solicitacaoRamal.getQuantidadeRamais());
+        context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
+        context.setVariable("telefoneTi",  solicitacaoRamal.getTelefoneTi());
+        context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
+        context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
+        context.setVariable("dataLimite", DateUtil.dateTimeToString(
+                solicitacaoRamal.getDataCadastro().plusHours(EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL)));
+        return context;
+    }
+
+    public List<SolicitacaoRamal> enviadorDeEmailParaSolicitacoesQueVaoExpirar() {
+        List<SolicitacaoRamal> solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente =
+                getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
+
+        solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente.forEach(solicitacao -> {
+            boolean deveEnviarEmail = verificarCasoTenhaQueEnviarEmailDeExpiracao(solicitacao.getDataCadastro());
+
+            if (deveEnviarEmail) {
+                enviaEmail(solicitacao);
+                atualizaFlagEnviouEmailExpiracao(solicitacao.getId());
+            }
+        });
+
+        return solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente;
+    }
+
+    private boolean verificarCasoTenhaQueEnviarEmailDeExpiracao(LocalDateTime dataCadastro) {
+        LocalDateTime dataLimite = getDataExpiracao(dataCadastro);
+
+        return LocalDate.now().isEqual(dataLimite.toLocalDate())
+                || LocalDate.now().isAfter(dataLimite.toLocalDate());
+    }
+
+    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
+        return dataCadastro.plusHours(DURACAO_DIA_EM_HORAS);
+    }
+
+    private void enviaEmail(SolicitacaoRamal solicitacaoRamal) {
+        Context context = obterContexto(solicitacaoRamal);
+        emailService.enviarEmailTemplate(DESTINATARIOS, ASSUNTO_EMAIL_EXPIRAR, TEMPLATE_EMAIL, context);
+    }
+
+    private void atualizaFlagEnviouEmailExpiracao(Integer solicitacaoId) {
+        this.updateFlagEnviouEmailExpirado(solicitacaoId);
+    }
+
+    public List<SolicitacaoRamal> getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse() {
+        return solicitacaoRamalRepository.findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse();
+    }
+
+    @Transactional
+    public void updateFlagEnviouEmailExpirado(Integer solicitacaoId) {
+        solicitacaoRamalRepository.updateFlagEnviouEmailExpirado(solicitacaoId);
     }
 
 }

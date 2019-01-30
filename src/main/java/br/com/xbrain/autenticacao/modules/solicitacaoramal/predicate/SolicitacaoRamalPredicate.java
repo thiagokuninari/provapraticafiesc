@@ -8,14 +8,19 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 
 public class SolicitacaoRamalPredicate extends PredicateBase {
 
-    public SolicitacaoRamalPredicate comSituacao(ESituacao situacao) {
+    public SolicitacaoRamalPredicate comSituacao(String situacao) {
         if (!ObjectUtils.isEmpty(situacao)) {
-            builder.and(solicitacaoRamal.situacao.eq(situacao));
+            Optional<ESituacao> situacaoEnum = Arrays.stream(ESituacao.values())
+                    .filter(s -> s.getDescricao().equals(situacao)).findFirst();
+
+            builder.and(solicitacaoRamal.situacao.eq(situacaoEnum.get()));
         }
 
         return this;

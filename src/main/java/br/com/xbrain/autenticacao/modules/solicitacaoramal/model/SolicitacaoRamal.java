@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
@@ -76,13 +77,22 @@ public class SolicitacaoRamal {
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
     private Integer quantidadeRamais;
 
+    @Column(name = "ENVIOU_EMAIL_EXPIRACAO", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Eboolean enviouEmailExpiracao;
+
     public void atualizarDataCadastro() {
         this.dataCadastro = LocalDateTime.now();
         atualizarSituacaoParaPendente();
+        atualizarEnviouEmailExpiracaoParaFalso();
     }
 
     private void atualizarSituacaoParaPendente() {
         this.situacao = ESituacao.PD;
+    }
+
+    private void atualizarEnviouEmailExpiracaoParaFalso() {
+        this.enviouEmailExpiracao = Eboolean.F;
     }
 
     public void editar(SolicitacaoRamalRequest request) {

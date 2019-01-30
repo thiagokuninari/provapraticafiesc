@@ -1,11 +1,16 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal;
 
+import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao.PD;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao.RJ;
@@ -46,6 +52,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SolicitacaoRamalControllerTest {
 
     @Autowired
+    private SolicitacaoRamalService solicitacaoRamalService;
+    @Autowired
     private MockMvc mvc;
     @MockBean
     private SolicitacaoRamalHistoricoService historicoService;
@@ -53,6 +61,8 @@ public class SolicitacaoRamalControllerTest {
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private EquipeVendasService equipeVendasService;
+    @MockBean
+    private EmailService emailService;
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
@@ -62,6 +72,20 @@ public class SolicitacaoRamalControllerTest {
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
         when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+    }
+
+    @Test
+    public void deveRetornarTodasAsSolicitacoesEmAndamentoOuPendenteQueNaoFoiEnviadoEmailAnteriomente() {
+        List<SolicitacaoRamal> resultList =
+                solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
+        Assert.assertEquals(4, resultList.size());
+    }
+
+    @Test
+    public void deveVerificarSeEmailDeAvisoFoiEnviadoParaCadaSolicitacaoEncontrada() {
+        solicitacaoRamalService.enviadorDeEmailParaSolicitacoesQueVaoExpirar();
+
+        verify(emailService, times(4)).enviarEmailTemplate(anyList(), any(), any(), any());
     }
 
     @Test
@@ -143,6 +167,7 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$.situacao", is(PD.getDescricao())));
 
         verify(historicoService, times(1)).save(any());
+        verify(emailService, times(1)).enviarEmailTemplate(anyList(), anyString(), any(), any());
     }
 
     @Test
@@ -193,7 +218,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesComSituacaoPendente() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PD")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PENDENTE")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -202,7 +227,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesComSituacaoEmAndamento() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EA")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EM_ANDAMENTO")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -211,7 +236,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesComSituacaoRejeitada() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=RJ")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=REJEITADO")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -220,7 +245,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendenteEAgenteAutorizadoId() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PD&agenteAutorizadoId=1")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PENDENTE&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -229,7 +254,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019&situacao=EA")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019&situacao=EM_ANDAMENTO")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -301,7 +326,7 @@ public class SolicitacaoRamalControllerTest {
         return SolicitacaoRamalAtualizarStatusRequest.builder()
                 .idSolicitacao(1)
                 .observacao("Rejeitada teste")
-                .situacao(RJ)
+                .situacao(ESituacao.RJ.getDescricao())
                 .build();
     }
 }
