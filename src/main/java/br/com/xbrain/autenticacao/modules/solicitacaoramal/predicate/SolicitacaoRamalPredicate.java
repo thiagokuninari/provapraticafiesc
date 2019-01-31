@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import org.springframework.util.ObjectUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -21,13 +20,11 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
         return this;
     }
 
-    public SolicitacaoRamalPredicate comDataCadastro(String data) {
-        if (!ObjectUtils.isEmpty(data)) {
-            LocalDate dataFormatada = DateUtil.parseStringToLocalDate(data);
-
+    public SolicitacaoRamalPredicate comDataCadastro(String dataInicialSolicitacao, String dataFinalSolicitacao) {
+        if (!ObjectUtils.isEmpty(dataInicialSolicitacao) && !ObjectUtils.isEmpty(dataFinalSolicitacao)) {
             builder.and(solicitacaoRamal.dataCadastro.between(
-                    LocalDateTime.of(dataFormatada, LocalTime.MIN),
-                    LocalDateTime.of(dataFormatada, LocalTime.MAX)));
+                    LocalDateTime.of(DateUtil.parseStringToLocalDate(dataInicialSolicitacao), LocalTime.MIN),
+                    LocalDateTime.of(DateUtil.parseStringToLocalDate(dataFinalSolicitacao), LocalTime.MAX)));
         }
 
         return this;

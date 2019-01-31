@@ -7,13 +7,14 @@ import lombok.Data;
 @Data
 public class SolicitacaoRamalFiltros {
 
-    private String data;
+    private String dataInicialSolicitacao;
+    private String dataFinalSolicitacao;
     private ESituacaoSolicitacao situacao;
     private Integer agenteAutorizadoId;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()
-                .comDataCadastro(this.data)
+                .comDataCadastro(this.dataInicialSolicitacao, this.dataFinalSolicitacao)
                 .comSituacaoSolicitacao(this.situacao)
                 .comAgenteAutorizadoId(this.agenteAutorizadoId);
     }
