@@ -1,21 +1,30 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @JsonIgnoreProperties
-public class UsuarioAutenticado {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class UsuarioAutenticado extends OAuth2Request {
 
     private Usuario usuario;
     private int id;
@@ -32,6 +41,11 @@ public class UsuarioAutenticado {
     private List<String> empresasNome;
     private List<Empresa> empresas;
     private Collection<? extends GrantedAuthority> permissoes;
+    private String nivelCodigo;
+
+    public UsuarioAutenticado(OAuth2Request other) {
+        super(other);
+    }
 
     public UsuarioAutenticado(Usuario usuario) {
         this.usuario = usuario;
@@ -47,6 +61,7 @@ public class UsuarioAutenticado {
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
+        this.nivelCodigo = usuario.getNivelCodigo().toString();
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
@@ -64,17 +79,38 @@ public class UsuarioAutenticado {
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
+        this.nivelCodigo = usuario.getNivelCodigo().toString();
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return permissoes != null
                 && permissoes
-                        .stream()
-                        .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
-                        .count() > 0;
+                .stream()
+                .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
+                .count() > 0;
     }
 
     public boolean isXbrain() {
-        return usuario.getNivelCodigo() == XBRAIN;
+        return XBRAIN == usuario.getNivelCodigo();
+    }
+
+    public boolean isMso() {
+        return MSO == usuario.getNivelCodigo();
+    }
+
+    public boolean isVendedor() {
+        return hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_VENDEDOR_PROPRIO);
+    }
+
+    public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId, List<Integer> agentesAutorizadosIdDoUsuario) {
+        if (isAgenteAutorizado()
+                && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
+                || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
+            throw new PermissaoException();
+        }
+    }
+
+    public boolean isAgenteAutorizado() {
+        return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 }

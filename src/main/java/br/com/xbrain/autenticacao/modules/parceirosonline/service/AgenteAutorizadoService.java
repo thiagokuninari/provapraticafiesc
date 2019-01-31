@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -19,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 
 @Service
 public class AgenteAutorizadoService {
@@ -38,6 +41,18 @@ public class AgenteAutorizadoService {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_AA_BY_CNPJ);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public AgenteAutorizadoResponse getAaById(Integer idAgenteAutorizado) {
+        try {
+            return agenteAutorizadoClient.getAaById(idAgenteAutorizado);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                    AgenteAutorizadoService.class.getName(),
+                    EErrors.ERRO_OBTER_AA_BY_ID);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
@@ -68,6 +83,12 @@ public class AgenteAutorizadoService {
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
+    }
+
+    public List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+                ? getAasPermitidos(usuario.getId())
+                : Collections.emptyList();
     }
 
     public List<Integer> getAasPermitidos(int usuarioId) {

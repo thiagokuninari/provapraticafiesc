@@ -25,6 +25,12 @@ public interface AgenteAutorizadoClient {
 
     @RequestMapping(
             method = RequestMethod.GET,
+            value = "api/agente-autorizado/id/{idAgenteAutorizado}"
+    )
+    AgenteAutorizadoResponse getAaById(@PathVariable("idAgenteAutorizado") Integer idAgenteAutorizado);
+
+    @RequestMapping(
+            method = RequestMethod.GET,
             value = "api/usuarios-agente-autorizado/{agenteAutorizadoId}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
             @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
@@ -53,4 +59,5 @@ public interface AgenteAutorizadoClient {
             method = RequestMethod.GET,
             value = "api/agentes-autorizados-usuario/situacao-agente-autorizado")
     boolean recuperarSituacaoAgenteAutorizado(@RequestParam(name = "email") String email);
+
 }

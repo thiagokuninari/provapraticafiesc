@@ -11,6 +11,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2033;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
+
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
@@ -42,6 +45,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/api/cargos").hasRole("AUT_2023")
                 .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole("AUT_2023")
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .antMatchers("/api/solicitacao-ramal").hasAnyRole(AUT_2033.name(), AUT_2034.name())
+                .antMatchers("/api/solicitacao-ramal/gerencia").hasRole(AUT_2034.name())
                 .anyRequest().authenticated();
     }
 

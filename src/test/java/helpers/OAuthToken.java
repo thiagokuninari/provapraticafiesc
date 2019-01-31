@@ -55,4 +55,6 @@ public class OAuthToken {
     private List<String> empresasNome;
 
     private List<EquipeVendasSupervisionadasResponse> equipesSupervisionadas;
+
+    private List<Integer> agentesAutorizados;
 }
