@@ -243,7 +243,8 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoPendenteEAgenteAutorizadoId() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=03/01/2019&situacao=PENDENTE&agenteAutorizadoId=1")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
+                + "/?dataInicialSolicitacao=03/01/2019&dataFinalSolicitacao=04/01/2019&situacao=PENDENTE&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -252,7 +253,8 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019&situacao=EM_ANDAMENTO")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
+                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENTO")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -261,7 +263,8 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void deveRetornarAsSolicitacoesPeloFiltroDataCadastro() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?data=02/01/2019")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
+                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=02/01/2019")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
