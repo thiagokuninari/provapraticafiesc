@@ -266,7 +266,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void deveResetarSenhaDoUsuarioComToken() throws Exception {
-        String hash = jsonWebTokenService.createJsonWebTokenResetSenha("teste@xbrain.com.br",2);
+        String hash = jsonWebTokenService.createJsonWebTokenResetSenha("teste@xbrain.com.br", 2);
 
         mvc.perform(put("/api/usuarios/esqueci-senha?hash=" + hash)
                 .header("Authorization", getAccessToken(mvc, ADMIN))

@@ -66,4 +66,10 @@ public class TestsHelper {
         }
     }
 
+    public static String convertObjectToJsonString(Object object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule( new JavaTimeModule());
+        return mapper.writeValueAsString(object);
+    }
+
 }

@@ -2,16 +2,19 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -72,13 +75,23 @@ public class UsuarioController {
 
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
-                                         @RequestParam boolean incluirProprio) {
+                                         @RequestParam(required = false, defaultValue = "false") boolean incluirProprio) {
         return usuarioService.getIdDosUsuariosSubordinados(id, incluirProprio);
     }
 
     @RequestMapping(value = "/{id}/subordinados/vendas", method = RequestMethod.GET)
     public List<Integer> getSubordinadosVendas(@PathVariable("id") int id) {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
+    }
+
+    @GetMapping("/hierarquia/subordinados/{id}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @PostMapping("/vincula/hierarquia")
+    public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
+        usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
@@ -158,5 +171,19 @@ public class UsuarioController {
     @PutMapping("inativar-colaboradores")
     public void inativarColaboradores(@RequestParam String cnpj) {
         usuarioService.inativarColaboradores(cnpj);
+    }
+
+    @GetMapping("/canais")
+    public Iterable<SelectResponse> getCanais() {
+        return ECanal.getCanaisAtivos()
+                .stream()
+                .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+                .sorted(Comparator.comparing(SelectResponse::getLabel))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("{id}/vendedores-hierarquia")
+    public List<Integer> getVendedoresDaHierarquia(@PathVariable() Integer id) {
+        return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 }

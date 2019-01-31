@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -87,6 +89,8 @@ public class UsuarioService {
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
+    private CargoService cargoService;
+    @Autowired
     private DepartamentoRepository departamentoRepository;
     @Autowired
     private UsuarioCidadeRepository usuarioCidadeRepository;
@@ -120,6 +124,8 @@ public class UsuarioService {
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private FileService fileService;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -241,10 +247,24 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public UsuarioDto save(UsuarioDto usuarioDto) {
+    public UsuarioDto save(Usuario request, MultipartFile foto) {
+        if (!ObjectUtils.isEmpty(foto)) {
+            fileService.uploadFotoUsuario(request, foto);
+        }
+        return save(request);
+    }
+
+    @Transactional
+    public UsuarioDto save(Usuario usuario) {
         try {
-            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
             validar(usuario);
 
             boolean enviarEmail = false;
@@ -256,10 +276,10 @@ public class UsuarioService {
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
-            usuario = repository.save(usuario);
+            repository.save(usuario);
             entityManager.flush();
-            tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
-            tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+            tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
+            tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -271,6 +291,18 @@ public class UsuarioService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        idUsuarioNovo.stream()
+                .map(id -> {
+                    UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                    usuario.setUsuarioSuperior(usuarioSuperior);
+                    usuarioHierarquiaRepository.save(usuario);
+                    return usuario;
+                })
+                .collect(Collectors.toList());
     }
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
@@ -446,7 +478,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(usuarioDto);
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -460,7 +492,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(usuarioDto);
+            save(UsuarioDto.convertFrom(usuarioDto));
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
@@ -702,10 +734,15 @@ public class UsuarioService {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
-        return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
-                .stream()
-                .map(UsuarioHierarquiaResponse::new)
-                .collect(Collectors.toList());
+        return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
+    }
+
+    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId) {
+        Cargo cargo = cargoService.findById(cargoId);
+        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.comCargo(Collections.singletonList(cargo.getCargoSuperior().getId()));
+        return repository.getUsuariosFilter(usuarioPredicate.build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -754,6 +791,20 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
+    }
+
+    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioSubordinadoDto.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cpf(objectToString(param[indice++]))
+                .email(objectToString(param[indice++]))
+                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
+                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
+                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
+                .nomeCargo(objectToString(param[indice++]))
+                .build();
     }
 
     private UsuarioResponse criarUsuarioResponse(Object[] param) {
@@ -1027,6 +1078,10 @@ public class UsuarioService {
 
     public boolean situacaoAtiva(String email) {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
+    }
+
+    public List<Integer> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name());
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {

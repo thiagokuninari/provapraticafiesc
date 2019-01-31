@@ -4,14 +4,12 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Profile("!test")
-@EnableScheduling
 public class UsuarioTimer {
 
     //@Autowired

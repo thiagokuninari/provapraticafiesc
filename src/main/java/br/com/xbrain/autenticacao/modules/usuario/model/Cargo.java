@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -35,6 +36,13 @@ public class Cargo {
     @Column(name = "SITUACAO", nullable = false, length = 1)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    @JsonIgnore
+    @JoinColumn(name = "FK_CARGO_SUPERIOR",
+            foreignKey = @ForeignKey(name = "FK_CARGO_CARGO_SUPER"),
+            referencedColumnName = "ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Cargo cargoSuperior;
 
     public Cargo() {
     }

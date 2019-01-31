@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -21,14 +22,15 @@ public class UsuarioGerenciaController {
     @Autowired
     private UsuarioService service;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public UsuarioDto save(@Validated @RequestBody UsuarioDto usuario) {
-        return service.save(usuario);
+    @PostMapping(consumes = { "multipart/form-data" })
+    public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
+                           @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        return service.save(UsuarioDto.convertFrom(usuario), foto);
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     public void alterar(@Validated @RequestBody UsuarioDto usuario) {
-        service.save(usuario);
+        service.save(UsuarioDto.convertFrom(usuario));
     }
 
     @RequestMapping("{id}")
@@ -54,6 +56,11 @@ public class UsuarioGerenciaController {
     @RequestMapping(value = "/hierarquia/{nivelId}", method = RequestMethod.GET)
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(@PathVariable int nivelId) {
         return service.getUsuariosHierarquia(nivelId);
+    }
+
+    @GetMapping(value = "/cargo-superior/{cargoId}")
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId) {
+        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId));
     }
 
     @RequestMapping(params = "email")
