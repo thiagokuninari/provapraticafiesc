@@ -2,17 +2,21 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
+import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getCpfFormatado;
+import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getStringFormatadaCsv;
+
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class UsuarioCsvResponse {
 
     private Integer id;
@@ -20,30 +24,27 @@ public class UsuarioCsvResponse {
     private String email;
     private String telefone;
     private String cpf;
-    private String rg;
-    private ESituacao situacao;
     private String cargo;
     private String departamento;
     private String unidadesNegocios;
     private String empresas;
+    private ESituacao situacao;
 
-    public UsuarioCsvResponse(Integer id,
-                              String nome,
+    public UsuarioCsvResponse(String nome,
+                              Integer id,
                               String email,
                               String telefone,
                               String cpf,
-                              String rg,
                               String cargo,
                               String departamento,
                               String unidadesNegocios,
                               String empresas,
                               ESituacao situacao) {
-        this.id = id;
         this.nome = nome;
+        this.id = id;
         this.email = email;
         this.telefone = telefone;
         this.cpf = cpf;
-        this.rg = rg;
         this.cargo = cargo;
         this.departamento = departamento;
         this.unidadesNegocios = unidadesNegocios;
@@ -58,7 +59,6 @@ public class UsuarioCsvResponse {
                 + "EMAIL;"
                 + "TELEFONE;"
                 + "CPF;"
-                + "RG;"
                 + "CARGO;"
                 + "DEPARTAMENTO;"
                 + "UNIDADE NEGOCIO;"
@@ -71,18 +71,16 @@ public class UsuarioCsvResponse {
     public String toCsv() {
         return Stream.of(
                 this.id.toString(),
-                this.nome,
-                this.email,
-                this.telefone,
-                this.cpf,
-                this.rg,
-                this.cargo,
-                this.departamento,
-                this.unidadesNegocios,
-                this.empresas,
+                getStringFormatadaCsv(this.nome),
+                getStringFormatadaCsv(this.email),
+                getStringFormatadaCsv(this.telefone),
+                getCpfFormatado(this.cpf),
+                getStringFormatadaCsv(this.cargo),
+                getStringFormatadaCsv(this.departamento),
+                getStringFormatadaCsv(this.unidadesNegocios),
+                getStringFormatadaCsv(this.empresas),
                 this.situacao.toString()
         ).map(CsvUtils::replaceCaracteres)
                 .collect(Collectors.joining(";"));
     }
-
 }

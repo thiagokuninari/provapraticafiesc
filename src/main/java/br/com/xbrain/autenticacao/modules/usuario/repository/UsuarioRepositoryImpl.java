@@ -353,12 +353,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(
                         Projections.constructor(UsuarioCsvResponse.class,
-                                usuario.id,
                                 usuario.nome,
+                                usuario.id,
                                 usuario.email,
                                 usuario.telefone,
                                 usuario.cpf,
-                                usuario.rg,
                                 cargo.nome,
                                 departamento.nome,
                                 select(Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome))
