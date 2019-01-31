@@ -1080,7 +1080,25 @@ public class UsuarioService {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 
-    public List<Integer> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name());
+    public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+                .stream()
+                .map(this::criarUsuarioHierarquiaVendedoresResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return getVendedoresOperacaoDaHierarquia(usuarioId).stream()
+                .map(UsuarioHierarquiaResponse::getId)
+                .collect(Collectors.toList());
+    }
+
+    private UsuarioHierarquiaResponse criarUsuarioHierarquiaVendedoresResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioHierarquiaResponse.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cargoNome(objectToString(param[indice++]))
+                .build();
     }
 }

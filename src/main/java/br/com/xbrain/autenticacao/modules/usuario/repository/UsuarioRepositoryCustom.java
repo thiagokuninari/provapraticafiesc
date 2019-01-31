@@ -27,7 +27,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
     List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
 
