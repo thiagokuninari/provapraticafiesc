@@ -12,24 +12,24 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.TemplateDefaultEnviarEmailSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitacaoRamal {
+public class SolicitacaoRamalService {
 
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
@@ -43,7 +43,12 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
+    @Value("${app-config.email.emails-solicitacao-ramal}")
+    private String destinatarios;
 
+    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
+    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 48h";
+    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final int DURACAO_DIA_EM_HORAS = 24;
     private static final int EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL = 72;
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
@@ -154,11 +159,10 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
     public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
         if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
             emailService.enviarEmailTemplate(
-                    DESTINATARIOS, ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
+                    getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
         }
     }
 
-    @Override
     public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
         context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
@@ -183,7 +187,7 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
 
             if (deveEnviarEmail) {
                 enviaEmail(solicitacao);
-                atualizaFlagEnviouEmailExpiracao(solicitacao.getId());
+                updateFlagEnviouEmailExpirado(solicitacao.getId());
             }
         });
 
@@ -203,20 +207,19 @@ public class SolicitacaoRamalService extends TemplateDefaultEnviarEmailSolicitac
 
     private void enviaEmail(SolicitacaoRamal solicitacaoRamal) {
         Context context = obterContexto(solicitacaoRamal);
-        emailService.enviarEmailTemplate(DESTINATARIOS, ASSUNTO_EMAIL_EXPIRAR, TEMPLATE_EMAIL, context);
-    }
-
-    private void atualizaFlagEnviouEmailExpiracao(Integer solicitacaoId) {
-        this.updateFlagEnviouEmailExpirado(solicitacaoId);
+        emailService.enviarEmailTemplate(getDestinatarios(), ASSUNTO_EMAIL_EXPIRAR, TEMPLATE_EMAIL, context);
     }
 
     public List<SolicitacaoRamal> getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse() {
         return solicitacaoRamalRepository.findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse();
     }
 
-    @Transactional
-    public void updateFlagEnviouEmailExpirado(Integer solicitacaoId) {
+    private void updateFlagEnviouEmailExpirado(Integer solicitacaoId) {
         solicitacaoRamalRepository.updateFlagEnviouEmailExpirado(solicitacaoId);
+    }
+
+    private List<String> getDestinatarios() {
+        return Arrays.asList(this.destinatarios.split(","));
     }
 
 }

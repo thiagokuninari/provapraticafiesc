@@ -9,8 +9,7 @@ public class CnpjUtil {
     public static String formataCnpj(String cnpj) {
         if (ObjectUtils.isEmpty(cnpj)) {
             return "";
-        }
-        if (cnpj.length() == CNPJ_8_LENGTH) {
+        } else if (cnpj.length() == CNPJ_8_LENGTH) {
             return cnpj.replaceFirst("(\\d{2})(\\d{3})(\\d{3})", "$1.$2.$3");
 
         } else {
