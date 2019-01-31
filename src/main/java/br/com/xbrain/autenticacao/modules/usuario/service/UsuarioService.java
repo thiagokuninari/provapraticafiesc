@@ -282,10 +282,12 @@ public class UsuarioService {
                 }
             }
             repository.save(usuario);
+            if(realocado) {
+                enviarParaFilaDeUsuariosColaboradores(usuario);
+            }
             entityManager.flush();
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
-
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
@@ -335,7 +337,7 @@ public class UsuarioService {
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
             if (isSocioPrincipal(cargo.getCodigo())) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuario);
+                UsuarioDto usuarioDto = UsuarioDto.convertTo(repository.findByCpf(usuario.getCpf()).get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -515,15 +517,15 @@ public class UsuarioService {
 
     @Transactional
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
-//        try {
+        try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
-//        } catch (Exception ex) {
-//            usuarioMqRequest.setException(ex.getMessage());
-//            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
-//            log.error("erro ao atualizar usuário da fila.", ex);
-//        }
+        } catch (Exception ex) {
+            usuarioMqRequest.setException(ex.getMessage());
+            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+            log.error("erro ao atualizar usuário da fila.", ex);
+        }
     }
 
     @Transactional
@@ -584,6 +586,18 @@ public class UsuarioService {
 
     private void enviarParaFiladeErrosUsuariosRecuperacao(UsuarioMqRequest usuarioMqRequest) {
         usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
+    }
+
+    private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        usuarios.forEach(
+                usuarioColaborador -> {
+                    if(usuarioColaborador.getSituacao().equals(ESituacao.A)) {
+                        UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
+                        usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
+                    }
+                }
+        );
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
