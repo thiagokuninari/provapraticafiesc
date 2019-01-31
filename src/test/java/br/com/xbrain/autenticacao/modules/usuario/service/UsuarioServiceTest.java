@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.mockito.Matchers.any;
@@ -156,9 +157,35 @@ public class UsuarioServiceTest {
     @Test
     public void deveRealocarUmUsuario() throws Exception {
         Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("38957979875");
-        Usuario usuario = service.validarRealocacaoDeUsuario(usuarioRealocar);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.R);
+        usuarioRealocar.setCpf("41842888803");
+        service.validarRealocacaoDeUsuario(usuarioRealocar);
+        Assert.assertEquals(usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao(), ESituacao.R);
+    }
+
+    @Test
+    public void deveVerificarUsuarioInativoRealocado () throws Exception {
+        Usuario usuarioRealocar = usuarioRepository.findByCpf("41842888803").get();
+        service.save(usuarioRealocar, true);
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findAllByCpf(usuarioRealocar.getCpf()).get(0).getSituacao());
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findAllByCpf(usuarioRealocar.getCpf()).get(1).getSituacao());
+    }
+
+    @Test
+    public void deveVerificarUsuarioPendenteRealocado () throws Exception {
+        Usuario usuarioRealocar = usuarioRepository.findByCpf("48177042092").get();
+        service.save(usuarioRealocar, true);
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpfAndSituacao(usuarioRealocar.getCpf(),
+                ESituacao.R).get().getSituacao());
+    }
+
+
+    @Test
+    public void deveVerificarCriacaoDeNovoUsuarioERealocacaoDoAntigo() throws Exception {
+        Usuario usuarioRealocar = new Usuario();
+        usuarioRealocar.setCpf("41842888603");
+        service.save(usuarioRealocar, true);
+        List<Usuario> usuarios = usuarioRepository.findAllByCpf(usuarioRealocar.getCpf());
+        Assert.assertEquals(usuarios.size(), 2);
     }
 
     @Test

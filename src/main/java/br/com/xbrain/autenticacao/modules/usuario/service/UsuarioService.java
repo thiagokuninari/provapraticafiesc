@@ -34,6 +34,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -256,18 +257,17 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario request, MultipartFile foto) {
+    public UsuarioDto save(Usuario request, MultipartFile foto, boolean realocado) {
         if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
-        return save(request);
+        return save(request, realocado);
     }
 
     @Transactional
-    public UsuarioDto save(Usuario usuario) {
+    public UsuarioDto save(Usuario usuario, boolean realocado) {
         try {
             validar(usuario);
-
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
@@ -275,8 +275,11 @@ public class UsuarioService {
                 enviarEmail = true;
             } else {
                 atualizarUsuariosParceiros(usuario);
-                validarRealocacaoDeUsuario(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
+                if(realocado) {
+                    validarRealocacaoDeUsuario(usuario);
+                    usuario = salvaNovoUsuarioAtivoAPartirDoRealocado(usuario);
+                }
             }
             repository.save(usuario);
             entityManager.flush();
@@ -295,17 +298,26 @@ public class UsuarioService {
         }
     }
 
-    public Usuario validarRealocacaoDeUsuario(Usuario usuario) {
-        Optional<Usuario> usuarioCpf = repository.findByCpf(usuario.getCpf());
-        if (!ObjectUtils.isEmpty(usuario)) {
-            usuarioCpf.ifPresent(
-                usuarioRealocado -> {
-                    usuarioRealocado.setSituacao(ESituacao.R);
-                    repository.save(usuarioRealocado);
-                }
-            );
+    public void validarRealocacaoDeUsuario(Usuario usuario) {
+            Usuario usuarioARealocar;
+            usuarioARealocar = repository.findByCpf(usuario.getCpf()).get();
+            if(usuarioARealocar.getSituacao().equals(ESituacao.A)) {
+                usuarioARealocar.setSituacao(ESituacao.R);
+                repository.save(usuarioARealocar);
+            }
+    }
+
+    private Usuario salvaNovoUsuarioAtivoAPartirDoRealocado(Usuario usuario) {
+        Usuario usuarioCopia = new Usuario();
+        BeanUtils.copyProperties(usuario, usuarioCopia);
+        if(!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
+            usuarioCopia.setSenha(repository.findById(usuario.getId()).get().getSenha());
+            usuarioCopia.setDataCadastro(LocalDateTime.now());
+            usuarioCopia.setAlterarSenha(Eboolean.V);
+            usuarioCopia.setSituacao(ESituacao.A);
+            usuarioCopia.setId(null);
         }
-        return usuarioCpf.get();
+        return usuarioCopia;
     }
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
@@ -348,7 +360,6 @@ public class UsuarioService {
         removerUsuarioSuperior(usuario, hierarquiasId);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
-
         repository.save(usuario);
     }
 
@@ -493,7 +504,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -504,15 +515,15 @@ public class UsuarioService {
 
     @Transactional
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
-        try {
+//        try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(UsuarioDto.convertFrom(usuarioDto));
-        } catch (Exception ex) {
-            usuarioMqRequest.setException(ex.getMessage());
-            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
-            log.error("erro ao atualizar usuário da fila.", ex);
-        }
+            save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+//        } catch (Exception ex) {
+//            usuarioMqRequest.setException(ex.getMessage());
+//            enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+//            log.error("erro ao atualizar usuário da fila.", ex);
+//        }
     }
 
     @Transactional
@@ -639,7 +650,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId()) || !usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -649,7 +661,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId()) || !usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
@@ -736,6 +749,7 @@ public class UsuarioService {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
+    //TODO melhorar código
     //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {

@@ -24,12 +24,12 @@ public class UsuarioGerenciaController {
     @PostMapping(consumes = { "multipart/form-data" })
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
-        return service.save(UsuarioDto.convertFrom(usuario), foto);
+        return service.save(UsuarioDto.convertFrom(usuario), foto, false);
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     public void alterar(@Validated @RequestBody UsuarioDto usuario) {
-        service.save(UsuarioDto.convertFrom(usuario));
+        service.save(UsuarioDto.convertFrom(usuario), false);
     }
 
     @RequestMapping("{id}")
