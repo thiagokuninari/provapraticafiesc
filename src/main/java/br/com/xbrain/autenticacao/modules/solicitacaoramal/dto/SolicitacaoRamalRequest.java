@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -50,6 +51,8 @@ public class SolicitacaoRamalRequest {
 
     @NotEmpty
     private String emailTi;
+
+    private ESituacaoSolicitacao situacao;
 
     public static SolicitacaoRamal convertFrom(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = new SolicitacaoRamal();

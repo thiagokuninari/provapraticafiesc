@@ -76,7 +76,8 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: luisdias@xbrain.com.br
+    emails: renato@xbrain.com.br
+    emails-solicitacao-ramal: renato@xbrain.com.br
 
   multiplo-login:
     emails: colaborador@claro.com.br

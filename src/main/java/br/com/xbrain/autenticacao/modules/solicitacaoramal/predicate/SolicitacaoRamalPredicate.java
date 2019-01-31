@@ -1,7 +1,8 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
@@ -12,7 +13,7 @@ import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicit
 
 public class SolicitacaoRamalPredicate extends PredicateBase {
 
-    public SolicitacaoRamalPredicate comSituacao(ESituacao situacao) {
+    public SolicitacaoRamalPredicate comSituacaoSolicitacao(ESituacaoSolicitacao situacao) {
         if (!ObjectUtils.isEmpty(situacao)) {
             builder.and(solicitacaoRamal.situacao.eq(situacao));
         }
@@ -20,11 +21,21 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
         return this;
     }
 
-    public SolicitacaoRamalPredicate comDataCadastro(LocalDate data) {
+    public SolicitacaoRamalPredicate comDataCadastro(String data) {
         if (!ObjectUtils.isEmpty(data)) {
+            LocalDate dataFormatada = DateUtil.parseStringToLocalDate(data);
+
             builder.and(solicitacaoRamal.dataCadastro.between(
-                    LocalDateTime.of(data, LocalTime.MIN),
-                    LocalDateTime.of(data, LocalTime.MAX)));
+                    LocalDateTime.of(dataFormatada, LocalTime.MIN),
+                    LocalDateTime.of(dataFormatada, LocalTime.MAX)));
+        }
+
+        return this;
+    }
+
+    public SolicitacaoRamalPredicate comAgenteAutorizadoId(Integer agenteAutorizadoId) {
+        if (!ObjectUtils.isEmpty(agenteAutorizadoId)) {
+            builder.and(solicitacaoRamal.agenteAutorizadoId.eq(agenteAutorizadoId));
         }
 
         return this;

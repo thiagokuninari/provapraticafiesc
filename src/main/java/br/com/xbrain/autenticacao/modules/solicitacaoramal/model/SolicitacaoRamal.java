@@ -1,9 +1,10 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -47,7 +48,7 @@ public class SolicitacaoRamal {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "SITUACAO")
-    private ESituacao situacao;
+    private ESituacaoSolicitacao situacao;
 
     @Column(name = "AGENTE_AUTORIZADO_ID", nullable = false)
     private Integer agenteAutorizadoId;
@@ -76,13 +77,22 @@ public class SolicitacaoRamal {
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
     private Integer quantidadeRamais;
 
+    @Column(name = "ENVIOU_EMAIL_EXPIRACAO")
+    @Enumerated(EnumType.STRING)
+    private Eboolean enviouEmailExpiracao;
+
     public void atualizarDataCadastro() {
         this.dataCadastro = LocalDateTime.now();
         atualizarSituacaoParaPendente();
+        atualizarEnviouEmailExpiracaoParaFalso();
     }
 
     private void atualizarSituacaoParaPendente() {
-        this.situacao = ESituacao.PD;
+        this.situacao = ESituacaoSolicitacao.PENDENTE;
+    }
+
+    private void atualizarEnviouEmailExpiracaoParaFalso() {
+        this.enviouEmailExpiracao = Eboolean.F;
     }
 
     public void editar(SolicitacaoRamalRequest request) {

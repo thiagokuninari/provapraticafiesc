@@ -1,23 +1,20 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate.SolicitacaoRamalPredicate;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Data
 public class SolicitacaoRamalFiltros {
 
     private String data;
-    private ESituacao situacao;
+    private ESituacaoSolicitacao situacao;
+    private Integer agenteAutorizadoId;
 
     public SolicitacaoRamalPredicate toPredicate() {
-        LocalDate data = DateUtil.parseStringToLocalDateDefault(this.data);
-
         return new SolicitacaoRamalPredicate()
-                .comDataCadastro(data)
-                .comSituacao(this.situacao);
+                .comDataCadastro(this.data)
+                .comSituacaoSolicitacao(this.situacao)
+                .comAgenteAutorizadoId(this.agenteAutorizadoId);
     }
 }

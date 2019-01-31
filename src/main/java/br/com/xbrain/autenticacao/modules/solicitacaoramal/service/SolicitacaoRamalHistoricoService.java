@@ -16,4 +16,5 @@ public class SolicitacaoRamalHistoricoService {
     public SolicitacaoRamalHistorico save(SolicitacaoRamalHistorico historico) {
         return historicoRepository.save(historico);
     }
+
 }
