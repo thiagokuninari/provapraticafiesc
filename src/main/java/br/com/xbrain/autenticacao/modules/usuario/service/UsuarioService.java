@@ -40,7 +40,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -391,7 +390,7 @@ public class UsuarioService {
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (CollectionUtils.isEmpty(hierarquiasId)) {
+        if (isEmpty(hierarquiasId)) {
             usuario.getUsuariosHierarquia().clear();
         } else {
             usuario.getUsuariosHierarquia()
@@ -400,7 +399,7 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+        if (!isEmpty(hierarquiasId)) {
             hierarquiasId
                     .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
         }
@@ -412,10 +411,10 @@ public class UsuarioService {
     }
 
     private void removerUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (CollectionUtils.isEmpty(cidadesId) && !CollectionUtils.isEmpty(usuario.getCidades())) {
+        if (isEmpty(cidadesId) && !isEmpty(usuario.getCidades())) {
             usuarioCidadeRepository.deleteByUsuario(usuario.getId());
 
-        } else if (!CollectionUtils.isEmpty(usuario.getCidades())) {
+        } else if (!isEmpty(usuario.getCidades())) {
             usuario.getCidades().forEach(c -> {
                 if (!cidadesId.contains(c.getCidade().getId())) {
                     usuarioCidadeRepository.deleteByCidadeAndUsuario(c.getCidade().getId(), usuario.getId());
@@ -425,7 +424,7 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (!CollectionUtils.isEmpty(cidadesId)) {
+        if (!isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
             repository.save(usuario);
@@ -1055,12 +1054,11 @@ public class UsuarioService {
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
-                + (!usuarios.isEmpty()
-                ? usuarios
-                .stream()
-                .map(UsuarioCsvResponse::toCsv)
-                .collect(Collectors.joining("\n"))
-                : "Registros não encontrados."
-        );
+            + (!usuarios.isEmpty()
+            ? usuarios
+            .stream()
+            .map(UsuarioCsvResponse::toCsv)
+            .collect(Collectors.joining("\n"))
+            : "Registros não encontrados.");
     }
 }

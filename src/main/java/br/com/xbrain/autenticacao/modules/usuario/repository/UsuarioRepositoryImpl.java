@@ -301,7 +301,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.cargo, cargo)
                 .innerJoin(usuario.departamento, departamento)
                 .where(predicate)
-                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg, cargo.nome, departamento.nome, usuario.situacao)
+                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
+                        cargo.nome, departamento.nome, usuario.situacao)
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }

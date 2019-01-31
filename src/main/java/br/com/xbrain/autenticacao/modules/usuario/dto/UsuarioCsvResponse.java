@@ -51,7 +51,6 @@ public class UsuarioCsvResponse {
         this.situacao = situacao;
     }
 
-
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"
@@ -66,8 +65,6 @@ public class UsuarioCsvResponse {
                 + "EMPRESA;"
                 + "SITUACAO"
                 + "\n";
-
-
     }
 
     @JsonIgnore
