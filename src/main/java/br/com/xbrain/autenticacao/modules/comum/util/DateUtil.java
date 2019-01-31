@@ -1,13 +1,13 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
-import java.util.Objects;
 
 @Slf4j
 public class DateUtil {
@@ -23,7 +23,7 @@ public class DateUtil {
     public static LocalDate parseStringToLocalDate(String data) {
         LocalDate response = null;
         try {
-            if (Objects.nonNull(data)) {
+            if (!ObjectUtils.isEmpty(data)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
                 response = LocalDate.parse(data, formatter);
             }
