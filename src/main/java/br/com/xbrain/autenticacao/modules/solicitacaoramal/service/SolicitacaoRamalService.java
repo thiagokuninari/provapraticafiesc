@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,40 +63,31 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
-            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-        }
+        validarFiltroAgenteAutorizadoId(filtros);
 
         BooleanBuilder builder = filtros.toPredicate().build();
 
-        Integer idUsuario = autenticacaoService.getUsuarioId();
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
 
-        List<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(pageable, idUsuario, builder);
-
-        return new PageImpl<>(solicitacoes.stream()
+        return new PageImpl<>(solicitacoes.getContent()
+                                          .stream()
                                           .map(SolicitacaoRamalResponse::convertFrom)
                                           .collect(Collectors.toList()),
                 pageable,
-                solicitacoes.size());
+                solicitacoes.getTotalElements());
+    }
+
+    private void validarFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
+        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CodigoFuncionalidade.AUT_2034)) {
+            throw new ValidacaoException("É necessário enviar o parametro agente autorizado id.");
+        }
     }
 
     private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
         autenticacaoService.getUsuarioAutenticado()
                 .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
-    }
-
-    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        BooleanBuilder builder = filtros.toPredicate().build();
-
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
-
-        return new PageImpl<>(
-                solicitacoes.getContent()
-                            .stream()
-                            .map(SolicitacaoRamalResponse::convertFrom)
-                            .collect(Collectors.toList()),
-                pageable,
-                solicitacoes.getTotalElements());
     }
 
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {

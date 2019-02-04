@@ -88,7 +88,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void devePermitirAcessoParaPermissaoHelpDesk() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -97,7 +97,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void devePermitirAcessoParaPermissaoAdmin() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -106,11 +106,11 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void devePermitirAcessoParaPermissaoSocioAa() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(6)));
+                .andExpect(jsonPath("$.content", hasSize(7)));
     }
 
     @Test
@@ -135,12 +135,12 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void deveRetornarTodasSolicitacoesDoUsuarioLogado() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+    public void deveRetornarTodasSolicitacoesPeloAgenteAutorizadoId() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(6)));
+                .andExpect(jsonPath("$.content", hasSize(7)));
     }
 
     @Test
@@ -199,6 +199,25 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
+    public void deveFalharCasoNaoEnvieOAgenteAutorizadoIdEUsuarioNaoPossuirRoleGerenciarRamais() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "É necessário enviar o parametro agente autorizado id.")));
+    }
+
+    @Test
+    public void deveRetornarTodasAsSolicitacoesSemAgenteAutorizadoIdParaUsuarioAdmin() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(10)));
+    }
+
+    @Test
     public void deveFalharQuandoUsuarioForSocioMasNaoTemPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=50")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -215,26 +234,26 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void deveRetornarAsSolicitacoesComSituacaoPendente() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PENDENTE")
+    public void deveRetornarAsSolicitacoesComSituacaoPendentePeloAgenteAutorizadoId() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=PENDENTE&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)));
+                .andExpect(jsonPath("$.content", hasSize(2)));
     }
 
     @Test
-    public void deveRetornarAsSolicitacoesComSituacaoEmAndamento() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EM_ANDAMENTO")
+    public void deveRetornarAsSolicitacoesComSituacaoEmAndamentoPeloAgenteAutorizadoId() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=EM_ANDAMENTO&agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)));
+                .andExpect(jsonPath("$.content", hasSize(5)));
     }
 
     @Test
     public void deveRetornarAsSolicitacoesComSituacaoRejeitada() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=REJEITADO")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?situacao=REJEITADO&agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -252,23 +271,23 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamento() throws Exception {
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroESituacaoEmAndamentoEAgenteAutorizadoId() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENTO")
+        + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENTO&agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)));
+                .andExpect(jsonPath("$.content", hasSize(4)));
     }
 
     @Test
-    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastro() throws Exception {
+    public void deveRetornarAsSolicitacoesPeloFiltroDataCadastroEAgenteAutorizadoId() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=02/01/2019")
+                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=02/01/2019&agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)));
+                .andExpect(jsonPath("$.content", hasSize(4)));
     }
 
     @Test
