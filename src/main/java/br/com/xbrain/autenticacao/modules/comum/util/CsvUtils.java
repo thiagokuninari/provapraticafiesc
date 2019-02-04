@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -33,7 +34,7 @@ public class CsvUtils {
     }
 
     public static String replaceCaracteres(String string) {
-        return string != null
+        return !ObjectUtils.isEmpty(string)
                 ? string
                         .replaceAll(";", "")
                         .replaceAll(",", ".")
