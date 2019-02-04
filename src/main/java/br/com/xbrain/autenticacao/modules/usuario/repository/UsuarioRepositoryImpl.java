@@ -33,6 +33,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.us
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static com.querydsl.jpa.JPAExpressions.select;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired

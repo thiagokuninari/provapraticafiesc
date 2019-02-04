@@ -2,12 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
-import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
