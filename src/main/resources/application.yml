@@ -87,9 +87,9 @@ app-config:
   queue:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
-    usuario-colaborador-success: usuario-colaborador-success-.queue
+    usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
-    usuario-atualizacao: usuario-atualizacao-.queue
+    usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
     usuario-aa-atualizacao: usuario-aa-atualizacao.queue
     usuario-aa-atualizacao-failure: usuario-aa-atualizacao-failure.queue
@@ -101,7 +101,7 @@ app-config:
     usuario-inativar: usuario-inativar.queue
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
-    atualizar-usuario-pol: atualizar-usuario-pol-.queue
+    atualizar-usuario-pol: atualizar-usuario-pol.queue
 
   oauth-clients:
     autenticacao-api:

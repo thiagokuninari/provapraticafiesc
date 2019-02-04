@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,7 +38,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static helpers.Empresas.NET;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -168,14 +166,14 @@ public class UsuarioServiceTest {
         service.updateFromQueue(umUsuarioARealocar());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
         usuarios.forEach(
-                usuario -> {
-                    if (usuario.getSituacao().equals(ESituacao.A)) {
-                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                    }
-                    if (usuario.getSituacao().equals(ESituacao.R)) {
-                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
-                    }
+            usuario -> {
+                if (usuario.getSituacao().equals(ESituacao.A)) {
+                    Assert.assertEquals(ESituacao.A, usuario.getSituacao());
                 }
+                if (usuario.getSituacao().equals(ESituacao.R)) {
+                    Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                }
+            }
         );
         Assert.assertEquals(2, usuarios.size());
     }
@@ -195,10 +193,10 @@ public class UsuarioServiceTest {
         service.updateFromQueue(naoRealocar);
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
         usuarios.forEach(
-                usuario -> {
-                    Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                    Assert.assertNotEquals(ESituacao.R, usuario.getSituacao());
-                }
+            usuario -> {
+                Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                Assert.assertNotEquals(ESituacao.R, usuario.getSituacao());
+            }
         );
     }
 

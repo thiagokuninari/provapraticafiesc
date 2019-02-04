@@ -313,7 +313,7 @@ public class UsuarioService {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
         if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()
-        && usuario.getSituacao().equals(ESituacao.A)) {
+                && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId()).get().getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
             usuarioCopia.setAlterarSenha(Eboolean.V);
@@ -593,12 +593,12 @@ public class UsuarioService {
         if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
             List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
             usuarios.forEach(
-                    usuarioColaborador -> {
-                        if (usuarioColaborador.getSituacao().equals(ESituacao.A)) {
-                            UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
-                            usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
-                        }
+                usuarioColaborador -> {
+                    if (usuarioColaborador.getSituacao().equals(ESituacao.A)) {
+                        UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
+                        usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
                     }
+                }
             );
         }
     }
