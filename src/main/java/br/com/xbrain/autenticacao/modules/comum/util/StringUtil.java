@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
+import br.com.caelum.stella.tinytype.CPF;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -94,5 +95,10 @@ public class StringUtil {
     public static String getSenhaRandomica(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
+    }
+
+    public static String getCpfFormatado(String cpf) {
+        return !StringUtils.isEmpty(cpf)
+                ? new CPF(cpf).getNumeroFormatado() : "";
     }
 }

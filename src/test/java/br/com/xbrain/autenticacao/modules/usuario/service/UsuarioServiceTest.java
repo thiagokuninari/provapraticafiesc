@@ -10,7 +10,10 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
@@ -35,7 +38,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mockito.Matchers.any;
@@ -300,6 +305,7 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
+
         verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
     }
 
@@ -326,6 +332,7 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setSituacao(ESituacao.A);
 
         service.saveFromQueue(usuarioMqRequest);
+
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 

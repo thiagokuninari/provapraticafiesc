@@ -3,20 +3,28 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
+import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
+import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.thymeleaf.context.Context;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,10 +39,32 @@ public class SolicitacaoRamalService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private SolicitacaoRamalHistoricoRepository historicoRepository;
+    @Autowired
+    private EmailService emailService;
+    @Value("${app-config.email.emails-solicitacao-ramal}")
+    private String destinatarios;
 
+    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
+    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 48h";
+    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
+    private static final int DURACAO_DIA_EM_HORAS = 24;
+    private static final int EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL = 72;
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
+    public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
+        return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
+                .stream()
+                .map(SolicitacaoRamalHistoricoResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
+
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+        }
+
         BooleanBuilder builder = filtros.toPredicate().build();
 
         Integer idUsuario = autenticacaoService.getUsuarioId();
@@ -46,6 +76,11 @@ public class SolicitacaoRamalService {
                                           .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.size());
+    }
+
+    private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        autenticacaoService.getUsuarioAutenticado()
+                .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
@@ -62,7 +97,7 @@ public class SolicitacaoRamalService {
                 solicitacoes.getTotalElements());
     }
 
-    public void save(SolicitacaoRamalRequest request) {
+    public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -73,17 +108,15 @@ public class SolicitacaoRamalService {
 
         solicitacaoRamal.retirarMascara();
         SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
+        enviarEmailAposCadastro(solicitacaoRamalPersistida);
 
-        gerarHistorico(solicitacaoRamalPersistida);
+        gerarHistorico(solicitacaoRamalPersistida, null);
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void gerarHistorico(SolicitacaoRamal solicitacaoRamal) {
-        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal));
-    }
-
-    public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
-        autenticacaoService.getUsuarioAutenticado()
-                           .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
+    private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
+        historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal, comentario));
     }
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
@@ -91,7 +124,7 @@ public class SolicitacaoRamalService {
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
-    public void update(SolicitacaoRamalRequest request) {
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -100,7 +133,19 @@ public class SolicitacaoRamalService {
         );
 
         solicitacaoEncontrada.retirarMascara();
-        solicitacaoRamalRepository.save(solicitacaoEncontrada);
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
+    }
+
+    public SolicitacaoRamalResponse atualizarStatus(SolicitacaoRamalAtualizarStatusRequest request) {
+        SolicitacaoRamal solicitacaoEncontrada = findById(request.getIdSolicitacao());
+        solicitacaoEncontrada.setSituacao(request.getSituacao());
+        gerarHistorico(solicitacaoEncontrada, request.getObservacao());
+
+        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
+    }
+
+    public SolicitacaoRamalResponse getSolicitacaoById(Integer idSolicitacao) {
+        return SolicitacaoRamalResponse.convertFrom(findById(idSolicitacao));
     }
 
     private SolicitacaoRamal findById(Integer id) {
@@ -109,6 +154,72 @@ public class SolicitacaoRamalService {
 
     private Usuario criaUsuario(int idUsuarioAutenticado) {
         return new Usuario(idUsuarioAutenticado);
+    }
+
+    public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
+        if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
+            emailService.enviarEmailTemplate(
+                    getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
+        }
+    }
+
+    public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
+        Context context = new Context();
+        context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
+        context.setVariable("codigo",  solicitacaoRamal.getId());
+        context.setVariable("situacao", solicitacaoRamal.getSituacao());
+        context.setVariable("qtdRamais",  solicitacaoRamal.getQuantidadeRamais());
+        context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
+        context.setVariable("telefoneTi",  solicitacaoRamal.getTelefoneTi());
+        context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
+        context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
+        context.setVariable("dataLimite", DateUtil.dateTimeToString(
+                solicitacaoRamal.getDataCadastro().plusHours(EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL)));
+        return context;
+    }
+
+    public List<SolicitacaoRamal> enviadorDeEmailParaSolicitacoesQueVaoExpirar() {
+        List<SolicitacaoRamal> solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente =
+                getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
+
+        solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente.forEach(solicitacao -> {
+            boolean deveEnviarEmail = verificarCasoTenhaQueEnviarEmailDeExpiracao(solicitacao.getDataCadastro());
+
+            if (deveEnviarEmail) {
+                enviaEmail(solicitacao);
+                updateFlagEnviouEmailExpirado(solicitacao.getId());
+            }
+        });
+
+        return solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente;
+    }
+
+    private boolean verificarCasoTenhaQueEnviarEmailDeExpiracao(LocalDateTime dataCadastro) {
+        LocalDateTime dataLimite = getDataExpiracao(dataCadastro);
+
+        return LocalDate.now().isEqual(dataLimite.toLocalDate())
+                || LocalDate.now().isAfter(dataLimite.toLocalDate());
+    }
+
+    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
+        return dataCadastro.plusHours(DURACAO_DIA_EM_HORAS);
+    }
+
+    private void enviaEmail(SolicitacaoRamal solicitacaoRamal) {
+        Context context = obterContexto(solicitacaoRamal);
+        emailService.enviarEmailTemplate(getDestinatarios(), ASSUNTO_EMAIL_EXPIRAR, TEMPLATE_EMAIL, context);
+    }
+
+    public List<SolicitacaoRamal> getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse() {
+        return solicitacaoRamalRepository.findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse();
+    }
+
+    private void updateFlagEnviouEmailExpirado(Integer solicitacaoId) {
+        solicitacaoRamalRepository.updateFlagEnviouEmailExpirado(solicitacaoId);
+    }
+
+    private List<String> getDestinatarios() {
+        return Arrays.asList(this.destinatarios.split(","));
     }
 
 }

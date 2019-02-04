@@ -27,6 +27,7 @@ spring:
           validation:
             mode: none
       hibernate:
+        dialect: br.com.xbrain.autenticacao.config.database.CustomOracle10gDialect
         hbm2ddl:
           import_files:
             database/estrutura.sql,
@@ -76,7 +77,8 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: luisdias@xbrain.com.br
+    emails: renato@xbrain.com.br
+    emails-solicitacao-ramal: renato@xbrain.com.br
 
   multiplo-login:
     emails: colaborador@claro.com.br

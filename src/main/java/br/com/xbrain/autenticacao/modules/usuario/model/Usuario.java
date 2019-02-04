@@ -399,4 +399,8 @@ public class Usuario {
     public Set<String> getCanaisString() {
         return canais.stream().map(Enum::toString).collect(Collectors.toSet());
     }
+
+    public boolean isOperacao() {
+        return CodigoNivel.OPERACAO == getNivelCodigo();
+    }
 }

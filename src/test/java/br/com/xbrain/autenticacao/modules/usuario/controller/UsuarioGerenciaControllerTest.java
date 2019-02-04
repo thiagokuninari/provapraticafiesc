@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,14 +49,14 @@ import static com.google.common.io.ByteStreams.toByteArray;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.HELP_DESK;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -71,7 +72,7 @@ public class UsuarioGerenciaControllerTest {
     private UsuarioRepository repository;
     @Autowired
     private EntityManager entityManager;
-    @Autowired
+    @SpyBean
     private UsuarioService usuarioService;
     @MockBean
     private EmailService emailService;
@@ -406,6 +407,26 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @Test
+    public void getCsv_CsvFormatadoCorretamente_QuandoRetornadoDoisUsuarios() throws Exception {
+        doReturn(doisUsuariosCsvResponse()).when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
+        String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/csv; charset=UTF-8"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertEquals(
+                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+                        + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
+                        + "X-Brain Claro Residencial;X-Brain Claro TV;A\n"
+                        + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
+                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A", csv);
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
@@ -500,5 +521,33 @@ public class UsuarioGerenciaControllerTest {
                 Files.readAllBytes(Paths.get(
                         getClass().getClassLoader().getResource(file)
                                 .getPath())));
+    }
+
+    private List<UsuarioCsvResponse> doisUsuariosCsvResponse() {
+        return asList(
+                new UsuarioCsvResponse(
+                        1,
+                        "Usuario Csv",
+                        "usuario_csv@xbrain.com.br",
+                        "(43) 2323-1782",
+                        "75400072062",
+                        "Vendedor",
+                        "Comercial",
+                        "X-Brain, Claro Residencial",
+                        "X-Brain, Claro TV",
+                        ESituacao.A),
+                new UsuarioCsvResponse(
+                        2,
+                        "Usuario Teste",
+                        "usuario_teste@xbrain.com.br",
+                        "(43) 4575-5878",
+                        "04803828083",
+                        "Vendedor",
+                        "Comercial",
+                        "X-Brain. Residencial e Combos",
+                        "X-Brain. Claro TV",
+                        ESituacao.A
+                )
+        );
     }
 }
