@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -297,6 +299,29 @@ public class UsuarioServiceTest {
     @Test
     public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
         Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+    }
+
+    @Test
+    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
+        assertEquals(1, usuarios.size());
+        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
+        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
+        assertEquals("NET,Xbrain", usuarios.get(0).getEmpresas());
+        assertEquals("Pessoal,Xbrain", usuarios.get(0).getUnidadesNegocios());
+        assertEquals("Vendedor", usuarios.get(0).getCargo());
+        assertEquals("Administrador", usuarios.get(0).getDepartamento());
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return new UsuarioAutenticado(umUsuarioComHierarquia());
+    }
+
+    private UsuarioFiltros getFiltroUsuario(String nome) {
+        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
+        usuarioFiltros.setNome(nome);
+        return usuarioFiltros;
     }
 
     private Usuario umUsuarioComHierarquia() {
