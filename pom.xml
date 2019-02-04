@@ -25,6 +25,7 @@
         <maven.checkstyle.version>2.17</maven.checkstyle.version>
         <puppycrawl.checkstyle.version>7.3</puppycrawl.checkstyle.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
+        <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
     </properties>
 
     <dependencies>
@@ -203,6 +204,13 @@
             <artifactId>poi-ooxml</artifactId>
             <version>3.17</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- Caelum Stella -->
+        <dependency>
+            <groupId>br.com.caelum.stella</groupId>
+            <artifactId>caelum-stella-core</artifactId>
+            <version>${caelum.stella.core.version}</version>
         </dependency>
     </dependencies>
 
