@@ -63,7 +63,6 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
-    private static final ESituacao REALOCADO = ESituacao.R;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -276,16 +275,16 @@ public class UsuarioService {
             } else {
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
-                if(realocado) {
+                if (realocado) {
                     validarRealocacaoDeUsuario(usuario);
                     usuario = salvaNovoUsuarioAtivoAPartirDoRealocado(usuario);
                 }
             }
             repository.save(usuario);
-            if(realocado) {
+            entityManager.flush();
+            if (realocado) {
                 enviarParaFilaDeUsuariosColaboradores(usuario);
             }
-            entityManager.flush();
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
             if (enviarEmail) {
@@ -293,26 +292,28 @@ public class UsuarioService {
             }
             return UsuarioDto.convertTo(usuario);
         } catch (PersistenceException ex) {
-            log.error("Erro de persistência ao salvar o Usuario.", ex);
+            log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
+            log.error("Erro que ainda não sabemos.", ex.getMessage());
             throw ex;
         }
     }
 
     public void validarRealocacaoDeUsuario(Usuario usuario) {
-            Usuario usuarioARealocar;
-            usuarioARealocar = repository.findByCpf(usuario.getCpf()).get();
-            if(usuarioARealocar.getSituacao().equals(ESituacao.A)) {
-                usuarioARealocar.setSituacao(ESituacao.R);
-                repository.save(usuarioARealocar);
-            }
+        Usuario usuarioARealocar;
+        usuarioARealocar = repository.findByCpf(usuario.getCpf()).get();
+        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
+            usuarioARealocar.setSituacao(ESituacao.R);
+            repository.save(usuarioARealocar);
+        }
     }
 
     private Usuario salvaNovoUsuarioAtivoAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        if(!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
+        if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()
+        && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId()).get().getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
             usuarioCopia.setAlterarSenha(Eboolean.V);
@@ -336,7 +337,7 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            if (isSocioPrincipal(cargo.getCodigo())) {
+            if (isSocioPrincipal(cargo.getCodigo()) && repository.findByCpf(usuario.getCpf()).isPresent()) {
                 UsuarioDto usuarioDto = UsuarioDto.convertTo(repository.findByCpf(usuario.getCpf()).get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
@@ -491,7 +492,7 @@ public class UsuarioService {
         }
     }
 
-    private void configurar(Usuario usuario, String senhaDescriptografada) {
+    public void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
@@ -506,7 +507,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto), false);
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -589,15 +590,17 @@ public class UsuarioService {
     }
 
     private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
-        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
-        usuarios.forEach(
-                usuarioColaborador -> {
-                    if(usuarioColaborador.getSituacao().equals(ESituacao.A)) {
-                        UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
-                        usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
+        if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
+            List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+            usuarios.forEach(
+                    usuarioColaborador -> {
+                        if (usuarioColaborador.getSituacao().equals(ESituacao.A)) {
+                            UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
+                            usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
+                        }
                     }
-                }
-        );
+            );
+        }
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
@@ -664,7 +667,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId()) || !usuario.getSituacao()
+                    if (!usuario.getSituacao()
                             .equals(ESituacao.A)) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
@@ -675,7 +678,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId()) || !usuario.getSituacao()
+                    if (!usuario.getSituacao()
                             .equals(ESituacao.A)) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }

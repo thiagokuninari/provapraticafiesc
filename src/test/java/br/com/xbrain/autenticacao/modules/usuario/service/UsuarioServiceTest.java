@@ -10,10 +10,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
@@ -21,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSend
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,12 +36,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static helpers.Empresas.NET;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -72,7 +69,11 @@ public class UsuarioServiceTest {
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
+    private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private UsuarioService usuarioService;
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
@@ -155,37 +156,50 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveRealocarUmUsuario() throws Exception {
+    public void validarRealocacaoDeUsuario_True_SeUsuarioRealocado() throws Exception {
         Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("41842888803");
+        usuarioRealocar.setCpf("28667582506");
         service.validarRealocacaoDeUsuario(usuarioRealocar);
-        Assert.assertEquals(usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao(), ESituacao.R);
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
     }
 
     @Test
-    public void deveVerificarUsuarioInativoRealocado () throws Exception {
-        Usuario usuarioRealocar = usuarioRepository.findByCpf("41842888803").get();
-        service.save(usuarioRealocar, true);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findAllByCpf(usuarioRealocar.getCpf()).get(0).getSituacao());
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findAllByCpf(usuarioRealocar.getCpf()).get(1).getSituacao());
+    public void updateFromQueue_True_SeNovoUsuarioInseridoEAntigoRealocado() throws Exception {
+        service.updateFromQueue(umUsuarioARealocar());
+        List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
+        usuarios.forEach(
+                usuario -> {
+                    if (usuario.getSituacao().equals(ESituacao.A)) {
+                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                    }
+                    if (usuario.getSituacao().equals(ESituacao.R)) {
+                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                    }
+                }
+        );
+        Assert.assertEquals(2, usuarios.size());
     }
 
     @Test
-    public void deveVerificarUsuarioPendenteRealocado () throws Exception {
-        Usuario usuarioRealocar = usuarioRepository.findByCpf("48177042092").get();
-        service.save(usuarioRealocar, true);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpfAndSituacao(usuarioRealocar.getCpf(),
-                ESituacao.R).get().getSituacao());
+    public void updateFromQueue_False_SeNovoUsuarioInseridoNaoForAtivo() throws Exception {
+        service.updateFromQueue(umUsuarioInativo());
+        List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
+        Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
+        Assert.assertEquals(1, usuarios.size());
     }
 
-
     @Test
-    public void deveVerificarCriacaoDeNovoUsuarioERealocacaoDoAntigo() throws Exception {
-        Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("41842888603");
-        service.save(usuarioRealocar, true);
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf(usuarioRealocar.getCpf());
-        Assert.assertEquals(usuarios.size(), 2);
+    public void updateFromQueue_True_SemSituacaoRSeNovoUsuarioNaoForRealocado() throws Exception {
+        UsuarioMqRequest naoRealocar = umUsuarioARealocar();
+        naoRealocar.setRealocado(false);
+        service.updateFromQueue(naoRealocar);
+        List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
+        usuarios.forEach(
+                usuario -> {
+                    Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                    Assert.assertNotEquals(ESituacao.R, usuario.getSituacao());
+                }
+        );
     }
 
     @Test
@@ -288,7 +302,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
-
         verify(usuarioRecuperacaoMqSender, times(1)).sendWithFailure(any());
     }
 
@@ -313,9 +326,31 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_ACEITE);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setSituacao(ESituacao.A);
-        service.saveFromQueue(usuarioMqRequest);
 
+        service.saveFromQueue(usuarioMqRequest);
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
+    }
+
+    private UsuarioMqRequest umUsuarioARealocar() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        usuarioMqRequest.setRealocado(true);
+        return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioInativo() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(105);
+        usuarioMqRequest.setCpf("41842888803");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.I);
+        usuarioMqRequest.setRealocado(true);
+        return usuarioMqRequest;
     }
 
     private Usuario umUsuarioComHierarquia() {
@@ -361,6 +396,7 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
+        usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
     }
 
