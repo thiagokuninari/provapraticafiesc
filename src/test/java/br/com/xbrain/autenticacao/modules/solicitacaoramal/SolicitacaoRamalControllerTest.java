@@ -105,7 +105,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void devePermitirAcessoParaPermissaoSocioAa() throws Exception {
+    public void getAll_listaComSeteRegistros_seUsuarioPossuirPermissaoSocioAa() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
@@ -205,7 +205,7 @@ public class SolicitacaoRamalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "É necessário enviar o parametro agente autorizado id.")));
+                        "É necessário enviar o parâmetro agente autorizado id.")));
     }
 
     @Test

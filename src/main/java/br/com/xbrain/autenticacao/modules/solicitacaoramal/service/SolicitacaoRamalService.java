@@ -81,7 +81,7 @@ public class SolicitacaoRamalService {
         if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
             verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
         } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CodigoFuncionalidade.AUT_2034)) {
-            throw new ValidacaoException("É necessário enviar o parametro agente autorizado id.");
+            throw new ValidacaoException("É necessário enviar o parâmetro agente autorizado id.");
         }
     }
 
