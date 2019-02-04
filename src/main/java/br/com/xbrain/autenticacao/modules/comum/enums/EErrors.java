@@ -19,7 +19,10 @@ public enum EErrors {
             "#004 - Erro ao verificar as pausas em andamento."),
     ERRO_OBTER_AA_BY_ID(
             "#005 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#005 - Erro ao tentar recuperar o AA por id.");
+            "#005 - Erro ao tentar recuperar o AA por id."),
+    ERRO_OBTER_EQUIPE_VENDAS_USUARIO(
+            "#006 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#006 - Erro ao tentar recuperar as equipes de vendas do usuário.");
 
     @Getter
     @Setter
