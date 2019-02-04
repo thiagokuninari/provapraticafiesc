@@ -408,7 +408,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarCsvDeUsuarios() throws Exception {
+    public void getCsv_CsvFormatadoCorretamente_QuandoRetornadoDoisUsuarios() throws Exception {
         doReturn(doisUsuariosCsvResponse()).when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
         String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -524,8 +524,8 @@ public class UsuarioGerenciaControllerTest {
     private List<UsuarioCsvResponse> doisUsuariosCsvResponse() {
         return asList(
                 new UsuarioCsvResponse(
-                        "Usuario Csv",
                         1,
+                        "Usuario Csv",
                         "usuario_csv@xbrain.com.br",
                         "(43) 2323-1782",
                         "75400072062",
@@ -535,8 +535,8 @@ public class UsuarioGerenciaControllerTest {
                         "X-Brain, Claro TV",
                         ESituacao.A),
                 new UsuarioCsvResponse(
-                        "Usuario Teste",
                         2,
+                        "Usuario Teste",
                         "usuario_teste@xbrain.com.br",
                         "(43) 4575-5878",
                         "04803828083",

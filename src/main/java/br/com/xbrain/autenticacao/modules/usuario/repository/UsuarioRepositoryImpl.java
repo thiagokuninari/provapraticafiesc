@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
@@ -38,6 +37,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Autowired
     private EntityManager entityManager;
+    private static final QUsuario USUARIO_SUBQUERY = new QUsuario("u1");
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -349,25 +349,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
-        QUsuario usuario1 = new QUsuario("u1");
         return new JPAQueryFactory(entityManager)
                 .select(
                         Projections.constructor(UsuarioCsvResponse.class,
-                                usuario.nome,
                                 usuario.id,
+                                usuario.nome,
                                 usuario.email,
                                 usuario.telefone,
                                 usuario.cpf,
                                 cargo.nome,
                                 departamento.nome,
                                 select(Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome))
-                                        .from(usuario1)
-                                        .innerJoin(usuario1.unidadesNegocios, unidadeNegocio)
-                                        .where(usuario1.id.eq(usuario.id)),
+                                        .from(USUARIO_SUBQUERY)
+                                        .innerJoin(USUARIO_SUBQUERY.unidadesNegocios, unidadeNegocio)
+                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
                                 select(Expressions.stringTemplate("wm_concat({0})", empresa.nome))
-                                        .from(usuario1)
-                                        .innerJoin(usuario1.empresas, empresa)
-                                        .where(usuario1.id.eq(usuario.id)),
+                                        .from(USUARIO_SUBQUERY)
+                                        .innerJoin(USUARIO_SUBQUERY.empresas, empresa)
+                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
                                 usuario.situacao
                         )
                 )

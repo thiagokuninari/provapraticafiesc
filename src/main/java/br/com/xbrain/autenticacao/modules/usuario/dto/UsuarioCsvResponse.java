@@ -30,28 +30,6 @@ public class UsuarioCsvResponse {
     private String empresas;
     private ESituacao situacao;
 
-    public UsuarioCsvResponse(String nome,
-                              Integer id,
-                              String email,
-                              String telefone,
-                              String cpf,
-                              String cargo,
-                              String departamento,
-                              String unidadesNegocios,
-                              String empresas,
-                              ESituacao situacao) {
-        this.nome = nome;
-        this.id = id;
-        this.email = email;
-        this.telefone = telefone;
-        this.cpf = cpf;
-        this.cargo = cargo;
-        this.departamento = departamento;
-        this.unidadesNegocios = unidadesNegocios;
-        this.empresas = empresas;
-        this.situacao = situacao;
-    }
-
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"

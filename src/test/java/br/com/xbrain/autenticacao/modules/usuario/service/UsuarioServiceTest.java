@@ -302,7 +302,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveRecuparOsUsuariosParaExportacaoCsv() {
+    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
         assertEquals(1, usuarios.size());

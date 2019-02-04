@@ -1094,7 +1094,7 @@ public class UsuarioService {
                 getCsv(usuarios),
                 CsvUtils.createFileName(USUARIOS_CSV),
                 response)) {
-            throw new ValidacaoException("Falhar ao tentar baixar relatório de usuários!");
+            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
         }
     }
 
