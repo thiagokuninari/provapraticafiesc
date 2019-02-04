@@ -55,16 +55,16 @@ public class UsuarioCsvResponse {
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"
-                + "NOME;"
-                + "EMAIL;"
-                + "TELEFONE;"
-                + "CPF;"
-                + "CARGO;"
-                + "DEPARTAMENTO;"
-                + "UNIDADE NEGOCIO;"
-                + "EMPRESA;"
-                + "SITUACAO"
-                + "\n";
+                .concat("NOME;")
+                .concat("EMAIL;")
+                .concat("TELEFONE;")
+                .concat("CPF;")
+                .concat("CARGO;")
+                .concat("DEPARTAMENTO;")
+                .concat("UNIDADE NEGOCIO;")
+                .concat("EMPRESA;")
+                .concat("SITUACAO")
+                .concat("\n");
     }
 
     @JsonIgnore
