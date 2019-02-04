@@ -276,8 +276,8 @@ public class UsuarioService {
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
                 if (realocado) {
-                    validarRealocacaoDeUsuario(usuario);
-                    usuario = salvaNovoUsuarioAtivoAPartirDoRealocado(usuario);
+                    salvarUsuarioRealocado(usuario);
+                    usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
                 }
             }
             repository.save(usuario);
@@ -299,21 +299,22 @@ public class UsuarioService {
         }
     }
 
-    public void validarRealocacaoDeUsuario(Usuario usuario) {
-        Usuario usuarioARealocar;
-        usuarioARealocar = repository.findByCpf(usuario.getCpf()).get();
+    public void salvarUsuarioRealocado(Usuario usuario) {
+        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
             usuarioARealocar.setSituacao(ESituacao.R);
             repository.save(usuarioARealocar);
         }
     }
 
-    private Usuario salvaNovoUsuarioAtivoAPartirDoRealocado(Usuario usuario) {
+    private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()
-                && usuario.getSituacao().equals(ESituacao.A)) {
-            usuarioCopia.setSenha(repository.findById(usuario.getId()).get().getSenha());
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!ObjectUtils.isEmpty(usuarios)
+            && usuario.getSituacao().equals(ESituacao.A)) {
+            usuarioCopia.setSenha(repository.findById(usuario.getId())
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
             usuarioCopia.setAlterarSenha(Eboolean.V);
             usuarioCopia.setSituacao(ESituacao.A);
@@ -323,7 +324,8 @@ public class UsuarioService {
     }
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
-        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() ->
+                new NotFoundException("Usuário não encontrado"));
         idUsuarioNovo.stream()
                 .map(id -> {
                     UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
@@ -590,16 +592,13 @@ public class UsuarioService {
 
     private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
         if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
-            List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
-            usuarios.forEach(
-                usuarioColaborador -> {
-                    if (usuarioColaborador.getSituacao().equals(ESituacao.A)) {
-                        UsuarioDto usuarioAtualizarColaborador = UsuarioDto.convertTo(usuarioColaborador);
-                        usuarioMqSender.sendColaboradoresSuccess(usuarioAtualizarColaborador);
-                    }
-                }
-            );
-        }
+            repository.findAllByCpf(usuario.getCpf())
+                    .stream()
+                    .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
+                    .map(UsuarioDto::convertTo)
+                    .forEach(usuarioAtualizarColaborador -> usuarioMqSender
+                    .sendColaboradoresSuccess(usuarioAtualizarColaborador));
+            }
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
@@ -765,8 +764,6 @@ public class UsuarioService {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
-    //TODO melhorar código
-    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {
             return new MotivoInativacao(dto.getIdMotivoInativacao());

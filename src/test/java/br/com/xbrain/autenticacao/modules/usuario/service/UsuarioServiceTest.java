@@ -159,32 +159,30 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void validarRealocacaoDeUsuario_True_SeUsuarioRealocado() throws Exception {
+    public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setCpf("28667582506");
-        service.validarRealocacaoDeUsuario(usuarioRealocar);
+        service.salvarUsuarioRealocado(usuarioRealocar);
         Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
     }
 
     @Test
-    public void updateFromQueue_True_SeNovoUsuarioInseridoEAntigoRealocado() throws Exception {
+    public void updateFromQueue_CriaNovoUsuario_QuandoAntigoRealocado() throws Exception {
         service.updateFromQueue(umUsuarioARealocar());
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
-        usuarios.forEach(
-            usuario -> {
+        usuarioRepository.findAllByCpf("21145664523")
+            .forEach(usuario -> {
                 if (usuario.getSituacao().equals(ESituacao.A)) {
                     Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                }
-                if (usuario.getSituacao().equals(ESituacao.R)) {
+                } else if (usuario.getSituacao().equals(ESituacao.R)) {
                     Assert.assertEquals(ESituacao.R, usuario.getSituacao());
                 }
             }
         );
-        Assert.assertEquals(2, usuarios.size());
+        Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
     @Test
-    public void updateFromQueue_False_SeNovoUsuarioInseridoNaoForAtivo() throws Exception {
+    public void updateFromQueue_NaoRealocaUsuario_QuandoSituacaoForInativa() throws Exception {
         service.updateFromQueue(umUsuarioInativo());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
         Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
@@ -192,7 +190,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void updateFromQueue_True_SemSituacaoRSeNovoUsuarioNaoForRealocado() throws Exception {
+    public void updateFromQueue_NaoRealocaUsuario_QuandoAFlagRealocadoForFalse() throws Exception {
         UsuarioMqRequest naoRealocar = umUsuarioARealocar();
         naoRealocar.setRealocado(false);
         service.updateFromQueue(naoRealocar);
