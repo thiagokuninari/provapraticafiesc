@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.solicitacaoramal;
+package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
