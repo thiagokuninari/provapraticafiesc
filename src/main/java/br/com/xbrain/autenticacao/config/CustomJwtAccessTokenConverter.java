@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.config;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.equipevendas.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -43,6 +45,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private EquipeVendasService equipeVendasService;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -59,7 +63,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                             userAuth,
                             getAgentesAutorizadosPermitidos(usuario),
                             getEmpresasDoUsuario(usuario),
-                            getEquipesSupervisionadas(usuario)));
+                            getEquipesSupervisionadas(usuario),
+                            getEquipeVendas(usuario)));
         } else {
             defaultOAuth2AccessToken.getAdditionalInformation().put("active", true);
         }
@@ -88,12 +93,17 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 : Collections.emptyList();
     }
 
+    private List<EquipeVendaDto> getEquipeVendas(Usuario usuario) {
+        return equipeVendaService.getEquipeVendas(usuario.getId());
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
                                           List<Integer> agentesAutorizados,
                                           List<Empresa> empresas,
-                                          List<Integer> equipesSupervisionadas) {
+                                          List<Integer> equipesSupervisionadas,
+                                          List<EquipeVendaDto> equipeVendas) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
@@ -111,6 +121,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
         token.getAdditionalInformation().put("canais", getCanais(usuario));
+        token.getAdditionalInformation().put("equipeVendas", equipeVendas);
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
