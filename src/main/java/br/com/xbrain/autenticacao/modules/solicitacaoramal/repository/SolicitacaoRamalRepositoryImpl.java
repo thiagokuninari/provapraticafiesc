@@ -20,17 +20,6 @@ public class SolicitacaoRamalRepositoryImpl
             implements SolicitacaoRamalRepositoryCustom {
 
     @Override
-    public List<SolicitacaoRamal> findAllByUsuarioId(Pageable pageable, Integer usuarioId, Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .select(solicitacaoRamal)
-                .from(solicitacaoRamal)
-                .innerJoin(solicitacaoRamal.usuario)
-                .where(solicitacaoRamal.usuario.id.eq(usuarioId).and(predicate))
-                .orderBy(solicitacaoRamal.id.desc())
-                .fetch();
-    }
-
-    @Override
     public Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate) {
         return super.findAll(
                 Collections.singletonList(JoinDescriptor.innerJoin(solicitacaoRamal.usuario)),
