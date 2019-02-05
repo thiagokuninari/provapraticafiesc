@@ -286,6 +286,7 @@ public class UsuarioService {
             }
             repository.save(usuario);
             entityManager.flush();
+
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
@@ -339,10 +340,36 @@ public class UsuarioService {
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
+        removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
 
         repository.save(usuario);
+    }
+
+    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
+            usuario.getUsuariosHierarquia().clear();
+        } else {
+            usuario.getUsuariosHierarquia()
+                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        }
+    }
+
+    private void removerHierarquiaSubordinados(Usuario usuario) {
+        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+                .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(subordinados)) {
+            usuarioHierarquiaRepository.delete(subordinados);
+        }
+    }
+
+    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+            hierarquiasId
+                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        }
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
@@ -427,22 +454,6 @@ public class UsuarioService {
 
             return existe;
         });
-    }
-
-    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (CollectionUtils.isEmpty(hierarquiasId)) {
-            usuario.getUsuariosHierarquia().clear();
-        } else {
-            usuario.getUsuariosHierarquia()
-                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
-        }
-    }
-
-    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!CollectionUtils.isEmpty(hierarquiasId)) {
-            hierarquiasId
-                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
-        }
     }
 
     private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
