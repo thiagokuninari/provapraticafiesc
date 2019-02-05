@@ -6,9 +6,9 @@ spring:
       ddl-auto: none
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.7:1521/hmlg
+    url: jdbc:oracle:thin:@//192.168.1.16:1521/hmlg
     username: AUTENTICACAO
-    password: py12nrk7
+    password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
       maximumPoolSize: 10
