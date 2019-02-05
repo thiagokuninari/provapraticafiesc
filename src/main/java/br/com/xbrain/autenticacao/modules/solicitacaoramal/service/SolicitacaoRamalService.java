@@ -171,7 +171,7 @@ public class SolicitacaoRamalService {
         return context;
     }
 
-    public List<SolicitacaoRamal> enviadorDeEmailParaSolicitacoesQueVaoExpirar() {
+    public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
         List<SolicitacaoRamal> solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente =
                 getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
 

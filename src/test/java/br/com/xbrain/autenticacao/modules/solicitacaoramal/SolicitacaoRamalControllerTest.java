@@ -80,8 +80,8 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void enviadorDeEmail_verificaSeMetodoEnviarEmailFoiInvocadoQuatroVezes_quandoHouverEmailParaEnviar() {
-        solicitacaoRamalService.enviadorDeEmailParaSolicitacoesQueVaoExpirar();
+    public void enviarEmailSolicitacoesQueVaoExpirar_enviarEmailFoiInvocadoQuatroVezes_quandoSolicitacaoForExpirar() {
+        solicitacaoRamalService.enviarEmailSolicitacoesQueVaoExpirar();
 
         verify(emailService, times(4)).enviarEmailTemplate(anyList(), any(), any(), any());
     }
@@ -130,7 +130,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_isUnauthorized_quandoUsuarioNaoExisteAutenticado() throws Exception {
+    public void getAll_isUnauthorized_quandoUsuarioNaoEstaAutenticado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL).accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 

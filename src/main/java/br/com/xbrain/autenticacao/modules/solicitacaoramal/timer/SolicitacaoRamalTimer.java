@@ -18,6 +18,6 @@ public class SolicitacaoRamalTimer {
     @Transactional
     @Scheduled(cron = EVERY_HOUR_OF_THE_DAY, zone = TIME_ZONE)
     public void enviarEmailDeNotificacaoParaSolicitacaoRamal() {
-        solicitacaoService.enviadorDeEmailParaSolicitacoesQueVaoExpirar();
+        solicitacaoService.enviarEmailSolicitacoesQueVaoExpirar();
     }
 }
