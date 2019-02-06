@@ -12,7 +12,7 @@ import java.util.List;
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.parceiros-online.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)
-public interface EquipeVendasClient {
+public interface EquipeVendaClient {
 
     @RequestMapping(
             method = RequestMethod.GET,

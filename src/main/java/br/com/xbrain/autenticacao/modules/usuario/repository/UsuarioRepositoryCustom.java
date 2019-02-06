@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -28,6 +28,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+
     List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
 
     List<Usuario> getUsuariosFilter(Predicate predicate);
@@ -50,5 +52,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
 
-    List<ColaboradorResponse> getUsuariosD2dGeral(Predicate predicate);
+    List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
 }

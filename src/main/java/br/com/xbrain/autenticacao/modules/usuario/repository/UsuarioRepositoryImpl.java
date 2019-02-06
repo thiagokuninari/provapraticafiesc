@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ColaboradorResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,15 +24,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static com.querydsl.jpa.JPAExpressions.select;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
+    private static final QUsuario USUARIO_SUBQUERY = new QUsuario("u1");
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -118,6 +125,27 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .stream()
                 .map(BigDecimal::intValue)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+        return entityManager
+                .createNativeQuery(
+                        " SELECT UH.FK_USUARIO "
+                                + " , U.NOME "
+                                + " , U.EMAIL_01 "
+                                + " , C.NOME AS NOME_CARGO "
+                                + " FROM USUARIO_HIERARQUIA UH"
+                                + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + " WHERE C.CODIGO = :_codigoCargo"
+                                + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
+                                + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .setParameter("_codigoCargo", codigoCargo)
+                .getResultList();
     }
 
     @SuppressWarnings("unchecked")
@@ -321,18 +349,34 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<ColaboradorResponse> getUsuariosD2dGeral(Predicate predicate) {
+    public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(ColaboradorResponse.class,
-                        usuario.id,
-                        usuario.nome,
-                        usuario.email,
-                        usuario.cargo.nome))
+                .select(
+                        Projections.constructor(UsuarioCsvResponse.class,
+                                usuario.id,
+                                usuario.nome,
+                                usuario.email,
+                                usuario.telefone,
+                                usuario.cpf,
+                                cargo.nome,
+                                departamento.nome,
+                                select(Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome))
+                                        .from(USUARIO_SUBQUERY)
+                                        .innerJoin(USUARIO_SUBQUERY.unidadesNegocios, unidadeNegocio)
+                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
+                                select(Expressions.stringTemplate("wm_concat({0})", empresa.nome))
+                                        .from(USUARIO_SUBQUERY)
+                                        .innerJoin(USUARIO_SUBQUERY.empresas, empresa)
+                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
+                                usuario.situacao
+                        )
+                )
                 .from(usuario)
                 .innerJoin(usuario.cargo, cargo)
-                .innerJoin(cargo.nivel)
+                .innerJoin(usuario.departamento, departamento)
                 .where(predicate)
-                .distinct()
+                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
+                        cargo.nome, departamento.nome, usuario.situacao)
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }

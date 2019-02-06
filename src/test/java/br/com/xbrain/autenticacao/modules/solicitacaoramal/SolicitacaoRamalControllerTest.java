@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal;
 
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public class SolicitacaoRamalControllerTest {
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
-    private EquipeVendasService equipeVendasService;
+    private EquipeVendaService equipeVendasService;
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
 

@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -15,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
+import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
@@ -31,7 +31,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
-import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioD2dGeralPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
@@ -51,14 +50,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 
 @Service
 public class UsuarioService {
@@ -132,7 +130,7 @@ public class UsuarioService {
     @Autowired
     private EquipeVendaService equipeVendaService;
 
-    private Usuario findComplete(Integer id) {
+    public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
         return usuario;
@@ -199,19 +197,15 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
-            obterUsuariosAa(filtros.getCnpjAa(), predicate);
-        }
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
         if (!CollectionUtils.isEmpty(pages.getContent())) {
-            popularUsuario(pages.getContent());
+            popularUsuarios(pages.getContent());
         }
         return pages;
     }
 
-    private void popularUsuario(List<Usuario> usuarios) {
+    private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
@@ -254,12 +248,6 @@ public class UsuarioService {
             usuariosSubordinados.add(usuarioId);
         }
         return usuariosSubordinados;
-    }
-
-    public List<ColaboradorResponse> getUsuariosD2dGeral(UsuarioAutenticado usuarioAutenticado) {
-        UsuarioD2dGeralPredicate predicate = new UsuarioD2dGeralPredicate()
-                .comNivel(Collections.singletonList(CodigoNivel.OPERACAO));
-        return repository.getUsuariosD2dGeral(predicate.build());
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
@@ -315,11 +303,11 @@ public class UsuarioService {
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
         if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
-            if (cargoOld.getCodigo().equals(SUPERVISOR_OPERACAO)) {
+            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
                 equipeVendaService.inativarSupervidor(usuario.getId());
 
-            } else if (cargoOld.getCodigo().equals(VENDEDOR_OPERACAO)
-                    || cargoOld.getCodigo().equals(ASSISTENTE_OPERACAO)) {
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
                 equipeVendaService.inativarUsuario(usuario.getId());
             }
         }
@@ -1122,18 +1110,58 @@ public class UsuarioService {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 
-    public List<ColaboradorResponse> getUsuariosD2d() {
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (usuarioAutenticado.isXbrain() || usuarioAutenticado.isMso()) {
-            return getUsuariosD2dGeral(usuarioAutenticado);
-        } else if (usuarioAutenticado.isVendedor()) {
-            return Collections.singletonList(ColaboradorResponse.convertFrom(findComplete(usuarioAutenticado.getId())));
-        } else {
-            return ColaboradorResponse.convertFrom(getSubordinadosDoUsuario(usuarioAutenticado.getId()));
+    public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+                .stream()
+                .map(this::criarUsuarioHierarquiaVendedoresResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return getVendedoresOperacaoDaHierarquia(usuarioId).stream()
+                .map(UsuarioHierarquiaResponse::getId)
+                .collect(Collectors.toList());
+    }
+
+    private UsuarioHierarquiaResponse criarUsuarioHierarquiaVendedoresResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioHierarquiaResponse.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cargoNome(objectToString(param[indice++]))
+                .build();
+    }
+
+    public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
+        return repository.getUsuariosCsv(predicate.build());
+    }
+
+    public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(
+                getCsv(usuarios),
+                CsvUtils.createFileName(USUARIOS_CSV),
+                response)) {
+            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
         }
     }
 
-    public List<Integer> getUsuariosD2dIds() {
-        return getUsuariosD2d().stream().map(ColaboradorResponse::getId).collect(Collectors.toList());
+    private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtros.toPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
+            obterUsuariosAa(filtros.getCnpjAa(), predicate);
+        }
+        return predicate;
+    }
+
+    private String getCsv(List<UsuarioCsvResponse> usuarios) {
+        return UsuarioCsvResponse.getCabecalhoCsv()
+            + (!usuarios.isEmpty()
+            ? usuarios
+            .stream()
+            .map(UsuarioCsvResponse::toCsv)
+            .collect(Collectors.joining("\n"))
+            : "Registros não encontrados.");
     }
 }

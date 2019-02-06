@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,16 +17,18 @@ import java.time.temporal.ChronoUnit;
 @Data
 public class SolicitacaoRamalResponse {
 
-    private static final int HORA_DEFAULT_EXPIRACAO = 72;
-
     private Integer id;
     private Integer quantidadeRamais;
-    private ESituacao situacao;
+    private ESituacaoSolicitacao situacao;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime horaExpiracao;
+    private String usuarioSolicitante;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
+        response.usuarioSolicitante = solicitacaoRamal.getUsuario().getNome();
 
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
@@ -33,16 +37,12 @@ public class SolicitacaoRamalResponse {
         return response;
     }
 
-    public void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
-        LocalDateTime expiracao = getDataExpiracao(dataCadastro);
+    private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
+        LocalDateTime dataExpiracao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
 
-        long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(expiracao);
+        long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataExpiracao);
 
         this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
-    }
-
-    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
-        return dataCadastro.plusHours(HORA_DEFAULT_EXPIRACAO);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {

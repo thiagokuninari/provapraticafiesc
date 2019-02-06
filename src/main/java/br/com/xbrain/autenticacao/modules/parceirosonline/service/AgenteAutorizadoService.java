@@ -46,6 +46,18 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public AgenteAutorizadoResponse getAaById(Integer idAgenteAutorizado) {
+        try {
+            return agenteAutorizadoClient.getAaById(idAgenteAutorizado);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                    AgenteAutorizadoService.class.getName(),
+                    EErrors.ERRO_OBTER_AA_BY_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     private AgenteAutorizadoResponse getAaByCpnj(String cnpj) {
         try {
             AgenteAutorizadoRequest request = new AgenteAutorizadoRequest();

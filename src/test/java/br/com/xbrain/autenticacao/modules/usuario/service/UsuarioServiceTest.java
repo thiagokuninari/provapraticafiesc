@@ -11,7 +11,10 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
@@ -29,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -41,7 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -78,13 +80,6 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
-
-    private static final Integer ADMIN_ID = 100;
-    private static final Integer GERENTE_OPERACAO_ID = 227;
-    private static final Integer COORDENADOR_OPERACAO_ID = 228;
-    private static final Integer GERENTE_COMERCIAL_OPERACAO_ID = 104;
-    private static final Integer MSO_ID = 366;
-    private static final Integer VENDEDOR_OPERACAO = 229;
 
     @Before
     public void setUp() {
@@ -291,113 +286,42 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveRetornarOsUsuariosOperacaoParaXbrain() {
-        Usuario usuario = usuarioRepository.findById(ADMIN_ID).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(ADMIN_ID)
-                        .usuario(usuario)
-                        .build());
-
-        List<ColaboradorResponse> usuarios = service.getUsuariosD2d();
-
-        Assert.assertEquals(4, usuarios.size());
-        Assert.assertThat(Arrays.asList(COORDENADOR_OPERACAO_ID,
-                GERENTE_OPERACAO_ID,
-                VENDEDOR_OPERACAO,
-                GERENTE_COMERCIAL_OPERACAO_ID),
-                equalTo(usuarios
-                        .stream()
-                        .map(ColaboradorResponse::getId)
-                        .collect(Collectors.toList())));
+    public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
-    public void deveRetornarOsUsuariosOperacaoParaXbrainComIds() {
-        Usuario usuario = usuarioRepository.findById(ADMIN_ID).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(ADMIN_ID)
-                        .usuario(usuario)
-                        .build());
-
-        List<Integer> usuarios = service.getUsuariosD2dIds();
-
-        Assert.assertEquals(4, usuarios.size());
-        Assert.assertThat(Arrays.asList(COORDENADOR_OPERACAO_ID,
-                GERENTE_OPERACAO_ID,
-                VENDEDOR_OPERACAO,
-                GERENTE_COMERCIAL_OPERACAO_ID),
-                equalTo(usuarios));
+    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
+        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
     }
 
     @Test
-    public void deveRetornarOsUsuariosOperacaoParaMso() {
-        Usuario usuario = usuarioRepository.findById(MSO_ID).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(MSO_ID)
-                        .usuario(usuario)
-                        .build());
-
-        Assert.assertEquals(4, service.getUsuariosD2d().size());
+    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
     }
 
     @Test
-    public void deveRetornarOsUsuariosNaHierarquiaDoGerenteOperacao() {
-        Usuario usuario = usuarioRepository.findById(GERENTE_OPERACAO_ID).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(GERENTE_OPERACAO_ID)
-                        .usuario(usuario)
-                        .build());
-
-        List<ColaboradorResponse> usuarios = service.getUsuariosD2d();
-        Assert.assertEquals(2, usuarios.size());
-        Assert.assertEquals(COORDENADOR_OPERACAO_ID, usuarios.get(0).getId());
-        Assert.assertEquals("COORDENADOR OPERACAO", usuarios.get(0).getNome());
-        Assert.assertEquals("Coordenador", usuarios.get(0).getNomeCargo());
+    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
+        assertEquals(1, usuarios.size());
+        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
+        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
+        assertEquals("NET,Xbrain", usuarios.get(0).getEmpresas());
+        assertEquals("Pessoal,Xbrain", usuarios.get(0).getUnidadesNegocios());
+        assertEquals("Vendedor", usuarios.get(0).getCargo());
+        assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
 
-    @Test
-    public void deveRetornarOsUsuariosNaHierarquiaDoCoordenadorOperacao() {
-        Usuario usuario = usuarioRepository.findById(COORDENADOR_OPERACAO_ID).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(COORDENADOR_OPERACAO_ID)
-                        .usuario(usuario)
-                        .build());
-
-        List<ColaboradorResponse> usuarios = service.getUsuariosD2d();
-        Assert.assertEquals(1, usuarios.size());
-        Assert.assertEquals(VENDEDOR_OPERACAO, usuarios.get(0).getId());
-        Assert.assertEquals("VENDEDOR OPERACAO", usuarios.get(0).getNome());
-        Assert.assertEquals("Vendedor", usuarios.get(0).getNomeCargo());
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return new UsuarioAutenticado(umUsuarioComHierarquia());
     }
 
-    @Test
-    public void deveRetornarOsUsuariosNaHierarquiaDoVendedorOperacao() {
-        Usuario usuario = usuarioRepository.findById(VENDEDOR_OPERACAO).get();
-
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado.builder()
-                        .id(VENDEDOR_OPERACAO)
-                        .usuario(usuario)
-                        .permissoes(Collections.singletonList(
-                                new SimpleGrantedAuthority(
-                                        "ROLE_" + CodigoFuncionalidade.AUT_VISUALIZAR_VENDEDOR_PROPRIO.name())))
-                        .build());
-
-        List<ColaboradorResponse> usuarios = service.getUsuariosD2d();
-        Assert.assertEquals(1, usuarios.size());
-        Assert.assertEquals(VENDEDOR_OPERACAO, usuarios.get(0).getId());
-        Assert.assertEquals("VENDEDOR OPERACAO", usuarios.get(0).getNome());
-        Assert.assertEquals("Vendedor", usuarios.get(0).getNomeCargo());
+    private UsuarioFiltros getFiltroUsuario(String nome) {
+        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
+        usuarioFiltros.setNome(nome);
+        return usuarioFiltros;
     }
 
     private Usuario umUsuarioComHierarquia() {

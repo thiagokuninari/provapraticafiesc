@@ -17,12 +17,18 @@ public enum EErrors {
     ERRO_VERIFICAR_PAUSA(
             "#004 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#004 - Erro ao verificar as pausas em andamento."),
-    ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA(
+    ERRO_OBTER_AA_BY_ID(
             "#005 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#005 - Erro ao tentar inativar o usuário supervisor na equipe de vendas."),
-    ERRO_INATIVAR_USUARIO_EQUIPE_VENDA(
+            "#005 - Erro ao tentar recuperar o AA por id."),
+    ERRO_OBTER_EQUIPE_VENDAS_USUARIO(
             "#006 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#006 - Erro ao tentar inativar o usuário Assistente ou Vendedor na equipe de vendas.");
+            "#006 - Erro ao tentar recuperar as equipes de vendas do usuário."),
+    ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA(
+            "#007 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#007 - Erro ao tentar inativar o usuário supervisor na equipe de vendas."),
+    ERRO_INATIVAR_USUARIO_EQUIPE_VENDA(
+            "#008 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#008 - Erro ao tentar inativar o usuário Assistente ou Vendedor na equipe de vendas.");
 
     @Getter
     @Setter

@@ -182,13 +182,13 @@ public class UsuarioController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("d2d")
-    public List<ColaboradorResponse> getUsuariosD2d() {
-        return usuarioService.getUsuariosD2d();
+    @GetMapping("{id}/vendedores-hierarquia-ids")
+    public List<Integer> getIdsVendedoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getIdsVendedoresOperacaoDaHierarquia(id);
     }
 
-    @GetMapping("d2d-ids")
-    public List<Integer> getUsuariosD2dIds() {
-        return usuarioService.getUsuariosD2dIds();
+    @GetMapping("{id}/vendedores-hierarquia")
+    public List<UsuarioHierarquiaResponse> getVendedoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 }
