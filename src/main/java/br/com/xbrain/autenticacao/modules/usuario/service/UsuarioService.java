@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -54,6 +55,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
 
 @Service
 public class UsuarioService {
@@ -124,6 +129,8 @@ public class UsuarioService {
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     private Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -275,18 +282,21 @@ public class UsuarioService {
         try {
             validar(usuario);
 
+            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
             entityManager.flush();
 
+            validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
@@ -298,7 +308,20 @@ public class UsuarioService {
             log.error("Erro de persistência ao salvar o Usuario.", ex);
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
             throw ex;
+        }
+    }
+
+    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
+        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+            if (cargoOld.getCodigo().equals(SUPERVISOR_OPERACAO)) {
+                equipeVendaService.inativarSupervidor(usuario.getId());
+
+            } else if (cargoOld.getCodigo().equals(VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
         }
     }
 
