@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CargoService {
 
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não "
-            + "encontrado.");
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
 
     @Autowired
     private CargoRepository repository;
@@ -39,6 +38,10 @@ public class CargoService {
 
     public Cargo findById(Integer id) {
         return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public Cargo findByUsuarioId(Integer usuarioId) {
+        return repository.findByUsuarioId(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public Cargo save(Cargo cargo) {

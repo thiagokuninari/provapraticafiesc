@@ -9,9 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.infra.JoinDescriptor.innerJoin;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static java.util.Arrays.asList;
 
 public class CargoRepositoryImpl extends CustomRepository<Cargo> implements CargoRepositoryCustom {
@@ -48,5 +50,16 @@ public class CargoRepositoryImpl extends CustomRepository<Cargo> implements Carg
                 )
                 .orderBy(cargo.nome.asc())
                 .fetch();
+    }
+
+    @Override
+    public Optional<Cargo> findByUsuarioId(Integer usuarioId) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(cargo)
+                        .from(usuario)
+                        .innerJoin(usuario.cargo).fetchJoin()
+                        .where(usuario.id.eq(usuarioId))
+                        .fetchOne());
     }
 }
