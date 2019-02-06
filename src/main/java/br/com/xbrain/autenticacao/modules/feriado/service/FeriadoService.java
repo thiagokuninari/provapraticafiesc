@@ -5,11 +5,14 @@ import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 public class FeriadoService {
@@ -35,5 +38,13 @@ public class FeriadoService {
 
     public Iterable<Feriado> findAllByAnoAtual() {
         return repository.findAllByAnoAtual(dataHoraAtual.getData());
+    }
+
+    public void loadAllFeriados() {
+        FeriadoSingleton.getInstance()
+                .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
+                .stream()
+                .map(Feriado::getDataFeriado)
+                .collect(Collectors.toSet()));
     }
 }
