@@ -1,6 +1,6 @@
 package helpers;
 
-import br.com.xbrain.autenticacao.modules.equipevendas.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
