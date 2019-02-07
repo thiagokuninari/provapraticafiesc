@@ -15,7 +15,7 @@ public interface EquipeVendaClient {
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
 
     @PutMapping("api/equipes-vendas/inativar-supervisor/equipe/{id}")
-    void inativarSupervidor(@PathVariable("supervisorId") Integer supervisorId);
+    void inativarSupervidor(@PathVariable("id") Integer supervisorId);
 
     @PutMapping("api/usuarios-equipe/inativar/{id}")
     void inativarUsuarioEquipe(@PathVariable("id") Integer usuariostatusId);
