@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -12,6 +13,8 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -47,10 +49,8 @@ public class SolicitacaoRamalService {
     private String destinatarios;
 
     private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
-    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 48h";
+    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
-    private static final int DURACAO_DIA_EM_HORAS = 24;
-    private static final int EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL = 72;
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
@@ -61,40 +61,31 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
-            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-        }
+        validarFiltroAgenteAutorizadoId(filtros);
 
         BooleanBuilder builder = filtros.toPredicate().build();
 
-        Integer idUsuario = autenticacaoService.getUsuarioId();
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
 
-        List<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllByUsuarioId(pageable, idUsuario, builder);
-
-        return new PageImpl<>(solicitacoes.stream()
+        return new PageImpl<>(solicitacoes.getContent()
+                                          .stream()
                                           .map(SolicitacaoRamalResponse::convertFrom)
                                           .collect(Collectors.toList()),
                 pageable,
-                solicitacoes.size());
+                solicitacoes.getTotalElements());
+    }
+
+    private void validarFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
+        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CodigoFuncionalidade.AUT_2034)) {
+            throw new ValidacaoException("É necessário enviar o parâmetro agente autorizado id.");
+        }
     }
 
     private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
         autenticacaoService.getUsuarioAutenticado()
                 .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
-    }
-
-    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        BooleanBuilder builder = filtros.toPredicate().build();
-
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
-
-        return new PageImpl<>(
-                solicitacoes.getContent()
-                            .stream()
-                            .map(SolicitacaoRamalResponse::convertFrom)
-                            .collect(Collectors.toList()),
-                pageable,
-                solicitacoes.getTotalElements());
     }
 
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
@@ -173,12 +164,11 @@ public class SolicitacaoRamalService {
         context.setVariable("telefoneTi",  solicitacaoRamal.getTelefoneTi());
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
-        context.setVariable("dataLimite", DateUtil.dateTimeToString(
-                solicitacaoRamal.getDataCadastro().plusHours(EXPIRACAO_EM_HORAS_SOLICITACAO_RAMAL)));
+        context.setVariable("dataLimite", DateUtil.dateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
         return context;
     }
 
-    public List<SolicitacaoRamal> enviadorDeEmailParaSolicitacoesQueVaoExpirar() {
+    public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
         List<SolicitacaoRamal> solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente =
                 getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
 
@@ -195,14 +185,15 @@ public class SolicitacaoRamalService {
     }
 
     private boolean verificarCasoTenhaQueEnviarEmailDeExpiracao(LocalDateTime dataCadastro) {
-        LocalDateTime dataLimite = getDataExpiracao(dataCadastro);
+        LocalDateTime dataLimite = getDataLimite(dataCadastro);
 
-        return LocalDate.now().isEqual(dataLimite.toLocalDate())
-                || LocalDate.now().isAfter(dataLimite.toLocalDate());
+        final int umDiaEmHoras = 24;
+        return LocalDateTime.now().isEqual(dataLimite.minusHours(umDiaEmHoras))
+                || LocalDateTime.now().isAfter(dataLimite.minusHours(umDiaEmHoras));
     }
 
-    private LocalDateTime getDataExpiracao(LocalDateTime dataCadastro) {
-        return dataCadastro.plusHours(DURACAO_DIA_EM_HORAS);
+    private LocalDateTime getDataLimite(LocalDateTime dataCadastro) {
+        return LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
 
     private void enviaEmail(SolicitacaoRamal solicitacaoRamal) {
@@ -219,7 +210,11 @@ public class SolicitacaoRamalService {
     }
 
     private List<String> getDestinatarios() {
-        return Arrays.asList(this.destinatarios.split(","));
+        if (this.destinatarios.contains(",")) {
+            return Arrays.asList(this.destinatarios.split(","));
+        }
+
+        return Arrays.asList(this.destinatarios);
     }
 
 }
