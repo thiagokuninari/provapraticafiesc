@@ -12,6 +12,8 @@ public class UsuarioCadastroMqSender {
 
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessQueue;
+    @Value("${app-config.queue.usuario-colaborador-success}")
+    private String usuarioColaboradorSuccessQueue;
     @Value("${app-config.queue.usuario-cadastro-failure}")
     private String usuarioCadastroFailureQueue;
 
@@ -20,6 +22,10 @@ public class UsuarioCadastroMqSender {
 
     public void sendSuccess(UsuarioDto usuarioDto) {
         rabbitTemplate.convertAndSend(usuarioCadastroSuccessQueue, usuarioDto);
+    }
+
+    public void sendColaboradoresSuccess(UsuarioDto usuarioDto) {
+        rabbitTemplate.convertAndSend(usuarioColaboradorSuccessQueue, usuarioDto);
     }
 
     public void sendWithFailure(UsuarioMqRequest usuarioMqRequest) {

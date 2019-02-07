@@ -37,4 +37,5 @@ public class UsuarioMqRequest {
     private Integer usuarioCadastroId;
     private String exception;
     private Set<ECanal> canais;
+    private boolean realocado;
 }
