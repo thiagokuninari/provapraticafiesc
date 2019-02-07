@@ -337,6 +337,32 @@ public class UsuarioServiceTest {
     @Test
     public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
         Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
+        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+    }
+
+    @Test
+    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
+        assertEquals(1, usuarios.size());
+        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
+        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
+        assertEquals("Xbrain.NET", usuarios.get(0).getEmpresas());
+        assertEquals("Pessoal.Xbrain", usuarios.get(0).getUnidadesNegocios());
+        assertEquals("Vendedor", usuarios.get(0).getCargo());
+        assertEquals("Administrador", usuarios.get(0).getDepartamento());
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
@@ -357,28 +383,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setSituacao(ESituacao.I);
         usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
-    @Test
-    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
-        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
-        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
-    }
-
-    @Test
-    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
-        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
-    }
-
-    @Test
-    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
-        assertEquals(1, usuarios.size());
-        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
-        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
-        assertEquals("NET,Xbrain", usuarios.get(0).getEmpresas());
-        assertEquals("Pessoal,Xbrain", usuarios.get(0).getUnidadesNegocios());
-        assertEquals("Vendedor", usuarios.get(0).getCargo());
-        assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
