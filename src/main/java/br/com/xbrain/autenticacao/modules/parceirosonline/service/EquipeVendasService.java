@@ -1,6 +1,6 @@
-package br.com.xbrain.autenticacao.modules.equipevendas.service;
+package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
-import br.com.xbrain.autenticacao.modules.equipevendas.dto.EquipeVendasSupervisionadasResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
