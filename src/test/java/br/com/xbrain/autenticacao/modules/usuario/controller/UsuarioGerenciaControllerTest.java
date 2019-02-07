@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -78,6 +79,8 @@ public class UsuarioGerenciaControllerTest {
     private EmailService emailService;
     @MockBean
     private FileService fileService;
+    @MockBean
+    private EquipeVendaService equipeVendaService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
@@ -277,6 +280,8 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
+
+        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -290,6 +295,8 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
+
+        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
