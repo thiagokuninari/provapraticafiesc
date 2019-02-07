@@ -128,7 +128,7 @@ public class UsuarioService {
     @Autowired
     private FileService fileService;
 
-    private Usuario findComplete(Integer id) {
+    public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
         return usuario;

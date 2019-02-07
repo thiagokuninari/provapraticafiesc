@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 @Service
 public class SolicitacaoRamalService {
 
+    @Autowired
+    private UsuarioService usuarioService;
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
@@ -111,7 +114,7 @@ public class SolicitacaoRamalService {
     }
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
-        Usuario usuario = criaUsuario(autenticacaoService.getUsuarioId());
+        Usuario usuario = usuarioService.findComplete(autenticacaoService.getUsuarioId());
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
@@ -141,10 +144,6 @@ public class SolicitacaoRamalService {
 
     private SolicitacaoRamal findById(Integer id) {
         return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
-    }
-
-    private Usuario criaUsuario(int idUsuarioAutenticado) {
-        return new Usuario(idUsuarioAutenticado);
     }
 
     public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
