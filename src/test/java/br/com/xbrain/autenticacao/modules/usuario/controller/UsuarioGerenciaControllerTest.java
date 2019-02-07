@@ -422,7 +422,7 @@ public class UsuarioGerenciaControllerTest {
         assertEquals(
                 "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + "X-Brain Claro Residencial;X-Brain Claro TV;A\n"
+                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
                         + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A", csv);
     }
@@ -533,8 +533,8 @@ public class UsuarioGerenciaControllerTest {
                         "75400072062",
                         "Vendedor",
                         "Comercial",
-                        "X-Brain, Claro Residencial",
-                        "X-Brain, Claro TV",
+                        "X-Brain. Claro Residencial",
+                        "X-Brain. Claro TV",
                         ESituacao.A),
                 new UsuarioCsvResponse(
                         2,
