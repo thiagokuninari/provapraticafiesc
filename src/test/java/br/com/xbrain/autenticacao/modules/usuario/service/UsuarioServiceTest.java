@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -171,13 +172,13 @@ public class UsuarioServiceTest {
         service.updateFromQueue(umUsuarioARealocar());
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {
-                if (usuario.getSituacao().equals(ESituacao.A)) {
-                    Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                    Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                    if (usuario.getSituacao().equals(ESituacao.A)) {
+                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                    } else if (usuario.getSituacao().equals(ESituacao.R)) {
+                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                    }
                 }
-            }
-        );
+            );
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
@@ -195,12 +196,9 @@ public class UsuarioServiceTest {
         naoRealocar.setRealocado(false);
         service.updateFromQueue(naoRealocar);
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
-        usuarios.forEach(
-            usuario -> {
-                Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                Assert.assertNotEquals(ESituacao.R, usuario.getSituacao());
-            }
-        );
+        assertThat(usuarios)
+                .extracting(Usuario::getSituacao)
+                .containsOnly(ESituacao.A);
     }
 
     @Test
@@ -316,7 +314,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setSituacao(ESituacao.A);
         service.saveFromQueue(usuarioMqRequest);
-
         verify(atualizarUsuarioMqSender, times(1)).sendSuccess(any());
     }
 

@@ -256,15 +256,33 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario request, MultipartFile foto, boolean realocado) {
+    public UsuarioDto save(Usuario request, MultipartFile foto) {
         if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
-        return save(request, realocado);
+        return save(request);
     }
 
     @Transactional
     public UsuarioDto save(Usuario usuario, boolean realocado) {
+        validar(usuario);
+        usuario.setAlterarSenha(Eboolean.F);
+        if (realocado) {
+            salvarUsuarioRealocado(usuario);
+            usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
+        } else {
+            atualizarUsuariosParceiros(usuario);
+        }
+        repository.save(usuario);
+        entityManager.flush();
+        if (realocado) {
+            enviarParaFilaDeUsuariosColaboradores(usuario);
+        }
+        return UsuarioDto.convertTo(usuario);
+    }
+
+    @Transactional
+    public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
             boolean enviarEmail = false;
@@ -275,16 +293,9 @@ public class UsuarioService {
             } else {
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
-                if (realocado) {
-                    salvarUsuarioRealocado(usuario);
-                    usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
-                }
             }
             repository.save(usuario);
             entityManager.flush();
-            if (realocado) {
-                enviarParaFilaDeUsuariosColaboradores(usuario);
-            }
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
             if (enviarEmail) {
@@ -338,8 +349,9 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            if (isSocioPrincipal(cargo.getCodigo()) && repository.findByCpf(usuario.getCpf()).isPresent()) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(repository.findByCpf(usuario.getCpf()).get());
+            Optional<Usuario> usuarioAtualizar = repository.findByCpf(usuario.getCpf());
+            if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
+                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -508,7 +520,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto), false);
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -591,14 +603,16 @@ public class UsuarioService {
     }
 
     private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
-        if (!repository.findAllByCpf(usuario.getCpf()).isEmpty()) {
-            repository.findAllByCpf(usuario.getCpf())
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!usuarios.isEmpty()) {
+            usuarios
                     .stream()
                     .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
                     .map(UsuarioDto::convertTo)
                     .forEach(usuarioAtualizarColaborador -> usuarioMqSender
-                    .sendColaboradoresSuccess(usuarioAtualizarColaborador));
-            }
+                            .sendColaboradoresSuccess(usuarioAtualizarColaborador));
+
+        }
     }
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
