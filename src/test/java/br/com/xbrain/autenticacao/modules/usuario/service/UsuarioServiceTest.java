@@ -308,8 +308,8 @@ public class UsuarioServiceTest {
         assertEquals(1, usuarios.size());
         assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
         assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
-        assertEquals("Xbrain.NET", usuarios.get(0).getEmpresas());
-        assertEquals("Pessoal.Xbrain", usuarios.get(0).getUnidadesNegocios());
+        assertEquals("NET,Xbrain", usuarios.get(0).getEmpresas());
+        assertEquals("Pessoal,Xbrain", usuarios.get(0).getUnidadesNegocios());
         assertEquals("Vendedor", usuarios.get(0).getCargo());
         assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
