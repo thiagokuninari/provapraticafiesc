@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -314,6 +316,7 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setSituacao(ESituacao.A);
         service.saveFromQueue(usuarioMqRequest);
+
         verify(atualizarUsuarioMqSender, times(1)).sendSuccess(any());
     }
 
@@ -331,15 +334,9 @@ public class UsuarioServiceTest {
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 
-    private UsuarioMqRequest umUsuarioARealocar() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
-        usuarioMqRequest.setSituacao(ESituacao.A);
-        usuarioMqRequest.setRealocado(true);
-        return usuarioMqRequest;
+    @Test
+    public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     private UsuarioMqRequest umUsuarioInativo() {
@@ -351,6 +348,40 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setSituacao(ESituacao.I);
         usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
+        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+    }
+
+    @Test
+    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+    }
+
+    @Test
+    public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
+        assertEquals(1, usuarios.size());
+        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
+        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
+        assertEquals("Xbrain.NET", usuarios.get(0).getEmpresas());
+        assertEquals("Pessoal.Xbrain", usuarios.get(0).getUnidadesNegocios());
+        assertEquals("Vendedor", usuarios.get(0).getCargo());
+        assertEquals("Administrador", usuarios.get(0).getDepartamento());
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return new UsuarioAutenticado(umUsuarioComHierarquia());
+    }
+
+    private UsuarioFiltros getFiltroUsuario(String nome) {
+        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
+        usuarioFiltros.setNome(nome);
+        return usuarioFiltros;
     }
 
     private Usuario umUsuarioComHierarquia() {
@@ -397,6 +428,17 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         usuarioMqRequest.setRealocado(false);
+        return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioARealocar() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 
