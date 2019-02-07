@@ -6,8 +6,10 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,8 @@ public class CargoService {
 
     @Autowired
     private CargoRepository repository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -41,7 +45,9 @@ public class CargoService {
     }
 
     public Cargo findByUsuarioId(Integer usuarioId) {
-        return repository.findByUsuarioId(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return usuarioRepository.findById(usuarioId)
+                .map(Usuario::getCargo)
+                .orElse(null);
     }
 
     public Cargo save(Cargo cargo) {

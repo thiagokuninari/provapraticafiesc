@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -43,7 +43,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
-    private EquipeVendaService equipeVendasService;
+    private EquipeVendasService equipeVendasService;
     @Autowired
     private br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService equipeVendaService;
 

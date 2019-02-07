@@ -10,10 +10,10 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class EquipeVendaService {
+public class EquipeVendasService {
 
     @Autowired
-    private EquipeVendaClient equipeVendasClient;
+    private EquipeVendasClient equipeVendasClient;
 
     public List<EquipeVendasSupervisionadasResponse> getEquipesPorSupervisor(Integer supervisorId) {
         try {
