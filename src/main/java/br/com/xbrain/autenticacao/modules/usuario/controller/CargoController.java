@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,8 +24,8 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping
-    public Iterable<Cargo> getAll(Integer nivelId) {
-        return service.getAll(nivelId);
+    public Iterable<CargoResponse> getAll(Integer nivelId) {
+        return CargoResponse.convertFrom((List<Cargo>)service.getAll(nivelId));
     }
 
     @GetMapping("/gerencia")
