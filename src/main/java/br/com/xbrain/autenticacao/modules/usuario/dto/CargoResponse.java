@@ -44,9 +44,12 @@ public class CargoResponse {
         response.setNivel(!isEmpty(cargo.getNivel()) ? new Nivel(cargo.getNivel().getId()).getId() : null);
         response.setSituacao(!isEmpty(cargo.getSituacao()) ? cargo.getSituacao() : null);
         response.setCodigo(!isEmpty(cargo.getCodigo()) ? cargo.getCodigo().name() : null);
-        response.setCargoSuperiorId(!isEmpty(cargo.getCargoSuperior()) ? cargo.getCargoSuperior().getId() : null);
-        response.setCargoSuperiorNome(!isEmpty(cargo.getCargoSuperior()) ? cargo.getCargoSuperior().getNome() : null);
-        response.setCargoSuperiorCodigo(!isEmpty(cargo.getCargoSuperior()) ? cargo.getCargoSuperior().getCodigo() : null);
+
+        if (!isEmpty(cargo.getCargoSuperior())) {
+            response.setCargoSuperiorId(cargo.getCargoSuperior().getId());
+            response.setCargoSuperiorNome(cargo.getCargoSuperior().getNome());
+            response.setCargoSuperiorCodigo(cargo.getCargoSuperior().getCodigo());
+        }
         return response;
     }
 }

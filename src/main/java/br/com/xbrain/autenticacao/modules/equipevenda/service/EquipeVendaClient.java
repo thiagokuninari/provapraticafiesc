@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Map;
 
-
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.equipe-venda.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)
@@ -23,7 +22,7 @@ public interface EquipeVendaClient {
     @GetMapping(PAUSA_AGENDADA_ENDPOINT + "/verificar-pausa/{username}")
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
 
-    @PutMapping("api/equipes-vendas/inativar-supervisor/equipe/{id}")
+    @PutMapping("api/equipes-vendas/inativar-supervisor/{id}")
     void inativarSupervidor(@PathVariable("id") Integer supervisorId);
 
     @PutMapping("api/usuarios-equipe/inativar/{id}")
@@ -31,5 +30,4 @@ public interface EquipeVendaClient {
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
     List<EquipeVendaDto> getUsuario(@RequestParam Map request);
-
 }
