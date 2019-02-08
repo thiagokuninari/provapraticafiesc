@@ -169,6 +169,7 @@ flyway:
   enabled: true
   out-of-order: true
   baseline-on-migrate: true
+  out-of-order: true
 
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin

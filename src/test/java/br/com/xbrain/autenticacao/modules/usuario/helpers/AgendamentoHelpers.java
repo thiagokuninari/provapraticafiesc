@@ -1,0 +1,165 @@
+package br.com.xbrain.autenticacao.modules.usuario.helpers;
+
+import br.com.xbrain.autenticacao.modules.mailing.dto.AgendamentoAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisorResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoUsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoResponse;
+import org.assertj.core.api.Condition;
+import org.mockito.stubbing.Answer;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+public class AgendamentoHelpers {
+    public static final Function<Long, Condition<Long>> QUANTIDADE_IGUAL_A = (valor) -> new Condition<Long>() {
+        @Override
+        public boolean matches(Long value) {
+            return value.equals(valor);
+        }
+    };
+
+    public static final Answer<List<TabulacaoDistribuicaoResponse>> TABULACAO_ANSWER =
+        invocationOnMock -> {
+            TabulacaoDistribuicaoRequest argument = invocationOnMock.getArgumentAt(0, TabulacaoDistribuicaoRequest.class);
+            return argument.getColaboradores()
+                    .stream()
+                    .map(u -> new TabulacaoDistribuicaoResponse(
+                            u.getId(),
+                            IntStream.range(0, u.getQuantidade().intValue())
+                                    .map(i -> i + 10000 + u.getId())
+                                    .boxed()
+                                    .collect(Collectors.toList())))
+                    .collect(Collectors.toList());
+        };
+
+    public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosDoAgenteAutorizado1400() {
+        return Arrays.asList(
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(140)
+                        .nome("MARINA PERES DA SILVA DOS SANTOS")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(141)
+                        .nome("MARINA PERES DA SILVA DOS SANTOS JÚNIOR")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(142)
+                        .nome("MARIA DA SILVA DOS SANTOS")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(143)
+                        .nome("MARIA DA SILVA DOS SANTOS JÚNIOR")
+                        .build());
+    }
+
+    public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosDoAgenteAutorizado1300() {
+        return Arrays.asList(
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(130)
+                        .nome("JOÃO MARINHO DA SILVA DOS SANTOS")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(131)
+                        .nome("JOÃO MARINHO DA SILVA DOS SANTOS JÚNIOR")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(132)
+                        .nome("JOSÉ MARINHO DA SILVA DOS SANTOS")
+                        .build(),
+                UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                        .id(133)
+                        .nome("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")
+                        .build());
+    }
+
+    public static List<AgenteAutorizadoPermitidoResponse> agentesAutorizadosPermitidos() {
+        return Arrays.asList(
+                AgenteAutorizadoPermitidoResponse.builder()
+                        .id(1300)
+                        .cnpj("17.822.087/0001-85")
+                        .cnpjRazaoSocial("17.822.087/0001-85 - S2 TELECOM COMERCIO DE ANTENAS EIRELI - ME")
+                        .build(),
+                AgenteAutorizadoPermitidoResponse.builder()
+                        .id(1400)
+                        .cnpj("06.152.588/0001-85")
+                        .cnpjRazaoSocial("06.152.588/0001-85 - AS2 COMERCIO DE ANTENAS EIRELI - ME")
+                        .build(),
+                AgenteAutorizadoPermitidoResponse.builder()
+                        .id(1500)
+                        .cnpj("07.152.589/0001-85")
+                        .cnpjRazaoSocial("07.152.589/0001-85 - AS3 COMERCIO DE ANTENAS EIRELI - ME")
+                        .build()
+        );
+    }
+
+    public static AgendamentoDistribuicaoRequest umAgendamentoDistribuicaoRequestDoUsuario140() {
+        return AgendamentoDistribuicaoRequest.builder()
+                .agenteAutorizadoId(1400)
+                .usuarioOrigemId(140)
+                .agendamentosPorUsuario(Collections.singletonList(
+                        AgendamentoUsuarioDto.builder()
+                                .id(141)
+                                .nome("USUARIO 141")
+                                .quantidade(3L)
+                                .build()))
+                .build();
+    }
+
+    public static AgendamentoDistribuicaoRequest umAgendamentoDistribuicaoRequestDoUsuario141() {
+        return AgendamentoDistribuicaoRequest.builder()
+                .agenteAutorizadoId(1400)
+                .usuarioOrigemId(141)
+                .agendamentosPorUsuario(Arrays.asList(
+                        AgendamentoUsuarioDto.builder()
+                                .id(140)
+                                .nome("USUARIO 140")
+                                .quantidade(5L)
+                                .build(),
+                        AgendamentoUsuarioDto.builder()
+                                .id(142)
+                                .nome("USUARIO 142")
+                                .quantidade(5L)
+                                .build(),
+                        AgendamentoUsuarioDto.builder()
+                                .id(143)
+                                .nome("USUARIO 143")
+                                .quantidade(4L)
+                                .build()))
+                .build();
+    }
+
+    public static List<AgendamentoAgenteAutorizadoResponse> agendamentosDoUsuario130PorAa() {
+        return Arrays.asList(
+                new AgendamentoAgenteAutorizadoResponse(1300, 15L),
+                new AgendamentoAgenteAutorizadoResponse(1400, 14L));
+    }
+
+    public static List<AgendamentoAgenteAutorizadoResponse> agendamentosDoAA1400() {
+        return Collections.singletonList(new AgendamentoAgenteAutorizadoResponse(1400, 14L));
+    }
+
+    public static EquipeVendasSupervisorResponse umaEquipeVendaAgendamentoRespose() {
+        return EquipeVendasSupervisorResponse.builder()
+                .equipeVendasNome("UMA EQUIPE DE VENDAS")
+                .supervisorNome("SUPERVISOR DA EQUIPE DE VENDAS")
+                .build();
+    }
+
+    public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosDoAgenteAutorizado1500() {
+        return IntStream.range(150, 159)
+                .mapToObj(i ->
+                        UsuarioAgenteAutorizadoAgendamentoResponse.builder()
+                                .id(i)
+                                .nome("USUARIO DO AA 1500 - " + i)
+                                .build())
+                .collect(Collectors.toList());
+    }
+}
