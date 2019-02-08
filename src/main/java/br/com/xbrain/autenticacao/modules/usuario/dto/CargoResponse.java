@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class CargoResponse {
     private ESituacao situacao;
     private Integer cargoSuperiorId;
     private String cargoSuperiorNome;
+    private CodigoCargo cargoSuperiorCodigo;
 
     public CargoResponse() { }
 
@@ -42,8 +44,12 @@ public class CargoResponse {
         response.setNivel(!isEmpty(cargo.getNivel()) ? new Nivel(cargo.getNivel().getId()).getId() : null);
         response.setSituacao(!isEmpty(cargo.getSituacao()) ? cargo.getSituacao() : null);
         response.setCodigo(!isEmpty(cargo.getCodigo()) ? cargo.getCodigo().name() : null);
-        response.setCargoSuperiorId(!isEmpty(cargo.getCargoSuperior()) ? cargo.getCargoSuperior().getId() : null);
-        response.setCargoSuperiorNome(!isEmpty(cargo.getCargoSuperior()) ? cargo.getCargoSuperior().getNome() : null);
+
+        if (!isEmpty(cargo.getCargoSuperior())) {
+            response.setCargoSuperiorId(cargo.getCargoSuperior().getId());
+            response.setCargoSuperiorNome(cargo.getCargoSuperior().getNome());
+            response.setCargoSuperiorCodigo(cargo.getCargoSuperior().getCodigo());
+        }
         return response;
     }
 }
