@@ -352,6 +352,12 @@ public class Usuario {
                 : null;
     }
 
+    public CodigoCargo getCargoSuperiorCodigo() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
+                ? cargo.getCargoSuperior().getCodigo()
+                : null;
+    }
+
     public Integer getDepartamentoId() {
         return this.departamento != null ? this.departamento.getId() : null;
     }
