@@ -363,17 +363,6 @@ public class UsuarioServiceTest {
         Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
-    private UsuarioMqRequest umUsuarioInativo() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(105);
-        usuarioMqRequest.setCpf("41842888803");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
-        usuarioMqRequest.setSituacao(ESituacao.I);
-        usuarioMqRequest.setRealocado(true);
-        return usuarioMqRequest;
-    }
-
     @Test
     public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
         Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
@@ -400,6 +389,17 @@ public class UsuarioServiceTest {
 
     private UsuarioAutenticado umUsuarioAutenticado() {
         return new UsuarioAutenticado(umUsuarioComHierarquia());
+    }
+
+    private UsuarioMqRequest umUsuarioInativo() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(105);
+        usuarioMqRequest.setCpf("41842888803");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.I);
+        usuarioMqRequest.setRealocado(true);
+        return usuarioMqRequest;
     }
 
     private UsuarioFiltros getFiltroUsuario(String nome) {

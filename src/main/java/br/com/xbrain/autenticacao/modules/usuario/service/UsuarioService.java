@@ -306,6 +306,7 @@ public class UsuarioService {
             validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
+
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
@@ -319,18 +320,6 @@ public class UsuarioService {
         }
     }
 
-    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
-        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
-            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
-                equipeVendaService.inativarSupervidor(usuario.getId());
-
-            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
-                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
-                equipeVendaService.inativarUsuario(usuario.getId());
-            }
-        }
-    }
-
     public void salvarUsuarioRealocado(Usuario usuario) {
         Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
@@ -339,12 +328,23 @@ public class UsuarioService {
         }
     }
 
+    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
+        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
+                equipeVendaService.inativarSupervidor(usuario.getId());
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
+        }
+    }
+
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
         List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
         if (!ObjectUtils.isEmpty(usuarios)
-                && usuario.getSituacao().equals(ESituacao.A)) {
+            && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
@@ -398,6 +398,7 @@ public class UsuarioService {
         removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
+
         repository.save(usuario);
     }
 
@@ -1214,12 +1215,12 @@ public class UsuarioService {
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
-                + (!usuarios.isEmpty()
-                ? usuarios
-                .stream()
-                .map(UsuarioCsvResponse::toCsv)
-                .collect(Collectors.joining("\n"))
-                : "Registros não encontrados.");
+            + (!usuarios.isEmpty()
+            ? usuarios
+            .stream()
+            .map(UsuarioCsvResponse::toCsv)
+            .collect(Collectors.joining("\n"))
+            : "Registros não encontrados.");
     }
 
     public List<UsuarioResponse> getUsuariosByCidades(String cargo, List<Integer> cidades) {
