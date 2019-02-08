@@ -31,10 +31,10 @@ public class AgenteAutorizadoService {
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
-    public List<Integer> getIdUsuariosPorAa(String cnpj) {
+    public List<Integer> getIdUsuariosPorAa(String cnpj, Boolean buscarInativos) {
         try {
             AgenteAutorizadoResponse aaResponse = getAaByCpnj(cnpj);
-            return getUsuariosByAaId(Integer.valueOf(aaResponse.getId())).stream()
+            return getUsuariosByAaId(Integer.valueOf(aaResponse.getId()), buscarInativos).stream()
                     .map(UsuarioAgenteAutorizadoResponse::getId)
                     .collect(Collectors.toList());
         } catch (RetryableException ex) {
@@ -73,9 +73,9 @@ public class AgenteAutorizadoService {
         }
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId) {
+    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId, Boolean buscarInativos) {
         try {
-            return agenteAutorizadoClient.getUsuariosByAaId(aaId);
+            return agenteAutorizadoClient.getUsuariosByAaId(aaId, buscarInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),

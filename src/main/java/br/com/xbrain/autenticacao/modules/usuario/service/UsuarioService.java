@@ -212,8 +212,8 @@ public class UsuarioService {
         });
     }
 
-    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
-        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
+    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
+        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa,buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -1132,7 +1132,7 @@ public class UsuarioService {
         UsuarioPredicate predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
-            obterUsuariosAa(filtros.getCnpjAa(), predicate);
+            obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
         }
         return predicate;
     }
