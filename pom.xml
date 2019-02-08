@@ -26,6 +26,7 @@
         <puppycrawl.checkstyle.version>7.3</puppycrawl.checkstyle.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
+        <xbrain-utils.version>0.0.1</xbrain-utils.version>
     </properties>
 
     <dependencies>
@@ -212,6 +213,13 @@
             <artifactId>caelum-stella-core</artifactId>
             <version>${caelum.stella.core.version}</version>
         </dependency>
+
+        <!-- X-Brain Utils -->
+        <dependency>
+            <groupId>br.com.xbrain</groupId>
+            <artifactId>xbrain-utils</artifactId>
+            <version>${xbrain-utils.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -373,7 +381,7 @@
         </repository>
         <repository>
             <id>xbrain</id>
-            <url>http://192.168.1.11:8092/nexus/content/groups/grupo_xbrain/</url>
+            <url>http://192.168.1.12:8092/nexus/content/groups/grupo_xbrain/</url>
         </repository>
     </repositories>
 
