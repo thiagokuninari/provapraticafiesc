@@ -58,7 +58,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 public class UsuarioService {
@@ -328,6 +327,7 @@ public class UsuarioService {
             repository.save(usuarioARealocar);
         }
     }
+
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
         if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
