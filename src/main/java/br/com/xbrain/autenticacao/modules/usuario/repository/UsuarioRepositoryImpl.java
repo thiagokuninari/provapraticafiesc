@@ -374,4 +374,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
+
+    @Override
+    public List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.usuario, usuario)
+                .where(usuarioCidade.usuario.id.eq(usuario.id)
+                .and(usuario.cargo.id.eq(cargo))
+                .and(usuarioCidade.cidade.id.in(cidades)))
+                .fetch();
+    }
+
 }

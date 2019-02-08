@@ -344,7 +344,7 @@ public class UsuarioService {
         BeanUtils.copyProperties(usuario, usuarioCopia);
         List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
         if (!ObjectUtils.isEmpty(usuarios)
-            && usuario.getSituacao().equals(ESituacao.A)) {
+                && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
@@ -1214,11 +1214,26 @@ public class UsuarioService {
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
-            + (!usuarios.isEmpty()
-            ? usuarios
-            .stream()
-            .map(UsuarioCsvResponse::toCsv)
-            .collect(Collectors.joining("\n"))
-            : "Registros não encontrados.");
+                + (!usuarios.isEmpty()
+                ? usuarios
+                .stream()
+                .map(UsuarioCsvResponse::toCsv)
+                .collect(Collectors.joining("\n"))
+                : "Registros não encontrados.");
     }
+
+    public List<UsuarioResponse> getUsuariosByCidades(String cargo, List<Integer> cidades) {
+        try {
+            int codigo = CodigoCargoOperacao.valueOf(cargo).getCodigo();
+            return repository.getUsuariosByCidades(codigo, cidades).stream()
+                    .map(UsuarioResponse::convertFrom)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+        } catch (Exception ex) {
+            log.error("Erro - Cargo Inválido.", ex);
+            throw new ValidacaoException("Erro - Cargo Inválido");
+        }
+    }
+
 }
