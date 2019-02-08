@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.equipevendas.dto;
+package br.com.xbrain.autenticacao.modules.parceirosonline.dto;
 
 import lombok.Data;
 

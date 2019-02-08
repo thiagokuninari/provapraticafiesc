@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -42,6 +43,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -127,6 +129,8 @@ public class UsuarioService {
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -197,7 +201,7 @@ public class UsuarioService {
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
-        if (!isEmpty(pages.getContent())) {
+        if (!CollectionUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
         return pages;
@@ -285,27 +289,34 @@ public class UsuarioService {
     public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
+
+            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
             entityManager.flush();
+
+            validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
+
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
             return UsuarioDto.convertTo(usuario);
         } catch (PersistenceException ex) {
-            log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
+            log.error("Erro de persistência ao salvar o Usuario.", ex);
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
     }
@@ -317,6 +328,10 @@ public class UsuarioService {
             repository.save(usuarioARealocar);
         }
     }
+    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
+        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
+                equipeVendaService.inativarSupervidor(usuario.getId());
 
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
@@ -330,6 +345,10 @@ public class UsuarioService {
             usuarioCopia.setAlterarSenha(Eboolean.V);
             usuarioCopia.setSituacao(ESituacao.A);
             usuarioCopia.setId(null);
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
         }
         return usuarioCopia;
     }
@@ -374,9 +393,36 @@ public class UsuarioService {
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
+        removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
+
         repository.save(usuario);
+    }
+
+    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
+            usuario.getUsuariosHierarquia().clear();
+        } else {
+            usuario.getUsuariosHierarquia()
+                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        }
+    }
+
+    private void removerHierarquiaSubordinados(Usuario usuario) {
+        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+                .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(subordinados)) {
+            usuarioHierarquiaRepository.delete(subordinados);
+        }
+    }
+
+    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+            hierarquiasId
+                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        }
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
@@ -485,10 +531,10 @@ public class UsuarioService {
     }
 
     private void removerUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (isEmpty(cidadesId) && !isEmpty(usuario.getCidades())) {
+        if (CollectionUtils.isEmpty(cidadesId) && !CollectionUtils.isEmpty(usuario.getCidades())) {
             usuarioCidadeRepository.deleteByUsuario(usuario.getId());
 
-        } else if (!isEmpty(usuario.getCidades())) {
+        } else if (!CollectionUtils.isEmpty(usuario.getCidades())) {
             usuario.getCidades().forEach(c -> {
                 if (!cidadesId.contains(c.getCidade().getId())) {
                     usuarioCidadeRepository.deleteByCidadeAndUsuario(c.getCidade().getId(), usuario.getId());
@@ -498,7 +544,7 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (!isEmpty(cidadesId)) {
+        if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
             repository.save(usuario);
@@ -778,6 +824,7 @@ public class UsuarioService {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
+    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {
             return new MotivoInativacao(dto.getIdMotivoInativacao());

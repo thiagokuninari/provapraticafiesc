@@ -6,8 +6,10 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,11 +18,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class CargoService {
 
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não "
-            + "encontrado.");
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
 
     @Autowired
     private CargoRepository repository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -39,6 +42,12 @@ public class CargoService {
 
     public Cargo findById(Integer id) {
         return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public Cargo findByUsuarioId(Integer usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .map(Usuario::getCargo)
+                .orElse(null);
     }
 
     public Cargo save(Cargo cargo) {
