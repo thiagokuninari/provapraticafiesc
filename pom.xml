@@ -352,6 +352,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20</version>
+                <configuration>
+                    <runOrder>alphabetical</runOrder>
+                    <!-- verificar se esse bug foi resolvido em versões mais novas do maven-surefire-plugin -->
+                    <!-- bug: https://stackoverflow.com/questions/53010200/maven-surefire-could-not-find-forkedbooter-class -->
+                    <argLine>-Xmx1024m -Xms1024m -XX:MaxPermSize=512m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>
