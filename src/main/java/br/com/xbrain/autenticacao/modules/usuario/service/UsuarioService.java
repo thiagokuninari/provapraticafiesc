@@ -332,6 +332,12 @@ public class UsuarioService {
         if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
                 equipeVendaService.inativarSupervidor(usuario.getId());
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
+        }
+    }
 
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
@@ -345,10 +351,6 @@ public class UsuarioService {
             usuarioCopia.setAlterarSenha(Eboolean.V);
             usuarioCopia.setSituacao(ESituacao.A);
             usuarioCopia.setId(null);
-            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
-                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
-                equipeVendaService.inativarUsuario(usuario.getId());
-            }
         }
         return usuarioCopia;
     }
@@ -507,22 +509,6 @@ public class UsuarioService {
 
             return existe;
         });
-    }
-
-    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (isEmpty(hierarquiasId)) {
-            usuario.getUsuariosHierarquia().clear();
-        } else {
-            usuario.getUsuariosHierarquia()
-                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
-        }
-    }
-
-    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!isEmpty(hierarquiasId)) {
-            hierarquiasId
-                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
-        }
     }
 
     private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
