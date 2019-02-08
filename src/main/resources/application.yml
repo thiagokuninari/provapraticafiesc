@@ -89,6 +89,7 @@ app-config:
   queue:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
+    usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
