@@ -151,7 +151,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosByCnpjAa() throws Exception {
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrar() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
@@ -159,8 +159,34 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content", hasSize(4)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+    }
+
+    @Test
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorAtivos() throws Exception {
+        mockResponseAgenteAutorizado();
+        mockResponseUsuariosAgenteAutorizado();
+
+        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=A")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.content[1].situacao", is("A")));
+    }
+
+    @Test
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorInativos() throws Exception {
+        mockResponseAgenteAutorizado();
+        mockResponseUsuariosAgenteAutorizado();
+
+        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=I")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
@@ -510,8 +536,9 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(100));
         response.add(new UsuarioAgenteAutorizadoResponse(101));
         response.add(new UsuarioAgenteAutorizadoResponse(104));
+        response.add(new UsuarioAgenteAutorizadoResponse(105));
 
-        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt()))
+        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
                 .thenReturn(response);
     }
 
