@@ -46,7 +46,6 @@ public class UsuarioCsvResponse {
         this.unidadesNegocios = removeDuplicadosWmConcat(unidadesNegocios);
         this.empresas = removeDuplicadosWmConcat(empresas);
         this.situacao = situacao;
-
     }
 
     @JsonIgnore
