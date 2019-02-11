@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -81,8 +82,10 @@ public class UsuarioCsvResponse {
     }
 
     private String removeDuplicadosWmConcat(String input) {
-        return Stream.of(input.split(","))
+        return !ObjectUtils.isEmpty(input)
+                ? Stream.of(input.split(","))
                 .distinct()
-                .collect(Collectors.joining("."));
+                .collect(Collectors.joining("."))
+                : "";
     }
 }
