@@ -151,7 +151,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosByCnpjAa() throws Exception {
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrar() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
@@ -164,7 +164,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosAtivosByCnpjAa() throws Exception {
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorAtivos() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
@@ -178,7 +178,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosInativosByCnpjAa() throws Exception {
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorInativos() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
@@ -538,7 +538,7 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(104));
         response.add(new UsuarioAgenteAutorizadoResponse(105));
 
-        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(),Matchers.anyBoolean()))
+        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
                 .thenReturn(response);
     }
 

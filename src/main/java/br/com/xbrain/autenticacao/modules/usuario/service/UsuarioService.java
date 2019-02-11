@@ -214,7 +214,7 @@ public class UsuarioService {
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
-        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa,buscarInativos);
+        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -344,7 +344,7 @@ public class UsuarioService {
         BeanUtils.copyProperties(usuario, usuarioCopia);
         List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
         if (!ObjectUtils.isEmpty(usuarios)
-            && usuario.getSituacao().equals(ESituacao.A)) {
+                && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
@@ -1198,11 +1198,11 @@ public class UsuarioService {
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
-            + (!usuarios.isEmpty()
-            ? usuarios
-            .stream()
-            .map(UsuarioCsvResponse::toCsv)
-            .collect(Collectors.joining("\n"))
-            : "Registros não encontrados.");
+                + (!usuarios.isEmpty()
+                ? usuarios
+                .stream()
+                .map(UsuarioCsvResponse::toCsv)
+                .collect(Collectors.joining("\n"))
+                : "Registros não encontrados.");
     }
 }
