@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.REJEITADO;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
@@ -81,6 +82,30 @@ public class SolicitacaoRamalControllerTest {
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
         when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+    }
+
+    @Test
+    public void atualizarSituacao_solicitacaoComSituacaoEnviado_quandoAlterarASituacaoPraEnviado() throws Exception {
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamalRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(4)))
+                .andExpect(jsonPath("$.situacao", is("ENVIADO")));
+
+        verify(historicoService, times(1)).save(any());
+    }
+
+    @Test
+    public void atualizarSituacao_isForbidden_seUsuarioNaoPossuirPermissaoParaAlterarSituacao() throws Exception {
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamalRequest())))
+                .andExpect(status().isForbidden());
+
+        verify(historicoService, times(0)).save(any());
     }
 
     @Test
@@ -377,7 +402,7 @@ public class SolicitacaoRamalControllerTest {
         return SolicitacaoRamalAtualizarStatusRequest.builder()
                 .idSolicitacao(1)
                 .observacao("Rejeitada teste")
-                .situacao(ESituacaoSolicitacao.REJEITADO)
+                .situacao(REJEITADO)
                 .build();
     }
 
@@ -410,5 +435,12 @@ public class SolicitacaoRamalControllerTest {
 
     private List<UsuarioAgenteAutorizadoResponse> criaListaUsuariosAtivos() {
         return Arrays.asList(new UsuarioAgenteAutorizadoResponse(), new UsuarioAgenteAutorizadoResponse());
+    }
+
+    private SolicitacaoRamalAtualizarStatusRequest criaSolicitacaoRamalRequest() {
+        return SolicitacaoRamalAtualizarStatusRequest.builder()
+                .idSolicitacao(4)
+                .situacao(ESituacaoSolicitacao.ENVIADO)
+                .build();
     }
 }
