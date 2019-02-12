@@ -18,17 +18,22 @@ public class SolicitacaoRamalController {
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
 
-    @GetMapping(value = "/historico/{idSolicitacao}")
+    @GetMapping("/dados-agente-autorizado/{agenteAutorizadoId}")
+    public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(@PathVariable Integer agenteAutorizadoId) {
+        return solicitacaoRamalService.getDadosAgenteAutorizado(agenteAutorizadoId);
+    }
+
+    @GetMapping("/historico/{idSolicitacao}")
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(@PathVariable Integer idSolicitacao) {
         return solicitacaoRamalService.getAllHistoricoBySolicitacaoId(idSolicitacao);
     }
 
-    @GetMapping(value = "/solicitacao/{idSolicitacao}")
+    @GetMapping("/solicitacao/{idSolicitacao}")
     public SolicitacaoRamalResponse getSolicitacaoById(@PathVariable Integer idSolicitacao) {
         return solicitacaoRamalService.getSolicitacaoById(idSolicitacao);
     }
 
-    @PostMapping(value = "/gerencia/atualiza-status")
+    @PostMapping("/gerencia/atualiza-status")
     public SolicitacaoRamalResponse atualizarSituacao(@Validated @RequestBody SolicitacaoRamalAtualizarStatusRequest request) {
         return solicitacaoRamalService.atualizarStatus(request);
     }

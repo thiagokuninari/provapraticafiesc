@@ -1,10 +1,17 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
+import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
+import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisAaResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -61,6 +68,10 @@ public class SolicitacaoRamalControllerTest {
     private EquipeVendasService equipeVendasService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private CallService callService;
+    @MockBean
+    private SocioService socioService;
 
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
@@ -73,7 +84,24 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
+    public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
+        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
+        when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
+        when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
+        when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());
+
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/dados-agente-autorizado/2")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.discadora", is("DISCADORA UN")))
+                .andExpect(jsonPath("$.socioPrincipal", is("FULANO")))
+                .andExpect(jsonPath("$.usuariosAtivos", is(2)))
+                .andExpect(jsonPath("$.quantidadeRamais", is(2)));
+    }
+
+    @Test
+    public void getAll_listaComQuatroRegistros_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
                 solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
         Assert.assertEquals(4, resultList.size());
@@ -324,7 +352,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
-        SolicitacaoRamalRequest request = SolicitacaoRamalRequest.builder()
+        return SolicitacaoRamalRequest.builder()
                 .id(id)
                 .quantidadeRamais(38)
                 .agenteAutorizadoId(7129)
@@ -334,17 +362,15 @@ public class SolicitacaoRamalControllerTest {
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100,101))
                 .build();
-
-        return request;
     }
 
     private AgenteAutorizadoResponse criaAa() {
-        AgenteAutorizadoResponse agenteAutorizadoResponse = new AgenteAutorizadoResponse();
-        agenteAutorizadoResponse.setId("303030");
-        agenteAutorizadoResponse.setCnpj("81733187000134");
-        agenteAutorizadoResponse.setNomeFantasia("Fulano");
-
-        return agenteAutorizadoResponse;
+        return AgenteAutorizadoResponse.builder()
+                .id("303030")
+                .cnpj("81733187000134")
+                .nomeFantasia("Fulano")
+                .discadoraId(1)
+                .build();
     }
 
     private SolicitacaoRamalAtualizarStatusRequest criaSolicitacaoRamalAtualizarStatusRequest() {
@@ -353,5 +379,36 @@ public class SolicitacaoRamalControllerTest {
                 .observacao("Rejeitada teste")
                 .situacao(ESituacaoSolicitacao.REJEITADO)
                 .build();
+    }
+
+    private SolicitacaoRamalDadosAdicionaisAaResponse criaDadosAdicionaisAa() {
+        return SolicitacaoRamalDadosAdicionaisAaResponse.builder()
+                .quantidadeRamais(4)
+                .usuariosAtivos(13)
+                .socioPrincipal("FULANO")
+                .discadora("DISCADORA UN")
+                .build();
+    }
+
+    private TelefoniaResponse criaTelefonia() {
+        return TelefoniaResponse.builder()
+                .id(13)
+                .nome("DISCADORA UN")
+                .build();
+    }
+
+    private List<RamalResponse> criaListaRamal() {
+        return Arrays.asList(new RamalResponse(), new RamalResponse());
+    }
+
+    private SocioResponse criaSocio() {
+        return SocioResponse.builder()
+                .cpf("33333333333")
+                .nome("FULANO")
+                .build();
+    }
+
+    private List<UsuarioAgenteAutorizadoResponse> criaListaUsuariosAtivos() {
+        return Arrays.asList(new UsuarioAgenteAutorizadoResponse(), new UsuarioAgenteAutorizadoResponse());
     }
 }

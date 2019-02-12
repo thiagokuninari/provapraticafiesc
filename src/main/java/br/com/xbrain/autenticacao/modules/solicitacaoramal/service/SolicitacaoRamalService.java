@@ -1,13 +1,16 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
@@ -36,6 +39,10 @@ public class SolicitacaoRamalService {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private SocioService socioService;
+    @Autowired
+    private CallService callService;
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
@@ -214,6 +221,36 @@ public class SolicitacaoRamalService {
         }
 
         return Arrays.asList(this.destinatarios);
+    }
+
+    public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
+        AgenteAutorizadoResponse agenteAutorizado = agenteAutorizadoService.getAaById(agenteAutorizadoId);
+
+        return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
+                getTelefoniaPelaDiscadoraId(agenteAutorizado),
+                getNomeSocioPrincipalAa(agenteAutorizadoId),
+                getQuantidadeUsuariosAtivos(agenteAutorizadoId),
+                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId));
+    }
+
+    private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
+        if (!ObjectUtils.isEmpty(agenteAutorizado.getDiscadoraId())) {
+            return callService.obterNomeTelefoniaPorId(agenteAutorizado.getDiscadoraId()).getNome();
+        }
+
+        return "";
+    }
+
+    private long getQuantidadeRamaisPeloAgenteAutorizadoId(Integer agenteAutorizadoId) {
+        return callService.obterRamaisParaAgenteAutorizado(agenteAutorizadoId).stream().count();
+    }
+
+    private String getNomeSocioPrincipalAa(Integer agenteAutorizadoId) {
+        return socioService.findSocioPrincipalByAaId(agenteAutorizadoId).getNome();
+    }
+
+    private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
+        return agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false).stream().count();
     }
 
 }
