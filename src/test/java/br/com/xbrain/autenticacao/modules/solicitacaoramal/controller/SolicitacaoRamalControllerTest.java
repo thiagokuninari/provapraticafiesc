@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.equipevendas.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -86,7 +85,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
-        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), false)).thenReturn(criaListaUsuariosAtivos());
+        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
         when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());
@@ -102,7 +101,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
+    public void getAll_listaComQuatroRegistros_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
                 solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
         Assert.assertEquals(4, resultList.size());
