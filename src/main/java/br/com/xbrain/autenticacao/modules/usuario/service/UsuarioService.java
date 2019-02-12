@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
-import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
@@ -34,6 +33,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.xbrainutils.CsvUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 
 @Service
 public class UsuarioService {
@@ -186,7 +187,7 @@ public class UsuarioService {
     }
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf) {
-        String cpfSemFormatacao = StringUtil.getOnlyNumbers(cpf);
+        String cpfSemFormatacao = getOnlyNumbers(cpf);
         Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
 
         return usuarioOptional.map(UsuarioResponse::convertFrom);
@@ -1198,7 +1199,7 @@ public class UsuarioService {
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
         if (!CsvUtils.setCsvNoHttpResponse(
                 getCsv(usuarios),
-                CsvUtils.createFileName(USUARIOS_CSV),
+                CsvUtils.createFileName(USUARIOS_CSV.name()),
                 response)) {
             throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
         }
