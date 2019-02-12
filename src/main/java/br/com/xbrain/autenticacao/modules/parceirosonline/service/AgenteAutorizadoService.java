@@ -73,7 +73,7 @@ public class AgenteAutorizadoService {
         }
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId) {
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId) {
         try {
             return agenteAutorizadoClient.getUsuariosByAaId(aaId);
         } catch (RetryableException ex) {
