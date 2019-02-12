@@ -25,8 +25,7 @@
         <maven.checkstyle.version>2.17</maven.checkstyle.version>
         <puppycrawl.checkstyle.version>7.3</puppycrawl.checkstyle.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
-        <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
-        <xbrain-utils.version>0.0.1</xbrain-utils.version>
+        <xbrain-utils.version>0.0.6</xbrain-utils.version>
     </properties>
 
     <dependencies>
@@ -206,14 +205,6 @@
             <version>3.17</version>
             <scope>compile</scope>
         </dependency>
-
-        <!-- Caelum Stella -->
-        <dependency>
-            <groupId>br.com.caelum.stella</groupId>
-            <artifactId>caelum-stella-core</artifactId>
-            <version>${caelum.stella.core.version}</version>
-        </dependency>
-
         <!-- X-Brain Utils -->
         <dependency>
             <groupId>br.com.xbrain</groupId>
@@ -356,7 +347,7 @@
                     <runOrder>alphabetical</runOrder>
                     <!-- verificar se esse bug foi resolvido em versões mais novas do maven-surefire-plugin -->
                     <!-- bug: https://stackoverflow.com/questions/53010200/maven-surefire-could-not-find-forkedbooter-class -->
-                    <argLine>-Xmx1024m -Xms1024m -XX:MaxPermSize=512m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                    <argLine>-Xmx1024m -Xms1024m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                 </configuration>
             </plugin>
         </plugins>
