@@ -631,32 +631,4 @@ public class UsuarioGerenciaControllerTest {
                     .build()
         );
     }
-
-    private List<UsuarioCsvResponse> doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios() {
-        return asList(
-                new UsuarioCsvResponse(
-                        1,
-                        "Usuario Csv",
-                        "usuario_csv@xbrain.com.br",
-                        "(43) 2323-1782",
-                        "75400072062",
-                        "Vendedor",
-                        "Comercial",
-                        null,
-                        null,
-                        ESituacao.A),
-                new UsuarioCsvResponse(
-                        2,
-                        "Usuario Teste",
-                        "usuario_teste@xbrain.com.br",
-                        "(43) 4575-5878",
-                        "04803828083",
-                        "Vendedor",
-                        "Comercial",
-                        null,
-                        null,
-                        ESituacao.A
-                )
-        );
-    }
 }
