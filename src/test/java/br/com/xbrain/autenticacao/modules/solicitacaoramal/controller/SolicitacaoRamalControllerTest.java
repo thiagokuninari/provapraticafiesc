@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisAaResponse;
@@ -85,7 +86,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
-        when(agenteAutorizadoService.getUsuariosByAaId(anyInt())).thenReturn(criaListaUsuariosAtivos());
+        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), false)).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
         when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());

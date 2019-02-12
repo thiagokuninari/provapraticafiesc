@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -79,6 +80,8 @@ public class UsuarioGerenciaControllerTest {
     @MockBean
     private FileService fileService;
     @MockBean
+    private EquipeVendaService equipeVendaService;
+    @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
     private static final int ID_USUARIO_HELPDESK = 101;
@@ -148,7 +151,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosByCnpjAa() throws Exception {
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrar() throws Exception {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
@@ -156,8 +159,34 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content", hasSize(4)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
+    }
+
+    @Test
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorAtivos() throws Exception {
+        mockResponseAgenteAutorizado();
+        mockResponseUsuariosAgenteAutorizado();
+
+        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=A")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.content[1].situacao", is("A")));
+    }
+
+    @Test
+    public void listarUsuario_deveRetornarTodosByCnpjAa_quandoFiltrarPorInativos() throws Exception {
+        mockResponseAgenteAutorizado();
+        mockResponseUsuariosAgenteAutorizado();
+
+        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=I")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
@@ -277,6 +306,8 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
+
+        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -290,6 +321,8 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
+
+        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -318,7 +351,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(90)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(91)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 
@@ -422,9 +455,30 @@ public class UsuarioGerenciaControllerTest {
         assertEquals(
                 "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + "X-Brain Claro Residencial;X-Brain Claro TV;A\n"
+                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
                         + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A", csv);
+    }
+
+    @Test
+    public void getCsv_CsvFormatadoCorretamente_QuandoUsuarioNaoPossuirEmpresaEUnidadeNegocio() throws Exception {
+        doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
+                .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
+        String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/csv; charset=UTF-8"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertEquals(
+                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+                        + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
+                        + ";;A\n"
+                        + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
+                        + ";;A", csv);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
@@ -504,8 +558,9 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(100));
         response.add(new UsuarioAgenteAutorizadoResponse(101));
         response.add(new UsuarioAgenteAutorizadoResponse(104));
+        response.add(new UsuarioAgenteAutorizadoResponse(105));
 
-        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt()))
+        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
                 .thenReturn(response);
     }
 
@@ -526,29 +581,55 @@ public class UsuarioGerenciaControllerTest {
 
     private List<UsuarioCsvResponse> doisUsuariosCsvResponse() {
         return asList(
-                new UsuarioCsvResponse(
-                        1,
-                        "Usuario Csv",
-                        "usuario_csv@xbrain.com.br",
-                        "(43) 2323-1782",
-                        "75400072062",
-                        "Vendedor",
-                        "Comercial",
-                        "X-Brain, Claro Residencial",
-                        "X-Brain, Claro TV",
-                        ESituacao.A),
-                new UsuarioCsvResponse(
-                        2,
-                        "Usuario Teste",
-                        "usuario_teste@xbrain.com.br",
-                        "(43) 4575-5878",
-                        "04803828083",
-                        "Vendedor",
-                        "Comercial",
-                        "X-Brain. Residencial e Combos",
-                        "X-Brain. Claro TV",
-                        ESituacao.A
-                )
+                UsuarioCsvResponse.builder()
+                        .id(1)
+                        .nome("Usuario Csv")
+                        .email("usuario_csv@xbrain.com.br")
+                        .telefone("(43) 2323-1782")
+                        .cpf("75400072062")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .unidadesNegocios("X-Brain. Claro Residencial")
+                        .empresas("X-Brain. Claro TV")
+                        .situacao(ESituacao.A)
+                        .build(),
+                UsuarioCsvResponse.builder()
+                        .id(2)
+                        .nome("Usuario Teste")
+                        .email("usuario_teste@xbrain.com.br")
+                        .telefone("(43) 4575-5878")
+                        .cpf("04803828083")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .unidadesNegocios("X-Brain. Residencial e Combos")
+                        .empresas("X-Brain. Claro TV")
+                        .situacao(ESituacao.A)
+                        .build()
+        );
+    }
+
+    private List<UsuarioCsvResponse> doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios() {
+        return asList(
+                UsuarioCsvResponse.builder()
+                    .id(1)
+                    .nome("Usuario Csv")
+                    .email("usuario_csv@xbrain.com.br")
+                    .telefone("(43) 2323-1782")
+                    .cpf("75400072062")
+                    .cargo("Vendedor")
+                    .departamento("Comercial")
+                    .situacao(ESituacao.A)
+                    .build(),
+                UsuarioCsvResponse.builder()
+                    .id(2)
+                    .nome("Usuario Teste")
+                    .email("usuario_teste@xbrain.com.br")
+                    .telefone("(43) 4575-5878")
+                    .cpf("04803828083")
+                    .cargo("Vendedor")
+                    .departamento("Comercial")
+                    .situacao(ESituacao.A)
+                    .build()
         );
     }
 }

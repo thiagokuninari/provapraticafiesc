@@ -17,5 +17,4 @@ public interface CargoRepositoryCustom {
 
     @Cacheable("cargoFindBySituacaoAndNivelId")
     Iterable<Cargo> findBySituacaoAndNivelId(ESituacao situacao, Integer nivelId);
-
 }

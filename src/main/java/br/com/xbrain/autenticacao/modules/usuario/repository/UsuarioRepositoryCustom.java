@@ -53,4 +53,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
 
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
+
+    List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades);
+
 }

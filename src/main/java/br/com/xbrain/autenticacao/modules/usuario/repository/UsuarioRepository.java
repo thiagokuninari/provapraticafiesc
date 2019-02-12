@@ -33,6 +33,10 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllByCpfIsNull();
 
+    List<Usuario> findAllByCpf(String cpf);
+
+    Optional<Usuario> findByCpfAndSituacao(String cpf, ESituacao situacao);
+
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);

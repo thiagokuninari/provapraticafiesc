@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -35,12 +36,14 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -55,7 +58,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Service
 public class UsuarioService {
@@ -126,6 +128,8 @@ public class UsuarioService {
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -196,7 +200,7 @@ public class UsuarioService {
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
-        if (!isEmpty(pages.getContent())) {
+        if (!CollectionUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
         return pages;
@@ -209,8 +213,8 @@ public class UsuarioService {
         });
     }
 
-    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
-        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
+    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
+        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -263,21 +267,43 @@ public class UsuarioService {
     }
 
     @Transactional
+    public UsuarioDto save(Usuario usuario, boolean realocado) {
+        validar(usuario);
+        usuario.setAlterarSenha(Eboolean.F);
+        if (realocado) {
+            salvarUsuarioRealocado(usuario);
+            usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
+        } else {
+            atualizarUsuariosParceiros(usuario);
+        }
+        repository.save(usuario);
+        entityManager.flush();
+        if (realocado) {
+            enviarParaFilaDeUsuariosColaboradores(usuario);
+        }
+        return UsuarioDto.convertTo(usuario);
+    }
+
+    @Transactional
     public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
 
+            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
             entityManager.flush();
+
+            validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
@@ -286,15 +312,52 @@ public class UsuarioService {
             }
             return UsuarioDto.convertTo(usuario);
         } catch (PersistenceException ex) {
-            log.error("Erro de persistência ao salvar o Usuario.", ex);
+            log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
     }
 
+    public void salvarUsuarioRealocado(Usuario usuario) {
+        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
+            usuarioARealocar.setSituacao(ESituacao.R);
+            repository.save(usuarioARealocar);
+        }
+    }
+
+    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
+        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
+                equipeVendaService.inativarSupervidor(usuario.getId());
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
+        }
+    }
+
+    private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
+        Usuario usuarioCopia = new Usuario();
+        BeanUtils.copyProperties(usuario, usuarioCopia);
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!ObjectUtils.isEmpty(usuarios)
+                && usuario.getSituacao().equals(ESituacao.A)) {
+            usuarioCopia.setSenha(repository.findById(usuario.getId())
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
+            usuarioCopia.setDataCadastro(LocalDateTime.now());
+            usuarioCopia.setAlterarSenha(Eboolean.V);
+            usuarioCopia.setSituacao(ESituacao.A);
+            usuarioCopia.setId(null);
+        }
+        return usuarioCopia;
+    }
+
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
-        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() ->
+                new NotFoundException("Usuário não encontrado"));
         idUsuarioNovo.stream()
                 .map(id -> {
                     UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
@@ -307,8 +370,9 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            if (isSocioPrincipal(cargo.getCodigo())) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuario);
+            Optional<Usuario> usuarioAtualizar = repository.findByCpf(usuario.getCpf());
+            if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
+                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -331,10 +395,36 @@ public class UsuarioService {
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
+        removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
 
         repository.save(usuario);
+    }
+
+    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
+            usuario.getUsuariosHierarquia().clear();
+        } else {
+            usuario.getUsuariosHierarquia()
+                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        }
+    }
+
+    private void removerHierarquiaSubordinados(Usuario usuario) {
+        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+                .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(subordinados)) {
+            usuarioHierarquiaRepository.delete(subordinados);
+        }
+    }
+
+    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+            hierarquiasId
+                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        }
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
@@ -421,32 +511,16 @@ public class UsuarioService {
         });
     }
 
-    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (isEmpty(hierarquiasId)) {
-            usuario.getUsuariosHierarquia().clear();
-        } else {
-            usuario.getUsuariosHierarquia()
-                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
-        }
-    }
-
-    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!isEmpty(hierarquiasId)) {
-            hierarquiasId
-                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
-        }
-    }
-
     private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
         removerUsuarioCidade(usuario, cidadesId);
         adicionarUsuarioCidade(usuario, cidadesId);
     }
 
     private void removerUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (isEmpty(cidadesId) && !isEmpty(usuario.getCidades())) {
+        if (CollectionUtils.isEmpty(cidadesId) && !CollectionUtils.isEmpty(usuario.getCidades())) {
             usuarioCidadeRepository.deleteByUsuario(usuario.getId());
 
-        } else if (!isEmpty(usuario.getCidades())) {
+        } else if (!CollectionUtils.isEmpty(usuario.getCidades())) {
             usuario.getCidades().forEach(c -> {
                 if (!cidadesId.contains(c.getCidade().getId())) {
                     usuarioCidadeRepository.deleteByCidadeAndUsuario(c.getCidade().getId(), usuario.getId());
@@ -456,14 +530,14 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (!isEmpty(cidadesId)) {
+        if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
             repository.save(usuario);
         }
     }
 
-    private void configurar(Usuario usuario, String senhaDescriptografada) {
+    public void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
@@ -492,7 +566,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(UsuarioDto.convertFrom(usuarioDto));
+            save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
@@ -560,6 +634,19 @@ public class UsuarioService {
         usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
+    private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!usuarios.isEmpty()) {
+            usuarios
+                    .stream()
+                    .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
+                    .map(UsuarioDto::convertTo)
+                    .forEach(usuarioAtualizarColaborador -> usuarioMqSender
+                            .sendColaboradoresSuccess(usuarioAtualizarColaborador));
+
+        }
+    }
+
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -624,7 +711,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (!usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -634,7 +722,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (!usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
@@ -721,7 +810,6 @@ public class UsuarioService {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
-    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {
             return new MotivoInativacao(dto.getIdMotivoInativacao());
@@ -1120,18 +1208,33 @@ public class UsuarioService {
         UsuarioPredicate predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
-            obterUsuariosAa(filtros.getCnpjAa(), predicate);
+            obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
         }
         return predicate;
     }
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
-            + (!usuarios.isEmpty()
-            ? usuarios
-            .stream()
-            .map(UsuarioCsvResponse::toCsv)
-            .collect(Collectors.joining("\n"))
-            : "Registros não encontrados.");
+                + (!usuarios.isEmpty()
+                ? usuarios
+                .stream()
+                .map(UsuarioCsvResponse::toCsv)
+                .collect(Collectors.joining("\n"))
+                : "Registros não encontrados.");
     }
+
+    public List<UsuarioResponse> getUsuariosByCidades(String cargo, List<Integer> cidades) {
+        try {
+            int codigo = CodigoCargoOperacao.valueOf(cargo).getCodigo();
+            return repository.getUsuariosByCidades(codigo, cidades).stream()
+                    .map(UsuarioResponse::convertFrom)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+        } catch (Exception ex) {
+            log.error("Erro - Cargo Inválido.", ex);
+            throw new ValidacaoException("Erro - Cargo Inválido");
+        }
+    }
+
 }

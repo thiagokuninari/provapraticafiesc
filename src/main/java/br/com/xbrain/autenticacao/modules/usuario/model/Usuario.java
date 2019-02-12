@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
@@ -53,7 +54,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = true)
+    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = false)
     private String email;
 
     @Email
@@ -77,7 +78,7 @@ public class Usuario {
 
     @NotNull
     @CPF
-    @Column(name = "CPF", length = 14, unique = true)
+    @Column(name = "CPF", length = 14, unique = false)
     private String cpf;
 
     @Size(max = 25)
@@ -337,6 +338,18 @@ public class Usuario {
 
     public CodigoCargo getCargoCodigo() {
         return this.cargo != null ? this.cargo.getCodigo() : null;
+    }
+
+    public CodigoCargo getCargoSuperiorCodigo() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
+                ? cargo.getCargoSuperior().getCodigo()
+                : null;
+    }
+
+    public Integer getCargoSuperiorId() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
+                ? cargo.getCargoSuperior().getId()
+                : null;
     }
 
     public Integer getDepartamentoId() {

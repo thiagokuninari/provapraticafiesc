@@ -31,14 +31,12 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.dep
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
-    private static final QUsuario USUARIO_SUBQUERY = new QUsuario("u1");
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -360,24 +358,33 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 usuario.cpf,
                                 cargo.nome,
                                 departamento.nome,
-                                select(Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome))
-                                        .from(USUARIO_SUBQUERY)
-                                        .innerJoin(USUARIO_SUBQUERY.unidadesNegocios, unidadeNegocio)
-                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
-                                select(Expressions.stringTemplate("wm_concat({0})", empresa.nome))
-                                        .from(USUARIO_SUBQUERY)
-                                        .innerJoin(USUARIO_SUBQUERY.empresas, empresa)
-                                        .where(USUARIO_SUBQUERY.id.eq(usuario.id)),
+                                Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome),
+                                Expressions.stringTemplate("wm_concat({0})", empresa.nome),
                                 usuario.situacao
                         )
                 )
                 .from(usuario)
-                .innerJoin(usuario.cargo, cargo)
-                .innerJoin(usuario.departamento, departamento)
+                .leftJoin(usuario.cargo, cargo)
+                .leftJoin(usuario.departamento, departamento)
+                .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
+                .leftJoin(usuario.empresas, empresa)
                 .where(predicate)
                 .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
                         cargo.nome, departamento.nome, usuario.situacao)
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
+
+    @Override
+    public List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.usuario, usuario)
+                .where(usuarioCidade.usuario.id.eq(usuario.id)
+                .and(usuario.cargo.id.eq(cargo))
+                .and(usuarioCidade.cidade.id.in(cidades)))
+                .fetch();
+    }
+
 }
