@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
@@ -13,6 +14,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getCpfFor
 import static br.com.xbrain.autenticacao.modules.comum.util.StringUtil.getStringFormatadaCsv;
 
 @Data
+@Builder
 public class UsuarioCsvResponse {
 
     private Integer id;

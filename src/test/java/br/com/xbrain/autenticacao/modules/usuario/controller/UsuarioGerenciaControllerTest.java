@@ -580,29 +580,55 @@ public class UsuarioGerenciaControllerTest {
 
     private List<UsuarioCsvResponse> doisUsuariosCsvResponse() {
         return asList(
-                new UsuarioCsvResponse(
-                        1,
-                        "Usuario Csv",
-                        "usuario_csv@xbrain.com.br",
-                        "(43) 2323-1782",
-                        "75400072062",
-                        "Vendedor",
-                        "Comercial",
-                        "X-Brain. Claro Residencial",
-                        "X-Brain. Claro TV",
-                        ESituacao.A),
-                new UsuarioCsvResponse(
-                        2,
-                        "Usuario Teste",
-                        "usuario_teste@xbrain.com.br",
-                        "(43) 4575-5878",
-                        "04803828083",
-                        "Vendedor",
-                        "Comercial",
-                        "X-Brain. Residencial e Combos",
-                        "X-Brain. Claro TV",
-                        ESituacao.A
-                )
+                UsuarioCsvResponse.builder()
+                        .id(1)
+                        .nome("Usuario Csv")
+                        .email("usuario_csv@xbrain.com.br")
+                        .telefone("(43) 2323-1782")
+                        .cpf("75400072062")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .unidadesNegocios("X-Brain. Claro Residencial")
+                        .empresas("X-Brain. Claro TV")
+                        .situacao(ESituacao.A)
+                        .build(),
+                UsuarioCsvResponse.builder()
+                        .id(2)
+                        .nome("Usuario Teste")
+                        .email("usuario_teste@xbrain.com.br")
+                        .telefone("(43) 4575-5878")
+                        .cpf("04803828083")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .unidadesNegocios("X-Brain. Residencial e Combos")
+                        .empresas("X-Brain. Claro TV")
+                        .situacao(ESituacao.A)
+                        .build()
+        );
+    }
+
+    private List<UsuarioCsvResponse> doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios() {
+        return asList(
+                UsuarioCsvResponse.builder()
+                    .id(1)
+                    .nome("Usuario Csv")
+                    .email("usuario_csv@xbrain.com.br")
+                    .telefone("(43) 2323-1782")
+                    .cpf("75400072062")
+                    .cargo("Vendedor")
+                    .departamento("Comercial")
+                    .situacao(ESituacao.A)
+                    .build(),
+                UsuarioCsvResponse.builder()
+                    .id(2)
+                    .nome("Usuario Teste")
+                    .email("usuario_teste@xbrain.com.br")
+                    .telefone("(43) 4575-5878")
+                    .cpf("04803828083")
+                    .cargo("Vendedor")
+                    .departamento("Comercial")
+                    .situacao(ESituacao.A)
+                    .build()
         );
     }
 
