@@ -1,14 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,31 +18,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class CargoService {
 
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não "
-            + "encontrado.");
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Cargo não encontrado.");
 
     @Autowired
     private CargoRepository repository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private AutenticacaoService autenticacaoService;
 
     public Iterable<Cargo> getAll(Integer operacaoId) {
         CargoPredicate predicate = new CargoPredicate();
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         predicate.comNivel(operacaoId);
-        predicate.filtrarPermitidos(usuarioAutenticado);
+        predicate.filtrarPermitidos(autenticacaoService.getUsuarioAutenticado());
         return repository.findAll(predicate.build());
     }
 
     public Page<Cargo> getAll(PageRequest pageRequest, CargoFiltros filtros) {
         CargoPredicate predicate = filtros.toPredicate();
-        Page<Cargo> pages = repository.findAll(predicate.build(), pageRequest);
-        return pages;
+        return repository.findAll(predicate.build(), pageRequest);
     }
 
     public Cargo findById(Integer id) {
         return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public Cargo findByUsuarioId(Integer usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .map(Usuario::getCargo)
+                .orElse(null);
     }
 
     public Cargo save(Cargo cargo) {

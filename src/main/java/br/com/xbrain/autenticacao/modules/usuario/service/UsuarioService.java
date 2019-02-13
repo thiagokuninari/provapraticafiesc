@@ -13,8 +13,11 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.FileService;
+import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -33,6 +36,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -43,13 +47,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 
 @Service
 public class UsuarioService {
@@ -82,6 +90,8 @@ public class UsuarioService {
     private MotivoInativacaoRepository motivoInativacaoRepository;
     @Autowired
     private CargoRepository cargoRepository;
+    @Autowired
+    private CargoService cargoService;
     @Autowired
     private DepartamentoRepository departamentoRepository;
     @Autowired
@@ -116,8 +126,12 @@ public class UsuarioService {
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
-    private Usuario findComplete(Integer id) {
+    public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
         return usuario;
@@ -184,27 +198,23 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
-            obterUsuariosAa(filtros.getCnpjAa(), predicate);
-        }
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
         if (!CollectionUtils.isEmpty(pages.getContent())) {
-            popularUsuario(pages.getContent());
+            popularUsuarios(pages.getContent());
         }
         return pages;
     }
 
-    private void popularUsuario(List<Usuario> usuarios) {
+    private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
         });
     }
 
-    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate) {
-        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa);
+    private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
+        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -241,25 +251,61 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public UsuarioDto save(UsuarioDto usuarioDto) {
+    public UsuarioDto save(Usuario request, MultipartFile foto) {
+        if (!ObjectUtils.isEmpty(foto)) {
+            fileService.uploadFotoUsuario(request, foto);
+        }
+        return save(request);
+    }
+
+    @Transactional
+    public UsuarioDto save(Usuario usuario, boolean realocado) {
+        validar(usuario);
+        usuario.setAlterarSenha(Eboolean.F);
+        if (realocado) {
+            salvarUsuarioRealocado(usuario);
+            usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
+        } else {
+            atualizarUsuariosParceiros(usuario);
+        }
+        repository.save(usuario);
+        entityManager.flush();
+        if (realocado) {
+            enviarParaFilaDeUsuariosColaboradores(usuario);
+        }
+        return UsuarioDto.convertTo(usuario);
+    }
+
+    @Transactional
+    public UsuarioDto save(Usuario usuario) {
         try {
-            Usuario usuario = UsuarioDto.convertFrom(usuarioDto);
             validar(usuario);
 
+            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
-            usuario = repository.save(usuario);
+            repository.save(usuario);
             entityManager.flush();
-            tratarHierarquiaUsuario(usuario, usuarioDto.getHierarquiasId());
-            tratarCidadesUsuario(usuario, usuarioDto.getCidadesId());
+
+            validarCargoEquipeVendas(usuario, cargoOld);
+            tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
+            tratarCidadesUsuario(usuario, usuario.getCidadesId());
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -269,14 +315,64 @@ public class UsuarioService {
             log.error("Erro de persistência ao salvar o Usuario.", ex);
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
     }
 
+    public void salvarUsuarioRealocado(Usuario usuario) {
+        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
+            usuarioARealocar.setSituacao(ESituacao.R);
+            repository.save(usuarioARealocar);
+        }
+    }
+
+    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
+        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
+                equipeVendaService.inativarSupervidor(usuario.getId());
+            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
+                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
+                equipeVendaService.inativarUsuario(usuario.getId());
+            }
+        }
+    }
+
+    private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
+        Usuario usuarioCopia = new Usuario();
+        BeanUtils.copyProperties(usuario, usuarioCopia);
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!ObjectUtils.isEmpty(usuarios)
+                && usuario.getSituacao().equals(ESituacao.A)) {
+            usuarioCopia.setSenha(repository.findById(usuario.getId())
+                    .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
+            usuarioCopia.setDataCadastro(LocalDateTime.now());
+            usuarioCopia.setAlterarSenha(Eboolean.V);
+            usuarioCopia.setSituacao(ESituacao.A);
+            usuarioCopia.setId(null);
+        }
+        return usuarioCopia;
+    }
+
+    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() ->
+                new NotFoundException("Usuário não encontrado"));
+        idUsuarioNovo.stream()
+                .map(id -> {
+                    UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                    usuario.setUsuarioSuperior(usuarioSuperior);
+                    usuarioHierarquiaRepository.save(usuario);
+                    return usuario;
+                })
+                .collect(Collectors.toList());
+    }
+
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            if (isSocioPrincipal(cargo.getCodigo())) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuario);
+            Optional<Usuario> usuarioAtualizar = repository.findByCpf(usuario.getCpf());
+            if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
+                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -299,10 +395,36 @@ public class UsuarioService {
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
         removerUsuarioSuperior(usuario, hierarquiasId);
+        removerHierarquiaSubordinados(usuario);
         adicionarUsuarioSuperior(usuario, hierarquiasId);
         hierarquiaIsValida(usuario);
 
         repository.save(usuario);
+    }
+
+    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
+            usuario.getUsuariosHierarquia().clear();
+        } else {
+            usuario.getUsuariosHierarquia()
+                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
+        }
+    }
+
+    private void removerHierarquiaSubordinados(Usuario usuario) {
+        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+                .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(subordinados)) {
+            usuarioHierarquiaRepository.delete(subordinados);
+        }
+    }
+
+    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+            hierarquiasId
+                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
+        }
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
@@ -389,22 +511,6 @@ public class UsuarioService {
         });
     }
 
-    private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (CollectionUtils.isEmpty(hierarquiasId)) {
-            usuario.getUsuariosHierarquia().clear();
-        } else {
-            usuario.getUsuariosHierarquia()
-                    .removeIf(h -> !hierarquiasId.contains(h.getUsuarioSuperiorId()));
-        }
-    }
-
-    private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!CollectionUtils.isEmpty(hierarquiasId)) {
-            hierarquiasId
-                    .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
-        }
-    }
-
     private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
         removerUsuarioCidade(usuario, cidadesId);
         adicionarUsuarioCidade(usuario, cidadesId);
@@ -431,7 +537,7 @@ public class UsuarioService {
         }
     }
 
-    private void configurar(Usuario usuario, String senhaDescriptografada) {
+    public void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
@@ -446,7 +552,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            usuarioDto = save(usuarioDto);
+            usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -460,7 +566,7 @@ public class UsuarioService {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(usuarioDto);
+            save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
@@ -528,6 +634,19 @@ public class UsuarioService {
         usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
+    private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
+        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
+        if (!usuarios.isEmpty()) {
+            usuarios
+                    .stream()
+                    .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
+                    .map(UsuarioDto::convertTo)
+                    .forEach(usuarioAtualizarColaborador -> usuarioMqSender
+                            .sendColaboradoresSuccess(usuarioAtualizarColaborador));
+
+        }
+    }
+
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -592,7 +711,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (!usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -602,7 +722,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
                 .ifPresent(u -> {
-                    if (usuario.isNovoCadastro() || !u.getId().equals(usuario.getId())) {
+                    if (!usuario.getSituacao()
+                            .equals(ESituacao.A)) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
@@ -702,10 +823,15 @@ public class UsuarioService {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
-        return ((List<Usuario>) repository.findAll(usuarioPredicate.build()))
-                .stream()
-                .map(UsuarioHierarquiaResponse::new)
-                .collect(Collectors.toList());
+        return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
+    }
+
+    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId) {
+        Cargo cargo = cargoService.findById(cargoId);
+        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.comCargo(Collections.singletonList(cargo.getCargoSuperior().getId()));
+        return repository.getUsuariosFilter(usuarioPredicate.build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -754,6 +880,20 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
+    }
+
+    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioSubordinadoDto.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cpf(objectToString(param[indice++]))
+                .email(objectToString(param[indice++]))
+                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
+                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
+                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
+                .nomeCargo(objectToString(param[indice++]))
+                .build();
     }
 
     private UsuarioResponse criarUsuarioResponse(Object[] param) {
@@ -1027,5 +1167,42 @@ public class UsuarioService {
 
     public boolean situacaoAtiva(String email) {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
+    }
+
+    public List<Integer> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name());
+    }
+
+    public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
+        return repository.getUsuariosCsv(predicate.build());
+    }
+
+    public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(
+                getCsv(usuarios),
+                CsvUtils.createFileName(USUARIOS_CSV),
+                response)) {
+            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
+        }
+    }
+
+    private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtros.toPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
+            obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
+        }
+        return predicate;
+    }
+
+    private String getCsv(List<UsuarioCsvResponse> usuarios) {
+        return UsuarioCsvResponse.getCabecalhoCsv()
+                + (!usuarios.isEmpty()
+                ? usuarios
+                .stream()
+                .map(UsuarioCsvResponse::toCsv)
+                .collect(Collectors.joining("\n"))
+                : "Registros não encontrados.");
     }
 }

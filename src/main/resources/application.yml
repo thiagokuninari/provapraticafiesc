@@ -18,7 +18,7 @@ spring:
       cache: false
   jpa:
     database: ORACLE
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: none
     properties:
@@ -27,6 +27,7 @@ spring:
           validation:
             mode: none
       hibernate:
+        dialect: br.com.xbrain.autenticacao.config.database.CustomOracle10gDialect
         hbm2ddl:
           import_files:
             database/estrutura.sql,
@@ -64,15 +65,20 @@ app-config:
   nome: Colaboradores
   url: http://localhost:3100
   url-servico-email: http://192.168.1.40:6541/emails/
-  url-estatico: https://estatico.xbrain.com.br/conexao_claro_brasil
+  url-estatico: https://estatico.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
   upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
 
+  usuario-foto:
+    dir: ${app-config.upload-dir}/usuario/foto
+    url: ${app-config.url-estatico-upload}/usuario/foto
+
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: luisdias@xbrain.com.br
+    emails: renato@xbrain.com.br
+    emails-solicitacao-ramal: renato@xbrain.com.br
 
   multiplo-login:
     emails: colaborador@claro.com.br
@@ -83,6 +89,7 @@ app-config:
   queue:
     usuario-cadastro: usuario-cadastro.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
+    usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue

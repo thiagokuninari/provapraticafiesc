@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
+import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+@Data
 public class PageRequest implements Pageable {
 
     private static final int DEFAULT_PAGE = 0;

@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+
 @Service
 public class AgenteAutorizadoService {
 
@@ -28,16 +31,28 @@ public class AgenteAutorizadoService {
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
-    public List<Integer> getIdUsuariosPorAa(String cnpj) {
+    public List<Integer> getIdUsuariosPorAa(String cnpj, Boolean buscarInativos) {
         try {
             AgenteAutorizadoResponse aaResponse = getAaByCpnj(cnpj);
-            return getUsuariosByAaId(Integer.valueOf(aaResponse.getId())).stream()
+            return getUsuariosByAaId(Integer.valueOf(aaResponse.getId()), buscarInativos).stream()
                     .map(UsuarioAgenteAutorizadoResponse::getId)
                     .collect(Collectors.toList());
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_AA_BY_CNPJ);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public AgenteAutorizadoResponse getAaById(Integer idAgenteAutorizado) {
+        try {
+            return agenteAutorizadoClient.getAaById(idAgenteAutorizado);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                    AgenteAutorizadoService.class.getName(),
+                    EErrors.ERRO_OBTER_AA_BY_ID);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
@@ -58,9 +73,9 @@ public class AgenteAutorizadoService {
         }
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId) {
+    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId, Boolean buscarInativos) {
         try {
-            return agenteAutorizadoClient.getUsuariosByAaId(aaId);
+            return agenteAutorizadoClient.getUsuariosByAaId(aaId, buscarInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
@@ -68,6 +83,12 @@ public class AgenteAutorizadoService {
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
+    }
+
+    public List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+                ? getAasPermitidos(usuario.getId())
+                : Collections.emptyList();
     }
 
     public List<Integer> getAasPermitidos(int usuarioId) {

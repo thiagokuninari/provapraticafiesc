@@ -3,13 +3,16 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,10 +24,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired
@@ -35,8 +43,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .innerJoin(usuario.cargo, QCargo.cargo).fetchJoin()
-                        .innerJoin(QCargo.cargo.nivel).fetchJoin()
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(cargo.nivel).fetchJoin()
                         .innerJoin(usuario.departamento).fetchJoin()
                         .innerJoin(usuario.empresas).fetchJoin()
                         .where(
@@ -61,10 +69,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .join(usuario.cargo, QCargo.cargo).fetchJoin()
-                        .join(QCargo.cargo.nivel).fetchJoin()
+                        .join(usuario.cargo, cargo).fetchJoin()
+                        .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
-                        .join(usuario.empresas).fetchJoin()
+                        .leftJoin(usuario.empresas).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .fetchOne()
@@ -76,8 +84,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
-                        .join(usuario.cargo, QCargo.cargo).fetchJoin()
-                        .join(QCargo.cargo.nivel).fetchJoin()
+                        .join(usuario.cargo, cargo).fetchJoin()
+                        .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.usuariosHierarquia).fetchJoin()
                         .where(usuario.id.eq(id))
@@ -108,6 +116,43 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         " SELECT FK_USUARIO"
                                 + " FROM usuario_hierarquia"
                                 + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
+        return result
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+        List<BigDecimal> result = entityManager
+                .createNativeQuery(
+                        " SELECT UH.FK_USUARIO"
+                                + " FROM usuario_hierarquia UH"
+                                + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + " WHERE C.CODIGO = :_codigoCargo"
+                                + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .setParameter("_codigoCargo", codigoCargo)
+                .getResultList();
+        return result
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Integer> getUsuariosSubordinadosByCidade(Integer usuarioId) {
+        List<BigDecimal> result = entityManager
+                .createNativeQuery(
+                        " SELECT FK_USUARIO"
+                                + " FROM usuario_hierarquia"
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .getResultList();
@@ -115,6 +160,31 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .stream()
                 .map(BigDecimal::intValue)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId) {
+        return entityManager
+                .createNativeQuery(
+                        " SELECT FK_USUARIO"
+                                + "     , U.NOME "
+                                + "     , U.CPF "
+                                + "     , U.EMAIL_01 "
+                                + "     , N.CODIGO AS NIVEL "
+                                + "     , D.CODIGO AS DEPARTAMENTO "
+                                + "     , C.CODIGO AS CARGO "
+                                + "     , C.NOME AS NOME_CARGO "
+                                + " FROM usuario_hierarquia UH"
+                                + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
+                                + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
     }
 
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
@@ -193,7 +263,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.usuario).fetchJoin()
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.funcionalidade).fetchJoin()
                 .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString())
-                    .and(QPermissaoEspecial.permissaoEspecial.dataBaixa.isNull()))
+                        .and(QPermissaoEspecial.permissaoEspecial.dataBaixa.isNull()))
                 .fetch();
     }
 
@@ -202,8 +272,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
                 .from(usuario)
-                .innerJoin(usuario.cargo, QCargo.cargo)
-                .where(QCargo.cargo.nivel.codigo.eq(codigoNivel))
+                .innerJoin(usuario.cargo, cargo)
+                .where(cargo.nivel.codigo.eq(codigoNivel))
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
@@ -226,11 +296,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
 
         Expression<Cargo> expressionCargo = Projections.fields(Cargo.class,
-                QCargo.cargo.id,
-                QCargo.cargo.nome,
-                QCargo.cargo.codigo,
-                QCargo.cargo.situacao,
-                QCargo.cargo.nivel
+                cargo.id,
+                cargo.nome,
+                cargo.codigo,
+                cargo.situacao,
+                cargo.nivel
         ).as("cargo");
 
         Expression<Departamento> expressionDepartamento = Projections.fields(Departamento.class,
@@ -263,5 +333,45 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .join(usuario.configuracao).fetchJoin()
                         .where(usuario.id.eq(usuarioId))
                         .fetchOne());
+    }
+
+    @Override
+    public List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(UsuarioHierarquiaResponse.class, usuario.id, usuario.nome))
+                .from(usuario)
+                .where(predicate)
+                .distinct()
+                .orderBy(usuario.nome.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(
+                        Projections.constructor(UsuarioCsvResponse.class,
+                                usuario.id,
+                                usuario.nome,
+                                usuario.email,
+                                usuario.telefone,
+                                usuario.cpf,
+                                cargo.nome,
+                                departamento.nome,
+                                Expressions.stringTemplate("wm_concat({0})", unidadeNegocio.nome),
+                                Expressions.stringTemplate("wm_concat({0})", empresa.nome),
+                                usuario.situacao
+                        )
+                )
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .innerJoin(usuario.departamento, departamento)
+                .innerJoin(usuario.unidadesNegocios, unidadeNegocio)
+                .innerJoin(usuario.empresas, empresa)
+                .where(predicate)
+                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
+                        cargo.nome, departamento.nome, usuario.situacao)
+                .orderBy(usuario.nome.asc())
+                .fetch();
     }
 }

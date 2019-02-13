@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -41,10 +44,6 @@ public class UsuarioHierarquia {
 
     public UsuarioHierarquia() { }
 
-    public UsuarioHierarquia(Usuario usuarioSuperior) {
-        this.usuarioSuperior = usuarioSuperior;
-    }
-
     public static UsuarioHierarquia criar(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
         return new UsuarioHierarquia(usuario, idHierarquia, idUsuarioAutenticado);
     }
@@ -57,25 +56,12 @@ public class UsuarioHierarquia {
         this.dataCadastro = LocalDateTime.now();
     }
 
-    public String getUsuarioSuperiorIdAsString() {
-        if (this.usuarioSuperior != null) {
-            return this.usuarioSuperior.toString();
-        }
-        return null;
-    }
-
     public Integer getUsuarioSuperiorId() {
         return usuarioSuperior != null ? usuarioSuperior.getId() : null;
     }
 
-    public void setUsuarioSuperiorId(int id) {
-        this.usuarioSuperior = new Usuario(id);
-    }
-
-    public String getUsuarioSuperiorNome() {
-        return usuarioSuperior != null ? usuarioSuperior.getNome() : null;
-    }
-
-    public void setUsuarioSuperiorNome(String nome) {
+    public boolean isSuperior(Integer cargoId) {
+        return !ObjectUtils.isEmpty(getUsuario().getCargoSuperiorId())
+                && getUsuario().getCargoSuperiorId().equals(cargoId);
     }
 }

@@ -6,10 +6,12 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class UsuarioMqRequest {
@@ -34,5 +36,6 @@ public class UsuarioMqRequest {
     private List<CodigoEmpresa> empresa;
     private Integer usuarioCadastroId;
     private String exception;
-
+    private Set<ECanal> canais;
+    private boolean realocado;
 }
