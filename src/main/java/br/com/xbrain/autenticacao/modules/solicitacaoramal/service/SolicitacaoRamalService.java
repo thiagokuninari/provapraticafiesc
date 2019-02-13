@@ -183,7 +183,7 @@ public class SolicitacaoRamalService {
 
             if (deveEnviarEmail) {
                 enviaEmail(solicitacao);
-                updateFlagEnviouEmailExpirado(solicitacao.getId());
+                updateFlagDataEnviouEmailExpiracao(solicitacao.getId());
             }
         });
 
@@ -208,11 +208,11 @@ public class SolicitacaoRamalService {
     }
 
     public List<SolicitacaoRamal> getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse() {
-        return solicitacaoRamalRepository.findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse();
+        return solicitacaoRamalRepository.findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
     }
 
-    private void updateFlagEnviouEmailExpirado(Integer solicitacaoId) {
-        solicitacaoRamalRepository.updateFlagEnviouEmailExpirado(solicitacaoId);
+    private void updateFlagDataEnviouEmailExpiracao(Integer solicitacaoId) {
+        solicitacaoRamalRepository.updateFlagDataEnviadoEmailExpiracao(LocalDateTime.now(), solicitacaoId);
     }
 
     private List<String> getDestinatarios() {

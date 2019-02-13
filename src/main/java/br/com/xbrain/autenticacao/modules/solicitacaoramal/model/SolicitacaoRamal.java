@@ -82,6 +82,9 @@ public class SolicitacaoRamal {
     @Enumerated(EnumType.STRING)
     private Eboolean enviouEmailExpiracao;
 
+    @Column(name = "DATA_ENVIADO_EMAIL_EXPIRACAO")
+    private LocalDateTime dataEnviadoEmailExpiracao;
+
     public void atualizarDataCadastro() {
         this.dataCadastro = LocalDateTime.now();
         atualizarSituacaoParaPendente();
