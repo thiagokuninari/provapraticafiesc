@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.DoubleStream;
 
 
 public interface UsuarioRepositoryCustom {
