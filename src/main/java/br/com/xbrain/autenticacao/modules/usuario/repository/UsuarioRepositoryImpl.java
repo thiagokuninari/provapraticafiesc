@@ -382,6 +382,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new JPAQueryFactory(entityManager)
                         .select(usuario)
                         .from(usuario)
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(cargo.nivel).fetchJoin()
+                        .innerJoin(usuario.departamento).fetchJoin()
+                        .innerJoin(usuario.empresas).fetchJoin()
                         .where(
                                 usuario.email.equalsIgnoreCase(email)
                                 .and(usuario.situacao.ne(ESituacao.R))
