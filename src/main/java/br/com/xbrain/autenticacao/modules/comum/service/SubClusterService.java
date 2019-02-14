@@ -39,4 +39,9 @@ public class SubClusterService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubClusterDto> getAll() {
+        return repository.findAll().stream()
+                .map(SubClusterDto::objectToDto)
+                .collect(Collectors.toList());
+    }
 }
