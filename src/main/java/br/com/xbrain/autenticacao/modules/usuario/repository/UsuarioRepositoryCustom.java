@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.DoubleStream;
 
 
 public interface UsuarioRepositoryCustom {
@@ -53,4 +55,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
 
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
+
+    Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 }

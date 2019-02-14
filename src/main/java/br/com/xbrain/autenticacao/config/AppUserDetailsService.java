@@ -29,7 +29,7 @@ public class AppUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usuarioRepository
-                .findByEmailAndSituacaoNot(username.toUpperCase(), ESituacao.R)
+                .findByEmailIgnoreCaseAndSituacaoNot(username, ESituacao.R)
                 .map(u -> {
                     u.forceLoad();
                     validarUsuarioPendente(u);
