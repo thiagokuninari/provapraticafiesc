@@ -29,6 +29,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     Optional<Usuario> findUsuarioByEmail(String email);
 
+    Optional<Usuario> findByEmailAndSituacaoNot(String email, ESituacao situacao);
+
     Optional<Usuario> findByCpf(String cpf);
 
     List<Usuario> findAllByCpfIsNull();
