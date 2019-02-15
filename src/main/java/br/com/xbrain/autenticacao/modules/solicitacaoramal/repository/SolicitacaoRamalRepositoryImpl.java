@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.querydsl.core.types.Predicate;
@@ -29,13 +28,13 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse() {
+    public List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull() {
         return new JPAQueryFactory(entityManager)
                 .select(solicitacaoRamal)
                 .from(solicitacaoRamal)
                 .where(solicitacaoRamal.situacao.eq(ESituacaoSolicitacao.PENDENTE)
                         .or(solicitacaoRamal.situacao.eq(ESituacaoSolicitacao.EM_ANDAMENTO))
-                        .and(solicitacaoRamal.enviouEmailExpiracao.eq(Eboolean.F)))
+                        .and(solicitacaoRamal.dataEnviadoEmailExpiracao.isNull()))
                 .orderBy(solicitacaoRamal.id.asc())
                 .fetch();
     }

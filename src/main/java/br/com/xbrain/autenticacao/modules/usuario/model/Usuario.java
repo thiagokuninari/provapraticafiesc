@@ -340,15 +340,15 @@ public class Usuario {
         return this.cargo != null ? this.cargo.getCodigo() : null;
     }
 
-    public Integer getCargoSuperiorId() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
-                ? cargo.getCargoSuperior().getId()
-                : null;
-    }
-
     public CodigoCargo getCargoSuperiorCodigo() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
                 ? cargo.getCargoSuperior().getCodigo()
+                : null;
+    }
+
+    public Integer getCargoSuperiorId() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
+                ? cargo.getCargoSuperior().getId()
                 : null;
     }
 

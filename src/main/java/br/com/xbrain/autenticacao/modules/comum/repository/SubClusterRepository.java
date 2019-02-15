@@ -16,4 +16,6 @@ public interface SubClusterRepository extends PagingAndSortingRepository<SubClus
 
     @Cacheable("subclusterFindBySituacao")
     List<SubCluster> findBySituacao(ESituacao situacao, Sort sort);
+
+    List<SubCluster> findAll();
 }
