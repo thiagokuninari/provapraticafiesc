@@ -55,7 +55,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
 
+    Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
+
     List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades);
 
-    Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 }

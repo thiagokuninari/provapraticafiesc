@@ -393,6 +393,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .fetchOne());
     }
 
+    @Override
     public List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
