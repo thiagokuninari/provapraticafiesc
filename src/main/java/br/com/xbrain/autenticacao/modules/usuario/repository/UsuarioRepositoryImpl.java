@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
@@ -373,5 +374,22 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         cargo.nome, departamento.nome, usuario.situacao)
                 .orderBy(usuario.nome.asc())
                 .fetch();
+    }
+
+    @Override
+    public Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(cargo.nivel).fetchJoin()
+                        .innerJoin(usuario.departamento).fetchJoin()
+                        .innerJoin(usuario.empresas).fetchJoin()
+                        .where(
+                                usuario.email.equalsIgnoreCase(email)
+                                .and(usuario.situacao.ne(ESituacao.R))
+                        )
+                        .fetchOne());
     }
 }
