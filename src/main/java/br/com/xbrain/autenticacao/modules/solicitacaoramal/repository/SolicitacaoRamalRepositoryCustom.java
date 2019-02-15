@@ -11,6 +11,6 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate);
 
-    List<SolicitacaoRamal> findAllBySituacaoPendenteOrEmAndamentoAndEnviouEmailExpiracaoFalse();
+    List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
 
 }

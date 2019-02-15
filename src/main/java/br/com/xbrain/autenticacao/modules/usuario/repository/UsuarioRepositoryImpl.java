@@ -128,23 +128,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
-        List<BigDecimal> result = entityManager
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+        return entityManager
                 .createNativeQuery(
-                        " SELECT UH.FK_USUARIO"
-                                + " FROM usuario_hierarquia UH"
+                        " SELECT UH.FK_USUARIO "
+                                + " , U.NOME "
+                                + " , U.EMAIL_01 "
+                                + " , C.NOME AS NOME_CARGO "
+                                + " FROM USUARIO_HIERARQUIA UH"
                                 + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                                 + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                                 + " WHERE C.CODIGO = :_codigoCargo"
+                                + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                                 + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .setParameter("_codigoCargo", codigoCargo)
                 .getResultList();
-        return result
-                .stream()
-                .map(BigDecimal::intValue)
-                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -365,10 +365,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         )
                 )
                 .from(usuario)
-                .innerJoin(usuario.cargo, cargo)
-                .innerJoin(usuario.departamento, departamento)
-                .innerJoin(usuario.unidadesNegocios, unidadeNegocio)
-                .innerJoin(usuario.empresas, empresa)
+                .leftJoin(usuario.cargo, cargo)
+                .leftJoin(usuario.departamento, departamento)
+                .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
+                .leftJoin(usuario.empresas, empresa)
                 .where(predicate)
                 .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
                         cargo.nome, departamento.nome, usuario.situacao)
@@ -388,8 +388,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .innerJoin(usuario.empresas).fetchJoin()
                         .where(
                                 usuario.email.equalsIgnoreCase(email)
-                                .and(usuario.situacao.ne(ESituacao.R))
+                                        .and(usuario.situacao.ne(ESituacao.R))
                         )
                         .fetchOne());
     }
+
+    public List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.usuario, usuario)
+                .where(usuarioCidade.usuario.id.eq(usuario.id)
+                .and(usuario.cargo.id.eq(cargo))
+                .and(usuarioCidade.cidade.id.in(cidades)))
+                .fetch();
+    }
+
 }
