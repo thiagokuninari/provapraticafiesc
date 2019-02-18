@@ -340,15 +340,15 @@ public class Usuario {
         return this.cargo != null ? this.cargo.getCodigo() : null;
     }
 
-    public CodigoCargo getCargoSuperiorCodigo() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
-                ? cargo.getCargoSuperior().getCodigo()
+    public Set<Integer> getCargosSuperioresId() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getSuperiores())
+                ? cargo.getSuperiores().stream().map(Cargo::getId).collect(Collectors.toSet())
                 : null;
     }
 
-    public Integer getCargoSuperiorId() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCargoSuperior())
-                ? cargo.getCargoSuperior().getId()
+    public Set<CodigoCargo> getCargosSuperioresCodigo() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getSuperiores())
+                ? cargo.getSuperiores().stream().map(Cargo::getCodigo).collect(Collectors.toSet())
                 : null;
     }
 

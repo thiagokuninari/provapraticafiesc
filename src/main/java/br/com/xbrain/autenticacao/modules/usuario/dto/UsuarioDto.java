@@ -67,7 +67,7 @@ public class UsuarioDto implements Serializable {
     @NotNull
     private Integer cargoId;
     private CodigoCargo cargoCodigo;
-    private CodigoCargo cargoSuperiorCodigo;
+    private boolean possuiCargoSuperior;
     @NotNull
     private Integer departamentoId;
     private LocalDateTime dataCadastro;
@@ -103,7 +103,7 @@ public class UsuarioDto implements Serializable {
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());
         usuarioDto.setCargoCodigo(usuario.getCargoCodigo());
-        usuarioDto.setCargoSuperiorCodigo(usuario.getCargoSuperiorCodigo());
+        usuarioDto.setPossuiCargoSuperior(!CollectionUtils.isEmpty(usuario.getCargo().getSuperiores()));
         usuarioDto.setDepartamentoId(usuario.getDepartamentoId());
         usuarioDto.setUnidadesNegociosId(usuario.getUnidadesNegociosId());
         usuarioDto.setEmpresasId(usuario.getEmpresasId());

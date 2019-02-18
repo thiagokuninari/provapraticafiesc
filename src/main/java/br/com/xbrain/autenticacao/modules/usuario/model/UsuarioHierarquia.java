@@ -61,7 +61,7 @@ public class UsuarioHierarquia {
     }
 
     public boolean isSuperior(Integer cargoId) {
-        return !ObjectUtils.isEmpty(getUsuario().getCargoSuperiorId())
-                && getUsuario().getCargoSuperiorId().equals(cargoId);
+        return !ObjectUtils.isEmpty(getUsuario().getCargosSuperioresId())
+                && getUsuario().getCargosSuperioresId().contains(cargoId);
     }
 }

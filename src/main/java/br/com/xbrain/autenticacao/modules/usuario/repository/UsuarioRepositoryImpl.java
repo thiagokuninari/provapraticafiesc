@@ -193,6 +193,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .select(usuario)
                 .from(usuario)
                 .where(predicate)
+                .orderBy(usuario.cargo.nome.asc(),
+                        usuario.nome.asc())
                 .fetch();
     }
 
