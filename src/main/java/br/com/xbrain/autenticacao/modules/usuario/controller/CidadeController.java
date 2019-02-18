@@ -58,6 +58,11 @@ public class CidadeController {
         return service.getAllBySubClusterId(subclusterId);
     }
 
+    @RequestMapping("sub-clusters")
+    public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
+        return service.getAllBySubClustersId(subclustersId);
+    }
+
     @RequestMapping(value = "cidade/{cidadeId}")
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
         return UsuarioCidadeDto.parse(repository.findOne(id));

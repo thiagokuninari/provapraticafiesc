@@ -16,6 +16,8 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate);
 
+    List<Cidade> findAllBySubClustersId(List<Integer> subClustersId, Predicate predicate);
+
     List<Cidade> findAllByGrupoId(Integer grupoId, Predicate predicate);
 
     List<Cidade> findAllByClusterId(Integer clusterId, Predicate predicate);
