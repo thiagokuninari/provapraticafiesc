@@ -38,6 +38,11 @@ public class SolicitacaoRamalController {
         return solicitacaoRamalService.atualizarStatus(request);
     }
 
+    @GetMapping("/gerencia/detalhar")
+    public PageImpl<SolicitacaoRamalResponse> getAllDetalhar(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return solicitacaoRamalService.getAllDetalhar(pageable, filtros);
+    }
+
     @GetMapping
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return solicitacaoRamalService.getAll(pageable, filtros);
