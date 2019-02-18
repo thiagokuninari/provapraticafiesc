@@ -50,6 +50,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .innerJoin(usuario.empresas).fetchJoin()
                         .where(
                                 usuario.email.equalsIgnoreCase(email)
+                                        .and(usuario.situacao.ne(ESituacao.R))
                         )
                         .fetchOne());
     }
