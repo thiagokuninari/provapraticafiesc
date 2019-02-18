@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
@@ -33,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
 
 @Service
 public class SolicitacaoRamalService {
@@ -251,6 +254,27 @@ public class SolicitacaoRamalService {
 
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
         return agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false).stream().count();
+    }
+
+    public void remover(Integer solicitacaoId) {
+        SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
+
+        validaSituacaoPendente(solicitacaoRamal.getSituacao());
+
+        removerHistoricoSolicitacao(solicitacaoId);
+        solicitacaoRamalRepository.delete(solicitacaoRamal);
+    }
+
+    private void validaSituacaoPendente(ESituacaoSolicitacao situacao) {
+        if (!situacao.equals(PENDENTE)) {
+            throw new ValidacaoException("Só é possível excluir solicitações com status pendente!");
+        }
+    }
+
+    private void removerHistoricoSolicitacao(Integer solicitacaoId) {
+        historicoRepository.findAllBySolicitacaoRamalId(solicitacaoId)
+                .stream()
+                .forEach(historico -> historicoRepository.delete(historico));
     }
 
 }

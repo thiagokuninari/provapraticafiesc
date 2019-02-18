@@ -54,4 +54,9 @@ public class SolicitacaoRamalController {
         return solicitacaoRamalService.update(request);
     }
 
+    @DeleteMapping("/{solicitacaoId}")
+    public void remover(@PathVariable Integer solicitacaoId) {
+        solicitacaoRamalService.remover(solicitacaoId);
+    }
+
 }
