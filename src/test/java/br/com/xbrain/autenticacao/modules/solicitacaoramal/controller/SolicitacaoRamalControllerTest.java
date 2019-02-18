@@ -201,13 +201,13 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5))))
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5, 7129))))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void save_isCreated_quandoTentarSalvarUmaNovaSolicitacao() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null);
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -219,6 +219,19 @@ public class SolicitacaoRamalControllerTest {
 
         verify(historicoService, times(1)).save(any());
         verify(emailService, times(1)).enviarEmailTemplate(anyList(), anyString(), any(), any());
+    }
+
+    @Test
+    public void save_badRequest_quandoTentarSalvarSolicitacaoHavendoUmaEmPendenteOuEmAndamento() throws Exception {
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 1);
+
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder(
+                        "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.")));
     }
 
     @Test
@@ -376,11 +389,11 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
+    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
                 .id(id)
                 .quantidadeRamais(38)
-                .agenteAutorizadoId(7129)
+                .agenteAutorizadoId(aaId)
                 .melhorHorarioImplantacao(LocalTime.of(10, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
                 .emailTi("reanto@ti.com.br")

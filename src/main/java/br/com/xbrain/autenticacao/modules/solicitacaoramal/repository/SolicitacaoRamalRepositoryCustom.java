@@ -13,4 +13,6 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
 
+    List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId);
+
 }

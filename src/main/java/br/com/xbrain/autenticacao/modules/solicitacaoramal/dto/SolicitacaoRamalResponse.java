@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
@@ -25,6 +26,8 @@ public class SolicitacaoRamalResponse {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime horaExpiracao;
     private String usuarioSolicitante;
+    private String agenteAutorizadoCnpj;
+    private String agenteAutorizadoNome;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
@@ -33,6 +36,7 @@ public class SolicitacaoRamalResponse {
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
         BeanUtils.copyProperties(solicitacaoRamal, response);
+        response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 
         return response;
     }
