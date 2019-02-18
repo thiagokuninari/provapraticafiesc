@@ -102,6 +102,8 @@ public class SolicitacaoRamalService {
     }
 
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
+        validaSalvar(request.getAgenteAutorizadoId());
+
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -117,6 +119,19 @@ public class SolicitacaoRamalService {
         gerarHistorico(solicitacaoRamalPersistida, null);
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+    }
+
+    private void validaSalvar(Integer aaId) {
+        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
+            throw new ValidacaoException(
+                    "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+        }
+    }
+
+    private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
+        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
+                .stream()
+                .count() > 0;
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
