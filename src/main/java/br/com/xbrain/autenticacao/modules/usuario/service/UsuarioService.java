@@ -322,11 +322,10 @@ public class UsuarioService {
     }
 
     public void salvarUsuarioRealocado(Usuario usuario) {
-        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
-            usuarioARealocar.setSituacao(ESituacao.R);
-            repository.save(usuarioARealocar);
-        }
+        Usuario usuarioARealocar = repository.findByCpfAndSituacao
+                (usuario.getCpf(), ATIVO).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuarioARealocar.setSituacao(ESituacao.R);
+        repository.save(usuarioARealocar);
     }
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
