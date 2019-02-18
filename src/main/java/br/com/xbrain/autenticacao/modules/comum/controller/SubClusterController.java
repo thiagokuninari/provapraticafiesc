@@ -15,7 +15,7 @@ public class SubClusterController {
     @Autowired
     private SubClusterService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public List<SubClusterDto> getAtivosPorCluster(@RequestParam(required = false) Integer clusterId) {
         if (!ObjectUtils.isEmpty(clusterId)) {
             return service.getAllByClusterId(clusterId);
