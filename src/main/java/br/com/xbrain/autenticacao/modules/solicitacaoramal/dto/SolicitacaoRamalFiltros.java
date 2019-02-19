@@ -11,6 +11,9 @@ public class SolicitacaoRamalFiltros {
     private String dataFinalSolicitacao;
     private ESituacaoSolicitacao situacao;
     private Integer agenteAutorizadoId;
+    private Integer page;
+    private Integer size;
+    private String orderDirection;
 
     public SolicitacaoRamalPredicate toPredicate() {
         return new SolicitacaoRamalPredicate()

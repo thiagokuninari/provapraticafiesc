@@ -24,10 +24,18 @@ public class SolicitacaoRamalResponse {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    private LocalDateTime horaExpiracao;
+    private LocalDateTime dataHoraExpiracao;
     private String usuarioSolicitante;
     private String agenteAutorizadoCnpj;
     private String agenteAutorizadoNome;
+    private long ramaisSolicitados;
+
+    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal, long ramaisSolicitados) {
+        SolicitacaoRamalResponse response = convertFrom(solicitacaoRamal);
+        response.ramaisSolicitados = ramaisSolicitados;
+
+        return response;
+    }
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
@@ -46,7 +54,7 @@ public class SolicitacaoRamalResponse {
 
         long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataExpiracao);
 
-        this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
+        this.dataHoraExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {
