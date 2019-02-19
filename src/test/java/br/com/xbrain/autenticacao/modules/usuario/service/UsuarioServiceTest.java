@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -163,10 +164,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
-        Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("28667582506");
-        service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
+        Optional<Usuario> usuarioRealocar = usuarioRepository.findByCpf("28667582506");
+        service.salvarUsuarioRealocado(usuarioRealocar.get());
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.get().getCpf()).get().getSituacao());
     }
 
     @Test
