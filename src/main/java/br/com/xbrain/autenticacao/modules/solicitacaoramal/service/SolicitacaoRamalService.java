@@ -74,6 +74,26 @@ public class SolicitacaoRamalService {
                 .collect(Collectors.toList());
     }
 
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        validaParametrosPaginacao(filtros);
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros), filtros);
+
+        return new PageImpl<>(solicitacoes.getContent()
+                .stream()
+                .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
+                        solicitacao,
+                        getQuantidadeRamaisPeloAgenteAutorizadoId(solicitacao.getAgenteAutorizadoId())))
+                .collect(Collectors.toList()),
+                pageable,
+                solicitacoes.getTotalElements());
+    }
+
+    private void validaParametrosPaginacao(SolicitacaoRamalFiltros filtros) {
+        if (ObjectUtils.isEmpty(filtros.getPage()) || ObjectUtils.isEmpty(filtros.getSize())) {
+            throw new ValidacaoException("É necessário enviar os parametros de paginação");
+        }
+    }
+
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroAgenteAutorizadoId(filtros);
 
