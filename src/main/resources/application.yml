@@ -133,7 +133,7 @@ app-config:
     equipe-venda-api:
       client: equipe-venda-api
       secret: 3qu1p3V3nD4xbr41n
-    dashborad-api:
+    dashboard-api:
       client: dashboard-api
       secret: d4shb04rd
 
