@@ -322,11 +322,9 @@ public class UsuarioService {
     }
 
     public void salvarUsuarioRealocado(Usuario usuario) {
-        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
-            usuarioARealocar.setSituacao(ESituacao.R);
-            repository.save(usuarioARealocar);
-        }
+        Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuarioARealocar.setSituacao(ESituacao.R);
+        repository.save(usuarioARealocar);
     }
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
@@ -343,8 +341,7 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
-        if (!ObjectUtils.isEmpty(usuarios)
+        if (!ObjectUtils.isEmpty(repository.findAllByCpf(usuario.getCpf()))
                 && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
@@ -371,7 +368,7 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            Optional<Usuario> usuarioAtualizar = repository.findByCpf(usuario.getCpf());
+            Optional<Usuario> usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
                 UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
                 try {
