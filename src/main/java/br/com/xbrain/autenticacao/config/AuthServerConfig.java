@@ -59,6 +59,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String callApiClient;
     @Value("${app-config.oauth-clients.call-api.secret}")
     private String callApiSecret;
+    @Value("${app-config.oauth-clients.dashboard-api.client}")
+    private String dashboardApiClient;
+    @Value("${app-config.oauth-clients.dashboard-api.secret}")
+    private String dashboardApiSecret;
 
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
     private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
@@ -130,6 +134,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(callApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("call-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(dashboardApiClient)
+                .secret(dashboardApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("dashboard-api")
                 .authorities(ROLE_APPLICATION);
     }
 
