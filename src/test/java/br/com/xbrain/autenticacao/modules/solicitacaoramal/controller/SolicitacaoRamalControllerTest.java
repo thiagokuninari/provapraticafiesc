@@ -77,11 +77,23 @@ public class SolicitacaoRamalControllerTest {
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
 
+    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
+
     @Before
     public void setUp() {
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
         when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+    }
+
+    @Test
+    public void getColaboradoresBySolicitacaoId_listaComQuatroRegistros_quandoVisualizarColaboradoresPeloSolicitacaoid()
+            throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/colaboradores/1")
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)));
     }
 
     @Test
@@ -126,7 +138,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_listaComQuatroRegistros_quandoHouverSolicitacoesPendenteOuEmAndamento() {
+    public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
                 solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
         Assert.assertEquals(4, resultList.size());
@@ -137,6 +149,31 @@ public class SolicitacaoRamalControllerTest {
         solicitacaoRamalService.enviarEmailSolicitacoesQueVaoExpirar();
 
         verify(emailService, times(4)).enviarEmailTemplate(anyList(), any(), any(), any());
+    }
+
+    @Test
+    public void getAllGerencia_forbidden_quandoUsuarioNaoTiverPermissaoETentaAcessarTelaDeGerencia() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getAllGerencia_listaComRegistros_quandoAcessarListagemDaTelaDeGerencia() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/?page=0&size=10")
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(10)));
+    }
+
+    @Test
+    public void getAllDetalhar_forbidden_quandoUsuarioNaoTiverPermissaoPraDetalharUmaSolicitacao() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/detalhar/?agenteAutorizadoId=1")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -201,13 +238,13 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5))))
+                .content(convertObjectToJsonBytes(criaSolicitacaoRamal(5, 7129))))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void save_isCreated_quandoTentarSalvarUmaNovaSolicitacao() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null);
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -219,6 +256,19 @@ public class SolicitacaoRamalControllerTest {
 
         verify(historicoService, times(1)).save(any());
         verify(emailService, times(1)).enviarEmailTemplate(anyList(), anyString(), any(), any());
+    }
+
+    @Test
+    public void save_badRequest_quandoTentarSalvarSolicitacaoHavendoUmaEmPendenteOuEmAndamento() throws Exception {
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 1);
+
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder(
+                        "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.")));
     }
 
     @Test
@@ -376,11 +426,11 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
-    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
+    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
                 .id(id)
                 .quantidadeRamais(38)
-                .agenteAutorizadoId(7129)
+                .agenteAutorizadoId(aaId)
                 .melhorHorarioImplantacao(LocalTime.of(10, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
                 .emailTi("reanto@ti.com.br")

@@ -12,13 +12,15 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +36,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
+import static java.util.Comparator.comparing;
+
 @Service
 public class SolicitacaoRamalService {
 
+    @Autowired
+    private CargoService cargoService;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -62,6 +70,7 @@ public class SolicitacaoRamalService {
     private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
+    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
 
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
@@ -70,12 +79,31 @@ public class SolicitacaoRamalService {
                 .collect(Collectors.toList());
     }
 
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        validaParametrosPaginacao(filtros);
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros), filtros);
+
+        return new PageImpl<>(solicitacoes.getContent().stream()
+                .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
+                        solicitacao,
+                        getQuantidadeRamaisPeloAgenteAutorizadoId(solicitacao.getAgenteAutorizadoId())))
+                .sorted(comparing(SolicitacaoRamalResponse::getId)
+                        .reversed())
+                .collect(Collectors.toList()),
+                pageable,
+                solicitacoes.getTotalElements());
+    }
+
+    private void validaParametrosPaginacao(SolicitacaoRamalFiltros filtros) {
+        if (ObjectUtils.isEmpty(filtros.getPage()) || ObjectUtils.isEmpty(filtros.getSize())) {
+            throw new ValidacaoException("É necessário enviar os parametros de paginação");
+        }
+    }
+
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroAgenteAutorizadoId(filtros);
 
-        BooleanBuilder builder = filtros.toPredicate().build();
-
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, builder);
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
                                           .stream()
@@ -88,8 +116,8 @@ public class SolicitacaoRamalService {
     private void validarFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
         if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
             verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CodigoFuncionalidade.AUT_2034)) {
-            throw new ValidacaoException("É necessário enviar o parâmetro agente autorizado id.");
+        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(AUT_2034)) {
+            throw new ValidacaoException(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO);
         }
     }
 
@@ -98,7 +126,32 @@ public class SolicitacaoRamalService {
                 .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
+    public PageImpl<SolicitacaoRamalResponse> getAllDetalhar(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        hasFiltroAgenteAutorizadoId(filtros);
+
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
+
+        return new PageImpl<>(solicitacoes.getContent()
+                                          .stream()
+                                          .map(SolicitacaoRamalResponse::convertFrom)
+                                          .collect(Collectors.toList()),
+                pageable,
+                solicitacoes.getTotalElements());
+    }
+
+    private void hasFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
+        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            throw new ValidacaoException(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO);
+        }
+    }
+
+    private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
+        return filtros.toPredicate().build();
+    }
+
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
+        validaSalvar(request.getAgenteAutorizadoId());
+
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro();
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
@@ -114,6 +167,19 @@ public class SolicitacaoRamalService {
         gerarHistorico(solicitacaoRamalPersistida, null);
 
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+    }
+
+    private void validaSalvar(Integer aaId) {
+        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
+            throw new ValidacaoException(
+                    "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+        }
+    }
+
+    private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
+        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
+                .stream()
+                .count() > 0;
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
@@ -151,6 +217,23 @@ public class SolicitacaoRamalService {
 
     private SolicitacaoRamal findById(Integer id) {
         return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(Integer solicitacaoId) {
+        SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
+
+        return solicitacaoRamal.getUsuariosSolicitados()
+                .stream()
+                .map(usuario -> SolicitacaoRamalColaboradorResponse.convertFrom(
+                        usuario,
+                        getCargoById(usuario.getCargoId())
+                ))
+                .sorted(comparing(SolicitacaoRamalColaboradorResponse::getNome))
+                .collect(Collectors.toList());
+    }
+
+    private Cargo getCargoById(Integer cargoId) {
+        return cargoService.findById(cargoId);
     }
 
     public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
@@ -251,6 +334,27 @@ public class SolicitacaoRamalService {
 
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
         return agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false).stream().count();
+    }
+
+    public void remover(Integer solicitacaoId) {
+        SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
+
+        validaSituacaoPendente(solicitacaoRamal.getSituacao());
+
+        removerHistoricoSolicitacao(solicitacaoId);
+        solicitacaoRamalRepository.delete(solicitacaoRamal);
+    }
+
+    private void validaSituacaoPendente(ESituacaoSolicitacao situacao) {
+        if (!situacao.equals(PENDENTE)) {
+            throw new ValidacaoException("Só é possível excluir solicitações com status pendente!");
+        }
+    }
+
+    private void removerHistoricoSolicitacao(Integer solicitacaoId) {
+        historicoRepository.findAllBySolicitacaoRamalId(solicitacaoId)
+                .stream()
+                .forEach(historico -> historicoRepository.delete(historico));
     }
 
 }
