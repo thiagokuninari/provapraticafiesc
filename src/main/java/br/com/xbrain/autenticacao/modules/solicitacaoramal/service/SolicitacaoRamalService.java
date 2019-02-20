@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
+import static java.util.Comparator.comparing;
 
 @Service
 public class SolicitacaoRamalService {
@@ -78,11 +79,12 @@ public class SolicitacaoRamalService {
         validaParametrosPaginacao(filtros);
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros), filtros);
 
-        return new PageImpl<>(solicitacoes.getContent()
-                .stream()
+        return new PageImpl<>(solicitacoes.getContent().stream()
                 .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
                         solicitacao,
                         getQuantidadeRamaisPeloAgenteAutorizadoId(solicitacao.getAgenteAutorizadoId())))
+                .sorted(comparing(SolicitacaoRamalResponse::getId)
+                        .reversed())
                 .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
