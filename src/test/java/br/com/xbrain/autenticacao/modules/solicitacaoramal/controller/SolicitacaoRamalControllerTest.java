@@ -167,24 +167,6 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAllDetalhar_badRequest_quandoNaoEnviarAgenteAutorizadoId() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/detalhar")
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.[*].message", containsInAnyOrder(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO)));
-    }
-
-    @Test
-    public void getAllDetalhar_listaComTresRegistros_quandoDetalharSolicitacaoPeloAgenteAutorizadoId() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/detalhar/?agenteAutorizadoId=1")
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)));
-    }
-
-    @Test
     public void getAll_listaComDezRegistro_seUsuarioPossuirPermissaoHelpDesk() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
