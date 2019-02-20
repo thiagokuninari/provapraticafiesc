@@ -188,9 +188,9 @@ public class UsuarioServiceTest {
     @Test
     public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
         Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("28667582506");
+        usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
