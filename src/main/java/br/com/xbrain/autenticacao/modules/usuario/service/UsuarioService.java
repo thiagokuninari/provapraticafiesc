@@ -345,7 +345,6 @@ public class UsuarioService {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
-            usuarioCopia.setAlterarSenha(Eboolean.V);
             usuarioCopia.setSituacao(ESituacao.A);
             usuarioCopia.setId(null);
         }
