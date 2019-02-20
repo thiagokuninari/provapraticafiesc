@@ -64,4 +64,9 @@ public class SolicitacaoRamalController {
         solicitacaoRamalService.remover(solicitacaoId);
     }
 
+    @GetMapping("/colaboradores/{solicitacaoId}")
+    public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(@PathVariable Integer solicitacaoId) {
+        return solicitacaoRamalService.getColaboradoresBySolicitacaoId(solicitacaoId);
+    }
+
 }
