@@ -87,6 +87,16 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
+    public void getColaboradoresBySolicitacaoId_listaComQuatroRegistros_quandoVisualizarColaboradoresPeloSolicitacaoid()
+            throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/colaboradores/1")
+                .header("Authorization", getAccessToken(mvc, HELP_DESK))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)));
+    }
+
+    @Test
     public void atualizarSituacao_solicitacaoComSituacaoEnviado_quandoAlterarASituacaoPraEnviado() throws Exception {
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
