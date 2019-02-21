@@ -707,8 +707,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpf(usuario.getCpf())
                 .ifPresent(u -> {
-                    if (!usuario.getSituacao()
-                            .equals(ESituacao.A)) {
+                    if (usuario.getSituacao()
+                            .equals(ESituacao.R) || ObjectUtils.isEmpty(usuario.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -718,8 +718,8 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
                 .ifPresent(u -> {
-                    if (!usuario.getSituacao()
-                            .equals(ESituacao.A)) {
+                    if (usuario.getSituacao()
+                            .equals(ESituacao.R) || ObjectUtils.isEmpty(usuario.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
