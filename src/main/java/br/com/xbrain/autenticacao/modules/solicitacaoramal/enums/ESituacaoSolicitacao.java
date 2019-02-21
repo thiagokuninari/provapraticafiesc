@@ -4,6 +4,7 @@ public enum ESituacaoSolicitacao {
     PENDENTE,
     EM_ANDAMENTO,
     CONCLUIDO,
-    REJEITADO
+    REJEITADO,
+    ENVIADO
 
 }
