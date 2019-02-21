@@ -212,11 +212,12 @@ public class SolicitacaoRamalService {
     }
 
     private SolicitacaoRamal findById(Integer id) {
-        return solicitacaoRamalRepository.findBySolicitacaoId(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(Integer solicitacaoId) {
-        SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
+        SolicitacaoRamal solicitacaoRamal = solicitacaoRamalRepository.findBySolicitacaoId(solicitacaoId)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         return solicitacaoRamal.getUsuariosSolicitados()
                 .stream()

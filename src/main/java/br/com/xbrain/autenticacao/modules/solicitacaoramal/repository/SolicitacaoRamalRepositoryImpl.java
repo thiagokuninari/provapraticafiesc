@@ -89,7 +89,7 @@ public class SolicitacaoRamalRepositoryImpl
                 new JPAQueryFactory(entityManager)
                         .select(solicitacaoRamal)
                         .from(solicitacaoRamal)
-                        .innerJoin(solicitacaoRamal.usuario, usuario).fetchJoin()
+                        .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
                         .innerJoin(usuario.cargo, cargo).fetchJoin()
                         .where(solicitacaoRamal.id.eq(solicitacaoId))
                         .fetchOne()
