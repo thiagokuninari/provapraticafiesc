@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -12,11 +11,11 @@ public class SolicitacaoRamalColaboradorResponse {
     private String nome;
     private String cargo;
 
-    public static SolicitacaoRamalColaboradorResponse convertFrom(Usuario usuario, Cargo cargo) {
+    public static SolicitacaoRamalColaboradorResponse convertFrom(Usuario usuario) {
         SolicitacaoRamalColaboradorResponse response = new SolicitacaoRamalColaboradorResponse();
         BeanUtils.copyProperties(usuario, response);
 
-        response.cargo = cargo.getNome();
+        response.cargo = usuario.getCargo().getNome();
 
         return response;
     }
