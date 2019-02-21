@@ -387,8 +387,15 @@ public class UsuarioServiceTest {
         assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
 
-    private UsuarioAutenticado umUsuarioAutenticado() {
-        return new UsuarioAutenticado(umUsuarioComHierarquia());
+    private UsuarioMqRequest umUsuarioARealocar() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        usuarioMqRequest.setRealocado(true);
+        return usuarioMqRequest;
     }
 
     private UsuarioMqRequest umUsuarioInativo() {
@@ -400,6 +407,10 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setSituacao(ESituacao.I);
         usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return new UsuarioAutenticado(umUsuarioComHierarquia());
     }
 
     private UsuarioFiltros getFiltroUsuario(String nome) {
@@ -452,17 +463,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         usuarioMqRequest.setRealocado(false);
-        return usuarioMqRequest;
-    }
-
-    private UsuarioMqRequest umUsuarioARealocar() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
-        usuarioMqRequest.setSituacao(ESituacao.A);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 

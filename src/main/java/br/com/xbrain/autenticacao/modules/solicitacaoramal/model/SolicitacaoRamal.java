@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -25,6 +26,7 @@ import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 @ToString(of = "id")
 @Entity
 @Table(name = "SOLICITACAO_RAMAL")
+@NoArgsConstructor
 public class SolicitacaoRamal {
 
     @Id
@@ -84,6 +86,19 @@ public class SolicitacaoRamal {
 
     @Column(name = "DATA_ENVIADO_EMAIL_EXPIRACAO")
     private LocalDateTime dataEnviadoEmailExpiracao;
+
+    public SolicitacaoRamal(Integer id, Integer agenteAutorizadoId, String agenteAutorizadoNome,
+                            String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao, LocalDateTime dataCadastro,
+                            String usuarioNome) {
+        this.id = id;
+        this.agenteAutorizadoId = agenteAutorizadoId;
+        this.agenteAutorizadoNome = agenteAutorizadoNome;
+        this.agenteAutorizadoCnpj = agenteAutorizadoCnpj;
+        this.situacao = situacao;
+        this.dataCadastro = dataCadastro;
+        this.usuario = new Usuario();
+        this.usuario.setNome(usuarioNome);
+    }
 
     public void atualizarDataCadastro() {
         this.dataCadastro = LocalDateTime.now();
