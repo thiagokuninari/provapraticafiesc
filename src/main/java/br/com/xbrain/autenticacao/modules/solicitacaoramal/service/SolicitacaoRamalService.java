@@ -18,9 +18,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +41,6 @@ import static java.util.Comparator.comparing;
 @Service
 public class SolicitacaoRamalService {
 
-    @Autowired
-    private CargoService cargoService;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -220,20 +216,14 @@ public class SolicitacaoRamalService {
     }
 
     public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(Integer solicitacaoId) {
-        SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
+        SolicitacaoRamal solicitacaoRamal = solicitacaoRamalRepository.findBySolicitacaoId(solicitacaoId)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         return solicitacaoRamal.getUsuariosSolicitados()
                 .stream()
-                .map(usuario -> SolicitacaoRamalColaboradorResponse.convertFrom(
-                        usuario,
-                        getCargoById(usuario.getCargoId())
-                ))
+                .map(SolicitacaoRamalColaboradorResponse::convertFrom)
                 .sorted(comparing(SolicitacaoRamalColaboradorResponse::getNome))
                 .collect(Collectors.toList());
-    }
-
-    private Cargo getCargoById(Integer cargoId) {
-        return cargoService.findById(cargoId);
     }
 
     public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {

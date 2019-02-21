@@ -13,10 +13,11 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.EM_ANDAMENTO;
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.*;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class SolicitacaoRamalRepositoryImpl
@@ -80,5 +81,18 @@ public class SolicitacaoRamalRepositoryImpl
                         .and(solicitacaoRamal.situacao.eq(PENDENTE)
                                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
                 .fetch();
+    }
+
+    @Override
+    public Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId) {
+        return Optional.ofNullable(
+                new JPAQueryFactory(entityManager)
+                        .select(solicitacaoRamal)
+                        .from(solicitacaoRamal)
+                        .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .where(solicitacaoRamal.id.eq(solicitacaoId))
+                        .fetchOne()
+        );
     }
 }
