@@ -322,11 +322,9 @@ public class UsuarioService {
     }
 
     public void salvarUsuarioRealocado(Usuario usuario) {
-        Usuario usuarioARealocar = repository.findByCpf(usuario.getCpf()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        if (usuarioARealocar.getSituacao().equals(ESituacao.A)) {
-            usuarioARealocar.setSituacao(ESituacao.R);
-            repository.save(usuarioARealocar);
-        }
+        Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        usuarioARealocar.setSituacao(ESituacao.R);
+        repository.save(usuarioARealocar);
     }
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
@@ -343,13 +341,11 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
-        if (!ObjectUtils.isEmpty(usuarios)
+        if (!ObjectUtils.isEmpty(repository.findAllByCpf(usuario.getCpf()))
                 && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
             usuarioCopia.setDataCadastro(LocalDateTime.now());
-            usuarioCopia.setAlterarSenha(Eboolean.V);
             usuarioCopia.setSituacao(ESituacao.A);
             usuarioCopia.setId(null);
         }
@@ -371,7 +367,7 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            Optional<Usuario> usuarioAtualizar = repository.findByCpf(usuario.getCpf());
+            Optional<Usuario> usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
                 UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
                 try {
@@ -710,10 +706,10 @@ public class UsuarioService {
     private void validarCpfExistente(Usuario usuario) {
         usuario.removerCaracteresDoCpf();
         repository
-                .findTop1UsuarioByCpf(usuario.getCpf())
+                .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (!usuario.getSituacao()
-                            .equals(ESituacao.A)) {
+                    if (ObjectUtils.isEmpty(usuario.getId())
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -721,10 +717,10 @@ public class UsuarioService {
 
     private void validarEmailExistente(Usuario usuario) {
         repository
-                .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
+                .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (!usuario.getSituacao()
-                            .equals(ESituacao.A)) {
+                    if (ObjectUtils.isEmpty(usuario.getId())
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
