@@ -1231,15 +1231,22 @@ public class UsuarioService {
                     .distinct()
                     .collect(Collectors.toList());
 
-            return usuarios.stream()
-                    .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())
-                                && !usuariosExistenteEmEquipesVendas.contains(usuario))
-                    .collect(Collectors.toList());
+            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
 
         } catch (Exception ex) {
             log.error("Erro - Cargo Inválido.", ex);
             throw new ValidacaoException("Erro - Cargo Inválido");
         }
+    }
+
+    public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
+                                                                   List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
+        return usuarios.stream()
+                .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())
+                        && !usuariosExistenteEmEquipesVendas.stream()
+                        .anyMatch(usuarioExistente ->
+                                usuarioExistente.getId().equals(usuario.getId())))
+                .collect(Collectors.toList());
     }
 
 }
