@@ -186,7 +186,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
+    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() throws Exception {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
@@ -194,7 +194,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void updateFromQueue_CriaNovoUsuario_QuandoAntigoRealocado() throws Exception {
+    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() throws Exception {
         service.updateFromQueue(umUsuarioARealocar());
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {

@@ -351,7 +351,11 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+<<<<<<< HEAD
                 .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(93)))
+=======
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(94)))
+>>>>>>> feat-permissao-d2d-mailing
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 
