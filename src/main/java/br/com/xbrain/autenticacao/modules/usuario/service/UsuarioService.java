@@ -709,7 +709,7 @@ public class UsuarioService {
                 .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                    || !usuario.getId().equals(u.getId())) {
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -720,7 +720,7 @@ public class UsuarioService {
                 .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                    || !usuario.getId().equals(u.getId())) {
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
