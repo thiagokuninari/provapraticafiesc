@@ -40,6 +40,13 @@ public class CidadeService {
         return UsuarioCidadeDto.parse(repository.findAllBySubClusterId(subClusterId, predicate.build()));
     }
 
+    public List<UsuarioCidadeDto> getAllBySubClustersId(List<Integer> subClustersId) {
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        CidadePredicate predicate = new CidadePredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return UsuarioCidadeDto.parse(repository.findAllBySubClustersId(subClustersId, predicate.build()));
+    }
+
     public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         CidadePredicate predicate = new CidadePredicate();

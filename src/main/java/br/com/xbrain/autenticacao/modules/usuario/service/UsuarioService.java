@@ -1223,15 +1223,30 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosByCidades(String cargo, List<Integer> cidades) {
         try {
             int codigo = CodigoCargoOperacao.valueOf(cargo).getCodigo();
-            return repository.getUsuariosByCidades(codigo, cidades).stream()
+            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
+                    .map(UsuarioResponse::convertEquipeVendasUsuario)
+                    .collect(Collectors.toList());
+            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(codigo, cidades).stream()
                     .map(UsuarioResponse::convertFrom)
                     .distinct()
                     .collect(Collectors.toList());
+
+            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
 
         } catch (Exception ex) {
             log.error("Erro - Cargo Inválido.", ex);
             throw new ValidacaoException("Erro - Cargo Inválido");
         }
+    }
+
+    public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
+                                                                   List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
+        return usuarios.stream()
+                .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())
+                        && !usuariosExistenteEmEquipesVendas.stream()
+                        .anyMatch(usuarioExistente ->
+                                usuarioExistente.getId().equals(usuario.getId())))
+                .collect(Collectors.toList());
     }
 
 }
