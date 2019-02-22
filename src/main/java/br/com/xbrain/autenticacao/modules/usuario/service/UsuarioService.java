@@ -705,10 +705,10 @@ public class UsuarioService {
     private void validarCpfExistente(Usuario usuario) {
         usuario.removerCaracteresDoCpf();
         repository
-                .findTop1UsuarioByCpf(usuario.getCpf())
+                .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (usuario.getSituacao()
-                            .equals(ESituacao.R) || ObjectUtils.isEmpty(usuario.getId())) {
+                    if (ObjectUtils.isEmpty(usuario.getId())
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -716,10 +716,10 @@ public class UsuarioService {
 
     private void validarEmailExistente(Usuario usuario) {
         repository
-                .findTop1UsuarioByEmailIgnoreCase(usuario.getEmail())
+                .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (usuario.getSituacao()
-                            .equals(ESituacao.R) || ObjectUtils.isEmpty(usuario.getId())) {
+                    if (ObjectUtils.isEmpty(usuario.getId())
+                        || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
