@@ -25,7 +25,7 @@ public class UsuarioHierarquiaRepositoryImpl
                 .from(usuarioHierarquia)
                 .join(usuarioHierarquia.usuario, usuario).fetchJoin()
                 .join(usuario.cargo, cargo).fetchJoin()
-                .join(cargo.cargoSuperior).fetchJoin()
+                .join(cargo.superiores).fetchJoin()
                 .where(usuarioHierarquia.usuarioSuperior.id.eq(idUsuario))
                 .fetch();
     }
