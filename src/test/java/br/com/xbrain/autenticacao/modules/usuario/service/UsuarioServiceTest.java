@@ -171,7 +171,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() throws Exception {
-        service.updateFromQueue(umUsuarioARealocar());
+        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        usuarioMqRequest.setId(368);
+        service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
@@ -310,7 +312,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveEnviarFilaDeAtualizarUsuariosNoPolQuandoForSocioPrincipal() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setId(368);
         usuarioMqRequest.setCpf("21145664523");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
