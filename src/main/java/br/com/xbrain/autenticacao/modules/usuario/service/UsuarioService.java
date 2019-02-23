@@ -1230,8 +1230,11 @@ public class UsuarioService {
                     .map(UsuarioResponse::convertFrom)
                     .distinct()
                     .collect(Collectors.toList());
-
-            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
+            if (cargo.equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())) {
+                return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
+            } else {
+                return usuarios;
+            }
 
         } catch (Exception ex) {
             log.error("Erro - Cargo Inválido.", ex);
