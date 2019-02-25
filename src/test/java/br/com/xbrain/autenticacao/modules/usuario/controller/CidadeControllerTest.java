@@ -45,7 +45,7 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(401)));
+                .andExpect(jsonPath("$", hasSize(8)));
     }
 
     @Test
@@ -63,8 +63,8 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(38)))
-                .andExpect(jsonPath("$[0].nome", is("ALHANDRA")))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("JACARAU")))
                 .andExpect(jsonPath("$[0].subCluster.nome", is("JOÃO PESSOA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
@@ -77,7 +77,7 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
                 .andExpect(jsonPath("$[0].subCluster.nome", is("LONDRINA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("NORTE DO PARANÁ")))
