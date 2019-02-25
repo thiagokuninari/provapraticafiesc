@@ -199,13 +199,23 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveFiltrarPorInativo() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?situacao=I")
+    public void filtrarUser_deveFiltrarPorInativo_quandoSituacaoForInativo() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia?situacao=I&realocado=false")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].nome", is("INATIVO")));
+    }
+
+    @Test
+    public void filtrarUser_deveFiltrarPorRealocado_quandoRealocadoForTrue() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia?realocado=true")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nome", is("REALOCADO")));
     }
 
     @Test
