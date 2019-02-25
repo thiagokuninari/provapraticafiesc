@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
@@ -23,8 +24,19 @@ public class SolicitacaoRamalResponse {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    private LocalDateTime horaExpiracao;
+    private LocalDateTime dataHoraExpiracao;
     private String usuarioSolicitante;
+    private String agenteAutorizadoCnpj;
+    private String agenteAutorizadoNome;
+    private Integer agenteAutorizadoId;
+    private long ramaisSolicitados;
+
+    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal, long ramaisSolicitados) {
+        SolicitacaoRamalResponse response = convertFrom(solicitacaoRamal);
+        response.ramaisSolicitados = ramaisSolicitados;
+
+        return response;
+    }
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
@@ -33,6 +45,7 @@ public class SolicitacaoRamalResponse {
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
         BeanUtils.copyProperties(solicitacaoRamal, response);
+        response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 
         return response;
     }
@@ -42,7 +55,7 @@ public class SolicitacaoRamalResponse {
 
         long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataExpiracao);
 
-        this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
+        this.dataHoraExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {

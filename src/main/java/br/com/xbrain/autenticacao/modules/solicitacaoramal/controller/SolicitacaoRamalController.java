@@ -18,19 +18,29 @@ public class SolicitacaoRamalController {
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
 
-    @GetMapping(value = "/historico/{idSolicitacao}")
+    @GetMapping("/dados-agente-autorizado/{agenteAutorizadoId}")
+    public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(@PathVariable Integer agenteAutorizadoId) {
+        return solicitacaoRamalService.getDadosAgenteAutorizado(agenteAutorizadoId);
+    }
+
+    @GetMapping("/historico/{idSolicitacao}")
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(@PathVariable Integer idSolicitacao) {
         return solicitacaoRamalService.getAllHistoricoBySolicitacaoId(idSolicitacao);
     }
 
-    @GetMapping(value = "/solicitacao/{idSolicitacao}")
+    @GetMapping("/solicitacao/{idSolicitacao}")
     public SolicitacaoRamalResponse getSolicitacaoById(@PathVariable Integer idSolicitacao) {
         return solicitacaoRamalService.getSolicitacaoById(idSolicitacao);
     }
 
-    @PostMapping(value = "/gerencia/atualiza-status")
+    @PostMapping("/gerencia/atualiza-status")
     public SolicitacaoRamalResponse atualizarSituacao(@Validated @RequestBody SolicitacaoRamalAtualizarStatusRequest request) {
         return solicitacaoRamalService.atualizarStatus(request);
+    }
+
+    @GetMapping("/gerencia")
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return solicitacaoRamalService.getAllGerencia(pageable, filtros);
     }
 
     @GetMapping
@@ -47,6 +57,16 @@ public class SolicitacaoRamalController {
     @PutMapping
     public SolicitacaoRamalResponse update(@Validated @RequestBody SolicitacaoRamalRequest request) {
         return solicitacaoRamalService.update(request);
+    }
+
+    @DeleteMapping("/{solicitacaoId}")
+    public void remover(@PathVariable Integer solicitacaoId) {
+        solicitacaoRamalService.remover(solicitacaoId);
+    }
+
+    @GetMapping("/colaboradores/{solicitacaoId}")
+    public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(@PathVariable Integer solicitacaoId) {
+        return solicitacaoRamalService.getColaboradoresBySolicitacaoId(solicitacaoId);
     }
 
 }

@@ -544,9 +544,10 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private void mockResponseAgenteAutorizado() {
-        AgenteAutorizadoResponse response = new AgenteAutorizadoResponse();
-        response.setId("100");
-        response.setCnpj("09.489.617/0001-97");
+        AgenteAutorizadoResponse response = AgenteAutorizadoResponse.builder()
+                .id("100")
+                .cnpj("09.489.617/0001-97")
+                .build();
 
         when(agenteAutorizadoClient.getAaByCpnj(Matchers.anyMap()))
                 .thenReturn(response);
