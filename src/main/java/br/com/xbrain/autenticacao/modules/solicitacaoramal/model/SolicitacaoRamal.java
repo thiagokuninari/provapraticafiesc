@@ -87,16 +87,17 @@ public class SolicitacaoRamal {
     private LocalDateTime dataEnviadoEmailExpiracao;
 
     public SolicitacaoRamal(Integer id, Integer agenteAutorizadoId, String agenteAutorizadoNome,
-                            String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao, LocalDateTime dataCadastro,
-                            String usuarioNome) {
+                            String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao,
+                            Integer quantidadeRamais, LocalDateTime dataCadastro,
+                            Usuario usuario) {
         this.id = id;
         this.agenteAutorizadoId = agenteAutorizadoId;
         this.agenteAutorizadoNome = agenteAutorizadoNome;
         this.agenteAutorizadoCnpj = agenteAutorizadoCnpj;
         this.situacao = situacao;
+        this.quantidadeRamais = quantidadeRamais;
         this.dataCadastro = dataCadastro;
-        this.usuario = new Usuario();
-        this.usuario.setNome(usuarioNome);
+        this.usuario = usuario;
     }
 
     public void atualizarDataCadastro() {
