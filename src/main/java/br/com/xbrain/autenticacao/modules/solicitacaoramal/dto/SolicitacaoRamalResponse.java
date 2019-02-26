@@ -25,14 +25,14 @@ public class SolicitacaoRamalResponse {
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataHoraExpiracao;
-    private String usuarioSolicitante;
+    private String solicitante;
     private String agenteAutorizadoCnpj;
     private String agenteAutorizadoNome;
     private Integer agenteAutorizadoId;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
-        response.usuarioSolicitante = solicitacaoRamal.getUsuario().getNome();
+        response.solicitante = solicitacaoRamal.getUsuario().getNome();
 
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
