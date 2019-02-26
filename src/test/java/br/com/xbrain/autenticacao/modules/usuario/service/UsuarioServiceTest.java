@@ -162,16 +162,18 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
+    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() throws Exception {
         Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("28667582506");
+        usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
-    public void updateFromQueue_CriaNovoUsuario_QuandoAntigoRealocado() throws Exception {
-        service.updateFromQueue(umUsuarioARealocar());
+    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() throws Exception {
+        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        usuarioMqRequest.setId(368);
+        service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
@@ -310,7 +312,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveEnviarFilaDeAtualizarUsuariosNoPolQuandoForSocioPrincipal() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setId(368);
         usuarioMqRequest.setCpf("21145664523");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);

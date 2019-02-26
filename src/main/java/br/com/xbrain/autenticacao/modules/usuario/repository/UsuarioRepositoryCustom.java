@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
@@ -53,4 +54,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
 
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
+
+    Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 }

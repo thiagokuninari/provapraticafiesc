@@ -21,7 +21,11 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     Optional<Usuario> findTop1UsuarioByEmailIgnoreCase(String email);
 
+    Optional<Usuario> findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
+
     Optional<Usuario> findTop1UsuarioByCpf(String cpf);
+
+    Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
     Optional<Usuario> findById(Integer id);
 
@@ -31,11 +35,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     Optional<Usuario> findByCpf(String cpf);
 
-    List<Usuario> findAllByCpfIsNull();
-
     List<Usuario> findAllByCpf(String cpf);
-
-    Optional<Usuario> findByCpfAndSituacao(String cpf, ESituacao situacao);
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
@@ -43,7 +43,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
 
-    List<Usuario> findAllByEmailIgnoreCaseOrCpf(String email, String cpf);
+    List<Usuario> findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(String email, String cpf, ESituacao situacao);
 
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
