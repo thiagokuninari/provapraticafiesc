@@ -243,7 +243,15 @@ public class SolicitacaoRamalService {
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
         context.setVariable("dataLimite", DateUtil.dateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
+        context.setVariable("colaboradoresIds", getColaboradoresIdsBySolicitacaoId(solicitacaoRamal.getId()));
         return context;
+    }
+
+    private List<Integer> getColaboradoresIdsBySolicitacaoId(Integer solicitacaoId) {
+        return getColaboradoresBySolicitacaoId(solicitacaoId)
+                .stream()
+                .map(SolicitacaoRamalColaboradorResponse::getId)
+                .collect(Collectors.toList());
     }
 
     public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
