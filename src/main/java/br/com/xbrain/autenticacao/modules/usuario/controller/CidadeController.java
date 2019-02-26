@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -71,5 +72,10 @@ public class CidadeController {
     @RequestMapping(value = "{cidadeId}")
     public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
         return CidadeResponse.parse(repository.findOne(id));
+    }
+
+    @GetMapping("{id}/clusterizacao")
+    public ClusterizacaoDto getAll(@PathVariable Integer id) {
+        return service.getClusterizacao(id);
     }
 }

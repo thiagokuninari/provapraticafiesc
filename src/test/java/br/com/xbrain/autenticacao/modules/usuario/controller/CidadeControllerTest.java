@@ -127,4 +127,21 @@ public class CidadeControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void getHierarquia_deveRetornarTodaEstruturaDeCluster_quandoPossuiEstrutura() throws Exception {
+        mvc.perform(get("/api/cidades/5578/clusterizacao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cidadeId", is(5578)))
+                .andExpect(jsonPath("$.cidadeNome", is("LONDRINA")))
+                .andExpect(jsonPath("$.subclusterId", is(189)))
+                .andExpect(jsonPath("$.subclusterNome", is("LONDRINA")))
+                .andExpect(jsonPath("$.clusterId", is(45)))
+                .andExpect(jsonPath("$.clusterNome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$.grupoId", is(20)))
+                .andExpect(jsonPath("$.grupoNome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$.regionalId", is(3)))
+                .andExpect(jsonPath("$.regionalNome", is("SUL")));
+    }
 }
