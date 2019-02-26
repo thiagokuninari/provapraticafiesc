@@ -45,12 +45,12 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comSituacao(ESituacao situacao, boolean realocado) {
-        if (Objects.nonNull(situacao) && realocado == false) {
+        if (Objects.nonNull(situacao) && !realocado) {
             builder.and(usuario.situacao.eq(situacao));
             builder.and(usuario.situacao.notIn(ESituacao.R));
-        } else if (!Objects.nonNull(situacao) && realocado == true) {
+        } else if (Objects.isNull(situacao) && realocado) {
             builder.and(usuario.situacao.eq(ESituacao.R));
-        } else if (!Objects.nonNull(situacao) && realocado == false) {
+        } else {
             builder.and(usuario.situacao.notIn(ESituacao.R));
         }
         return this;
