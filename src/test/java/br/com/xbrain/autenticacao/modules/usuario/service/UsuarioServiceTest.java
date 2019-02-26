@@ -186,16 +186,18 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void salvarUsuarioRealocado_RealocaUsuario_QuandoUsuarioEstiverAtivo() throws Exception {
+    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() throws Exception {
         Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setCpf("28667582506");
+        usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findByCpf(usuarioRealocar.getCpf()).get().getSituacao());
+        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
-    public void updateFromQueue_CriaNovoUsuario_QuandoAntigoRealocado() throws Exception {
-        service.updateFromQueue(umUsuarioARealocar());
+    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() throws Exception {
+        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        usuarioMqRequest.setId(368);
+        service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
@@ -334,7 +336,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveEnviarFilaDeAtualizarUsuariosNoPolQuandoForSocioPrincipal() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setId(368);
         usuarioMqRequest.setCpf("21145664523");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
@@ -387,8 +389,15 @@ public class UsuarioServiceTest {
         assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
 
-    private UsuarioAutenticado umUsuarioAutenticado() {
-        return new UsuarioAutenticado(umUsuarioComHierarquia());
+    private UsuarioMqRequest umUsuarioARealocar() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        usuarioMqRequest.setRealocado(true);
+        return usuarioMqRequest;
     }
 
     private UsuarioMqRequest umUsuarioInativo() {
@@ -400,6 +409,10 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setSituacao(ESituacao.I);
         usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return new UsuarioAutenticado(umUsuarioComHierarquia());
     }
 
     private UsuarioFiltros getFiltroUsuario(String nome) {
@@ -452,17 +465,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         usuarioMqRequest.setRealocado(false);
-        return usuarioMqRequest;
-    }
-
-    private UsuarioMqRequest umUsuarioARealocar() {
-        UsuarioMqRequest usuarioMqRequest = umUsuario();
-        usuarioMqRequest.setId(104);
-        usuarioMqRequest.setCpf("21145664523");
-        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
-        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
-        usuarioMqRequest.setSituacao(ESituacao.A);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 

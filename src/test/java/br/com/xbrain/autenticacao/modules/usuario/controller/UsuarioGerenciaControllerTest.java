@@ -141,13 +141,13 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosByCargoSuperior() throws Exception {
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
+                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")));
     }
 
     @Test
@@ -199,13 +199,23 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveFiltrarPorInativo() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?situacao=I")
+    public void filtrarUser_deveFiltrarPorInativo_quandoSituacaoForInativo() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia?situacao=I&realocado=false")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].nome", is("INATIVO")));
+    }
+
+    @Test
+    public void filtrarUser_deveFiltrarPorRealocado_quandoRealocadoForTrue() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia?realocado=true")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nome", is("REALOCADO")));
     }
 
     @Test
@@ -351,7 +361,8 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(91)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(95)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(95)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 

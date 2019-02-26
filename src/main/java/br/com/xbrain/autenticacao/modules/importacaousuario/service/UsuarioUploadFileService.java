@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
@@ -208,8 +209,8 @@ public class UsuarioUploadFileService {
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
         StringBuilder msgErro = new StringBuilder();
 
-        List<Usuario> listaUsuariosPresentes = usuarioRepository.findAllByEmailIgnoreCaseOrCpf(usuario.getEmail(),
-                usuario.getCpf());
+        List<Usuario> listaUsuariosPresentes = usuarioRepository
+                .findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(usuario.getEmail(), usuario.getCpf(), ESituacao.R);
 
         if (listaUsuariosPresentes.size() > 0) {
             msgErro.append("Usuário já salvo no banco");

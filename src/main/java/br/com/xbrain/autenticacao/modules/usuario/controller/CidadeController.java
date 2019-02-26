@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +56,11 @@ public class CidadeController {
     @RequestMapping("sub-cluster/{subclusterId}")
     public List<UsuarioCidadeDto> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return service.getAllBySubClusterId(subclusterId);
+    }
+
+    @RequestMapping("sub-clusters")
+    public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
+        return service.getAllBySubClustersId(subclustersId);
     }
 
     @RequestMapping(value = "cidade/{cidadeId}")

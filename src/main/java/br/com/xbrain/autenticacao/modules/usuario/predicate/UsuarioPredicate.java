@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -44,9 +45,14 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacao(ESituacao situacao) {
-        if (Objects.nonNull(situacao)) {
+    public UsuarioPredicate comSituacao(ESituacao situacao, boolean realocado) {
+        if (Objects.nonNull(situacao) && !realocado) {
             builder.and(usuario.situacao.eq(situacao));
+            builder.and(usuario.situacao.notIn(ESituacao.R));
+        } else if (Objects.isNull(situacao) && realocado) {
+            builder.and(usuario.situacao.eq(ESituacao.R));
+        } else {
+            builder.and(usuario.situacao.notIn(ESituacao.R));
         }
         return this;
     }
@@ -93,6 +99,13 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
+        if (!CollectionUtils.isEmpty(cargoIds)) {
+            builder.and(usuario.cargo.id.in(cargoIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCargos(Set<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
         }

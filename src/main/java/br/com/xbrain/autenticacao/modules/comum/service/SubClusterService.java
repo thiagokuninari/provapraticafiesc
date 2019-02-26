@@ -32,6 +32,16 @@ public class SubClusterService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubClusterDto> getAllByClustersId(List<Integer> clustersId) {
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        SubClusterPredicate predicate = new SubClusterPredicate();
+        predicate.filtrarPermitidos(usuarioAutenticado);
+        return repository.findAllByClustersId(clustersId, predicate.build())
+                .stream()
+                .map(SubClusterDto::objectToDto)
+                .collect(Collectors.toList());
+    }
+
     public List<SubClusterDto> getAllAtivos() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
                 .stream()
@@ -39,4 +49,9 @@ public class SubClusterService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubClusterDto> getAll() {
+        return repository.findAll().stream()
+                .map(SubClusterDto::objectToDto)
+                .collect(Collectors.toList());
+    }
 }

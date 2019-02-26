@@ -38,6 +38,11 @@ public class SolicitacaoRamalController {
         return solicitacaoRamalService.atualizarStatus(request);
     }
 
+    @GetMapping("/gerencia")
+    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return solicitacaoRamalService.getAllGerencia(pageable, filtros);
+    }
+
     @GetMapping
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return solicitacaoRamalService.getAll(pageable, filtros);
@@ -52,6 +57,16 @@ public class SolicitacaoRamalController {
     @PutMapping
     public SolicitacaoRamalResponse update(@Validated @RequestBody SolicitacaoRamalRequest request) {
         return solicitacaoRamalService.update(request);
+    }
+
+    @DeleteMapping("/{solicitacaoId}")
+    public void remover(@PathVariable Integer solicitacaoId) {
+        solicitacaoRamalService.remover(solicitacaoId);
+    }
+
+    @GetMapping("/colaboradores/{solicitacaoId}")
+    public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(@PathVariable Integer solicitacaoId) {
+        return solicitacaoRamalService.getColaboradoresBySolicitacaoId(solicitacaoId);
     }
 
 }
