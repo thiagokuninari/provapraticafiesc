@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 
@@ -22,4 +23,5 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> findAllByClusterId(Integer clusterId, Predicate predicate);
 
+    ClusterizacaoDto getClusterizacao(Integer id);
 }
