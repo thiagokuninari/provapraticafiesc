@@ -29,14 +29,6 @@ public class SolicitacaoRamalResponse {
     private String agenteAutorizadoCnpj;
     private String agenteAutorizadoNome;
     private Integer agenteAutorizadoId;
-    private long ramaisSolicitados;
-
-    public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal, long ramaisSolicitados) {
-        SolicitacaoRamalResponse response = convertFrom(solicitacaoRamal);
-        response.ramaisSolicitados = ramaisSolicitados;
-
-        return response;
-    }
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();

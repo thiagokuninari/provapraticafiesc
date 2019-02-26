@@ -68,6 +68,9 @@ public class SolicitacaoRamalService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
 
+    private final Integer pageDefault = 0;
+    private final Integer sizeDefault = 10;
+
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
                 .stream()
@@ -76,24 +79,20 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        validaParametrosPaginacao(filtros);
+        validaPaginacao(filtros);
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros), filtros);
 
-        return new PageImpl<>(solicitacoes.getContent().stream()
-                .map(solicitacao -> SolicitacaoRamalResponse.convertFrom(
-                        solicitacao,
-                        getQuantidadeRamaisPeloAgenteAutorizadoId(solicitacao.getAgenteAutorizadoId())))
-                .sorted(comparing(SolicitacaoRamalResponse::getId)
-                        .reversed())
-                .collect(Collectors.toList()),
+        return new PageImpl<>(solicitacoes.getContent()
+                            .stream()
+                            .map(SolicitacaoRamalResponse::convertFrom)
+                            .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
     }
 
-    private void validaParametrosPaginacao(SolicitacaoRamalFiltros filtros) {
-        if (ObjectUtils.isEmpty(filtros.getPage()) || ObjectUtils.isEmpty(filtros.getSize())) {
-            throw new ValidacaoException("É necessário enviar os parametros de paginação");
-        }
+    private void validaPaginacao(SolicitacaoRamalFiltros filtros) {
+        filtros.setPage(!ObjectUtils.isEmpty(filtros.getPage()) ? filtros.getPage() : pageDefault);
+        filtros.setSize(!ObjectUtils.isEmpty(filtros.getSize()) ? filtros.getSize() : sizeDefault);
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
