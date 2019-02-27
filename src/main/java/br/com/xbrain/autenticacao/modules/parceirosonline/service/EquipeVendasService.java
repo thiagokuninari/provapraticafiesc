@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,15 @@ public class EquipeVendasService {
         } catch (Exception ex) {
             log.warn("Erro ao obter as equipes de venda do supervisor", ex);
             return Collections.emptyList();
+        }
+    }
+
+    public EquipeVendaDto getByUsuario(Integer usuarioId) {
+        try {
+            return equipeVendasClient.getByUsuario(usuarioId);
+        } catch (Exception ex) {
+            log.warn("Erro ao obter a equipe de venda do usuário", ex);
+            return null;
         }
     }
 }
