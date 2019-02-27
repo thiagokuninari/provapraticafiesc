@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
-import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,10 +16,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.*;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.EM_ANDAMENTO;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class SolicitacaoRamalRepositoryImpl
         extends CustomRepository<SolicitacaoRamal>
             implements SolicitacaoRamalRepositoryCustom {
@@ -48,9 +50,9 @@ public class SolicitacaoRamalRepositoryImpl
                                 solicitacaoRamal.quantidadeRamais,
                                 solicitacaoRamal.dataCadastro,
                                 new JPAQueryFactory(entityManager)
-                                        .select(QUsuario.usuario)
-                                        .from(QUsuario.usuario)
-                                        .where(QUsuario.usuario.id.eq(solicitacaoRamal.usuario.id)))
+                                        .select(usuario)
+                                        .from(usuario)
+                                        .where(usuario.id.eq(solicitacaoRamal.usuario.id)))
                 ).from(solicitacaoRamal)
                 .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
                                 .select(solicitacaoAuxiliar.id.max())
@@ -94,8 +96,8 @@ public class SolicitacaoRamalRepositoryImpl
                 new JPAQueryFactory(entityManager)
                         .select(solicitacaoRamal)
                         .from(solicitacaoRamal)
-                        .innerJoin(solicitacaoRamal.usuariosSolicitados, QUsuario.usuario).fetchJoin()
-                        .innerJoin(QUsuario.usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
                         .where(solicitacaoRamal.id.eq(solicitacaoId))
                         .fetchOne()
         );
