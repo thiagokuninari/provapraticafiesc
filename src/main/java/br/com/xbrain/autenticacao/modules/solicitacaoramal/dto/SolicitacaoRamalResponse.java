@@ -9,9 +9,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,14 +30,22 @@ public class SolicitacaoRamalResponse {
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataHoraExpiracao;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime melhorHorarioImplantacao;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate melhorDataImplantacao;
     private String solicitante;
     private String agenteAutorizadoCnpj;
     private String agenteAutorizadoNome;
+    private String telefoneTi;
+    private String emailTi;
     private Integer agenteAutorizadoId;
+    private List<SolicitacaoRamalColaboradorResponse> colaboradores;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
+        response.colaboradores = response.getColaboradores(solicitacaoRamal);
 
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
@@ -40,6 +53,16 @@ public class SolicitacaoRamalResponse {
         response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 
         return response;
+    }
+
+    private List<SolicitacaoRamalColaboradorResponse> getColaboradores(SolicitacaoRamal solicitacaoRamal) {
+        if (!ObjectUtils.isEmpty(solicitacaoRamal.getUsuariosSolicitados())) {
+            return solicitacaoRamal.getUsuariosSolicitados().stream()
+                    .map(SolicitacaoRamalColaboradorResponse::convertFrom)
+                    .collect(Collectors.toList());
+        }
+
+        return null;
     }
 
     private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
