@@ -134,7 +134,8 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$.discadora", is("DISCADORA UN")))
                 .andExpect(jsonPath("$.socioPrincipal", is("FULANO")))
                 .andExpect(jsonPath("$.usuariosAtivos", is(2)))
-                .andExpect(jsonPath("$.quantidadeRamais", is(2)));
+                .andExpect(jsonPath("$.quantidadeRamais", is(2)))
+                .andExpect(jsonPath("$.agenteAutorizadoRazaoSocial", is("RAZAO SOCIAL AA")));
     }
 
     @Test
@@ -445,6 +446,7 @@ public class SolicitacaoRamalControllerTest {
                 .cnpj("81733187000134")
                 .nomeFantasia("Fulano")
                 .discadoraId(1)
+                .razaoSocial("RAZAO SOCIAL AA")
                 .build();
     }
 

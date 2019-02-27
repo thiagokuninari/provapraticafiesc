@@ -210,7 +210,7 @@ public class SolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(findById(idSolicitacao));
     }
 
-    private SolicitacaoRamal findById(Integer id) {
+    public SolicitacaoRamal findById(Integer id) {
         return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
@@ -303,13 +303,14 @@ public class SolicitacaoRamalService {
     }
 
     public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
-        AgenteAutorizadoResponse agenteAutorizado = agenteAutorizadoService.getAaById(agenteAutorizadoId);
+        AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoService.getAaById(agenteAutorizadoId);
 
         return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
-                getTelefoniaPelaDiscadoraId(agenteAutorizado),
+                getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
                 getNomeSocioPrincipalAa(agenteAutorizadoId),
                 getQuantidadeUsuariosAtivos(agenteAutorizadoId),
-                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId));
+                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId),
+                agenteAutorizadoResponse);
     }
 
     private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
