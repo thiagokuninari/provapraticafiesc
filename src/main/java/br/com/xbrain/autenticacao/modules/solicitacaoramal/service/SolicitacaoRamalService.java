@@ -234,15 +234,18 @@ public class SolicitacaoRamalService {
 
     public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
-        context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
+        context.setVariable("dataAtual", DateUtil.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
+        context.setVariable("melhorDataImplantacao", DateUtil.parseLocalDateToString(
+                solicitacaoRamal.getMelhorDataImplantacao()));
+        context.setVariable("melhorHoraImplantacao", solicitacaoRamal.getMelhorHorarioImplantacao());
         context.setVariable("qtdRamais", solicitacaoRamal.getQuantidadeRamais());
         context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
         context.setVariable("telefoneTi", solicitacaoRamal.getTelefoneTi());
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
-        context.setVariable("dataLimite", DateUtil.dateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
+        context.setVariable("dataLimite", DateUtil.parseLocalDateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
         context.setVariable("colaboradoresIds", getColaboradoresIds(solicitacaoRamal.getUsuariosSolicitados()));
         return context;
     }
