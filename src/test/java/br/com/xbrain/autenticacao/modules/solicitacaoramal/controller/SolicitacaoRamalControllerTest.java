@@ -165,7 +165,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(10)));
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     @Test

@@ -3,7 +3,9 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,7 +20,6 @@ import java.util.Optional;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.*;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class SolicitacaoRamalRepositoryImpl
         extends CustomRepository<SolicitacaoRamal>
@@ -35,26 +36,30 @@ public class SolicitacaoRamalRepositoryImpl
 
     @Override
     public PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate, SolicitacaoRamalFiltros filtros) {
+        final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
         List<SolicitacaoRamal> solicitacoes = new JPAQueryFactory(entityManager)
                 .select(
-                    Projections.constructor(SolicitacaoRamal.class,
-                            solicitacaoRamal.id.max(),
-                            solicitacaoRamal.agenteAutorizadoId,
-                            solicitacaoRamal.agenteAutorizadoNome,
-                            solicitacaoRamal.agenteAutorizadoCnpj,
-                            solicitacaoRamal.situacao,
-                            solicitacaoRamal.dataCadastro.max(),
-                            usuario.nome))
-                .from(solicitacaoRamal)
-                .innerJoin(solicitacaoRamal.usuario, usuario)
-                    .where(predicate)
-                        .offset(filtros.getPage())
-                        .limit(filtros.getSize())
-                        .groupBy(solicitacaoRamal.agenteAutorizadoId,
+                        Projections.constructor(SolicitacaoRamal.class,
+                                solicitacaoRamal.id,
+                                solicitacaoRamal.agenteAutorizadoId,
                                 solicitacaoRamal.agenteAutorizadoNome,
                                 solicitacaoRamal.agenteAutorizadoCnpj,
                                 solicitacaoRamal.situacao,
-                                usuario.nome)
+                                solicitacaoRamal.quantidadeRamais,
+                                solicitacaoRamal.dataCadastro,
+                                new JPAQueryFactory(entityManager)
+                                        .select(QUsuario.usuario)
+                                        .from(QUsuario.usuario)
+                                        .where(QUsuario.usuario.id.eq(solicitacaoRamal.usuario.id)))
+                ).from(solicitacaoRamal)
+                .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
+                                .select(solicitacaoAuxiliar.id.max())
+                                .from(solicitacaoAuxiliar)
+                                .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
+                .and(predicate))
+                .offset(filtros.getPage())
+                .limit(filtros.getSize())
+                .orderBy(solicitacaoRamal.id.desc())
                 .fetch();
 
         return new PageImpl<SolicitacaoRamal>(solicitacoes, pageable, solicitacoes.size());
@@ -89,8 +94,8 @@ public class SolicitacaoRamalRepositoryImpl
                 new JPAQueryFactory(entityManager)
                         .select(solicitacaoRamal)
                         .from(solicitacaoRamal)
-                        .innerJoin(solicitacaoRamal.usuariosSolicitados, usuario).fetchJoin()
-                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(solicitacaoRamal.usuariosSolicitados, QUsuario.usuario).fetchJoin()
+                        .innerJoin(QUsuario.usuario.cargo, cargo).fetchJoin()
                         .where(solicitacaoRamal.id.eq(solicitacaoId))
                         .fetchOne()
         );
