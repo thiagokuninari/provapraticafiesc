@@ -11,27 +11,51 @@ import java.util.Locale;
 
 @Slf4j
 public class DateUtil {
-    
-    public static String dateTimeToString(LocalDateTime localDateTime) {
-        if (localDateTime == null) {
-            return "";
+
+    static final Locale LOCALE_PT_BR = new Locale("pt", "BR");
+
+    public static String parseLocalDateTimeToString(LocalDateTime localDateTime) {
+        try {
+            if (!ObjectUtils.isEmpty(localDateTime)) {
+                return localDateTime.format(getDateTimeFormatter());
+            }
+        } catch (DateTimeParseException ex) {
+            log.error("Não foi possível converter a data " + localDateTime + " para o padrão dd/MM/yyyy HH:mm");
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        return localDateTime.format(formatter);
+
+        return "";
+    }
+
+    public static String parseLocalDateToString(LocalDate localDate) {
+        try {
+            if (!ObjectUtils.isEmpty(localDate)) {
+                return localDate.format(getDateFormatter());
+            }
+        } catch (DateTimeParseException ex) {
+            log.error("Não foi possível converter a data " + localDate + " para o padrão dd/MM/yyyy");
+        }
+
+        return "";
     }
 
     public static LocalDate parseStringToLocalDate(String data) {
-        LocalDate response = null;
         try {
             if (!ObjectUtils.isEmpty(data)) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
-                response = LocalDate.parse(data, formatter);
+                return LocalDate.parse(data, getDateFormatter());
             }
         } catch (DateTimeParseException ex) {
             log.error("Não foi possível converter a data " + data + " para o padrão dd/MM/yyyy");
         }
 
-        return response;
+        return null;
+    }
+
+    private static DateTimeFormatter getDateFormatter() {
+        return DateTimeFormatter.ofPattern("dd/MM/yyyy", LOCALE_PT_BR);
+    }
+
+    private static DateTimeFormatter getDateTimeFormatter() {
+        return DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", LOCALE_PT_BR);
     }
 
 }

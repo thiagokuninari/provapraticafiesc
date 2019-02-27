@@ -18,7 +18,7 @@ public class UsuarioHistoricoDto {
     public UsuarioHistoricoDto(UsuarioHistorico usuarioHistorico) {
         this.id = usuarioHistorico.getId();
         this.motivo = usuarioHistorico.getMotivoInativacao().getDescricao();
-        this.cadastro = DateUtil.dateTimeToString(usuarioHistorico.getDataCadastro());
+        this.cadastro = DateUtil.parseLocalDateTimeToString(usuarioHistorico.getDataCadastro());
         this.observacao = usuarioHistorico.getObservacao();
     }    
 
