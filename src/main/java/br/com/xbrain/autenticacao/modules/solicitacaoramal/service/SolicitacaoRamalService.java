@@ -235,23 +235,20 @@ public class SolicitacaoRamalService {
     public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
         context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
-        context.setVariable("codigo",  solicitacaoRamal.getId());
+        context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
-        context.setVariable("qtdRamais",  solicitacaoRamal.getQuantidadeRamais());
+        context.setVariable("qtdRamais", solicitacaoRamal.getQuantidadeRamais());
         context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
-        context.setVariable("telefoneTi",  solicitacaoRamal.getTelefoneTi());
+        context.setVariable("telefoneTi", solicitacaoRamal.getTelefoneTi());
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
         context.setVariable("dataLimite", DateUtil.dateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
-        context.setVariable("colaboradoresIds", getColaboradoresIdsBySolicitacaoId(solicitacaoRamal.getId()));
+        context.setVariable("colaboradoresIds", getColaboradoresIds(solicitacaoRamal.getUsuariosSolicitados()));
         return context;
     }
 
-    private List<Integer> getColaboradoresIdsBySolicitacaoId(Integer solicitacaoId) {
-        return getColaboradoresBySolicitacaoId(solicitacaoId)
-                .stream()
-                .map(SolicitacaoRamalColaboradorResponse::getId)
-                .collect(Collectors.toList());
+    private List<Integer> getColaboradoresIds(List<Usuario> usuarios) {
+        return usuarios.stream().map(Usuario::getId).collect(Collectors.toList());
     }
 
     public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
