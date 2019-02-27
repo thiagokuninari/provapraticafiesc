@@ -248,7 +248,9 @@ public class SolicitacaoRamalService {
     }
 
     private List<Integer> getColaboradoresIds(List<Usuario> usuarios) {
-        return usuarios.stream().map(Usuario::getId).collect(Collectors.toList());
+        return usuarios.stream()
+                .map(Usuario::getId)
+                .collect(Collectors.toList());
     }
 
     public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
