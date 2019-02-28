@@ -9,6 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
+// Utilizar lib xbrainUtils, classe DateUtils
+@Deprecated
 @Slf4j
 public class DateUtil {
 
