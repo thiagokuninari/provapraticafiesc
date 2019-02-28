@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -404,6 +405,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuarioCidade.usuario, usuario)
                 .where(usuarioCidade.usuario.id.eq(usuario.id)
                 .and(usuario.cargo.id.eq(cargo))
+                .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
                 .and(usuarioCidade.cidade.id.in(cidades)))
                 .fetch();
     }
