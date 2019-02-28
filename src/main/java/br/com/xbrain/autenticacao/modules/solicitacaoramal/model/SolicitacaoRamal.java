@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
@@ -19,6 +18,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 
 @Data
 @EqualsAndHashCode(of = "id")
@@ -139,8 +140,8 @@ public class SolicitacaoRamal {
     }
 
     public void retirarMascara() {
-        this.telefoneTi = StringUtil.getOnlyNumbers(this.telefoneTi);
-        this.agenteAutorizadoCnpj = StringUtil.getOnlyNumbers(this.agenteAutorizadoCnpj);
+        this.telefoneTi = getOnlyNumbers(this.telefoneTi);
+        this.agenteAutorizadoCnpj = getOnlyNumbers(this.agenteAutorizadoCnpj);
     }
 
 }
