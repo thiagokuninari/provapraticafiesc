@@ -182,8 +182,13 @@ public class UsuarioController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("{id}/vendedores-hierarquia-ids")
+    public List<Integer> getIdsVendedoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getIdsVendedoresOperacaoDaHierarquia(id);
+    }
+
     @GetMapping("{id}/vendedores-hierarquia")
-    public List<Integer> getVendedoresDaHierarquia(@PathVariable() Integer id) {
+    public List<UsuarioHierarquiaResponse> getVendedoresDaHierarquia(@PathVariable Integer id) {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 }

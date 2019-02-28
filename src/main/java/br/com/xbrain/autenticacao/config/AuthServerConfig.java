@@ -59,8 +59,13 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String callApiClient;
     @Value("${app-config.oauth-clients.call-api.secret}")
     private String callApiSecret;
+    @Value("${app-config.oauth-clients.dashboard-api.client}")
+    private String dashboardApiClient;
+    @Value("${app-config.oauth-clients.dashboard-api.secret}")
+    private String dashboardApiSecret;
 
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
+    private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
 
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
@@ -87,42 +92,55 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .authorizedGrantTypes("password")
                 .scopes("app")
                 .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS)
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(autenticacaoApiClient)
                 .secret(autenticacaoApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("autenticacao-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(parceirosApiClient)
                 .secret(parceirosApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("parceiros-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(vendasApiClient)
                 .secret(vendasApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("vendas-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(integracaoVendasApiClient)
                 .secret(integracaoVendasApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("integracao-vendas-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(mailingApiClient)
                 .secret(mailingApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("mailing-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(equipeVendaApiClient)
                 .secret(equipeVendaApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("equipevenda-api")
+                .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(callApiClient)
                 .secret(callApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("call-api")
-                .authorities("ROLE_APPLICATION");
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(dashboardApiClient)
+                .secret(dashboardApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("dashboard-api")
+                .authorities(ROLE_APPLICATION);
     }
 
     @Override

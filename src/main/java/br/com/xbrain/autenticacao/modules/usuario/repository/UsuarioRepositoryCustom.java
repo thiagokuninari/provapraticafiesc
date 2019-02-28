@@ -29,7 +29,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
     List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
 
@@ -56,4 +56,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
 
     Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
+
+    List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades);
+
 }
