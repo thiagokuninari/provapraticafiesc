@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
-import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -20,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -234,15 +234,19 @@ public class SolicitacaoRamalService {
 
     public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
-        context.setVariable("dataAtual", DateUtil.dateTimeToString(LocalDateTime.now()));
+        context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
+        context.setVariable("melhorDataImplantacao", DateUtils.parseLocalDateToString(
+                solicitacaoRamal.getMelhorDataImplantacao()));
+        context.setVariable("melhorHoraImplantacao", solicitacaoRamal.getMelhorHorarioImplantacao());
         context.setVariable("qtdRamais", solicitacaoRamal.getQuantidadeRamais());
         context.setVariable("emailTi", solicitacaoRamal.getEmailTi());
         context.setVariable("telefoneTi", solicitacaoRamal.getTelefoneTi());
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
-        context.setVariable("dataLimite", DateUtil.dateTimeToString(getDataLimite(solicitacaoRamal.getDataCadastro())));
+        context.setVariable("dataLimite", DateUtils.parseLocalDateTimeToString(
+                getDataLimite(solicitacaoRamal.getDataCadastro())));
         context.setVariable("colaboradoresIds", getColaboradoresIds(solicitacaoRamal.getUsuariosSolicitados()));
         return context;
     }
@@ -303,13 +307,14 @@ public class SolicitacaoRamalService {
     }
 
     public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
-        AgenteAutorizadoResponse agenteAutorizado = agenteAutorizadoService.getAaById(agenteAutorizadoId);
+        AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoService.getAaById(agenteAutorizadoId);
 
         return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
-                getTelefoniaPelaDiscadoraId(agenteAutorizado),
+                getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
                 getNomeSocioPrincipalAa(agenteAutorizadoId),
                 getQuantidadeUsuariosAtivos(agenteAutorizadoId),
-                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId));
+                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId),
+                agenteAutorizadoResponse);
     }
 
     private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {

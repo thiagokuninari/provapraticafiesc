@@ -77,8 +77,6 @@ public class SolicitacaoRamalControllerTest {
     private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
 
-    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
-
     @Before
     public void setUp() {
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
@@ -134,7 +132,8 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$.discadora", is("DISCADORA UN")))
                 .andExpect(jsonPath("$.socioPrincipal", is("FULANO")))
                 .andExpect(jsonPath("$.usuariosAtivos", is(2)))
-                .andExpect(jsonPath("$.quantidadeRamais", is(2)));
+                .andExpect(jsonPath("$.quantidadeRamais", is(2)))
+                .andExpect(jsonPath("$.agenteAutorizadoRazaoSocial", is("RAZAO SOCIAL AA")));
     }
 
     @Test
@@ -406,7 +405,13 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.quantidadeRamais", is(35)))
                 .andExpect(jsonPath("$.situacao", is("PENDENTE")))
-                .andExpect(jsonPath("$.id", is(1)));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.agenteAutorizadoId", is(1)))
+                .andExpect(jsonPath("$.agenteAutorizadoNome", is("JoãoAA")))
+                .andExpect(jsonPath("$.agenteAutorizadoCnpj", is("25.280.843/0001-10")))
+                .andExpect(jsonPath("$.telefoneTi", is("(43) 3322-44444")))
+                .andExpect(jsonPath("$.emailTi", is("joaoaa@hotmail.com")))
+                .andExpect(jsonPath("$.dataCadastro", is("01/01/2019 10:30")));
     }
 
     @Test
@@ -445,6 +450,7 @@ public class SolicitacaoRamalControllerTest {
                 .cnpj("81733187000134")
                 .nomeFantasia("Fulano")
                 .discadoraId(1)
+                .razaoSocial("RAZAO SOCIAL AA")
                 .build();
     }
 
