@@ -24,6 +24,7 @@ public class UsuarioFiltros {
     private Integer departamentoId;
     private Integer cargoId;
     private ESituacao situacao;
+    private boolean realocado;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -31,7 +32,7 @@ public class UsuarioFiltros {
                 .comCpf(cpf)
                 .comNome(nome)
                 .comEmail(emailUsuario)
-                .comSituacao(situacao)
+                .comSituacao(situacao,realocado)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
                 .comRegional(regionalId)

@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
-import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -21,6 +20,7 @@ import java.util.Set;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 
 public class UsuarioPredicate {
 
@@ -45,16 +45,22 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacao(ESituacao situacao) {
-        if (Objects.nonNull(situacao)) {
+    public UsuarioPredicate comSituacao(ESituacao situacao, boolean realocado) {
+        if (Objects.nonNull(situacao) && !realocado) {
             builder.and(usuario.situacao.eq(situacao));
+            builder.and(usuario.situacao.notIn(ESituacao.R));
+        } else if (Objects.isNull(situacao) && realocado) {
+            builder.and(usuario.situacao.eq(ESituacao.R));
+        } else {
+            builder.and(usuario.situacao.notIn(ESituacao.R));
         }
         return this;
     }
 
     public UsuarioPredicate comCpf(String cpf) {
-        if (!StringUtils.isEmpty(StringUtil.getOnlyNumbers(cpf))) {
-            builder.and(usuario.cpf.eq(StringUtil.getOnlyNumbers(cpf)));
+        String numeroCpf = getOnlyNumbers(cpf);
+        if (!StringUtils.isEmpty(numeroCpf)) {
+            builder.and(usuario.cpf.eq(numeroCpf));
         }
         return this;
     }
