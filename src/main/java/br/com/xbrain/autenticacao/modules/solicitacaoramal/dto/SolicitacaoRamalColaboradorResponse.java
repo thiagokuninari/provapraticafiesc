@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
 @Data
 public class SolicitacaoRamalColaboradorResponse {
@@ -15,7 +16,8 @@ public class SolicitacaoRamalColaboradorResponse {
         SolicitacaoRamalColaboradorResponse response = new SolicitacaoRamalColaboradorResponse();
         BeanUtils.copyProperties(usuario, response);
 
-        response.cargo = usuario.getCargo().getNome();
+        response.cargo = !ObjectUtils.isEmpty(usuario.getCargo())
+                ? usuario.getCargo().getNome() : "";
 
         return response;
     }

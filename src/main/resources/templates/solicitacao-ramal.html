@@ -131,11 +131,11 @@
                     </td>
                 </tr>
                 <tr>
-                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 19px; font-weight: bold; line-height: 160%;
+                    <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 19px; font-weight: bold; line-height: 160%;
                         padding-top: 25px;
                         color: #546e7a;
                         font-family: sans-serif;" class="paragraph">
-                        Solicitação de Ramal
+                        Dados da Solicitação
                     </td>
                 </tr>
                 <tr>
@@ -158,6 +158,22 @@
                     <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
                         color: #546e7a;
                         font-family: sans-serif;" class="paragraph">
+                        Data Implantação:
+                        <b style="color: #546e7a; font-size: 15px;" th:text="${melhorDataImplantacao}"></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+                        Hora Implantação:
+                        <b style="color: #546e7a; font-size: 15px;" th:text="${melhorHoraImplantacao}"></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
                         Data Limite:
                         <b style="color: #FF0000; font-size: 15px;" th:text="${dataLimite}"></b>
                     </td>
@@ -166,15 +182,7 @@
                     <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
                         color: #546e7a;
                         font-family: sans-serif;" class="paragraph">
-                        Quantidade de ramais:
-                        <b style="color: #546e7a; font-size: 15px;" th:text="${qtdRamais}"></b>
-                    </td>
-                </tr>
-                <tr>
-                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
-                        color: #546e7a;
-                        font-family: sans-serif;" class="paragraph">
-                        Email:
+                        Email TI:
                         <b style="color: #546e7a; font-size: 15px;" th:text="${emailTi}"></b>
                     </td>
                 </tr>
@@ -182,8 +190,16 @@
                     <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
                         color: #546e7a;
                         font-family: sans-serif;" class="paragraph">
-                        Telefone:
+                        Telefone TI:
                         <b style="color: #546e7a; font-size: 15px;" th:text="${telefoneTi}"></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+                        Quantidade de ramais:
+                        <b style="color: #546e7a; font-size: 15px;" th:text="${qtdRamais}"></b>
                     </td>
                 </tr>
                 <tr>
@@ -200,6 +216,14 @@
                         font-family: sans-serif;" class="paragraph">
                         Nome AA:
                         <b style="color: #546e7a; font-size: 15px;" th:text="${nomeAa}"></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%; font-size: 16px; font-weight: 400; line-height: 160%;
+                        color: #546e7a;
+                        font-family: sans-serif;" class="paragraph">
+                        Colaboradores IDS:
+                        <b style="color: #546e7a; font-size: 15px;" th:text="${colaboradoresIds}"></b>
                     </td>
                 </tr>
                 <tr>
