@@ -56,13 +56,11 @@ public class SolicitacaoRamalResponse {
     }
 
     private List<SolicitacaoRamalColaboradorResponse> getColaboradores(SolicitacaoRamal solicitacaoRamal) {
-        if (!ObjectUtils.isEmpty(solicitacaoRamal.getUsuariosSolicitados())) {
-            return solicitacaoRamal.getUsuariosSolicitados().stream()
-                    .map(SolicitacaoRamalColaboradorResponse::convertFrom)
-                    .collect(Collectors.toList());
-        }
-
-        return null;
+        return !ObjectUtils.isEmpty(solicitacaoRamal.getUsuariosSolicitados())
+                ? solicitacaoRamal.getUsuariosSolicitados().stream()
+                .map(SolicitacaoRamalColaboradorResponse::convertFrom)
+                .collect(Collectors.toList())
+                : null;
     }
 
     private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
