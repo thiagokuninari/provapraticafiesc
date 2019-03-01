@@ -9,6 +9,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,10 @@ public class Cargo {
     @Column(name = "SITUACAO", nullable = false, length = 1)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    @NotNull
+    @Column(name = "QUANTIDADE_SUPERIOR", nullable = false, length = 2)
+    private Integer quantidadeSuperior;
 
     @JsonIgnore
     @JoinTable(name = "CARGO_SUPERIOR", joinColumns = {
