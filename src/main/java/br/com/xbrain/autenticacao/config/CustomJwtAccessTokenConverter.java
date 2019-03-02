@@ -94,7 +94,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private List<EquipeVendaDto> getEquipeVendas(Usuario usuario) {
-        return equipeVendaService.getEquipeVendas(usuario.getId());
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
+                ? Collections.singletonList(equipeVendasService.getByUsuario(usuario.getId()))
+                : equipeVendaService.getEquipeVendas(usuario.getId());
     }
 
     private void setAdditionalInformation(OAuth2AccessToken token,
