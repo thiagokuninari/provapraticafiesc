@@ -42,7 +42,7 @@ public class Cargo {
     private ESituacao situacao;
 
     @NotNull
-    @Column(name = "QUANTIDADE_SUPERIOR", nullable = false, length = 2)
+    @Column(name = "QUANTIDADE_SUPERIOR", length = 2)
     private Integer quantidadeSuperior;
 
     @JsonIgnore
