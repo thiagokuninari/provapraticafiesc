@@ -346,12 +346,6 @@ public class Usuario {
                 : null;
     }
 
-    public Set<CodigoCargo> getCargosSuperioresCodigo() {
-        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getSuperiores())
-                ? cargo.getSuperiores().stream().map(Cargo::getCodigo).collect(Collectors.toSet())
-                : null;
-    }
-
     public Integer getDepartamentoId() {
         return this.departamento != null ? this.departamento.getId() : null;
     }

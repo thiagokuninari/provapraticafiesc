@@ -1,17 +1,27 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.equipe-venda.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)
 public interface EquipeVendaClient {
 
-    @GetMapping("api/pausa-agendada/verificar-pausa/{username}")
+    String EQUIPE_VENDAS_ENDPOINT = "api/equipes-vendas";
+    String PAUSA_AGENDADA_ENDPOINT = "api/pausa-agendada";
+    String USUARIOS_EQUIPE_VENDAS = "api/usuarios-equipe";
+
+    @GetMapping(PAUSA_AGENDADA_ENDPOINT + "/verificar-pausa/{username}")
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
 
     @PutMapping("api/equipes-vendas/inativar-supervisor/{id}")
@@ -19,4 +29,10 @@ public interface EquipeVendaClient {
 
     @PutMapping("api/usuarios-equipe/inativar/{id}")
     void inativarUsuarioEquipe(@PathVariable("id") Integer usuariostatusId);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
+    List<EquipeVendaDto> getUsuario(@RequestParam Map request);
+
+    @GetMapping(USUARIOS_EQUIPE_VENDAS)
+    List<EquipeVendaUsuarioResponse> getAll();
 }
