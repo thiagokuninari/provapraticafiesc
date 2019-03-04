@@ -334,7 +334,9 @@ public class SolicitacaoRamalService {
     }
 
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false).stream().count();
+        return agenteAutorizadoService.getUsuariosAaAtivo(agenteAutorizadoId, true)
+                .stream()
+                .count();
     }
 
     public void remover(Integer solicitacaoId) {
