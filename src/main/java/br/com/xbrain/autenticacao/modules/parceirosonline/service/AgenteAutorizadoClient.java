@@ -44,6 +44,13 @@ public interface AgenteAutorizadoClient {
 
     @RequestMapping(
             method = RequestMethod.GET,
+            value = "api/usuarios-agente-autorizado/usuarios/{agenteAutorizadoId}/{buscarVendedoresD2D}")
+    List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivo(
+            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
+            @PathVariable("buscarVendedoresD2D") boolean buscarVendedoresD2D);
+
+    @RequestMapping(
+            method = RequestMethod.GET,
             value = "api/agentes-autorizados-permitidos/{usuarioId}")
     List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
 
