@@ -85,6 +85,18 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivo(Integer aaId, boolean buscarVendedoresD2D) {
+        try {
+            return agenteAutorizadoClient.getUsuariosAaAtivo(aaId, buscarVendedoresD2D);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                    AgenteAutorizadoService.class.getName(),
+                    EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     public List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
                 ? getAasPermitidos(usuario.getId())
