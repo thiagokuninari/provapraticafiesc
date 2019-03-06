@@ -709,7 +709,7 @@ public class UsuarioService {
                 .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                        || !usuario.getId().equals(u.getId())) {
+                            || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -720,7 +720,7 @@ public class UsuarioService {
                 .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                        || !usuario.getId().equals(u.getId())) {
+                            || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
@@ -1220,22 +1220,16 @@ public class UsuarioService {
                 : "Registros não encontrados.");
     }
 
-    public List<UsuarioResponse> getUsuariosByCidades(String cargo, List<Integer> cidades) {
+    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
         try {
-            int codigo = CodigoCargoOperacao.valueOf(cargo).getCodigo();
             List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
                     .map(UsuarioResponse::convertEquipeVendasUsuario)
                     .collect(Collectors.toList());
-            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(codigo, cidades).stream()
+            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
                     .map(UsuarioResponse::convertFrom)
                     .distinct()
                     .collect(Collectors.toList());
-            if (cargo.equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())) {
-                return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
-            } else {
-                return usuarios;
-            }
-
+            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
         } catch (Exception ex) {
             log.error("Erro - Cargo Inválido.", ex);
             throw new ValidacaoException("Erro - Cargo Inválido");

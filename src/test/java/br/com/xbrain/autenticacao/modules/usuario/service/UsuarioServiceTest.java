@@ -112,26 +112,20 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades("ASSISTENTE_OPERACAO", Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 2);
+        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
+        Assert.assertEquals(assistentesOperacao.size(), 3);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades("SUPERVISOR_OPERACAO", Arrays.asList(5578));
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
         Assert.assertEquals(supervisoresOperacao.size(), 3);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades("VENDEDOR_OPERACAO", Arrays.asList(5578));
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
         Assert.assertEquals(vendedoresOperacao.size(), 3);
-    }
-
-    @Test
-    public void getUsuariosByCidades_retonarException_seNaoExistirCargo() {
-        thrown.expect(ValidacaoException.class);
-        service.getUsuariosByCidades("XBRAIN", Arrays.asList(5578));
     }
 
     @Test
