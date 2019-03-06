@@ -57,6 +57,6 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
-    List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades);
+    List<Usuario> getUsuariosByCidades(List<Integer> cidades);
 
 }
