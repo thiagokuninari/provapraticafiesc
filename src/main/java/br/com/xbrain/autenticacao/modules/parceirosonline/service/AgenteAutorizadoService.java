@@ -85,9 +85,9 @@ public class AgenteAutorizadoService {
         }
     }
 
-    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivo(Integer aaId, boolean buscarVendedoresD2D) {
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
         try {
-            return agenteAutorizadoClient.getUsuariosAaAtivo(aaId, buscarVendedoresD2D);
+            return agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(aaId);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
