@@ -73,13 +73,25 @@ public class AgenteAutorizadoService {
         }
     }
 
-    private List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId, Boolean buscarInativos) {
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId, Boolean buscarInativos) {
         try {
             return agenteAutorizadoClient.getUsuariosByAaId(aaId, buscarInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
+        try {
+            return agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(aaId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                    AgenteAutorizadoService.class.getName(),
+                    EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

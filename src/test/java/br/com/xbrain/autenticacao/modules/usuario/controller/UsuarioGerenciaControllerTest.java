@@ -351,7 +351,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(92)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(93)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
     }
 
@@ -544,9 +544,10 @@ public class UsuarioGerenciaControllerTest {
     }
 
     private void mockResponseAgenteAutorizado() {
-        AgenteAutorizadoResponse response = new AgenteAutorizadoResponse();
-        response.setId("100");
-        response.setCnpj("09.489.617/0001-97");
+        AgenteAutorizadoResponse response = AgenteAutorizadoResponse.builder()
+                .id("100")
+                .cnpj("09.489.617/0001-97")
+                .build();
 
         when(agenteAutorizadoClient.getAaByCpnj(Matchers.anyMap()))
                 .thenReturn(response);

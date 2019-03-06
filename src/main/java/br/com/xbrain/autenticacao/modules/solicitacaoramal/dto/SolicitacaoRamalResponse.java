@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
@@ -8,9 +9,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,18 +29,38 @@ public class SolicitacaoRamalResponse {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    private LocalDateTime horaExpiracao;
-    private String usuarioSolicitante;
+    private LocalDateTime dataHoraExpiracao;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime melhorHorarioImplantacao;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate melhorDataImplantacao;
+    private String solicitante;
+    private String agenteAutorizadoCnpj;
+    private String agenteAutorizadoNome;
+    private String telefoneTi;
+    private String emailTi;
+    private Integer agenteAutorizadoId;
+    private List<SolicitacaoRamalColaboradorResponse> colaboradores;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
-        response.usuarioSolicitante = solicitacaoRamal.getUsuario().getNome();
+        response.solicitante = solicitacaoRamal.getUsuario().getNome();
+        response.colaboradores = response.getColaboradores(solicitacaoRamal);
 
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
 
         BeanUtils.copyProperties(solicitacaoRamal, response);
+        response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 
         return response;
+    }
+
+    private List<SolicitacaoRamalColaboradorResponse> getColaboradores(SolicitacaoRamal solicitacaoRamal) {
+        return !ObjectUtils.isEmpty(solicitacaoRamal.getUsuariosSolicitados())
+                ? solicitacaoRamal.getUsuariosSolicitados().stream()
+                .map(SolicitacaoRamalColaboradorResponse::convertFrom)
+                .collect(Collectors.toList())
+                : null;
     }
 
     private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
@@ -42,7 +68,7 @@ public class SolicitacaoRamalResponse {
 
         long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataExpiracao);
 
-        this.horaExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
+        this.dataHoraExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
     }
 
     private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {
