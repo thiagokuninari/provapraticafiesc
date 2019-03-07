@@ -105,10 +105,10 @@ public class CidadeController {
         if (cidadesId.size() > MAXIMO) {
             List<Integer> segundaLista = cidadesId.subList(MINIMO, cidadesId.size());
             cidadesId = cidadesId.subList(0, MAXIMO);
-            List<UsuarioResponse> usuariosByCidades = usuarioService.getUsuariosByCidades(segundaLista);
-            List<UsuarioResponse> usuariosByCidades1 = usuarioService.getUsuariosByCidades(cidadesId);
-            usuariosByCidades.addAll(usuariosByCidades1);
-            return usuariosByCidades;
+            List<UsuarioResponse> listaUsuario = usuarioService.getUsuariosByCidades(segundaLista);
+            List<UsuarioResponse> listaUsuarioComplementar = usuarioService.getUsuariosByCidades(cidadesId);
+            listaUsuario.addAll(listaUsuarioComplementar);
+            return listaUsuario;
         }
 
         return usuarioService.getUsuariosByCidades(cidadesId);

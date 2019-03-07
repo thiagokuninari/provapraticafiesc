@@ -1239,10 +1239,11 @@ public class UsuarioService {
     public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
                                                                    List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
         return usuarios.stream()
-                .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())
-                        && !usuariosExistenteEmEquipesVendas.stream()
+                .filter(usuario -> !usuariosExistenteEmEquipesVendas.stream()
                         .anyMatch(usuarioExistente ->
-                                usuarioExistente.getId().equals(usuario.getId())))
+                                usuarioExistente.getId().equals(usuario.getId())
+                                        && usuarioExistente.getCodigoCargo().name()
+                                        .equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())))
                 .collect(Collectors.toList());
     }
 
