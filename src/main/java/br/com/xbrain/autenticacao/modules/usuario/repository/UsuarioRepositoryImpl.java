@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -38,6 +39,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Autowired
     private EntityManager entityManager;
+    private static final Integer CODIGO_VENDEDOR_OPERACAO = 8;
+    private static final Integer CODIGO_ASSISTENTE_OPERACAO = 2;
+    private static final Integer CODIGO_SUPERVISOR_OPERACAO = 10;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -129,23 +133,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
-        List<BigDecimal> result = entityManager
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+        return entityManager
                 .createNativeQuery(
-                        " SELECT UH.FK_USUARIO"
-                                + " FROM usuario_hierarquia UH"
+                        " SELECT UH.FK_USUARIO "
+                                + " , U.NOME "
+                                + " , U.EMAIL_01 "
+                                + " , C.NOME AS NOME_CARGO "
+                                + " FROM USUARIO_HIERARQUIA UH"
                                 + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                                 + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                                 + " WHERE C.CODIGO = :_codigoCargo"
+                                + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                                 + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .setParameter("_codigoCargo", codigoCargo)
                 .getResultList();
-        return result
-                .stream()
-                .map(BigDecimal::intValue)
-                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -391,8 +395,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .innerJoin(usuario.empresas).fetchJoin()
                         .where(
                                 usuario.email.equalsIgnoreCase(email)
-                                .and(usuario.situacao.ne(ESituacao.R))
+                                        .and(usuario.situacao.ne(ESituacao.R))
                         )
                         .fetchOne());
     }
+
+    @Override
+    public List<Usuario> getUsuariosByCidades(List<Integer> cidades) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.usuario, usuario)
+                .where(usuarioCidade.usuario.id.eq(usuario.id)
+                        .and(usuario.cargo.id.eq(CODIGO_ASSISTENTE_OPERACAO).or(usuario.cargo.id.eq(CODIGO_VENDEDOR_OPERACAO)
+                                .or(usuario.cargo.id.eq(CODIGO_SUPERVISOR_OPERACAO))))
+                        .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
+                        .and(usuarioCidade.cidade.id.in(cidades)))
+                .fetch();
+    }
+
 }

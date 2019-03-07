@@ -313,7 +313,7 @@ public class UsuarioService {
             }
             return UsuarioDto.convertTo(usuario);
         } catch (PersistenceException ex) {
-            log.error("Erro de persistência ao salvar o Usuario.", ex);
+            log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
@@ -709,7 +709,7 @@ public class UsuarioService {
                 .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                        || !usuario.getId().equals(u.getId())) {
+                            || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
                 });
@@ -720,7 +720,7 @@ public class UsuarioService {
                 .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
                     if (ObjectUtils.isEmpty(usuario.getId())
-                        || !usuario.getId().equals(u.getId())) {
+                            || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
                 });
@@ -807,7 +807,6 @@ public class UsuarioService {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
-    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         if (dto.getIdMotivoInativacao() != null) {
             return new MotivoInativacao(dto.getIdMotivoInativacao());
@@ -1166,8 +1165,26 @@ public class UsuarioService {
         return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 
-    public List<Integer> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name());
+    public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+                .stream()
+                .map(this::criarUsuarioHierarquiaVendedoresResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
+        return getVendedoresOperacaoDaHierarquia(usuarioId).stream()
+                .map(UsuarioHierarquiaResponse::getId)
+                .collect(Collectors.toList());
+    }
+
+    private UsuarioHierarquiaResponse criarUsuarioHierarquiaVendedoresResponse(Object[] param) {
+        int indice = POSICAO_ZERO;
+        return UsuarioHierarquiaResponse.builder()
+                .id(objectToInteger(param[indice++]))
+                .nome(objectToString(param[indice++]))
+                .cargoNome(objectToString(param[indice++]))
+                .build();
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
@@ -1202,4 +1219,32 @@ public class UsuarioService {
                 .collect(Collectors.joining("\n"))
                 : "Registros não encontrados.");
     }
+
+    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
+        try {
+            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
+                    .map(UsuarioResponse::convertEquipeVendasUsuario)
+                    .collect(Collectors.toList());
+            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
+                    .map(UsuarioResponse::convertFrom)
+                    .distinct()
+                    .collect(Collectors.toList());
+            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
+        } catch (Exception ex) {
+            log.error("Erro - Cargo Inválido.", ex);
+            throw new ValidacaoException("Erro - Cargo Inválido");
+        }
+    }
+
+    public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
+                                                                   List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
+        return usuarios.stream()
+                .filter(usuario -> !usuariosExistenteEmEquipesVendas.stream()
+                        .anyMatch(usuarioExistente ->
+                                usuarioExistente.getId().equals(usuario.getId())
+                                        && usuarioExistente.getCodigoCargo().name()
+                                        .equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())))
+                .collect(Collectors.toList());
+    }
+
 }
