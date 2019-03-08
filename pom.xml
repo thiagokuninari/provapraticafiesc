@@ -27,6 +27,7 @@
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <xbrain-utils.version>0.2.0</xbrain-utils.version>
         <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
+        <glassfish.jaxb.version>2.4.0-b180830.0438</glassfish.jaxb.version>
     </properties>
 
     <dependencies>
@@ -164,6 +165,12 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20180130</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${glassfish.jaxb.version}</version>
         </dependency>
 
         <!-- test -->
@@ -314,7 +321,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.3</version>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>
@@ -351,13 +358,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
-                <configuration>
-                    <runOrder>alphabetical</runOrder>
-                    <!-- verificar se esse bug foi resolvido em versões mais novas do maven-surefire-plugin -->
-                    <!-- bug: https://stackoverflow.com/questions/53010200/maven-surefire-could-not-find-forkedbooter-class -->
-                    <argLine>-Xmx1024m -Xms1024m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
-                </configuration>
+                <version>3.0.0-M3</version>
+                <!--<configuration>-->
+                    <!--<runOrder>alphabetical</runOrder>-->
+                    <!--&lt;!&ndash; verificar se esse bug foi resolvido em versões mais novas do maven-surefire-plugin &ndash;&gt;-->
+                    <!--&lt;!&ndash; bug: https://stackoverflow.com/questions/53010200/maven-surefire-could-not-find-forkedbooter-class &ndash;&gt;-->
+                    <!--<argLine>-Xmx1024m -Xms1024m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>-->
+                <!--</configuration>-->
             </plugin>
         </plugins>
     </build>
@@ -367,7 +374,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.5</version>
+                <version>3.0.0</version>
             </plugin>
         </plugins>
     </reporting>
