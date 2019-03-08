@@ -19,7 +19,7 @@ spring:
       maximumPoolSize: 100
 
   redis:
-    host: 172.10.10.61
+    host: 192.168.2.29
     port: 6379
     pool:
       max-active: 120
