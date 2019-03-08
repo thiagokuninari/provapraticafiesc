@@ -826,7 +826,7 @@ public class UsuarioService {
         Cargo cargo = cargoService.findById(cargoId);
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        usuarioPredicate.comCargo(Collections.singletonList(cargo.getCargoSuperior().getId()));
+        usuarioPredicate.comCargos(cargo.getCargosSuperioresId());
         return repository.getUsuariosFilter(usuarioPredicate.build());
     }
 

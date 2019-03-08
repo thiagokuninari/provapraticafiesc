@@ -141,13 +141,13 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosByCargoSuperior() throws Exception {
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
+                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")));
     }
 
     @Test
