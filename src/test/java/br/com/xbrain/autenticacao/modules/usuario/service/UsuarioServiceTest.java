@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -86,6 +87,8 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
+    @MockBean
+    private EquipeVendaClient equipeVendaClient;
 
     @Before
     public void setUp() {
