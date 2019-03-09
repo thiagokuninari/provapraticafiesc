@@ -159,6 +159,7 @@ app-config:
 
 flyway:
   enabled: true
+  out-of-order: true
   baseline-on-migrate: true
 
 zuul:

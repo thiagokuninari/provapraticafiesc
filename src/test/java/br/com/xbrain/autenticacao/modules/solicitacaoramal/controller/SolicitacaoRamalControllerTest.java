@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisAaResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -131,7 +130,7 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.discadora", is("DISCADORA UN")))
                 .andExpect(jsonPath("$.socioPrincipal", is("FULANO")))
-                .andExpect(jsonPath("$.usuariosAtivos", is(2)))
+                .andExpect(jsonPath("$.usuariosAtivos", is(0)))
                 .andExpect(jsonPath("$.quantidadeRamais", is(2)))
                 .andExpect(jsonPath("$.agenteAutorizadoRazaoSocial", is("RAZAO SOCIAL AA")));
     }
@@ -459,15 +458,6 @@ public class SolicitacaoRamalControllerTest {
                 .idSolicitacao(1)
                 .observacao("Rejeitada teste")
                 .situacao(REJEITADO)
-                .build();
-    }
-
-    private SolicitacaoRamalDadosAdicionaisAaResponse criaDadosAdicionaisAa() {
-        return SolicitacaoRamalDadosAdicionaisAaResponse.builder()
-                .quantidadeRamais(4)
-                .usuariosAtivos(13)
-                .socioPrincipal("FULANO")
-                .discadora("DISCADORA UN")
                 .build();
     }
 

@@ -20,6 +20,7 @@ public class CargoResponse {
     private Integer nivel;
     private String codigo;
     private ESituacao situacao;
+    private Integer quantidadeSuperior;
     private boolean possuiCargoSuperior;
 
     public CargoResponse() { }
