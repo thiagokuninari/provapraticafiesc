@@ -2,11 +2,11 @@ package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
-import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.xbrainutils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +23,11 @@ public class FeriadoService {
     private DataHoraAtual dataHoraAtual;
 
     public boolean consulta(String data) {
-        return repository.findByDataFeriadoAndFeriadoNacional(DateUtil.parseStringToLocalDate(data), Eboolean.V).isPresent();
+        return repository.findByDataFeriadoAndFeriadoNacional(DateUtils.parseStringToLocalDate(data), Eboolean.V).isPresent();
     }
 
     public boolean consulta(String data, Integer cidadeId) {
-        return repository.findByDataFeriadoAndCidadeId(DateUtil.parseStringToLocalDate(data), cidadeId).isPresent();
+        return repository.findByDataFeriadoAndCidadeId(DateUtils.parseStringToLocalDate(data), cidadeId).isPresent();
     }
 
     public Feriado save(FeriadoRequest request) {
