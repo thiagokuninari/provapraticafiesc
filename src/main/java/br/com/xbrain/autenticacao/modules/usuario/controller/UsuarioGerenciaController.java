@@ -130,11 +130,4 @@ public class UsuarioGerenciaController {
                 response
         );
     }
-
-    @GetMapping("cidades/{cargo}")
-    public List<UsuarioResponse> getSupervisoresByCidades(@PathVariable String cargo,
-                                                          @RequestParam(name = "cidades") List<Integer> cidades) {
-        return service.getUsuariosByCidades(cargo, cidades);
-    }
-
 }

@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,6 +36,8 @@ public class LogoutControllerTest {
     private MockMvc mvc;
     @Autowired
     private TokenStore tokenStore;
+    @MockBean
+    private EquipeVendaClient equipeVendaClient;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception  {

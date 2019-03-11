@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -86,6 +87,8 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
+    @MockBean
+    private EquipeVendaClient equipeVendaClient;
 
     @Before
     public void setUp() {
@@ -112,26 +115,20 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades("ASSISTENTE_OPERACAO", Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 2);
+        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
+        Assert.assertEquals(assistentesOperacao.size(), 8);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades("SUPERVISOR_OPERACAO", Arrays.asList(5578));
-        Assert.assertEquals(supervisoresOperacao.size(), 3);
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(supervisoresOperacao.size(), 8);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades("VENDEDOR_OPERACAO", Arrays.asList(5578));
-        Assert.assertEquals(vendedoresOperacao.size(), 3);
-    }
-
-    @Test
-    public void getUsuariosByCidades_retonarException_seNaoExistirCargo() {
-        thrown.expect(ValidacaoException.class);
-        service.getUsuariosByCidades("XBRAIN", Arrays.asList(5578));
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(vendedoresOperacao.size(), 8);
     }
 
     @Test

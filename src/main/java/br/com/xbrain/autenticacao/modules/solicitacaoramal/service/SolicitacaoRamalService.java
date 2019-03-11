@@ -334,7 +334,7 @@ public class SolicitacaoRamalService {
     }
 
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosAaAtivo(agenteAutorizadoId, true)
+        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId)
                 .stream()
                 .count();
     }
