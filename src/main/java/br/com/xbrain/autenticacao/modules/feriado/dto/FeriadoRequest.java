@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.feriado.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.xbrainutils.DateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,7 +32,7 @@ public class FeriadoRequest {
     public static Feriado convertFrom(FeriadoRequest request) {
         Feriado feriado = new Feriado();
         BeanUtils.copyProperties(request, feriado);
-        feriado.setDataFeriado(DateUtil.parseStringToLocalDate(request.getDataFeriado()));
+        feriado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
         feriado.setFeriadoNacional(Objects.isNull(request.getCidadeId()) ? Eboolean.V : Eboolean.F);
         if (Objects.nonNull(request.getCidadeId())) {
             feriado.setCidade(new Cidade(request.getCidadeId()));
