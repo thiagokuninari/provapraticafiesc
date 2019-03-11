@@ -6,8 +6,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "CARGO")
@@ -37,17 +41,27 @@ public class Cargo {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
+    @NotNull
+    @Column(name = "QUANTIDADE_SUPERIOR", length = 2)
+    private Integer quantidadeSuperior;
+
     @JsonIgnore
-    @JoinColumn(name = "FK_CARGO_SUPERIOR",
-            foreignKey = @ForeignKey(name = "FK_CARGO_CARGO_SUPER"),
-            referencedColumnName = "ID")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Cargo cargoSuperior;
+    @JoinTable(name = "CARGO_SUPERIOR", joinColumns = {
+            @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID")}, inverseJoinColumns = {
+            @JoinColumn(name = "FK_CARGO_SUPERIOR", referencedColumnName = "ID")})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<Cargo> superiores;
 
     public Cargo() {
     }
 
     public Cargo(Integer id) {
         this.id = id;
+    }
+
+    public Set<Integer> getCargosSuperioresId() {
+        return !ObjectUtils.isEmpty(getSuperiores())
+                ? getSuperiores().stream().map(Cargo::getId).collect(Collectors.toSet())
+                : null;
     }
 }
