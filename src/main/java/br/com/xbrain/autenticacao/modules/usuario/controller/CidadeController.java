@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoHierarquia;
@@ -97,7 +95,7 @@ public class CidadeController {
             cidades = service.getAllByGrupoId(id);
         } else if (hierarquia.equalsIgnoreCase(CodigoHierarquia.CLUSTER.name())) {
             cidades = service.getAllByClusterId(id);
-        } else if (hierarquia.replace("-","").equalsIgnoreCase(CodigoHierarquia.SUBCLUSTER.name())) {
+        } else if (hierarquia.replace("-", "").equalsIgnoreCase(CodigoHierarquia.SUBCLUSTER.name())) {
             cidades = service.getAllBySubClusterId(id);
         } else if (hierarquia.equalsIgnoreCase(CodigoHierarquia.CIDADE.name())) {
             return usuarioService.getUsuariosByCidades(Arrays.asList(id));
