@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cidades")
@@ -77,5 +79,11 @@ public class CidadeController {
     @GetMapping("{id}/clusterizacao")
     public ClusterizacaoDto getAll(@PathVariable Integer id) {
         return service.getClusterizacao(id);
+    }
+
+    @RequestMapping(value = "net-uno")
+    public List<CidadeResponse> getAllCidadeNetUno() {
+        List<Cidade> cidadesNetUno = repository.findAllByNetUno(Eboolean.V);
+        return cidadesNetUno.stream().map(CidadeResponse::parse).collect(Collectors.toList());
     }
 }
