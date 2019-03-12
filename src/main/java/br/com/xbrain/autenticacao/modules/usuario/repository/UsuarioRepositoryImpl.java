@@ -39,6 +39,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Autowired
     private EntityManager entityManager;
+    private static final Integer CODIGO_VENDEDOR_OPERACAO = 8;
+    private static final Integer CODIGO_ASSISTENTE_OPERACAO = 2;
+    private static final Integer CODIGO_SUPERVISOR_OPERACAO = 10;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -398,15 +401,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> getUsuariosByCidades(Integer cargo, List<Integer> cidades) {
+    public List<Usuario> getUsuariosByCidades(List<Integer> cidades) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
                 .from(usuarioCidade)
                 .innerJoin(usuarioCidade.usuario, usuario)
                 .where(usuarioCidade.usuario.id.eq(usuario.id)
-                .and(usuario.cargo.id.eq(cargo))
-                .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
-                .and(usuarioCidade.cidade.id.in(cidades)))
+                        .and(usuario.cargo.id.eq(CODIGO_ASSISTENTE_OPERACAO).or(usuario.cargo.id.eq(CODIGO_VENDEDOR_OPERACAO)
+                                .or(usuario.cargo.id.eq(CODIGO_SUPERVISOR_OPERACAO))))
+                        .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
+                        .and(usuarioCidade.cidade.id.in(cidades)))
                 .fetch();
     }
 
