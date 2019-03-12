@@ -144,4 +144,16 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$.regionalId", is(3)))
                 .andExpect(jsonPath("$.regionalNome", is("SUL")));
     }
+
+    @Test
+    public void findAll_deveRetornarTodasAsCidadesNetUno_quandoNetUnoForTrue() throws Exception {
+        mvc.perform(get("/api/cidades/net-uno")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(4498)))
+                .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
+                .andExpect(jsonPath("$[0].netUno", is("V")))
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
 }

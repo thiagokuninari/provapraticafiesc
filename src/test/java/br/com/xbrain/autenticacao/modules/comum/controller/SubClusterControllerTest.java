@@ -65,7 +65,7 @@ public class SubClusterControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(244)))
+                .andExpect(jsonPath("$", hasSize(245)))
                 .andExpect(jsonPath("$[0].nome", is("ABCDM")));
     }
 }
