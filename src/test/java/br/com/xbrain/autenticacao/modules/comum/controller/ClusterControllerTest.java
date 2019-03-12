@@ -65,7 +65,7 @@ public class ClusterControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(60)))
+                .andExpect(jsonPath("$", hasSize(61)))
                 .andExpect(jsonPath("$[0].nome", is("ALAGOAS")));
     }
 }

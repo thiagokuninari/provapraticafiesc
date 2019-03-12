@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
@@ -161,15 +160,5 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .from(cidade)
                 .where(predicate)
                 .fetchOne());
-    }
-
-    @Override
-    public List<Cidade> findAllByNetUno(Eboolean netUno) {
-        return new JPAQueryFactory(entityManager)
-                .select(cidade)
-                .from(cidade)
-                .where(cidade.netUno.eq(netUno))
-                .distinct()
-                .fetch();
     }
 }
