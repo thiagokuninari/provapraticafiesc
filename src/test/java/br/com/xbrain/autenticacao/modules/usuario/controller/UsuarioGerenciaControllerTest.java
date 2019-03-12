@@ -362,7 +362,7 @@ public class UsuarioGerenciaControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(96)))
-                .andExpect(jsonPath("$.permissoesEspeciais", hasSize(0)));
+                .andExpect(jsonPath("$.permissoesEspeciais", hasSize(1)));
     }
 
     @Test

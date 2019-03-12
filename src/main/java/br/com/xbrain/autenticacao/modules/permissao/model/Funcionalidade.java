@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 
 @Entity
 @Table(name = "FUNCIONALIDADE")
@@ -36,6 +38,13 @@ public class Funcionalidade {
     @Column(name = "PERMISSAO_TELA", length = 1)
     @Enumerated(EnumType.STRING)
     private Eboolean permissaoTela;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @JoinTable(name = "FUNCIONALIDADE_CANAL",
+            joinColumns = @JoinColumn(name = "FK_FUNCIONALIDADE"))
+    @Column(name = "CANAL", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Collection<ECanal> canais;
 
     @Transient
     private boolean especial;

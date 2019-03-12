@@ -942,8 +942,8 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getUsuarioByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
-        List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(codigoFuncionalidade);
+    public List<UsuarioResponse> getUsuarioByPermissao(String funcionalidade) {
+        List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(funcionalidade);
         return permissoes.stream()
                 .map(PermissaoEspecial::getUsuario)
                 .map(UsuarioResponse::convertFrom)
