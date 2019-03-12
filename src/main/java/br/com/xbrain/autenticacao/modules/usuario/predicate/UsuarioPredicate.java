@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
@@ -194,6 +195,13 @@ public class UsuarioPredicate {
                             .join(cidade.subCluster, QSubCluster.subCluster)
                             .where(QSubCluster.subCluster.id.eq(subClusterId))
             ));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCanal(ECanal canal) {
+        if (!ObjectUtils.isEmpty(canal)) {
+            builder.and(usuario.canais.any().eq(canal));
         }
         return this;
     }
