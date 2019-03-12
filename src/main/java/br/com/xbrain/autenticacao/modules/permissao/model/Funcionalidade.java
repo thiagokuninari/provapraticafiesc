@@ -39,13 +39,6 @@ public class Funcionalidade {
     @Enumerated(EnumType.STRING)
     private Eboolean permissaoTela;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @JoinTable(name = "FUNCIONALIDADE_CANAL",
-            joinColumns = @JoinColumn(name = "FK_FUNCIONALIDADE"))
-    @Column(name = "CANAL", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Collection<ECanal> canais;
-
     @Transient
     private boolean especial;
 
