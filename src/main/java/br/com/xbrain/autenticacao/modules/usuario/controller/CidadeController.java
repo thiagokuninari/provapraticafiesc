@@ -81,9 +81,8 @@ public class CidadeController {
         return service.getClusterizacao(id);
     }
 
-    @GetMapping(value = "net-uno")
+    @GetMapping("net-uno")
     public List<CidadeResponse> getAllCidadeNetUno() {
-        List<Cidade> cidadesNetUno = repository.findAllByNetUno(Eboolean.V);
-        return cidadesNetUno.stream().map(CidadeResponse::parse).collect(Collectors.toList());
+        return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
     }
 }
