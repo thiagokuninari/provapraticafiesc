@@ -6,7 +6,7 @@ public enum CodigoHierarquia {
     REGIONAL("Regional"),
     GRUPO("Grupo"),
     CLUSTER("Cluster"),
-    SUBCLUSTER("Subcluster"),
+    SUBCLUSTER("sub-cluster"),
     CIDADE("Cidade");
 
     private String hierarquia;

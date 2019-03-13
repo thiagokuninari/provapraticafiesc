@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -85,8 +82,15 @@ public class CidadeController {
         return CidadeResponse.parse(repository.findOne(id));
     }
 
+    @GetMapping("/usuarios")
+    public List<UsuarioEquipeVendasResponse> getUsuariosByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
+        return usuarioService.getUsuariosByCidades(cidadesId).stream()
+                .map(UsuarioEquipeVendasResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("usuarios-cidades/{hierarquia}/{id}")
-    public List<UsuarioResponse> getUsuariosByCidades(@PathVariable String hierarquia, @PathVariable Integer id) {
+    public List<UsuarioResponse> getUsuariosByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
         List<UsuarioCidadeDto> cidades = null;
         if (hierarquia.equalsIgnoreCase(CodigoHierarquia.REGIONAL.name())) {
             cidades = service.getAllByRegionalId(id);

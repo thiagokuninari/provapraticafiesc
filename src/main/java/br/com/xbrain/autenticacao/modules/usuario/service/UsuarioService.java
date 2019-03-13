@@ -1069,6 +1069,19 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioCidadeDto> getCidadeByListUsuario(List<Integer> usuariosId) {
+        List<Usuario> usuarios = new ArrayList<>();
+        usuariosId.forEach(usuarioId -> usuarios.add(findComplete(usuarioId)));
+        Stream<UsuarioCidadeDto> usuarioCidadeDtoStream = null;
+
+        for (Usuario usuario : usuarios) {
+            usuarioCidadeDtoStream = usuario.getCidades().stream()
+                    .map(c -> UsuarioCidadeDto.parse(c.getCidade()));
+        }
+        return usuarioCidadeDtoStream.collect(Collectors.toList());
+
+    }
+
     @Transactional
     public ConfiguracaoResponse adicionarConfiguracao(UsuarioConfiguracaoDto dto) {
         Configuracao configuracao = configuracaoRepository

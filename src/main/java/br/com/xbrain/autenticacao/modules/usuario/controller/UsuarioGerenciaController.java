@@ -103,6 +103,11 @@ public class UsuarioGerenciaController {
         return service.getCidadeByUsuario(idUsuario);
     }
 
+    @RequestMapping(value = "/usuarios/cidades", method = RequestMethod.GET)
+    public List<UsuarioCidadeDto> getCidadesByListUsuarios(@RequestParam List<Integer> usuariosId) {
+        return service.getCidadeByListUsuario(usuariosId);
+    }
+
     @RequestMapping(value = "/acesso/email", method = RequestMethod.PUT)
     public void alterarDadosAcessoEmail(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         service.alterarDadosAcessoEmail(usuarioDadosAcessoRequest);
