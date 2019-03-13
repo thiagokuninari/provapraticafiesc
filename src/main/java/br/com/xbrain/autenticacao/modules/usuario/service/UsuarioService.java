@@ -23,7 +23,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -187,10 +186,9 @@ public class UsuarioService {
     }
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf) {
-        String cpfSemFormatacao = getOnlyNumbers(cpf);
-        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
-
-        return usuarioOptional.map(UsuarioResponse::convertFrom);
+        return repository
+                .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
+                .map(UsuarioResponse::convertFrom);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -1040,21 +1038,20 @@ public class UsuarioService {
 
     public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
-        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
-        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
-        List<Funcionalidade> permissoesEspeciais = permissaoEspecialRepository.findPorUsuario(usuario.getId());
 
-        UsuarioPermissaoResponse response = new UsuarioPermissaoResponse();
-        response.setPermissoesCargoDepartamento(funcionalidades);
-        response.setPermissoesEspeciais(permissoesEspeciais);
-        return response;
+        return UsuarioPermissaoResponse.of(
+                cargoDepartamentoFuncionalidadeRepository
+                        .findFuncionalidadesPorCargoEDepartamento(
+                                new FuncionalidadePredicate()
+                                        .comCargo(usuario.getCargoId())
+                                        .comDepartamento(usuario.getDepartamentoId()).build()),
+                permissaoEspecialRepository.findPorUsuario(usuario.getId()));
     }
 
     private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {
-        FuncionalidadePredicate predicate = new FuncionalidadePredicate();
-        predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
-        return predicate;
+        return new FuncionalidadePredicate()
+                .comCargo(usuario.getCargoId())
+                .comDepartamento(usuario.getDepartamentoId());
     }
 
     public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
