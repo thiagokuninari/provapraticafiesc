@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "api/public/disparar-timer-inativar-usuarios")
+@RequestMapping(value = "api/disparar-timer-inativar-usuarios")
 public class UsuarioTimerController {
 
     @Autowired
@@ -18,5 +18,4 @@ public class UsuarioTimerController {
         service.inativarUsuariosSemAcesso();
         return "timer disparado";
     }
-    
 }
