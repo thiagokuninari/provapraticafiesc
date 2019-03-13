@@ -161,5 +161,4 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .where(predicate)
                 .fetchOne());
     }
-
 }

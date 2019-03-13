@@ -24,4 +24,5 @@ public interface CidadeRepositoryCustom {
     List<Cidade> findAllByClusterId(Integer clusterId, Predicate predicate);
 
     ClusterizacaoDto getClusterizacao(Integer id);
+
 }
