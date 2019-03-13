@@ -86,8 +86,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         return permissoes != null
                 && permissoes
                 .stream()
-                .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
-                .count() > 0;
+                .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
     public boolean isXbrain() {
@@ -98,11 +97,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         return MSO == usuario.getNivelCodigo();
     }
 
-    public boolean isVendedor() {
-        return hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_VENDEDOR_PROPRIO);
-    }
-
-    public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId, List<Integer> agentesAutorizadosIdDoUsuario) {
+    public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
+                                                   List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
                 && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
                 || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
@@ -110,7 +106,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         }
     }
 
-    public boolean isAgenteAutorizado() {
+    private boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 }

@@ -12,15 +12,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.SOCIO_AA;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,12 +32,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = "classpath:/tests_database.sql")
 public class PermissaoEspecialControllerTest {
 
+    private static final String URL = "/api/permissoes-especiais";
+
     @Autowired
     private MockMvc mvc;
 
     @Test
+    public void getAll_unauthorized_quandoNaoPassarAToken() throws Exception {
+        mvc.perform(get(URL)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void save_forbidden_quandoNaoTiverPermissaoParaPermissoesEspeciais() throws Exception {
+        mvc.perform(post(URL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void deveSalvar() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.post("/api/permissoes-especiais")
+        mvc.perform(post("/api/permissoes-especiais")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
