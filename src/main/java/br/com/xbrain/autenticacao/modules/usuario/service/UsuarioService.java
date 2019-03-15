@@ -409,9 +409,9 @@ public class UsuarioService {
     }
 
     private void removerHierarquiaSubordinados(Usuario usuario) {
-        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+        Set<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
                 .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         if (!CollectionUtils.isEmpty(subordinados)) {
             usuarioHierarquiaRepository.delete(subordinados);
         }
