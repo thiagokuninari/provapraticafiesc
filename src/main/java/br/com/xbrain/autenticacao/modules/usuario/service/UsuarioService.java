@@ -26,6 +26,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFunci
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -130,6 +131,8 @@ public class UsuarioService {
     private FileService fileService;
     @Autowired
     private EquipeVendaService equipeVendaService;
+    @Autowired
+    private FuncionalidadeService funcionalidadeService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1244,4 +1247,12 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
+        return funcionalidadeService
+                .getFuncionalidadesPermitidasAoUsuarioComCanal(
+                        findCompleteById(autenticacaoService.getUsuarioId()))
+                .stream()
+                .map(UsuarioPermissaoCanal::of)
+                .collect(Collectors.toList());
+    }
 }

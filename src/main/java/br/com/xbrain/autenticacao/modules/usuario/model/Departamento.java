@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -13,6 +11,9 @@ import javax.persistence.*;
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Departamento {
 
     @Id
@@ -36,14 +37,7 @@ public class Departamento {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    public Departamento() {
-    }
-
     public Departamento(Integer id) {
         this.id = id;
-    }
-
-    public void forceLoad() {
-        nivel.getId();
     }
 }
