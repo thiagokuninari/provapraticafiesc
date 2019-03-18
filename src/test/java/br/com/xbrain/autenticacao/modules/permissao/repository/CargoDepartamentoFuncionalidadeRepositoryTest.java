@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.permissao.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -35,21 +34,33 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
         List<Funcionalidade> funcionalidades = repository
                 .findFuncionalidadesDoCargoDepartamentoComCanal(CARGO_SOCIO_ID, DEPARTAMENTO_SOCIO_ID);
 
-        assertEquals(4, funcionalidades.size());
-        assertEquals("Relatório - Resumo de Mailing", funcionalidades.get(0).getNome());
-        assertEquals(2, funcionalidades.get(0).getCanais().size());
-        assertEquals(AGENTE_AUTORIZADO, funcionalidades.get(0).getCanais().get(0).getCanal());
-        assertEquals(ATIVO, funcionalidades.get(0).getCanais().get(1).getCanal());
+        assertThat(funcionalidades)
+                .extracting("nome")
+                .containsExactly(
+                        "Relatório - Resumo de Mailing",
+                        "Relatório - Ticket Médio Analítico",
+                        "Relatório - Ticket Médio por Vendedor",
+                        "Relatório - Gerenciamento Operacional");
+
+        assertThat(funcionalidades.get(0).getCanais())
+                .extracting("canal")
+                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
     }
 
     @Test
     public void findPermissoesEspeciaisDoUsuarioComCanal_funcionalidades_aoFiltrarPorUsuario() {
         List<Funcionalidade> funcionalidades = repository.findPermissoesEspeciaisDoUsuarioComCanal(USUARIO_SOCIO_ID);
 
-        assertEquals(4, funcionalidades.size());
-        assertEquals("Relatório - Resumo de Mailing", funcionalidades.get(0).getNome());
-        assertEquals(2, funcionalidades.get(0).getCanais().size());
-        assertEquals(AGENTE_AUTORIZADO, funcionalidades.get(0).getCanais().get(0).getCanal());
-        assertEquals(ATIVO, funcionalidades.get(0).getCanais().get(1).getCanal());
+        assertThat(funcionalidades)
+                .extracting("nome")
+                .containsExactly(
+                        "Relatório - Resumo de Mailing",
+                        "Relatório - Ticket Médio Analítico",
+                        "Relatório - Gerenciamento Operacional",
+                        "Cadastrar venda para o vendedor D2D");
+
+        assertThat(funcionalidades.get(0).getCanais())
+                .extracting("canal")
+                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
     }
 }

@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static helpers.Usuarios.SOCIO_AA;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -37,8 +37,10 @@ public class FuncionalidadeServiceTest {
     public void getPermissoes_permissosDoUsuario_somentePermitidasAoUsuario() {
         List<SimpleGrantedAuthority> permissoes = service.getPermissoes(umUsuarioSocio());
 
-        assertEquals(27, permissoes.size());
-        assertEquals("ROLE_AUT_2031", permissoes.get(0).getAuthority());
+        assertThat(permissoes)
+                .hasSize(27)
+                .extracting("authority")
+                .contains("ROLE_AUT_2031");
     }
 
     @Test
@@ -46,12 +48,14 @@ public class FuncionalidadeServiceTest {
         List<Funcionalidade> funcionalidades =
                 service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
 
-        assertEquals(5, funcionalidades.size());
-        assertEquals("Relatório - Resumo de Mailing", funcionalidades.get(0).getNome());
-        assertEquals("Relatório - Ticket Médio Analítico", funcionalidades.get(1).getNome());
-        assertEquals("Relatório - Ticket Médio por Vendedor", funcionalidades.get(2).getNome());
-        assertEquals("Relatório - Gerenciamento Operacional", funcionalidades.get(3).getNome());
-        assertEquals("Cadastrar venda para o vendedor D2D", funcionalidades.get(4).getNome());
+        assertThat(funcionalidades)
+                .extracting("nome")
+                .containsExactly(
+                        "Relatório - Resumo de Mailing",
+                        "Relatório - Ticket Médio Analítico",
+                        "Relatório - Ticket Médio por Vendedor",
+                        "Relatório - Gerenciamento Operacional",
+                        "Cadastrar venda para o vendedor D2D");
     }
 
     private Usuario umUsuarioSocio() {
