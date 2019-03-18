@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -264,13 +263,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<PermissaoEspecial> getUsuariosByPermissao(CodigoFuncionalidade codigoFuncionalidade) {
+    public List<PermissaoEspecial> getUsuariosByPermissao(String codigoFuncionalidade) {
         return new JPAQueryFactory(entityManager)
                 .select(QPermissaoEspecial.permissaoEspecial)
                 .from(QPermissaoEspecial.permissaoEspecial)
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.usuario).fetchJoin()
                 .innerJoin(QPermissaoEspecial.permissaoEspecial.funcionalidade).fetchJoin()
-                .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade.toString())
+                .where(QPermissaoEspecial.permissaoEspecial.funcionalidade.role.eq(codigoFuncionalidade)
                         .and(QPermissaoEspecial.permissaoEspecial.dataBaixa.isNull()))
                 .fetch();
     }

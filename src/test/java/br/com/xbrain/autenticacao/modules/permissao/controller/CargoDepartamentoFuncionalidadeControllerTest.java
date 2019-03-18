@@ -18,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,8 +34,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = "classpath:/tests_database.sql")
 public class CargoDepartamentoFuncionalidadeControllerTest {
 
+    private static final String URL = "/api/cargo-departamento-funcionalidade";
+
     @Autowired
     private MockMvc mvc;
+
+    @Test
+    public void getAll_unauthorized_quandoNaoPassarAToken() throws Exception {
+        mvc.perform(get(URL)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getAll_forbidden_quandoNaoTiverPermissaoParaGerenciaDePermissao() throws Exception {
+        mvc.perform(get(URL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
     public void deveSalvar() throws Exception {
@@ -51,7 +69,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(635)));
+                .andExpect(jsonPath("$", hasSize(636)));
     }
 
     @Test
@@ -62,7 +80,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.totalPages", is(64)))
-                .andExpect(jsonPath("$.totalElements", is(635)));
+                .andExpect(jsonPath("$.totalElements", is(636)));
     }
 
     @Test

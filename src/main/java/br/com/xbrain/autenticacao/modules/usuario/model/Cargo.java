@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.util.ObjectUtils;
 
@@ -18,6 +16,9 @@ import java.util.stream.Collectors;
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Cargo {
 
     @Id
@@ -51,9 +52,6 @@ public class Cargo {
             @JoinColumn(name = "FK_CARGO_SUPERIOR", referencedColumnName = "ID")})
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<Cargo> superiores;
-
-    public Cargo() {
-    }
 
     public Cargo(Integer id) {
         this.id = id;
