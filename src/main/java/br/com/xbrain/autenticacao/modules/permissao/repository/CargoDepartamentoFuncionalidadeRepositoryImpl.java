@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.permissao.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -13,9 +14,12 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
+import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidadeCanal.funcionalidadeCanal;
+import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static java.util.Arrays.asList;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class CargoDepartamentoFuncionalidadeRepositoryImpl
         extends CustomRepository<CargoDepartamentoFuncionalidade>
         implements CargoDepartamentoFuncionalidadeRepositoryCustom {
@@ -47,5 +51,34 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
                 predicate,
                 pageable,
                 new Sort(Sort.Direction.ASC, funcionalidade.nome.toString()));
+    }
+
+    @Override
+    public List<Funcionalidade> findPermissoesEspeciaisDoUsuarioComCanal(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(funcionalidade)
+                .distinct()
+                .from(permissaoEspecial)
+                .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
+                .innerJoin(funcionalidade.canais, funcionalidadeCanal).fetchJoin()
+                .where(permissaoEspecial.usuario.id.eq(usuarioId)
+                        .and(permissaoEspecial.dataBaixa.isNull()))
+                .orderBy(funcionalidade.id.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<Funcionalidade> findFuncionalidadesDoCargoDepartamentoComCanal(Integer cargoId,
+                                                                               Integer departamentoId) {
+        return new JPAQueryFactory(entityManager)
+                .select(funcionalidade)
+                .distinct()
+                .from(cargoDepartamentoFuncionalidade)
+                .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
+                .innerJoin(funcionalidade.canais, funcionalidadeCanal).fetchJoin()
+                .where(cargoDepartamentoFuncionalidade.cargo.id.eq(cargoId)
+                        .and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamentoId)))
+                .orderBy(funcionalidade.id.asc())
+                .fetch();
     }
 }

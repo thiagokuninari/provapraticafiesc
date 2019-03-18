@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,30 +24,28 @@ public class PermissaoEspecialService {
     private AutenticacaoService autenticacaoService;
 
     public void save(PermissaoEspecialRequest request) {
-        Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
-        List<PermissaoEspecial> itens = request.getFuncionalidadesIds()
-                .stream()
-                .map(item -> criarPermissaoEspecial(item, request.getUsuarioId(), usuarioAutenticado))
-                .collect(Collectors.toList());
-        repository.save(itens);
-    }
+        Usuario usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
 
-    private PermissaoEspecial criarPermissaoEspecial(Integer item, Integer usuarioId,
-                                                     Usuario usuarioAutenticado) {
-        return PermissaoEspecial.builder()
-                .id(null)
-                .funcionalidade(new Funcionalidade(item))
-                .usuario(new Usuario(usuarioId))
-                .dataCadastro(LocalDateTime.now())
-                .usuarioCadastro(usuarioAutenticado)
-                .build();
+        repository.save(
+                request.getFuncionalidadesIds()
+                        .stream()
+                        .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .usuario(new Usuario(request.getUsuarioId()))
+                                .dataCadastro(LocalDateTime.now())
+                                .usuarioCadastro(usuario)
+                                .build())
+                        .collect(Collectors.toList()));
     }
 
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
-        PermissaoEspecial permissaoEspecial = repository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
-                usuarioId, funcionalidadeId).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        permissaoEspecial.baixar(autenticacaoService.getUsuarioId());
-        repository.save(permissaoEspecial);
-        return permissaoEspecial;
+        return repository
+                .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)
+                .map(p -> {
+                    p.baixar(autenticacaoService.getUsuarioId());
+                    return repository.save(p);
+                })
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }

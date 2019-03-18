@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -13,6 +15,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "PERMISSAO_ESPECIAL")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PermissaoEspecial {
 
     @Id
@@ -50,18 +55,6 @@ public class PermissaoEspecial {
             referencedColumnName = "ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioBaixa;
-
-    public PermissaoEspecial() { }
-
-    @Builder
-    public PermissaoEspecial(Integer id, Funcionalidade funcionalidade,
-                             Usuario usuario, Usuario usuarioCadastro, LocalDateTime dataCadastro) {
-        this.id = id;
-        this.funcionalidade = funcionalidade;
-        this.usuario = usuario;
-        this.dataCadastro = dataCadastro;
-        this.usuarioCadastro = usuarioCadastro;
-    }
 
     public void baixar(Integer usuarioId) {
         this.setUsuarioBaixa(new Usuario(usuarioId));

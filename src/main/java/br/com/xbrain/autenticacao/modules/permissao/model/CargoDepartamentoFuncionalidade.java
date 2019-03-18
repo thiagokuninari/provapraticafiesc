@@ -54,7 +54,7 @@ public class CargoDepartamentoFuncionalidade {
     public CargoDepartamentoFuncionalidade(Integer cargoId, Integer departamentoId, Integer funcionalidadeId) {
         this.cargo = new Cargo(cargoId);
         this.departamento = new Departamento(departamentoId);
-        this.funcionalidade = new Funcionalidade(funcionalidadeId);
+        this.funcionalidade = Funcionalidade.builder().id(funcionalidadeId).build();
     }
 
     @Builder

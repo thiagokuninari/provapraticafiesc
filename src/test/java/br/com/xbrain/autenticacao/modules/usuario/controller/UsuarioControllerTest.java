@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.SOCIO_AA;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
@@ -274,6 +275,19 @@ public class UsuarioControllerTest {
                 .content(convertObjectToJsonBytes(umEsqueciSenha())))
                 .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+    }
+
+    @Test
+    public void getPermissoesPorCanal_permissoesComCanal_somentePermitidasAoUsuario() throws Exception {
+        mvc.perform(get("/api/usuarios/permissoes-por-canal")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
+                .andExpect(jsonPath("$[0].canais", hasSize(2)))
+                .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
+                .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
     }
 
     private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {
