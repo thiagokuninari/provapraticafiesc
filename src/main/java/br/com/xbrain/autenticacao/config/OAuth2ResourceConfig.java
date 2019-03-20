@@ -2,13 +2,12 @@ package br.com.xbrain.autenticacao.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
@@ -18,7 +17,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
-    private RedisConnectionFactory redisConnectionFactory;
+    private TokenStore tokenStore;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -56,6 +55,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        resources.tokenStore(new RedisTokenStore(redisConnectionFactory));
+        resources.tokenStore(tokenStore);
     }
 }

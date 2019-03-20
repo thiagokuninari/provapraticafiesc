@@ -25,7 +25,6 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
-
     @Autowired
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
 
@@ -189,5 +188,10 @@ public class UsuarioController {
     @GetMapping("{id}/vendedores-hierarquia")
     public List<UsuarioHierarquiaResponse> getVendedoresDaHierarquia(@PathVariable Integer id) {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
+    }
+
+    @GetMapping("permissoes-por-canal")
+    public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
+        return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 }

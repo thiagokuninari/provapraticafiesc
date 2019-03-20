@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,13 +31,12 @@ public class FuncionalidadeService {
     private PermissaoEspecialRepository permissaoEspecialRepository;
 
     public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuario(Usuario usuario) {
-        FuncionalidadePredicate predicate = new FuncionalidadePredicate()
-                .comCargo(usuario.getCargoId())
-                .comDepartamento(usuario.getDepartamentoId());
-        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
-                funcionalidades
+                cargoDepartamentoFuncionalidadeRepository
+                        .findFuncionalidadesPorCargoEDepartamento(
+                                new FuncionalidadePredicate()
+                                        .comCargo(usuario.getCargoId())
+                                        .comDepartamento(usuario.getDepartamentoId()).build())
                         .stream()
                         .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
                 permissaoEspecialRepository
@@ -57,4 +57,14 @@ public class FuncionalidadeService {
         return FuncionalidadeResponse.convertFrom(repository.findAllByOrderByNome());
     }
 
+    public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuarioComCanal(Usuario usuario) {
+        return Stream.of(
+                cargoDepartamentoFuncionalidadeRepository
+                        .findFuncionalidadesDoCargoDepartamentoComCanal(usuario.getCargoId(), usuario.getDepartamentoId()),
+                cargoDepartamentoFuncionalidadeRepository
+                        .findPermissoesEspeciaisDoUsuarioComCanal(usuario.getId()))
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(toList());
+    }
 }
