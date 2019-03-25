@@ -116,19 +116,19 @@ public class UsuarioServiceTest {
     @Test
     public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
         List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 8);
+        Assert.assertEquals(assistentesOperacao.size(), 6);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
-        Assert.assertEquals(supervisoresOperacao.size(), 8);
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
+        Assert.assertEquals(supervisoresOperacao.size(), 6);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
-        Assert.assertEquals(vendedoresOperacao.size(), 8);
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
+        Assert.assertEquals(vendedoresOperacao.size(), 6);
     }
 
     @Test
@@ -359,18 +359,32 @@ public class UsuarioServiceTest {
 
     @Test
     public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
-        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
+        Assert.assertEquals(5, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
     public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
-        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
-        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(234).size());
     }
 
     @Test
     public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
-        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(230).size());
+    }
+
+    @Test
+    public void deveRecuperarOsSupervisoresOperacaoPelaHierarquiaDoGerente() {
+        Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
+    }
+
+    @Test
+    public void deveRecuperarOsSupervisoresOperacaoPelaHierarquiaDoCoordenador() {
+        Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
+        Assert.assertEquals(1, service.getIdsSubordinadosDaHierarquia(234,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
     }
 
     @Test
