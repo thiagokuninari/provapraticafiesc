@@ -197,13 +197,12 @@ public class UsuarioServiceTest {
         service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
                 .forEach(usuario -> {
-                            if (usuario.getSituacao().equals(ESituacao.A)) {
-                                Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                            } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                                Assert.assertEquals(ESituacao.R, usuario.getSituacao());
-                            }
-                        }
-                );
+                    if (usuario.getSituacao().equals(ESituacao.A)) {
+                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                    } else if (usuario.getSituacao().equals(ESituacao.R)) {
+                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                    }
+                });
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
