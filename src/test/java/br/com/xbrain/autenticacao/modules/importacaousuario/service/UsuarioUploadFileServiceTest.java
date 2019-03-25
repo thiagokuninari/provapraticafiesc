@@ -318,8 +318,8 @@ public class UsuarioUploadFileServiceTest {
         return usuarioRepository.findOne(id);
     }
 
-    private Row umaLinha(int i) {
-        return PlanilhaService.converterTipoCelulaParaString(sheet.getRow(i));
+    private Row umaLinha(int index) {
+        return PlanilhaService.converterTipoCelulaParaString(sheet.getRow(index));
     }
 
 }

@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -10,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,10 +19,6 @@ public class CidadeController {
 
     @Autowired
     private CidadeRepository repository;
-    private static final Integer MAXIMO = 1000;
-    private static final Integer MINIMO = 1001;
-
-
     @Autowired
     private CidadeService service;
 
@@ -83,6 +77,13 @@ public class CidadeController {
         return CidadeResponse.parse(repository.findOne(id));
     }
 
+    @GetMapping("/supervisores")
+    public List<UsuarioEquipeVendasResponse> getSupervisoresByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
+        return usuarioService.getSupervisoresByCidades(cidadesId).stream()
+                .map(UsuarioEquipeVendasResponse::convertFrom)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/usuarios")
     public List<UsuarioEquipeVendasResponse> getUsuariosByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
         return usuarioService.getUsuariosByCidades(cidadesId).stream()
@@ -90,34 +91,14 @@ public class CidadeController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("usuarios-cidades/{hierarquia}/{id}")
-    public List<UsuarioResponse> getUsuariosByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
-        List<UsuarioCidadeDto> cidades = null;
-        if (hierarquia.equalsIgnoreCase(CodigoHierarquia.REGIONAL.name())) {
-            cidades = service.getAllByRegionalId(id);
-        } else if (hierarquia.equalsIgnoreCase(CodigoHierarquia.GRUPO.name())) {
-            cidades = service.getAllByGrupoId(id);
-        } else if (hierarquia.equalsIgnoreCase(CodigoHierarquia.CLUSTER.name())) {
-            cidades = service.getAllByClusterId(id);
-        } else if (hierarquia.replace("-", "").equalsIgnoreCase(CodigoHierarquia.SUBCLUSTER.name())) {
-            cidades = service.getAllBySubClusterId(id);
-        } else if (hierarquia.equalsIgnoreCase(CodigoHierarquia.CIDADE.name())) {
-            return usuarioService.getUsuariosByCidades(Arrays.asList(id));
-        }
-        List<Integer> cidadesId = cidades.stream()
-                .map(usuarioCidade -> usuarioCidade.getIdCidade())
-                .collect(Collectors.toList());
-        if (cidadesId.size() > MAXIMO) {
-            List<Integer> segundaLista = cidadesId.subList(MINIMO, cidadesId.size());
-            cidadesId = cidadesId.subList(0, MAXIMO);
-            List<UsuarioResponse> listaUsuario = usuarioService.getUsuariosByCidades(segundaLista);
-            List<UsuarioResponse> listaUsuarioComplementar = usuarioService.getUsuariosByCidades(cidadesId);
-            listaUsuario.addAll(listaUsuarioComplementar);
-            return listaUsuario;
-        }
+    @GetMapping("supervisor/usuarios/{id}")
+    public List<UsuarioResponse> getUsuariosBySupervisor(@PathVariable Integer id) {
+        return usuarioService.getUsuariosBySupervisor(id);
+    }
 
-        return usuarioService.getUsuariosByCidades(cidadesId);
-
+    @GetMapping("cidades/supervisores/{hierarquia}/{id}")
+    public List<UsuarioResponse> getSupervisoresByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
+        return service.getSupervisoresByHierarquia(hierarquia, id);
     }
 
     @GetMapping("{id}/clusterizacao")
