@@ -116,19 +116,19 @@ public class UsuarioServiceTest {
     @Test
     public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
         List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 6);
+        Assert.assertEquals(assistentesOperacao.size(), 8);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
         List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(supervisoresOperacao.size(), 6);
+        Assert.assertEquals(supervisoresOperacao.size(), 8);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
         List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(vendedoresOperacao.size(), 6);
+        Assert.assertEquals(vendedoresOperacao.size(), 8);
     }
 
     @Test
@@ -196,14 +196,14 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setId(368);
         service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
-            .forEach(usuario -> {
-                    if (usuario.getSituacao().equals(ESituacao.A)) {
-                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
-                    } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
-                    }
-                }
-            );
+                .forEach(usuario -> {
+                            if (usuario.getSituacao().equals(ESituacao.A)) {
+                                Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                            } else if (usuario.getSituacao().equals(ESituacao.R)) {
+                                Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                            }
+                        }
+                );
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
@@ -358,29 +358,29 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
         Assert.assertEquals(5, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForOperacaoPelaHierarquia() {
         Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(228).size());
         Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(234).size());
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForVendedorOperacaoPelaHierarquia() {
         Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(230).size());
     }
 
     @Test
-    public void deveRecuperarOsSupervisoresOperacaoPelaHierarquiaDoGerente() {
+    public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForGerente() {
         Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
                 CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
     }
 
     @Test
-    public void deveRecuperarOsSupervisoresOperacaoPelaHierarquiaDoCoordenador() {
+    public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForCoordenador() {
         Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
                 CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
         Assert.assertEquals(1, service.getIdsSubordinadosDaHierarquia(234,
