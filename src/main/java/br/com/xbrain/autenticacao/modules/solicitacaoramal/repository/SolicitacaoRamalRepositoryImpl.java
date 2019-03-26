@@ -64,7 +64,15 @@ public class SolicitacaoRamalRepositoryImpl
                 .orderBy(solicitacaoRamal.id.desc())
                 .fetch();
 
-        return new PageImpl<SolicitacaoRamal>(solicitacoes, pageable, solicitacoes.size());
+        return new PageImpl<>(solicitacoes, pageable, countSolicitacaoRamal(predicate));
+    }
+
+    private long countSolicitacaoRamal(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(solicitacaoRamal)
+                .from(solicitacaoRamal)
+                .where(predicate)
+                .fetchCount();
     }
 
     @Override

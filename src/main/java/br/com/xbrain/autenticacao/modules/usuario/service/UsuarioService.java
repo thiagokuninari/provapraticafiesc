@@ -1268,4 +1268,11 @@ public class UsuarioService {
                 .map(UsuarioPermissaoCanal::of)
                 .collect(Collectors.toList());
     }
+
+    public List<Integer> getIdsSubordinadosDaHierarquia(Integer usuarioId, String codigoCargo) {
+        return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
+                .stream()
+                .map(row -> objectToInteger(row[POSICAO_ZERO]))
+                .collect(Collectors.toList());
+    }
 }
