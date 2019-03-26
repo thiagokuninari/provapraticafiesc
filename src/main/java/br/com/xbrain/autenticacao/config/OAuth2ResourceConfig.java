@@ -10,10 +10,18 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_PERMISSAO_ESPECIAL_USUARIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_EMULAR_USUARIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2023;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2033;
 
 @Configuration
 @EnableResourceServer
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import org.springframework.core.NestedExceptionUtils;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +30,7 @@ public class IntegracaoException extends RuntimeException {
 
     public IntegracaoException(HystrixBadRequestException request) {
         if (request instanceof FeignBadResponseWrapper) {
-            String message = tratarException(((FeignBadResponseWrapper) request)).get(0).getMessage();
+            String message = tratarException((FeignBadResponseWrapper) request).get(0).getMessage();
             throw new IntegracaoException(message);
         }
     }

@@ -116,19 +116,19 @@ public class UsuarioServiceTest {
     @Test
     public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
         List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 8);
+        Assert.assertEquals(assistentesOperacao.size(), 5);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(supervisoresOperacao.size(), 8);
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(supervisoresOperacao.size(), 5);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(vendedoresOperacao.size(), 8);
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(vendedoresOperacao.size(), 5);
     }
 
     @Test

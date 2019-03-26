@@ -33,9 +33,9 @@ public class StringUtil {
 
         if (!ObjectUtils.isEmpty(serializable)) {
             if (serializable instanceof String) {
-                valorFormatado = ((String) serializable);
+                valorFormatado = (String) serializable;
             } else if (serializable instanceof BigDecimal) {
-                valorFormatado = MoneyUtils.formatarMonetario(((BigDecimal) serializable), Locale.US);
+                valorFormatado = MoneyUtils.formatarMonetario((BigDecimal) serializable, Locale.US);
             } else {
                 throw new ValidacaoException("Tipo " + serializable.getClass() + " não suportado");
             }
