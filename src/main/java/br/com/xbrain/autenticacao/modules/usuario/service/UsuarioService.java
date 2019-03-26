@@ -23,10 +23,10 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -133,6 +133,8 @@ public class UsuarioService {
     private FileService fileService;
     @Autowired
     private EquipeVendaService equipeVendaService;
+    @Autowired
+    private FuncionalidadeService funcionalidadeService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -189,10 +191,9 @@ public class UsuarioService {
     }
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf) {
-        String cpfSemFormatacao = getOnlyNumbers(cpf);
-        Optional<Usuario> usuarioOptional = repository.findTop1UsuarioByCpf(cpfSemFormatacao);
-
-        return usuarioOptional.map(UsuarioResponse::convertFrom);
+        return repository
+                .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
+                .map(UsuarioResponse::convertFrom);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -411,9 +412,9 @@ public class UsuarioService {
     }
 
     private void removerHierarquiaSubordinados(Usuario usuario) {
-        List<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+        Set<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
                 .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         if (!CollectionUtils.isEmpty(subordinados)) {
             usuarioHierarquiaRepository.delete(subordinados);
         }
@@ -1042,21 +1043,20 @@ public class UsuarioService {
 
     public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
-        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
-        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
-                .findFuncionalidadesPorCargoEDepartamento(predicate.build());
-        List<Funcionalidade> permissoesEspeciais = permissaoEspecialRepository.findPorUsuario(usuario.getId());
 
-        UsuarioPermissaoResponse response = new UsuarioPermissaoResponse();
-        response.setPermissoesCargoDepartamento(funcionalidades);
-        response.setPermissoesEspeciais(permissoesEspeciais);
-        return response;
+        return UsuarioPermissaoResponse.of(
+                cargoDepartamentoFuncionalidadeRepository
+                        .findFuncionalidadesPorCargoEDepartamento(
+                                new FuncionalidadePredicate()
+                                        .comCargo(usuario.getCargoId())
+                                        .comDepartamento(usuario.getDepartamentoId()).build()),
+                permissaoEspecialRepository.findPorUsuario(usuario.getId()));
     }
 
     private FuncionalidadePredicate getFuncionalidadePredicate(Usuario usuario) {
-        FuncionalidadePredicate predicate = new FuncionalidadePredicate();
-        predicate.comCargo(usuario.getCargoId()).comDepartamento(usuario.getDepartamentoId()).build();
-        return predicate;
+        return new FuncionalidadePredicate()
+                .comCargo(usuario.getCargoId())
+                .comDepartamento(usuario.getDepartamentoId());
     }
 
     public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
@@ -1284,6 +1284,22 @@ public class UsuarioService {
                                 usuarioExistente.getId().equals(usuario.getId())
                                         && usuarioExistente.getCodigoCargo().name()
                                         .equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())))
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
+        return funcionalidadeService
+                .getFuncionalidadesPermitidasAoUsuarioComCanal(
+                        findCompleteById(autenticacaoService.getUsuarioId()))
+                .stream()
+                .map(UsuarioPermissaoCanal::of)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getIdsSubordinadosDaHierarquia(Integer usuarioId, String codigoCargo) {
+        return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
+                .stream()
+                .map(row -> objectToInteger(row[POSICAO_ZERO]))
                 .collect(Collectors.toList());
     }
 

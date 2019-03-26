@@ -1,16 +1,19 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Entity
 @Table(name = "FUNCIONALIDADE")
 @Data
 @EqualsAndHashCode(of = {"id"})
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Funcionalidade {
 
     @Id
@@ -37,25 +40,9 @@ public class Funcionalidade {
     @Enumerated(EnumType.STRING)
     private Eboolean permissaoTela;
 
+    @OneToMany(mappedBy = "funcionalidade", fetch = FetchType.LAZY)
+    private List<FuncionalidadeCanal> canais;
+
     @Transient
     private boolean especial;
-
-    public Funcionalidade() { }
-
-    public Funcionalidade(Integer id) {
-        this.id = id;
-    }
-
-    public Funcionalidade(Integer id, String nome, String role) {
-        this.id = id;
-        this.nome = nome;
-        this.role = role;
-    }
-
-    public Funcionalidade(Integer id, String nome, String role, Eboolean permissaoTela) {
-        this.id = id;
-        this.nome = nome;
-        this.role = role;
-        this.permissaoTela = permissaoTela;
-    }
 }

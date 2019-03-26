@@ -25,7 +25,6 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
-
     @Autowired
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
 
@@ -181,6 +180,11 @@ public class UsuarioController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
+    public List<Integer> getIdsDaHierarquia(@PathVariable Integer usuarioId, @PathVariable String codigoCargo) {
+        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigoCargo);
+    }
+
     @GetMapping("{id}/vendedores-hierarquia-ids")
     public List<Integer> getIdsVendedoresDaHierarquia(@PathVariable Integer id) {
         return usuarioService.getIdsVendedoresOperacaoDaHierarquia(id);
@@ -189,5 +193,10 @@ public class UsuarioController {
     @GetMapping("{id}/vendedores-hierarquia")
     public List<UsuarioHierarquiaResponse> getVendedoresDaHierarquia(@PathVariable Integer id) {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
+    }
+
+    @GetMapping("permissoes-por-canal")
+    public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
+        return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 }
