@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.querydsl.core.types.Predicate;
@@ -37,7 +36,7 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate, SolicitacaoRamalFiltros filtros) {
+    public PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate) {
         final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
         List<SolicitacaoRamal> solicitacoes = new JPAQueryFactory(entityManager)
                 .select(
@@ -58,9 +57,9 @@ public class SolicitacaoRamalRepositoryImpl
                                 .select(solicitacaoAuxiliar.id.max())
                                 .from(solicitacaoAuxiliar)
                                 .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
-                .and(predicate))
-                .offset(filtros.getPage())
-                .limit(filtros.getSize())
+                        .and(predicate))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .orderBy(solicitacaoRamal.id.desc())
                 .fetch();
 
@@ -69,7 +68,7 @@ public class SolicitacaoRamalRepositoryImpl
 
     private long countSolicitacaoRamal(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(solicitacaoRamal)
+                .selectDistinct(solicitacaoRamal.agenteAutorizadoId)
                 .from(solicitacaoRamal)
                 .where(predicate)
                 .fetchCount();
