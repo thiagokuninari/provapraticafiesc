@@ -7,4 +7,6 @@ import java.util.List;
 public interface SolicitacaoRamalHistoricoRepositoryCustom {
 
     List<SolicitacaoRamalHistorico> findAllBySolicitacaoRamalId(Integer id);
+
+    void deleteAll(Integer solicitacaoId);
 }

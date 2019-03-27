@@ -12,7 +12,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -30,7 +30,7 @@ public class SolicitacaoRamalServiceTest {
     public void remover_deveRetornarFalse_quandoRemoverSolicitacaoRamalComStatusPendente() {
         service.remover(1);
 
-        assertEquals(false, repository.findById(1).isPresent());
+        assertFalse(repository.findById(1).isPresent());
     }
 
     @Test( expected = NotFoundException.class)

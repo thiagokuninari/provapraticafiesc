@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
@@ -14,7 +13,7 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate);
 
-    PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate, SolicitacaoRamalFiltros filtros);
+    PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate);
 
     List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
 
