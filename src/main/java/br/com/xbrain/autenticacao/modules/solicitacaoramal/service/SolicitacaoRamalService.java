@@ -26,11 +26,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,9 +70,6 @@ public class SolicitacaoRamalService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
 
-    private final Integer pageDefault = 0;
-    private final Integer sizeDefault = 10;
-
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
                 .stream()
@@ -79,8 +78,7 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        validaPaginacao(filtros);
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros), filtros);
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
                             .stream()
@@ -88,11 +86,6 @@ public class SolicitacaoRamalService {
                             .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
-    }
-
-    private void validaPaginacao(SolicitacaoRamalFiltros filtros) {
-        filtros.setPage(!ObjectUtils.isEmpty(filtros.getPage()) ? filtros.getPage() : pageDefault);
-        filtros.setSize(!ObjectUtils.isEmpty(filtros.getSize()) ? filtros.getSize() : sizeDefault);
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
@@ -173,8 +166,7 @@ public class SolicitacaoRamalService {
 
     private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
         return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
-                .stream()
-                .count() > 0;
+                .size() > 0;
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
@@ -225,14 +217,14 @@ public class SolicitacaoRamalService {
                 .collect(Collectors.toList());
     }
 
-    public void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
+    private void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
         if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
             emailService.enviarEmailTemplate(
                     getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
         }
     }
 
-    public Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
+    private Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
         context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
@@ -303,7 +295,7 @@ public class SolicitacaoRamalService {
             return Arrays.asList(this.destinatarios.split(","));
         }
 
-        return Arrays.asList(this.destinatarios);
+        return Collections.singletonList(this.destinatarios);
     }
 
     public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
@@ -326,7 +318,7 @@ public class SolicitacaoRamalService {
     }
 
     private long getQuantidadeRamaisPeloAgenteAutorizadoId(Integer agenteAutorizadoId) {
-        return callService.obterRamaisParaAgenteAutorizado(agenteAutorizadoId).stream().count();
+        return callService.obterRamaisParaAgenteAutorizado(agenteAutorizadoId).size();
     }
 
     private String getNomeSocioPrincipalAa(Integer agenteAutorizadoId) {
@@ -334,17 +326,16 @@ public class SolicitacaoRamalService {
     }
 
     private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId)
-                .stream()
-                .count();
+        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
     }
 
+    @Transactional
     public void remover(Integer solicitacaoId) {
         SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
 
         validaSituacaoPendente(solicitacaoRamal.getSituacao());
 
-        removerHistoricoSolicitacao(solicitacaoId);
+        historicoRepository.deleteAll(solicitacaoId);
         solicitacaoRamalRepository.delete(solicitacaoRamal);
     }
 
@@ -352,12 +343,6 @@ public class SolicitacaoRamalService {
         if (!situacao.equals(PENDENTE)) {
             throw new ValidacaoException("Só é possível excluir solicitações com status pendente!");
         }
-    }
-
-    private void removerHistoricoSolicitacao(Integer solicitacaoId) {
-        historicoRepository.findAllBySolicitacaoRamalId(solicitacaoId)
-                .stream()
-                .forEach(historico -> historicoRepository.delete(historico));
     }
 
 }
