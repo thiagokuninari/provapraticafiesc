@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 
@@ -328,12 +329,13 @@ public class SolicitacaoRamalService {
         return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
     }
 
+    @Transactional
     public void remover(Integer solicitacaoId) {
         SolicitacaoRamal solicitacaoRamal = findById(solicitacaoId);
 
         validaSituacaoPendente(solicitacaoRamal.getSituacao());
 
-        removerHistoricoSolicitacao(solicitacaoId);
+        historicoRepository.deleteAll(solicitacaoId);
         solicitacaoRamalRepository.delete(solicitacaoRamal);
     }
 
@@ -341,11 +343,6 @@ public class SolicitacaoRamalService {
         if (!situacao.equals(PENDENTE)) {
             throw new ValidacaoException("Só é possível excluir solicitações com status pendente!");
         }
-    }
-
-    private void removerHistoricoSolicitacao(Integer solicitacaoId) {
-        historicoRepository.findAllBySolicitacaoRamalId(solicitacaoId)
-                .forEach(historico -> historicoRepository.delete(historico));
     }
 
 }
