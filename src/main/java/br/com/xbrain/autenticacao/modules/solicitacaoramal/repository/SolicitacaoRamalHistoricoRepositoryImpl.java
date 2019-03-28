@@ -22,4 +22,12 @@ public class SolicitacaoRamalHistoricoRepositoryImpl
                 .orderBy(solicitacaoRamalHistorico.id.desc())
                 .fetch();
     }
+
+    @Override
+    public void deleteAll(Integer solicitacaoId) {
+        new JPAQueryFactory(entityManager)
+                .delete(solicitacaoRamalHistorico)
+                .where(solicitacaoRamalHistorico.solicitacaoRamal.id.eq(solicitacaoId))
+                .execute();
+    }
 }

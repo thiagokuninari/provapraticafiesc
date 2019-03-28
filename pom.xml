@@ -6,7 +6,7 @@
 
     <groupId>br.com.xbrain</groupId>
     <artifactId>autenticacao-api</artifactId>
-    <version>2.1.9</version>
+    <version>2.1.10</version>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -14,7 +14,7 @@
     </parent>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <springcloud.version>1.4.0.RELEASE</springcloud.version>
         <ojdbc6.version>11.2.0.3</ojdbc6.version>
         <querydsl.version>4.1.4</querydsl.version>
@@ -22,8 +22,8 @@
         <jackson.jsr310.version>2.8.3</jackson.jsr310.version>
         <lombok.version>1.18.4</lombok.version>
         <jsonwebtoken.version>0.9.0</jsonwebtoken.version>
-        <maven.checkstyle.version>2.17</maven.checkstyle.version>
-        <puppycrawl.checkstyle.version>7.3</puppycrawl.checkstyle.version>
+        <maven.checkstyle.version>3.0.0</maven.checkstyle.version>
+        <puppycrawl.checkstyle.version>8.11</puppycrawl.checkstyle.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <xbrain-utils.version>0.2.1</xbrain-utils.version>
         <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
@@ -205,13 +205,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>3.17</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>3.17</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Caelum Stella -->
@@ -299,7 +292,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.8</version>
+                <version>3.11.0</version>
                 <configuration>
                     <printFailingErrors>true</printFailingErrors>
                     <excludeRoots>
@@ -359,12 +352,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M3</version>
-                <!--<configuration>-->
-                    <!--<runOrder>alphabetical</runOrder>-->
-                    <!--&lt;!&ndash; verificar se esse bug foi resolvido em versões mais novas do maven-surefire-plugin &ndash;&gt;-->
-                    <!--&lt;!&ndash; bug: https://stackoverflow.com/questions/53010200/maven-surefire-could-not-find-forkedbooter-class &ndash;&gt;-->
-                    <!--<argLine>-Xmx1024m -Xms1024m -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>-->
-                <!--</configuration>-->
             </plugin>
         </plugins>
     </build>

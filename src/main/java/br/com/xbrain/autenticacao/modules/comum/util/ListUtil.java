@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
-
 import java.util.ArrayList;
 import java.util.List;
 

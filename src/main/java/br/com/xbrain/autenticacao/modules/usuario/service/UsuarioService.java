@@ -69,6 +69,8 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
+    private static final Integer MAXIMO = 1000;
+    private static final Integer MINIMO = 1001;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -1088,9 +1090,9 @@ public class UsuarioService {
     @Transactional
     public void removerRamalConfiguracao(UsuarioConfiguracaoDto dto) {
         List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
-        configuracao.forEach((c) -> {
-            c.removerRamal();
-            configuracaoRepository.save(c);
+        configuracao.forEach((config) -> {
+            config.removerRamal();
+            configuracaoRepository.save(config);
         });
     }
 
@@ -1220,13 +1222,38 @@ public class UsuarioService {
                 : "Registros não encontrados.");
     }
 
-    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
+    public List<UsuarioResponse> getSupervisoresByCidades(List<Integer> cidades) {
         try {
             List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
                     .map(UsuarioResponse::convertEquipeVendasUsuario)
                     .collect(Collectors.toList());
             List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
                     .map(UsuarioResponse::convertFrom)
+                    .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
+                    .distinct()
+                    .collect(Collectors.toList());
+            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
+        } catch (Exception ex) {
+            log.error("Erro - Cargo Inválido.", ex);
+            throw new ValidacaoException("Erro - Cargo Inválido");
+        }
+    }
+
+    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
+        try {
+            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
+                    .map(UsuarioResponse::convertEquipeVendasUsuario)
+                    .collect(Collectors.toList());
+            if (cidades.size() > MAXIMO) {
+                List<Integer> segundaLista = cidades.subList(MINIMO, cidades.size());
+                cidades = cidades.subList(0, MAXIMO);
+                List<UsuarioResponse> listaUsuario = getUsuariosByCidades(segundaLista);
+                List<UsuarioResponse> listaUsuarioComplementar = getUsuariosByCidades(cidades);
+                listaUsuario.addAll(listaUsuarioComplementar);
+            }
+            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
+                    .map(UsuarioResponse::convertFrom)
+                    .filter(usuario -> !usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
                     .distinct()
                     .collect(Collectors.toList());
             return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
@@ -1261,5 +1288,14 @@ public class UsuarioService {
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
                 .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponse> getUsuariosBySupervisor(Integer id) {
+        Usuario usuario = repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        List<Integer> cidades = usuario.getCidades().stream()
+                .map(user -> user.getCidade().getId())
+                .collect(Collectors.toList());
+
+        return getUsuariosByCidades(cidades);
     }
 }
