@@ -404,4 +404,9 @@ public class Usuario {
     public Set<String> getCanaisString() {
         return canais.stream().map(Enum::toString).collect(Collectors.toSet());
     }
+
+    public boolean isAgenteAutorizado() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+                && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
+    }
 }

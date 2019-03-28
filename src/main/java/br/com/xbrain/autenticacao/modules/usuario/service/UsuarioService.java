@@ -738,7 +738,7 @@ public class UsuarioService {
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         if (!ObjectUtils.isEmpty(usuario.getCpf())) {
-            if (situacaoAtiva(usuario.getEmail())) {
+            if (situacaoAtiva(usuario.getEmail()) || !usuario.isAgenteAutorizado()) {
                 usuario.adicionar(UsuarioHistorico.builder()
                         .dataCadastro(LocalDateTime.now())
                         .usuario(usuario)
