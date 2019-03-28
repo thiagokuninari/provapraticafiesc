@@ -230,7 +230,7 @@ public class UsuarioServiceTest {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
-        usuarioAtivacaoDto.setIdUsuario(100);
+        usuarioAtivacaoDto.setIdUsuario(243);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
     }
