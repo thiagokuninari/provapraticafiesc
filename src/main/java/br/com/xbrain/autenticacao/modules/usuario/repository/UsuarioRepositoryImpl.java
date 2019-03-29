@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponseD2D;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -14,6 +15,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -400,16 +402,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> getUsuariosByCidades(List<Integer> cidades) {
+    public List<UsuarioResponseD2D> getUsuariosBySupervisorId(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
-                .select(usuario)
+                .select(Projections.constructor(UsuarioResponseD2D.class,
+                        usuario.id,
+                        usuario.nome,
+                        usuario.cargo.nome))
                 .from(usuarioCidade)
                 .innerJoin(usuarioCidade.usuario, usuario)
                 .where(usuarioCidade.usuario.id.eq(usuario.id)
-                        .and(usuario.cargo.id.eq(CODIGO_ASSISTENTE_OPERACAO).or(usuario.cargo.id.eq(CODIGO_VENDEDOR_OPERACAO)
-                                .or(usuario.cargo.id.eq(CODIGO_SUPERVISOR_OPERACAO))))
+                        .and(usuario.cargo.id.eq(CODIGO_ASSISTENTE_OPERACAO).or(usuario.cargo.id.eq(CODIGO_VENDEDOR_OPERACAO)))
+                        .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO)))
+                .where(usuario.cidades.any().cidade.id.in(JPAExpressions.select(usuarioCidade.cidade.id)
+                        .from(usuarioCidade)
+                        .where(usuarioCidade.usuario.id.eq(usuarioId))))
+                .distinct()
+                .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponseD2D> getSupervisoresByHierarquia(List<Integer> cidades) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(UsuarioResponseD2D.class,
+                        usuario.id,
+                        usuario.nome,
+                        usuario.cargo.nome))
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.usuario, usuario)
+                .where(usuarioCidade.usuario.id.eq(usuario.id)
+                        .and(usuario.cargo.id.eq(CODIGO_SUPERVISOR_OPERACAO))
                         .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
                         .and(usuarioCidade.cidade.id.in(cidades)))
+                .distinct()
                 .fetch();
     }
 
