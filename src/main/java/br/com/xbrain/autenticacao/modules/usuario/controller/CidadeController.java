@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponseD2D;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -78,26 +81,17 @@ public class CidadeController {
     }
 
     @GetMapping("/supervisores")
-    public List<UsuarioEquipeVendasResponse> getSupervisoresByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
-        return usuarioService.getSupervisoresByCidades(cidadesId).stream()
-                .map(UsuarioEquipeVendasResponse::convertFrom)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("/usuarios")
-    public List<UsuarioEquipeVendasResponse> getUsuariosByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
-        return usuarioService.getUsuariosByCidades(cidadesId).stream()
-                .map(UsuarioEquipeVendasResponse::convertFrom)
-                .collect(Collectors.toList());
+    public List<UsuarioResponseD2D> getSupervisoresByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
+        return usuarioService.getSupervisoresByCidades(cidadesId);
     }
 
     @GetMapping("supervisor/usuarios/{id}")
-    public List<UsuarioResponse> getUsuariosBySupervisor(@PathVariable Integer id) {
+    public List<UsuarioResponseD2D> getUsuariosBySupervisor(@PathVariable Integer id) {
         return usuarioService.getUsuariosBySupervisor(id);
     }
 
     @GetMapping("cidades/supervisores/{hierarquia}/{id}")
-    public List<UsuarioResponse> getSupervisoresByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
+    public List<UsuarioResponseD2D> getSupervisoresByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
         return service.getSupervisoresByHierarquia(hierarquia, id);
     }
 
