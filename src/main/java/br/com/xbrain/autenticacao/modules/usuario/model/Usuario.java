@@ -396,6 +396,12 @@ public class Usuario {
         return configuracao != null;
     }
 
+    public boolean isUsuarioEquipeVendas() {
+        return !ObjectUtils.isEmpty(cargo) && List.of(CodigoCargo.SUPERVISOR_OPERACAO,
+                CodigoCargo.VENDEDOR_OPERACAO, CodigoCargo.ASSISTENTE_OPERACAO)
+                .contains(cargo.getCodigo());
+    }
+
     public Integer getRecuperarSenhaTentativa() {
         return recuperarSenhaTentativa == null ? 0 : recuperarSenhaTentativa;
     }

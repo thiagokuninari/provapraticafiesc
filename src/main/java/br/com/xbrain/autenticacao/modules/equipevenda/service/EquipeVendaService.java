@@ -38,7 +38,7 @@ public class EquipeVendaService {
         return false;
     }
 
-    public void inativarSupervidor(Integer usuarioId) {
+    public void inativarSupervisor(Integer usuarioId) {
         try {
             equipeVendaClient.inativarSupervidor(usuarioId);
         } catch (Exception ex) {
