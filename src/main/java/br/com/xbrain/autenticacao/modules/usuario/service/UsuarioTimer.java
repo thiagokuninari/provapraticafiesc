@@ -15,14 +15,12 @@ public class UsuarioTimer {
     //@Autowired
     //private UsuarioService service;
 
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    //private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
-
     private static final String EVERY_DAY_AT_MIDNIGHT = "0 0 0 * * *";
 
+    //private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
     private static final String TIME_ZONE = "America/Sao_Paulo";
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     //@Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     public void inativarUsuariosSemAcesso() {

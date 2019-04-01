@@ -801,16 +801,16 @@ public class UsuarioService {
     public void inativarUsuariosSemAcesso() {
         motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO)
                 .ifPresent(motivo -> getUsuariosSemAcesso().forEach(usuario -> {
-            usuario = findComplete(usuario.getId());
-            usuario.setSituacao(ESituacao.I);
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .motivoInativacao(motivo)
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuario)
-                    .observacao("Inativado por falta de acesso")
-                    .situacao(ESituacao.I)
-                    .build());
+                    usuario = findComplete(usuario.getId());
+                    usuario.setSituacao(ESituacao.I);
+                    usuario.adicionar(UsuarioHistorico.builder()
+                            .dataCadastro(LocalDateTime.now())
+                            .motivoInativacao(motivo)
+                            .usuario(usuario)
+                            .usuarioAlteracao(usuario)
+                            .observacao("Inativado por falta de acesso")
+                            .situacao(ESituacao.I)
+                            .build());
                     repository.save(usuario);
                 }));
     }

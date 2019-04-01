@@ -43,10 +43,10 @@ public enum CodigoHierarquia {
     };
 
     @Getter
-    private String hierarquia;
-    @Getter
     @Setter
     public CidadeService cidadeService;
+    @Getter
+    private String hierarquia;
 
     CodigoHierarquia(String hierarquia) {
         this.hierarquia = hierarquia;

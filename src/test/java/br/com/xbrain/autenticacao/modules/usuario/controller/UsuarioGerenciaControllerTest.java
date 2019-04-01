@@ -67,6 +67,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioGerenciaControllerTest {
 
+    private static final int ID_USUARIO_HELPDESK = 101;
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -83,8 +84,6 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaService equipeVendaService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
-
-    private static final int ID_USUARIO_HELPDESK = 101;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
@@ -621,25 +620,25 @@ public class UsuarioGerenciaControllerTest {
     private List<UsuarioCsvResponse> doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios() {
         return asList(
                 UsuarioCsvResponse.builder()
-                    .id(1)
-                    .nome("Usuario Csv")
-                    .email("usuario_csv@xbrain.com.br")
-                    .telefone("(43) 2323-1782")
-                    .cpf("75400072062")
-                    .cargo("Vendedor")
-                    .departamento("Comercial")
-                    .situacao(ESituacao.A)
-                    .build(),
+                        .id(1)
+                        .nome("Usuario Csv")
+                        .email("usuario_csv@xbrain.com.br")
+                        .telefone("(43) 2323-1782")
+                        .cpf("75400072062")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .situacao(ESituacao.A)
+                        .build(),
                 UsuarioCsvResponse.builder()
-                    .id(2)
-                    .nome("Usuario Teste")
-                    .email("usuario_teste@xbrain.com.br")
-                    .telefone("(43) 4575-5878")
-                    .cpf("04803828083")
-                    .cargo("Vendedor")
-                    .departamento("Comercial")
-                    .situacao(ESituacao.A)
-                    .build()
+                        .id(2)
+                        .nome("Usuario Teste")
+                        .email("usuario_teste@xbrain.com.br")
+                        .telefone("(43) 4575-5878")
+                        .cpf("04803828083")
+                        .cargo("Vendedor")
+                        .departamento("Comercial")
+                        .situacao(ESituacao.A)
+                        .build()
         );
     }
 }

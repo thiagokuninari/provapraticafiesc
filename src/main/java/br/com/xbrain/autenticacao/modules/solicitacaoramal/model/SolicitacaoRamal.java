@@ -127,8 +127,8 @@ public class SolicitacaoRamal {
 
     private void atualizaUsuariosSolicitados(SolicitacaoRamalRequest request) {
         this.usuariosSolicitados = request.getUsuariosSolicitadosIds()
-                                          .stream()
-                                          .map(Usuario::new).collect(Collectors.toList());
+                .stream()
+                .map(Usuario::new).collect(Collectors.toList());
     }
 
     public void atualizarUsuario(Integer idUsuario) {

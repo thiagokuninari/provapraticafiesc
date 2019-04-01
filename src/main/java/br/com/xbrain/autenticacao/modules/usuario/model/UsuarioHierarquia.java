@@ -42,10 +42,7 @@ public class UsuarioHierarquia {
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    public UsuarioHierarquia() { }
-
-    public static UsuarioHierarquia criar(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
-        return new UsuarioHierarquia(usuario, idHierarquia, idUsuarioAutenticado);
+    public UsuarioHierarquia() {
     }
 
     private UsuarioHierarquia(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
@@ -54,6 +51,10 @@ public class UsuarioHierarquia {
         this.usuarioSuperior = new Usuario(idHierarquia);
         this.usuarioCadastro = new Usuario(idUsuarioAutenticado);
         this.dataCadastro = LocalDateTime.now();
+    }
+
+    public static UsuarioHierarquia criar(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
+        return new UsuarioHierarquia(usuario, idHierarquia, idUsuarioAutenticado);
     }
 
     public Integer getUsuarioSuperiorId() {

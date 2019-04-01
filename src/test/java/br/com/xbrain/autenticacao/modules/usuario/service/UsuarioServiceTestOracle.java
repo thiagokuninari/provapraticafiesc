@@ -2,29 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
-import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,16 +27,13 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
 @RunWith(SpringRunner.class)
@@ -128,6 +112,7 @@ public class UsuarioServiceTestOracle {
         assertEquals("Vendedor", usuarios.get(0).getCargo());
         assertEquals("Administrador", usuarios.get(0).getDepartamento());
     }
+
     @Test
     public void deveBuscarOsUsuarioComInatividade() throws Exception {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();

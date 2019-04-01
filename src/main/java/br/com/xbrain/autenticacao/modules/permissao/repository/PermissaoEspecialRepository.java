@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface PermissaoEspecialRepository extends CrudRepository<PermissaoEspecial, Integer>,
-        PermissaoEspecialRepositoryCustom  {
+        PermissaoEspecialRepositoryCustom {
 
     Optional<PermissaoEspecial> findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(Integer usuarioId,
                                                                                         Integer funcionalidadeId);

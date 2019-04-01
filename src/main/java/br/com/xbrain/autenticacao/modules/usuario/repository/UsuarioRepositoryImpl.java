@@ -36,11 +36,11 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarqui
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
-    @Autowired
-    private EntityManager entityManager;
     private static final Integer CODIGO_VENDEDOR_OPERACAO = 8;
     private static final Integer CODIGO_ASSISTENTE_OPERACAO = 2;
     private static final Integer CODIGO_SUPERVISOR_OPERACAO = 10;
+    @Autowired
+    private EntityManager entityManager;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(

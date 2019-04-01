@@ -23,7 +23,8 @@ public class CargoResponse {
     private Integer quantidadeSuperior;
     private boolean possuiCargoSuperior;
 
-    public CargoResponse() { }
+    public CargoResponse() {
+    }
 
     public CargoResponse(Cargo cargo) {
         BeanUtils.copyProperties(convertFrom(cargo), this);

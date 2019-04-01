@@ -15,8 +15,6 @@ import java.util.Objects;
 @Service
 public class LogRequestService {
 
-    @Autowired
-    private LogRequestRepository repository;
     private static final int TAMANHO_MAXIMO = 255;
     private static List<String> urlsArmazenar = Arrays.asList(
             "/oauth/token",
@@ -24,8 +22,9 @@ public class LogRequestService {
             "/api/usuarios/gerencia",
             "/api/usuarios"
     );
-
     private static List<String> dominiosNaoPermitidos = Collections.singletonList("@XBRAIN.COM.BR");
+    @Autowired
+    private LogRequestRepository repository;
 
     @Async
     public void saveAsync(String url,
@@ -49,7 +48,7 @@ public class LogRequestService {
                            String ip) {
         if (deveArmazenarLogUrl(url) && deveLogarUsuarioDominio(email)) {
             if (!Objects.isNull(urlParam) && urlParam.length() > TAMANHO_MAXIMO) {
-                urlParam = urlParam.substring(0,TAMANHO_MAXIMO);
+                urlParam = urlParam.substring(0, TAMANHO_MAXIMO);
             }
             return save(LogRequest.build(usuario, url, method, urlParam, dados, usuarioEmulador, ip));
         }

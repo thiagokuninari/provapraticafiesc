@@ -33,14 +33,14 @@ public class RegionalControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/regionais")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarAsRegionaisAtivas() throws Exception  {
+    public void deveRetornarAsRegionaisAtivas() throws Exception {
         mvc.perform(get("/api/regionais")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

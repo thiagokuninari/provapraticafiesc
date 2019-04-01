@@ -18,7 +18,7 @@ public class Aplicacao {
     private Integer id;
 
     @NotNull
-    @Column(name = "NOME",length = 80)
+    @Column(name = "NOME", length = 80)
     private String nome;
 
     @Column(name = "CODIGO", nullable = false, length = 80)

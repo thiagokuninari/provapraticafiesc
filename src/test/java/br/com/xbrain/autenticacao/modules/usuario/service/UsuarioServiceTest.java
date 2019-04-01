@@ -15,7 +15,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
@@ -123,13 +122,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
         Assert.assertEquals(supervisoresOperacao.size(), 5);
     }
 
     @Test
     public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
         Assert.assertEquals(vendedoresOperacao.size(), 5);
     }
 
@@ -360,7 +359,6 @@ public class UsuarioServiceTest {
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 
-
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
@@ -382,7 +380,6 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
-
 
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
@@ -451,6 +448,4 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
     }
-
-
 }

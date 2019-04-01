@@ -32,11 +32,6 @@ public class Grupo implements AreaAtuacao {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @JsonIgnore
-    public EAreaAtuacao getTipo() {
-        return EAreaAtuacao.GRUPO;
-    }
-
     public Grupo() {
     }
 
@@ -49,5 +44,10 @@ public class Grupo implements AreaAtuacao {
         this.nome = nome;
         this.regional = regional;
         this.situacao = situacao;
+    }
+
+    @JsonIgnore
+    public EAreaAtuacao getTipo() {
+        return EAreaAtuacao.GRUPO;
     }
 }

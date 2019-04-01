@@ -25,8 +25,8 @@ public class UsuarioHistoricoRepositoryImpl
                         .select(usuarioHistorico)
                         .from(usuarioHistorico)
                         .where(usuarioHistorico.usuario.id.eq(usuarioId)
-                                    .and(usuarioHistorico.motivoInativacao
-                                            .codigo.eq(CodigoMotivoInativacao.ULTIMO_ACESSO)))
+                                .and(usuarioHistorico.motivoInativacao
+                                        .codigo.eq(CodigoMotivoInativacao.ULTIMO_ACESSO)))
                         .fetchOne());
     }
 
@@ -44,18 +44,18 @@ public class UsuarioHistoricoRepositoryImpl
     @Override
     public List<Usuario> getUsuariosSemAcesso() {
         List<BigDecimal> usuariosHistorico = entityManager.createNativeQuery(
-                "SELECT distinct U.ID "                        
-                        + "  FROM USUARIO_HISTORICO UH "           
+                "SELECT distinct U.ID "
+                        + "  FROM USUARIO_HISTORICO UH "
                         + " INNER JOIN USUARIO U ON U.ID = UH.FK_USUARIO"
                         + " WHERE UH.FK_MOTIVO_INATIV = 5 "
                         + " AND U.SITUACAO = 'A' "
-                        + " AND (SYSDATE - TRUNC(UH.DATA_CADASTRO)) >= 32")                
-                .getResultList();  
+                        + " AND (SYSDATE - TRUNC(UH.DATA_CADASTRO)) >= 32")
+                .getResultList();
         return usuariosHistorico.stream()
                 .map(h -> {
                     return new Usuario(h.intValue());
                 })
                 .collect(Collectors.toList());
-    }        
+    }
 
 }

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Transactional
-@Sql(scripts = { "classpath:/tests_database.sql"})
+@Sql(scripts = {"classpath:/tests_database.sql"})
 public class CargoDepartamentoFuncionalidadeRepositoryTest {
 
     private static Integer USUARIO_SOCIO_ID = 226;

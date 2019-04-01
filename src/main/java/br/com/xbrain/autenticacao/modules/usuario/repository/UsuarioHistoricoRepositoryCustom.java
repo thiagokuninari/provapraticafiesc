@@ -10,9 +10,9 @@ import java.util.Optional;
 public interface UsuarioHistoricoRepositoryCustom {
 
     Optional<UsuarioHistorico> getUltimoHistoricoPorUsuario(Integer usuarioId);
-    
+
     List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId);
-    
+
     List<Usuario> getUsuariosSemAcesso();
-    
+
 }

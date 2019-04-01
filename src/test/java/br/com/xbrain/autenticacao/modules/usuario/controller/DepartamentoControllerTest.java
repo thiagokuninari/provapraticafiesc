@@ -33,14 +33,14 @@ public class DepartamentoControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/departamentos")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsCargosAtivosPorNivel() throws Exception  {
+    public void deveRetornarOsCargosAtivosPorNivel() throws Exception {
         mvc.perform(get("/api/departamentos?nivelId=4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

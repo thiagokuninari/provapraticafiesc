@@ -21,8 +21,9 @@ import java.util.Collections;
 @EnableAuthorizationServer
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
+    private static final int UM_MES_EM_SEGUNDOS = 2592000;
+    private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
     public static String APP_CLIENT = "xbrain-app-client";
-
     @Value("${keys.private}")
     private String privateKey;
     @Value("${keys.public}")
@@ -63,10 +64,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
-
-    private static final int UM_MES_EM_SEGUNDOS = 2592000;
-    private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
-
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired

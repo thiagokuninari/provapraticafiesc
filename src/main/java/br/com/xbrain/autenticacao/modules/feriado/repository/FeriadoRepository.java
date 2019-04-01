@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface FeriadoRepository extends CrudRepository<Feriado,Integer>, FeriadoRepositoryCustom {
+public interface FeriadoRepository extends CrudRepository<Feriado, Integer>, FeriadoRepositoryCustom {
 
     Optional<Feriado> findByDataFeriadoAndFeriadoNacional(LocalDate data, Eboolean nacional);
 

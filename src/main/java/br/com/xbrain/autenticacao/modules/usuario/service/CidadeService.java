@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-
+    private static final Integer MAXIMO = 1000;
+    private static final Integer MINIMO = 1001;
     @Getter
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -31,8 +32,6 @@ public class CidadeService {
     private UsuarioService usuarioService;
     @Autowired
     private CidadeRepository repository;
-    private static final Integer MAXIMO = 1000;
-    private static final Integer MINIMO = 1001;
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();

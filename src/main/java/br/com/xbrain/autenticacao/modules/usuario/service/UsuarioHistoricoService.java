@@ -15,22 +15,22 @@ import java.util.Optional;
 
 @Service
 public class UsuarioHistoricoService {
-        
+
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
-    
+
     @Autowired
     private MotivoInativacaoRepository motivoInativacaoRepository;
-    
+
     @Async
     public void registrarHistoricoUltimoAcessoAsync(Integer usuarioId) {
         UsuarioHistorico historico = gerarHistoricoUltimoAcessoDoUsuario(usuarioId);
         usuarioHistoricoRepository.save(historico);
     }
-    
+
     public List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId) {
         return usuarioHistoricoRepository.getHistoricoDoUsuario(usuarioId);
-    }   
+    }
 
     public UsuarioHistorico gerarHistoricoUltimoAcessoDoUsuario(Integer usuarioId) {
         Optional<UsuarioHistorico> usuarioHistorico = usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(usuarioId);

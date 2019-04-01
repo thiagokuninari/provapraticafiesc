@@ -32,14 +32,14 @@ public class UfControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/ufs")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarTodos() throws Exception  {
+    public void deveRetornarTodos() throws Exception {
         mvc.perform(get("/api/ufs")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

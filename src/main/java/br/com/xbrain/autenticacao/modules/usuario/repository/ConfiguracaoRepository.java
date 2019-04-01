@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface ConfiguracaoRepository extends PagingAndSortingRepository<Configuracao, Integer> {
 
     Optional<Configuracao> findByUsuario(Usuario usuario);
-    
+
     List<Configuracao> findByRamal(Integer ramal);
 }
