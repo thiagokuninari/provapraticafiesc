@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -26,7 +25,6 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
-
     @Autowired
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
 
@@ -129,7 +127,7 @@ public class UsuarioController {
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
-            @RequestParam CodigoFuncionalidade funcionalidade) {
+            @RequestParam String funcionalidade) {
         return usuarioService.getUsuarioByPermissao(funcionalidade);
     }
 
@@ -182,8 +180,23 @@ public class UsuarioController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
+    public List<Integer> getIdsDaHierarquia(@PathVariable Integer usuarioId, @PathVariable String codigoCargo) {
+        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigoCargo);
+    }
+
+    @GetMapping("{id}/vendedores-hierarquia-ids")
+    public List<Integer> getIdsVendedoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getIdsVendedoresOperacaoDaHierarquia(id);
+    }
+
     @GetMapping("{id}/vendedores-hierarquia")
-    public List<Integer> getVendedoresDaHierarquia(@PathVariable() Integer id) {
+    public List<UsuarioHierarquiaResponse> getVendedoresDaHierarquia(@PathVariable Integer id) {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
+    }
+
+    @GetMapping("permissoes-por-canal")
+    public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
+        return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 }

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -70,6 +71,14 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
+        return usuarioResponse;
+    }
+
+    public static UsuarioResponse convertEquipeVendasUsuario(EquipeVendaUsuarioResponse equipeVendaUsuarioResponse) {
+        UsuarioResponse usuarioResponse = new UsuarioResponse();
+        usuarioResponse.setId(equipeVendaUsuarioResponse.getUsuarioId());
+        usuarioResponse.setCodigoCargo(CodigoCargo.valueOf(equipeVendaUsuarioResponse.getCargoNome()));
+        usuarioResponse.setNome(equipeVendaUsuarioResponse.getUsuarioNome());
         return usuarioResponse;
     }
 

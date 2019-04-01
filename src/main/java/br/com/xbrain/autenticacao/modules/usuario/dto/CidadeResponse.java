@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -11,6 +12,7 @@ public class CidadeResponse {
     private String nome;
     private String codigoIbge;
     private UfResponse uf;
+    private Eboolean netUno;
 
     public static CidadeResponse parse(Cidade request) {
         CidadeResponse response = new CidadeResponse();

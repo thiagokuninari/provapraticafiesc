@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -29,7 +28,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Integer> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
     List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
 
@@ -41,7 +40,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId);
 
-    List<PermissaoEspecial> getUsuariosByPermissao(CodigoFuncionalidade codigoFuncionalidade);
+    List<PermissaoEspecial> getUsuariosByPermissao(String codigoFuncionalidade);
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
@@ -56,4 +55,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
 
     Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
+
+    List<Usuario> getUsuariosByCidades(List<Integer> cidades);
+
 }

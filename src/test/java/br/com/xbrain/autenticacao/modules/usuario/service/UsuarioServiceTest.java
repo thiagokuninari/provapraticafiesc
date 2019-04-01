@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -86,6 +87,8 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
+    @MockBean
+    private EquipeVendaClient equipeVendaClient;
 
     @Before
     public void setUp() {
@@ -108,6 +111,24 @@ public class UsuarioServiceTest {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
+    }
+
+    @Test
+    public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
+        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
+        Assert.assertEquals(assistentesOperacao.size(), 5);
+    }
+
+    @Test
+    public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
+        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(supervisoresOperacao.size(), 5);
+    }
+
+    @Test
+    public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
+        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades( Arrays.asList(5578));
+        Assert.assertEquals(vendedoresOperacao.size(), 5);
     }
 
     @Test
@@ -175,14 +196,13 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setId(368);
         service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
-            .forEach(usuario -> {
+                .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
                         Assert.assertEquals(ESituacao.A, usuario.getSituacao());
                     } else if (usuario.getSituacao().equals(ESituacao.R)) {
                         Assert.assertEquals(ESituacao.R, usuario.getSituacao());
                     }
-                }
-            );
+                });
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
@@ -210,7 +230,7 @@ public class UsuarioServiceTest {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
-        usuarioAtivacaoDto.setIdUsuario(100);
+        usuarioAtivacaoDto.setIdUsuario(243);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
     }
@@ -337,19 +357,33 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
-        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(5, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
-        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
-        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(228).size());
+        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(234).size());
     }
 
     @Test
-    public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
-        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+    public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForVendedorOperacaoPelaHierarquia() {
+        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(230).size());
+    }
+
+    @Test
+    public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForGerente() {
+        Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
+    }
+
+    @Test
+    public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForCoordenador() {
+        Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
+        Assert.assertEquals(1, service.getIdsSubordinadosDaHierarquia(234,
+                CodigoCargo.SUPERVISOR_OPERACAO.name()).size());
     }
 
     @Test

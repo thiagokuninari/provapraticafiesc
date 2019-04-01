@@ -12,9 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -37,6 +35,9 @@ import java.util.stream.Collectors;
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "USUARIO")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
@@ -206,9 +207,6 @@ public class Usuario {
 
     public boolean isNovoCadastro() {
         return id == null;
-    }
-
-    public Usuario() {
     }
 
     public Usuario(Integer id) {
@@ -407,7 +405,8 @@ public class Usuario {
         return canais.stream().map(Enum::toString).collect(Collectors.toSet());
     }
 
-    public boolean isOperacao() {
-        return CodigoNivel.OPERACAO == getNivelCodigo();
+    public boolean isAgenteAutorizado() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+                && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 }

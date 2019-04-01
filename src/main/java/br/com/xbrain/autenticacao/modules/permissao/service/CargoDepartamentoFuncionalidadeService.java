@@ -52,14 +52,17 @@ public class CargoDepartamentoFuncionalidadeService {
     }
 
     private CargoDepartamentoFuncionalidade criarCargoDepartamentoFuncionalidade(
-            CargoDepartamentoFuncionalidadeRequest funcionalidadeSaveRequest,
+            CargoDepartamentoFuncionalidadeRequest request,
             Usuario usuarioAutenticado,
-            Integer item) {
+            Integer funcionalidadeId) {
         return CargoDepartamentoFuncionalidade.builder()
-                .id(null)
-                .cargo(new Cargo(funcionalidadeSaveRequest.getCargoId()))
-                .departamento(new Departamento(funcionalidadeSaveRequest.getDepartamentoId()))
-                .funcionalidade(new Funcionalidade(item))
+                .cargo(new Cargo(request.getCargoId()))
+                .departamento(new Departamento(request.getDepartamentoId()))
+                .funcionalidade(
+                        Funcionalidade
+                                .builder()
+                                .id(funcionalidadeId)
+                                .build())
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuarioAutenticado)
                 .build();
