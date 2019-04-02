@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -42,13 +41,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -145,23 +142,13 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveBuscarSuperioresDoUsuario() {
-        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
-        List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
-        Assert.assertEquals(1, usuariosResponse.size());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
-    }
-
-    @Test
     public void deveAlterarOCargoDoUsuario() {
         UsuarioAlteracaoRequest usuarioAlteracaoRequest = new UsuarioAlteracaoRequest();
         usuarioAlteracaoRequest.setId(100);
-        usuarioAlteracaoRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCargoCodigo(), CodigoCargo.EXECUTIVO);
+        Assert.assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
     }
 
     @Test
@@ -189,7 +176,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
+    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
         doReturn(umUsuarioSupervisor()).when(service).findComplete(205);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -198,7 +185,7 @@ public class UsuarioServiceTest {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, times(0)).sendInativar(any());
     }
 
     @Test
@@ -338,7 +325,7 @@ public class UsuarioServiceTest {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("2292929292929292929229292929");
-        usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioMqRequest.setCargo(EXECUTIVO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
 
