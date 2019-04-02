@@ -28,7 +28,10 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamento
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -1229,44 +1232,6 @@ public class UsuarioService {
                 : "Registros não encontrados.");
     }
 
-    public List<UsuarioResponseD2D> getSupervisoresByCidades(List<Integer> cidades) {
-        try {
-            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
-                    .map(UsuarioResponse::convertEquipeVendasUsuario)
-                    .collect(Collectors.toList());
-            List<UsuarioResponseD2D> usuarios = repository.getSupervisoresByHierarquia(cidades);
-            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
-        } catch (Exception ex) {
-            log.error("Erro - Cargo Inválido.", ex);
-            throw new ValidacaoException("Erro - Cargo Inválido");
-        }
-    }
-
-    public List<UsuarioResponseD2D> getUsuariosBySupervisorId(Integer id) {
-        try {
-            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
-                    .map(UsuarioResponse::convertEquipeVendasUsuario)
-                    .collect(Collectors.toList());
-
-            List<UsuarioResponseD2D> usuarios = repository.getUsuariosBySupervisorId(id);
-            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
-        } catch (Exception ex) {
-            log.error("O sistema Equipe de Vendas não está respondendo.", ex);
-            throw new ValidacaoException("O sistema Equipe de Vendas não está respondendo");
-        }
-    }
-
-    public List<UsuarioResponseD2D> retornarVendedoresSemEquipeVendas(List<UsuarioResponseD2D> usuarios,
-                                                                      List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
-        return usuarios.stream()
-                .filter(usuario -> !usuariosExistenteEmEquipesVendas.stream()
-                        .anyMatch(usuarioExistente ->
-                                usuarioExistente.getId().equals(usuario.getId())
-                                        && usuarioExistente.getCodigoCargo().name()
-                                        .equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())))
-                .collect(Collectors.toList());
-    }
-
     public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
         return funcionalidadeService
                 .getFuncionalidadesPermitidasAoUsuarioComCanal(
@@ -1281,9 +1246,5 @@ public class UsuarioService {
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
                 .collect(Collectors.toList());
-    }
-
-    public List<UsuarioResponseD2D> getUsuariosBySupervisor(Integer id) {
-        return getUsuariosBySupervisorId(id);
     }
 }

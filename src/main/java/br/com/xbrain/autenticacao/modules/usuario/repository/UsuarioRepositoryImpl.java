@@ -2,12 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponseD2D;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -28,6 +32,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
+import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
+import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -38,9 +44,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarqui
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
-    private static final Integer CODIGO_VENDEDOR_OPERACAO = 8;
-    private static final Integer CODIGO_ASSISTENTE_OPERACAO = 2;
-    private static final Integer CODIGO_SUPERVISOR_OPERACAO = 10;
     @Autowired
     private EntityManager entityManager;
 
@@ -80,21 +83,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.empresas).fetchJoin()
-                        .where(usuario.id.eq(id))
-                        .distinct()
-                        .fetchOne()
-        );
-    }
-
-    public Optional<Usuario> findComHierarquia(Integer id) {
-        return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .join(usuario.cargo, cargo).fetchJoin()
-                        .join(cargo.nivel).fetchJoin()
-                        .join(usuario.departamento).fetchJoin()
-                        .leftJoin(usuario.usuariosHierarquia).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .fetchOne()
@@ -151,22 +139,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .setParameter("_usuarioId", usuarioId)
                 .setParameter("_codigoCargo", codigoCargo)
                 .getResultList();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getUsuariosSubordinadosByCidade(Integer usuarioId) {
-        List<BigDecimal> result = entityManager
-                .createNativeQuery(
-                        " SELECT FK_USUARIO"
-                                + " FROM usuario_hierarquia"
-                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
-                .setParameter("_usuarioId", usuarioId)
-                .getResultList();
-        return result
-                .stream()
-                .map(BigDecimal::intValue)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -402,39 +374,47 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioResponseD2D> getUsuariosBySupervisorId(Integer usuarioId) {
+    public List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
+                                                                     List<CodigoCargo> cargos,
+                                                                     ECanal canal) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioResponseD2D.class,
+                .select(Projections.constructor(UsuarioResponse.class,
                         usuario.id,
                         usuario.nome,
-                        usuario.cargo.nome))
+                        usuario.cargo.codigo))
                 .from(usuarioCidade)
-                .innerJoin(usuarioCidade.usuario, usuario)
-                .where(usuarioCidade.usuario.id.eq(usuario.id)
-                        .and(usuario.cargo.id.eq(CODIGO_ASSISTENTE_OPERACAO).or(usuario.cargo.id.eq(CODIGO_VENDEDOR_OPERACAO)))
-                        .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO)))
-                .where(usuario.cidades.any().cidade.id.in(JPAExpressions.select(usuarioCidade.cidade.id)
-                        .from(usuarioCidade)
-                        .where(usuarioCidade.usuario.id.eq(usuarioId))))
+                .join(usuarioCidade.usuario, usuario)
+                .where(usuario.cargo.codigo.in(cargos)
+                        .and(usuario.canais.any().eq(canal))
+                        .and(usuario.cidades.any().cidade.id.in(
+                                JPAExpressions.select(usuarioCidade.cidade.id)
+                                        .from(usuarioCidade)
+                                        .where(usuarioCidade.usuario.id.eq(usuarioId)))))
                 .distinct()
                 .fetch();
     }
 
     @Override
-    public List<UsuarioResponseD2D> getSupervisoresByHierarquia(List<Integer> cidades) {
+    public List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
+                                                           List<Integer> areasAtuacaoIds,
+                                                           CodigoCargo cargo,
+                                                           ECanal canal) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioResponseD2D.class,
+                .select(Projections.constructor(UsuarioResponse.class,
                         usuario.id,
                         usuario.nome,
-                        usuario.cargo.nome))
+                        usuario.cargo.codigo))
                 .from(usuarioCidade)
-                .innerJoin(usuarioCidade.usuario, usuario)
-                .where(usuarioCidade.usuario.id.eq(usuario.id)
-                        .and(usuario.cargo.id.eq(CODIGO_SUPERVISOR_OPERACAO))
-                        .and(usuario.canais.any().eq(ECanal.D2D_PROPRIO))
-                        .and(usuarioCidade.cidade.id.in(cidades)))
+                .join(usuarioCidade.usuario, usuario)
+                .join(usuarioCidade.cidade, QCidade.cidade)
+                .join(QCidade.cidade.subCluster, QSubCluster.subCluster)
+                .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                .join(QCluster.cluster.grupo, grupo)
+                .join(grupo.regional, regional)
+                .where(usuario.cargo.codigo.eq(cargo)
+                        .and(usuario.canais.any().eq(canal))
+                        .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
                 .distinct()
                 .fetch();
     }
-
 }
