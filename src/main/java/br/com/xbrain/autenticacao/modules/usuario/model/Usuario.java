@@ -32,6 +32,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
@@ -397,9 +400,9 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo) && List.of(CodigoCargo.SUPERVISOR_OPERACAO,
-                CodigoCargo.VENDEDOR_OPERACAO, CodigoCargo.ASSISTENTE_OPERACAO)
-                .contains(cargo.getCodigo());
+        return !ObjectUtils.isEmpty(cargo) &&
+                List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
+                        .contains(cargo.getCodigo());
     }
 
     public Integer getRecuperarSenhaTentativa() {
