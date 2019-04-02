@@ -22,7 +22,7 @@ public class UsuarioGerenciaController {
     @Autowired
     private UsuarioService service;
 
-    @PostMapping(consumes = { "multipart/form-data" })
+    @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
         return service.save(UsuarioDto.convertFrom(usuario), foto);
@@ -112,7 +112,7 @@ public class UsuarioGerenciaController {
     public Integer alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         return service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
     }
-    
+
     @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
     public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);

@@ -30,7 +30,7 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
                 && equipeVendaService.verificaPausaEmAndamento(servletRequest.getParameter("username"))) {
             sendErrorValidation(servletResponse);
         }
-        filterChain.doFilter(servletRequest,servletResponse);
+        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     private boolean isValidTokenRequest(ServletRequest servletRequest) {

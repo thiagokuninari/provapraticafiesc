@@ -33,14 +33,14 @@ public class UnidadeNegocioControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/unidades-negocio")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarTodos() throws Exception  {
+    public void deveRetornarTodos() throws Exception {
         mvc.perform(get("/api/unidades-negocio")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -60,7 +60,7 @@ public class UnidadeNegocioControllerTest {
     }
 
     @Test
-    public void deveIgnorarXbrain() throws Exception  {
+    public void deveIgnorarXbrain() throws Exception {
         mvc.perform(get("/api/unidades-negocio?ignorarXbrain=true")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

@@ -36,7 +36,7 @@ public class SolicitacaoRamalExpiracaoAdjuster implements TemporalAdjuster {
         }
     }
 
-    private boolean verificaData(LocalDateTime data , int hora) {
+    private boolean verificaData(LocalDateTime data, int hora) {
         return isFinalDeSemanaOuFeriado(data) && hora != 0;
     }
 

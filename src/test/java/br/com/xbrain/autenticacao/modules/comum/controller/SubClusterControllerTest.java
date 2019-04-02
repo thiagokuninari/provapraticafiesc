@@ -33,14 +33,14 @@ public class SubClusterControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/subclusters")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsSubClustersAtivosPorCluster() throws Exception  {
+    public void deveRetornarOsSubClustersAtivosPorCluster() throws Exception {
         mvc.perform(get("/api/subclusters?clusterId=16")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -60,7 +60,7 @@ public class SubClusterControllerTest {
     }
 
     @Test
-    public void deveRetornarOsSubClustersAtivos() throws Exception  {
+    public void deveRetornarOsSubClustersAtivos() throws Exception {
         mvc.perform(get("/api/subclusters")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

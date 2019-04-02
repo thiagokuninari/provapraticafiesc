@@ -28,7 +28,7 @@ app-config:
   url-servico-email: http://172.10.10.41:8080/emails/
   url-estatico-upload: ${app-config.url-estatico}/homologacao/autenticacao
   upload-dir: ${app-config.estatico-dir}/homologacao/autenticacao
-  
+
   services:
     autenticacao:
       url: http://172.10.10.73:8096
@@ -51,5 +51,5 @@ app-config:
 
 logging:
   level:
-      org.springframework: 'ERROR'
-      org.hibernate: 'ERROR'
+    org.springframework: 'ERROR'
+    org.hibernate: 'ERROR'

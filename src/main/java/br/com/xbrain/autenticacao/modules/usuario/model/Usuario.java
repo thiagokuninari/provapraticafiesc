@@ -32,6 +32,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
@@ -205,10 +208,6 @@ public class Usuario {
     @Transient
     private List<Integer> cidadesId;
 
-    public boolean isNovoCadastro() {
-        return id == null;
-    }
-
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -216,6 +215,17 @@ public class Usuario {
     public Usuario(Collection<Empresa> empresas, Collection<UnidadeNegocio> unidadeNegocios) {
         this.empresas = new ArrayList<>(empresas);
         this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
+    }
+
+    public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
+        Usuario usuario = new Usuario();
+        BeanUtils.copyProperties(usuarioMqRequest, usuario);
+        usuario.setUsuarioCadastro(new Usuario(usuarioMqRequest.getUsuarioCadastroId()));
+        return usuario;
+    }
+
+    public boolean isNovoCadastro() {
+        return id == null;
     }
 
     public void forceLoad() {
@@ -237,15 +247,6 @@ public class Usuario {
                 : null;
     }
 
-    public List<String> getEmpresasNome() {
-        return empresas != null && Hibernate.isInitialized(empresas)
-                ? empresas
-                .stream()
-                .map(Empresa::getNome)
-                .collect(Collectors.toList())
-                : null;
-    }
-
     public void setEmpresasId(List<Integer> ids) {
         if (ids != null) {
             empresas = ids
@@ -253,6 +254,15 @@ public class Usuario {
                     .map(Empresa::new)
                     .collect(Collectors.toList());
         }
+    }
+
+    public List<String> getEmpresasNome() {
+        return empresas != null && Hibernate.isInitialized(empresas)
+                ? empresas
+                .stream()
+                .map(Empresa::getNome)
+                .collect(Collectors.toList())
+                : null;
     }
 
     public List<Integer> getUnidadesNegociosId() {
@@ -282,13 +292,6 @@ public class Usuario {
             this.historicos = new ArrayList<>();
         }
         this.historicos.add(historico);
-    }
-
-    public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
-        Usuario usuario = new Usuario();
-        BeanUtils.copyProperties(usuarioMqRequest, usuario);
-        usuario.setUsuarioCadastro(new Usuario(usuarioMqRequest.getUsuarioCadastroId()));
-        return usuario;
     }
 
     public Set<UsuarioCidade> getCidades() {
@@ -394,6 +397,12 @@ public class Usuario {
 
     public boolean hasConfiguracao() {
         return configuracao != null;
+    }
+
+    public boolean isUsuarioEquipeVendas() {
+        return !ObjectUtils.isEmpty(cargo) &&
+                List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
+                        .contains(cargo.getCodigo());
     }
 
     public Integer getRecuperarSenhaTentativa() {

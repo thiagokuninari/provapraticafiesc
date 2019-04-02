@@ -79,7 +79,7 @@ public class FeriadoControllerTest {
 
     @Test
     public void deveRetornarTodosFeriadosAnoAtual() throws Exception {
-        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2018,06,06));
+        when(dataHoraAtual.getData()).thenReturn(LocalDate.of(2018, 06, 06));
         mvc.perform(get("/api/feriado")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

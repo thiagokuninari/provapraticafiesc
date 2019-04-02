@@ -20,12 +20,11 @@ import java.util.stream.StreamSupport;
 @Service
 public class ImportacaoUsuarioService {
 
+    private final Logger log = LoggerFactory.getLogger(ImportacaoUsuarioService.class);
     @Autowired
     private PlanilhaService planilhaService;
     @Autowired
     private UsuarioUploadFileService usuarioUploadFile;
-
-    private final Logger log = LoggerFactory.getLogger(ImportacaoUsuarioService.class);
 
     public List<UsuarioImportacaoPlanilha> readFile(MultipartFile file, UsuarioImportacaoRequest usuario) {
         try {

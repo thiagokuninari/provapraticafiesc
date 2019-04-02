@@ -32,7 +32,7 @@ public class UsuarioCidadeControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveFiltrarOsUsuariosPorRegional() throws Exception  {
+    public void deveFiltrarOsUsuariosPorRegional() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia?regionalId=3")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -41,7 +41,7 @@ public class UsuarioCidadeControllerTest {
     }
 
     @Test
-    public void deveFiltrarOsUsuariosPorGrupo() throws Exception  {
+    public void deveFiltrarOsUsuariosPorGrupo() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia?grupoId=20")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -50,7 +50,7 @@ public class UsuarioCidadeControllerTest {
     }
 
     @Test
-    public void deveFiltrarOsUsuariosPorCluster() throws Exception  {
+    public void deveFiltrarOsUsuariosPorCluster() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia?clusterId=45")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -59,7 +59,7 @@ public class UsuarioCidadeControllerTest {
     }
 
     @Test
-    public void deveFiltrarOsUsuariosPorSubCluster() throws Exception  {
+    public void deveFiltrarOsUsuariosPorSubCluster() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia?subClusterId=189")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

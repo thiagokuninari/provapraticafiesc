@@ -65,7 +65,7 @@ public class UsuarioHistorico {
         this.observacao = observacao;
         this.situacao = situacao;
     }
-    
+
     public static UsuarioHistorico gerarUltimoAcesso(Integer usuarioId, MotivoInativacao motivo) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), null, ESituacao.A);

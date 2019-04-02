@@ -18,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.*;
+import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.SOCIO_AA;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

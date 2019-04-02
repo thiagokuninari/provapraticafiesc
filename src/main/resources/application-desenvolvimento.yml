@@ -17,8 +17,8 @@ app-config:
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
   level:
-      org.springframework: 'ERROR'
-      org.hibernate: 'ERROR'
+    org.springframework: 'ERROR'
+    org.hibernate: 'ERROR'
 
 spring:
   redis:
@@ -26,7 +26,7 @@ spring:
     port: 6379
 
   rabbitmq:
-      host: 172.10.10.30
-      port: 5672
-      username: xbrain
-      password: xbrain
+    host: 172.10.10.30
+    port: 5672
+    username: xbrain
+    password: xbrain

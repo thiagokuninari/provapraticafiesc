@@ -26,11 +26,6 @@ public class Regional implements AreaAtuacao {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @JsonIgnore
-    public EAreaAtuacao getTipo() {
-        return EAreaAtuacao.REGIONAL;
-    }
-
     public Regional() {
     }
 
@@ -42,5 +37,10 @@ public class Regional implements AreaAtuacao {
         this.id = id;
         this.nome = nome;
         this.situacao = situacao;
+    }
+
+    @JsonIgnore
+    public EAreaAtuacao getTipo() {
+        return EAreaAtuacao.REGIONAL;
     }
 }

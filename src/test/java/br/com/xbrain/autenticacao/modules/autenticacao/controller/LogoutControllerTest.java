@@ -40,14 +40,14 @@ public class LogoutControllerTest {
     private EquipeVendaClient equipeVendaClient;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/logout")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveFazerOLogoutDoUsuarioLogado() throws Exception  {
+    public void deveFazerOLogoutDoUsuarioLogado() throws Exception {
         String token = getAccessToken(mvc, ADMIN);
 
         requestEmpresas(token).andExpect(status().isOk());
@@ -61,7 +61,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception  {
+    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception {
         String token = getAccessToken(mvc, ADMIN);
 
         requestEmpresas(token).andExpect(status().isOk());
@@ -81,7 +81,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void devePermitirSomenteUsuariosXBrainFazerLogoutDeTodosOsUsuarios() throws Exception  {
+    public void devePermitirSomenteUsuariosXBrainFazerLogoutDeTodosOsUsuarios() throws Exception {
         mvc.perform(get("/api/logout/todos-usuarios")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
@@ -89,7 +89,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveDeslogarTodosOsUsuarios() throws Exception  {
+    public void deveDeslogarTodosOsUsuarios() throws Exception {
         getAccessToken(mvc, ADMIN);
         getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL);
 

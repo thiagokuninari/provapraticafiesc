@@ -33,7 +33,7 @@ public class FeriadoService {
     public Feriado save(FeriadoRequest request) {
         Feriado feriado = FeriadoRequest.convertFrom(request);
         feriado.setDataCadastro(LocalDateTime.now());
-        return  repository.save(feriado);
+        return repository.save(feriado);
     }
 
     public Iterable<Feriado> findAllByAnoAtual() {
@@ -43,8 +43,8 @@ public class FeriadoService {
     public void loadAllFeriados() {
         FeriadoSingleton.getInstance()
                 .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
-                .stream()
-                .map(Feriado::getDataFeriado)
-                .collect(Collectors.toSet()));
+                        .stream()
+                        .map(Feriado::getDataFeriado)
+                        .collect(Collectors.toSet()));
     }
 }

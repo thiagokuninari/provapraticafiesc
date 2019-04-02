@@ -25,7 +25,7 @@ public class CargoController {
 
     @GetMapping
     public Iterable<CargoResponse> getAll(Integer nivelId) {
-        return CargoResponse.convertFrom((List<Cargo>)service.getAll(nivelId));
+        return CargoResponse.convertFrom((List<Cargo>) service.getAll(nivelId));
     }
 
     @GetMapping("/gerencia")

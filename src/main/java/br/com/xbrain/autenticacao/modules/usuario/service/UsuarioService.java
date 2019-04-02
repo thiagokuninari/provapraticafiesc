@@ -133,6 +133,8 @@ public class UsuarioService {
     private EquipeVendaService equipeVendaService;
     @Autowired
     private FuncionalidadeService funcionalidadeService;
+    @Autowired
+    private UsuarioEquipeVendaMqSender equipeVendaMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -331,7 +333,7 @@ public class UsuarioService {
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
         if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
-                equipeVendaService.inativarSupervidor(usuario.getId());
+                equipeVendaService.inativarSupervisor(usuario.getId());
             } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
                     || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
                 equipeVendaService.inativarUsuario(usuario.getId());
@@ -771,7 +773,8 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao())
+        Usuario usuarioInativacao = !ObjectUtils.isEmpty(dto.getIdUsuarioInativacao())
+                ? new Usuario(dto.getIdUsuarioInativacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         usuario.adicionar(UsuarioHistorico.builder()
@@ -782,26 +785,32 @@ public class UsuarioService {
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build());
+        inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
+    }
+
+    private void inativarUsuarioNaEquipeVendas(Usuario usuario) {
+        if (usuario.isUsuarioEquipeVendas()) {
+            equipeVendaMqSender.sendInativar(UsuarioEquipeVendasDto.createFromUsuario(usuario));
+        }
     }
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
-        MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
-        List<Usuario> usuarios = getUsuariosSemAcesso();
-        usuarios.forEach(usuario -> {
-            usuario = findComplete(usuario.getId());
-            usuario.setSituacao(ESituacao.I);
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .motivoInativacao(motivo)
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuario)
-                    .observacao("Inativado por falta de acesso")
-                    .situacao(ESituacao.I)
-                    .build());
-            repository.save(usuario);
-        });
+        motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO)
+                .ifPresent(motivo -> getUsuariosSemAcesso().forEach(usuario -> {
+                    usuario = findComplete(usuario.getId());
+                    usuario.setSituacao(ESituacao.I);
+                    usuario.adicionar(UsuarioHistorico.builder()
+                            .dataCadastro(LocalDateTime.now())
+                            .motivoInativacao(motivo)
+                            .usuario(usuario)
+                            .usuarioAlteracao(usuario)
+                            .observacao("Inativado por falta de acesso")
+                            .situacao(ESituacao.I)
+                            .build());
+                    repository.save(usuario);
+                }));
     }
 
     public List<Usuario> getUsuariosSemAcesso() {

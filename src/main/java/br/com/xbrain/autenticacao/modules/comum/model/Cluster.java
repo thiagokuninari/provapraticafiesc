@@ -32,11 +32,6 @@ public class Cluster implements AreaAtuacao {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @JsonIgnore
-    public EAreaAtuacao getTipo() {
-        return EAreaAtuacao.CLUSTER;
-    }
-
     public Cluster() {
     }
 
@@ -49,5 +44,10 @@ public class Cluster implements AreaAtuacao {
         this.nome = nome;
         this.grupo = grupo;
         this.situacao = situacao;
+    }
+
+    @JsonIgnore
+    public EAreaAtuacao getTipo() {
+        return EAreaAtuacao.CLUSTER;
     }
 }

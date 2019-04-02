@@ -34,14 +34,14 @@ public class NivelControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/niveis")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarOsNiveis() throws Exception  {
+    public void deveRetornarOsNiveis() throws Exception {
         mvc.perform(get("/api/niveis")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -51,7 +51,7 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisAtivosCadastro() throws Exception  {
+    public void deveRetornarOsNiveisAtivosCadastro() throws Exception {
         mvc.perform(get("/api/niveis/permitidos-cadastro-usuario")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -61,7 +61,7 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisAtivosLista() throws Exception  {
+    public void deveRetornarOsNiveisAtivosLista() throws Exception {
         mvc.perform(get("/api/niveis/permitidos-lista-usuarios")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -71,7 +71,7 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisSemXbrainCadastro() throws Exception  {
+    public void deveRetornarOsNiveisSemXbrainCadastro() throws Exception {
         mvc.perform(get("/api/niveis/permitidos-cadastro-usuario")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
@@ -81,7 +81,7 @@ public class NivelControllerTest {
     }
 
     @Test
-    public void deveRetornarOsNiveisSemXbrainLista() throws Exception  {
+    public void deveRetornarOsNiveisSemXbrainLista() throws Exception {
         mvc.perform(get("/api/niveis/permitidos-lista-usuarios")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))

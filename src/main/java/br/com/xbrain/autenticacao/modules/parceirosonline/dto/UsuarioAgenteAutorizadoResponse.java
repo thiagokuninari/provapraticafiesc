@@ -9,7 +9,8 @@ public class UsuarioAgenteAutorizadoResponse {
     private String nome;
     private String email;
 
-    public UsuarioAgenteAutorizadoResponse() { }
+    public UsuarioAgenteAutorizadoResponse() {
+    }
 
     public UsuarioAgenteAutorizadoResponse(Integer id) {
         this.id = id;

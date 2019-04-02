@@ -208,11 +208,11 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessTokenObject_deveNaoGerarHistorico_quandoNaoAutenticar() {
-        long totalRegistrosAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistrosAntes = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
 
         TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
 
-        long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistroApos = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
         assertTrue(totalRegistrosAntes == totalRegistroApos);
     }
 }
