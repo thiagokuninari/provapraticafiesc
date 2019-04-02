@@ -2,8 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
-import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
@@ -31,11 +29,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
+import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
@@ -401,18 +402,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                                            ECanal canal) {
         return new JPAQueryFactory(entityManager)
                 .select(Projections.constructor(UsuarioResponse.class,
-                        usuario.id,
-                        usuario.nome,
-                        usuario.cargo.codigo))
+                        usuarioCidade.usuario.id,
+                        usuarioCidade.usuario.nome,
+                        usuarioCidade.usuario.cargo.codigo))
                 .from(usuarioCidade)
-                .join(usuarioCidade.usuario, usuario)
-                .join(usuarioCidade.cidade, QCidade.cidade)
-                .join(QCidade.cidade.subCluster, QSubCluster.subCluster)
-                .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                .join(QCluster.cluster.grupo, grupo)
+                .join(usuarioCidade.cidade, cidade)
+                .join(cidade.subCluster, subCluster)
+                .join(subCluster.cluster, cluster)
+                .join(cluster.grupo, grupo)
                 .join(grupo.regional, regional)
-                .where(usuario.cargo.codigo.eq(cargo)
-                        .and(usuario.canais.any().eq(canal))
+                .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+                        .and(usuarioCidade.usuario.canais.any().eq(canal))
                         .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
                 .distinct()
                 .fetch();
