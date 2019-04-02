@@ -400,9 +400,9 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo) &&
-                List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
-                        .contains(cargo.getCodigo());
+        return !ObjectUtils.isEmpty(cargo)
+                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
+                .contains(cargo.getCodigo());
     }
 
     public Integer getRecuperarSenhaTentativa() {

@@ -41,7 +41,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -115,24 +114,6 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> assistentesOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(assistentesOperacao.size(), 5);
-    }
-
-    @Test
-    public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> supervisoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(supervisoresOperacao.size(), 5);
-    }
-
-    @Test
-    public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponse> vendedoresOperacao = service.getUsuariosByCidades(Arrays.asList(5578));
-        Assert.assertEquals(vendedoresOperacao.size(), 5);
-    }
-
-    @Test
     public void deveNaoSalvarUsuarioEEnviarParaFilaDeFalha() {
         try {
             service.saveFromQueue(new UsuarioMqRequest());
@@ -185,7 +166,7 @@ public class UsuarioServiceTest {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, times(0)).sendInativar(any());
     }
 
     @Test

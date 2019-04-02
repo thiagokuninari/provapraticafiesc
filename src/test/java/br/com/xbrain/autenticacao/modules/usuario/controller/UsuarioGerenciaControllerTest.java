@@ -360,7 +360,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(96)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(97)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(1)));
     }
 

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponseD2D;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -56,6 +57,8 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
-    List<Usuario> getUsuariosByCidades(List<Integer> cidades);
+    List<UsuarioResponseD2D> getUsuariosBySupervisorId(Integer usuarioId);
+
+    List<UsuarioResponseD2D> getSupervisoresByHierarquia(List<Integer> cidades);
 
 }

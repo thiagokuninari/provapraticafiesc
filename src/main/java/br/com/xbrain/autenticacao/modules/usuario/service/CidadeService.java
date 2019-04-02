@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponseD2D;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
@@ -14,17 +14,19 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("magicnumber")
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-    private static final Integer MAXIMO = 1000;
-    private static final Integer MINIMO = 1001;
+
     @Getter
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -32,6 +34,10 @@ public class CidadeService {
     private UsuarioService usuarioService;
     @Autowired
     private CidadeRepository repository;
+    private Integer minimo = 0;
+    private Integer maximo = 1000;
+    private static final Integer valorMaximo = 1000;
+    private static final Integer zerar = 0;
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -89,29 +95,43 @@ public class CidadeService {
         return repository.getClusterizacao(id);
     }
 
-    public List<UsuarioResponse> getSupervisoresByHierarquia(String hierarquia, Integer id) {
+    public List<UsuarioResponseD2D> getSupervisoresByHierarquia(String hierarquia, Integer id) {
         List<UsuarioCidadeDto> cidades = null;
         if (!hierarquia.equalsIgnoreCase("CIDADE")) {
-            CodigoHierarquia codigoHierarquia = CodigoHierarquia.valueOf(hierarquia);
-            cidades = codigoHierarquia.recupaEquipe(id);
+            cidades = CodigoHierarquia.valueOf(hierarquia).recupaEquipe(id);
         } else {
             return usuarioService.getSupervisoresByCidades(Arrays.asList(id));
         }
         List<Integer> cidadesId = cidades.stream()
-                .map(usuarioCidade -> usuarioCidade.getIdCidade())
+                .map(UsuarioCidadeDto::getIdCidade)
                 .collect(Collectors.toList());
         return recuperarUsuarios(cidadesId);
     }
 
-    public List<UsuarioResponse> recuperarUsuarios(List<Integer> cidadesId) {
-        if (cidadesId.size() > MAXIMO) {
-            List<Integer> segundaLista = cidadesId.subList(MINIMO, cidadesId.size());
-            cidadesId = cidadesId.subList(0, MAXIMO);
-            List<UsuarioResponse> listaUsuario = usuarioService.getSupervisoresByCidades(segundaLista);
-            List<UsuarioResponse> listaUsuarioComplementar = usuarioService.getSupervisoresByCidades(cidadesId);
-            listaUsuario.addAll(listaUsuarioComplementar);
-            return listaUsuario;
+    public List<UsuarioResponseD2D> recuperarUsuarios(List<Integer> cidadesId) {
+        if (cidadesId.size() > maximo) {
+            List<UsuarioResponseD2D> usuarios = new ArrayList<>();
+            while (!ObjectUtils.isEmpty(cidadesId)) {
+                if (cidadesId.size() < maximo) {
+                    maximo -= maximo - cidadesId.size();
+                    List<UsuarioResponseD2D> usuariosFiltrados = filtrarUsuariosByCidades(cidadesId);
+                    usuarios.addAll(usuariosFiltrados);
+                    break;
+                }
+                List<UsuarioResponseD2D> usuariosFiltrados = filtrarUsuariosByCidades(cidadesId);
+                usuarios.addAll(usuariosFiltrados);
+            }
+            minimo = zerar;
+            maximo = valorMaximo;
+            return usuarios;
         }
         return usuarioService.getSupervisoresByCidades(cidadesId);
+    }
+
+    public List<UsuarioResponseD2D> filtrarUsuariosByCidades(List<Integer> cidadesId) {
+        List<UsuarioResponseD2D> usuariosFiltrados = usuarioService.getSupervisoresByCidades(cidadesId.subList(minimo, maximo));
+        minimo = maximo;
+        maximo = maximo + valorMaximo;
+        return usuariosFiltrados;
     }
 }

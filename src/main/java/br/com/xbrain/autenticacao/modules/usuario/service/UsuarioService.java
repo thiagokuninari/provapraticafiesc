@@ -69,8 +69,6 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
-    private static final Integer MAXIMO = 1000;
-    private static final Integer MINIMO = 1001;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -1231,16 +1229,12 @@ public class UsuarioService {
                 : "Registros não encontrados.");
     }
 
-    public List<UsuarioResponse> getSupervisoresByCidades(List<Integer> cidades) {
+    public List<UsuarioResponseD2D> getSupervisoresByCidades(List<Integer> cidades) {
         try {
             List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
                     .map(UsuarioResponse::convertEquipeVendasUsuario)
                     .collect(Collectors.toList());
-            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
-                    .map(UsuarioResponse::convertFrom)
-                    .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<UsuarioResponseD2D> usuarios = repository.getSupervisoresByHierarquia(cidades);
             return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
         } catch (Exception ex) {
             log.error("Erro - Cargo Inválido.", ex);
@@ -1248,32 +1242,22 @@ public class UsuarioService {
         }
     }
 
-    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
+    public List<UsuarioResponseD2D> getUsuariosBySupervisorId(Integer id) {
         try {
             List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
                     .map(UsuarioResponse::convertEquipeVendasUsuario)
                     .collect(Collectors.toList());
-            if (cidades.size() > MAXIMO) {
-                List<Integer> segundaLista = cidades.subList(MINIMO, cidades.size());
-                cidades = cidades.subList(0, MAXIMO);
-                List<UsuarioResponse> listaUsuario = getUsuariosByCidades(segundaLista);
-                List<UsuarioResponse> listaUsuarioComplementar = getUsuariosByCidades(cidades);
-                listaUsuario.addAll(listaUsuarioComplementar);
-            }
-            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
-                    .map(UsuarioResponse::convertFrom)
-                    .filter(usuario -> !usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
-                    .distinct()
-                    .collect(Collectors.toList());
+
+            List<UsuarioResponseD2D> usuarios = repository.getUsuariosBySupervisorId(id);
             return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
         } catch (Exception ex) {
-            log.error("Erro - Cargo Inválido.", ex);
-            throw new ValidacaoException("Erro - Cargo Inválido");
+            log.error("O sistema Equipe de Vendas não está respondendo.", ex);
+            throw new ValidacaoException("O sistema Equipe de Vendas não está respondendo");
         }
     }
 
-    public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
-                                                                   List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
+    public List<UsuarioResponseD2D> retornarVendedoresSemEquipeVendas(List<UsuarioResponseD2D> usuarios,
+                                                                      List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
         return usuarios.stream()
                 .filter(usuario -> !usuariosExistenteEmEquipesVendas.stream()
                         .anyMatch(usuarioExistente ->
@@ -1299,12 +1283,7 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getUsuariosBySupervisor(Integer id) {
-        Usuario usuario = repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        List<Integer> cidades = usuario.getCidades().stream()
-                .map(user -> user.getCidade().getId())
-                .collect(Collectors.toList());
-
-        return getUsuariosByCidades(cidades);
+    public List<UsuarioResponseD2D> getUsuariosBySupervisor(Integer id) {
+        return getUsuariosBySupervisorId(id);
     }
 }

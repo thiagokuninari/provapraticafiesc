@@ -204,4 +204,10 @@
         </module>
 
     </module>
+
+    <module name="TreeWalker">
+        <module name="SuppressWarningsHolder"/>
+    </module>
+
+    <module name="SuppressWarningsFilter"/>
 </module>
