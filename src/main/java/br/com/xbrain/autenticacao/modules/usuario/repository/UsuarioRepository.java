@@ -19,8 +19,6 @@ import java.util.Optional;
 public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, Integer>,
         QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
 
-    Optional<Usuario> findTop1UsuarioByEmailIgnoreCase(String email);
-
     Optional<Usuario> findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
     Optional<Usuario> findTop1UsuarioByCpf(String cpf);
@@ -32,8 +30,6 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     Optional<Usuario> findByEmail(String email);
 
     Optional<Usuario> findUsuarioByEmail(String email);
-
-    Optional<Usuario> findByCpf(String cpf);
 
     List<Usuario> findAllByCpf(String cpf);
 
@@ -79,5 +75,4 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     @Query("SELECT x.unidadesNegocios FROM Usuario x WHERE x.id = :id")
     List<UnidadeNegocio> findUnidadesNegociosById(@Param("id") Integer id);
-
 }

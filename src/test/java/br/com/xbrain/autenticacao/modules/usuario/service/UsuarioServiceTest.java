@@ -115,24 +115,6 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getUsuariosByCidades_recuperarTodosOsAssistentesDasCidades_seExistirUsuarios() {
-        List<UsuarioResponseD2D> assistentesOperacao = service.getUsuariosBySupervisorId(100);
-        Assert.assertEquals(assistentesOperacao.size(), 5);
-    }
-
-    @Test
-    public void getUsuariosByCidades_recuperarTodosOsSupervisoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponseD2D> supervisoresOperacao = service.getUsuariosBySupervisorId(100);
-        Assert.assertEquals(supervisoresOperacao.size(), 5);
-    }
-
-    @Test
-    public void getUsuariosByCidades_recuperarTodosOsVendedoresDasCidades_seExistirUsuarios() {
-        List<UsuarioResponseD2D> vendedoresOperacao = service.getUsuariosBySupervisorId(100);
-        Assert.assertEquals(vendedoresOperacao.size(), 5);
-    }
-
-    @Test
     public void deveNaoSalvarUsuarioEEnviarParaFilaDeFalha() {
         try {
             service.saveFromQueue(new UsuarioMqRequest());
