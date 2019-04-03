@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -45,7 +46,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,6 +58,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 public class UsuarioService {
@@ -68,6 +70,8 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
+    private static final NotFoundException MOTIVO_INATIVACAO_NOT_FOUND = new NotFoundException(
+            "Motivo de inativação não encontrado.");
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -130,6 +134,8 @@ public class UsuarioService {
     private FileService fileService;
     @Autowired
     private EquipeVendaService equipeVendaService;
+    @Autowired
+    private ColaboradorVendasService colaboradorVendasService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -260,7 +266,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(Usuario request, MultipartFile foto) {
-        if (!ObjectUtils.isEmpty(foto)) {
+        if (!isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
         return save(request);
@@ -327,7 +333,7 @@ public class UsuarioService {
     }
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
-        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+        if (!isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
                 equipeVendaService.inativarSupervidor(usuario.getId());
             } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
@@ -340,7 +346,7 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        if (!ObjectUtils.isEmpty(repository.findAllByCpf(usuario.getCpf()))
+        if (!isEmpty(repository.findAllByCpf(usuario.getCpf()))
                 && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
@@ -424,8 +430,8 @@ public class UsuarioService {
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
-        if (!ObjectUtils.isEmpty(usuario)
-                && !ObjectUtils.isEmpty(usuario.getUsuariosHierarquia())) {
+        if (!isEmpty(usuario)
+                && !isEmpty(usuario.getUsuariosHierarquia())) {
 
             usuario.getUsuariosHierarquia()
                     .forEach(user -> processarHierarquia(usuario, user, new ArrayList<>()));
@@ -467,10 +473,10 @@ public class UsuarioService {
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
-        return !ObjectUtils.isEmpty(usuarioParaAchar)
-                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-                && !ObjectUtils.isEmpty(usuario)
-                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
+        return !isEmpty(usuarioParaAchar)
+                && !isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+                && !isEmpty(usuario)
+                && !isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -482,7 +488,7 @@ public class UsuarioService {
         return usuario.getUsuariosHierarquia()
                 .stream()
                 .map(UsuarioHierarquia::getUsuarioSuperiorId)
-                .filter(item -> !ObjectUtils.isEmpty(item))
+                .filter(item -> !isEmpty(item))
                 .collect(Collectors.toList());
     }
 
@@ -707,7 +713,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (ObjectUtils.isEmpty(usuario.getId())
+                    if (isEmpty(usuario.getId())
                         || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
@@ -718,7 +724,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (ObjectUtils.isEmpty(usuario.getId())
+                    if (isEmpty(usuario.getId())
                         || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
@@ -733,7 +739,7 @@ public class UsuarioService {
         Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        if (!ObjectUtils.isEmpty(usuario.getCpf())) {
+        if (!isEmpty(usuario.getCpf())) {
             if (situacaoAtiva(usuario.getEmail())) {
                 usuario.adicionar(UsuarioHistorico.builder()
                         .dataCadastro(LocalDateTime.now())
@@ -785,9 +791,9 @@ public class UsuarioService {
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
-        MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
-        List<Usuario> usuarios = getUsuariosSemAcesso();
-        usuarios.forEach(usuario -> {
+        MotivoInativacao motivo = findMotivoInativacao(INATIVADO_SEM_ACESSO);
+
+        getUsuariosSemAcesso().forEach(usuario -> {
             usuario = findComplete(usuario.getId());
             usuario.setSituacao(ESituacao.I);
             usuario.adicionar(UsuarioHistorico.builder()
@@ -798,21 +804,30 @@ public class UsuarioService {
                     .observacao("Inativado por falta de acesso")
                     .situacao(ESituacao.I)
                     .build());
+
+            inativarColaborador(usuario);
             repository.save(usuario);
         });
+    }
+
+    private void inativarColaborador(Usuario usuario) {
+        if (!usuario.isSocioPrincipal()) {
+            colaboradorVendasService.inativarColaborador(usuario.getEmail());
+        }
+    }
+
+    private MotivoInativacao findMotivoInativacao(CodigoMotivoInativacao motivo) {
+        return motivoInativacaoRepository.findByCodigo(motivo)
+                .orElseThrow(() -> MOTIVO_INATIVACAO_NOT_FOUND);
     }
 
     public List<Usuario> getUsuariosSemAcesso() {
         return usuarioHistoricoRepository.getUsuariosSemAcesso();
     }
 
-    //TODO melhorar código
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
-        if (dto.getIdMotivoInativacao() != null) {
-            return new MotivoInativacao(dto.getIdMotivoInativacao());
-        }
-        return motivoInativacaoRepository.findByCodigo(dto.getCodigoMotivoInativacao())
-                .orElseThrow(() -> new ValidacaoException("Motivo de inativação não encontrado."));
+        return !isEmpty(dto.getIdMotivoInativacao()) ? new MotivoInativacao(dto.getIdMotivoInativacao()) :
+                findMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
@@ -994,12 +1009,12 @@ public class UsuarioService {
     @Transactional
     public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario;
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+        if (isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
             usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+        if (isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
                 || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }

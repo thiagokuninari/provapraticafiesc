@@ -280,7 +280,7 @@ public class Usuario {
     }
 
     public void adicionar(UsuarioHistorico historico) {
-        if (this.historicos == null) {
+        if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
         }
         this.historicos.add(historico);
@@ -409,5 +409,11 @@ public class Usuario {
 
     public boolean isOperacao() {
         return CodigoNivel.OPERACAO == getNivelCodigo();
+    }
+
+    public boolean isSocioPrincipal() {
+        return this.getCargo()
+                .getCodigo()
+                .equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
     }
 }

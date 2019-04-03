@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Size;
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
+@NoArgsConstructor
 public class MotivoInativacao {
 
     @Id
@@ -33,9 +35,6 @@ public class MotivoInativacao {
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
-
-    public MotivoInativacao() {
-    }
 
     public MotivoInativacao(Integer id) {
         this.id = id;
