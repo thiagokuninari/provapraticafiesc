@@ -16,7 +16,7 @@ public class UsuarioTimerController {
     @GetMapping
     public String inativarUsuariosSemAcesso() {
         service.inativarUsuariosSemAcesso();
-        return "timer disparado";
+        return "timer que inativa usuários após 32 dias sem acesso ao sistema executado.";
     }
     
 }

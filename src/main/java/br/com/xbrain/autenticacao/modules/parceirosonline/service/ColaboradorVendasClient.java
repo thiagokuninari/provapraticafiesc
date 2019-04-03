@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
         configuration = FeignSkipBadRequestsConfiguration.class)
 public interface ColaboradorVendasClient {
 
-    @PutMapping("/inativar")
-    void inativarColaboradorPeloEmail(@RequestParam String email);
+    @PutMapping("api/colaboradores-vendas/inativar")
+    void inativarColaboradorPeloEmail(@RequestParam(name = "email") String email);
 
 }

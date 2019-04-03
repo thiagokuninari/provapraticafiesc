@@ -92,6 +92,7 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(autenticacaoApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("autenticacao-api")
+                .authorities("ROLE_APPLICATION")
                 .and()
                 .withClient(parceirosApiClient)
                 .secret(parceirosApiSecret)
