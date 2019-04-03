@@ -3,11 +3,11 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UsuarioResponse {
 
     private Integer id;
@@ -33,22 +35,10 @@ public class UsuarioResponse {
     private List<CodigoEmpresa> codigoEmpresas;
     private List<String> permissoes;
 
-    @Builder
-    public UsuarioResponse(Integer id, String nome, String cpf, String email, String telefone, ESituacao situacao,
-                           CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento, CodigoCargo codigoCargo,
-                           List<CodigoUnidadeNegocio> codigoUnidadesNegocio, List<CodigoEmpresa> codigoEmpresas) {
+    public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
         this.nome = nome;
-        this.cpf = cpf;
-        this.email = email;
-        this.telefone = telefone;
-        this.situacao = situacao;
-        this.codigoNivel = codigoNivel;
-        this.codigoDepartamento = codigoDepartamento;
         this.codigoCargo = codigoCargo;
-        this.codigoUnidadesNegocio = codigoUnidadesNegocio;
-        this.codigoEmpresas = codigoEmpresas;
-        this.permissoes = permissoes;
     }
 
     public static UsuarioResponse convertFrom(Usuario usuario) {
@@ -73,13 +63,4 @@ public class UsuarioResponse {
         usuarioResponse.setPermissoes(permissoes.stream().map(p -> "ROLE_" + p).collect(Collectors.toList()));
         return usuarioResponse;
     }
-
-    public static UsuarioResponse convertEquipeVendasUsuario(EquipeVendaUsuarioResponse equipeVendaUsuarioResponse) {
-        UsuarioResponse usuarioResponse = new UsuarioResponse();
-        usuarioResponse.setId(equipeVendaUsuarioResponse.getUsuarioId());
-        usuarioResponse.setCodigoCargo(CodigoCargo.valueOf(equipeVendaUsuarioResponse.getCargoNome()));
-        usuarioResponse.setNome(equipeVendaUsuarioResponse.getUsuarioNome());
-        return usuarioResponse;
-    }
-
 }

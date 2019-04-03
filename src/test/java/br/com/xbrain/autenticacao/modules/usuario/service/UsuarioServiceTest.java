@@ -44,6 +44,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -126,10 +127,10 @@ public class UsuarioServiceTest {
     public void deveAlterarOCargoDoUsuario() {
         UsuarioAlteracaoRequest usuarioAlteracaoRequest = new UsuarioAlteracaoRequest();
         usuarioAlteracaoRequest.setId(100);
-        usuarioAlteracaoRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCargoCodigo(), CodigoCargo.EXECUTIVO);
+        Assert.assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
     }
 
     @Test
@@ -157,7 +158,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
+    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
         doReturn(umUsuarioSupervisor()).when(service).findComplete(205);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -306,7 +307,7 @@ public class UsuarioServiceTest {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("2292929292929292929229292929");
-        usuarioMqRequest.setCargo(CodigoCargo.EXECUTIVO);
+        usuarioMqRequest.setCargo(EXECUTIVO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         service.recuperarUsuariosAgentesAutorizados(usuarioMqRequest);
 
