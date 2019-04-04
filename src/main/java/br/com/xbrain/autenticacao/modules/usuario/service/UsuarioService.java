@@ -32,11 +32,11 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioHistoricoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -62,6 +62,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInati
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
+@Slf4j
 public class UsuarioService {
 
     private static final int POSICAO_ZERO = 0;
@@ -77,8 +78,8 @@ public class UsuarioService {
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
-
+    private static final String MSG_ERRO_AO_INATIVAR_USUARIO =
+        "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
 
     @Autowired
     private UsuarioRepository repository;
@@ -741,7 +742,7 @@ public class UsuarioService {
 
         if (!isEmpty(usuario.getCpf())) {
             if (situacaoAtiva(usuario.getEmail())) {
-                usuario.adicionar(UsuarioHistorico.builder()
+                usuario.gerarHistorico(UsuarioHistorico.builder()
                         .dataCadastro(LocalDateTime.now())
                         .usuario(usuario)
                         .usuarioAlteracao(usuarioInativacao)
@@ -775,10 +776,10 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao())
+        Usuario usuarioInativacao = !isEmpty(dto.getIdUsuarioInativacao()) ? new Usuario(dto.getIdUsuarioInativacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        usuario.adicionar(UsuarioHistorico.builder()
+        usuario.gerarHistorico(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
@@ -794,19 +795,14 @@ public class UsuarioService {
         MotivoInativacao motivo = findMotivoInativacao(INATIVADO_SEM_ACESSO);
 
         getUsuariosSemAcesso().forEach(usuario -> {
-            usuario = findComplete(usuario.getId());
-            usuario.setSituacao(ESituacao.I);
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .motivoInativacao(motivo)
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuario)
-                    .observacao("Inativado por falta de acesso")
-                    .situacao(ESituacao.I)
-                    .build());
-
-            inativarColaborador(usuario);
-            repository.save(usuario);
+            try {
+                usuario.inativarPorFaltaDeAcesso(motivo);
+                repository.save(usuario);
+                inativarColaborador(usuario);
+            } catch (Exception exception) {
+                log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
+                throw new ValidacaoException(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
+            }
         });
     }
 
@@ -822,7 +818,12 @@ public class UsuarioService {
     }
 
     public List<Usuario> getUsuariosSemAcesso() {
-        return usuarioHistoricoRepository.getUsuariosSemAcesso();
+        return usuarioHistoricoRepository.getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias(toPredicate().build());
+    }
+
+    private UsuarioHistoricoPredicate toPredicate() {
+        return new UsuarioHistoricoPredicate()
+                .comDataCadastro();
     }
 
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {

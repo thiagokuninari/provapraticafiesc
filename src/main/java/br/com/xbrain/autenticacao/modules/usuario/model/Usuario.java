@@ -279,13 +279,6 @@ public class Usuario {
         }
     }
 
-    public void adicionar(UsuarioHistorico historico) {
-        if (Objects.isNull(this.historicos)) {
-            this.historicos = new ArrayList<>();
-        }
-        this.historicos.add(historico);
-    }
-
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioMqRequest, usuario);
@@ -415,5 +408,26 @@ public class Usuario {
         return this.getCargo()
                 .getCodigo()
                 .equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
+    }
+
+    public void inativarPorFaltaDeAcesso(MotivoInativacao motivoInativacao) {
+        this.setSituacao(ESituacao.I);
+        this.gerarHistorico(
+                UsuarioHistorico.builder()
+                        .dataCadastro(LocalDateTime.now())
+                        .motivoInativacao(motivoInativacao)
+                        .usuario(this)
+                        .usuarioAlteracao(this)
+                        .observacao("Inativado por falta de acesso")
+                        .situacao(ESituacao.I)
+                        .build());
+    }
+
+    public void gerarHistorico(UsuarioHistorico historico) {
+        if (Objects.isNull(this.historicos)) {
+            this.historicos = new ArrayList<>();
+        }
+
+        this.historicos.add(historico);
     }
 }
