@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -86,6 +87,8 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
+    @MockBean
+    private ColaboradorVendasService colaboradorVendasService;
 
     @Before
     public void setUp() {
@@ -279,8 +282,9 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void deveInativarOsUsuarioComInatividade() throws Exception {
+    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
         service.inativarUsuariosSemAcesso();
+        verify(colaboradorVendasService, times(2)).inativarColaborador(anyString());
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(0, usuarios.size());
 
