@@ -1,10 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.NivelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -14,18 +16,13 @@ public class NivelController {
     @Autowired
     private NivelService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Nivel> getAll() {
         return service.getAll();
     }
 
-    @RequestMapping(value = "/permitidos-cadastro-usuario", method = RequestMethod.GET)
-    public Iterable<Nivel> getAllByPermitidosCadastro() {
-        return service.getAllByPermitidosCadastroUsuario();
-    }
-
-    @RequestMapping(value = "/permitidos-lista-usuarios", method = RequestMethod.GET)
-    public Iterable<Nivel> getAllByPermitidosLista() {
-        return service.getAllByPermitidosListaUsuarios();
+    @GetMapping(value = "/permitidos/{tipoVisualizacao}")
+    public Iterable<Nivel> getPermitidos(@PathVariable NivelTipoVisualizacao tipoVisualizacao) {
+        return service.getPermitidos(tipoVisualizacao);
     }
 }
