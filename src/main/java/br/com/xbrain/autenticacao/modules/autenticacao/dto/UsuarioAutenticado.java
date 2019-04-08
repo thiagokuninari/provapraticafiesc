@@ -98,7 +98,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isXbrain() {
-        return XBRAIN == CodigoNivel.valueOf(nivelCodigo);
+        return XBRAIN == getNivelCodigoEnum();
     }
 
     public boolean isMso() {
