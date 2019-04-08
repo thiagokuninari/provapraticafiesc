@@ -3,10 +3,12 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.*;
+import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
+import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
+import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -20,12 +22,13 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
 
-    private QUsuario usuario = QUsuario.usuario;
     private BooleanBuilder builder;
 
     public UsuarioPredicate() {
@@ -128,7 +131,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCidade(List<Integer> cidadesIds) {
-        if (cidadesIds.size() > 0) {
+        if (!cidadesIds.isEmpty()) {
             builder.and(usuario.cidades.any().cidade.id.in(cidadesIds));
         }
         return this;
@@ -207,13 +210,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daEmpresaEUnidadeDeNegocio(List<Empresa> empresaList,
-                                                        List<UnidadeNegocio> unidadeNegocios) {
-        builder.and(usuario.empresas.any().in(empresaList)
-                .and(usuario.unidadesNegocios.any().in(unidadeNegocios)));
-        return this;
-    }
-
     private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
                 JPAExpressions
@@ -225,9 +221,8 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCidadeOuUsuarioCadastro(List<Integer> listaUsuario, Integer usuarioAutenticadoId) {
-        builder.and(usuario.id.in(listaUsuario)
-                .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)));
+    private UsuarioPredicate ignorarTodos() {
+        builder.and(usuario.id.isNull());
         return this;
     }
 
@@ -236,23 +231,15 @@ public class UsuarioPredicate {
             ignorarAa();
         }
 
-        if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
-            if (usuario.hasPermissao(AUT_VISUALIZAR_EMPRESA_UNIDADE)) {
-                daEmpresaEUnidadeDeNegocio(
-                        usuario.getUsuario().getEmpresas(),
-                        usuario.getUsuario().getUnidadesNegocios()
-                );
+        if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+            daCarteiraHierarquiaOuUsuarioCadastro(
+                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+                    usuario.getUsuario().getId());
 
-            } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-                daCarteiraHierarquiaOuUsuarioCadastro(
-                        usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
-                        usuario.getUsuario().getId());
-
-            } else if (usuario.hasPermissao(AUT_VISUALIZAR_CIDADE)) {
-                daCidadeOuUsuarioCadastro(usuarioService.getIdDosUsuariosPorCidade(usuario.getUsuario().getId()),
-                        usuario.getUsuario().getId());
-            }
+        } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            ignorarTodos();
         }
+
         return this;
     }
 

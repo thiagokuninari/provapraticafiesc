@@ -82,7 +82,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void getAccessToken_deveNaoAutenticar_quandoAsCredenciaisEstiveremInvalidas() {
+    public void getAccessToken_deveNaoAutenticar_quandoAsCredenciasEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
         assertNull(token.getAccessToken());
     }
@@ -174,7 +174,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void getAccessTokenClientCredentials_null_quandoAsCredencisEstiveremInvalidas() {
+    public void getAccessTokenClientCredentials_null_quandoAsCredenciaisEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:invalida");
         assertNull(token.getAccessToken());
     }
@@ -208,11 +208,11 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessTokenObject_deveNaoGerarHistorico_quandoNaoAutenticar() {
-        long totalRegistrosAntes = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistrosAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
 
         TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
 
-        long totalRegistroApos = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
         assertTrue(totalRegistrosAntes == totalRegistroApos);
     }
 }

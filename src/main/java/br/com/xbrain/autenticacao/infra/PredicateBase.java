@@ -18,8 +18,4 @@ public class PredicateBase {
     protected boolean isEmpty(Object object) {
         return ObjectUtils.isEmpty(object);
     }
-
-    protected boolean isNotEmpty(Object object) {
-        return !isEmpty(object);
-    }
 }

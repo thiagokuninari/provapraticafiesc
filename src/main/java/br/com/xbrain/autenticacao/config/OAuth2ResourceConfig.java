@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,18 +11,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_PERMISSAO_ESPECIAL_USUARIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_EMULAR_USUARIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2023;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2033;
-
 @Configuration
 @EnableResourceServer
-@SuppressWarnings("PMD.TooManyStaticImports")
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
@@ -47,17 +38,18 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(permitAll).permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .antMatchers("/api/usuarios/gerencia/**").hasAnyRole(
-                        AUT_VISUALIZAR_USUARIO.name(), POL_GERENCIAR_USUARIOS_EXECUTIVO.name())
-                .antMatchers("/api/emular**").hasRole(AUT_EMULAR_USUARIO.name())
-                .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(AUT_2023.name())
-                .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole(AUT_2023.name())
-                .antMatchers("/api/funcionalidades").hasAnyRole(
-                        AUT_VISUALIZAR_USUARIO.name(), POL_GERENCIAR_USUARIOS_EXECUTIVO.name())
-                .antMatchers("/api/cargo-departamento-funcionalidade").hasRole(AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO.name())
-                .antMatchers("/api/permissoes-especiais").hasRole(AUT_GER_PERMISSAO_ESPECIAL_USUARIO.name())
-                .antMatchers("/api/solicitacao-ramal").hasAnyRole(AUT_2033.name(), AUT_2034.name())
-                .antMatchers("/api/solicitacao-ramal/gerencia/**").hasRole(AUT_2034.name())
+                .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+                .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
+                .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
+                .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
+                .antMatchers("/api/funcionalidades").hasAnyRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+                .antMatchers("/api/cargo-departamento-funcionalidade")
+                    .hasRole(CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO.name())
+                .antMatchers("/api/permissoes-especiais")
+                    .hasRole(CodigoFuncionalidade.AUT_GER_PERMISSAO_ESPECIAL_USUARIO.name())
+                .antMatchers("/api/solicitacao-ramal")
+                    .hasAnyRole(CodigoFuncionalidade.AUT_2033.name(), CodigoFuncionalidade.AUT_2034.name())
+                .antMatchers("/api/solicitacao-ramal/gerencia/**").hasRole(CodigoFuncionalidade.AUT_2034.name())
                 .anyRequest().authenticated();
     }
 

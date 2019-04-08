@@ -23,12 +23,11 @@ public class EmpresaController {
     private AutenticacaoService autenticacaoService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public Iterable<Empresa> getAll(boolean ignorarXbrain, Integer unidadeNegocioId) {
+    public Iterable<Empresa> getAll(Integer unidadeNegocioId) {
         return repository.findAll(
                 new EmpresaPredicate()
                         .daUnidadeDeNegocio(unidadeNegocioId)
-                        .ignorarXbrain(ignorarXbrain)
-                        .filtrarPermitidos(autenticacaoService.getUsuarioAutenticado())
+                        .exibeXbrainSomenteParaXbrain(autenticacaoService.getUsuarioAutenticado().isXbrain())
                         .build(),
                 new Sort(ASC, "nome"));
     }

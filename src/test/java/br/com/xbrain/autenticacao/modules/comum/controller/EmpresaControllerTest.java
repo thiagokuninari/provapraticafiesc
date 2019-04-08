@@ -29,19 +29,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class EmpresaControllerTest {
 
+    private static String URL = "/api/empresas";
+
     @Autowired
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/empresas")
+    public void getAll_isUnauthorized_quandoNaoPassarAToken() throws Exception {
+        mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveRetornarTodos() throws Exception {
-        mvc.perform(get("/api/empresas")
+    public void getAll_deveRetornarTodos_quandoXbrain() throws Exception {
+        mvc.perform(get(URL)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -51,17 +53,18 @@ public class EmpresaControllerTest {
     }
 
     @Test
-    public void deveIgnorarXbrain() throws Exception {
-        mvc.perform(get("/api/empresas?ignorarXbrain=true")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    public void getAll_deveIgnorarXbrain_quandoNaoForXbrain() throws Exception {
+        mvc.perform(get(URL)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
 
     @Test
-    public void deveFiltrarPorUnidadeDeNegocio() throws Exception {
-        mvc.perform(get("/api/empresas?unidadeNegocioId=1")
+    public void getAll_deveFiltrarPorUnidadeDeNegocio_quandoPassarParametro() throws Exception {
+        mvc.perform(get(URL)
+                .param("unidadeNegocioId", "1")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
