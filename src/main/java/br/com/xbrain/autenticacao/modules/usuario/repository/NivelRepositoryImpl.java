@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,17 +17,6 @@ public class NivelRepositoryImpl extends CustomRepository<Nivel> implements Nive
                 .select(nivel)
                 .from(nivel)
                 .where(predicate)
-                .orderBy(nivel.nome.asc())
-                .fetch();
-    }
-
-    @Override
-    public List<Nivel> getAllByPermitidos(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .select(nivel)
-                .from(nivel)
-                .where(nivel.situacao.eq(ESituacao.A)
-                        .and(predicate))
                 .orderBy(nivel.nome.asc())
                 .fetch();
     }

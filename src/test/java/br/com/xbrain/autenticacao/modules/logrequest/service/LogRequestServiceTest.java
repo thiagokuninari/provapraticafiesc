@@ -19,12 +19,12 @@ import static org.junit.Assert.*;
 @Transactional
 public class LogRequestServiceTest {
 
-    @Autowired
-    private LogRequestService service;
     private static final int TAMANHO_MAXIMO = 255;
     String urlParamMaior = "?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'"
             + "?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&"
             + "?nome='teste'?nome='teste'&?nome='teste'?nome='teste'&?nome='teste'&?nome='teste'";
+    @Autowired
+    private LogRequestService service;
 
     @Test
     public void deveGravarOLog() {
@@ -41,7 +41,7 @@ public class LogRequestServiceTest {
 
     @Test
     public void deveNaoGravarOLog() {
-        LogRequest res = service.save("/api/usuarios/gerencia", "POST",urlParamMaior,null,
+        LogRequest res = service.save("/api/usuarios/gerencia", "POST", urlParamMaior, null,
                 100, ADMIN, 101, "200.0.0.1");
         assertNull(res);
     }
@@ -55,7 +55,7 @@ public class LogRequestServiceTest {
 
     @Test
     public void deveNaoArmazenarUrlsNaoMapeadas() {
-        LogRequest res = service.save("/api/teste", "POST","?nome='teste'",null,
+        LogRequest res = service.save("/api/teste", "POST", "?nome='teste'", null,
                 100, ADMIN, 101, "200.0.0.1");
         assertNull(res);
     }

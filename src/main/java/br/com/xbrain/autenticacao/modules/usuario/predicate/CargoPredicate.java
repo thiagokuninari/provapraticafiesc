@@ -2,14 +2,15 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
 import com.querydsl.core.BooleanBuilder;
+
+import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 
 public class CargoPredicate extends PredicateBase {
 
-    private QCargo cargo = QCargo.cargo;
     private BooleanBuilder builder;
 
     public CargoPredicate() {
@@ -30,16 +31,14 @@ public class CargoPredicate extends PredicateBase {
         return this;
     }
 
-    private CargoPredicate daExecutivo() {
-        builder.and(cargo.codigo.eq(CodigoCargo.EXECUTIVO));
+    private CargoPredicate comId(List<Integer> cargosId) {
+        builder.and(cargo.id.in(cargosId));
         return this;
     }
 
-    public CargoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO)
-                && usuarioAutenticado.hasPermissao(CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
-            daExecutivo();
-
+    public CargoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado, List<Integer> cargosId) {
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+            comId(cargosId);
         }
         return this;
     }

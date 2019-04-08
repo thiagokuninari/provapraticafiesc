@@ -10,7 +10,7 @@ import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicit
 
 public class SolicitacaoRamalHistoricoRepositoryImpl
         extends CustomRepository<SolicitacaoRamalHistorico>
-        implements  SolicitacaoRamalHistoricoRepositoryCustom {
+        implements SolicitacaoRamalHistoricoRepositoryCustom {
 
     @Override
     public List<SolicitacaoRamalHistorico> findAllBySolicitacaoRamalId(Integer idSolicitacao) {

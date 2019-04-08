@@ -45,7 +45,7 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(401)));
+                .andExpect(jsonPath("$", hasSize(8)));
     }
 
     @Test
@@ -63,8 +63,8 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(38)))
-                .andExpect(jsonPath("$[0].nome", is("ALHANDRA")))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("JACARAU")))
                 .andExpect(jsonPath("$[0].subCluster.nome", is("JOÃO PESSOA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
@@ -77,7 +77,7 @@ public class CidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
                 .andExpect(jsonPath("$[0].subCluster.nome", is("LONDRINA")))
                 .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("NORTE DO PARANÁ")))
@@ -127,4 +127,33 @@ public class CidadeControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void getHierarquia_deveRetornarTodaEstruturaDeCluster_quandoPossuiEstrutura() throws Exception {
+        mvc.perform(get("/api/cidades/5578/clusterizacao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cidadeId", is(5578)))
+                .andExpect(jsonPath("$.cidadeNome", is("LONDRINA")))
+                .andExpect(jsonPath("$.subclusterId", is(189)))
+                .andExpect(jsonPath("$.subclusterNome", is("LONDRINA")))
+                .andExpect(jsonPath("$.clusterId", is(45)))
+                .andExpect(jsonPath("$.clusterNome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$.grupoId", is(20)))
+                .andExpect(jsonPath("$.grupoNome", is("NORTE DO PARANÁ")))
+                .andExpect(jsonPath("$.regionalId", is(3)))
+                .andExpect(jsonPath("$.regionalNome", is("SUL")));
+    }
+
+    @Test
+    public void findAll_deveRetornarTodasAsCidadesNetUno_quandoNetUnoForTrue() throws Exception {
+        mvc.perform(get("/api/cidades/net-uno")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(4498)))
+                .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
+                .andExpect(jsonPath("$[0].netUno", is("V")))
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
 }

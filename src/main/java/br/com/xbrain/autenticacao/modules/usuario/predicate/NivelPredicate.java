@@ -1,58 +1,42 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.QNivel;
 import com.querydsl.core.BooleanBuilder;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 
 public class NivelPredicate {
 
-    private QNivel nivel = QNivel.nivel;
     private BooleanBuilder builder;
 
     public NivelPredicate() {
         this.builder = new BooleanBuilder();
     }
 
-    private NivelPredicate doNivel() {
-        builder.and(nivel.codigo.eq(CodigoNivel.OPERACAO));
-        return this;
-    }
-
-    public NivelPredicate withoutXbrain() {
-        builder.and(nivel.codigo.ne(CodigoNivel.XBRAIN));
-        return this;
-    }
-
-    public NivelPredicate withoutAgenteAutoriazado() {
-        builder.and(nivel.codigo.ne(CodigoNivel.AGENTE_AUTORIZADO));
-        return this;
-    }
-
-    public NivelPredicate withoutVarejo() {
-        builder.and(nivel.codigo.ne(CodigoNivel.VAREJO));
-        return this;
-    }
-
-    public NivelPredicate ativo() {
+    public NivelPredicate isAtivo() {
         builder.and(nivel.situacao.eq(ESituacao.A));
         return this;
     }
 
-    public NivelPredicate deveExibirCadastro() {
-        builder.and(nivel.exibirCadastroUsuario.eq(Eboolean.V));
+    public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel) {
+        if (!visualizaGeral) {
+            builder.and(nivel.codigo.eq(codigoNivel));
+        }
         return this;
     }
 
-    public NivelPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_USUARIO)
-                && usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
-            doNivel();
+    public NivelPredicate exibeXbrainSomenteParaXbrain(boolean isXbrain) {
+        if (!isXbrain) {
+            builder.and(nivel.codigo.ne(CodigoNivel.XBRAIN));
+        }
+        return this;
+    }
+
+    public NivelPredicate exibeSomenteParaCadastro(boolean isCadastro) {
+        if (isCadastro) {
+            builder.and(nivel.exibirCadastroUsuario.eq(Eboolean.V));
         }
         return this;
     }

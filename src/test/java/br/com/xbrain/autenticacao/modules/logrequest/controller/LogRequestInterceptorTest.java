@@ -56,7 +56,7 @@ public class LogRequestInterceptorTest {
                 .findAll()
                 .stream()
                 .filter(l ->
-                    l.getUrl().equals("/api/usuarios/gerencia"))
+                        l.getUrl().equals("/api/usuarios/gerencia"))
                 .findFirst()
                 .get();
 

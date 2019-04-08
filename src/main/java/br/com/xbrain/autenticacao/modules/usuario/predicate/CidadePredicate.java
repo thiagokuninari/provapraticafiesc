@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
@@ -36,7 +36,7 @@ public class CidadePredicate {
         return this.builder;
     }
 
-    private CidadePredicate daEmpresaUsuarioPorUsuario(Integer usuarioId) {
+    private CidadePredicate dasCidadesQueOUsuarioEstaVinculado(Integer usuarioId) {
         builder.and(cidade.id.in(
                 JPAExpressions.select(cidade.id)
                         .from(usuario)
@@ -47,8 +47,8 @@ public class CidadePredicate {
     }
 
     public CidadePredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
-            daEmpresaUsuarioPorUsuario(usuarioAutenticado.getId());
+        if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            dasCidadesQueOUsuarioEstaVinculado(usuarioAutenticado.getId());
         }
         return this;
     }

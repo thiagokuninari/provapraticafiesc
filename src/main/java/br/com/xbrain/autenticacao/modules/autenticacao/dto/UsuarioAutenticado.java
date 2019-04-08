@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -42,6 +44,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private List<Empresa> empresas;
     private Collection<? extends GrantedAuthority> permissoes;
     private String nivelCodigo;
+    private CodigoDepartamento departamentoCodigo;
+    private CodigoCargo cargoCodigo;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -62,6 +66,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
+        this.departamentoCodigo = usuario.getDepartamentoCodigo();
+        this.cargoCodigo = usuario.getCargoCodigo();
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
@@ -80,29 +86,27 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
+        this.departamentoCodigo = usuario.getDepartamentoCodigo();
+        this.cargoCodigo = usuario.getCargoCodigo();
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return permissoes != null
                 && permissoes
                 .stream()
-                .filter(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade))
-                .count() > 0;
+                .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
     public boolean isXbrain() {
-        return XBRAIN == usuario.getNivelCodigo();
+        return XBRAIN == getNivelCodigoEnum();
     }
 
     public boolean isMso() {
         return MSO == usuario.getNivelCodigo();
     }
 
-    public boolean isVendedor() {
-        return hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_VENDEDOR_PROPRIO);
-    }
-
-    public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId, List<Integer> agentesAutorizadosIdDoUsuario) {
+    public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
+                                                   List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
                 && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
                 || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
@@ -110,7 +114,11 @@ public class UsuarioAutenticado extends OAuth2Request {
         }
     }
 
-    public boolean isAgenteAutorizado() {
+    private boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
+    }
+
+    public CodigoNivel getNivelCodigoEnum() {
+        return CodigoNivel.valueOf(nivelCodigo);
     }
 }

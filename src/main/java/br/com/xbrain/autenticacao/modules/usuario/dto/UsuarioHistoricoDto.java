@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class UsuarioHistoricoDto {
-    
+
     private Integer id;
     private String motivo;
     private String observacao;
@@ -14,12 +14,12 @@ public class UsuarioHistoricoDto {
 
     public UsuarioHistoricoDto() {
     }
-    
+
     public UsuarioHistoricoDto(UsuarioHistorico usuarioHistorico) {
         this.id = usuarioHistorico.getId();
         this.motivo = usuarioHistorico.getMotivoInativacao().getDescricao();
         this.cadastro = DateUtils.parseLocalDateTimeToString(usuarioHistorico.getDataCadastro());
         this.observacao = usuarioHistorico.getObservacao();
-    }    
+    }
 
 }

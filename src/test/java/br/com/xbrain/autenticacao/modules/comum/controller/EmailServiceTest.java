@@ -28,14 +28,12 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class EmailServiceTest {
 
-    @MockBean
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private EmailService emailService;
-
     private static final String ASSUNTO_EMAIL = "Teste de envio de Email";
     private static final String CONTEUDO_EMAIL = "<html><head></head><body><h1>Olá mundo</h1></body></html>";
+    @MockBean
+    private RestTemplate restTemplate;
+    @Autowired
+    private EmailService emailService;
 
     @Before
     public void setup() {

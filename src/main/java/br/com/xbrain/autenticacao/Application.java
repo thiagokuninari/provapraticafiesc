@@ -10,7 +10,7 @@ import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EntityScan(
-        basePackageClasses = { Application.class, Jsr310JpaConverters.class })
+        basePackageClasses = {Application.class, Jsr310JpaConverters.class})
 @EnableZuulProxy
 @EnableFeignClients
 @SpringBootApplication

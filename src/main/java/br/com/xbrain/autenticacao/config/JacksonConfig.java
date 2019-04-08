@@ -27,7 +27,7 @@ public class JacksonConfig {
         objectMapper.registerModule(hibernateModule);
 
         //Javatime config
-        objectMapper.registerModule( new JavaTimeModule());
+        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         objectMapper.configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false);
 

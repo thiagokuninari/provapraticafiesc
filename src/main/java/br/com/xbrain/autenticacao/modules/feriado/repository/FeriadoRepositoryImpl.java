@@ -14,13 +14,13 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
 
     @Override
     public List<Feriado> findAllByAnoAtual(LocalDate now) {
-        return  new JPAQueryFactory(entityManager)
-                    .select(feriado)
-                    .from(feriado)
-                    .where(feriado.dataFeriado.between(
-                            now.with(TemporalAdjusters.firstDayOfYear()),
-                            now.with(TemporalAdjusters.lastDayOfYear())
-                    ))
-                    .fetch();
+        return new JPAQueryFactory(entityManager)
+                .select(feriado)
+                .from(feriado)
+                .where(feriado.dataFeriado.between(
+                        now.with(TemporalAdjusters.firstDayOfYear()),
+                        now.with(TemporalAdjusters.lastDayOfYear())
+                ))
+                .fetch();
     }
 }

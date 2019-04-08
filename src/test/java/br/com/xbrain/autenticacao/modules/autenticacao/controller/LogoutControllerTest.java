@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,16 +36,18 @@ public class LogoutControllerTest {
     private MockMvc mvc;
     @Autowired
     private TokenStore tokenStore;
+    @MockBean
+    private EquipeVendaClient equipeVendaClient;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception  {
+    public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/logout")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveFazerOLogoutDoUsuarioLogado() throws Exception  {
+    public void deveFazerOLogoutDoUsuarioLogado() throws Exception {
         String token = getAccessToken(mvc, ADMIN);
 
         requestEmpresas(token).andExpect(status().isOk());
@@ -57,7 +61,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception  {
+    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception {
         String token = getAccessToken(mvc, ADMIN);
 
         requestEmpresas(token).andExpect(status().isOk());
@@ -77,7 +81,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void devePermitirSomenteUsuariosXBrainFazerLogoutDeTodosOsUsuarios() throws Exception  {
+    public void devePermitirSomenteUsuariosXBrainFazerLogoutDeTodosOsUsuarios() throws Exception {
         mvc.perform(get("/api/logout/todos-usuarios")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
@@ -85,7 +89,7 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveDeslogarTodosOsUsuarios() throws Exception  {
+    public void deveDeslogarTodosOsUsuarios() throws Exception {
         getAccessToken(mvc, ADMIN);
         getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL);
 

@@ -43,7 +43,7 @@ public class TestsHelper {
 
     public static byte[] convertObjectToJsonBytes(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule( new JavaTimeModule());
+        mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsBytes(object);
     }
 
@@ -68,7 +68,7 @@ public class TestsHelper {
 
     public static String convertObjectToJsonString(Object object) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule( new JavaTimeModule());
+        mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsString(object);
     }
 

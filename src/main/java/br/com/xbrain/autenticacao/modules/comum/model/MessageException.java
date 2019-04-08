@@ -8,7 +8,8 @@ public class MessageException {
     private String message;
     private String field;
 
-    public MessageException() { }
+    public MessageException() {
+    }
 
     public MessageException(String message) {
         this.message = message;

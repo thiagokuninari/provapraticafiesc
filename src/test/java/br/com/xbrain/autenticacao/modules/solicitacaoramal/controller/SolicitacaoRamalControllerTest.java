@@ -56,6 +56,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_solicitacao_ramal_database.sql"})
 public class SolicitacaoRamalControllerTest {
 
+    private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
+    private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
     @Autowired
@@ -73,12 +75,9 @@ public class SolicitacaoRamalControllerTest {
     @MockBean
     private SocioService socioService;
 
-    private static final String URL_API_SOLICITACAO_RAMAL = "/api/solicitacao-ramal";
-    private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
-
     @Before
     public void setUp() {
-        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1,2));
+        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
         when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
     }
@@ -202,7 +201,8 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void getAll_isForbiden_seUsuarioPossuirPermissaoOperacaoGerenteComercialETentarAcessarGerencial() throws Exception {
+    public void getAll_isForbiden_seUsuarioPossuirPermissaoOperacaoGerenteComercialETentarAcessarGerencial()
+            throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL)
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
@@ -329,9 +329,9 @@ public class SolicitacaoRamalControllerTest {
     @Test
     public void getAll_isOk_quandoUsuarioPossuirPermissaoSobreOAgenteAutorizado() throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/?agenteAutorizadoId=1")
-            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -367,7 +367,8 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_listaComUmRegistro_quandoLocalizarAsSolicitacoesPelaDataCadastroESituacaoPendenteEAaId()
             throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-                + "/?dataInicialSolicitacao=03/01/2019&dataFinalSolicitacao=04/01/2019&situacao=PENDENTE&agenteAutorizadoId=1")
+                + "/?dataInicialSolicitacao=03/01/2019&dataFinalSolicitacao=04/01/"
+                + "2019&situacao=PENDENTE&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -378,7 +379,8 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_listaComQuatroRegistros_quandoLocalizarAsSolicitacoesPelaDataCadastroESituacaoEmAndamentoEAaId()
             throws Exception {
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL
-        + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENTO&agenteAutorizadoId=2")
+                + "/?dataInicialSolicitacao=02/01/2019&dataFinalSolicitacao=03/01/2019&situacao=EM_ANDAMENT"
+                + "O&agenteAutorizadoId=2")
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -439,7 +441,7 @@ public class SolicitacaoRamalControllerTest {
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
-                .usuariosSolicitadosIds(Arrays.asList(100,101))
+                .usuariosSolicitadosIds(Arrays.asList(100, 101))
                 .build();
     }
 

@@ -1,18 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cidades")
@@ -20,7 +20,6 @@ public class CidadeController {
 
     @Autowired
     private CidadeRepository repository;
-
     @Autowired
     private CidadeService service;
 
@@ -61,6 +60,11 @@ public class CidadeController {
         return service.getAllBySubClusterId(subclusterId);
     }
 
+    @RequestMapping("sub-clusters")
+    public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
+        return service.getAllBySubClustersId(subclustersId);
+    }
+
     @RequestMapping(value = "cidade/{cidadeId}")
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
         return UsuarioCidadeDto.parse(repository.findOne(id));
@@ -69,5 +73,15 @@ public class CidadeController {
     @RequestMapping(value = "{cidadeId}")
     public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
         return CidadeResponse.parse(repository.findOne(id));
+    }
+
+    @GetMapping("{id}/clusterizacao")
+    public ClusterizacaoDto getAll(@PathVariable Integer id) {
+        return service.getClusterizacao(id);
+    }
+
+    @GetMapping("net-uno")
+    public List<CidadeResponse> getAllCidadeNetUno() {
+        return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
     }
 }

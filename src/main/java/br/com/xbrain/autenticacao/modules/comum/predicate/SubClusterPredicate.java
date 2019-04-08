@@ -24,7 +24,7 @@ public class SubClusterPredicate extends PredicateBase {
     }
 
     public SubClusterPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (usuarioAutenticado.hasPermissao(CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             daSubClusterUsuarioPorUsuario(usuarioAutenticado.getId());
         }
         return this;
