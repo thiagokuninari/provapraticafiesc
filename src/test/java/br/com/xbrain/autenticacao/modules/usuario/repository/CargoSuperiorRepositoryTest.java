@@ -16,16 +16,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class CargoSuperiorRepositoryTest {
 
+    private static final int GERENTE_OPERACAO_ID = 7;
+    private static final int VENDEDOR_OPERACAO_ID = 8;
+
     @Autowired
     private CargoSuperiorRepository repository;
 
     @Test
-    public void fgetCargosHierarquia_deveRetornarAHierarquiaDeCargos_quandoExistir() {
+    public void getCargosHierarquia_deveRetornarAHierarquiaDeCargos_quandoExistir() {
 
-        assertThat(repository.getCargosHierarquia(7))
+        assertThat(repository.getCargosHierarquia(GERENTE_OPERACAO_ID))
                 .containsExactly(4, 5, 10);
 
-        assertThat(repository.getCargosHierarquia(10))
+        assertThat(repository.getCargosHierarquia(VENDEDOR_OPERACAO_ID))
                 .isEmpty();
     }
 }
