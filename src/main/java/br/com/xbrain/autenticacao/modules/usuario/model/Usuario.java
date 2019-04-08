@@ -404,7 +404,7 @@ public class Usuario {
         return CodigoNivel.OPERACAO == getNivelCodigo();
     }
 
-    public void gerarHistorico(UsuarioHistorico historico) {
+    public void adicionar(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
         }

@@ -745,7 +745,7 @@ public class UsuarioService {
 
         if (!isEmpty(usuario.getCpf())) {
             if (situacaoAtiva(usuario.getEmail())) {
-                usuario.gerarHistorico(UsuarioHistorico.builder()
+                usuario.adicionar(UsuarioHistorico.builder()
                         .dataCadastro(LocalDateTime.now())
                         .usuario(usuario)
                         .usuarioAlteracao(usuarioInativacao)
@@ -782,7 +782,7 @@ public class UsuarioService {
         Usuario usuarioInativacao = !isEmpty(dto.getIdUsuarioInativacao()) ? new Usuario(dto.getIdUsuarioInativacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        usuario.gerarHistorico(UsuarioHistorico.builder()
+        usuario.adicionar(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(motivoInativacao)
                 .usuario(usuario)
