@@ -1,11 +1,8 @@
 package br.com.xbrain.autenticacao.modules.comum.filtros;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.QEmpresa;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
-
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.POL_GERENCIAR_USUARIOS_EXECUTIVO;
 
 public class EmpresaPredicate {
     private QEmpresa empresa = QEmpresa.empresa;
@@ -15,9 +12,9 @@ public class EmpresaPredicate {
         this.builder = new BooleanBuilder();
     }
 
-    public EmpresaPredicate ignorarXbrain(Boolean ignorar) {
-        if (ignorar != null && ignorar) {
-            builder.and(empresa.nome.notLike("Xbrain"));
+    public EmpresaPredicate exibeXbrainSomenteParaXbrain(boolean isXbrain) {
+        if (!isXbrain) {
+            builder.and(empresa.codigo.ne(CodigoEmpresa.XBRAIN));
         }
         return this;
     }
@@ -25,18 +22,6 @@ public class EmpresaPredicate {
     public EmpresaPredicate daUnidadeDeNegocio(Integer unidadeId) {
         if (unidadeId != null) {
             builder.and(empresa.unidadeNegocio.id.eq(unidadeId));
-        }
-        return this;
-    }
-
-    private EmpresaPredicate daEmpresaUsuarioPorUsuario(Usuario usuario) {
-        builder.and(empresa.id.in(usuario.getEmpresasId()));
-        return this;
-    }
-
-    public EmpresaPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
-        if (usuarioAutenticado.hasPermissao(POL_GERENCIAR_USUARIOS_EXECUTIVO)) {
-            daEmpresaUsuarioPorUsuario(usuarioAutenticado.getUsuario());
         }
         return this;
     }

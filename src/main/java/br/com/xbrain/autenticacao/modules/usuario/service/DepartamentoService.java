@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.DepartamentoPredicate;
@@ -18,12 +17,11 @@ public class DepartamentoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    public List<Departamento> getAllByNivelId(Integer nivelId) {
-        DepartamentoPredicate predicate = new DepartamentoPredicate();
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        predicate.filtrarPermitidos(usuarioAutenticado);
-        predicate.deNivelId(nivelId);
-        return repository.findAll(predicate.build());
+    public List<Departamento> getPermitidosPorNivel(Integer nivelId) {
+        return repository.findAll(
+                new DepartamentoPredicate()
+                        .doNivel(nivelId)
+                        .filtrarPermitidos(autenticacaoService.getUsuarioAutenticado())
+                        .build());
     }
-
 }

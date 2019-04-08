@@ -246,10 +246,6 @@ public class UsuarioService {
         return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
     }
 
-    public List<Integer> getIdDosUsuariosPorCidade(Integer usuarioId) {
-        return repository.getUsuariosPorCidade(usuarioId);
-    }
-
     public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
         List<Integer> usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
         if (incluirProprio) {

@@ -7,12 +7,9 @@ import br.com.xbrain.autenticacao.modules.comum.predicate.UnidadeNegocioPredicat
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @Service
 public class UnidadeNegocioService {
@@ -24,18 +21,11 @@ public class UnidadeNegocioService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    public Iterable<UnidadeNegocio> findWithoutXbrain() {
-        return repository.findByNomeIsNot("Xbrain", new Sort(ASC, "nome"));
-    }
-
     public List<UnidadeNegocio> getAll() {
-        UnidadeNegocioPredicate predicate = new UnidadeNegocioPredicate();
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        predicate.filtrarPermitidos(usuarioAutenticado);
-        if (!usuarioAutenticado.isXbrain()) {
-            predicate.withoutXbrain();
-        }
-
-        return repository.findAll(predicate.build());
+        return repository.findAll(
+                new UnidadeNegocioPredicate()
+                        .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
+                        .build());
     }
 }
