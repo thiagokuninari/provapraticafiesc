@@ -212,9 +212,11 @@ public class AutenticacaoControllerTest {
     @Test
     public void deveGerarUltimoAcessoAposAutenticar() {
         deveAutenticar();
-        List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(100);
-        assertTrue(!historico.isEmpty());
-        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
+        List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(101);
+        assertFalse(historico.isEmpty());
+        assertEquals(1, historico.stream()
+                .filter(h -> h.getMotivo().equals("ÚLTIMO ACESSO DO USUÁRIO"))
+                .count());
     }
 
     @Test

@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVen
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -25,7 +24,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +43,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.FERIAS;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -109,7 +109,7 @@ public class UsuarioServiceTest {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         service.saveFromQueue(usuarioMqRequest);
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
-        Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
+        assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
     }
 
@@ -126,10 +126,10 @@ public class UsuarioServiceTest {
     public void deveBuscarSuperioresDoUsuario() {
         UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
         List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
-        Assert.assertEquals(1, usuariosResponse.size());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
+        assertEquals(1, usuariosResponse.size());
+        assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
+        assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
+        assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class UsuarioServiceTest {
         usuarioAlteracaoRequest.setCargo(CodigoCargo.EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCargoCodigo(), CodigoCargo.EXECUTIVO);
+        assertEquals(usuario.getCargoCodigo(), CodigoCargo.EXECUTIVO);
     }
 
     @Test
@@ -149,19 +149,19 @@ public class UsuarioServiceTest {
         usuarioAlteracaoRequest.setEmail("EMAILALTERADO@XBRAIN.COM.BR");
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
+        assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
     }
 
     @Test
     public void deveInativarUmUsuario() throws Exception {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(FERIAS);
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
     }
 
     @Test
@@ -169,7 +169,7 @@ public class UsuarioServiceTest {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
+        assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
@@ -180,21 +180,21 @@ public class UsuarioServiceTest {
         usuarioRepository.findAllByCpf("21145664523")
             .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
-                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                        assertEquals(ESituacao.A, usuario.getSituacao());
                     } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                        assertEquals(ESituacao.R, usuario.getSituacao());
                     }
                 }
             );
-        Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
+        assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
     @Test
     public void updateFromQueue_NaoRealocaUsuario_QuandoSituacaoForInativa() throws Exception {
         service.updateFromQueue(umUsuarioInativo());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
-        Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
-        Assert.assertEquals(1, usuarios.size());
+        assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
+        assertEquals(1, usuarios.size());
     }
 
     @Test
@@ -225,14 +225,14 @@ public class UsuarioServiceTest {
         usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
 
     @Test
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCpf(), null);
+        assertEquals(usuario.getCpf(), null);
     }
 
     @Test
@@ -274,7 +274,7 @@ public class UsuarioServiceTest {
     @Test
     public void deveBuscarOsUsuarioComInatividade() throws Exception {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
-        Assert.assertEquals(2, usuarios
+        assertEquals(2, usuarios
                 .stream()
                 .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
                 .collect(Collectors.toList())
@@ -284,21 +284,18 @@ public class UsuarioServiceTest {
     @Test
     public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
         service.inativarUsuariosSemAcesso();
+
+        Usuario usuarioInativo = service.findById(101);
+        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
+                .extracting("id", "motivo", "observacao")
+                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
+
+        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
+        assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        assertEquals(ESituacao.A, service.findById(100).getSituacao());
+        assertEquals(ESituacao.A, service.findById(366).getSituacao());
+        assertEquals(0, service.getUsuariosSemAcesso().size());
         verify(colaboradorVendasService, times(2)).inativarColaborador(anyString());
-        List<Usuario> usuarios = service.getUsuariosSemAcesso();
-        Assert.assertEquals(0, usuarios.size());
-
-        Assert.assertEquals(ESituacao.I, service.findById(101).getSituacao());
-        Assert.assertEquals(ESituacao.I, service.findById(104).getSituacao());
-
-        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
-                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-
-        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
-                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-
-        Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
-        Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
     }
 
     @Test
@@ -342,18 +339,18 @@ public class UsuarioServiceTest {
 
     @Test
     public void deveRecuperarOsVendedoresDoGerenteOperacaoPelaHierarquia() {
-        Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
+        assertEquals(3, service.getVendedoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
     public void deveRecuperarOsVendedoresDoCoordenadorOperacaoPelaHierarquia() {
-        Assert.assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
-        Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
+        assertEquals(1, service.getVendedoresOperacaoDaHierarquia(228).size());
+        assertEquals(2, service.getVendedoresOperacaoDaHierarquia(230).size());
     }
 
     @Test
     public void deveRecuperarOsVendedoresDoVendedorOperacaoPelaHierarquia() {
-        Assert.assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
+        assertEquals(0, service.getVendedoresOperacaoDaHierarquia(229).size());
     }
 
     @Test

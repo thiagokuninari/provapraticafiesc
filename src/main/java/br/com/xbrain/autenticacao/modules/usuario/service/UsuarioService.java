@@ -30,7 +30,10 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioHistoricoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -58,7 +61,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -71,8 +73,7 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
-    private static final NotFoundException MOTIVO_INATIVACAO_NOT_FOUND = new NotFoundException(
-            "Motivo de inativação não encontrado.");
+
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -92,7 +93,7 @@ public class UsuarioService {
     @Autowired
     private NotificacaoService notificacaoService;
     @Autowired
-    private MotivoInativacaoRepository motivoInativacaoRepository;
+    private MotivoInativacaoService motivoInativacaoService;
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
@@ -129,6 +130,8 @@ public class UsuarioService {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -792,13 +795,12 @@ public class UsuarioService {
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
-        MotivoInativacao motivo = findMotivoInativacao(INATIVADO_SEM_ACESSO);
-
-        getUsuariosSemAcesso().forEach(usuario -> {
+        this.getUsuariosSemAcesso().forEach(usuario -> {
             try {
-                usuario.inativarPorFaltaDeAcesso(motivo);
-                repository.save(usuario);
+                usuario.setSituacao(ESituacao.I);
+                usuarioHistoricoService.gerarHistoricoUsuarioInativado(usuario);
                 inativarColaborador(usuario);
+                repository.save(usuario);
             } catch (Exception exception) {
                 log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
                 throw new ValidacaoException(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
@@ -807,14 +809,7 @@ public class UsuarioService {
     }
 
     private void inativarColaborador(Usuario usuario) {
-        if (!usuario.isSocioPrincipal()) {
-            colaboradorVendasService.inativarColaborador(usuario.getEmail());
-        }
-    }
-
-    private MotivoInativacao findMotivoInativacao(CodigoMotivoInativacao motivo) {
-        return motivoInativacaoRepository.findByCodigo(motivo)
-                .orElseThrow(() -> MOTIVO_INATIVACAO_NOT_FOUND);
+        colaboradorVendasService.inativarColaborador(usuario.getEmail());
     }
 
     public List<Usuario> getUsuariosSemAcesso() {
@@ -828,7 +823,7 @@ public class UsuarioService {
 
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
         return !isEmpty(dto.getIdMotivoInativacao()) ? new MotivoInativacao(dto.getIdMotivoInativacao()) :
-                findMotivoInativacao(dto.getCodigoMotivoInativacao());
+                motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {

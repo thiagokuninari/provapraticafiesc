@@ -65,10 +65,11 @@ public class UsuarioHistorico {
         this.observacao = observacao;
         this.situacao = situacao;
     }
-    
-    public static UsuarioHistorico gerarUltimoAcesso(Integer usuarioId, MotivoInativacao motivo) {
+
+    public static UsuarioHistorico gerarUltimoAcesso(Integer usuarioId, MotivoInativacao motivo,
+                                                     String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
-        return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), null, ESituacao.A);
+        return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
     public void atualizarDataUltimoAcesso() {

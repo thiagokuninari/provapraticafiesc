@@ -13,9 +13,9 @@ public interface UsuarioHistoricoRepositoryCustom {
     Optional<UsuarioHistorico> getUltimoHistoricoPorUsuario(Integer usuarioId);
     
     List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId);
-    
-    List<Usuario> getUsuariosSemAcesso();
 
     List<Usuario> getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias(Predicate predicate);
+
+    List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
     
 }
