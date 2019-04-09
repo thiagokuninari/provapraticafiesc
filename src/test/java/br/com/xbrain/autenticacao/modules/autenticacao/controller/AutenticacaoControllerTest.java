@@ -203,7 +203,7 @@ public class AutenticacaoControllerTest {
 
         List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(100);
         assertTrue(!historico.isEmpty());
-        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
+        assertEquals(3, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
     }
 
     @Test

@@ -13,19 +13,14 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +40,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.FERIAS;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,6 +87,8 @@ public class UsuarioServiceTest {
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @MockBean
     private EquipeVendaClient equipeVendaClient;
 
     @Before
@@ -110,7 +110,7 @@ public class UsuarioServiceTest {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         service.saveFromQueue(usuarioMqRequest);
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
-        Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
+        assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
     }
 
@@ -130,7 +130,7 @@ public class UsuarioServiceTest {
         usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
+        assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class UsuarioServiceTest {
         usuarioAlteracaoRequest.setEmail("EMAILALTERADO@XBRAIN.COM.BR");
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
+        assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
     }
 
     @Test
@@ -148,12 +148,12 @@ public class UsuarioServiceTest {
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(FERIAS);
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
         verify(equipeVendaMqSender, times(0)).sendInativar(any());
     }
 
@@ -163,7 +163,7 @@ public class UsuarioServiceTest {
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(205);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(FERIAS);
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
@@ -176,7 +176,7 @@ public class UsuarioServiceTest {
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(204);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(FERIAS);
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
@@ -189,7 +189,7 @@ public class UsuarioServiceTest {
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(203);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(FERIAS);
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
@@ -201,7 +201,7 @@ public class UsuarioServiceTest {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
+        assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
@@ -210,22 +210,23 @@ public class UsuarioServiceTest {
         usuarioMqRequest.setId(368);
         service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
-                .forEach(usuario -> {
+            .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
-                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                        assertEquals(ESituacao.A, usuario.getSituacao());
                     } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                        assertEquals(ESituacao.R, usuario.getSituacao());
                     }
-                });
-        Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
+                }
+            );
+        assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
     @Test
     public void updateFromQueue_NaoRealocaUsuario_QuandoSituacaoForInativa() throws Exception {
         service.updateFromQueue(umUsuarioInativo());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
-        Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
-        Assert.assertEquals(1, usuarios.size());
+        assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
+        assertEquals(1, usuarios.size());
     }
 
     @Test
@@ -256,14 +257,14 @@ public class UsuarioServiceTest {
         usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
 
     @Test
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCpf(), null);
+        assertEquals(usuario.getCpf(), null);
     }
 
     @Test
@@ -300,6 +301,23 @@ public class UsuarioServiceTest {
         Usuario usuario = umUsuarioComHierarquia();
         service.hierarquiaIsValida(usuario);
 
+    }
+
+    @Test
+    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
+        service.inativarUsuariosSemAcesso();
+
+        Usuario usuarioInativo = service.findById(101);
+        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
+                .extracting("id", "motivo", "observacao")
+                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
+
+        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
+        assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        assertEquals(ESituacao.A, service.findById(100).getSituacao());
+        assertEquals(ESituacao.A, service.findById(366).getSituacao());
+        assertEquals(0, service.getUsuariosSemAcesso().size());
+        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test

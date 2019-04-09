@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         deslogaUsuariosAutenticadosComOMesmoLogin(event);
-        //registrarUltimoAcesso(event);
+        registrarUltimoAcesso(event);
     }
 
     private void deslogaUsuariosAutenticadosComOMesmoLogin(AuthenticationSuccessEvent event) {
@@ -35,10 +36,11 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
     }
 
     public void registrarUltimoAcesso(AuthenticationSuccessEvent event) {
-        if (event.getAuthentication().isAuthenticated() && event.getAuthentication().getPrincipal() instanceof User) {
-            String login = ((User) event.getAuthentication().getPrincipal()).getUsername();
-            Integer usuarioId = new Integer(login.split("-")[0]);
-            usuarioHistoricoService.registrarHistoricoUltimoAcessoAsync(usuarioId);
+        Authentication authentication = event.getAuthentication();
+        if (authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
+            String login = ((User) authentication.getPrincipal()).getUsername();
+            Integer usuarioId = Integer.valueOf(login.split("-")[0]);
+            usuarioHistoricoService.gerarHistoricoUltimoAcessoDoUsuario(usuarioId);
         }
     }
 }
