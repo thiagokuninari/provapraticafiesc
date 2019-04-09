@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -18,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -88,7 +88,7 @@ public class UsuarioServiceTest {
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
-    private ColaboradorVendasService colaboradorVendasService;
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
 
     @Before
     public void setUp() {
@@ -295,7 +295,7 @@ public class UsuarioServiceTest {
         assertEquals(ESituacao.A, service.findById(100).getSituacao());
         assertEquals(ESituacao.A, service.findById(366).getSituacao());
         assertEquals(0, service.getUsuariosSemAcesso().size());
-        verify(colaboradorVendasService, times(2)).inativarColaborador(anyString());
+        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test

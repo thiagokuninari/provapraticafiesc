@@ -42,7 +42,7 @@ public class UsuarioHistoricoRepositoryImpl
                 .fetch();
     }
 
-    public List<Usuario> getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias(Predicate predicate) {
+    public List<Usuario> getUsuariosPorTempoDeInatividade(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .selectDistinct(usuarioHistorico.usuario)
                 .from(usuarioHistorico)
