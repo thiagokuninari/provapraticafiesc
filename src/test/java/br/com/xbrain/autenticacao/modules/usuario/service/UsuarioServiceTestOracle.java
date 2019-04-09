@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
@@ -22,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -32,7 +32,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -102,15 +104,28 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
-        assertEquals(1, usuarios.size());
-        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
-        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
-        assertEquals("Xbrain.NET", usuarios.get(0).getEmpresas());
-        assertEquals("Pessoal.Xbrain", usuarios.get(0).getUnidadesNegocios());
-        assertEquals("Vendedor", usuarios.get(0).getCargo());
-        assertEquals("Administrador", usuarios.get(0).getDepartamento());
+        when(autenticacaoService.getUsuarioAutenticado())
+                .thenReturn(UsuarioAutenticado
+                        .builder()
+                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                        .build());
+
+        assertThat(service.getAllForCsv(getFiltroUsuario("USUARIO TESTE")))
+                .hasSize(1)
+                .extracting(
+                        "nome",
+                        "email",
+                        "empresas",
+                        "unidadesNegocios",
+                        "cargo",
+                        "departamento")
+                .containsExactly(tuple(
+                        "USUARIO TESTE",
+                        "USUARIO_TESTE@GMAIL.COM",
+                        "Xbrain.NET",
+                        "Pessoal.Xbrain",
+                        "Vendedor",
+                        "Administrador"));
     }
 
     @Test
