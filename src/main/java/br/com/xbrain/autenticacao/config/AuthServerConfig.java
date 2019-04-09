@@ -60,10 +60,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String mailingImportacaoApiClient;
     @Value("${app-config.oauth-clients.mailing-importacao-api.secret}")
     private String mailingImportacaoApiSecret;
-    @Value("${app-config.oauth-clients.mailing-acompanhamento-api.client}")
-    private String mailingAcompanhamentoApiClient;
-    @Value("${app-config.oauth-clients.mailing-acompanhamento-api.secret}")
-    private String mailingAcompanhamentoApiSecret;
     @Value("${app-config.oauth-clients.equipe-venda-api.client}")
     private String equipeVendaApiClient;
     @Value("${app-config.oauth-clients.equipe-venda-api.secret}")
@@ -143,12 +139,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(mailingImportacaoApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("mailing-importacao-api")
-                .authorities(ROLE_APPLICATION)
-                .and()
-                .withClient(mailingAcompanhamentoApiClient)
-                .secret(mailingAcompanhamentoApiSecret)
-                .authorizedGrantTypes("client_credentials")
-                .scopes("mailing-acompanhamento-api")
                 .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(equipeVendaApiClient)
