@@ -38,6 +38,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -82,6 +83,7 @@ public class UsuarioService {
 
 
     @Autowired
+    @Setter
     private UsuarioRepository repository;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
