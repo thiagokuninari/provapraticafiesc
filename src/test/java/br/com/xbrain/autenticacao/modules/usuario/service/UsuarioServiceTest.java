@@ -17,7 +17,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.FERIAS;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -87,8 +85,6 @@ public class UsuarioServiceTest {
     private DepartamentoRepository departamentoRepository;
     @MockBean
     private NotificacaoService notificacaoService;
-    @MockBean
-    private InativarColaboradorMqSender inativarColaboradorMqSender;
 
     @Before
     public void setUp() {
@@ -279,23 +275,6 @@ public class UsuarioServiceTest {
                 .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
                 .collect(Collectors.toList())
                 .size());
-    }
-
-    @Test
-    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
-        service.inativarUsuariosSemAcesso();
-
-        Usuario usuarioInativo = service.findById(101);
-        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
-                .extracting("id", "motivo", "observacao")
-                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
-
-        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
-        assertEquals(ESituacao.I, service.findById(104).getSituacao());
-        assertEquals(ESituacao.A, service.findById(100).getSituacao());
-        assertEquals(ESituacao.A, service.findById(366).getSituacao());
-        assertEquals(0, service.getUsuariosSemAcesso().size());
-        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test
