@@ -20,7 +20,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -124,6 +123,8 @@ public class UsuarioService {
     @Autowired
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Autowired
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
@@ -137,8 +138,6 @@ public class UsuarioService {
     private FileService fileService;
     @Autowired
     private EquipeVendaService equipeVendaService;
-    @Autowired
-    private ColaboradorVendasService colaboradorVendasService;
     @Autowired
     private FuncionalidadeService funcionalidadeService;
     @Autowired
@@ -805,21 +804,17 @@ public class UsuarioService {
             try {
                 usuario.setSituacao(ESituacao.I);
                 usuarioHistoricoService.gerarHistoricoUsuarioInativado(usuario);
-                inativarColaborador(usuario);
                 repository.save(usuario);
+
+                inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
             } catch (Exception exception) {
                 log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
-                throw new ValidacaoException(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
             }
         });
     }
 
-    private void inativarColaborador(Usuario usuario) {
-        colaboradorVendasService.inativarColaborador(usuario.getEmail());
-    }
-
     public List<Usuario> getUsuariosSemAcesso() {
-        return usuarioHistoricoRepository.getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias(toPredicate().build());
+        return usuarioHistoricoRepository.getUsuariosPorTempoDeInatividade(toPredicate().build());
     }
 
     private UsuarioHistoricoPredicate toPredicate() {

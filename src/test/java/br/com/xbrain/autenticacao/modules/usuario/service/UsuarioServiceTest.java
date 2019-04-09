@@ -10,17 +10,13 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -46,6 +42,7 @@ import java.util.List;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.FERIAS;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -90,7 +87,7 @@ public class UsuarioServiceTest {
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
-    private ColaboradorVendasService colaboradorVendasService;
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private EquipeVendaClient equipeVendaClient;
 
@@ -304,6 +301,23 @@ public class UsuarioServiceTest {
         Usuario usuario = umUsuarioComHierarquia();
         service.hierarquiaIsValida(usuario);
 
+    }
+
+    @Test
+    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
+        service.inativarUsuariosSemAcesso();
+
+        Usuario usuarioInativo = service.findById(101);
+        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
+                .extracting("id", "motivo", "observacao")
+                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
+
+        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
+        assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        assertEquals(ESituacao.A, service.findById(100).getSituacao());
+        assertEquals(ESituacao.A, service.findById(366).getSituacao());
+        assertEquals(0, service.getUsuariosSemAcesso().size());
+        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test

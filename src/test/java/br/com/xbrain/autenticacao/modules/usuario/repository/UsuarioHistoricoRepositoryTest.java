@@ -30,7 +30,7 @@ public class UsuarioHistoricoRepositoryTest {
 
     @Test
     public void getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias_doisUsuarios_usuariosQueNaoAcessaOSistemaATrintaEDoisDias() {
-        final List<Usuario> usuarios = repository.getUsuariosSemAcessoAoSistemaAposTrintaEDoisDias(getPredicate());
+        final List<Usuario> usuarios = repository.getUsuariosPorTempoDeInatividade(getPredicate());
         assertEquals(2, usuarios.size());
         assertThat(usuarios)
                 .extracting(Usuario::getSituacao)
