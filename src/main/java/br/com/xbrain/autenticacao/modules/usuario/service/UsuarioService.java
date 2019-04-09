@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -1241,6 +1242,14 @@ public class UsuarioService {
         return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
+                .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> getSubclusterUsuario(Integer usuarioId) {
+        return repository
+                .getSubclustersUsuario(usuarioId)
+                .stream()
+                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
                 .collect(Collectors.toList());
     }
 }
