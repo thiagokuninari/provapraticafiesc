@@ -32,7 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -104,13 +105,22 @@ public class UsuarioServiceTestOracle {
     public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         List<UsuarioCsvResponse> usuarios = service.getAllForCsv(getFiltroUsuario("USUARIO TESTE"));
-        assertEquals(1, usuarios.size());
-        assertEquals("USUARIO TESTE", usuarios.get(0).getNome());
-        assertEquals("USUARIO_TESTE@GMAIL.COM", usuarios.get(0).getEmail());
-        assertEquals("Xbrain.NET", usuarios.get(0).getEmpresas());
-        assertEquals("Pessoal.Xbrain", usuarios.get(0).getUnidadesNegocios());
-        assertEquals("Vendedor", usuarios.get(0).getCargo());
-        assertEquals("Administrador", usuarios.get(0).getDepartamento());
+        assertThat(usuarios)
+                .hasSize(1)
+                .extracting(
+                        "nome",
+                        "email",
+                        "empresas",
+                        "unidadesNegocios",
+                        "cargo",
+                        "departamento")
+                .containsExactly(tuple(
+                        "USUARIO TESTE",
+                        "USUARIO_TESTE@GMAIL.COM",
+                        "Xbrain.NET",
+                        "Pessoal.Xbrain",
+                        "Vendedor",
+                        "Administrador"));
     }
 
     @Test
