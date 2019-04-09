@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import org.springframework.core.NestedExceptionUtils;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +40,8 @@ public class IntegracaoException extends RuntimeException {
         List<MessageException> response;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            TypeReference<List<MessageException>> typeReference = new TypeReference<List<MessageException>>() { };
+            TypeReference<List<MessageException>> typeReference = new TypeReference<List<MessageException>>() {
+            };
             response = mapper.readValue(request.getBody(), typeReference);
         } catch (Exception ex) {
             throw new IntegracaoException(ex,

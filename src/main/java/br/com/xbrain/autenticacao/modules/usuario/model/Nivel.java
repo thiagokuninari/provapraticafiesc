@@ -3,15 +3,16 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "NIVEL")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
 public class Nivel {
@@ -35,9 +36,6 @@ public class Nivel {
     @Column(name = "EXIBIR_CAD_USUARIO", nullable = false, length = 1)
     @Enumerated(EnumType.STRING)
     private Eboolean exibirCadastroUsuario;
-
-    public Nivel() {
-    }
 
     public Nivel(Integer id) {
         this.id = id;

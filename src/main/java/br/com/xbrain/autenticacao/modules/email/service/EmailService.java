@@ -79,7 +79,7 @@ public class EmailService {
     private String converteEmailJson(Object objeto) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return  mapper.writeValueAsString(objeto);
+            return mapper.writeValueAsString(objeto);
         } catch (IOException ex) {
             logger.error("Erro ao converter objeto para json", ex);
             return null;
@@ -87,7 +87,7 @@ public class EmailService {
     }
 
     private boolean validaCampos(List<String> emailsDestino, String empresaAlias) {
-        return  emailsDestino != null
+        return emailsDestino != null
                 && !emailsDestino.isEmpty()
                 && empresaAlias != null
                 && enviarEmail;

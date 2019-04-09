@@ -35,7 +35,7 @@ public class UsuarioFiltros {
                 .comNome(nome)
                 .comEmail(emailUsuario)
                 .comCanal(canal)
-                .comSituacao(situacao,realocado)
+                .comSituacao(situacao, realocado)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
                 .comRegional(regionalId)

@@ -28,7 +28,10 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamento
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -69,8 +72,6 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
-    private static final Integer MAXIMO = 1000;
-    private static final Integer MINIMO = 1001;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
@@ -135,6 +136,8 @@ public class UsuarioService {
     private EquipeVendaService equipeVendaService;
     @Autowired
     private FuncionalidadeService funcionalidadeService;
+    @Autowired
+    private UsuarioEquipeVendaMqSender equipeVendaMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -243,10 +246,6 @@ public class UsuarioService {
         return UsuarioHierarquia.criar(usuario, idHierarquia, autenticacaoService.getUsuarioId());
     }
 
-    public List<Integer> getIdDosUsuariosPorCidade(Integer usuarioId) {
-        return repository.getUsuariosPorCidade(usuarioId);
-    }
-
     public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
         List<Integer> usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
         if (incluirProprio) {
@@ -333,7 +332,7 @@ public class UsuarioService {
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
         if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
-                equipeVendaService.inativarSupervidor(usuario.getId());
+                equipeVendaService.inativarSupervisor(usuario.getId());
             } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
                     || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
                 equipeVendaService.inativarUsuario(usuario.getId());
@@ -773,7 +772,8 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioInativacao() != null ? new Usuario(dto.getIdUsuarioInativacao())
+        Usuario usuarioInativacao = !ObjectUtils.isEmpty(dto.getIdUsuarioInativacao())
+                ? new Usuario(dto.getIdUsuarioInativacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         usuario.adicionar(UsuarioHistorico.builder()
@@ -784,26 +784,32 @@ public class UsuarioService {
                 .observacao(dto.getObservacao())
                 .situacao(ESituacao.I)
                 .build());
+        inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
+    }
+
+    private void inativarUsuarioNaEquipeVendas(Usuario usuario) {
+        if (usuario.isUsuarioEquipeVendas()) {
+            equipeVendaMqSender.sendInativar(UsuarioEquipeVendasDto.createFromUsuario(usuario));
+        }
     }
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
-        MotivoInativacao motivo = motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO).get();
-        List<Usuario> usuarios = getUsuariosSemAcesso();
-        usuarios.forEach(usuario -> {
-            usuario = findComplete(usuario.getId());
-            usuario.setSituacao(ESituacao.I);
-            usuario.adicionar(UsuarioHistorico.builder()
-                    .dataCadastro(LocalDateTime.now())
-                    .motivoInativacao(motivo)
-                    .usuario(usuario)
-                    .usuarioAlteracao(usuario)
-                    .observacao("Inativado por falta de acesso")
-                    .situacao(ESituacao.I)
-                    .build());
-            repository.save(usuario);
-        });
+        motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO)
+                .ifPresent(motivo -> getUsuariosSemAcesso().forEach(usuario -> {
+                    usuario = findComplete(usuario.getId());
+                    usuario.setSituacao(ESituacao.I);
+                    usuario.adicionar(UsuarioHistorico.builder()
+                            .dataCadastro(LocalDateTime.now())
+                            .motivoInativacao(motivo)
+                            .usuario(usuario)
+                            .usuarioAlteracao(usuario)
+                            .observacao("Inativado por falta de acesso")
+                            .situacao(ESituacao.I)
+                            .build());
+                    repository.save(usuario);
+                }));
     }
 
     public List<Usuario> getUsuariosSemAcesso() {
@@ -1222,58 +1228,6 @@ public class UsuarioService {
                 : "Registros não encontrados.");
     }
 
-    public List<UsuarioResponse> getSupervisoresByCidades(List<Integer> cidades) {
-        try {
-            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
-                    .map(UsuarioResponse::convertEquipeVendasUsuario)
-                    .collect(Collectors.toList());
-            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
-                    .map(UsuarioResponse::convertFrom)
-                    .filter(usuario -> usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
-                    .distinct()
-                    .collect(Collectors.toList());
-            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
-        } catch (Exception ex) {
-            log.error("Erro - Cargo Inválido.", ex);
-            throw new ValidacaoException("Erro - Cargo Inválido");
-        }
-    }
-
-    public List<UsuarioResponse> getUsuariosByCidades(List<Integer> cidades) {
-        try {
-            List<UsuarioResponse> usuariosExistenteEmEquipesVendas = equipeVendaService.getAllUsuariosEquipeVendas().stream()
-                    .map(UsuarioResponse::convertEquipeVendasUsuario)
-                    .collect(Collectors.toList());
-            if (cidades.size() > MAXIMO) {
-                List<Integer> segundaLista = cidades.subList(MINIMO, cidades.size());
-                cidades = cidades.subList(0, MAXIMO);
-                List<UsuarioResponse> listaUsuario = getUsuariosByCidades(segundaLista);
-                List<UsuarioResponse> listaUsuarioComplementar = getUsuariosByCidades(cidades);
-                listaUsuario.addAll(listaUsuarioComplementar);
-            }
-            List<UsuarioResponse> usuarios = repository.getUsuariosByCidades(cidades).stream()
-                    .map(UsuarioResponse::convertFrom)
-                    .filter(usuario -> !usuario.getCodigoCargo().name().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.name()))
-                    .distinct()
-                    .collect(Collectors.toList());
-            return retornarVendedoresSemEquipeVendas(usuarios, usuariosExistenteEmEquipesVendas);
-        } catch (Exception ex) {
-            log.error("Erro - Cargo Inválido.", ex);
-            throw new ValidacaoException("Erro - Cargo Inválido");
-        }
-    }
-
-    public List<UsuarioResponse> retornarVendedoresSemEquipeVendas(List<UsuarioResponse> usuarios,
-                                                                   List<UsuarioResponse> usuariosExistenteEmEquipesVendas) {
-        return usuarios.stream()
-                .filter(usuario -> !usuariosExistenteEmEquipesVendas.stream()
-                        .anyMatch(usuarioExistente ->
-                                usuarioExistente.getId().equals(usuario.getId())
-                                        && usuarioExistente.getCodigoCargo().name()
-                                        .equalsIgnoreCase(CodigoCargoOperacao.VENDEDOR_OPERACAO.name())))
-                .collect(Collectors.toList());
-    }
-
     public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
         return funcionalidadeService
                 .getFuncionalidadesPermitidasAoUsuarioComCanal(
@@ -1288,14 +1242,5 @@ public class UsuarioService {
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
                 .collect(Collectors.toList());
-    }
-
-    public List<UsuarioResponse> getUsuariosBySupervisor(Integer id) {
-        Usuario usuario = repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        List<Integer> cidades = usuario.getCidades().stream()
-                .map(user -> user.getCidade().getId())
-                .collect(Collectors.toList());
-
-        return getUsuariosByCidades(cidades);
     }
 }

@@ -1,11 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +22,6 @@ public class CidadeController {
     private CidadeRepository repository;
     @Autowired
     private CidadeService service;
-
-    @Autowired
-    private UsuarioService usuarioService;
 
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
@@ -75,30 +73,6 @@ public class CidadeController {
     @RequestMapping(value = "{cidadeId}")
     public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
         return CidadeResponse.parse(repository.findOne(id));
-    }
-
-    @GetMapping("/supervisores")
-    public List<UsuarioEquipeVendasResponse> getSupervisoresByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
-        return usuarioService.getSupervisoresByCidades(cidadesId).stream()
-                .map(UsuarioEquipeVendasResponse::convertFrom)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("/usuarios")
-    public List<UsuarioEquipeVendasResponse> getUsuariosByCidades(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
-        return usuarioService.getUsuariosByCidades(cidadesId).stream()
-                .map(UsuarioEquipeVendasResponse::convertFrom)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("supervisor/usuarios/{id}")
-    public List<UsuarioResponse> getUsuariosBySupervisor(@PathVariable Integer id) {
-        return usuarioService.getUsuariosBySupervisor(id);
-    }
-
-    @GetMapping("cidades/supervisores/{hierarquia}/{id}")
-    public List<UsuarioResponse> getSupervisoresByHierarquia(@PathVariable String hierarquia, @PathVariable Integer id) {
-        return service.getSupervisoresByHierarquia(hierarquia, id);
     }
 
     @GetMapping("{id}/clusterizacao")

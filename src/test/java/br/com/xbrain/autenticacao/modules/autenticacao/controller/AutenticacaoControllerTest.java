@@ -82,7 +82,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void getAccessToken_deveNaoAutenticar_quandoAsCredenciaisEstiveremInvalidas() {
+    public void getAccessToken_deveNaoAutenticar_quandoAsCredenciasEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
         assertNull(token.getAccessToken());
     }
@@ -174,7 +174,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void getAccessTokenClientCredentials_null_quandoAsCredencisEstiveremInvalidas() {
+    public void getAccessTokenClientCredentials_null_quandoAsCredenciaisEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:invalida");
         assertNull(token.getAccessToken());
     }

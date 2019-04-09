@@ -49,7 +49,8 @@ public class CargoDepartamentoFuncionalidade {
     @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
 
-    public CargoDepartamentoFuncionalidade() {}
+    public CargoDepartamentoFuncionalidade() {
+    }
 
     public CargoDepartamentoFuncionalidade(Integer cargoId, Integer departamentoId, Integer funcionalidadeId) {
         this.cargo = new Cargo(cargoId);

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public enum CodigoCargoOperacao  {
+public enum CodigoCargoOperacao {
 
     SUPERVISOR_OPERACAO(10),
     ASSISTENTE_OPERACAO(2),

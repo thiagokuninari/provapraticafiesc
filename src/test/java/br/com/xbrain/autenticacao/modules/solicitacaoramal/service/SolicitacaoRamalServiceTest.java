@@ -18,7 +18,7 @@ import static org.junit.Assert.assertFalse;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Transactional
-@Sql(scripts = { "classpath:/tests_database.sql", "classpath:/tests_solicitacao_ramal_database.sql"})
+@Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_solicitacao_ramal_database.sql"})
 public class SolicitacaoRamalServiceTest {
 
     @Autowired
@@ -33,12 +33,12 @@ public class SolicitacaoRamalServiceTest {
         assertFalse(repository.findById(1).isPresent());
     }
 
-    @Test( expected = NotFoundException.class)
+    @Test(expected = NotFoundException.class)
     public void remover_deveRetornarNotFoundException_quandoSolicitacaoIdNaoExistir() {
         service.remover(1000);
     }
 
-    @Test( expected = ValidacaoException.class)
+    @Test(expected = ValidacaoException.class)
     public void remover_deveRetornarValidacaoException_quandoSolicitacaoEstiverComStatusDiferenteDePendente() {
         service.remover(6);
     }

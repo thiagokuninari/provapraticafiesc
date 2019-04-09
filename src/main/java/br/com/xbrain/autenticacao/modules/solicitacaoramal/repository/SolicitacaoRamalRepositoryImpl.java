@@ -24,7 +24,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SolicitacaoRamalRepositoryImpl
         extends CustomRepository<SolicitacaoRamal>
-            implements SolicitacaoRamalRepositoryCustom {
+        implements SolicitacaoRamalRepositoryCustom {
 
     @Override
     public Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate) {
@@ -54,9 +54,9 @@ public class SolicitacaoRamalRepositoryImpl
                                         .where(usuario.id.eq(solicitacaoRamal.usuario.id)))
                 ).from(solicitacaoRamal)
                 .where(solicitacaoRamal.id.eq(new JPAQueryFactory(entityManager)
-                                .select(solicitacaoAuxiliar.id.max())
-                                .from(solicitacaoAuxiliar)
-                                .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
+                        .select(solicitacaoAuxiliar.id.max())
+                        .from(solicitacaoAuxiliar)
+                        .where(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId)))
                         .and(predicate))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

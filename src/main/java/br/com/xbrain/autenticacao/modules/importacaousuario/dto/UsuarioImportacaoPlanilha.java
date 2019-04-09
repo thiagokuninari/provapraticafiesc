@@ -36,13 +36,6 @@ public class UsuarioImportacaoPlanilha {
     private ESituacao situacao;
     private List<String> motivoNaoImportacao;
 
-    public static Usuario convertFrom(UsuarioImportacaoPlanilha usuario) {
-        Usuario response = new Usuario();
-        BeanUtils.copyProperties(usuario, response);
-        response.setRecuperarSenhaTentativa(usuario.getRecuperarSenhaTentativa());
-        return response;
-    }
-
     @Builder
     public UsuarioImportacaoPlanilha(
             Cargo cargo,
@@ -72,5 +65,12 @@ public class UsuarioImportacaoPlanilha {
         this.situacao = ESituacao.A;
         this.recuperarSenhaTentativa = 0;
         this.motivoNaoImportacao = motivoNaoImportacao;
+    }
+
+    public static Usuario convertFrom(UsuarioImportacaoPlanilha usuario) {
+        Usuario response = new Usuario();
+        BeanUtils.copyProperties(usuario, response);
+        response.setRecuperarSenhaTentativa(usuario.getRecuperarSenhaTentativa());
+        return response;
     }
 }

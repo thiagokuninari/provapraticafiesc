@@ -15,11 +15,7 @@ public class UnidadeNegocioController {
     private UnidadeNegocioService service;
 
     @RequestMapping(method = RequestMethod.GET)
-    public Iterable<UnidadeNegocio> getAll(boolean ignorarXbrain) {
-        if (ignorarXbrain) {
-            return service.findWithoutXbrain();
-        } else {
-            return service.getAll();
-        }
+    public Iterable<UnidadeNegocio> getAll() {
+        return service.getAll();
     }
 }

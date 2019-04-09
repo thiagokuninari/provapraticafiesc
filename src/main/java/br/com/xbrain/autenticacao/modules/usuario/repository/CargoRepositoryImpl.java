@@ -35,18 +35,6 @@ public class CargoRepositoryImpl extends CustomRepository<Cargo> implements Carg
                 .orderBy(cargo.nome.asc())
                 .fetch();
     }
-
-    @Override
-    public Iterable<Cargo> findBySituacaoAndNivelId(ESituacao situacao, Integer nivelId) {
-        return new JPAQueryFactory(entityManager)
-                .select(cargo)
-                .from(cargo)
-                .innerJoin(cargo.nivel).fetchJoin()
-                .where(
-                        cargo.nivel.id.eq(nivelId)
-                                .and(cargo.situacao.eq(situacao))
-                )
-                .orderBy(cargo.nome.asc())
-                .fetch();
-    }
 }
+
+

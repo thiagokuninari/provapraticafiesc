@@ -40,7 +40,7 @@ public class FeignSkipBadRequestsConfiguration {
 
     private HttpHeaders getHttpHeaders(Response response) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        response.headers().forEach((content, value) -> httpHeaders.add("feign-" + content, StringUtils.join(value,",")));
+        response.headers().forEach((content, value) -> httpHeaders.add("feign-" + content, StringUtils.join(value, ",")));
         return httpHeaders;
     }
 }

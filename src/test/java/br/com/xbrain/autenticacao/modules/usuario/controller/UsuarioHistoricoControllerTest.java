@@ -31,21 +31,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioHistoricoControllerTest {
-    
+
     @Autowired
     private MockMvc mvc;
-    
+
     @MockBean
     private AutenticacaoService autenticacaoService;
-    
+
     @Before
     public void setup() {
         Mockito.when(autenticacaoService.getUsuarioId())
                 .thenReturn(100);
     }
-    
+
     @Test
-    public void deveBuscarHistoricoDoUsuario() throws Exception {    
+    public void deveBuscarHistoricoDoUsuario() throws Exception {
         mvc.perform(get("/api/usuario-historico/100")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))

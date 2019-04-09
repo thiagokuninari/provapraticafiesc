@@ -24,23 +24,6 @@ public class PlanilhaService {
                 .equals(valorColuna);
     }
 
-    public Sheet getSheet(MultipartFile file) throws ValidacaoException {
-        try {
-            Sheet sheet = null;
-            String extensao = file.getOriginalFilename().substring(file.getOriginalFilename().indexOf("."));
-
-            String arquivoXlsx = ".xlsx";
-            if (extensao.equals(arquivoXlsx)) {
-                sheet = new XSSFWorkbook(file.getInputStream()).getSheetAt(0);
-            } else {
-                throw new ValidacaoException("Não foi possível reconhecer o formato do arquivo");
-            }
-            return sheet;
-        } catch (ValidacaoException | IOException ex) {
-            throw new ValidacaoException("Não foi possível recuperar o sheet");
-        }
-    }
-
     public static Row converterTipoCelulaParaString(Row linha) {
         for (int i = 0; i < NumeroCelulaUtil.QNT_COL; i++) {
             Cell cell = linha.getCell(i);
@@ -86,5 +69,22 @@ public class PlanilhaService {
             }
         }
         return linhaVazia;
+    }
+
+    public Sheet getSheet(MultipartFile file) throws ValidacaoException {
+        try {
+            Sheet sheet = null;
+            String extensao = file.getOriginalFilename().substring(file.getOriginalFilename().indexOf("."));
+
+            String arquivoXlsx = ".xlsx";
+            if (extensao.equals(arquivoXlsx)) {
+                sheet = new XSSFWorkbook(file.getInputStream()).getSheetAt(0);
+            } else {
+                throw new ValidacaoException("Não foi possível reconhecer o formato do arquivo");
+            }
+            return sheet;
+        } catch (ValidacaoException | IOException ex) {
+            throw new ValidacaoException("Não foi possível recuperar o sheet");
+        }
     }
 }

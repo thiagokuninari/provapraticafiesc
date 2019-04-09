@@ -20,10 +20,9 @@ import java.util.regex.Pattern;
 @Service
 public class AutenticacaoService {
 
+    public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
-    public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
-
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -34,6 +33,18 @@ public class AutenticacaoService {
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
         return authentication != null && authentication.getUserAuthentication() != null;
+    }
+
+    public static OAuth2Authentication getAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication instanceof OAuth2Authentication ? (OAuth2Authentication) authentication : null;
+    }
+
+    public static Integer getUsuarioEmuladorId(HttpServletRequest request) {
+        if (request.getHeader(HEADER_USUARIO_EMULADOR) != null) {
+            return Integer.parseInt(request.getHeader(HEADER_USUARIO_EMULADOR));
+        }
+        return null;
     }
 
     public String getLoginUsuario() {
@@ -83,20 +94,8 @@ public class AutenticacaoService {
                 .forEach(token -> tokenStore.removeAccessToken(token));
     }
 
-    public static OAuth2Authentication getAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication instanceof OAuth2Authentication ? (OAuth2Authentication) authentication : null;
-    }
-
     public boolean isEmulacao() {
         return request.getAttribute("emulacao") != null;
-    }
-
-    public static Integer getUsuarioEmuladorId(HttpServletRequest request) {
-        if (request.getHeader(HEADER_USUARIO_EMULADOR) != null) {
-            return Integer.parseInt(request.getHeader(HEADER_USUARIO_EMULADOR));
-        }
-        return null;
     }
 
     public boolean somenteUmLoginPorUsuario(String login) {

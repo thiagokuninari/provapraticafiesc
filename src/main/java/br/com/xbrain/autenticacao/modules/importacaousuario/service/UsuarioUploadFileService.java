@@ -50,26 +50,24 @@ public class UsuarioUploadFileService {
     private static final int TAMANHO_MAX_EMAIL = 80;
     private static final int TAMANHO_MAX_NOME = 100;
     private static final int RADIX_LONG = 36;
-
+    private final Logger log = LoggerFactory.getLogger(UsuarioUploadFileService.class);
     @Autowired
     private CargoRepository cargoRepository;
-
     @Autowired
     private NivelRepository nivelRepository;
-
     @Autowired
     private DepartamentoRepository departamentoRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private NotificacaoService notificacaoService;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    private final Logger log = LoggerFactory.getLogger(UsuarioUploadFileService.class);
+    protected static String getSenhaRandomica() {
+        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX_LONG);
+        return tag.substring(PRIMEIRA_POSICAO, QNT_SENHA);
+    }
 
     protected UsuarioImportacaoPlanilha processarUsuarios(Row row, UsuarioImportacaoRequest request) {
         String senhaDescriptografada = tratarSenha(request.isSenhaPadrao());
@@ -199,11 +197,6 @@ public class UsuarioUploadFileService {
     protected Usuario salvarUsuario(UsuarioImportacaoPlanilha usuario) {
         Usuario usuarioConvertido = UsuarioImportacaoPlanilha.convertFrom(usuario);
         return usuarioRepository.save(usuarioConvertido);
-    }
-
-    protected static String getSenhaRandomica() {
-        String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX_LONG);
-        return tag.substring(PRIMEIRA_POSICAO, QNT_SENHA);
     }
 
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {

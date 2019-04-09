@@ -14,7 +14,8 @@ public class PermissaoEspecialRequest {
     @NotEmpty
     private List<Integer> funcionalidadesIds;
 
-    public PermissaoEspecialRequest() {}
+    public PermissaoEspecialRequest() {
+    }
 
     public PermissaoEspecialRequest(Integer usuarioId,
                                     List<Integer> funcionalidadesIds) {

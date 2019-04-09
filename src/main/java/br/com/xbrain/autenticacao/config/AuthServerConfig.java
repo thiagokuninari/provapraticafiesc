@@ -21,8 +21,9 @@ import java.util.Collections;
 @EnableAuthorizationServer
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
+    private static final int UM_MES_EM_SEGUNDOS = 2592000;
+    private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
     public static String APP_CLIENT = "xbrain-app-client";
-
     @Value("${keys.private}")
     private String privateKey;
     @Value("${keys.public}")
@@ -51,6 +52,18 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String mailingApiClient;
     @Value("${app-config.oauth-clients.mailing-api.secret}")
     private String mailingApiSecret;
+    @Value("${app-config.oauth-clients.mailing-discadora-api.client}")
+    private String mailingDiscadoraApiClient;
+    @Value("${app-config.oauth-clients.mailing-discadora-api.secret}")
+    private String mailingDiscadoraApiSecret;
+    @Value("${app-config.oauth-clients.mailing-importacao-api.client}")
+    private String mailingImportacaoApiClient;
+    @Value("${app-config.oauth-clients.mailing-importacao-api.secret}")
+    private String mailingImportacaoApiSecret;
+    @Value("${app-config.oauth-clients.mailing-acompanhamento-api.client}")
+    private String mailingAcompanhamentoApiClient;
+    @Value("${app-config.oauth-clients.mailing-acompanhamento-api.secret}")
+    private String mailingAcompanhamentoApiSecret;
     @Value("${app-config.oauth-clients.equipe-venda-api.client}")
     private String equipeVendaApiClient;
     @Value("${app-config.oauth-clients.equipe-venda-api.secret}")
@@ -63,10 +76,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
-
-    private static final int UM_MES_EM_SEGUNDOS = 2592000;
-    private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
-
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -122,6 +131,24 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(mailingApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("mailing-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(mailingDiscadoraApiClient)
+                .secret(mailingDiscadoraApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("mailing-discadora-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(mailingImportacaoApiClient)
+                .secret(mailingImportacaoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("mailing-importacao-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(mailingAcompanhamentoApiClient)
+                .secret(mailingAcompanhamentoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("mailing-acompanhamento-api")
                 .authorities(ROLE_APPLICATION)
                 .and()
                 .withClient(equipeVendaApiClient)

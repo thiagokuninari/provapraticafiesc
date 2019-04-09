@@ -19,7 +19,7 @@ public class StringUtil {
 
     public static String getDataAtualEmail() {
         return LocalDate.now().format(DateTimeFormatter
-                .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt","BR")));
+                .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt", "BR")));
     }
 
     public static String removerAcentos(String str) {

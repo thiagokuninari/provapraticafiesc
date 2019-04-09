@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,7 @@ public class EquipeVendaService {
         return false;
     }
 
-    public void inativarSupervidor(Integer usuarioId) {
+    public void inativarSupervisor(Integer usuarioId) {
         try {
             equipeVendaClient.inativarSupervidor(usuarioId);
         } catch (Exception ex) {
@@ -46,10 +45,6 @@ public class EquipeVendaService {
                     EquipeVendaService.class.getName(),
                     ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA);
         }
-    }
-
-    public List<EquipeVendaUsuarioResponse> getAllUsuariosEquipeVendas() {
-        return equipeVendaClient.getAll();
     }
 
     public void inativarUsuario(Integer usuarioId) {
