@@ -16,10 +16,10 @@ public class UsuarioHistoricoController {
 
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
-    
+
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public List<UsuarioHistoricoDto> getHistoricoDoUsuario(@PathVariable("id") Integer usuarioId) {
         return usuarioHistoricoService.getHistoricoDoUsuario(usuarioId);
     }
-    
+
 }

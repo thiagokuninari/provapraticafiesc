@@ -52,7 +52,7 @@ public class ClusterControllerTest {
     @Test
     public void deveRetornarSomenteOsClustersAtivosPorGrupoGerenteComercial() throws Exception {
         mvc.perform(get("/api/clusters?grupoId=20")
-               .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -65,7 +65,7 @@ public class ClusterControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(60)))
+                .andExpect(jsonPath("$", hasSize(61)))
                 .andExpect(jsonPath("$[0].nome", is("ALAGOAS")));
     }
 }

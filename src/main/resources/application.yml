@@ -46,10 +46,10 @@ spring:
       maximumPoolSize: 2
 
   rabbitmq:
-      host: 192.168.1.40
-      port: 5671
-      username: xbrain
-      password: xbrain
+    host: 192.168.1.40
+    port: 5671
+    username: xbrain
+    password: xbrain
 
   http:
     encoding:
@@ -104,6 +104,7 @@ app-config:
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
+    inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
 
   oauth-clients:
@@ -125,6 +126,12 @@ app-config:
     mailing-api:
       client: mailing-api
       secret: m41l1ng4p1
+    mailing-discadora-api:
+      client: mailing-discadora-api
+      secret: m41l1ng4d1sc4d0r44p1
+    mailing-importacao-api:
+      client: mailing-importacao-api
+      secret: m41l1ng1mp0rt4c404p1
     call-api:
       client: call-api
       secret: c4ll4p1
@@ -134,6 +141,9 @@ app-config:
     equipe-venda-api:
       client: equipe-venda-api
       secret: 3qu1p3V3nD4xbr41n
+    dashboard-api:
+      client: dashboard-api
+      secret: d4shb04rd
 
   services:
     autenticacao:
@@ -192,40 +202,40 @@ hystrix:
             timeoutInMilliseconds: 300000
 
 keys:
-    public: |
-        -----BEGIN RSA PUBLIC KEY-----
-        MIIBCgKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnzipdI
-        SU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlpthiL
-        8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYTSbkx
-        U5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cFHQGx
-        M0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk+WSw
-        3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQAB
-        -----END RSA PUBLIC KEY-----
-    private: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEpQIBAAKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnz
-        ipdISU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlp
-        thiL8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYT
-        SbkxU5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cF
-        HQGxM0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk
-        +WSw3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQABAoIBADHBUmd4IT6iHUZ2
-        7Rinq7mIgk6DVN3P7glgv1BgT7IpGiu+tDzIeM7WlVTwW9Ho/NX8C9a7GaOFWz2A
-        nmWJdRW53ZkHKQ+ul/26hiOpJ0hDsC99u9JHEEhNyVxX+L5ADgc+x29hcryGGC8f
-        WDbLu5/j8FNAjOb4uq634RGKRYw79p279LoGf+f1HBwCTQmZ3HN8svQi1HoivMi6
-        +aXDgDfnu0+pIvaiBZGkNKpkcGKiF2YC+FFB7Ly3AaF2C36O616MjFAsb0Bk1ge3
-        FIapZsUn1qU0+2CSdez/5kRBjQWpi5moVGMvdR7MOYn8Nvwu9aVc+G2kYW8wmSFo
-        Om2qmr0CgYEA9BTzsEMK4Lk2p3ch8/cjNa4Fl80Jv8+ZotjE3+pC/XCQVEtAWsoe
-        aK0HRgyJBpb05Maw/2TNg1IiWoZXiiSkQHit3zrmlvwZm1zBi5pdHnpuW+tjEwnC
-        WWywHpfI7vMQ2Ydc03JCbDwVGWKa1CleujdSLMZuSzbkNymRTd9wTccCgYEAyls4
-        xw6wtYk78naspIbfQCFSteAqsnXXSv214taNV1SJG+5cfPzPIOGaj+sy2AoOOfSt
-        VlA+/okGjHu/+8c01wR4ANwJIfeWUrUhB5pJv8S2Wn/b/o7AKSLg4AFHv3utZfG6
-        9qwE7HQZt8aVe2RQVEclC5X4CLeoQrwLqn+vy4MCgYEA54fkbWP7MpaeoJaij4D0
-        VlxAE/I8eEXeUBpeDqVybGTVlBBZ+IVX+SWBC9KiPKz/mvBbP7iINjS4P7TF31XI
-        tRuEm4eM6tYzGCwRsHJ6OIocm3ca4RlV0WwHWM3Unc3WQvJjfHQbS/5maVEe23hu
-        0ifd/HkycIieTTFSE1OLfUsCgYEAg1ZBu7DlMG4p4mz0ELUZIV5/eFxOWhXx7lJN
-        QzVN92h+tQo4LUdIiGblEpPtJBsisKsF9gePW1VEUtne+WOKACR+XtBxfQJdJsE4
-        9t5FD5p1YLer6cRtJEXm/nzWPInhOVFzr7ZmW7HfH1BcpQGuwYSLnsFvgvjw1J+I
-        UtkdGFECgYEA4YfAR1eSBmkvaVTqViXmNd2UI5lmo3lm/VvT2AhwOSdg8FIh124Y
-        rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
-        I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
-        -----END RSA PRIVATE KEY-----
+  public: |
+    -----BEGIN RSA PUBLIC KEY-----
+    MIIBCgKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnzipdI
+    SU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlpthiL
+    8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYTSbkx
+    U5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cFHQGx
+    M0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk+WSw
+    3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQAB
+    -----END RSA PUBLIC KEY-----
+  private: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpQIBAAKCAQEAwO+B3hQoB69bFn8Tsy+VJAnQFxvgVGlMxRMkJIdqYn+DQwnz
+    ipdISU1rR3lieZUSwGk1Z7IW2ePWilnSBBZlkEo10Nf3vhMr00NyntIxy2yYjGlp
+    thiL8vG91vjC0xIinZJYhYyz2v5E0PYZU/WODu2pA3OeoKyUfj5uzpCzcH8VVQYT
+    SbkxU5/oNenBSB1sNkVzuTKy17Bg9lxCppi2AT9azEXkqefrvDDneLpCvJ4He5cF
+    HQGxM0QkWHhyxPjLHAYgBWCPJLwRtDuNZoPHbbMPthzMwshgKzrTu/It8YvfdYRk
+    +WSw3OrTvTOoZZa6V4wTECWLj3TGocKISC2Z1QIDAQABAoIBADHBUmd4IT6iHUZ2
+    7Rinq7mIgk6DVN3P7glgv1BgT7IpGiu+tDzIeM7WlVTwW9Ho/NX8C9a7GaOFWz2A
+    nmWJdRW53ZkHKQ+ul/26hiOpJ0hDsC99u9JHEEhNyVxX+L5ADgc+x29hcryGGC8f
+    WDbLu5/j8FNAjOb4uq634RGKRYw79p279LoGf+f1HBwCTQmZ3HN8svQi1HoivMi6
+    +aXDgDfnu0+pIvaiBZGkNKpkcGKiF2YC+FFB7Ly3AaF2C36O616MjFAsb0Bk1ge3
+    FIapZsUn1qU0+2CSdez/5kRBjQWpi5moVGMvdR7MOYn8Nvwu9aVc+G2kYW8wmSFo
+    Om2qmr0CgYEA9BTzsEMK4Lk2p3ch8/cjNa4Fl80Jv8+ZotjE3+pC/XCQVEtAWsoe
+    aK0HRgyJBpb05Maw/2TNg1IiWoZXiiSkQHit3zrmlvwZm1zBi5pdHnpuW+tjEwnC
+    WWywHpfI7vMQ2Ydc03JCbDwVGWKa1CleujdSLMZuSzbkNymRTd9wTccCgYEAyls4
+    xw6wtYk78naspIbfQCFSteAqsnXXSv214taNV1SJG+5cfPzPIOGaj+sy2AoOOfSt
+    VlA+/okGjHu/+8c01wR4ANwJIfeWUrUhB5pJv8S2Wn/b/o7AKSLg4AFHv3utZfG6
+    9qwE7HQZt8aVe2RQVEclC5X4CLeoQrwLqn+vy4MCgYEA54fkbWP7MpaeoJaij4D0
+    VlxAE/I8eEXeUBpeDqVybGTVlBBZ+IVX+SWBC9KiPKz/mvBbP7iINjS4P7TF31XI
+    tRuEm4eM6tYzGCwRsHJ6OIocm3ca4RlV0WwHWM3Unc3WQvJjfHQbS/5maVEe23hu
+    0ifd/HkycIieTTFSE1OLfUsCgYEAg1ZBu7DlMG4p4mz0ELUZIV5/eFxOWhXx7lJN
+    QzVN92h+tQo4LUdIiGblEpPtJBsisKsF9gePW1VEUtne+WOKACR+XtBxfQJdJsE4
+    9t5FD5p1YLer6cRtJEXm/nzWPInhOVFzr7ZmW7HfH1BcpQGuwYSLnsFvgvjw1J+I
+    UtkdGFECgYEA4YfAR1eSBmkvaVTqViXmNd2UI5lmo3lm/VvT2AhwOSdg8FIh124Y
+    rdHOkFQIId5u5VqWoq/USR2Ek3ecCvlO/74mApTTT2Foc6JftqL8eqd3DI+ZiI0g
+    I19GBb8PGGkHbVCVrisVpld6hL3wqDrGTZ3sT2fM748v2LoMd9bZlPE=
+    -----END RSA PRIVATE KEY-----

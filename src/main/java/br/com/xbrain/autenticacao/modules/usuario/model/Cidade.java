@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,6 +49,10 @@ public class Cidade {
     @JsonIgnore
     @OneToMany(mappedBy = "cidade", fetch = FetchType.LAZY)
     private List<UsuarioCidade> cidadeUsuarios;
+
+    @Column(name = "NET_UNO")
+    @Enumerated(EnumType.STRING)
+    private Eboolean netUno;
 
     public Cidade() {
     }

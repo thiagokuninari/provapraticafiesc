@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 @FeignClient(name = "callClient",
-             url = "${app-config.services.call.url}",
-             configuration = FeignSkipBadRequestsConfiguration.class)
+        url = "${app-config.services.call.url}",
+        configuration = FeignSkipBadRequestsConfiguration.class)
 public interface CallClient {
 
     String API_CONFIGURACAO_TELEFONIA = "api/configuracao-telefonia";

@@ -65,6 +65,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.atualizar-usuario-pol}")
     private String atualizarUsuarioPOlMq;
 
+    @Value("${app-config.queue.inativar-usuario-equipe-venda}")
+    private String inativarUsuarioEquipeVendaMq;
+
     @Value("${app-config.queue.inativar-colaborador-pol}")
     private String inativarColaboradorPolMq;
 
@@ -86,6 +89,11 @@ public class RabbitConfig {
     @Bean
     Queue atualizarUsuarioPOlMq() {
         return new Queue(atualizarUsuarioPOlMq, false);
+    }
+
+    @Bean
+    Queue inativaUsuarioEquipeVendaMq() {
+        return new Queue(inativarUsuarioEquipeVendaMq, false);
     }
 
     @Bean
@@ -241,6 +249,11 @@ public class RabbitConfig {
     @Bean
     public Binding atualizarUsuarioPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarUsuarioPOlMq()).to(exchange).with(usuarioAlterarSituacaoMq);
+    }
+
+    @Bean
+    public Binding inativaUsuarioBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativaUsuarioEquipeVendaMq()).to(exchange).with(usuarioAlterarSituacaoMq);
     }
 
     @Bean

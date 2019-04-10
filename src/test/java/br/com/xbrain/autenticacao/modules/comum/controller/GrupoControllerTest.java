@@ -65,7 +65,7 @@ public class GrupoControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(35)))
+                .andExpect(jsonPath("$", hasSize(36)))
                 .andExpect(jsonPath("$[0].nome", is("ARAÇATUBA")));
     }
 }

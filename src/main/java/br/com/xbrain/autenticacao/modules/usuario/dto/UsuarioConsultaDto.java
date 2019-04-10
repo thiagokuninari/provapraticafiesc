@@ -23,7 +23,8 @@ public class UsuarioConsultaDto {
     private String cargoNome;
     private String departamentoNome;
 
-    public UsuarioConsultaDto() { }
+    public UsuarioConsultaDto() {
+    }
 
     public UsuarioConsultaDto(Usuario objRequest) {
         BeanUtils.copyProperties(convertFrom(objRequest), this);

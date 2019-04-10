@@ -16,7 +16,8 @@ public class CargoDepartamentoFuncionalidadeRequest {
     @NotEmpty
     private List<Integer> funcionalidadesIds;
 
-    public CargoDepartamentoFuncionalidadeRequest() {}
+    public CargoDepartamentoFuncionalidadeRequest() {
+    }
 
     public CargoDepartamentoFuncionalidadeRequest(Integer departamentoId,
                                                   Integer cargoId,

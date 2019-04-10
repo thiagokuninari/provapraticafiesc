@@ -31,7 +31,7 @@ public class IntegracaoException extends RuntimeException {
 
     public IntegracaoException(HystrixBadRequestException request) {
         if (request instanceof FeignBadResponseWrapper) {
-            String message = tratarException(((FeignBadResponseWrapper) request)).get(0).getMessage();
+            String message = tratarException((FeignBadResponseWrapper) request).get(0).getMessage();
             throw new IntegracaoException(message);
         }
     }
@@ -40,7 +40,8 @@ public class IntegracaoException extends RuntimeException {
         List<MessageException> response;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            TypeReference<List<MessageException>> typeReference = new TypeReference<List<MessageException>>() { };
+            TypeReference<List<MessageException>> typeReference = new TypeReference<List<MessageException>>() {
+            };
             response = mapper.readValue(request.getBody(), typeReference);
         } catch (Exception ex) {
             throw new IntegracaoException(ex,

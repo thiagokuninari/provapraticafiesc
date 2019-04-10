@@ -1,6 +1,5 @@
-package br.com.xbrain.autenticacao.modules.oauth;
+package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
-import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -61,7 +60,7 @@ public class AutenticacaoControllerTest {
     private TokenStore tokenStore;
 
     @Test
-    public void deveAutenticar() {
+    public void getAccessToken_deveAutenticar_quandoAsCredenciaisEstiveremValidas() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
         assertNotNull(token.getAccessToken());
         assertEquals("100-ADMIN@XBRAIN.COM.BR", token.getLogin());
@@ -83,13 +82,13 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveNaoAutenticar() {
+    public void getAccessToken_deveNaoAutenticar_quandoAsCredenciasEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
         assertNull(token.getAccessToken());
     }
 
     @Test
-    public void deveChecarATokenComoValida() throws Exception {
+    public void checkToken_ok_quandoForUmaTokenValida() throws Exception {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         mvc.perform(
@@ -117,7 +116,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveIncluirOsAAsPermitidosNaoTokenQuandoForNivelAgenteAutorizado() throws Exception {
+    public void getAccessToken_deveIncluirOsAAsPermitidos_quandoForNivelAgenteAutorizado() throws Exception {
         Mockito.when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
@@ -132,7 +131,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveIncluirAsEmpresasDoAaQuandoForNivelAgenteAutorizado() throws Exception {
+    public void getAccessToken_deveIncluirAsEmpresasDoAa_quandoForNivelAgenteAutorizado() throws Exception {
         Mockito.when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
                 .thenReturn(Arrays.asList(
                         new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
@@ -152,7 +151,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveChecarATokenComoInvalida() throws Exception {
+    public void getAccessToken_badRequest_quandoATokenForInvalida() throws Exception {
         mvc.perform(
                 post("/oauth/check_token")
                         .param("token", "teste"))
@@ -160,7 +159,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveAutenticarUsandoClientCredentials() {
+    public void getAccessTokenClientCredentials_ok_quandoAsCredenciaisEstiveremValidas() {
         assertNotNull(TestsHelper
                 .getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1").getAccessToken());
 
@@ -175,13 +174,13 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveNaoAutenticarUsandoClientCredentialsQuandoSenhaInvalida() {
+    public void getAccessTokenClientCredentials_null_quandoAsCredenciaisEstiveremInvalidas() {
         OAuthToken token = TestsHelper.getAccessTokenClientCredentials(mvc, "parceiros-online-api:invalida");
         assertNull(token.getAccessToken());
     }
 
     @Test
-    public void deveRetornarErroQuandoOUsuarioEstiverInativo() throws Exception {
+    public void getTokenResponse_401_quandoOUsuarioEstiverInativo() throws Exception {
         MockHttpServletResponse response = TestsHelper.getTokenResponse(mvc, Usuarios.INATIVO);
 
         assertEquals(401, response.getStatus());
@@ -190,7 +189,7 @@ public class AutenticacaoControllerTest {
     }
 
     @Test
-    public void deveRetornarErroQuandoOUsuarioEstiverPendente() throws Exception {
+    public void getTokenResponse_401_quandoOUsuarioEstiverPendente() throws Exception {
         MockHttpServletResponse response = TestsHelper.getTokenResponse(mvc, Usuarios.PENDENTE);
 
         assertEquals(401, response.getStatus());
@@ -198,32 +197,22 @@ public class AutenticacaoControllerTest {
                 "Agente Autorizado com aceite de contrato pendente."));
     }
 
-    //TODO rescrever esse teste com mocks, no redis as vezes quebra
-    //@Test
-    public void deveManterSomenteUmUsuarioLogadoPorLogin() {
-        autenticacaoService.logoutAllUsers();
-
-        TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
-        TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
-
-        assertEquals(1, tokenStore.findTokensByClientId(AuthServerConfig.APP_CLIENT).size());
-    }
-
     @Test
-    public void deveGerarUltimoAcessoAposAutenticar() {
-        deveAutenticar();
+    public void getAccessTokenObject_deveGerarHistorico_quandoAutenticar() {
+        TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
+
         List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(101);
-        assertFalse(historico.isEmpty());
-        assertEquals(1, historico.stream()
-                .filter(h -> h.getMotivo().equals("ÚLTIMO ACESSO DO USUÁRIO"))
-                .count());
+        assertTrue(!historico.isEmpty());
+        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
     }
 
     @Test
-    public void naoDeveGerarUltimoAcessoAposAutenticar() {
-        long totalRegistroAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
-        deveNaoAutenticar();
+    public void getAccessTokenObject_deveNaoGerarHistorico_quandoNaoAutenticar() {
+        long totalRegistrosAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+
+        TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
+
         long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
-        assertTrue(totalRegistroAntes == totalRegistroApos);
+        assertTrue(totalRegistrosAntes == totalRegistroApos);
     }
 }

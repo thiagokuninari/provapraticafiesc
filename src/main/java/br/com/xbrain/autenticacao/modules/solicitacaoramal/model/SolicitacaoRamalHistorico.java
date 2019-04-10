@@ -18,7 +18,7 @@ public class SolicitacaoRamalHistorico {
 
     @Id
     @SequenceGenerator(name = "SEQ_SOLIC_RM_HIST",
-                       sequenceName = "SEQ_SOLIC_RM_HIST", allocationSize = 1)
+            sequenceName = "SEQ_SOLIC_RM_HIST", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_SOLIC_RM_HIST", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
@@ -38,7 +38,7 @@ public class SolicitacaoRamalHistorico {
     private String comentario;
 
     @JoinColumn(name = "FK_SOLICITACAO_RAMAL", referencedColumnName = "ID",
-                foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_SOLIC_RAMAL"))
+            foreignKey = @ForeignKey(name = "FK_SOLIC_RM_HIST_SOLIC_RAMAL"))
     @ManyToOne(fetch = FetchType.LAZY)
     private SolicitacaoRamal solicitacaoRamal;
 

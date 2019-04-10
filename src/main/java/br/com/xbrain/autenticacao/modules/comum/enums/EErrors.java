@@ -25,13 +25,13 @@ public enum EErrors {
             "#006 - Erro ao tentar recuperar as equipes de vendas do usuário."),
     ERRO_OBTER_SOCIO_PRINCIPAL_BY_AA_ID(
             "#007 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-                    "#007 - Erro ao tentar recuperar o sócio principal do agente autorizado."),
+            "#007 - Erro ao tentar recuperar o sócio principal do agente autorizado."),
     ERRO_OBTER_DISCADORA_BY_ID(
             "#008 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-                    "#008 - Erro ao tentar recuperar a discadora pelo id."),
+            "#008 - Erro ao tentar recuperar a discadora pelo id."),
     ERRO_OBTER_LISTA_RAMAIS_BY_AA(
             "#009 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-                    "#009 - Erro ao tentar recuperar a lista de ramais do agente autorizado"),
+            "#009 - Erro ao tentar recuperar a lista de ramais do agente autorizado"),
     ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA(
             "#010 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#010 - Erro ao tentar inativar o usuário supervisor na equipe de vendas."),

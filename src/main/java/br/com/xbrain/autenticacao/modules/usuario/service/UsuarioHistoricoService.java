@@ -20,16 +20,16 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInati
 
 @Service
 public class UsuarioHistoricoService {
-
+        
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
-
+    
     @Autowired
     private MotivoInativacaoService motivoInativacaoService;
 
     public List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId) {
         return usuarioHistoricoRepository.getHistoricoDoUsuario(usuarioId);
-    }
+    }   
 
     @Transactional
     public void gerarHistoricoUltimoAcessoDoUsuario(Integer usuarioId) {

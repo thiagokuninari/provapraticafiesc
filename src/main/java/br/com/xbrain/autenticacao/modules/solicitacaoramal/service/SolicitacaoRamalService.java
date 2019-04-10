@@ -43,6 +43,11 @@ import static java.util.Comparator.comparing;
 @Service
 public class SolicitacaoRamalService {
 
+    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
+    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
+    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
+    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -64,12 +69,6 @@ public class SolicitacaoRamalService {
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
-    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
-    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
-    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
-    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
-
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
                 .stream()
@@ -81,9 +80,9 @@ public class SolicitacaoRamalService {
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                            .stream()
-                            .map(SolicitacaoRamalResponse::convertFrom)
-                            .collect(Collectors.toList()),
+                .stream()
+                .map(SolicitacaoRamalResponse::convertFrom)
+                .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
     }
@@ -94,9 +93,9 @@ public class SolicitacaoRamalService {
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                                          .stream()
-                                          .map(SolicitacaoRamalResponse::convertFrom)
-                                          .collect(Collectors.toList()),
+                .stream()
+                .map(SolicitacaoRamalResponse::convertFrom)
+                .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
     }
@@ -120,9 +119,9 @@ public class SolicitacaoRamalService {
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                                          .stream()
-                                          .map(SolicitacaoRamalResponse::convertFrom)
-                                          .collect(Collectors.toList()),
+                .stream()
+                .map(SolicitacaoRamalResponse::convertFrom)
+                .collect(Collectors.toList()),
                 pageable,
                 solicitacoes.getTotalElements());
     }

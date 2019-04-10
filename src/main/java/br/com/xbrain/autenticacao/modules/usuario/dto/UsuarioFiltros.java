@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -23,7 +24,9 @@ public class UsuarioFiltros {
     private Integer nivelId;
     private Integer departamentoId;
     private Integer cargoId;
+    private ECanal canal;
     private ESituacao situacao;
+    private boolean realocado;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -31,7 +34,8 @@ public class UsuarioFiltros {
                 .comCpf(cpf)
                 .comNome(nome)
                 .comEmail(emailUsuario)
-                .comSituacao(situacao)
+                .comCanal(canal)
+                .comSituacao(situacao, realocado)
                 .comGrupo(grupoId)
                 .comCluster(clusterId)
                 .comRegional(regionalId)
