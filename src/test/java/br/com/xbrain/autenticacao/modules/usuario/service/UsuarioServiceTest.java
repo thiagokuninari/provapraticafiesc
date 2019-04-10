@@ -37,10 +37,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.FERIAS;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -265,16 +263,6 @@ public class UsuarioServiceTest {
         Usuario usuario = umUsuarioComHierarquia();
         service.hierarquiaIsValida(usuario);
 
-    }
-
-    @Test
-    public void deveBuscarOsUsuarioComInatividade() throws Exception {
-        List<Usuario> usuarios = service.getUsuariosSemAcesso();
-        assertEquals(2, usuarios
-                .stream()
-                .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
-                .collect(Collectors.toList())
-                .size());
     }
 
     @Test
