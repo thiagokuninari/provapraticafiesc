@@ -54,8 +54,8 @@ public class UsuarioHistoricoServiceTest {
         assertEquals(1, usuarioHistoricos.size());
 
         assertThat(usuarioHistoricos.get(0))
-                .extracting("id", "situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(1, ESituacao.A, findMotivoInativacaoByCodigo(ULTIMO_ACESSO), null, 799);
+                .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
+                .contains(ESituacao.A, findMotivoInativacaoByCodigo(ULTIMO_ACESSO), null, 799);
     }
 
     @Test

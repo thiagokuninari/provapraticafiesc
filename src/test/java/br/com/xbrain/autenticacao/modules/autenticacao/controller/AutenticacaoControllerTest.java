@@ -201,9 +201,9 @@ public class AutenticacaoControllerTest {
     public void getAccessTokenObject_deveGerarHistorico_quandoAutenticar() {
         TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
-        List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(100);
+        List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(101);
         assertTrue(!historico.isEmpty());
-        assertEquals(3, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
+        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
     }
 
     @Test
