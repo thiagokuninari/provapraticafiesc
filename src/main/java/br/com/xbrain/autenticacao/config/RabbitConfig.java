@@ -68,6 +68,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-usuario-equipe-venda}")
     private String inativarUsuarioEquipeVendaMq;
 
+    @Value("${app-config.queue.inativar-colaborador-pol}")
+    private String inativarColaboradorPolMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -91,6 +94,11 @@ public class RabbitConfig {
     @Bean
     Queue inativaUsuarioEquipeVendaMq() {
         return new Queue(inativarUsuarioEquipeVendaMq, false);
+    }
+
+    @Bean
+    Queue inativarColaboradorPolMq() {
+        return new Queue(inativarColaboradorPolMq, false);
     }
 
     @Bean
@@ -246,5 +254,10 @@ public class RabbitConfig {
     @Bean
     public Binding inativaUsuarioBinding(TopicExchange exchange) {
         return BindingBuilder.bind(inativaUsuarioEquipeVendaMq()).to(exchange).with(usuarioAlterarSituacaoMq);
+    }
+
+    @Bean
+    public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
     }
 }

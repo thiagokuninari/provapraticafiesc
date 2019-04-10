@@ -40,7 +40,11 @@ public enum EErrors {
             "#011 - Erro ao tentar inativar o usuário Assistente ou Vendedor na equipe de vendas."),
     ERRO_OBTER_COLABORADORES_DO_AA(
             "#012 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#012 - Erro ao obter os colaboradores do agente autorizado.");
+            "#012 - Erro ao obter os colaboradores do agente autorizado."),
+    ERRO_INATIVAR_COLABORADOR_VENDAS(
+            "#013 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#013 - Erro ao inativar o colaborador de vendas.");
+
     @Getter
     @Setter
     private String descricao;
