@@ -52,8 +52,7 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
-        "classpath:/tests_usuario_historico.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -347,17 +346,16 @@ public class UsuarioServiceIT {
     public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
         service.inativarUsuariosSemAcesso();
 
-        Usuario usuarioInativo = service.findById(601);
+        Usuario usuarioInativo = service.findById(101);
         assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
                 .extracting("id", "motivo", "observacao")
-                .contains(tuple(201, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
+                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
 
         assertEquals(ESituacao.I, usuarioInativo.getSituacao());
-        assertEquals(ESituacao.I, service.findById(600).getSituacao());
-        assertEquals(ESituacao.A, service.findById(800).getSituacao());
-        assertEquals(ESituacao.A, service.findById(799).getSituacao());
+        assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        assertEquals(ESituacao.A, service.findById(100).getSituacao());
         assertEquals(0, service.getUsuariosSemAcesso().size());
-        verify(inativarColaboradorMqSender, times(4)).sendSuccess(anyString());
+        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {
