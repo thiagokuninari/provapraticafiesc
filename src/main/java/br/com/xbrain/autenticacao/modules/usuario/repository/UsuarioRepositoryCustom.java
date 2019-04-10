@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -45,8 +46,6 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
-    List<Integer> getUsuariosPorCidade(Integer idUsuario);
-
     Page<Usuario> findAll(Predicate predicate, Pageable pageable);
 
     Optional<Usuario> findComConfiguracao(Integer usuarioId);
@@ -65,4 +64,6 @@ public interface UsuarioRepositoryCustom {
                                                     List<Integer> areasAtuacaoIds,
                                                     CodigoCargo cargo,
                                                     ECanal canal);
+
+    List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 }

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -37,6 +38,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +83,7 @@ public class UsuarioService {
         "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
 
     @Autowired
+    @Setter
     private UsuarioRepository repository;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -1244,6 +1247,14 @@ public class UsuarioService {
         return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
+                .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> getSubclusterUsuario(Integer usuarioId) {
+        return repository
+                .getSubclustersUsuario(usuarioId)
+                .stream()
+                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
                 .collect(Collectors.toList());
     }
 }

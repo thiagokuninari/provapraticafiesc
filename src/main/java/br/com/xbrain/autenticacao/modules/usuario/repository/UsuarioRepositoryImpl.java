@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
@@ -261,20 +262,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> getUsuariosPorCidade(Integer idUsuario) {
-        QUsuarioCidade usuarioCidadeGeral = new QUsuarioCidade("usuarioCidadeGeral");
-        return new JPAQueryFactory(entityManager)
-                .select(usuarioCidadeGeral.usuario.id)
-                .from(usuarioCidade)
-                .innerJoin(usuarioCidade.cidade.cidadeUsuarios, usuarioCidadeGeral)
-                .where(usuarioCidade.usuario.id.eq(idUsuario)
-                        .and(usuarioCidade.dataBaixa.isNull())
-                        .and(usuarioCidadeGeral.dataBaixa.isNull()))
-                .distinct()
-                .fetch();
-    }
-
-    @Override
     public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
 
         Expression<Cargo> expressionCargo = Projections.fields(Cargo.class,
@@ -414,6 +401,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
                         .and(usuarioCidade.usuario.canais.any().eq(canal))
                         .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
+                .distinct()
+                .fetch();
+    }
+
+    public List<SubCluster> getSubclustersUsuario(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(subCluster)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.cidade, cidade)
+                .innerJoin(cidade.subCluster, subCluster)
+                .where(usuarioCidade.usuario.id.eq(usuarioId)
+                        .and(usuarioCidade.dataBaixa.isNull()))
+                .orderBy(subCluster.nome.asc())
                 .distinct()
                 .fetch();
     }
