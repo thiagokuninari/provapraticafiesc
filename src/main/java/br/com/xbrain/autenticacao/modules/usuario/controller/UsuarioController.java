@@ -71,6 +71,11 @@ public class UsuarioController {
         return usuarioService.findCidadesByUsuario(id);
     }
 
+    @GetMapping(value = "/{id}/subclusters")
+    public List<SelectResponse> getSubclustersUsuario(@PathVariable("id") int usuarioId) {
+        return usuarioService.getSubclusterUsuario(usuarioId);
+    }
+
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
                                          @RequestParam(required = false, defaultValue = "false") boolean incluirProprio) {
