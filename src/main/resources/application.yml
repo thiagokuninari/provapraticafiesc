@@ -105,6 +105,7 @@ app-config:
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
+    inativar-colaborador-pol: inativar-colaborador-pol.queue
 
   oauth-clients:
     autenticacao-api:

@@ -287,13 +287,6 @@ public class Usuario {
         }
     }
 
-    public void adicionar(UsuarioHistorico historico) {
-        if (this.historicos == null) {
-            this.historicos = new ArrayList<>();
-        }
-        this.historicos.add(historico);
-    }
-
     public Set<UsuarioCidade> getCidades() {
         return Collections.unmodifiableSet(this.cidades);
     }
@@ -417,5 +410,13 @@ public class Usuario {
     public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
                 && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
+    }
+
+    public void adicionar(UsuarioHistorico historico) {
+        if (Objects.isNull(this.historicos)) {
+            this.historicos = new ArrayList<>();
+        }
+
+        this.historicos.add(historico);
     }
 }
