@@ -6,6 +6,7 @@
 
 <suppressions>
     <suppress checks="MagicNumberCheck" files="[\\/]test[\\/]"/>
+    <suppress checks="AbbreviationAsWordInName" files="[\\/]test[\\/]"/>
     <suppress checks="." files="[\\/]generated-sources[\\/]"/>
     <suppress checks="." files="com[\\/]xbrain[\\/]autenticacao[\\/]infra[\\/]mensagemWs"/>
     <suppress checks="." files="com[\\/]xbrain[\\/]autenticacao[\\/]modules[\\/]comum[\\/]util[\\/]CsvUtil"/>

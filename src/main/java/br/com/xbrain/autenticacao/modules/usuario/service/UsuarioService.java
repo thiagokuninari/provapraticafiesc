@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -30,15 +31,15 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioHistoricoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,7 +49,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,8 +62,10 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
+@Slf4j
 public class UsuarioService {
 
     private static final int POSICAO_ZERO = 0;
@@ -77,10 +79,11 @@ public class UsuarioService {
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private final Logger log = LoggerFactory.getLogger(UsuarioService.class);
-
+    private static final String MSG_ERRO_AO_INATIVAR_USUARIO =
+        "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
 
     @Autowired
+    @Setter
     private UsuarioRepository repository;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -91,7 +94,7 @@ public class UsuarioService {
     @Autowired
     private NotificacaoService notificacaoService;
     @Autowired
-    private MotivoInativacaoRepository motivoInativacaoRepository;
+    private MotivoInativacaoService motivoInativacaoService;
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
@@ -123,11 +126,15 @@ public class UsuarioService {
     @Autowired
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
     @Autowired
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -263,7 +270,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(Usuario request, MultipartFile foto) {
-        if (!ObjectUtils.isEmpty(foto)) {
+        if (!isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
         return save(request);
@@ -330,7 +337,7 @@ public class UsuarioService {
     }
 
     private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
-        if (!ObjectUtils.isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
+        if (!isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
             if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
                 equipeVendaService.inativarSupervisor(usuario.getId());
             } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
@@ -343,7 +350,7 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
         Usuario usuarioCopia = new Usuario();
         BeanUtils.copyProperties(usuario, usuarioCopia);
-        if (!ObjectUtils.isEmpty(repository.findAllByCpf(usuario.getCpf()))
+        if (!isEmpty(repository.findAllByCpf(usuario.getCpf()))
                 && usuario.getSituacao().equals(ESituacao.A)) {
             usuarioCopia.setSenha(repository.findById(usuario.getId())
                     .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
@@ -427,8 +434,8 @@ public class UsuarioService {
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
-        if (!ObjectUtils.isEmpty(usuario)
-                && !ObjectUtils.isEmpty(usuario.getUsuariosHierarquia())) {
+        if (!isEmpty(usuario)
+                && !isEmpty(usuario.getUsuariosHierarquia())) {
 
             usuario.getUsuariosHierarquia()
                     .forEach(user -> processarHierarquia(usuario, user, new ArrayList<>()));
@@ -470,10 +477,10 @@ public class UsuarioService {
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
-        return !ObjectUtils.isEmpty(usuarioParaAchar)
-                && !ObjectUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-                && !ObjectUtils.isEmpty(usuario)
-                && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
+        return !isEmpty(usuarioParaAchar)
+                && !isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+                && !isEmpty(usuario)
+                && !isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -485,7 +492,7 @@ public class UsuarioService {
         return usuario.getUsuariosHierarquia()
                 .stream()
                 .map(UsuarioHierarquia::getUsuarioSuperiorId)
-                .filter(item -> !ObjectUtils.isEmpty(item))
+                .filter(item -> !isEmpty(item))
                 .collect(Collectors.toList());
     }
 
@@ -710,7 +717,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (ObjectUtils.isEmpty(usuario.getId())
+                    if (isEmpty(usuario.getId())
                             || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("CPF já cadastrado.");
                     }
@@ -721,7 +728,7 @@ public class UsuarioService {
         repository
                 .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
                 .ifPresent(u -> {
-                    if (ObjectUtils.isEmpty(usuario.getId())
+                    if (isEmpty(usuario.getId())
                             || !usuario.getId().equals(u.getId())) {
                         throw new ValidacaoException("Email já cadastrado.");
                     }
@@ -736,8 +743,8 @@ public class UsuarioService {
         Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        if (!ObjectUtils.isEmpty(usuario.getCpf())) {
-            if (situacaoAtiva(usuario.getEmail()) || !usuario.isAgenteAutorizado()) {
+        if (!isEmpty(usuario.getCpf())) {
+            if (situacaoAtiva(usuario.getEmail())) {
                 usuario.adicionar(UsuarioHistorico.builder()
                         .dataCadastro(LocalDateTime.now())
                         .usuario(usuario)
@@ -772,8 +779,7 @@ public class UsuarioService {
         usuario.setSituacao(ESituacao.I);
         MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
 
-        Usuario usuarioInativacao = !ObjectUtils.isEmpty(dto.getIdUsuarioInativacao())
-                ? new Usuario(dto.getIdUsuarioInativacao())
+        Usuario usuarioInativacao = !isEmpty(dto.getIdUsuarioInativacao()) ? new Usuario(dto.getIdUsuarioInativacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
         usuario.adicionar(UsuarioHistorico.builder()
@@ -796,32 +802,31 @@ public class UsuarioService {
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
-        motivoInativacaoRepository.findByCodigo(CodigoMotivoInativacao.INATIVADO_SEM_ACESSO)
-                .ifPresent(motivo -> getUsuariosSemAcesso().forEach(usuario -> {
-                    usuario = findComplete(usuario.getId());
-                    usuario.setSituacao(ESituacao.I);
-                    usuario.adicionar(UsuarioHistorico.builder()
-                            .dataCadastro(LocalDateTime.now())
-                            .motivoInativacao(motivo)
-                            .usuario(usuario)
-                            .usuarioAlteracao(usuario)
-                            .observacao("Inativado por falta de acesso")
-                            .situacao(ESituacao.I)
-                            .build());
-                    repository.save(usuario);
-                }));
+        this.getUsuariosSemAcesso().forEach(usuario -> {
+            try {
+                usuario.setSituacao(ESituacao.I);
+                usuarioHistoricoService.gerarHistoricoUsuarioInativado(usuario);
+                repository.save(usuario);
+
+                inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+            } catch (Exception exception) {
+                log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
+            }
+        });
     }
 
     public List<Usuario> getUsuariosSemAcesso() {
-        return usuarioHistoricoRepository.getUsuariosSemAcesso();
+        return usuarioHistoricoRepository.getUsuariosPorTempoDeInatividade(toPredicate().build());
+    }
+
+    private UsuarioHistoricoPredicate toPredicate() {
+        return new UsuarioHistoricoPredicate()
+                .comDataCadastro();
     }
 
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
-        if (dto.getIdMotivoInativacao() != null) {
-            return new MotivoInativacao(dto.getIdMotivoInativacao());
-        }
-        return motivoInativacaoRepository.findByCodigo(dto.getCodigoMotivoInativacao())
-                .orElseThrow(() -> new ValidacaoException("Motivo de inativação não encontrado."));
+        return !isEmpty(dto.getIdMotivoInativacao()) ? new MotivoInativacao(dto.getIdMotivoInativacao()) :
+                motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
@@ -1003,12 +1008,12 @@ public class UsuarioService {
     @Transactional
     public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario;
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+        if (isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
             usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+        if (isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
                 || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
@@ -1241,6 +1246,14 @@ public class UsuarioService {
         return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
                 .stream()
                 .map(row -> objectToInteger(row[POSICAO_ZERO]))
+                .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> getSubclusterUsuario(Integer usuarioId) {
+        return repository
+                .getSubclustersUsuario(usuarioId)
+                .stream()
+                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
                 .collect(Collectors.toList());
     }
 }

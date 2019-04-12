@@ -105,6 +105,7 @@ app-config:
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
+    inativar-colaborador-pol: inativar-colaborador-pol.queue
 
   oauth-clients:
     autenticacao-api:
@@ -131,9 +132,6 @@ app-config:
     mailing-importacao-api:
       client: mailing-importacao-api
       secret: m41l1ng1mp0rt4c404p1
-    mailing-acompanhamento-api:
-      client: mailing-acompanhamento-api
-      secret: m41l1ng4c0mp4nh4m3nt04p1
     call-api:
       client: call-api
       secret: c4ll4p1

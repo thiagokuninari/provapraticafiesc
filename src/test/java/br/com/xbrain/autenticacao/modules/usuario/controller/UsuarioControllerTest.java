@@ -45,8 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioControllerTest {
 
-    private static final int ID_USUARIO_HELPDESK = 101;
-
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -288,6 +286,18 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$[0].canais", hasSize(2)))
                 .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
                 .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
+    }
+
+    @Test
+    public void getSubclustersUsuario_deveRetornarOsSubclusters_conformeUsuarioIdInformado() throws Exception {
+        mvc.perform(get("/api/usuarios/100/subclusters")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].value", is(189)))
+                .andExpect(jsonPath("$[0].label", is("LONDRINA")));
+
     }
 
     private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {

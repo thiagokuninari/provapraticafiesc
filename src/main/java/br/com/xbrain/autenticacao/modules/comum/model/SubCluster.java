@@ -4,7 +4,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EAreaAtuacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -13,6 +16,9 @@ import java.util.List;
 @Entity
 @Table(name = "SUB_CLUSTER")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SubCluster implements AreaAtuacao {
 
     @Id
@@ -38,18 +44,12 @@ public class SubCluster implements AreaAtuacao {
     @OneToMany(mappedBy = "subCluster", fetch = FetchType.LAZY)
     private List<Cidade> cidades;
 
-    public SubCluster() {
-    }
-
-    public SubCluster(Integer id) {
-        this.id = id;
-    }
-
-    public SubCluster(Integer id, String nome, Cluster cluster, ESituacao situacao) {
-        this.id = id;
-        this.nome = nome;
-        this.cluster = cluster;
-        this.situacao = situacao;
+    public static SubCluster of(Integer id, String nome) {
+        return SubCluster
+                .builder()
+                .id(id)
+                .nome(nome)
+                .build();
     }
 
     @JsonIgnore
