@@ -42,8 +42,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -219,6 +221,27 @@ public class UsuarioServiceIT {
                     }
                 });
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
+    }
+
+    @Test
+    public void updateFromQueue_deveAlterarCpf_seNovoCpfValido() throws Exception {
+        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        usuarioMqRequest.setId(368);
+        usuarioMqRequest.setCpf("43185104099");
+        service.updateFromQueue(usuarioMqRequest);
+        Usuario usuario = usuarioRepository
+                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+        assertNotNull(usuario);
+    }
+
+    @Test
+    public void updateFromQueue_deveLancarException_seNovoCpfInvalido() throws Exception {
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setId(368);
+        usuarioDto.setCpf("41842888803");
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+                .withMessage("CPF já cadastrado.");
     }
 
     @Test
