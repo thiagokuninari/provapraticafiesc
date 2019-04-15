@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -585,10 +586,13 @@ public class UsuarioService {
     }
 
     public boolean isAlteracaoCpf(Usuario usuario) {
+        boolean alteracao = false;
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
                 .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
-        return usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
+        return !ObjectUtils.isEmpty(usuario.getCpf())
+            || (!usuario.getCpf().equals(usuarioCpfAntigo.getCpf())
+            && usuario.getId().equals(usuarioCpfAntigo.getId()));
     }
 
     @Transactional
