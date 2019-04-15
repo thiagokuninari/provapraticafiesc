@@ -28,6 +28,7 @@
         <xbrain-utils.version>0.2.1</xbrain-utils.version>
         <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
         <glassfish.jaxb.version>2.4.0-b180830.0438</glassfish.jaxb.version>
+        <assertj-core.version>3.12.2</assertj-core.version>
     </properties>
 
     <dependencies>
@@ -92,7 +93,12 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.jsr310.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Database -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
