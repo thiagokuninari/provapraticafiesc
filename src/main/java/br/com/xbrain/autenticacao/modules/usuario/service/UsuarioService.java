@@ -62,6 +62,7 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static org.hibernate.annotations.common.util.StringHelper.isEmpty;
 
 @Service
 public class UsuarioService {
@@ -579,9 +580,11 @@ public class UsuarioService {
 
     public boolean isAlteracaoCpf(Usuario usuario) {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
-        return usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
+        return !isEmpty(usuario.getCpf())
+                || !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())
+                && usuario.getId().equals(usuarioCpfAntigo.getId());
     }
 
     @Transactional
