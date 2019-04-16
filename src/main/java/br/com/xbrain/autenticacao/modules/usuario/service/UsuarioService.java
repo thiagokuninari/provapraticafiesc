@@ -589,8 +589,8 @@ public class UsuarioService {
                 .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
         boolean isAlteracao = false;
-        if (!isEmpty(usuario.getCpf()) &&
-                !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())) {
+        if (!isEmpty(usuario.getCpf())
+                && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())) {
             isAlteracao = true;
         }
         return isAlteracao;
