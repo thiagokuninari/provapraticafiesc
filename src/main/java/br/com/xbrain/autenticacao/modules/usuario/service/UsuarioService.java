@@ -571,7 +571,7 @@ public class UsuarioService {
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            if (isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
+            if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
             } else {
@@ -588,9 +588,12 @@ public class UsuarioService {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
                 .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
-        return !isEmpty(usuario.getCpf())
-                || !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())
-                && usuario.getId().equals(usuarioCpfAntigo.getId());
+        boolean isAlteracao = false;
+        if (!isEmpty(usuario.getCpf()) &&
+            !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())) {
+            isAlteracao = true;
+        }
+        return isAlteracao;
     }
 
     @Transactional
