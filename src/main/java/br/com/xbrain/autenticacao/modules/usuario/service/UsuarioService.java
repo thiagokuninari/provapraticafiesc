@@ -571,13 +571,33 @@ public class UsuarioService {
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
-            configurarUsuario(usuarioMqRequest, usuarioDto);
-            save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+            if (isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
+                configurarUsuario(usuarioMqRequest, usuarioDto);
+                save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+            } else {
+                saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
+            }
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
             log.error("erro ao atualizar usuário da fila.", ex);
         }
+    }
+
+    public boolean isAlteracaoCpf(Usuario usuario) {
+        Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
+                .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+        usuario.removerCaracteresDoCpf();
+        return !isEmpty(usuario.getCpf())
+                || !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())
+                && usuario.getId().equals(usuarioCpfAntigo.getId());
+    }
+
+    @Transactional
+    public void saveUsuarioAlteracaoCpf(Usuario usuario) {
+        validarCpfExistente(usuario);
+        usuario.removerCaracteresDoCpf();
+        repository.updateCpf(usuario.getCpf(), usuario.getId());
     }
 
     @Transactional
