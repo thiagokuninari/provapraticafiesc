@@ -588,12 +588,7 @@ public class UsuarioService {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
                 .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
-        boolean isAlteracao = false;
-        if (!isEmpty(usuario.getCpf())
-                && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())) {
-            isAlteracao = true;
-        }
-        return isAlteracao;
+        return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
     @Transactional
