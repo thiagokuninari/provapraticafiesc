@@ -295,9 +295,7 @@ public class Usuario {
         if (CollectionUtils.isEmpty(this.cidades)) {
             this.cidades = new HashSet<>();
         }
-        if (!this.cidades.contains(usuarioCidade)) {
-            this.cidades.add(usuarioCidade);
-        }
+        this.cidades.add(usuarioCidade);
     }
 
     public void adicionarHierarquia(UsuarioHierarquia usuarioHierarquia) {
