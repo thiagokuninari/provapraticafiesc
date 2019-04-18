@@ -10,18 +10,29 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlteracaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlterarSenhaDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +49,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +58,11 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -356,6 +372,89 @@ public class UsuarioServiceIT {
         assertEquals(ESituacao.A, service.findById(100).getSituacao());
         assertEquals(0, service.getUsuariosSemAcesso().size());
         verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
+    }
+
+    @Test
+    public void save_cidadesAdicionadas_QuandoAdicionarNovasCidadesEManterACidadeExistente() {
+        var usuario = service.findById(100);
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 2466, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3022, 100));
+        service.save(usuario);
+        var usuarioComNovasCidades = service.findById(100);
+        assertThat(usuarioComNovasCidades.getCidades())
+                .hasSize(5)
+                .extracting("usuario.id", "cidade.id")
+                .containsExactlyInAnyOrder(
+                        tuple(100, 5578),
+                        tuple(100, 3237),
+                        tuple(100, 1443),
+                        tuple(100, 2466),
+                        tuple(100, 3022));
+    }
+
+    @Test
+    public void save_cidadesAdicionadasERemovidas_QuandoAdicionarNovasCidadesERemoverACidadeExistente() {
+        var usuario = service.findById(100);
+        usuario.setCidades(Sets.newHashSet(
+                Arrays.asList(
+                        UsuarioCidade.criar(usuario, 3237, 100),
+                        UsuarioCidade.criar(usuario, 1443, 100),
+                        UsuarioCidade.criar(usuario, 2466, 100),
+                        UsuarioCidade.criar(usuario, 3022, 100))));
+        service.save(usuario);
+        var usuarioComCidadesAtualizadas = service.findById(100);
+        assertThat(usuarioComCidadesAtualizadas.getCidades())
+                .hasSize(4)
+                .extracting("usuario.id", "cidade.id")
+                .containsExactlyInAnyOrder(
+                        tuple(100, 3237),
+                        tuple(100, 1443),
+                        tuple(100, 2466),
+                        tuple(100, 3022));
+    }
+
+    @Test
+    public void save_cidadesRemovidas_QuandoRemoverAsCidadesExistentes() {
+        var usuario = service.findById(100);
+        usuario.setCidades(Sets.newHashSet());
+        service.save(usuario);
+        var usuarioComCidadesRemovidas = service.findById(100);
+        assertThat(usuarioComCidadesRemovidas.getCidades()).isEmpty();
+    }
+
+    @Test
+    public void save_cidadesNaoAlteradas_QuandoAdicionarUmaCidadeJaExistente() {
+        var usuario = service.findById(100);
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 5578, 100));
+        service.save(usuario);
+        var usuarioAtualizado = service.findById(100);
+        assertThat(usuarioAtualizado.getCidades())
+                .hasSize(1)
+                .extracting("usuario.id", "cidade.id")
+                .containsExactlyInAnyOrder(
+                        tuple(100, 5578));
+    }
+
+    @Test
+    public void save_cidadesAdicionadas_QuandoAdicionarCidadesAUmUsuarioSemCidades() {
+        var usuario = service.findById(101);
+        assertThat(usuario.getCidades()).isEmpty();
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 2466, 100));
+        usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3022, 100));
+        service.save(usuario);
+        var usuarioComNovasCidades = service.findById(101);
+        assertThat(usuarioComNovasCidades.getCidades())
+                .hasSize(4)
+                .extracting("usuario.id", "cidade.id")
+                .containsExactlyInAnyOrder(
+                        tuple(101, 3237),
+                        tuple(101, 1443),
+                        tuple(101, 2466),
+                        tuple(101, 3022));
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {
