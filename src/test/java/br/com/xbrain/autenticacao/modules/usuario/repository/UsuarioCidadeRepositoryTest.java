@@ -19,15 +19,14 @@ public class UsuarioCidadeRepositoryTest {
     private UsuarioCidadeRepository repository;
 
     @Test
-    public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_QuandoEncontrarCidadesPorUsuarioId() {
+    public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(100))
                 .hasSize(5)
                 .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617);
     }
 
     @Test
-    public void findCidadesIdByUsuarioId_deveRetornarUmaListaVazia_QuandoNaoEncontrarCidadesPorUsuarioId() {
-        assertThat(repository.findCidadesIdByUsuarioId(999))
-                .hasSize(0);
+    public void findCidadesIdByUsuarioId_deveRetornarUmaListaVazia_quandoNaoEncontrarCidadesPorUsuarioId() {
+        assertThat(repository.findCidadesIdByUsuarioId(999)).isEmpty();
     }
 }

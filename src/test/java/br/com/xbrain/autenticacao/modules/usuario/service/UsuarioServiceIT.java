@@ -54,7 +54,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -151,7 +151,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveAlterarOEmailDoUsuario() throws Exception {
+    public void deveAlterarOEmailDoUsuario() {
         UsuarioAlteracaoRequest usuarioAlteracaoRequest = new UsuarioAlteracaoRequest();
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setEmail("EMAILALTERADO@XBRAIN.COM.BR");
@@ -214,7 +214,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() throws Exception {
+    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
@@ -222,7 +222,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() throws Exception {
+    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() {
         UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
         usuarioMqRequest.setId(368);
         service.updateFromQueue(usuarioMqRequest);
@@ -238,7 +238,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void updateFromQueue_NaoRealocaUsuario_QuandoSituacaoForInativa() throws Exception {
+    public void updateFromQueue_naoRealocaUsuario_quandoSituacaoForInativa() {
         service.updateFromQueue(umUsuarioInativo());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
         Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
@@ -246,7 +246,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void updateFromQueue_NaoRealocaUsuario_QuandoAFlagRealocadoForFalse() throws Exception {
+    public void updateFromQueue_naoRealocaUsuario_quandoAFlagRealocadoForFalse() {
         UsuarioMqRequest naoRealocar = umUsuarioARealocar();
         naoRealocar.setRealocado(false);
         service.updateFromQueue(naoRealocar);
@@ -257,7 +257,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() throws Exception {
+    public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
@@ -267,7 +267,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveAlterarSenhaUsuario() throws Exception {
+    public void deveAlterarSenhaUsuario() {
         UsuarioAlterarSenhaDto usuarioAlterarSenhaDto = new UsuarioAlterarSenhaDto();
         usuarioAlterarSenhaDto.setUsuarioId(100);
         usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
@@ -284,7 +284,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() throws Exception {
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
                 + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
@@ -294,7 +294,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() throws Exception {
+    public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
                 + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
@@ -304,7 +304,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() throws Exception {
+    public void deveGerarExcessaoNaHierarquiaPeloUsuarioSerSeuSuperior() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível atrelar o próprio usuário em sua Hierarquia.");
         Usuario usuario = umUsuarioComProprioUsuarioComoSuperior();
@@ -313,7 +313,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void deveEditarHierarquiaSemExceptions() throws Exception {
+    public void deveEditarHierarquiaSemExceptions() {
         Usuario usuario = umUsuarioComHierarquia();
         service.hierarquiaIsValida(usuario);
 
@@ -375,7 +375,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void save_cidadesAdicionadas_QuandoAdicionarNovasCidadesEManterACidadeExistente() {
+    public void save_cidadesAdicionadas_quandoAdicionarNovasCidadesEManterACidadeExistente() {
         var usuario = service.findById(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
@@ -395,7 +395,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void save_cidadesAdicionadasERemovidas_QuandoAdicionarNovasCidadesERemoverACidadeExistente() {
+    public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
         var usuario = service.findById(100);
         usuario.setCidades(Sets.newHashSet(
                 Arrays.asList(
@@ -416,7 +416,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void save_cidadesRemovidas_QuandoRemoverAsCidadesExistentes() {
+    public void save_cidadesRemovidas_quandoRemoverAsCidadesExistentes() {
         var usuario = service.findById(100);
         usuario.setCidades(Sets.newHashSet());
         service.save(usuario);
@@ -425,7 +425,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void save_cidadesNaoAlteradas_QuandoAdicionarUmaCidadeJaExistente() {
+    public void save_cidadesNaoAlteradas_quandoAdicionarUmaCidadeJaExistente() {
         var usuario = service.findById(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 5578, 100));
         service.save(usuario);
@@ -438,7 +438,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void save_cidadesAdicionadas_QuandoAdicionarCidadesAUmUsuarioSemCidades() {
+    public void save_cidadesAdicionadas_quandoAdicionarCidadesAUmUsuarioSemCidades() {
         var usuario = service.findById(101);
         assertThat(usuario.getCidades()).isEmpty();
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
