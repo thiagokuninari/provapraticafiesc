@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface UsuarioCidadeRepository extends PagingAndSortingRepository<UsuarioCidade, Integer> {
+public interface UsuarioCidadeRepository extends PagingAndSortingRepository<UsuarioCidade, Integer>,
+        UsuarioCidadeRepositoryCustom {
 
     @Modifying
     @Query("delete from UsuarioCidade c WHERE c.cidade.id = ?1 AND c.usuario.id = ?2")

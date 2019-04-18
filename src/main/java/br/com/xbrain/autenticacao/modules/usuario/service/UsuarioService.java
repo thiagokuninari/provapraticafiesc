@@ -28,16 +28,61 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlteracaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlterarSenhaDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoSaveDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeVendasDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaCarteiraDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqAtualizacaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Configuracao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioHistoricoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.xbrainutils.CsvUtils;
+import com.google.common.collect.Sets;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -47,7 +92,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,16 +100,24 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static java.util.Collections.emptyList;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 @Slf4j
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioService {
 
     private static final int POSICAO_ZERO = 0;
@@ -214,7 +266,7 @@ public class UsuarioService {
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
-        if (!CollectionUtils.isEmpty(pages.getContent())) {
+        if (!isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
         return pages;
@@ -315,7 +367,7 @@ public class UsuarioService {
 
             validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
-            tratarCidadesUsuario(usuario, usuario.getCidadesId());
+            tratarCidadesUsuario(usuario);
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
@@ -409,7 +461,7 @@ public class UsuarioService {
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (CollectionUtils.isEmpty(hierarquiasId)) {
+        if (isEmpty(hierarquiasId)) {
             usuario.getUsuariosHierarquia().clear();
         } else {
             usuario.getUsuariosHierarquia()
@@ -421,13 +473,13 @@ public class UsuarioService {
         Set<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
                 .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
                 .collect(Collectors.toSet());
-        if (!CollectionUtils.isEmpty(subordinados)) {
+        if (!isEmpty(subordinados)) {
             usuarioHierarquiaRepository.delete(subordinados);
         }
     }
 
     private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!CollectionUtils.isEmpty(hierarquiasId)) {
+        if (!isEmpty(hierarquiasId)) {
             hierarquiasId
                     .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
         }
@@ -517,26 +569,21 @@ public class UsuarioService {
         });
     }
 
-    private void tratarCidadesUsuario(Usuario usuario, List<Integer> cidadesId) {
-        removerUsuarioCidade(usuario, cidadesId);
-        adicionarUsuarioCidade(usuario, cidadesId);
+    private void tratarCidadesUsuario(Usuario usuario) {
+        var cidadesAtuais = Sets.newHashSet(usuarioCidadeRepository.findCidadesIdByUsuarioId(usuario.getId()));
+        var cidadesModificadas = Sets.newHashSet(isEmpty(usuario.getCidadesId()) ? emptyList() : usuario.getCidadesId());
+        var cidadesRemovidas = Sets.difference(cidadesAtuais, cidadesModificadas);
+        var cidadesAdicionadas = Sets.difference(cidadesModificadas, cidadesAtuais);
+        removerUsuarioCidade(usuario, cidadesRemovidas);
+        adicionarUsuarioCidade(usuario, cidadesAdicionadas);
     }
 
-    private void removerUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (CollectionUtils.isEmpty(cidadesId) && !CollectionUtils.isEmpty(usuario.getCidades())) {
-            usuarioCidadeRepository.deleteByUsuario(usuario.getId());
-
-        } else if (!CollectionUtils.isEmpty(usuario.getCidades())) {
-            usuario.getCidades().forEach(c -> {
-                if (!cidadesId.contains(c.getCidade().getId())) {
-                    usuarioCidadeRepository.deleteByCidadeAndUsuario(c.getCidade().getId(), usuario.getId());
-                }
-            });
-        }
+    private void removerUsuarioCidade(Usuario usuario, Set<Integer> cidadesId) {
+        cidadesId.forEach(cidadeId -> usuarioCidadeRepository.deleteByCidadeAndUsuario(cidadeId, usuario.getId()));
     }
 
-    private void adicionarUsuarioCidade(Usuario usuario, List<Integer> cidadesId) {
-        if (!CollectionUtils.isEmpty(cidadesId)) {
+    private void adicionarUsuarioCidade(Usuario usuario, Set<Integer> cidadesId) {
+        if (!isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                     criarUsuarioCidade(usuario, idCidade)));
             repository.save(usuario);
