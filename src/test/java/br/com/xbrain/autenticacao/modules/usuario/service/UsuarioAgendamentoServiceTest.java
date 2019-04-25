@@ -10,11 +10,11 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoListagemResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoUsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.DistribuirTabulacoesMqSender;
+import org.assertj.core.matcher.AssertionMatcher;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.AgendamentoHelpers.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -48,10 +48,10 @@ public class UsuarioAgendamentoServiceTest {
     private ColaboradorVendasService colaboradorVendasService;
     @MockBean
     private TabulacaoService tabulacaoService;
+    @MockBean
+    private DistribuirTabulacoesMqSender distribuirTabulacoesMqSender;
     @Autowired
     private UsuarioAgendamentoService usuarioAgendamentoService;
-    @Rule
-    public ExpectedException quantidadeException = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -65,8 +65,6 @@ public class UsuarioAgendamentoServiceTest {
                 .thenReturn(agendamentosDoAA1400());
         when(tabulacaoService.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(eq(150)))
                 .thenReturn(Collections.singletonList(new AgendamentoAgenteAutorizadoResponse(1500, 333L)));
-        when(tabulacaoService.distribuirAgendamentosProprietariosDoUsuario(any(TabulacaoDistribuicaoRequest.class)))
-                .thenAnswer(TABULACAO_ANSWER);
         when(agenteAutorizadoService.getAgentesAutorizadosPermitidos())
                 .thenReturn(agentesAutorizadosPermitidos());
         when(agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(eq(1300), any()))
@@ -82,17 +80,35 @@ public class UsuarioAgendamentoServiceTest {
 
     @Test
     public void distribuirAgendamentosDoUsuario_deveLancarExcecao_seQuantidadeForEnviadaForDiferenteDoTotal() {
-        quantidadeException.expect(ValidacaoException.class);
-        quantidadeException.expectMessage("Quantidade de agendamentos enviada é inválida.");
-
-        usuarioAgendamentoService.distribuirAgendamentosDoUsuario(umAgendamentoDistribuicaoRequestDoUsuario140());
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> usuarioAgendamentoService.distribuirAgendamentosDoUsuario(
+                        umAgendamentoDistribuicaoRequestDoUsuario140()))
+                .withMessage("Quantidade de agendamentos enviada é inválida.");
     }
 
     @Test
     public void distribuirAgendamentosDoUsuario_deveDistribuirTabulacoes_seQuantidadeForValida() {
         usuarioAgendamentoService.distribuirAgendamentosDoUsuario(umAgendamentoDistribuicaoRequestDoUsuario141());
-        verify(tabulacaoService, times(1)).getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(any());
-        verify(tabulacaoService, times(1)).distribuirAgendamentosProprietariosDoUsuario(any());
+        verify(tabulacaoService, times(1)).getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(argThat(new AssertionMatcher<>() {
+            @Override
+            public void assertion(Integer usuarioId) throws AssertionError {
+                assertThat(usuarioId).isEqualTo(141);
+            }
+        }));
+        verify(distribuirTabulacoesMqSender, times(1)).distribuirTabulacoes(argThat(new AssertionMatcher<>() {
+            @Override
+            public void assertion(TabulacaoDistribuicaoMqRequest request) throws AssertionError {
+                assertThat(request)
+                    .extracting("agenteAutorizadoId", "usuarioOrigemId")
+                    .containsExactly(1400, 141);
+                assertThat(request.getColaboradores())
+                    .extracting("id", "nome", "quantidade")
+                    .containsExactlyInAnyOrder(
+                            tuple(140, "USUARIO 140", 5L),
+                            tuple(142, "USUARIO 142", 5L),
+                            tuple(143, "USUARIO 143", 4L));
+            }
+        }));
     }
 
     @Test

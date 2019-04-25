@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -98,12 +99,10 @@ public class AgenteAutorizadoService {
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(Integer aaId, Integer usuarioId) {
         try {
             return agenteAutorizadoClient.getUsuariosByAaIdCanalDoUsuario(aaId, usuarioId);
-        } catch (RetryableException ex) {
+        } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
@@ -116,12 +115,10 @@ public class AgenteAutorizadoService {
     public List<AgenteAutorizadoPermitidoResponse> getAgentesAutorizadosPermitidos() {
         try {
             return agenteAutorizadoClient.getAgentesAutorizadosPermitidos();
-        } catch (RetryableException ex) {
+        } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_AA_BY_CNPJ);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 

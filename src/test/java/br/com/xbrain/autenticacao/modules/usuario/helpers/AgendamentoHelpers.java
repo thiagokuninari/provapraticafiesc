@@ -4,19 +4,15 @@ import br.com.xbrain.autenticacao.modules.mailing.dto.AgendamentoAgenteAutorizad
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoListagemResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoUsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoResponse;
 import org.assertj.core.api.Condition;
-import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class AgendamentoHelpers {
     public static final Function<Long, Condition<Long>> QUANTIDADE_IGUAL_A = (valor) -> new Condition<Long>() {
@@ -25,20 +21,6 @@ public class AgendamentoHelpers {
             return value.equals(valor);
         }
     };
-
-    public static final Answer<List<TabulacaoDistribuicaoResponse>> TABULACAO_ANSWER =
-        invocationOnMock -> {
-            TabulacaoDistribuicaoRequest argument = invocationOnMock.getArgumentAt(0, TabulacaoDistribuicaoRequest.class);
-            return argument.getColaboradores()
-                    .stream()
-                    .map(u -> new TabulacaoDistribuicaoResponse(
-                            u.getId(),
-                            IntStream.range(0, u.getQuantidade().intValue())
-                                    .map(i -> i + 10000 + u.getId())
-                                    .boxed()
-                                    .collect(Collectors.toList())))
-                    .collect(Collectors.toList());
-        };
 
     public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosDoAgenteAutorizado1400() {
         return Arrays.asList(
@@ -153,13 +135,10 @@ public class AgendamentoHelpers {
                 .build();
     }
 
-    public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosDoAgenteAutorizado1500() {
-        return IntStream.range(150, 159)
-                .mapToObj(i ->
-                        UsuarioAgenteAutorizadoAgendamentoResponse.builder()
-                                .id(i)
-                                .nome("USUARIO DO AA 1500 - " + i)
-                                .build())
-                .collect(Collectors.toList());
+    public static List<AgendamentoDistribuicaoListagemResponse> agendamentoDistribuicaoListagemResponse() {
+        return Arrays.asList(
+                new AgendamentoDistribuicaoListagemResponse(1400, "123.456-789/0001-12", "EV", "SUPERVISOR A", 0L, 0L, List.of()),
+                new AgendamentoDistribuicaoListagemResponse(1401, "123.456-790/0001-12", "IV", "SUPERVISOR B", 1L, 1L, List.of())
+        );
     }
 }

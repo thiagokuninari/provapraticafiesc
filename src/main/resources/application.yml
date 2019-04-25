@@ -106,6 +106,7 @@ app-config:
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
+    distribuir-tabulacoes: distribuir-tabulacoes.queue
 
   oauth-clients:
     autenticacao-api:
@@ -154,12 +155,12 @@ app-config:
       #url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      #url: http://localhost:8099
+      # url: http://localhost:8099
     vendas:
-      #url: http://localhost:8097
+      # url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-      #url: http://localhost:8095
+      # url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
@@ -169,7 +170,6 @@ flyway:
   enabled: true
   out-of-order: true
   baseline-on-migrate: true
-  out-of-order: true
 
 zuul:
   ignored-headers: Access-Control-Allow-Credentials, Access-Control-Allow-Origin

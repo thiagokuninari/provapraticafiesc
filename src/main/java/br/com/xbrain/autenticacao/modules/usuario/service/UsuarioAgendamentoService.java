@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.DistribuirTabulacoesMqSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class UsuarioAgendamentoService {
     private final AgenteAutorizadoService agenteAutorizadoService;
     private final TabulacaoService tabulacaoService;
     private final ColaboradorVendasService colaboradorVendasService;
+    private final DistribuirTabulacoesMqSender distribuirTabulacoesMqSender;
 
     public List<AgendamentoDistribuicaoListagemResponse> getAgendamentoDistribuicaoDoUsuario(Integer usuarioId) {
         Map<Integer, Long> agendamentos =
@@ -105,16 +107,12 @@ public class UsuarioAgendamentoService {
             throw new ValidacaoException("Quantidade de agendamentos enviada é inválida.");
         }
 
-        List<TabulacaoDistribuicaoResponse> tabulacoesDistribuidas =
-                tabulacaoService.distribuirAgendamentosProprietariosDoUsuario(new TabulacaoDistribuicaoRequest(
-                    request.getAgenteAutorizadoId(),
-                    request.getUsuarioOrigemId(),
-                    request.getAgendamentosPorUsuario(),
-                    usuarioAutenticado.getId(),
-                    usuarioAutenticado.getNome()));
-
-        System.out.println(tabulacoesDistribuidas);
-        // TODO: Enviar as tabulações distribuidas para o vendas
+        distribuirTabulacoesMqSender.distribuirTabulacoes(new TabulacaoDistribuicaoMqRequest(
+                request.getAgenteAutorizadoId(),
+                request.getUsuarioOrigemId(),
+                request.getAgendamentosPorUsuario(),
+                usuarioAutenticado.getId(),
+                usuarioAutenticado.getNome()));
     }
 
     private boolean isQuantidadeAgendamentosValida(Integer aaId, Integer usuarioOrigemId, long totalAgendamentosEnviados) {

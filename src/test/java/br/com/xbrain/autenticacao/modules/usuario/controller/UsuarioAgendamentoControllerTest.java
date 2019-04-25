@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.mailing.service.TabulacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.TabulacaoDistribuicaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,15 +18,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.AgendamentoHelpers.*;
 import static helpers.TestsHelper.convertObjectToJsonString;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.HELP_DESK;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,23 +48,13 @@ public class UsuarioAgendamentoControllerTest {
     private ColaboradorVendasService colaboradorVendasService;
     @MockBean
     private TabulacaoService tabulacaoService;
-    @Autowired
+    @MockBean
     private UsuarioAgendamentoService usuarioAgendamentoService;
 
     @Before
     public void setup() {
-        when(tabulacaoService.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(eq(140)))
-                .thenReturn(agendamentosDoAA1400());
-        when(tabulacaoService.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(eq(141)))
-                .thenReturn(agendamentosDoAA1400());
-        when(tabulacaoService.distribuirAgendamentosProprietariosDoUsuario(any(TabulacaoDistribuicaoRequest.class)))
-                .thenAnswer(TABULACAO_ANSWER);
-        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos())
-                .thenReturn(agentesAutorizadosPermitidos());
-        when(agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(eq(1400), any()))
-                .thenReturn(usuariosDoAgenteAutorizado1400());
-        when(colaboradorVendasService.getEquipeVendasSupervisorDoUsuarioId(any()))
-                .thenReturn(Optional.ofNullable(umaEquipeVendaAgendamentoRespose()));
+        when(usuarioAgendamentoService.getAgendamentoDistribuicaoDoUsuario(eq(140)))
+                .thenReturn(agendamentoDistribuicaoListagemResponse());
     }
 
     @Test
@@ -86,7 +72,9 @@ public class UsuarioAgendamentoControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].agenteAutorizadoId", is(1400)))
-                .andExpect(jsonPath("$[0].quantidadeAgendamentos", is(14)));
+                .andExpect(jsonPath("$[0].quantidadeAgendamentos", is(0)))
+                .andExpect(jsonPath("$[1].agenteAutorizadoId", is(1401)))
+                .andExpect(jsonPath("$[1].quantidadeAgendamentos", is(1)));
     }
 
     @Test
@@ -99,11 +87,11 @@ public class UsuarioAgendamentoControllerTest {
     }
 
     @Test
-    public void distribuirAgendamentosDoUsuario_deveRetornar204_sePossuirPermissao() throws Exception {
+    public void distribuirAgendamentosDoUsuario_deveRetornar200_sePossuirPermissao() throws Exception {
         mvc.perform(post(URL_USUARIOS_AGENDAMENTOS)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .content(convertObjectToJsonString(umAgendamentoDistribuicaoRequestDoUsuario141())))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
     }
 }

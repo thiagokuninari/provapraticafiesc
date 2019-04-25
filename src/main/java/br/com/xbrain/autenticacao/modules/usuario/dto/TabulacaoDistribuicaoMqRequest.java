@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @RequiredArgsConstructor
-public class TabulacaoDistribuicaoRequest {
+public class TabulacaoDistribuicaoMqRequest {
     private final Integer agenteAutorizadoId;
     private final Integer usuarioOrigemId;
     private final List<AgendamentoUsuarioDto> colaboradores;

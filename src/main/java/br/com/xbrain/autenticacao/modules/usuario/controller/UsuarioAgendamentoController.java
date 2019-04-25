@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoLis
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgendamentoDistribuicaoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +22,6 @@ public class UsuarioAgendamentoController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void distribuirAgendamentosDoUsuario(@Validated @RequestBody AgendamentoDistribuicaoRequest request) {
         usuarioAgendamentoService.distribuirAgendamentosDoUsuario(request);
     }

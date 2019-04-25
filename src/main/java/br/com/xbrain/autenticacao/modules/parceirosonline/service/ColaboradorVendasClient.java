@@ -14,7 +14,6 @@ public interface ColaboradorVendasClient {
 
     @RequestMapping(
             method = RequestMethod.GET,
-            path = "api/colaboradores-vendas/equipe-vendas/usuario/{usuarioId}"
-    )
+            path = "api/colaboradores-vendas/equipe-vendas/usuario/{usuarioId}")
     EquipeVendasSupervisorResponse getEquipeVendasSupervisorDoUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
 }
