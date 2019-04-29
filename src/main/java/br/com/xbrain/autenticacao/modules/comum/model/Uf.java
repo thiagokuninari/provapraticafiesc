@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.comum.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -8,6 +11,8 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "UF")
 @Data
+@AllArgsConstructor
+@Builder
 public class Uf {
 
     @Id

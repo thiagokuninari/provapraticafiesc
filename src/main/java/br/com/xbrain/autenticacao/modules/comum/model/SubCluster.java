@@ -44,6 +44,7 @@ public class SubCluster implements AreaAtuacao {
     @OneToMany(mappedBy = "subCluster", fetch = FetchType.LAZY)
     private List<Cidade> cidades;
 
+
     public static SubCluster of(Integer id, String nome) {
         return SubCluster
                 .builder()
