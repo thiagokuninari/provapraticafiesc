@@ -17,7 +17,6 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -192,8 +191,6 @@ public class UsuarioService {
     @Autowired
     private FileService fileService;
     @Autowired
-    private EquipeVendaService equipeVendaService;
-    @Autowired
     private FuncionalidadeService funcionalidadeService;
     @Autowired
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
@@ -351,21 +348,18 @@ public class UsuarioService {
         try {
             validar(usuario);
 
-            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
-                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
             entityManager.flush();
 
-            validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario);
 
@@ -386,17 +380,6 @@ public class UsuarioService {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuarioARealocar.setSituacao(ESituacao.R);
         repository.save(usuarioARealocar);
-    }
-
-    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
-        if (!isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
-            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
-                equipeVendaService.inativarSupervisor(usuario.getId());
-            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
-                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
-                equipeVendaService.inativarUsuario(usuario.getId());
-            }
-        }
     }
 
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
