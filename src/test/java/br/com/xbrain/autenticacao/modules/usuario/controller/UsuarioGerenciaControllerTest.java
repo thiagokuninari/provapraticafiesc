@@ -315,8 +315,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
-
-        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -330,8 +328,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
-
-        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test

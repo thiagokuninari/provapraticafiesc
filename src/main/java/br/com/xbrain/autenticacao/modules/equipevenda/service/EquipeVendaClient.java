@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -21,12 +20,6 @@ public interface EquipeVendaClient {
 
     @GetMapping(PAUSA_AGENDADA_ENDPOINT + "/verificar-pausa/{username}")
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
-
-    @PutMapping("api/equipes-vendas/inativar-supervisor/{id}")
-    void inativarSupervidor(@PathVariable("id") Integer supervisorId);
-
-    @PutMapping("api/usuarios-equipe/inativar/{id}")
-    void inativarUsuarioEquipe(@PathVariable("id") Integer usuariostatusId);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
     List<EquipeVendaDto> getUsuario(@RequestParam Map request);
