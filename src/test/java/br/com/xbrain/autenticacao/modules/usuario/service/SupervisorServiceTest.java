@@ -152,6 +152,5 @@ public class SupervisorServiceTest {
         assertThat(
                 service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
-
     }
 }
