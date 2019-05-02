@@ -377,7 +377,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .and(usuario.cidades.any().cidade.id.in(
                                 JPAExpressions.select(usuarioCidade.cidade.id)
                                         .from(usuarioCidade)
-                                        .where(usuarioCidade.usuario.id.eq(usuarioId)))))
+                                        .where(usuarioCidade.usuario.id.eq(usuarioId))))
+                        .and(usuario.situacao.eq(ESituacao.A)))
                 .distinct()
                 .fetch();
     }

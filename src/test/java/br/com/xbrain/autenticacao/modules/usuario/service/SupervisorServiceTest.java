@@ -120,7 +120,7 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_seExistirem() {
+    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
         assertThat(
                 service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LONDRINA_ID))
                 .extracting("nome", "codigoCargo")
@@ -145,5 +145,13 @@ public class SupervisorServiceTest {
         assertThat(
                 service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
+    }
+
+    @Test
+    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoseEstiverInativo() {
+        assertThat(
+                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
+                .isEmpty();
+
     }
 }
