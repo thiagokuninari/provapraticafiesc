@@ -148,7 +148,7 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoseEstiverInativo() {
+    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         assertThat(
                 service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
