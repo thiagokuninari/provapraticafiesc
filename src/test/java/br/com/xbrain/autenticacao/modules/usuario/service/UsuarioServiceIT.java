@@ -276,6 +276,16 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void ativar_deveAtivarUmUsuario_quandoNaoForAgenteAutorizado() {
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.I);
+        UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
+        usuarioAtivacaoDto.setIdUsuario(244);
+        usuarioAtivacaoDto.setObservacao("Teste ativar");
+        service.ativar(usuarioAtivacaoDto);
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.A);
+    }
+
+    @Test
     public void deveAlterarSenhaUsuario() {
         UsuarioAlterarSenhaDto usuarioAlterarSenhaDto = new UsuarioAlterarSenhaDto();
         usuarioAlterarSenhaDto.setUsuarioId(100);
