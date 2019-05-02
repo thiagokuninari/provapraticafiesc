@@ -10,12 +10,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlteracaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlterarSenhaDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
@@ -23,11 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -60,11 +51,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -287,6 +274,16 @@ public class UsuarioServiceIT {
         usuarioAtivacaoDto.setIdUsuario(243);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
+    }
+
+    @Test
+    public void ativar_deveAtivarUmUsuario_quandoNaoForAgenteAutorizado() {
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.I);
+        UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
+        usuarioAtivacaoDto.setIdUsuario(244);
+        usuarioAtivacaoDto.setObservacao("Teste ativar");
+        service.ativar(usuarioAtivacaoDto);
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.A);
     }
 
     @Test
