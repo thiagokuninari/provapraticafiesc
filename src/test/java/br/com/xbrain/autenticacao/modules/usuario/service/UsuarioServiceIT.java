@@ -59,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -247,7 +248,7 @@ public class UsuarioServiceIT {
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
                 .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
-        assertNotNull(usuario);
+        Assert.assertNotNull(usuario);
     }
 
     @Test
