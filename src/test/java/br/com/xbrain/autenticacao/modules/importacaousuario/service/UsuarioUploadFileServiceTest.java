@@ -25,7 +25,10 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -64,9 +67,8 @@ public class UsuarioUploadFileServiceTest {
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = usuarioUploadFileService
                 .processarUsuarios(row, new UsuarioImportacaoRequest(true, false));
         assertNotNull(usuarioImportacaoRequest);
-        assertNotNull(usuarioImportacaoRequest.getCpf());
-        assertEquals(usuarioImportacaoRequest.getMotivoNaoImportacao().get(1),
-                "O campo cpf está incorreto.");
+        assertThat(usuarioImportacaoRequest.getCpf()).isEmpty();
+        assertThat(usuarioImportacaoRequest.getMotivoNaoImportacao()).contains("O campo cpf está incorreto.");
     }
 
     @Test
@@ -100,6 +102,7 @@ public class UsuarioUploadFileServiceTest {
         String msgErro = usuarioUploadFileService.validarCpf(usuarioImportacaoRequest);
         assertNotEquals("O campo cpf está incorreto.", msgErro);
     }
+
 
     @Test
     public void deveRetornarErroCasoOEmailEstejaInvalido() {
@@ -234,6 +237,14 @@ public class UsuarioUploadFileServiceTest {
         UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
                 .buildUsuario(umaLinha(3), "102030", false);
         assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nível");
+    }
+
+    @Test
+    public void buildUsuario_deveTratarCpf_quandoPossuirSimbolos() {
+        UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
+                .buildUsuario(umaLinha(3), "102030", false);
+
+        assertThat(usuario.getCpf()).isEqualTo("70159931479");
     }
 
     @Test
