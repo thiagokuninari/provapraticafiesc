@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
-import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -23,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -98,13 +95,13 @@ public class UsuarioUploadFileService {
 
     protected UsuarioImportacaoPlanilha buildUsuario(Row row, String senha, boolean resetarSenhaUsuarioSalvo) {
 
-        Nivel nivel = recuperarNivel(row.getCell(NumeroCelulaUtil.CELULA_NIVEL).getStringCellValue());
+        Nivel nivel = recuperarNivel(row.getCell(CELULA_NIVEL).getStringCellValue());
 
         Departamento departamento = recuperarDepartamento(
-                row.getCell(NumeroCelulaUtil.CELULA_DEPARTAMENTO)
+                row.getCell(CELULA_DEPARTAMENTO)
                         .getStringCellValue(), nivel);
 
-        Cargo cargo = recuperarCargo(row.getCell(NumeroCelulaUtil.CELULA_CARGO)
+        Cargo cargo = recuperarCargo(row.getCell(CELULA_CARGO)
                 .getStringCellValue(), nivel);
 
         UsuarioImportacaoPlanilha usuario = UsuarioImportacaoPlanilha

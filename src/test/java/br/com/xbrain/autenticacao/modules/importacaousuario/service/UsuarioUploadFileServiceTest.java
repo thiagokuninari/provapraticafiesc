@@ -103,7 +103,6 @@ public class UsuarioUploadFileServiceTest {
         assertNotEquals("O campo cpf está incorreto.", msgErro);
     }
 
-
     @Test
     public void deveRetornarErroCasoOEmailEstejaInvalido() {
         UsuarioImportacaoPlanilha usuarioImportacaoRequest = UsuarioImportacaoPlanilha
