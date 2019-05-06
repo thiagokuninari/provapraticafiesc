@@ -57,8 +57,8 @@ public class UsuarioServiceEsqueciSenha {
                     if (usuario.getRecuperarSenhaTentativa() < MAXIMO_TENTATIVAS_RESETAR_SENHA) {
                         notificarCliente(usuario, false, null);
                     } else {
-                        throw new ExceedMaxTriesResetPassException("Excedido o número de solicitações para resetar " +
-                                "a senha. Aguarde 20 minutos para realizar outra tentativa.");
+                        throw new ExceedMaxTriesResetPassException("Excedido o número de solicitações para resetar "
+                                + "a senha. Aguarde 20 minutos para realizar outra tentativa.");
                     }
                 }
             } catch (ExpiredJwtException exception) {
