@@ -151,7 +151,6 @@ public class UsuarioServiceIT {
 
     @Test
     public void inativar_deveInativarUmUsuario_seAtivo() {
-
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
@@ -160,11 +159,24 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
     @Test
-    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
+    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoGerente() {
+        doReturn(umUsuarioSupervisor()).when(service).findComplete(227);
+
+        UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
+        usuarioInativacaoDto.setIdUsuario(227);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
+        usuarioInativacaoDto.setObservacao("Teste inativar");
+        service.inativar(usuarioInativacaoDto);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
         doReturn(umUsuarioSupervisor()).when(service).findComplete(205);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -173,7 +185,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -186,7 +198,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -199,7 +211,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
