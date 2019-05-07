@@ -164,7 +164,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoGerente() {
-        doReturn(umUsuarioSupervisor()).when(service).findComplete(227);
+        doReturn(umUsuarioGerente()).when(service).findComplete(227);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(227);
@@ -511,24 +511,27 @@ public class UsuarioServiceIT {
         return usuarioMqRequest;
     }
 
+    private Usuario umUsuarioGerente() {
+        var usuario = usuarioRepository.findOne(227);
+        usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.GERENTE_OPERACAO));
+        return usuario;
+    }
+
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.SUPERVISOR_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioAssistente() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioVendedorD2d() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.VENDEDOR_OPERACAO));
-
         return usuario;
     }
 
