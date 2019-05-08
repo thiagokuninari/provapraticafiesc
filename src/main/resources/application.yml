@@ -147,8 +147,8 @@ app-config:
 
   services:
     autenticacao:
-      #url: http://localhost:8096
-      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      url: http://localhost:8096
+      #url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
