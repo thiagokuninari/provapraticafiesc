@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSubClusterResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -35,9 +36,13 @@ public class CidadeController {
     }
 
     @RequestMapping(value = "uf-cidade/{uf}/{cidade}", method = RequestMethod.GET)
-    public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf,
-                                         @PathVariable("cidade") String cidade) {
+    public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf, @PathVariable("cidade") String cidade) {
         return CidadeResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
+    }
+
+    @GetMapping("recuperar-cidade/{uf}/{cidade}")
+    public CidadeSubClusterResponse getCidadeSubcluster(@PathVariable String uf, @PathVariable String cidade) {
+        return CidadeSubClusterResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
     @RequestMapping("regional/{regionalId}")
