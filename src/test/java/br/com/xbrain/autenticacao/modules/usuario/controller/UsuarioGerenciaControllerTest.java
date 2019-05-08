@@ -315,8 +315,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
-
-        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -330,8 +328,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk());
         Usuario usuario = repository.findOne(ID_USUARIO_HELPDESK);
         Assert.assertEquals(usuario.getNome(), "JOAOZINHO");
-
-        verify(equipeVendaService, times(0)).inativarUsuario(any());
     }
 
     @Test
@@ -360,7 +356,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(100)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(101)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(1)));
     }
 

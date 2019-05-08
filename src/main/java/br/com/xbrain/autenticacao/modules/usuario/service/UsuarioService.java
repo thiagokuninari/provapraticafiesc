@@ -17,7 +17,6 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -28,59 +27,15 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ConfiguracaoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlteracaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlterarSenhaDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoSaveDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeVendasDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaCarteiraDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqAtualizacaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoCanal;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Configuracao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioHistoricoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAaAtualizacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioAtualizacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import lombok.Setter;
@@ -100,12 +55,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -191,8 +141,6 @@ public class UsuarioService {
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
-    @Autowired
-    private EquipeVendaService equipeVendaService;
     @Autowired
     private FuncionalidadeService funcionalidadeService;
     @Autowired
@@ -351,21 +299,18 @@ public class UsuarioService {
         try {
             validar(usuario);
 
-            Cargo cargoOld = null;
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
-                cargoOld = cargoService.findByUsuarioId(usuario.getId());
                 atualizarUsuariosParceiros(usuario);
                 usuario.setAlterarSenha(Eboolean.F);
             }
             repository.save(usuario);
             entityManager.flush();
 
-            validarCargoEquipeVendas(usuario, cargoOld);
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario);
 
@@ -386,17 +331,6 @@ public class UsuarioService {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuarioARealocar.setSituacao(ESituacao.R);
         repository.save(usuarioARealocar);
-    }
-
-    private void validarCargoEquipeVendas(Usuario usuario, Cargo cargoOld) {
-        if (!isEmpty(cargoOld) && !usuario.getCargoId().equals(cargoOld.getId())) {
-            if (cargoOld.getCodigo().equals(CodigoCargo.SUPERVISOR_OPERACAO)) {
-                equipeVendaService.inativarSupervisor(usuario.getId());
-            } else if (cargoOld.getCodigo().equals(CodigoCargo.VENDEDOR_OPERACAO)
-                    || cargoOld.getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO)) {
-                equipeVendaService.inativarUsuario(usuario.getId());
-            }
-        }
     }
 
     private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
@@ -808,22 +742,19 @@ public class UsuarioService {
         Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
                 : new Usuario(autenticacaoService.getUsuarioId());
 
-        if (!isEmpty(usuario.getCpf())) {
-            if (situacaoAtiva(usuario.getEmail())) {
-                usuario.adicionar(UsuarioHistorico.builder()
-                        .dataCadastro(LocalDateTime.now())
-                        .usuario(usuario)
-                        .usuarioAlteracao(usuarioInativacao)
-                        .observacao(dto.getObservacao())
-                        .situacao(ESituacao.A)
-                        .build());
-                repository.save(usuario);
-            } else {
-                throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
-            }
-        } else {
+        if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
+        } else if (!situacaoAtiva(usuario.getEmail()) && usuario.isAgenteAutorizado()) {
+            throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
         }
+        usuario.adicionar(UsuarioHistorico.builder()
+                .dataCadastro(LocalDateTime.now())
+                .usuario(usuario)
+                .usuarioAlteracao(usuarioInativacao)
+                .observacao(dto.getObservacao())
+                .situacao(ESituacao.A)
+                .build());
+        repository.save(usuario);
     }
 
     public void limparCpfUsuario(Integer id) {

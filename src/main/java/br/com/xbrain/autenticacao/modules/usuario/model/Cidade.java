@@ -4,9 +4,8 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -17,6 +16,8 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(of = {"id"})
 @ToString(of = "id")
+@AllArgsConstructor
+@Builder
 public class Cidade {
 
     @Id
@@ -104,5 +105,15 @@ public class Cidade {
     @JsonIgnore
     public String getSubClusterNome() {
         return subCluster.getNome();
+    }
+
+    @JsonIgnore
+    public Integer getIdUf() {
+        return ObjectUtils.isEmpty(uf) ? null : uf.getId();
+    }
+
+    @JsonIgnore
+    public String getNomeUf() {
+        return ObjectUtils.isEmpty(uf) ? null : uf.getNome();
     }
 }

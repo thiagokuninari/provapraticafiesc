@@ -19,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.R;
+
 @Service
 public class UsuarioServiceEsqueciSenha {
 
@@ -40,7 +42,8 @@ public class UsuarioServiceEsqueciSenha {
 
     @Transactional
     public void enviarConfirmacaoResetarSenha(String email) {
-        Usuario usuario = repository.findUsuarioByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        Usuario usuario = repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, R)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         String hash = usuario.getRecuperarSenhaHash();
         if (hash == null) {
@@ -54,8 +57,8 @@ public class UsuarioServiceEsqueciSenha {
                     if (usuario.getRecuperarSenhaTentativa() < MAXIMO_TENTATIVAS_RESETAR_SENHA) {
                         notificarCliente(usuario, false, null);
                     } else {
-                        throw new ExceedMaxTriesResetPassException("Excedido o número de solicitações para resetar a senha. "
-                                + "Aguarde 20 minutos para realizar outra tentativa.");
+                        throw new ExceedMaxTriesResetPassException("Excedido o número de solicitações para resetar "
+                                + "a senha. Aguarde 20 minutos para realizar outra tentativa.");
                     }
                 }
             } catch (ExpiredJwtException exception) {

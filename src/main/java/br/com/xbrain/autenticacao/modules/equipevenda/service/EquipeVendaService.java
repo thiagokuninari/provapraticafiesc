@@ -13,10 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA;
-import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_INATIVAR_USUARIO_EQUIPE_VENDA;
-
-
 @Service
 public class EquipeVendaService {
 
@@ -35,26 +31,6 @@ public class EquipeVendaService {
     @SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.UnusedPrivateMethod"})
     private boolean verificaPausaEmAndamentoOnError(String username) {
         return false;
-    }
-
-    public void inativarSupervisor(Integer usuarioId) {
-        try {
-            equipeVendaClient.inativarSupervidor(usuarioId);
-        } catch (Exception ex) {
-            throw new IntegracaoException(ex,
-                    EquipeVendaService.class.getName(),
-                    ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA);
-        }
-    }
-
-    public void inativarUsuario(Integer usuarioId) {
-        try {
-            equipeVendaClient.inativarUsuarioEquipe(usuarioId);
-        } catch (Exception ex) {
-            throw new IntegracaoException(ex,
-                    EquipeVendaService.class.getName(),
-                    ERRO_INATIVAR_USUARIO_EQUIPE_VENDA);
-        }
     }
 
     @HystrixCommand(fallbackMethod = "getEquipeVendasOnError")

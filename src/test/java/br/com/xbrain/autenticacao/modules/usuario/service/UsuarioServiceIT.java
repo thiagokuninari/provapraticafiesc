@@ -10,12 +10,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlteracaoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAlterarSenhaDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAtivacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
@@ -23,11 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioRecuperacaoMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -57,14 +48,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECU
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -164,7 +150,6 @@ public class UsuarioServiceIT {
 
     @Test
     public void inativar_deveInativarUmUsuario_seAtivo() {
-
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
@@ -173,11 +158,24 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
     @Test
-    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
+    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoGerente() {
+        doReturn(umUsuarioGerente()).when(service).findComplete(227);
+
+        UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
+        usuarioInativacaoDto.setIdUsuario(227);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
+        usuarioInativacaoDto.setObservacao("Teste inativar");
+        service.inativar(usuarioInativacaoDto);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
         doReturn(umUsuarioSupervisor()).when(service).findComplete(205);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -186,7 +184,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -199,7 +197,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -212,7 +210,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -247,7 +245,7 @@ public class UsuarioServiceIT {
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
                 .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
-        assertNotNull(usuario);
+        Assert.assertNotNull(usuario);
     }
 
     @Test
@@ -287,6 +285,16 @@ public class UsuarioServiceIT {
         usuarioAtivacaoDto.setIdUsuario(243);
         usuarioAtivacaoDto.setObservacao("Teste ativar");
         service.ativar(usuarioAtivacaoDto);
+    }
+
+    @Test
+    public void ativar_deveAtivarUmUsuario_quandoNaoForAgenteAutorizado() {
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.I);
+        UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
+        usuarioAtivacaoDto.setIdUsuario(244);
+        usuarioAtivacaoDto.setObservacao("Teste ativar");
+        service.ativar(usuarioAtivacaoDto);
+        assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.A);
     }
 
     @Test
@@ -502,24 +510,27 @@ public class UsuarioServiceIT {
         return usuarioMqRequest;
     }
 
+    private Usuario umUsuarioGerente() {
+        var usuario = usuarioRepository.findOne(227);
+        usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.GERENTE_OPERACAO));
+        return usuario;
+    }
+
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.SUPERVISOR_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioAssistente() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioVendedorD2d() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.VENDEDOR_OPERACAO));
-
         return usuario;
     }
 
