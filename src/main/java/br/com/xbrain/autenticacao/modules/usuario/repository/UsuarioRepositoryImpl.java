@@ -20,7 +20,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +47,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarqui
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     @Autowired
-    @Setter
     private EntityManager entityManager;
 
     public Optional<Usuario> findByEmail(String email) {
