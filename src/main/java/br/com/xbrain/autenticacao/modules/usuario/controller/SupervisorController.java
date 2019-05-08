@@ -21,7 +21,7 @@ public class SupervisorController {
 
     @GetMapping("/assistentes-vendedores/{id}")
     public List<UsuarioResponse> getAssistentesEVendedores(@PathVariable Integer id) {
-        return service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(id);
+        return service.getAssistentesEVendedoresD2dDoSupervisor(id);
     }
 
     @GetMapping("/por-area-atuacao/{areaAtuacao}/{id}")
