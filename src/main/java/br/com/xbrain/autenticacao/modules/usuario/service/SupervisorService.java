@@ -39,7 +39,7 @@ public class SupervisorService {
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
-                .getSubordinadosPorCargo(supervisorId, CodigoCargo.VENDEDOR.name())
+                .getSubordinadosPorCargo(supervisorId, CodigoCargo.VENDEDOR_OPERACAO.name())
                 .stream()
                 .map(row -> new UsuarioResponse(
                         (Integer) row[COLUNA_USUARIO_ID],
