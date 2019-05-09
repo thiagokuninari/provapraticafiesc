@@ -11,6 +11,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static java.util.Collections.emptyList;
@@ -129,7 +131,7 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
-        doReturn(singletonList(new Object[]{1, "VENDEDOR"}))
+        doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
                 .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
         assertThat(
