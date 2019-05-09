@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class SupervisorService {
                 .getSubordinadosPorCargo(supervisorId, CodigoCargo.VENDEDOR_OPERACAO.name())
                 .stream()
                 .map(row -> new UsuarioResponse(
-                        (Integer) row[COLUNA_USUARIO_ID],
+                        ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
                         (String) row[COLUNA_USUARIO_NOME],
                         CodigoCargo.VENDEDOR_OPERACAO))
                 .collect(Collectors.toList());
