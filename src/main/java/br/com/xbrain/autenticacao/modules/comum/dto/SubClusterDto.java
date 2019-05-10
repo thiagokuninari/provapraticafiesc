@@ -15,7 +15,6 @@ public class SubClusterDto {
     private Integer id;
     private String nome;
 
-
     public static SubClusterDto of(SubCluster subCluster) {
         return SubClusterDto.builder()
                 .id(subCluster.getId())
