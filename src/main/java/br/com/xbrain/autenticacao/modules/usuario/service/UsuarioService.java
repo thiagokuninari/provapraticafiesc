@@ -1249,7 +1249,7 @@ public class UsuarioService {
         return repository
                 .getSubclustersUsuario(usuarioId)
                 .stream()
-                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
+                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
                 .collect(Collectors.toList());
     }
 }

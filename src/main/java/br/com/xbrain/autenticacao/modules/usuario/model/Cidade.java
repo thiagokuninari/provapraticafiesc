@@ -104,7 +104,7 @@ public class Cidade {
 
     @JsonIgnore
     public String getSubClusterNome() {
-        return subCluster.getNome();
+        return subCluster.getNomeComMarca();
     }
 
     @JsonIgnore

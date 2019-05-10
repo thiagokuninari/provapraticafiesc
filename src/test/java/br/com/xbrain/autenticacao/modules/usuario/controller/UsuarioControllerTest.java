@@ -296,7 +296,7 @@ public class UsuarioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].value", is(189)))
-                .andExpect(jsonPath("$[0].label", is("LONDRINA")));
+                .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
 
     }
 

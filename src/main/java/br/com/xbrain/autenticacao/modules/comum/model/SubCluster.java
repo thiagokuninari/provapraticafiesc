@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -44,12 +45,21 @@ public class SubCluster implements AreaAtuacao {
     @OneToMany(mappedBy = "subCluster", fetch = FetchType.LAZY)
     private List<Cidade> cidades;
 
+    @JoinColumn(name = "FK_MARCA", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_SUBCLUSTER_FK_MARCA"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Marca marca;
+
     public static SubCluster of(Integer id, String nome) {
         return SubCluster
                 .builder()
                 .id(id)
                 .nome(nome)
                 .build();
+    }
+
+    public String getNomeComMarca() {
+        return nome + (ObjectUtils.isEmpty(marca) ? "" : " - " + marca.getNome());
     }
 
     @JsonIgnore

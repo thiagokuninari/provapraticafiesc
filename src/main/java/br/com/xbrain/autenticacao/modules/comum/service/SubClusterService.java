@@ -28,7 +28,7 @@ public class SubClusterService {
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByClusterId(clusterId, predicate.build())
                 .stream()
-                .map(SubClusterDto::objectToDto)
+                .map(SubClusterDto::of)
                 .collect(Collectors.toList());
     }
 
@@ -38,20 +38,20 @@ public class SubClusterService {
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByClustersId(clustersId, predicate.build())
                 .stream()
-                .map(SubClusterDto::objectToDto)
+                .map(SubClusterDto::of)
                 .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAllAtivos() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
                 .stream()
-                .map(SubClusterDto::objectToDto)
+                .map(SubClusterDto::of)
                 .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAll() {
         return repository.findAll().stream()
-                .map(SubClusterDto::objectToDto)
+                .map(SubClusterDto::of)
                 .collect(Collectors.toList());
     }
 }
