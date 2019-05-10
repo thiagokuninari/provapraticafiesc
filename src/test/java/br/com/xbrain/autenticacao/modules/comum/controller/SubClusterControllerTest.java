@@ -56,7 +56,7 @@ public class SubClusterControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
+                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")));
     }
 
     @Test
