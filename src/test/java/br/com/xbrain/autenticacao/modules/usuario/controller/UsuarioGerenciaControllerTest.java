@@ -141,12 +141,18 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/cargo-superior/4")
+        mvc.perform(post("/api/usuarios/gerencia/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                        UsuarioCargoSuperiorPost
+                                .builder()
+                                .cidadeIds(List.of(1, 5578))
+                                .build())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")));
+                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
