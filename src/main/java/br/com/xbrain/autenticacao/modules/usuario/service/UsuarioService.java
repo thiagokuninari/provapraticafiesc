@@ -76,14 +76,13 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
+    private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
+            + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final String MSG_ERRO_AO_INATIVAR_USUARIO =
-        "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
-
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -832,12 +831,13 @@ public class UsuarioService {
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
-    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId) {
-        Cargo cargo = cargoService.findById(cargoId);
-        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
-        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        usuarioPredicate.comCargos(cargo.getCargosSuperioresId());
-        return repository.getUsuariosFilter(usuarioPredicate.build());
+    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
+        return repository.getUsuariosFilter(
+                new UsuarioPredicate()
+                        .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                        .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                        .comCidade(cidadesId)
+                        .build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
