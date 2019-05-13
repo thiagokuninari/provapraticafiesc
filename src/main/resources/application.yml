@@ -85,6 +85,7 @@ app-config:
 
   topic:
     autenticacao: autenticacao.topic
+    mailing: mailing.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue

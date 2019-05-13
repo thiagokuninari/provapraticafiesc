@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class DistribuirTabulacoesMqSender {
 
+    @Value("${app-config.topic.mailing}")
+    private String mailingTopic;
+
     @Value("${app-config.queue.distribuir-tabulacoes: distribuir-tabulacoes.queue}")
     private String distribuirTabulacoesQueue;
 
@@ -19,7 +22,7 @@ public class DistribuirTabulacoesMqSender {
 
     public void distribuirTabulacoes(TabulacaoDistribuicaoMqRequest tabulacaoDistribuicaoMqRequest) {
         try {
-            rabbitTemplate.convertAndSend(distribuirTabulacoesQueue, tabulacaoDistribuicaoMqRequest);
+            rabbitTemplate.convertAndSend(mailingTopic, distribuirTabulacoesQueue, tabulacaoDistribuicaoMqRequest);
         } catch (Exception ex) {
             log.error("Erro ao enviar distribuição de tabulações para o rabbit", ex);
         }
