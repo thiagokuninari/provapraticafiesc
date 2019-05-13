@@ -37,7 +37,7 @@ public class UsuarioCidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class UsuarioCidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class UsuarioCidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class UsuarioCidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)));
+                .andExpect(jsonPath("$.content", hasSize(3)));
     }
 
 }

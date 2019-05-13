@@ -107,6 +107,11 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate ignorarXbrain() {
+        builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.XBRAIN));
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
@@ -240,7 +245,9 @@ public class UsuarioPredicate {
         if (!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA)) {
             ignorarAa();
         }
-
+        if (!usuario.isXbrain()) {
+            ignorarXbrain();
+        }
         if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
@@ -249,7 +256,6 @@ public class UsuarioPredicate {
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
-
         return this;
     }
 

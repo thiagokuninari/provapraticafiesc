@@ -107,6 +107,7 @@ public class UsuarioServiceTestOracle {
         when(autenticacaoService.getUsuarioAutenticado())
                 .thenReturn(UsuarioAutenticado
                         .builder()
+                        .nivelCodigo(CodigoNivel.XBRAIN.name())
                         .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
                         .build());
 
