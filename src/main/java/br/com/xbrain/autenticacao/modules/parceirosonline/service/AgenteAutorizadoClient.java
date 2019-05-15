@@ -2,8 +2,7 @@ package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.*;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,4 +72,15 @@ public interface AgenteAutorizadoClient {
             value = "api/agentes-autorizados-usuario/situacao-agente-autorizado")
     boolean recuperarSituacaoAgenteAutorizado(@RequestParam(name = "email") String email);
 
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/agentes-autorizados-permitidos")
+    List<AgenteAutorizadoPermitidoResponse> getAgentesAutorizadosPermitidos();
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "api/usuarios-agente-autorizado/{agenteAutorizadoId}/canal/usuario/{usuarioId}")
+    List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(
+            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
+            @PathVariable("usuarioId") Integer usuarioId);
 }
