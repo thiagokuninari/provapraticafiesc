@@ -51,6 +51,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/api/solicitacao-ramal")
                     .hasAnyRole(CodigoFuncionalidade.AUT_2033.name(), CodigoFuncionalidade.AUT_2034.name())
                 .antMatchers("/api/solicitacao-ramal/gerencia/**").hasRole(CodigoFuncionalidade.AUT_2034.name())
+                .antMatchers("/api/usuarios/agendamentos/**").hasRole(CodigoFuncionalidade.AUT_2035.name())
                 .anyRequest().authenticated();
     }
 
