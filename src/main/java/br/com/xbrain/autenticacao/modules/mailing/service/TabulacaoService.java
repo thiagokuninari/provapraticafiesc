@@ -21,10 +21,12 @@ public class TabulacaoService {
     public List<AgendamentoAgenteAutorizadoResponse> getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(Integer usuarioId) {
         try {
             return tabulacaoClient.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(usuarioId);
-        } catch (RetryableException | HystrixBadRequestException ex) {
+        } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                     AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_DISTRIBUIR_TABULACOES);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 }
