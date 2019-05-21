@@ -5,10 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -18,7 +15,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,12 +32,15 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
+import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
+import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
@@ -375,7 +374,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .where(usuario.cargo.codigo.in(cargos)
                         .and(usuario.canais.any().eq(canal))
                         .and(usuario.cidades.any().cidade.id.in(
-                                JPAExpressions.select(usuarioCidade.cidade.id)
+                                select(usuarioCidade.cidade.id)
                                         .from(usuarioCidade)
                                         .where(usuarioCidade.usuario.id.eq(usuarioId))))
                         .and(usuario.situacao.eq(ESituacao.A)))
@@ -416,6 +415,27 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .and(usuarioCidade.dataBaixa.isNull()))
                 .orderBy(subCluster.nome.asc())
                 .distinct()
+                .fetch();
+    }
+
+    @Override
+    public List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(
+                        UsuarioPermissoesResponse.class,
+                        usuario.id,
+                        select(Expressions.stringTemplate("wm_concat({0})", cargoDepartamentoFuncionalidade.funcionalidade.role))
+                        .from(cargoDepartamentoFuncionalidade)
+                        .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
+                        .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
+                        .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
+                        .where(cargo.eq(usuario.cargo)
+                                .and(departamento.eq(usuario.departamento))
+                                .and(funcionalidade.role.in(permissoes)))))
+                .from(usuario)
+                .leftJoin(usuario.cargo)
+                .leftJoin(usuario.departamento)
+                .where(usuario.id.in(usuariosIds))
                 .fetch();
     }
 }

@@ -1252,4 +1252,10 @@ public class UsuarioService {
                 .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
                 .collect(Collectors.toList());
     }
+
+    public List<UsuarioPermissoesResponse> findUsuariosByPermissoes(UsuarioPermissoesRequest usuarioPermissoesRequest) {
+        return repository.getUsuariosIdAndPermissoes(usuarioPermissoesRequest.getUsuariosId(),
+                usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());
+    }
+
 }
