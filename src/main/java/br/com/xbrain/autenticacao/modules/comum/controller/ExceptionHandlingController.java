@@ -47,17 +47,17 @@ public class ExceptionHandlingController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public List<MessageException> argumentValidationError(MethodArgumentNotValidException ex) {
-        return getMessageExceptionFromValidationException(ex.getBindingResult());
+        return getMessageFromValidationException(ex.getBindingResult());
     }
 
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public List<MessageException> bindValidationError(BindException ex) {
-        return getMessageExceptionFromValidationException(ex.getBindingResult());
+        return getMessageFromValidationException(ex.getBindingResult());
     }
 
-    private List<MessageException> getMessageExceptionFromValidationException(BindingResult result) {
+    private List<MessageException> getMessageFromValidationException(BindingResult result) {
         return result.getFieldErrors()
                 .stream()
                 .map(e -> e.getDefaultMessage().toLowerCase().contains("campo")
