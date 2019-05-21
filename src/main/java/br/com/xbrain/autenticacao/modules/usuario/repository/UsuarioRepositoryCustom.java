@@ -66,4 +66,6 @@ public interface UsuarioRepositoryCustom {
                                                     ECanal canal);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
+
+    List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 }
