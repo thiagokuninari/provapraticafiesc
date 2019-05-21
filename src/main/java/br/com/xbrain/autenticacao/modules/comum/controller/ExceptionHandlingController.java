@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.MessageException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -46,8 +47,17 @@ public class ExceptionHandlingController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public List<MessageException> argumentValidationError(MethodArgumentNotValidException ex) {
-        BindingResult result = ex.getBindingResult();
+        return getMessageExceptionFromValidationException(ex.getBindingResult());
+    }
 
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public List<MessageException> bindValidationError(BindException ex) {
+        return getMessageExceptionFromValidationException(ex.getBindingResult());
+    }
+
+    private List<MessageException> getMessageExceptionFromValidationException(BindingResult result) {
         return result.getFieldErrors()
                 .stream()
                 .map(e -> e.getDefaultMessage().toLowerCase().contains("campo")
