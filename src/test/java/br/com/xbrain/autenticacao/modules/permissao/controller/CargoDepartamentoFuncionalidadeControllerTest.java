@@ -70,7 +70,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(655)));
+                .andExpect(jsonPath("$", hasSize(661)));
     }
 
     @Test
@@ -80,8 +80,8 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(10)))
-                .andExpect(jsonPath("$.totalPages", is(66)))
-                .andExpect(jsonPath("$.totalElements", is(655)));
+                .andExpect(jsonPath("$.totalPages", is(67)))
+                .andExpect(jsonPath("$.totalElements", is(661)));
     }
 
     @Test

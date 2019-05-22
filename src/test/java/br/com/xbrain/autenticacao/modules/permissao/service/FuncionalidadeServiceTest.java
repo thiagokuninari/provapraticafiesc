@@ -38,7 +38,7 @@ public class FuncionalidadeServiceTest {
         List<SimpleGrantedAuthority> permissoes = service.getPermissoes(umUsuarioSocio());
 
         assertThat(permissoes)
-                .hasSize(27)
+                .hasSize(28)
                 .extracting("authority")
                 .contains("ROLE_AUT_2031");
     }
