@@ -14,11 +14,11 @@ spring:
       maximumPoolSize: 10
 
   redis:
-    host: 192.168.1.40
-    port: 6380
+    host: 172.10.10.80
+    port: 6379
 
   rabbitmq:
-    host: 192.168.1.40
+    host: 172.10.10.70
     port: 5672
     username: xbrain
     password: xbrain
@@ -31,17 +31,17 @@ app-config:
 
   services:
     autenticacao:
-      url: http://localhost:8096
+      url: http://172.10.10.73:8096
     vendas:
       url: http://172.10.10.74:8097
     parceiros-online:
-      url: https://parceiros-hom.conexaoclarobrasil.com.br/
+      url: http://172.10.10.76:8099
     call:
       url: http://172.10.10.78:8094
     mailing:
       url: http://172.10.10.77:8095
     equipe-venda:
-      url: http://equipe-venda-api-hom.conexaoclarobrasil.com.br
+      url: http://172.10.10.82:8089
 
   email:
     enviar: true
