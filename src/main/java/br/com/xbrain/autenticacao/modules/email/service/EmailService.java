@@ -58,7 +58,6 @@ public class EmailService {
         enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias);
     }
 
-    // TODO: Quando permitido, alterar template para o do Conexão Claro Brasil
     public void enviarEmailConexaoClaroBrasil(List<String> emailsDestino, String assunto, String template, Context context) {
         obterContexto(assunto, template, context);
 
