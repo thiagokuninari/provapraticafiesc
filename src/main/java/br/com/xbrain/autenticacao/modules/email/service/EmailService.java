@@ -20,7 +20,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,7 +66,6 @@ public class EmailService {
     }
 
     private void obterContexto(String assunto, String template, Context context) {
-        context.setVariable("anoAtual", LocalDate.now().getYear());
         context.setVariable("urlEstatico", urlEstatico);
         context.setVariable("nomeSistema", nomeSistema);
         context.setVariable("urlSistema", urlSistema);
