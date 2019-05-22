@@ -17,6 +17,8 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -144,6 +146,8 @@ public class UsuarioService {
     private FuncionalidadeService funcionalidadeService;
     @Autowired
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -154,7 +158,7 @@ public class UsuarioService {
     @Transactional
     public Usuario findById(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa();
+        predicate.ignorarAa(true);
         predicate.comId(id);
         Usuario usuario = repository.findOne(predicate.build());
         usuario.forceLoad();
@@ -1217,6 +1221,14 @@ public class UsuarioService {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
         }
         return predicate;
+    }
+
+    public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
+        return equipeVendaService
+                .getUsuariosPermitidos()
+                .stream()
+                .map(EquipeVendaUsuarioResponse::getId)
+                .collect(Collectors.toList());
     }
 
     private String getCsv(List<UsuarioCsvResponse> usuarios) {

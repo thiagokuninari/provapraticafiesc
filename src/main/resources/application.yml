@@ -200,6 +200,7 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 300000
+  shareSecurityContext: true
 
 keys:
   public: |

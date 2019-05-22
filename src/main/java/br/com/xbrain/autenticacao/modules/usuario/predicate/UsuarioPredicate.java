@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -102,13 +103,17 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate ignorarAa() {
-        builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
+    public UsuarioPredicate ignorarAa(Boolean ignorar) {
+        if (ignorar) {
+            builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
+        }
         return this;
     }
 
-    public UsuarioPredicate ignorarXbrain() {
-        builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.XBRAIN));
+    public UsuarioPredicate ignorarXbrain(Boolean ignorar) {
+        if (ignorar) {
+            builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.XBRAIN));
+        }
         return this;
     }
 
@@ -242,13 +247,13 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
-        if (!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA)) {
-            ignorarAa();
-        }
-        if (!usuario.isXbrain()) {
-            ignorarXbrain();
-        }
-        if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
+        ignorarXbrain(!usuario.isXbrain());
+
+        if (usuario.getCargoCodigo() == CodigoCargo.ASSISTENTE_OPERACAO) {
+            comIds(usuarioService.getUsuariosPermitidosPelaEquipeDeVenda());
+
+        } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                     usuario.getUsuario().getId());

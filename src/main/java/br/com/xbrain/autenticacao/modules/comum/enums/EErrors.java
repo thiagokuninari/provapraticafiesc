@@ -43,7 +43,10 @@ public enum EErrors {
             "#012 - Erro ao obter os colaboradores do agente autorizado."),
     ERRO_INATIVAR_COLABORADOR_VENDAS(
             "#013 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#013 - Erro ao inativar o colaborador de vendas.");
+            "#013 - Erro ao inativar o colaborador de vendas."),
+    ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS(
+            "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#014 - Erro ao tentar recuperar usuários permitidos por equipe.");
 
     @Getter
     @Setter

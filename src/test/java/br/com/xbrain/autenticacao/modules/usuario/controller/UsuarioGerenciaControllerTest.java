@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -126,7 +127,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content", hasSize(8)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
@@ -136,10 +137,27 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content", hasSize(4)))
                 .andExpect(jsonPath("$.content[0].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")));
+                .andExpect(jsonPath("$.content[1].nome", is("Assistente NET")))
+                .andExpect(jsonPath("$.content[2].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.content[3].nome", is("Mso Analista Adm Claro Pessoal")));
+    }
+
+    @Test
+    public void getAll_deveRetornarOsUsuariosPermitidosPeloEquipeVendas_quandoForCargoAssistente() throws Exception {
+        when(equipeVendaService.getUsuariosPermitidos())
+                .thenReturn(List.of(
+                        EquipeVendaUsuarioResponse.builder().id(104).build(),
+                        EquipeVendaUsuarioResponse.builder().id(230).build()));
+
+        mvc.perform(get("/api/usuarios/gerencia")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].id", is(104)))
+                .andExpect(jsonPath("$.content[1].id", is(230)));
     }
 
     @Test
