@@ -62,7 +62,7 @@ public class EquipeVendaService {
         }
     }
 
-    @SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.UnusedPrivateMethod"})
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
     private List<EquipeVendaUsuarioResponse> getUsuariosPermitidosOnError() {
         return Collections.emptyList();
     }
