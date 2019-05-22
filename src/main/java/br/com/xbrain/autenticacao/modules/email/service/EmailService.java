@@ -20,6 +20,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,7 +59,6 @@ public class EmailService {
         enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias);
     }
 
-    // TODO: Quando permitido, alterar template para o do Conexão Claro Brasil
     public void enviarEmailConexaoClaroBrasil(List<String> emailsDestino, String assunto, String template, Context context) {
         obterContexto(assunto, template, context);
 
@@ -67,6 +67,7 @@ public class EmailService {
     }
 
     private void obterContexto(String assunto, String template, Context context) {
+        context.setVariable("anoAtual", LocalDate.now().getYear());
         context.setVariable("urlEstatico", urlEstatico);
         context.setVariable("nomeSistema", nomeSistema);
         context.setVariable("urlSistema", urlSistema);
