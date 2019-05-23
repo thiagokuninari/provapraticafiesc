@@ -164,21 +164,24 @@ public class UsuarioServiceTestOracle {
                 "ROLE_VDS_TABULACAO_CLICKTOCALL",
                 "ROLE_VDS_TABULACAO_PERSONALIZADA",
                 "ROLE_VDS_TABULACAO_MANUAL"));
-        request.setUsuariosId(Arrays.asList(245, 243, 231));
+        request.setUsuariosId(Arrays.asList(245, 243, 231, 238));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
-        Assert.assertEquals(3, response.size());
+        Assert.assertEquals(4, response.size());
         assertThat(response)
             .containsExactlyElementsOf(
                 Arrays.asList(
                     new UsuarioPermissoesResponse(231, Collections.emptyList()),
+                    new UsuarioPermissoesResponse(238, Collections.singletonList(
+                            "ROLE_VDS_TABULACAO_DISCADORA")),
                     new UsuarioPermissoesResponse(243, Arrays.asList(
                             "ROLE_VDS_TABULACAO_CLICKTOCALL",
                             "ROLE_VDS_TABULACAO_DISCADORA",
                             "ROLE_VDS_TABULACAO_PERSONALIZADA")),
                     new UsuarioPermissoesResponse(245, Arrays.asList(
                             "ROLE_VDS_TABULACAO_MANUAL",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))));
+                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))
+                    ));
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
