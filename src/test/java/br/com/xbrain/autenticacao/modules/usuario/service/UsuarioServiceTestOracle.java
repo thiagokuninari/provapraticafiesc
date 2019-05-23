@@ -3,9 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -156,6 +154,34 @@ public class UsuarioServiceTestOracle {
 
         Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
         Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
+    }
+
+    @Test
+    public void getPermissoesPorUsuarios_permissoesComUsuario_conformeParametroUsuarioIdAndPermissao() {
+        UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
+        request.setPermissoes(Arrays.asList(
+                "ROLE_VDS_TABULACAO_DISCADORA",
+                "ROLE_VDS_TABULACAO_CLICKTOCALL",
+                "ROLE_VDS_TABULACAO_PERSONALIZADA",
+                "ROLE_VDS_TABULACAO_MANUAL"));
+        request.setUsuariosId(Arrays.asList(245, 243, 231, 238));
+
+        List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
+        Assert.assertEquals(4, response.size());
+        assertThat(response)
+            .containsExactlyElementsOf(
+                Arrays.asList(
+                    new UsuarioPermissoesResponse(231, Collections.emptyList()),
+                    new UsuarioPermissoesResponse(238, Collections.singletonList(
+                            "ROLE_VDS_TABULACAO_DISCADORA")),
+                    new UsuarioPermissoesResponse(243, Arrays.asList(
+                            "ROLE_VDS_TABULACAO_CLICKTOCALL",
+                            "ROLE_VDS_TABULACAO_DISCADORA",
+                            "ROLE_VDS_TABULACAO_PERSONALIZADA")),
+                    new UsuarioPermissoesResponse(245, Arrays.asList(
+                            "ROLE_VDS_TABULACAO_MANUAL",
+                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))
+                    ));
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {

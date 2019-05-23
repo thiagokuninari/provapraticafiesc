@@ -17,6 +17,8 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -57,6 +59,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
@@ -144,6 +147,8 @@ public class UsuarioService {
     private FuncionalidadeService funcionalidadeService;
     @Autowired
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -154,7 +159,7 @@ public class UsuarioService {
     @Transactional
     public Usuario findById(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa();
+        predicate.ignorarAa(true);
         predicate.comId(id);
         Usuario usuario = repository.findOne(predicate.build());
         usuario.forceLoad();
@@ -1219,6 +1224,17 @@ public class UsuarioService {
         return predicate;
     }
 
+    public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
+        return IntStream.concat(
+                equipeVendaService
+                        .getUsuariosPermitidos()
+                        .stream()
+                        .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
+                IntStream.of(autenticacaoService.getUsuarioId()))
+                .boxed()
+                .collect(Collectors.toList());
+    }
+
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
                 + (!usuarios.isEmpty()
@@ -1252,4 +1268,10 @@ public class UsuarioService {
                 .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
                 .collect(Collectors.toList());
     }
+
+    public List<UsuarioPermissoesResponse> findUsuariosByPermissoes(UsuarioPermissoesRequest usuarioPermissoesRequest) {
+        return repository.getUsuariosIdAndPermissoes(usuarioPermissoesRequest.getUsuariosId(),
+                usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());
+    }
+
 }
