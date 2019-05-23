@@ -120,6 +120,9 @@ app-config:
     integracao-vendas-api:
       client: integracao-vendas-api
       secret: 1nt3gr4c40v3nd4s4p1
+    integracao-brscan-api:
+      client: integracao-brscan-api
+      secret: 1nt3gr4c40brsc4n
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
