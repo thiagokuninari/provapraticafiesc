@@ -59,6 +59,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
@@ -1224,10 +1225,13 @@ public class UsuarioService {
     }
 
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
-        return equipeVendaService
-                .getUsuariosPermitidos()
-                .stream()
-                .map(EquipeVendaUsuarioResponse::getUsuarioId)
+        return IntStream.concat(
+                equipeVendaService
+                        .getUsuariosPermitidos()
+                        .stream()
+                        .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
+                IntStream.of(autenticacaoService.getUsuarioId()))
+                .boxed()
                 .collect(Collectors.toList());
     }
 
