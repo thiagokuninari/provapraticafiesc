@@ -1,29 +1,40 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class UsuarioPermissoesResponse {
+
     public static final String ROLE_PREFIX = "ROLE_";
 
     private Integer usuarioId;
     private List<String> permissoes;
 
-    public UsuarioPermissoesResponse(Integer usuarioId, String permissoes) {
+    public UsuarioPermissoesResponse(Integer usuarioId, String permissoes, String permissoesEspeciais) {
         this.usuarioId = usuarioId;
-        this.permissoes = Objects.nonNull(permissoes)
-                ? Arrays.stream(permissoes.split(","))
-                        .map(permissao -> ROLE_PREFIX + permissao)
-                        .collect(Collectors.toList()) : Collections.emptyList();
+        this.permissoes = Arrays.stream(getAllPermissoes(permissoes, permissoesEspeciais))
+                .map(perm -> ROLE_PREFIX + perm)
+                .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    private static String[] getAllPermissoes(String permissoes, String permissoesEspeciais) {
+        return Stream.of(permissoes, permissoesEspeciais)
+                .filter(s -> !StringUtils.isEmpty(s))
+                .map(s -> s.split(","))
+                .reduce(StringUtils::mergeStringArrays)
+                .orElse(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 }
