@@ -148,8 +148,8 @@ public class UsuarioGerenciaControllerTest {
     public void getAll_deveRetornarOsUsuariosPermitidosPeloEquipeVendas_quandoForCargoAssistente() throws Exception {
         when(equipeVendaService.getUsuariosPermitidos())
                 .thenReturn(List.of(
-                        EquipeVendaUsuarioResponse.builder().id(104).build(),
-                        EquipeVendaUsuarioResponse.builder().id(230).build()));
+                        EquipeVendaUsuarioResponse.builder().usuarioId(104).build(),
+                        EquipeVendaUsuarioResponse.builder().usuarioId(230).build()));
 
         mvc.perform(get("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))

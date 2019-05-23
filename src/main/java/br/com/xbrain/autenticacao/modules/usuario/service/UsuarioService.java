@@ -1227,7 +1227,7 @@ public class UsuarioService {
         return equipeVendaService
                 .getUsuariosPermitidos()
                 .stream()
-                .map(EquipeVendaUsuarioResponse::getId)
+                .map(EquipeVendaUsuarioResponse::getUsuarioId)
                 .collect(Collectors.toList());
     }
 
