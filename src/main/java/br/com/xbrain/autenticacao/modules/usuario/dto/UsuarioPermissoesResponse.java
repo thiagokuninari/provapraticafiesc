@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,9 +32,9 @@ public class UsuarioPermissoesResponse {
     @JsonIgnore
     private static String[] getAllPermissoes(String permissoes, String permissoesEspeciais) {
         return Stream.of(permissoes, permissoesEspeciais)
-                .filter(StringUtils::isNotBlank)
+                .filter(s -> !StringUtils.isEmpty(s))
                 .map(s -> s.split(","))
-                .reduce(org.springframework.util.StringUtils::mergeStringArrays)
+                .reduce(StringUtils::mergeStringArrays)
                 .orElse(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 }
