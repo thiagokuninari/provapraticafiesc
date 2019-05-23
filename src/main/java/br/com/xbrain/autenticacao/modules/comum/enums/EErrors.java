@@ -52,7 +52,10 @@ public enum EErrors {
             "#015 - Erro ao tentar distribuir os agendamentos do usuário."),
     ERRO_RECUPERAR_TABULACOES(
             "#016 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#016 - Erro ao tentar recuperar os agendamentos do usuário.");
+            "#016 - Erro ao tentar recuperar os agendamentos do usuário."),
+    ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS(
+            "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#017 - Erro ao tentar recuperar usuários permitidos por equipe.");
 
     @Getter
     @Setter
