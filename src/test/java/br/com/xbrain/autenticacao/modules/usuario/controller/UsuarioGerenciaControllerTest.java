@@ -155,9 +155,10 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content", hasSize(3)))
                 .andExpect(jsonPath("$.content[0].id", is(104)))
-                .andExpect(jsonPath("$.content[1].id", is(230)));
+                .andExpect(jsonPath("$.content[1].id", is(108)))
+                .andExpect(jsonPath("$.content[2].id", is(230)));
     }
 
     @Test
