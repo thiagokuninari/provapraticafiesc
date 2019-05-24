@@ -85,6 +85,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .join(cargo.nivel).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.empresas).fetchJoin()
+                        .leftJoin(usuario.organizacao).fetchJoin()
                         .where(usuario.id.eq(id))
                         .distinct()
                         .fetchOne()
