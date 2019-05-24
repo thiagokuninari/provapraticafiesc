@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -200,6 +201,11 @@ public class Usuario {
     @ElementCollection
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
+
+    @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Organizacao organizacao;
 
     @Transient
     private List<Integer> hierarquiasId;
