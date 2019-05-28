@@ -45,8 +45,8 @@ public enum EErrors {
             "#013 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#013 - Erro ao inativar o colaborador de vendas."),
     ERRO_OBTER_AA(
-            "#005 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#005 - Erro ao tentar recuperar o AA.");
+            "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#014 - Erro ao tentar recuperar o AA.");
 
     @Getter
     @Setter
