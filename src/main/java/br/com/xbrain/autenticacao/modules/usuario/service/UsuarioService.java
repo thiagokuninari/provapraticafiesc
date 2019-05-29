@@ -86,6 +86,9 @@ public class UsuarioService {
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
+    private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
+            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -362,6 +365,12 @@ public class UsuarioService {
                     return usuario;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Usuario getUsuarioAtivacao(UsuarioAtivacaoDto usuarioAtivacaoDto) {
+        return Objects.nonNull(usuarioAtivacaoDto.getIdUsuarioAtivacao())
+                ? new Usuario(usuarioAtivacaoDto.getIdUsuarioAtivacao())
+                : new Usuario(autenticacaoService.getUsuarioId());
     }
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
@@ -740,25 +749,33 @@ public class UsuarioService {
 
     @Transactional
     public void ativar(UsuarioAtivacaoDto dto) {
-        Usuario usuario = findComplete(dto.getIdUsuario());
+        var usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
 
-        Usuario usuarioInativacao = dto.getIdUsuarioAtivacao() != null ? new Usuario(dto.getIdUsuarioAtivacao())
-                : new Usuario(autenticacaoService.getUsuarioId());
+        validarAtivacao(usuario);
+        Usuario usuarioAtivacao = getUsuarioAtivacao(dto);
+        usuario.adicionar(new UsuarioHistorico().gerarHistoricoAtivacao(usuarioAtivacao, dto.getObservacao(), usuario));
+        repository.save(usuario);
+    }
 
+    private void validarAtivacao(Usuario usuario) {
         if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
-        } else if (!situacaoAtiva(usuario.getEmail()) && usuario.isAgenteAutorizado()) {
-            throw new ValidacaoException("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
+        } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
+            throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO
+                    + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
+        } else if (!usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()
+                && !encontrouAgenteAutorizadoByUsuarioId(usuario.getId())) {
+            throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         }
-        usuario.adicionar(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao)
-                .observacao(dto.getObservacao())
-                .situacao(ESituacao.A)
-                .build());
-        repository.save(usuario);
+    }
+
+    private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
+        return agenteAutorizadoService.existeAaAtivoByUsuarioId(usuarioId);
+    }
+
+    private boolean encontrouAgenteAutorizadoBySocioEmail(String usuarioEmail) {
+        return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
     public void limparCpfUsuario(Integer id) {
@@ -1173,10 +1190,6 @@ public class UsuarioService {
             usuario.setSituacao(INATIVO);
             repository.save(usuario);
         });
-    }
-
-    public boolean situacaoAtiva(String email) {
-        return agenteAutorizadoClient.recuperarSituacaoAgenteAutorizado(email);
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {

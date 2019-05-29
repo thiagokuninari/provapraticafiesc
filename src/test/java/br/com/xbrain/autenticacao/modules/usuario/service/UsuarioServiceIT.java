@@ -278,13 +278,53 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void naoDeveAtivarUmUsuarioQuandoAgenteAutorizadoInativo() {
+    public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
+        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        service.ativar(UsuarioAtivacaoDto.builder()
+                .idUsuario(245)
+                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+                .build());
+
+        Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
+        assertThat(usuarioLocalizado)
+                .extracting("id", "nome", "email", "cpf", "situacao")
+                .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
+        assertThat(usuarioLocalizado.getHistoricos())
+                .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
+                .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoUsuarioNaoPossuirCpf() {
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("O usuário não pode ser ativo, porque o Agente Autorizado está inativo.");
-        UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
-        usuarioAtivacaoDto.setIdUsuario(243);
-        usuarioAtivacaoDto.setObservacao("Teste ativar");
-        service.ativar(usuarioAtivacaoDto);
+        thrown.expectMessage("O usuário não pode ser ativado por não possuir CPF.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+                .idUsuario(246)
+                .observacao("ATIVANDO UM USUÁRIO")
+                .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
+        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
+                + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+                .idUsuario(245)
+                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+                .build());
+    }
+
+    @Test
+    public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
+        when(agenteAutorizadoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
+        service.ativar(UsuarioAtivacaoDto.builder()
+                .idUsuario(243)
+                .observacao("Teste ativar")
+                .build());
     }
 
     @Test
