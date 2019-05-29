@@ -149,6 +149,9 @@ app-config:
     dashboard-api:
       client: dashboard-api
       secret: d4shb04rd
+    contato-crn-api:
+      client: contato-crn-api
+      secret: c0nt4t0crn4p1
 
   services:
     autenticacao:

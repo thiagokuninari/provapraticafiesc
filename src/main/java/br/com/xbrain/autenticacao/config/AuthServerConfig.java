@@ -76,6 +76,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
+    @Value("${app-config.oauth-clients.contato-crn-api.client}")
+    private String contatoCrnApiClient;
+    @Value("${app-config.oauth-clients.contato-crn-api.secret}")
+    private String contatoCrnApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -167,6 +171,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(dashboardApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("dashboard-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(contatoCrnApiClient)
+                .secret(contatoCrnApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("contato-crn-api")
                 .authorities(ROLE_APPLICATION);
     }
 
