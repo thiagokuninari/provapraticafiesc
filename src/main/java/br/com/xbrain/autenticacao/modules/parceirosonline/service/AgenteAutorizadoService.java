@@ -146,4 +146,21 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
+        try {
+            return agenteAutorizadoClient.existeAaAtivoBySocioEmail(usuarioEmail);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(
+                    ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
+        }
+    }
+
+    public boolean existeAaAtivoByUsuarioId(Integer usuarioId) {
+        try {
+            return agenteAutorizadoClient.existeAaAtivoByUsuarioId(usuarioId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(
+                    ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
+        }
+    }
 }

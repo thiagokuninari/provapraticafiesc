@@ -75,4 +75,14 @@ public class UsuarioHistorico {
     public void atualizarDataUltimoAcesso() {
         this.dataCadastro = LocalDateTime.now();
     }
+
+    public UsuarioHistorico gerarHistoricoAtivacao(Usuario usuarioAlteracao, String observacao, Usuario usuarioAtivado) {
+        return UsuarioHistorico.builder()
+                .dataCadastro(LocalDateTime.now())
+                .usuario(usuarioAtivado)
+                .usuarioAlteracao(usuarioAlteracao)
+                .observacao(observacao)
+                .situacao(ESituacao.A)
+                .build();
+    }
 }
