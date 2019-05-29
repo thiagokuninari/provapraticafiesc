@@ -297,8 +297,8 @@ public class UsuarioServiceIT {
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
         when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("O usuário não pode ser ativo, porque o agente autorizado está inativo/descredenciado. "
-                + "Ou email do sócio está divergente do que está inserido no agente autorizado.");
+        thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
+                + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
         service.ativar(UsuarioAtivacaoDto.builder()
                 .idUsuario(245)
                 .observacao("ATIVANDO O SÓCIO PRINCIPAL")
@@ -309,7 +309,7 @@ public class UsuarioServiceIT {
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
         when(agenteAutorizadoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("O usuário não pode ser ativo, porque o agente autorizado está inativo/descredenciado.");
+        thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
                 .idUsuario(243)
                 .observacao("Teste ativar")

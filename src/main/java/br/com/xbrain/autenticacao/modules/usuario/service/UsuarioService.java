@@ -84,7 +84,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO =
         "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
-            "O usuário não pode ser ativo, porque o agente autorizado está inativo/descredenciado.";
+            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
 
     @Autowired
     @Setter
