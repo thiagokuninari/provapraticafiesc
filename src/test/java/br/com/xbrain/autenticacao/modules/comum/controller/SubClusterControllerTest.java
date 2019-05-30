@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class SubClusterControllerTest {
 
+    private static String API_SUBCLUSTER = "/api/subclusters";
+
     @Autowired
     private MockMvc mvc;
 
@@ -67,5 +69,28 @@ public class SubClusterControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(245)))
                 .andExpect(jsonPath("$[0].nome", is("ABCDM")));
+    }
+
+    @Test
+    public void getById_deveRetornar_quandoORequestForValido() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/45")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(45)));
+    }
+
+    @Test
+    public void getById_deveRetornarNotFound_quandoOSubClusterNaoExistir() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/999")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getById_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/45"))
+                .andExpect(status().isUnauthorized());
     }
 }

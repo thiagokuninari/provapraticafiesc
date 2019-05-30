@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,9 @@ import java.util.stream.Collectors;
 @Service
 public class SubClusterService {
 
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Subcluster não encontrado.");
     @Autowired
     private SubClusterRepository repository;
-
     @Autowired
     private AutenticacaoService autenticacaoService;
 
@@ -40,6 +41,11 @@ public class SubClusterService {
                 .stream()
                 .map(SubClusterDto::of)
                 .collect(Collectors.toList());
+    }
+
+    public SubClusterDto getById(Integer subClusterId) {
+        return repository.findById(subClusterId).map(SubClusterDto::of)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<SubClusterDto> getAllAtivos() {
