@@ -1056,6 +1056,10 @@ public class UsuarioService {
     public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
 
+        return findPermissoesByUsuario(usuario);
+    }
+
+    public UsuarioPermissaoResponse findPermissoesByUsuario(Usuario usuario) {
         return UsuarioPermissaoResponse.of(
                 cargoDepartamentoFuncionalidadeRepository
                         .findFuncionalidadesPorCargoEDepartamento(
