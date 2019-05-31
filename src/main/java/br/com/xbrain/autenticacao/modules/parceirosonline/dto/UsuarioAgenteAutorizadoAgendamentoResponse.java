@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.parceirosonline.dto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 
+import java.util.Objects;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,5 +21,9 @@ public class UsuarioAgenteAutorizadoAgendamentoResponse {
                 .id(usuario.getId())
                 .nome(usuario.getNome())
                 .build();
+    }
+
+    public boolean isUsuarioSolicitante(Integer usuarioSolicitante) {
+        return Objects.equals(usuarioSolicitante, id);
     }
 }

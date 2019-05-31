@@ -148,7 +148,7 @@ public class UsuarioAgendamentoService {
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
 
         return Stream.concat(usuariosHibridosValidos.stream(), vendedoresDoMesmoCanal.stream())
-                .filter(u -> !isUsuarioSolicitante(usuarioId, u))
+                .filter(u -> !u.isUsuarioSolicitante(usuarioId))
                 .distinct()
                 .collect(Collectors.toList());
     }
@@ -175,10 +175,6 @@ public class UsuarioAgendamentoService {
                 .stream()
                 .filter(u -> isCargoHibrido(u.getCargoCodigo()))
                 .collect(Collectors.toList());
-    }
-
-    private boolean isUsuarioSolicitante(Integer usuarioId, UsuarioAgenteAutorizadoAgendamentoResponse response) {
-        return Objects.equals(usuarioId, response.getId());
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> filtrarSupervisoresSemPermissaoDeVenda(List<Usuario> usuarios) {
@@ -215,7 +211,6 @@ public class UsuarioAgendamentoService {
     }
 
     private boolean isVendedor(Cargo cargoDoUsuario) {
-
         return Objects.nonNull(cargoDoUsuario)
                 && Objects.equals(cargoDoUsuario.getNivel().getCodigo(), CodigoNivel.AGENTE_AUTORIZADO)
                 && !isCargoHibrido(cargoDoUsuario.getCodigo());
