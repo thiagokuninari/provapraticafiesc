@@ -57,8 +57,8 @@ public enum EErrors {
             "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_AA(
-            "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#014 - Erro ao tentar recuperar o AA.");
+            "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#018 - Erro ao tentar recuperar o AA.");
 
     @Getter
     @Setter
