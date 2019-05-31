@@ -22,7 +22,7 @@ public class UsuarioFeriasRepositoryTest {
     private UsuarioFeriasRepository usuarioFeriasRepository;
 
     @Test
-    public void getUsuariosInativosComFeriasEmAberto_deveRetornarOsUsuarios() {
+    public void getUsuariosInativosComFeriasEmAberto_deveRetornarOsUsuarios_quandoAsFeriasVenceremNaDataInformada() {
         assertEquals("INATIVO_COMFERIAS_VENCENDO@XBRAIN.COM.BR",
                 usuarioFeriasRepository
                 .getUsuariosInativosComFeriasEmAberto(LocalDate.of(2019, 1, 1))
