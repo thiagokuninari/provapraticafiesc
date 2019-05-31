@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioFeriasService {
@@ -16,14 +17,14 @@ public class UsuarioFeriasService {
     @Autowired
     private UsuarioFeriasRepository repository;
 
-    public UsuarioFerias save(Usuario usuario, UsuarioInativacaoDto usuarioInativacao) {
+    public Optional<UsuarioFerias> save(Usuario usuario, UsuarioInativacaoDto usuarioInativacao) {
         if (usuarioInativacao.isFerias()) {
-            return repository.save(
+            return Optional.of(repository.save(
                 UsuarioFerias.of(usuario,
                         usuarioInativacao.getDataInicio(),
-                        usuarioInativacao.getDataFim()));
+                        usuarioInativacao.getDataFim())));
         }
-        return null;
+        return Optional.empty();
     }
 
     public List<Usuario> getUsuariosInativosComFeriasEmAberto(LocalDate dataFinalFerias) {

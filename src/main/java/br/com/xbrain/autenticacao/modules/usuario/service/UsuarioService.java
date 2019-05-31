@@ -807,7 +807,7 @@ public class UsuarioService {
                 .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
                 .ferias(usuarioFeriasService
-                        .save(usuario, usuarioInativacao))
+                        .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
