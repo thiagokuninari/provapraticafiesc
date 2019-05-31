@@ -416,6 +416,11 @@ public class Usuario {
                 && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
+    public boolean isSocioPrincipal() {
+        return Objects.nonNull(this.cargo)
+                && Objects.equals(this.cargo.getCodigo(), CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
+    }
+
     public void adicionar(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
