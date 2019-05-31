@@ -798,16 +798,16 @@ public class UsuarioService {
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
-        carregarMotivoInativacao(usuarioInativacao);
         usuario.adicionarHistorico(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(usuarioInativacao.getMotivoInativacao())
+                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
                 .usuario(usuario)
                 .usuarioAlteracao(usuarioInativacao
                         .getUsuarioInativacaoTratado(autenticacaoService.getUsuarioId()))
                 .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
-                .ferias(usuarioFeriasService.save(usuario, usuarioInativacao))
+                .ferias(usuarioFeriasService
+                        .save(usuario, usuarioInativacao))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
@@ -843,11 +843,8 @@ public class UsuarioService {
                 .comDataCadastro();
     }
 
-    private void carregarMotivoInativacao(UsuarioInativacaoDto dto) {
-        dto.setMotivoInativacao(
-                !isEmpty(dto.getIdMotivoInativacao())
-                        ? motivoInativacaoService.findById(dto.getIdMotivoInativacao())
-                        : motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao()));
+    private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
+        return motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {

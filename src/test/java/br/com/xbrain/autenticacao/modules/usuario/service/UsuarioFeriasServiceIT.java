@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioFeriasRepository;
 import org.assertj.core.util.Streams;
 import org.junit.Test;
@@ -40,13 +39,9 @@ public class UsuarioFeriasServiceIT {
                 usuarioService.findById(101),
                 UsuarioInativacaoDto
                         .builder()
-                        .motivoInativacao(
-                                MotivoInativacao
-                                        .builder()
-                                        .codigo(CodigoMotivoInativacao.FERIAS)
-                                        .build())
-                        .dataInicio("01/01/2019")
-                        .dataFim("01/02/2019")
+                        .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
+                        .dataInicio(LocalDate.of(2019, 1, 1))
+                        .dataFim(LocalDate.of(2019, 2, 1))
                         .build());
 
         assertThat(Streams.stream(repository.findAll()).collect(Collectors.toList()))
@@ -61,11 +56,7 @@ public class UsuarioFeriasServiceIT {
                 usuarioService.findById(101),
                 UsuarioInativacaoDto
                         .builder()
-                        .motivoInativacao(
-                                MotivoInativacao
-                                        .builder()
-                                        .codigo(CodigoMotivoInativacao.DEMISSAO)
-                                        .build())
+                        .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
                         .build());
 
         assertThat(Streams.stream(

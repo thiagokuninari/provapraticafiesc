@@ -39,6 +39,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -167,8 +168,8 @@ public class UsuarioServiceIT {
                 .builder()
                 .idUsuario(100)
                 .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
-                .dataInicio("01/01/2019")
-                .dataFim("01/02/2019")
+                .dataInicio(LocalDate.of(2019, 1, 1))
+                .dataFim(LocalDate.of(2019, 2, 1))
                 .build());
 
         Usuario usuario = service.findById(100);

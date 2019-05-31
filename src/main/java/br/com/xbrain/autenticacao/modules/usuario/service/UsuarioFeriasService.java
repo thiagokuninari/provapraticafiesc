@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
-import static br.com.xbrain.xbrainutils.DateUtils.parseStringToLocalDate;
-
 @Service
 public class UsuarioFeriasService {
 
@@ -22,8 +20,8 @@ public class UsuarioFeriasService {
         if (usuarioInativacao.isFerias()) {
             return repository.save(
                 UsuarioFerias.of(usuario,
-                        parseStringToLocalDate(usuarioInativacao.getDataInicio()),
-                        parseStringToLocalDate(usuarioInativacao.getDataFim())));
+                        usuarioInativacao.getDataInicio(),
+                        usuarioInativacao.getDataFim()));
         }
         return null;
     }

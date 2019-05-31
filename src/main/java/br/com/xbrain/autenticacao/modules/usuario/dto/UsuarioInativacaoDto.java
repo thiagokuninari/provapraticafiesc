@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +11,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -23,8 +24,6 @@ public class UsuarioInativacaoDto {
     @NotNull
     private Integer idUsuario;
 
-    private Integer idMotivoInativacao;
-
     private Integer idUsuarioInativacao;
 
     private CodigoMotivoInativacao codigoMotivoInativacao;
@@ -32,12 +31,11 @@ public class UsuarioInativacaoDto {
     @Size(max = 250)
     private String observacao;
 
-    private String dataInicio;
+    @JsonFormat(pattern = "")
+    private LocalDate dataInicio;
 
-    private String dataFim;
-
-    @JsonIgnore
-    private MotivoInativacao motivoInativacao;
+    @JsonFormat(pattern = "")
+    private LocalDate dataFim;
 
     @JsonIgnore
     public Usuario getUsuarioInativacaoTratado(Integer usuarioAutenticadoId) {
@@ -48,8 +46,7 @@ public class UsuarioInativacaoDto {
 
     @JsonIgnore
     public boolean isFerias() {
-        return !isEmpty(motivoInativacao)
-                && motivoInativacao.getCodigo() == CodigoMotivoInativacao.FERIAS
+        return codigoMotivoInativacao == CodigoMotivoInativacao.FERIAS
                 && !isEmpty(dataInicio)
                 && !isEmpty(dataFim);
     }
