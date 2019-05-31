@@ -2,10 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,7 +13,9 @@ import javax.validation.constraints.Size;
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class MotivoInativacao {
 
     @Id

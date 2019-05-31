@@ -58,7 +58,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = false)
+    @Column(name = "EMAIL_01", nullable = false, length = 80)
     private String email;
 
     @Email
@@ -82,7 +82,7 @@ public class Usuario {
 
     @NotNull
     @CPF
-    @Column(name = "CPF", length = 14, unique = false)
+    @Column(name = "CPF", length = 14)
     private String cpf;
 
     @Size(max = 25)
@@ -420,7 +420,7 @@ public class Usuario {
                 && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
-    public void adicionar(UsuarioHistorico historico) {
+    public void adicionarHistorico(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
         }

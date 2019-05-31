@@ -534,7 +534,6 @@ public class UsuarioGerenciaControllerTest {
 
     private UsuarioInativacaoDto umUsuarioParaInativar() {
         UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
-        dto.setDataCadastro(LocalDateTime.now());
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
         dto.setIdMotivoInativacao(1);
