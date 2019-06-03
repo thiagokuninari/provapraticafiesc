@@ -56,6 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -152,6 +153,8 @@ public class UsuarioService {
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Autowired
     private EquipeVendaService equipeVendaService;
+    @Autowired
+    private UsuarioFeriasService usuarioFeriasService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -754,7 +757,7 @@ public class UsuarioService {
 
         validarAtivacao(usuario);
         Usuario usuarioAtivacao = getUsuarioAtivacao(dto);
-        usuario.adicionar(new UsuarioHistorico().gerarHistoricoAtivacao(usuarioAtivacao, dto.getObservacao(), usuario));
+        usuario.adicionarHistorico(new UsuarioHistorico().gerarHistoricoAtivacao(usuarioAtivacao, dto.getObservacao(), usuario));
         repository.save(usuario);
     }
 
@@ -768,6 +771,7 @@ public class UsuarioService {
                 && !encontrouAgenteAutorizadoByUsuarioId(usuario.getId())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         }
+        repository.save(usuario);
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
@@ -791,21 +795,19 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void inativar(UsuarioInativacaoDto dto) {
-        Usuario usuario = findComplete(dto.getIdUsuario());
+    public void inativar(UsuarioInativacaoDto usuarioInativacao) {
+        Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
-        MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
-
-        Usuario usuarioInativacao = !isEmpty(dto.getIdUsuarioInativacao()) ? new Usuario(dto.getIdUsuarioInativacao())
-                : new Usuario(autenticacaoService.getUsuarioId());
-
-        usuario.adicionar(UsuarioHistorico.builder()
+        usuario.adicionarHistorico(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(motivoInativacao)
+                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
                 .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao)
-                .observacao(dto.getObservacao())
+                .usuarioAlteracao(usuarioInativacao
+                        .getUsuarioInativacaoTratado(autenticacaoService.getUsuarioId()))
+                .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
+                .ferias(usuarioFeriasService
+                        .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
@@ -842,8 +844,7 @@ public class UsuarioService {
     }
 
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
-        return !isEmpty(dto.getIdMotivoInativacao()) ? new MotivoInativacao(dto.getIdMotivoInativacao()) :
-                motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
+        return motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
@@ -1287,4 +1288,14 @@ public class UsuarioService {
                 usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());
     }
 
+    public void reativarUsuariosInativosComFeriasTerminando(LocalDate dataFinalFerias) {
+        usuarioFeriasService.getUsuariosInativosComFeriasEmAberto(dataFinalFerias)
+                .forEach(usuario -> ativar(
+                        UsuarioAtivacaoDto
+                                .builder()
+                                .idUsuario(usuario.getId())
+                                .observacao("Usuário reativado automaticamente devido ao término de férias")
+                                .idUsuarioAtivacao(usuario.getId())
+                                .build()));
+    }
 }

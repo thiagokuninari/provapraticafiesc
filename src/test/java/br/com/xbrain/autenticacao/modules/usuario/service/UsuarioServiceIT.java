@@ -39,7 +39,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -95,6 +95,8 @@ public class UsuarioServiceIT {
     private EquipeVendaClient equipeVendaClient;
     @MockBean
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @MockBean
+    private UsuarioFeriasService usuarioFeriasService;
 
     @Before
     public void setUp() {
@@ -115,7 +117,7 @@ public class UsuarioServiceIT {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         service.saveFromQueue(usuarioMqRequest);
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
-        Assert.assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
+        assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
     }
 
@@ -135,7 +137,7 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
+        assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
     }
 
     @Test
@@ -145,7 +147,7 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setEmail("EMAILALTERADO@XBRAIN.COM.BR");
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
+        assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
     }
 
     @Test
@@ -153,12 +155,27 @@ public class UsuarioServiceIT {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
-        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
         verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
+    public void inativar_deveGerarUsuarioFerias_quandoOMotivoDaInativacaoForFerias() {
+        service.inativar(UsuarioInativacaoDto
+                .builder()
+                .idUsuario(100)
+                .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
+                .dataInicio(LocalDate.of(2019, 1, 1))
+                .dataFim(LocalDate.of(2019, 2, 1))
+                .build());
+
+        Usuario usuario = service.findById(100);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
+
+        verify(usuarioFeriasService, atLeastOnce()).save(eq(usuario), any());
     }
 
     @Test
@@ -168,7 +185,6 @@ public class UsuarioServiceIT {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(227);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
-        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, never()).sendInativar(any());
@@ -181,7 +197,6 @@ public class UsuarioServiceIT {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(205);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
-        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
@@ -194,7 +209,6 @@ public class UsuarioServiceIT {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(204);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
-        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
@@ -207,7 +221,6 @@ public class UsuarioServiceIT {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(203);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
-        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
@@ -218,7 +231,7 @@ public class UsuarioServiceIT {
         Usuario usuarioRealocar = new Usuario();
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
-        Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
+        assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
     }
 
     @Test
@@ -229,12 +242,12 @@ public class UsuarioServiceIT {
         usuarioRepository.findAllByCpf("21145664523")
                 .forEach(usuario -> {
                     if (usuario.getSituacao().equals(ESituacao.A)) {
-                        Assert.assertEquals(ESituacao.A, usuario.getSituacao());
+                        assertEquals(ESituacao.A, usuario.getSituacao());
                     } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        Assert.assertEquals(ESituacao.R, usuario.getSituacao());
+                        assertEquals(ESituacao.R, usuario.getSituacao());
                     }
                 });
-        Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
+        assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
     @Test
@@ -262,8 +275,8 @@ public class UsuarioServiceIT {
     public void updateFromQueue_naoRealocaUsuario_quandoSituacaoForInativa() {
         service.updateFromQueue(umUsuarioInativo());
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
-        Assert.assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
-        Assert.assertEquals(1, usuarios.size());
+        assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
+        assertEquals(1, usuarios.size());
     }
 
     @Test
@@ -344,14 +357,14 @@ public class UsuarioServiceIT {
         usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getAlterarSenha(), Eboolean.V);
+        assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
 
     @Test
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
         Usuario usuario = service.findById(100);
-        Assert.assertEquals(usuario.getCpf(), null);
+        assertEquals(usuario.getCpf(), null);
     }
 
     @Test

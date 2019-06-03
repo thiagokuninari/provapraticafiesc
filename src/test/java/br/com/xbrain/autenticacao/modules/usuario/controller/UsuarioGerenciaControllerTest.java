@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -534,10 +535,9 @@ public class UsuarioGerenciaControllerTest {
 
     private UsuarioInativacaoDto umUsuarioParaInativar() {
         UsuarioInativacaoDto dto = new UsuarioInativacaoDto();
-        dto.setDataCadastro(LocalDateTime.now());
         dto.setIdUsuario(ID_USUARIO_HELPDESK);
         dto.setObservacao("Teste inativação");
-        dto.setIdMotivoInativacao(1);
+        dto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
         return dto;
     }
 
