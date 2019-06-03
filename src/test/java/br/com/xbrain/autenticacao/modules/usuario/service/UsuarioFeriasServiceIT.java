@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioFeriasRepository;
-import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class UsuarioFeriasServiceIT {
                         .dataFim(LocalDate.of(2019, 2, 1))
                         .build());
 
-        assertThat(Lists.newArrayList(repository.findAll()))
+        assertThat(repository.findAll())
                 .extracting("inicio", "fim")
                 .contains(
                         tuple(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)));
@@ -58,6 +57,6 @@ public class UsuarioFeriasServiceIT {
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
                         .build());
 
-        assertThat(Lists.newArrayList(repository.findAll())).isEmpty();
+        assertThat(repository.findAll()).isEmpty();
     }
 }
