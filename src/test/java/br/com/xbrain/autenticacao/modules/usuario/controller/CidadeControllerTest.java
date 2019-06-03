@@ -1,11 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -17,6 +22,8 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class CidadeControllerTest {
 
+    @SpyBean
+    private CidadeService cidadeService;
     @Autowired
     private MockMvc mvc;
 
@@ -55,6 +64,22 @@ public class CidadeControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("LONDRINA")));
+    }
+
+    @Test
+    public void getCidadeSubcluster_deveRetornarCidadeComSubClusterPorUfAndCidadeNome_seExistir() throws Exception {
+
+        doReturn(umaCidade()).when(cidadeService).findByUfNomeAndCidadeNome(any(), any());
+        mvc.perform(get("/api/cidades/recuperar-cidade/PR/LONDRINA")
+
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idCidade", is(5578)))
+                .andExpect(jsonPath("$.idSubcluster", is(189)))
+                .andExpect(jsonPath("$.idUf", is(1)))
+                .andExpect(jsonPath("$.nomeCidade", is("LONDRINA")))
+                .andExpect(jsonPath("$.nomeUf", is("PARANA")));
     }
 
     @Test
@@ -155,5 +180,15 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
                 .andExpect(jsonPath("$[0].netUno", is("V")))
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    private Cidade umaCidade() {
+
+        return Cidade.builder()
+                .id(5578)
+                .nome("LONDRINA")
+                .subCluster(SubCluster.builder().id(189).build())
+                .uf(Uf.builder().id(1).nome("PARANA").build())
+                .build();
     }
 }

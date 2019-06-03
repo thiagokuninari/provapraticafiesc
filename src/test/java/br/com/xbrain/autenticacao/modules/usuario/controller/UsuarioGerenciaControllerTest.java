@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -48,8 +49,7 @@ import java.util.List;
 
 import static com.google.common.io.ByteStreams.toByteArray;
 import static helpers.TestsHelper.*;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.HELP_DESK;
+import static helpers.Usuarios.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
@@ -86,14 +86,14 @@ public class UsuarioGerenciaControllerTest {
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
+    public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void deveTerPermissaoDeGerenciaDeUsuario() throws Exception {
+    public void getAll_deveRetornarForbidden_quandoNaoTiverPermissaoParaGerenciaDeUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
@@ -101,15 +101,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void somenteUsuariosComPermissaoDeGerenciaDeUsuariosPodeTerAcesso() throws Exception {
-        mvc.perform(get("/api/usuarios")
-                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void deveRetornarPorId() throws Exception {
+    public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia/" + ID_USUARIO_HELPDESK)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -120,7 +112,7 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarPorEmail() throws Exception {
+    public void getAll_deveFiltrarPorEmail_quandoOFiltroForPassado() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -130,23 +122,59 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void deveRetornarTodos() throws Exception {
+    public void getAll_deveRetornarTodosOsUsuarios_quandoForAdmin() throws Exception {
         mvc.perform(get("/api/usuarios/gerencia")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content", hasSize(8)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
     @Test
-    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/cargo-superior/4")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+    public void getAll_deveNaoRetornarOsUsuariosXbrain_quandoForNivelMso() throws Exception {
+        mvc.perform(get("/api/usuarios/gerencia")
+                .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(4)))
+                .andExpect(jsonPath("$.content[0].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[1].nome", is("Assistente NET")))
+                .andExpect(jsonPath("$.content[2].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.content[3].nome", is("Mso Analista Adm Claro Pessoal")));
+    }
+
+    @Test
+    public void getAll_deveRetornarOsUsuariosPermitidosPeloEquipeVendas_quandoForCargoAssistente() throws Exception {
+        when(equipeVendaService.getUsuariosPermitidos())
+                .thenReturn(List.of(
+                        EquipeVendaUsuarioResponse.builder().usuarioId(104).build(),
+                        EquipeVendaUsuarioResponse.builder().usuarioId(230).build()));
+
+        mvc.perform(get("/api/usuarios/gerencia")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[0].id", is(104)))
+                .andExpect(jsonPath("$.content[1].id", is(108)))
+                .andExpect(jsonPath("$.content[2].id", is(230)));
+    }
+
+    @Test
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
+        mvc.perform(post("/api/usuarios/gerencia/cargo-superior/4")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                        UsuarioCargoSuperiorPost
+                                .builder()
+                                .cidadeIds(List.of(1, 5578))
+                                .build())))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")));
+                .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
@@ -356,7 +384,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(100)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(103)))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(1)));
     }
 
@@ -501,13 +529,6 @@ public class UsuarioGerenciaControllerTest {
         dto.setSenhaAtual("123456");
         dto.setSenhaNova("654321");
         dto.setIgnorarSenhaAtual(Boolean.FALSE);
-        return dto;
-    }
-
-    private UsuarioAtivacaoDto umUsuarioParaAtivar() {
-        UsuarioAtivacaoDto dto = new UsuarioAtivacaoDto();
-        dto.setIdUsuario(ID_USUARIO_HELPDESK);
-        dto.setObservacao("Teste ativação");
         return dto;
     }
 

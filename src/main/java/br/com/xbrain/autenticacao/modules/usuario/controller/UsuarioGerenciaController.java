@@ -58,9 +58,10 @@ public class UsuarioGerenciaController {
         return service.getUsuariosHierarquia(nivelId);
     }
 
-    @GetMapping("/cargo-superior/{cargoId}")
-    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId) {
-        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId));
+    @PostMapping(value = "/cargo-superior/{cargoId}")
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
+                                                                    @RequestBody UsuarioCargoSuperiorPost post) {
+        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
     }
 
     @GetMapping(params = "email")

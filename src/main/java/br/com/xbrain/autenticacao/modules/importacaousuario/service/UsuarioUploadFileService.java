@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
-import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -18,11 +17,11 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.xbrainutils.NumberUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,8 +39,10 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.importacaousuario.util.CpfUtil.adicionarZerosAEsquerda;
 import static br.com.xbrain.autenticacao.modules.importacaousuario.util.CpfUtil.isCpfValido;
+import static br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil.*;
 
 @Service
+@Slf4j
 public class UsuarioUploadFileService {
 
     private static final String SENHA_PADRAO = "102030";
@@ -50,7 +51,6 @@ public class UsuarioUploadFileService {
     private static final int TAMANHO_MAX_EMAIL = 80;
     private static final int TAMANHO_MAX_NOME = 100;
     private static final int RADIX_LONG = 36;
-    private final Logger log = LoggerFactory.getLogger(UsuarioUploadFileService.class);
     @Autowired
     private CargoRepository cargoRepository;
     @Autowired
@@ -89,29 +89,28 @@ public class UsuarioUploadFileService {
         }
     }
 
-    protected String tratarSenha(boolean senhaPadrao) {
-        return senhaPadrao
-                ? SENHA_PADRAO : getSenhaRandomica();
+    protected String tratarSenha(boolean isSenhaPadrao) {
+        return isSenhaPadrao ? SENHA_PADRAO : getSenhaRandomica();
     }
 
     protected UsuarioImportacaoPlanilha buildUsuario(Row row, String senha, boolean resetarSenhaUsuarioSalvo) {
 
-        Nivel nivel = recuperarNivel(row.getCell(NumeroCelulaUtil.CELULA_NIVEL).getStringCellValue());
+        Nivel nivel = recuperarNivel(row.getCell(CELULA_NIVEL).getStringCellValue());
 
         Departamento departamento = recuperarDepartamento(
-                row.getCell(NumeroCelulaUtil.CELULA_DEPARTAMENTO)
+                row.getCell(CELULA_DEPARTAMENTO)
                         .getStringCellValue(), nivel);
 
-        Cargo cargo = recuperarCargo(row.getCell(NumeroCelulaUtil.CELULA_CARGO)
+        Cargo cargo = recuperarCargo(row.getCell(CELULA_CARGO)
                 .getStringCellValue(), nivel);
 
         UsuarioImportacaoPlanilha usuario = UsuarioImportacaoPlanilha
                 .builder()
-                .nome(row.getCell(NumeroCelulaUtil.CELULA_NOME).getStringCellValue())
-                .cpf(row.getCell(NumeroCelulaUtil.CELULA_CPF).getStringCellValue())
-                .email(row.getCell(NumeroCelulaUtil.CELULA_EMAIL).getStringCellValue())
-                .nascimento(trataData(row.getCell(NumeroCelulaUtil.CELULA_NACIMENTO)))
-                .telefone(row.getCell(NumeroCelulaUtil.CELULA_TELEFONE).getStringCellValue())
+                .nome(recuperarValorCelula(row, CELULA_NOME))
+                .cpf(NumberUtils.getOnlyNumbers(recuperarValorCelula(row, CELULA_CPF)))
+                .email(recuperarValorCelula(row, CELULA_EMAIL))
+                .nascimento(trataData(row.getCell(CELULA_NACIMENTO)))
+                .telefone(recuperarValorCelula(row, CELULA_TELEFONE))
                 .senha(passwordEncoder.encode(senha))
                 .departamento(departamento)
                 .cargo(cargo)
@@ -119,6 +118,10 @@ public class UsuarioUploadFileService {
                 .build();
 
         return validarUsuario(usuario, resetarSenhaUsuarioSalvo);
+    }
+
+    private String recuperarValorCelula(Row row, int celulaNome) {
+        return row.getCell(celulaNome).getStringCellValue().trim();
     }
 
     protected UsuarioImportacaoPlanilha validarUsuario(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
@@ -147,12 +150,9 @@ public class UsuarioUploadFileService {
 
     protected Departamento recuperarDepartamento(String departamentoStr, Nivel nivel) {
         Departamento departamento = null;
-        if (nivel != null) {
+        if (!ObjectUtils.isEmpty(nivel)) {
             try {
-                CodigoDepartamento codigoDepartamento = CodigoDepartamento
-                        .valueOf(
-                                trataString(departamentoStr)
-                        );
+                CodigoDepartamento codigoDepartamento = CodigoDepartamento.valueOf(trataString(departamentoStr));
                 Optional<Departamento> optionalDepartamento = departamentoRepository
                         .findByCodigoAndNivelId(codigoDepartamento, nivel.getId());
                 if (optionalDepartamento.isPresent()) {
@@ -170,14 +170,13 @@ public class UsuarioUploadFileService {
 
     protected Cargo recuperarCargo(String nome, Nivel nivel) {
         Cargo cargo = null;
-        if (nivel != null) {
+        if (!ObjectUtils.isEmpty(nivel)) {
             Optional<Cargo> optionalCargo = cargoRepository
                     .findFirstByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
             if (optionalCargo.isPresent()) {
                 cargo = optionalCargo.get();
             } else {
-                log.error("Não foi encontrado nenhum cargo com o nivelId "
-                        + nivel.getId() + " e com o nome " + nome);
+                log.error("Não foi encontrado nenhum cargo com o nivelId " + nivel.getId() + " e com o nome " + nome);
             }
         }
         return cargo;
