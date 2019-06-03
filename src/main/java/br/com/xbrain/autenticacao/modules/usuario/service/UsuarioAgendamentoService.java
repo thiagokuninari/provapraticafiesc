@@ -72,7 +72,7 @@ public class UsuarioAgendamentoService {
 
         var colaboradorVendas =
                 colaboradorVendasService.getEquipeVendasSupervisorDoUsuarioId(usuarioId)
-                .orElseGet(() -> new EquipeVendasSupervisorResponse(null, null));
+                .orElseGet(EquipeVendasSupervisorResponse::empty);
 
         return agenteAutorizadoService.getAgentesAutorizadosPermitidos()
                 .stream()
@@ -185,10 +185,7 @@ public class UsuarioAgendamentoService {
     }
 
     private boolean isSupervisorComPermissaoDeVenda(Usuario usuario) {
-        if (isSupervisor(usuario.getCargoCodigo())) {
-            return hasPermissaoVenda(usuarioService.findPermissoesByUsuario(usuario));
-        }
-        return true;
+        return !isSupervisor(usuario.getCargoCodigo()) || hasPermissaoVenda(usuarioService.findPermissoesByUsuario(usuario));
     }
 
     private boolean hasPermissaoVenda(UsuarioPermissaoResponse usuarioPermissaoResponse) {
