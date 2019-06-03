@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioFeriasRepository;
-import org.assertj.core.util.Streams;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
@@ -44,7 +43,7 @@ public class UsuarioFeriasServiceIT {
                         .dataFim(LocalDate.of(2019, 2, 1))
                         .build());
 
-        assertThat(Streams.stream(repository.findAll()).collect(Collectors.toList()))
+        assertThat(Lists.newArrayList(repository.findAll()))
                 .extracting("inicio", "fim")
                 .contains(
                         tuple(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)));
@@ -59,9 +58,6 @@ public class UsuarioFeriasServiceIT {
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
                         .build());
 
-        assertThat(Streams.stream(
-                repository.findAll())
-                .collect(Collectors.toList()))
-                .isEmpty();
+        assertThat(Lists.newArrayList(repository.findAll())).isEmpty();
     }
 }
