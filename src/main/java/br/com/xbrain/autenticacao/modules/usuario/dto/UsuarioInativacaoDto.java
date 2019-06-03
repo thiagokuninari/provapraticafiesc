@@ -31,10 +31,10 @@ public class UsuarioInativacaoDto {
     @Size(max = 250)
     private String observacao;
 
-    @JsonFormat(pattern = "")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataInicio;
 
-    @JsonFormat(pattern = "")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFim;
 
     @JsonIgnore
