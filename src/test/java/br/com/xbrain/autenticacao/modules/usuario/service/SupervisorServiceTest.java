@@ -1,19 +1,26 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepositoryImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doReturn;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -44,6 +51,8 @@ public class SupervisorServiceTest {
 
     @Autowired
     private SupervisorService service;
+    @SpyBean
+    private UsuarioRepositoryImpl usuarioRepository;
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
@@ -121,36 +130,49 @@ public class SupervisorServiceTest {
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
-        assertThat(
-                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LONDRINA_ID))
-                .extracting("nome", "codigoCargo")
-                .containsExactly(
-                        tuple("VENDEDOR LONDRINA", VENDEDOR_OPERACAO),
-                        tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO));
+
+        doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
+                .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
+                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
                 .extracting("nome", "codigoCargo")
                 .containsExactly(
-                        tuple("VENDEDOR ARAPONGAS", VENDEDOR_OPERACAO),
-                        tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO));
+                        tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
+                        tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
+                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
+                .extracting("nome", "codigoCargo")
+                .containsExactly(
+                        tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
+                        tuple("VENDEDOR", VENDEDOR_OPERACAO));
+
+        doReturn(emptyList())
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
+
+        assertThat(
+                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
                 .isEmpty();
     }
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
+        doReturn(emptyList())
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+
         assertThat(
-                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
+                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
     }
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
+        doReturn(emptyList())
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+
         assertThat(
-                service.getAssistentesEVendedoresD2dDaCidadeDoSupervisor(SUPERVISOR_LINS_ID))
+                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
     }
 }

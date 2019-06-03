@@ -5,18 +5,20 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -24,15 +26,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.SOCIO_AA;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,10 +61,12 @@ public class UsuarioControllerTest {
     private EmailService emailService;
     @Autowired
     private JsonWebTokenService jsonWebTokenService;
+    @SpyBean
+    private UsuarioService usuarioService;
 
     @Before
     public void setup() {
-        Mockito.when(autenticacaoService.getUsuarioId())
+        when(autenticacaoService.getUsuarioId())
                 .thenReturn(100);
     }
 
@@ -296,8 +302,35 @@ public class UsuarioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].value", is(189)))
-                .andExpect(jsonPath("$[0].label", is("LONDRINA")));
+                .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
 
+    }
+
+    @Test
+    public void getPermissoesPorUsuarios_throwException_QuandoParametrosVazios() throws Exception {
+        mvc.perform(get("/api/usuarios/permissoes-por-usuario")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "O campo permissoes é obrigatório.",
+                        "O campo usuariosId é obrigatório.")));
+    }
+
+    @Test
+    public void getPermissoesPorUsuarios_usuarioComPermissoes_QuandoFornecidoParametros() throws Exception {
+        doReturn(Collections.singletonList(
+                new UsuarioPermissoesResponse(
+                        2844,
+                        Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
+                .when(usuarioService).findUsuariosByPermissoes(any());
+        mvc.perform(get("/api/usuarios/permissoes-por-usuario?usuariosId=2844&permissoes=ROLE_VDS_TABULACAO_CLICKTOCALL")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].usuarioId", is(2844)))
+                .andExpect(jsonPath("$[0].permissoes", containsInAnyOrder("ROLE_VDS_TABULACAO_CLICKTOCALL")));
     }
 
     private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {

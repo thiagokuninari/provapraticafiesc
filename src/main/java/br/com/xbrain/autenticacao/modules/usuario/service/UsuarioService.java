@@ -17,6 +17,8 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -57,6 +59,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
@@ -76,13 +79,13 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
+    private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
+            + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final String MSG_ERRO_AO_INATIVAR_USUARIO =
-        "ocorreu um erro desconhecido na rotina de inativar usuários que estão a mais de 32 dias sem efetuar login no sistema.";
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
             "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
 
@@ -147,6 +150,8 @@ public class UsuarioService {
     private FuncionalidadeService funcionalidadeService;
     @Autowired
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
+    @Autowired
+    private EquipeVendaService equipeVendaService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -157,7 +162,7 @@ public class UsuarioService {
     @Transactional
     public Usuario findById(int id) {
         UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa();
+        predicate.ignorarAa(true);
         predicate.comId(id);
         Usuario usuario = repository.findOne(predicate.build());
         usuario.forceLoad();
@@ -577,12 +582,7 @@ public class UsuarioService {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
                 .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         usuario.removerCaracteresDoCpf();
-        boolean isAlteracao = false;
-        if (!isEmpty(usuario.getCpf())
-            && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf())) {
-            isAlteracao = true;
-        }
-        return isAlteracao;
+        return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
     @Transactional
@@ -853,12 +853,13 @@ public class UsuarioService {
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
-    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId) {
-        Cargo cargo = cargoService.findById(cargoId);
-        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
-        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
-        usuarioPredicate.comCargos(cargo.getCargosSuperioresId());
-        return repository.getUsuariosFilter(usuarioPredicate.build());
+    public List<Usuario> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
+        return repository.getUsuariosFilter(
+                new UsuarioPredicate()
+                        .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                        .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                        .comCidade(cidadesId)
+                        .build());
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
@@ -1236,6 +1237,17 @@ public class UsuarioService {
         return predicate;
     }
 
+    public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
+        return IntStream.concat(
+                equipeVendaService
+                        .getUsuariosPermitidos()
+                        .stream()
+                        .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
+                IntStream.of(autenticacaoService.getUsuarioId()))
+                .boxed()
+                .collect(Collectors.toList());
+    }
+
     private String getCsv(List<UsuarioCsvResponse> usuarios) {
         return UsuarioCsvResponse.getCabecalhoCsv()
                 + (!usuarios.isEmpty()
@@ -1266,7 +1278,13 @@ public class UsuarioService {
         return repository
                 .getSubclustersUsuario(usuarioId)
                 .stream()
-                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
+                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
                 .collect(Collectors.toList());
     }
+
+    public List<UsuarioPermissoesResponse> findUsuariosByPermissoes(UsuarioPermissoesRequest usuarioPermissoesRequest) {
+        return repository.getUsuariosIdAndPermissoes(usuarioPermissoesRequest.getUsuariosId(),
+                usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());
+    }
+
 }

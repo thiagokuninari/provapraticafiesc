@@ -12,6 +12,7 @@ public enum CodigoFuncionalidade {
     AUT_VISUALIZAR_CARTEIRA_HIERARQUIA("Visualizar Carteira/Hierarquia"),
     AUT_2033("Solicitar Ramal"),
     AUT_2034("Gerenciar Solicitacao Ramal"),
+    AUT_2035("Distribuir Agendamentos"),
     AUT_2023("Gerenciar Cargos"),
     AUT_EMULAR_USUARIO("Emular Usuários"),
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),

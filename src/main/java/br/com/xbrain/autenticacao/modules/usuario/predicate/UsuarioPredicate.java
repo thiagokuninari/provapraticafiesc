@@ -7,10 +7,13 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -19,6 +22,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -28,6 +32,8 @@ import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
+
+    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
 
@@ -97,8 +103,17 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate ignorarAa() {
-        builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
+    public UsuarioPredicate ignorarAa(Boolean ignorar) {
+        if (ignorar) {
+            builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate ignorarXbrain(Boolean ignorar) {
+        if (ignorar) {
+            builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.XBRAIN));
+        }
         return this;
     }
 
@@ -131,8 +146,13 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCidade(List<Integer> cidadesIds) {
-        if (!cidadesIds.isEmpty()) {
-            builder.and(usuario.cidades.any().cidade.id.in(cidadesIds));
+        if (!ObjectUtils.isEmpty(cidadesIds)) {
+            builder.and(
+                    ExpressionUtils.anyOf(
+                            Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                                    .stream()
+                                    .map(ids -> usuario.cidades.any().cidade.id.in(ids))
+                                    .collect(Collectors.toList())));
         }
         return this;
     }
@@ -227,11 +247,13 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
-        if (!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA)) {
-            ignorarAa();
-        }
+        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
+        ignorarXbrain(!usuario.isXbrain());
 
-        if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+        if (usuario.getCargoCodigo() == CodigoCargo.ASSISTENTE_OPERACAO) {
+            comIds(usuarioService.getUsuariosPermitidosPelaEquipeDeVenda());
+
+        } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                     usuario.getUsuario().getId());
@@ -239,7 +261,6 @@ public class UsuarioPredicate {
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
-
         return this;
     }
 

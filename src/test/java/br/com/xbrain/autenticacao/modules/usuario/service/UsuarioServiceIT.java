@@ -49,7 +49,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -151,7 +150,6 @@ public class UsuarioServiceIT {
 
     @Test
     public void inativar_deveInativarUmUsuario_seAtivo() {
-
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
@@ -160,11 +158,24 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findById(100);
         Assert.assertEquals(usuario.getSituacao(), ESituacao.I);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
     @Test
-    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
+    public void inativar_deveNaoEnviarParaInativarNoEquipeVendas_sePossuirCargoGerente() {
+        doReturn(umUsuarioGerente()).when(service).findComplete(227);
+
+        UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
+        usuarioInativacaoDto.setIdUsuario(227);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
+        usuarioInativacaoDto.setObservacao("Teste inativar");
+        service.inativar(usuarioInativacaoDto);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoSupervisor() {
         doReturn(umUsuarioSupervisor()).when(service).findComplete(205);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -173,7 +184,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(0)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -186,7 +197,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -199,7 +210,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setDataCadastro(LocalDateTime.now());
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, times(1)).sendInativar(any());
+        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -208,27 +219,6 @@ public class UsuarioServiceIT {
         usuarioRealocar.setId(366);
         service.salvarUsuarioRealocado(usuarioRealocar);
         Assert.assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
-    }
-
-    @Test
-    public void updateFromQueue_deveAlterarCpf_seNovoCpfValido() throws Exception {
-        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
-        usuarioMqRequest.setId(368);
-        usuarioMqRequest.setCpf("43185104099");
-        service.updateFromQueue(usuarioMqRequest);
-        Usuario usuario = usuarioRepository
-                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
-        assertNotNull(usuario);
-    }
-
-    @Test
-    public void updateFromQueue_deveLancarException_seNovoCpfInvalido() throws Exception {
-        UsuarioDto usuarioDto = new UsuarioDto();
-        usuarioDto.setId(368);
-        usuarioDto.setCpf("41842888803");
-        assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
-                .withMessage("CPF já cadastrado.");
     }
 
     @Test
@@ -245,6 +235,27 @@ public class UsuarioServiceIT {
                     }
                 });
         Assert.assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
+    }
+
+    @Test
+    public void updateFromQueue_deveAlterarCpf_seNovoCpfValido() throws Exception {
+        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        usuarioMqRequest.setId(368);
+        usuarioMqRequest.setCpf("43185104099");
+        service.updateFromQueue(usuarioMqRequest);
+        Usuario usuario = usuarioRepository
+                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+        Assert.assertNotNull(usuario);
+    }
+
+    @Test
+    public void updateFromQueue_deveLancarException_seNovoCpfInvalido() throws Exception {
+        UsuarioDto usuarioDto = new UsuarioDto();
+        usuarioDto.setId(368);
+        usuarioDto.setCpf("41842888803");
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+                .withMessage("CPF já cadastrado.");
     }
 
     @Test
@@ -539,24 +550,27 @@ public class UsuarioServiceIT {
         return usuarioMqRequest;
     }
 
+    private Usuario umUsuarioGerente() {
+        var usuario = usuarioRepository.findOne(227);
+        usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.GERENTE_OPERACAO));
+        return usuario;
+    }
+
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.SUPERVISOR_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioAssistente() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
-
         return usuario;
     }
 
     private Usuario umUsuarioVendedorD2d() {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.VENDEDOR_OPERACAO));
-
         return usuario;
     }
 

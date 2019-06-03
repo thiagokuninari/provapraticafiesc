@@ -85,6 +85,7 @@ app-config:
 
   topic:
     autenticacao: autenticacao.topic
+    mailing: mailing.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -106,6 +107,7 @@ app-config:
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
+    distribuir-tabulacoes: distribuir-tabulacoes.queue
 
   oauth-clients:
     autenticacao-api:
@@ -120,6 +122,9 @@ app-config:
     integracao-vendas-api:
       client: integracao-vendas-api
       secret: 1nt3gr4c40v3nd4s4p1
+    integracao-brscan-api:
+      client: integracao-brscan-api
+      secret: 1nt3gr4c40brsc4n
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
@@ -147,19 +152,19 @@ app-config:
 
   services:
     autenticacao:
-      #url: http://localhost:8096
-      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      url: http://localhost:8096
+      #url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      #url: http://localhost:8099
+      # url: http://localhost:8099
     vendas:
-      #url: http://localhost:8097
+      # url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-      #url: http://localhost:8095
+      # url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
@@ -200,6 +205,7 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 300000
+  shareSecurityContext: true
 
 keys:
   public: |

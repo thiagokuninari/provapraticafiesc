@@ -33,8 +33,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 
 @Data
 @ToString(of = "id")
@@ -398,7 +397,7 @@ public class Usuario {
 
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo)
-                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
+                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)
                 .contains(cargo.getCodigo());
     }
 
@@ -418,7 +417,7 @@ public class Usuario {
 
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
-                && Objects.equals(this.cargo.getCodigo(), CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
+                && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
     public void adicionar(UsuarioHistorico historico) {
