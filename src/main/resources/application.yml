@@ -149,6 +149,9 @@ app-config:
     dashboard-api:
       client: dashboard-api
       secret: d4shb04rd
+    discadora-eccp-api:
+      client: discadora-eccp-api
+      secret: d1sc4d0r43ccp4p1
 
   services:
     autenticacao:
