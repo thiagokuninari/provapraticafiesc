@@ -3,10 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.service.ClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +21,10 @@ public class ClusterController {
         } else {
             return service.getAllAtivo();
         }
+    }
+
+    @GetMapping("usuario")
+    public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@RequestParam Integer grupoId, @RequestParam Integer usuarioId) {
+        return service.getAllByGrupoIdAndUsuarioId(grupoId, usuarioId);
     }
 }

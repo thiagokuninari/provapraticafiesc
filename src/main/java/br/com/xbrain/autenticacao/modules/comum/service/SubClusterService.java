@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,22 @@ public class SubClusterService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     public List<SubClusterDto> getAllByClusterId(Integer clusterId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         SubClusterPredicate predicate = new SubClusterPredicate();
         predicate.filtrarPermitidos(usuarioAutenticado);
+        return repository.findAllByClusterId(clusterId, predicate.build())
+                .stream()
+                .map(SubClusterDto::of)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubClusterDto> getAllByClusterIdAndUsuarioId(Integer clusterId, Integer usuarioId) {
+        SubClusterPredicate predicate = new SubClusterPredicate()
+                .filtrarPermitidos(new UsuarioAutenticado(usuarioService.findById(usuarioId)));
         return repository.findAllByClusterId(clusterId, predicate.build())
                 .stream()
                 .map(SubClusterDto::of)

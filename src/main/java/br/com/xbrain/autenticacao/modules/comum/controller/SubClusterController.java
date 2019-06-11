@@ -27,6 +27,11 @@ public class SubClusterController {
         }
     }
 
+    @GetMapping("usuario")
+    public List<SubClusterDto> getAllByClusterIdAndUsuarioId(@RequestParam Integer clusterId, @RequestParam Integer usuarioId) {
+        return service.getAllByClusterIdAndUsuarioId(clusterId, usuarioId);
+    }
+
     @GetMapping("clusters")
     public List<SubClusterDto> getAtivosPorClusters(@RequestParam(required = false) List<Integer> clustersId) {
         if (!ObjectUtils.isEmpty(clustersId)) {

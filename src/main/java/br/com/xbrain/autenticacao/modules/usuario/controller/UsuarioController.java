@@ -100,7 +100,6 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
-
     @PostMapping("/vincula/hierarquia")
     public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
         usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
