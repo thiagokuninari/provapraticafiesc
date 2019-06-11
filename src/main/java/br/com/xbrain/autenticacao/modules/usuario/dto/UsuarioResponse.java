@@ -27,6 +27,8 @@ public class UsuarioResponse {
     private String cpf;
     private String email;
     private String telefone;
+    private String telefone02;
+    private String telefone03;
     private ESituacao situacao;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
