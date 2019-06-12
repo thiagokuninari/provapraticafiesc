@@ -23,7 +23,7 @@ public class ClusterController {
         }
     }
 
-    @GetMapping("usuario")
+    @GetMapping("/usuario")
     public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@RequestParam Integer grupoId, @RequestParam Integer usuarioId) {
         return service.getAllByGrupoIdAndUsuarioId(grupoId, usuarioId);
     }

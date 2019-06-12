@@ -27,7 +27,7 @@ public class SubClusterController {
         }
     }
 
-    @GetMapping("usuario")
+    @GetMapping("/usuario")
     public List<SubClusterDto> getAllByClusterIdAndUsuarioId(@RequestParam Integer clusterId, @RequestParam Integer usuarioId) {
         return service.getAllByClusterIdAndUsuarioId(clusterId, usuarioId);
     }
