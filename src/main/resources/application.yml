@@ -149,6 +149,9 @@ app-config:
     dashboard-api:
       client: dashboard-api
       secret: d4shb04rd
+    funil-prospeccao-api:
+      client: funil-prospeccao-api
+      secret: fun1lpr0sp3cc40
 
   services:
     autenticacao:

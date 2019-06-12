@@ -76,6 +76,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.client}")
+    private String funilProspeccaoApiClient;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.secret}")
+    private String funilProspeccaoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -167,6 +171,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(dashboardApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("dashboard-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(funilProspeccaoApiClient)
+                .secret(funilProspeccaoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("funil-prospeccao-api")
                 .authorities(ROLE_APPLICATION);
     }
 
