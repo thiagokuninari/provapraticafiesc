@@ -158,8 +158,8 @@ app-config:
 
   services:
     autenticacao:
-      url: http://localhost:8096
-      #url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8096
+      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
@@ -173,8 +173,8 @@ app-config:
       # url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
-      url: http://localhost:8089
-      #url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8089
+      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
 
 flyway:
   enabled: true
