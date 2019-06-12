@@ -136,7 +136,7 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
     }
 
@@ -146,7 +146,7 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setEmail("EMAILALTERADO@XBRAIN.COM.BR");
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
     }
 
@@ -157,7 +157,7 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
@@ -172,7 +172,7 @@ public class UsuarioServiceIT {
                 .dataFim(LocalDate.of(2019, 2, 1))
                 .build());
 
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
 
         verify(usuarioFeriasService, atLeastOnce()).save(eq(usuario), any());
@@ -356,14 +356,14 @@ public class UsuarioServiceIT {
         usuarioAlterarSenhaDto.setUsuarioId(100);
         usuarioAlterarSenhaDto.setAlterarSenha(Eboolean.V);
         service.alterarSenhaAa(usuarioAlterarSenhaDto);
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getAlterarSenha(), Eboolean.V);
     }
 
     @Test
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
-        Usuario usuario = service.findById(100);
+        Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getCpf(), null);
     }
 
@@ -446,27 +446,27 @@ public class UsuarioServiceIT {
     public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
         service.inativarUsuariosSemAcesso();
 
-        Usuario usuarioInativo = service.findById(101);
+        Usuario usuarioInativo = service.findByIdCompleto(101);
         assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
                 .extracting("id", "motivo", "observacao")
                 .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
 
         assertEquals(ESituacao.I, usuarioInativo.getSituacao());
-        assertEquals(ESituacao.I, service.findById(104).getSituacao());
-        assertEquals(ESituacao.A, service.findById(100).getSituacao());
+        assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
+        assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
         assertEquals(0, service.getUsuariosSemAcesso().size());
         verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
     }
 
     @Test
     public void save_cidadesAdicionadas_quandoAdicionarNovasCidadesEManterACidadeExistente() {
-        var usuario = service.findById(100);
+        var usuario = service.findByIdCompleto(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 2466, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3022, 100));
         service.save(usuario);
-        var usuarioComNovasCidades = service.findById(100);
+        var usuarioComNovasCidades = service.findByIdCompleto(100);
         assertThat(usuarioComNovasCidades.getCidades())
                 .hasSize(5)
                 .extracting("usuario.id", "cidade.id")
@@ -480,7 +480,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
-        var usuario = service.findById(100);
+        var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet(
                 Arrays.asList(
                         UsuarioCidade.criar(usuario, 3237, 100),
@@ -488,7 +488,7 @@ public class UsuarioServiceIT {
                         UsuarioCidade.criar(usuario, 2466, 100),
                         UsuarioCidade.criar(usuario, 3022, 100))));
         service.save(usuario);
-        var usuarioComCidadesAtualizadas = service.findById(100);
+        var usuarioComCidadesAtualizadas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesAtualizadas.getCidades())
                 .hasSize(4)
                 .extracting("usuario.id", "cidade.id")
@@ -501,19 +501,19 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesRemovidas_quandoRemoverAsCidadesExistentes() {
-        var usuario = service.findById(100);
+        var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet());
         service.save(usuario);
-        var usuarioComCidadesRemovidas = service.findById(100);
+        var usuarioComCidadesRemovidas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesRemovidas.getCidades()).isEmpty();
     }
 
     @Test
     public void save_cidadesNaoAlteradas_quandoAdicionarUmaCidadeJaExistente() {
-        var usuario = service.findById(100);
+        var usuario = service.findByIdCompleto(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 5578, 100));
         service.save(usuario);
-        var usuarioAtualizado = service.findById(100);
+        var usuarioAtualizado = service.findByIdCompleto(100);
         assertThat(usuarioAtualizado.getCidades())
                 .hasSize(1)
                 .extracting("usuario.id", "cidade.id")
@@ -523,14 +523,14 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesAdicionadas_quandoAdicionarCidadesAUmUsuarioSemCidades() {
-        var usuario = service.findById(101);
+        var usuario = service.findByIdCompleto(101);
         assertThat(usuario.getCidades()).isEmpty();
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 2466, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3022, 100));
         service.save(usuario);
-        var usuarioComNovasCidades = service.findById(101);
+        var usuarioComNovasCidades = service.findByIdCompleto(101);
         assertThat(usuarioComNovasCidades.getCidades())
                 .hasSize(4)
                 .extracting("usuario.id", "cidade.id")

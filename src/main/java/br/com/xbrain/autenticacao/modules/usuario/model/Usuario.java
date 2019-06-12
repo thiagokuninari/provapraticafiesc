@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -233,7 +234,7 @@ public class Usuario {
         return id == null;
     }
 
-    public void forceLoad() {
+    public Usuario forceLoad() {
         empresas.size();
         cidades.size();
         usuariosHierarquia.forEach(u -> u.getUsuarioSuperior().getId());
@@ -241,6 +242,7 @@ public class Usuario {
         unidadesNegocios.size();
         departamento.getId();
         canais.size();
+        return this;
     }
 
     public List<Integer> getEmpresasId() {
@@ -396,7 +398,7 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo)
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
                 && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)
                 .contains(cargo.getCodigo());
     }
@@ -426,5 +428,11 @@ public class Usuario {
         }
 
         this.historicos.add(historico);
+    }
+
+    @JsonIgnore
+    public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
+        return !usuarioAutenticado.isUsuarioEquipeVendas()
+                || getCargoCodigo() == VENDEDOR_OPERACAO;
     }
 }

@@ -163,13 +163,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario findById(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa(true);
-        predicate.comId(id);
-        Usuario usuario = repository.findOne(predicate.build());
-        usuario.forceLoad();
-        return usuario;
+    public Usuario findByIdCompleto(int id) {
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .ignorarAa(true)
+                        .comId(id)
+                        .build())
+                .forceLoad();
     }
 
     @Transactional
@@ -182,9 +182,10 @@ public class UsuarioService {
     }
 
     public Usuario findByIdComAa(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.comId(id);
-        return repository.findOne(predicate.build());
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .comId(id)
+                        .build());
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
@@ -201,7 +202,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto findByEmail(String email) {
-        return UsuarioDto.convertTo(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email) {
@@ -256,7 +257,7 @@ public class UsuarioService {
                     new Configuracao(
                             usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
         }
-        return UsuarioDto.convertTo(repository.save(usuario));
+        return UsuarioDto.of(repository.save(usuario));
     }
 
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idHierarquia) {
@@ -301,7 +302,7 @@ public class UsuarioService {
         if (realocado) {
             enviarParaFilaDeUsuariosColaboradores(usuario);
         }
-        return UsuarioDto.convertTo(usuario);
+        return UsuarioDto.of(usuario);
     }
 
     @Transactional
@@ -327,7 +328,7 @@ public class UsuarioService {
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
-            return UsuarioDto.convertTo(usuario);
+            return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
@@ -380,7 +381,7 @@ public class UsuarioService {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
             Optional<Usuario> usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
+                UsuarioDto usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -661,7 +662,7 @@ public class UsuarioService {
             usuarios
                     .stream()
                     .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
-                    .map(UsuarioDto::convertTo)
+                    .map(UsuarioDto::of)
                     .forEach(usuarioAtualizarColaborador -> usuarioMqSender
                             .sendColaboradoresSuccess(usuarioAtualizarColaborador));
 
@@ -878,7 +879,7 @@ public class UsuarioService {
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
         return usuarioList.stream()
-                .map(UsuarioDto::convertTo)
+                .map(UsuarioDto::of)
                 .collect(Collectors.toList());
     }
 
@@ -1245,7 +1246,11 @@ public class UsuarioService {
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
                 equipeVendaService
-                        .getUsuariosPermitidos()
+                        .getUsuariosPermitidos(List.of(
+                                CodigoCargo.SUPERVISOR_OPERACAO,
+                                CodigoCargo.ASSISTENTE_OPERACAO,
+                                CodigoCargo.VENDEDOR_OPERACAO
+                        ))
                         .stream()
                         .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
                 IntStream.of(autenticacaoService.getUsuarioId()))
