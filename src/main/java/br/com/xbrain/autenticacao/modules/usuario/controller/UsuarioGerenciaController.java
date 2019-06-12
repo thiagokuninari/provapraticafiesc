@@ -38,9 +38,9 @@ public class UsuarioGerenciaController {
 
     @GetMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
-        Usuario usuario = service.findByIdComAa(id);
+        var usuario = service.findByIdComAa(id);
         return UsuarioDto.convertTo(
-                usuario,
+                service.findByIdComAa(id),
                 usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
