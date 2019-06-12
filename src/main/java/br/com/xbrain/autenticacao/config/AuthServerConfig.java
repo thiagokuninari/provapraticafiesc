@@ -76,6 +76,14 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
+    @Value("${app-config.oauth-clients.contato-crn-api.client}")
+    private String contatoCrnApiClient;
+    @Value("${app-config.oauth-clients.contato-crn-api.secret}")
+    private String contatoCrnApiSecret;
+    @Value("${app-config.oauth-clients.discadora-eccp-api.client}")
+    private String discadoraEccpApiClient;
+    @Value("${app-config.oauth-clients.discadora-eccp-api.secret}")
+    private String discadoraEccpApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -167,6 +175,18 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(dashboardApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("dashboard-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(contatoCrnApiClient)
+                .secret(contatoCrnApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("contato-crn-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(discadoraEccpApiClient)
+                .secret(discadoraEccpApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("discadora-eccp-api")
                 .authorities(ROLE_APPLICATION);
     }
 

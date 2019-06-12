@@ -36,7 +36,7 @@ public class UsuarioController {
     @GetMapping
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
-                usuarioService.findById(getUsuarioId(principal)));
+                usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
     @PutMapping("ativar-socio")

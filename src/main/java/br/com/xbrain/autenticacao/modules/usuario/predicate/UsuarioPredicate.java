@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -19,16 +18,19 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static java.util.Collections.singletonList;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
@@ -250,8 +252,13 @@ public class UsuarioPredicate {
         ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
         ignorarXbrain(!usuario.isXbrain());
 
-        if (usuario.getCargoCodigo() == CodigoCargo.ASSISTENTE_OPERACAO) {
-            comIds(usuarioService.getUsuariosPermitidosPelaEquipeDeVenda());
+        if (usuario.isUsuarioEquipeVendas()) {
+            comIds(Stream.of(
+                    usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
+                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+                    singletonList(usuario.getUsuario().getId()))
+                   .flatMap(Collection::stream)
+                   .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(

@@ -55,7 +55,11 @@ public class UsuarioHistorico {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @Builder
+    @JoinColumn(name = "FK_USUARIO_FERIAS", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_FERIAS_USU_HIS"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UsuarioFerias ferias;
+
     public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioAlteracao,
                             LocalDateTime dataCadastro, String observacao, ESituacao situacao) {
         this.usuario = usuario;
@@ -70,10 +74,6 @@ public class UsuarioHistorico {
                                                      String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
-    }
-
-    public void atualizarDataUltimoAcesso() {
-        this.dataCadastro = LocalDateTime.now();
     }
 
     public UsuarioHistorico gerarHistoricoAtivacao(Usuario usuarioAlteracao, String observacao, Usuario usuarioAtivado) {

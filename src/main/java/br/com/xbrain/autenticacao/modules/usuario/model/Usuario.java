@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -58,7 +59,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = false)
+    @Column(name = "EMAIL_01", nullable = false, length = 80)
     private String email;
 
     @Email
@@ -82,7 +83,7 @@ public class Usuario {
 
     @NotNull
     @CPF
-    @Column(name = "CPF", length = 14, unique = false)
+    @Column(name = "CPF", length = 14)
     private String cpf;
 
     @Size(max = 25)
@@ -233,7 +234,7 @@ public class Usuario {
         return id == null;
     }
 
-    public void forceLoad() {
+    public Usuario forceLoad() {
         empresas.size();
         cidades.size();
         usuariosHierarquia.forEach(u -> u.getUsuarioSuperior().getId());
@@ -241,6 +242,7 @@ public class Usuario {
         unidadesNegocios.size();
         departamento.getId();
         canais.size();
+        return this;
     }
 
     public List<Integer> getEmpresasId() {
@@ -396,7 +398,7 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo)
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
                 && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)
                 .contains(cargo.getCodigo());
     }
@@ -420,11 +422,17 @@ public class Usuario {
                 && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
-    public void adicionar(UsuarioHistorico historico) {
+    public void adicionarHistorico(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
         }
 
         this.historicos.add(historico);
+    }
+
+    @JsonIgnore
+    public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
+        return !usuarioAutenticado.isUsuarioEquipeVendas()
+                || getCargoCodigo() == VENDEDOR_OPERACAO;
     }
 }

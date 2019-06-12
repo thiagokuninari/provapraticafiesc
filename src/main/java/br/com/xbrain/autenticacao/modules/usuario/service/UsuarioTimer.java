@@ -8,15 +8,18 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Component
 @Profile("!test")
 public class UsuarioTimer {
 
     @Autowired
     private UsuarioService service;
-
     @Autowired
     private AutenticacaoService autenticacaoService;
+
+    private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
 
     private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
 
@@ -36,4 +39,8 @@ public class UsuarioTimer {
         autenticacaoService.logoutAllUsers();
     }
 
+    @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
+    public void reativarUsuariosComFeriasComTerminoFinalizado() {
+        service.reativarUsuariosInativosComFeriasTerminando(LocalDate.now().minusDays(1));
+    }
 }

@@ -143,8 +143,8 @@ public class UsuarioServiceTestOracle {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(0, usuarios.size());
 
-        Assert.assertEquals(ESituacao.I, service.findById(101).getSituacao());
-        Assert.assertEquals(ESituacao.I, service.findById(104).getSituacao());
+        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(101).getSituacao());
+        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
 
         Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
                 .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
@@ -152,8 +152,8 @@ public class UsuarioServiceTestOracle {
         Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
                 .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
 
-        Assert.assertEquals(ESituacao.A, service.findById(100).getSituacao());
-        Assert.assertEquals(ESituacao.A, service.findById(366).getSituacao());
+        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
+        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(366).getSituacao());
     }
 
     @Test
