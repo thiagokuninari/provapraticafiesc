@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,6 @@ public class GrupoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    @Autowired
-    private UsuarioService usuarioService;
-
     public List<GrupoDto> getAllByRegionalId(Integer regionalId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         GrupoPredicate predicate = new GrupoPredicate();
@@ -37,8 +33,8 @@ public class GrupoService {
     }
 
     public List<GrupoDto> getAllByRegionalIdAndUsuarioId(Integer regionalId, Integer usuarioId) {
-        GrupoPredicate predicate = new GrupoPredicate();
-        predicate.filtrarPermitidos(new UsuarioAutenticado(usuarioService.findCompleteById(usuarioId)));
+        GrupoPredicate predicate = new GrupoPredicate()
+                .filtrarPermitidos(usuarioId);
         return repository.findAllByRegionalId(regionalId, predicate.build())
                 .stream()
                 .map(GrupoDto::objectToDto)

@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,6 @@ public class ClusterService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    @Autowired
-    private UsuarioService usuarioService;
-
     public List<ClusterDto> getAllByGrupoId(Integer grupoId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         ClusterPredicate predicate = new ClusterPredicate();
@@ -38,7 +34,7 @@ public class ClusterService {
 
     public List<ClusterDto> getAllByGrupoIdAndUsuarioId(Integer grupoId, Integer usuarioId) {
         ClusterPredicate predicate = new ClusterPredicate()
-                .filtrarPermitidos(new UsuarioAutenticado(usuarioService.findById(usuarioId)));
+                .filtrarPermitidos(usuarioId);
         return repository.findAllByGrupoId(grupoId, predicate.build())
                 .stream()
                 .map(ClusterDto::objectToDto)

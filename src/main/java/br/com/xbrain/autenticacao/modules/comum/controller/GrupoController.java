@@ -23,8 +23,8 @@ public class GrupoController {
         }
     }
 
-    @GetMapping("/usuario")
-    public List<GrupoDto> getAllByRegionalIdAndUsuarioId(@RequestParam Integer regionalId, @RequestParam Integer usuarioId) {
+    @GetMapping("/regional/{regionalId}/usuario/{usuarioId}")
+    public List<GrupoDto> getAllByRegionalIdAndUsuarioId(@PathVariable Integer regionalId, @PathVariable Integer usuarioId) {
         return service.getAllByRegionalIdAndUsuarioId(regionalId, usuarioId);
     }
 }

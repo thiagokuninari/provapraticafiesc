@@ -20,7 +20,7 @@ public class RegionalController {
         return service.getAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/usuario/{id}")
     public List<SelectResponse> getAllByUsuarioId(@PathVariable("id") int usuarioId) {
         return service.getAllByUsuarioId(usuarioId);
     }

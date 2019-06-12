@@ -14,7 +14,7 @@ public class ClusterController {
     @Autowired
     private ClusterService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public List<ClusterDto> getAtivosPorGrupo(@RequestParam(required = false) Integer grupoId) {
         if (grupoId != null) {
             return service.getAllByGrupoId(grupoId);
@@ -23,8 +23,8 @@ public class ClusterController {
         }
     }
 
-    @GetMapping("/usuario")
-    public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@RequestParam Integer grupoId, @RequestParam Integer usuarioId) {
+    @GetMapping("/grupo/{grupoId}/usuario/{usuarioId}")
+    public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@PathVariable Integer grupoId, @PathVariable Integer usuarioId) {
         return service.getAllByGrupoIdAndUsuarioId(grupoId, usuarioId);
     }
 }
