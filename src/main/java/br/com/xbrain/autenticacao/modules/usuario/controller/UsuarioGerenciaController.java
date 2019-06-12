@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -21,6 +22,8 @@ public class UsuarioGerenciaController {
 
     @Autowired
     private UsuarioService service;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
@@ -35,9 +38,10 @@ public class UsuarioGerenciaController {
 
     @GetMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
-        Usuario aa = service.findByIdComAa(id);
-        aa.forceLoad();
-        return UsuarioDto.convertTo(aa);
+        Usuario usuario = service.findByIdComAa(id);
+        return UsuarioDto.convertTo(
+                usuario,
+                usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
     @GetMapping

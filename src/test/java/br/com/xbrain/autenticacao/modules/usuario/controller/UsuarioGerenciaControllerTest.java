@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -147,7 +148,10 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getAll_deveRetornarOsUsuariosPermitidosPeloEquipeVendas_quandoForCargoAssistente() throws Exception {
-        when(equipeVendaService.getUsuariosPermitidos())
+        when(equipeVendaService.getUsuariosPermitidos(eq(List.of(
+                    CodigoCargo.SUPERVISOR_OPERACAO,
+                    CodigoCargo.ASSISTENTE_OPERACAO,
+                    CodigoCargo.VENDEDOR_OPERACAO))))
                 .thenReturn(List.of(
                         EquipeVendaUsuarioResponse.builder().usuarioId(104).build(),
                         EquipeVendaUsuarioResponse.builder().usuarioId(230).build()));
@@ -385,7 +389,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.permissoesCargoDepartamento", hasSize(103)))
+                .andExpect(jsonPath("$.permissoesCargoDepartamento", is(not(empty()))))
                 .andExpect(jsonPath("$.permissoesEspeciais", hasSize(1)));
     }
 

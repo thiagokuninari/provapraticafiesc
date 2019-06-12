@@ -88,6 +88,7 @@ public class UsuarioDto implements Serializable {
     private String fotoNomeOriginal;
     private String fotoContentType;
     private Integer organizacaoId;
+    private boolean permiteEditarCompleto;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
@@ -122,6 +123,12 @@ public class UsuarioDto implements Serializable {
                 .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        return usuarioDto;
+    }
+
+    public static UsuarioDto convertTo(Usuario usuario, boolean permiteEditarCompleto) {
+        UsuarioDto usuarioDto = UsuarioDto.convertTo(usuario);
+        usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
         return usuarioDto;
     }
 

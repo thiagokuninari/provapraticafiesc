@@ -34,7 +34,7 @@ public class UsuarioFeriasServiceIT {
     @Test
     public void save_deveGerarORegistroDeFerias_quandoOMotivoDeInativacaoForFerias() {
         service.save(
-                usuarioService.findById(101),
+                usuarioService.findByIdCompleto(101),
                 UsuarioInativacaoDto
                         .builder()
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
@@ -51,7 +51,7 @@ public class UsuarioFeriasServiceIT {
     @Test
     public void save_deveNaoGerarORegistroDeFerias_quandoOMotivoDeInativacaoNaoForFerias() {
         service.save(
-                usuarioService.findById(101),
+                usuarioService.findByIdCompleto(101),
                 UsuarioInativacaoDto
                         .builder()
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,17 +54,17 @@ public class EquipeVendaService {
     }
 
     @HystrixCommand(fallbackMethod = "getUsuariosPermitidosOnError")
-    public List<EquipeVendaUsuarioResponse> getUsuariosPermitidos() {
+    public List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(List<CodigoCargo> cargos) {
         try {
-            return equipeVendaClient.getUsuariosPermitidos();
+            return equipeVendaClient.getUsuariosPermitidos(cargos);
         } catch (Exception ex) {
             throw new IntegracaoException(ex, EquipeVendaService.class.getName(),
                     EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
         }
     }
 
-    @SuppressWarnings({"PMD.UnusedPrivateMethod"})
-    private List<EquipeVendaUsuarioResponse> getUsuariosPermitidosOnError() {
+    @SuppressWarnings({"PMD.UnusedPrivateMethod", "PMD.UnusedFormalParameter"})
+    private List<EquipeVendaUsuarioResponse> getUsuariosPermitidosOnError(List<CodigoCargo> cargos) {
         return Collections.emptyList();
     }
 }

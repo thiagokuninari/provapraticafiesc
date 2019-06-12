@@ -163,13 +163,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario findById(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa(true);
-        predicate.comId(id);
-        Usuario usuario = repository.findOne(predicate.build());
-        usuario.forceLoad();
-        return usuario;
+    public Usuario findByIdCompleto(int id) {
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .ignorarAa(true)
+                        .comId(id)
+                        .build())
+                .forceLoad();
     }
 
     @Transactional
@@ -182,9 +182,10 @@ public class UsuarioService {
     }
 
     public Usuario findByIdComAa(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.comId(id);
-        return repository.findOne(predicate.build());
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .comId(id)
+                        .build());
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
@@ -1245,7 +1246,11 @@ public class UsuarioService {
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
                 equipeVendaService
-                        .getUsuariosPermitidos()
+                        .getUsuariosPermitidos(List.of(
+                                CodigoCargo.SUPERVISOR_OPERACAO,
+                                CodigoCargo.ASSISTENTE_OPERACAO,
+                                CodigoCargo.VENDEDOR_OPERACAO
+                        ))
                         .stream()
                         .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
                 IntStream.of(autenticacaoService.getUsuarioId()))
