@@ -433,7 +433,7 @@ public class Usuario {
     @JsonIgnore
     public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
         if (usuarioAutenticado.isUsuarioEquipeVendas()) {
-            return getCargoCodigo() == VENDEDOR_OPERACAO;
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
         }
         return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
