@@ -84,6 +84,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String discadoraEccpApiClient;
     @Value("${app-config.oauth-clients.discadora-eccp-api.secret}")
     private String discadoraEccpApiSecret;
+    @Value("${app-config.oauth-clients.chamado-api.client}")
+    private String chamadoApiClient;
+    @Value("${app-config.oauth-clients.chamado-api.secret}")
+    private String chamadoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -187,6 +191,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(discadoraEccpApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("discadora-eccp-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(chamadoApiClient)
+                .secret(chamadoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("chamado-api")
                 .authorities(ROLE_APPLICATION);
     }
 

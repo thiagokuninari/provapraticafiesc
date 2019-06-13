@@ -155,6 +155,9 @@ app-config:
     discadora-eccp-api:
       client: discadora-eccp-api
       secret: d1sc4d0r43ccp4p1
+    chamado-api:
+      client: chamado-api
+      secret: ch4m4d04p1
 
   services:
     autenticacao:
