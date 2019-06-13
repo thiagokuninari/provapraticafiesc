@@ -185,7 +185,8 @@ public class UsuarioService {
         return repository.findOne(
                 new UsuarioPredicate()
                         .comId(id)
-                        .build());
+                        .build())
+                        .forceLoad();
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
