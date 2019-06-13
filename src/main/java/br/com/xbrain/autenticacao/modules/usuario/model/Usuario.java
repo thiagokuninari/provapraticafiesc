@@ -432,7 +432,9 @@ public class Usuario {
 
     @JsonIgnore
     public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
-        return !usuarioAutenticado.isUsuarioEquipeVendas()
-                || getCargoCodigo() == VENDEDOR_OPERACAO;
+        if (usuarioAutenticado.isUsuarioEquipeVendas()) {
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
+        }
+        return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
 }
