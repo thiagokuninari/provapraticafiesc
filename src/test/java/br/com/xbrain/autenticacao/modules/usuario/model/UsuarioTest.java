@@ -61,8 +61,8 @@ public class UsuarioTest {
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
-        assertFalse(umUsuarioComCargo(1, CodigoCargo.SUPERVISOR_OPERACAO)
-                .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.VENDEDOR_OPERACAO)));
+        assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
+                .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     private Usuario umUsuarioComCargo(Integer id, CodigoCargo codigoCargo) {
