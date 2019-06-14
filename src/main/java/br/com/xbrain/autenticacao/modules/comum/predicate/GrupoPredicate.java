@@ -35,4 +35,9 @@ public class GrupoPredicate extends PredicateBase {
         }
         return this;
     }
+
+    public GrupoPredicate filtrarPermitidos(Integer usuarioId) {
+        daEmpresaUsuarioPorUsuario(usuarioId);
+        return this;
+    }
 }

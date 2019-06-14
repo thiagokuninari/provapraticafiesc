@@ -33,6 +33,15 @@ public class SubClusterService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubClusterDto> getAllByClusterIdAndUsuarioId(Integer clusterId, Integer usuarioId) {
+        SubClusterPredicate predicate = new SubClusterPredicate()
+                .filtrarPermitidos(usuarioId);
+        return repository.findAllByClusterId(clusterId, predicate.build())
+                .stream()
+                .map(SubClusterDto::of)
+                .collect(Collectors.toList());
+    }
+
     public List<SubClusterDto> getAllByClustersId(List<Integer> clustersId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         SubClusterPredicate predicate = new SubClusterPredicate();

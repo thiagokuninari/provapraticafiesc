@@ -3,10 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
 import br.com.xbrain.autenticacao.modules.comum.service.GrupoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +21,10 @@ public class GrupoController {
         } else {
             return service.getAllAtiva();
         }
+    }
+
+    @GetMapping("/regional/{regionalId}/usuario/{usuarioId}")
+    public List<GrupoDto> getAllByRegionalIdAndUsuarioId(@PathVariable Integer regionalId, @PathVariable Integer usuarioId) {
+        return service.getAllByRegionalIdAndUsuarioId(regionalId, usuarioId);
     }
 }

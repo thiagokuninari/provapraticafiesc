@@ -274,7 +274,14 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, null);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo);
         return usuariosCompletoSubordinados.stream()
                 .map(this::criarUsuarioSubordinadoResponse)
                 .collect(Collectors.toList());

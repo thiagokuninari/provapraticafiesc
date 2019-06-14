@@ -158,6 +158,9 @@ app-config:
     chamado-api:
       client: chamado-api
       secret: ch4m4d04p1
+    funil-prospeccao-api:
+      client: funil-prospeccao-api
+      secret: fun1lpr0sp3cc40
 
   services:
     autenticacao:

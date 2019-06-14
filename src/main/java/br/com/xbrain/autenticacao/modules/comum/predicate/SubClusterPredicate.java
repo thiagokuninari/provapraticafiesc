@@ -29,4 +29,9 @@ public class SubClusterPredicate extends PredicateBase {
         }
         return this;
     }
+
+    public SubClusterPredicate filtrarPermitidos(Integer usuarioId) {
+        daSubClusterUsuarioPorUsuario(usuarioId);
+        return this;
+    }
 }

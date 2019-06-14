@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -91,6 +92,12 @@ public class UsuarioController {
     @GetMapping("/hierarquia/subordinados/{id}")
     public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/subordinados/{id}/{codigoCargo}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
+                                                                        @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
     @PostMapping("/vincula/hierarquia")
