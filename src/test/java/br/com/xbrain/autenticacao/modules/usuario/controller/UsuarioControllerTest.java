@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -32,9 +33,7 @@ import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.SOCIO_AA;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -331,6 +330,84 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].usuarioId", is(2844)))
                 .andExpect(jsonPath("$[0].permissoes", containsInAnyOrder("ROLE_VDS_TABULACAO_CLICKTOCALL")));
+    }
+
+    @Test
+    public void getSuperioresByUsuario_deveRetornar_quandoForValido() throws Exception {
+        doReturn(Collections.singletonList(umUsuarioHierarquia()))
+                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(100)))
+                .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
+    }
+
+    @Test
+    public void getSuperioresByUsuario_deveRetornarNada_quandoNaoPossuirSuperior() throws Exception {
+        doReturn(Collections.emptyList())
+                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    public void getSuperioresByUsuario_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornar_quandoForValido() throws Exception {
+        doReturn(Collections.singletonList(umUsuarioHierarquia()))
+                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(100)))
+                .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarNada_quandoNaoPossuirSuperior() throws Exception {
+        doReturn(Collections.emptyList())
+                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarBadRequest_quandoCargoNaoExistir() throws Exception {
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/1/a")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+    
+    private UsuarioHierarquiaResponse umUsuarioHierarquia() {
+        return UsuarioHierarquiaResponse.builder()
+                .id(100)
+                .nome("XBRAIN")
+                .cargoNome("COORDENADOR_OPERACAO")
+                .build();
     }
 
     private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {

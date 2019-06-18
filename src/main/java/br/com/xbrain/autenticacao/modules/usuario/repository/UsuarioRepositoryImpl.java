@@ -17,6 +17,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -167,6 +168,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .getResultList();
+    }
+
+    public List<Usuario> getUsuariosCompletoSuperiores(Integer usuarioId, CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId)
+                        .and(!ObjectUtils.isEmpty(codigoCargo)
+                                ? usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)
+                                : null))
+                .fetch();
     }
 
     private String where(CodigoCargo codigoCargo) {
