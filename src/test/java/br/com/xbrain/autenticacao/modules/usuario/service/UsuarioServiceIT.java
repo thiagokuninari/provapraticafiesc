@@ -543,10 +543,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getSuperioresByUsuario_deveRetornar_quandoPossuirSuperiores() {
-        var superiores = service.getSuperioresDoUsuario(110);
-        assertThat(superiores).isNotEmpty();
-        assertEquals(superiores.get(0).getId().intValue(), 112);
-        assertEquals(superiores.get(1).getId().intValue(), 113);
+        assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactly(112, 113);
     }
 
     @Test
@@ -561,9 +558,8 @@ public class UsuarioServiceIT {
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
-        var superiores = service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR);
-        assertThat(superiores).isNotEmpty();
-        assertEquals(superiores.get(0).getId().intValue(), 112);
+        assertThat(service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR))
+                .hasSize(2).extracting("id").containsExactly(112, 113);
     }
 
     @Test
