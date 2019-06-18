@@ -541,6 +541,41 @@ public class UsuarioServiceIT {
                         tuple(101, 3022));
     }
 
+    @Test
+    public void getSuperioresByUsuario_deveRetornar_quandoPossuirSuperiores() {
+        var superiores = service.getSuperioresDoUsuario(110);
+        assertThat(superiores).isNotEmpty();
+        assertEquals(superiores.get(0).getId().intValue(), 112);
+        assertEquals(superiores.get(1).getId().intValue(), 113);
+    }
+
+    @Test
+    public void getSuperioresByUsuario_deveRetornarVazio_quandoNaoPossuirSuperiores() {
+        assertThat(service.getSuperioresDoUsuario(120)).isEmpty();
+    }
+
+    @Test
+    public void getSuperioresByUsuario_deveRetornarVazio_quandoNaoExistirUsuario() {
+        assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
+        var superiores = service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR);
+        assertThat(superiores).isNotEmpty();
+        assertEquals(superiores.get(0).getId().intValue(), 112);
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarVazio_quandoNaoPossuirSuperioresComEsseCargo() {
+        assertThat(service.getSuperioresDoUsuarioPorCargo(120, EXECUTIVO)).isEmpty();
+    }
+
+    @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarVazio_quandoNaoExistirUsuario() {
+        assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
