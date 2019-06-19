@@ -89,6 +89,17 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
     }
 
+    @GetMapping("/hierarquia/superiores/{id}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSuperioresDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/superiores/{id}/{codigoCargo}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuarioPorCargo(@PathVariable Integer id,
+                                                                          @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(id, codigoCargo);
+    }
+
     @GetMapping("/hierarquia/subordinados/{id}")
     public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoUsuario(id);

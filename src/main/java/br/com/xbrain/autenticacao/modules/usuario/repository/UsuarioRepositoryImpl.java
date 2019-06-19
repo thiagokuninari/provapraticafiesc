@@ -169,6 +169,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .getResultList();
     }
 
+    public List<Usuario> getSuperioresDoUsuario(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .fetch();
+    }
+
+    public List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuario.id.eq(usuarioId)
+                        .and(usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)))
+                .fetch();
+    }
+
     private String where(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo)
                 ? " WHERE C.CODIGO LIKE '" + codigoCargo.name().toUpperCase() + "'"

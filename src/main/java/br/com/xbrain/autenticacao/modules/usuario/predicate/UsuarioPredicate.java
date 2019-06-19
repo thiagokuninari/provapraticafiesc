@@ -257,8 +257,8 @@ public class UsuarioPredicate {
                     usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                     singletonList(usuario.getUsuario().getId()))
-                   .flatMap(Collection::stream)
-                   .collect(Collectors.toList()));
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
