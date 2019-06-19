@@ -287,13 +287,13 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
-        return repository.getUsuariosCompletoSuperiores(usuarioId, null)
+        return repository.getSuperioresDoUsuario(usuarioId)
                 .stream().map(UsuarioHierarquiaResponse::new)
                 .collect(Collectors.toList());
     }
 
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
-        return repository.getUsuariosCompletoSuperiores(usuarioId, codigoCargo)
+        return repository.getSuperioresDoUsuarioPorCargo(usuarioId, codigoCargo)
                 .stream().map(UsuarioHierarquiaResponse::new)
                 .collect(Collectors.toList());
     }

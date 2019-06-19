@@ -17,7 +17,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -170,14 +169,22 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .getResultList();
     }
 
-    public List<Usuario> getUsuariosCompletoSuperiores(Integer usuarioId, CodigoCargo codigoCargo) {
+    public List<Usuario> getSuperioresDoUsuario(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHierarquia.usuarioSuperior)
                 .from(usuarioHierarquia)
-                .where(usuarioHierarquia.usuario.id.eq(usuarioId)
-                        .and(!ObjectUtils.isEmpty(codigoCargo)
-                                ? usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)
-                                : null))
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .fetch();
+    }
+
+    public List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuario.id.eq(usuarioId)
+                        .and(usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)))
                 .fetch();
     }
 

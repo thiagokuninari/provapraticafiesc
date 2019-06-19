@@ -358,6 +358,18 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void getSuperioresByUsuario_deveRetornarNada_quandoUsuarioNaoExistir() throws Exception {
+        doReturn(Collections.emptyList())
+                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/999")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
     public void getSuperioresByUsuario_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1"))
                 .andExpect(status().isUnauthorized());
@@ -389,6 +401,18 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void getSuperioresByUsuarioPorCargo_deveRetornarNada_quandoUsuarioNaoExistir() throws Exception {
+        doReturn(Collections.emptyList())
+                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+
+        mvc.perform(get("/api/usuarios/hierarquia/superiores/999")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO"))
                 .andExpect(status().isUnauthorized());
@@ -401,7 +425,7 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
-    
+
     private UsuarioHierarquiaResponse umUsuarioHierarquia() {
         return UsuarioHierarquiaResponse.builder()
                 .id(100)

@@ -542,33 +542,33 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void getSuperioresByUsuario_deveRetornar_quandoPossuirSuperiores() {
+    public void getSuperioresDoUsuario_deveRetornar_quandoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactly(112, 113);
     }
 
     @Test
-    public void getSuperioresByUsuario_deveRetornarVazio_quandoNaoPossuirSuperiores() {
+    public void getSuperioresDoUsuario_deveRetornarVazio_quandoNaoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuario(120)).isEmpty();
     }
 
     @Test
-    public void getSuperioresByUsuario_deveRetornarVazio_quandoNaoExistirUsuario() {
+    public void getSuperioresDoUsuario_deveRetornarVazio_quandoNaoExistirUsuario() {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
     }
 
     @Test
-    public void getSuperioresByUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
+    public void getSuperioresDoUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR))
                 .hasSize(2).extracting("id").containsExactly(112, 113);
     }
 
     @Test
-    public void getSuperioresByUsuarioPorCargo_deveRetornarVazio_quandoNaoPossuirSuperioresComEsseCargo() {
+    public void getSuperioresDoUsuarioPorCargo_deveRetornarVazio_quandoNaoPossuirSuperioresComEsseCargo() {
         assertThat(service.getSuperioresDoUsuarioPorCargo(120, EXECUTIVO)).isEmpty();
     }
 
     @Test
-    public void getSuperioresByUsuarioPorCargo_deveRetornarVazio_quandoNaoExistirUsuario() {
+    public void getSuperioresDoUsuarioPorCargo_deveRetornarVazio_quandoNaoExistirUsuario() {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
     }
 
