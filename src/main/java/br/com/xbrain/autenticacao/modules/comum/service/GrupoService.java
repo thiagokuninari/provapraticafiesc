@@ -32,6 +32,15 @@ public class GrupoService {
                 .collect(Collectors.toList());
     }
 
+    public List<GrupoDto> getAllByRegionalIdAndUsuarioId(Integer regionalId, Integer usuarioId) {
+        GrupoPredicate predicate = new GrupoPredicate()
+                .filtrarPermitidos(usuarioId);
+        return repository.findAllByRegionalId(regionalId, predicate.build())
+                .stream()
+                .map(GrupoDto::objectToDto)
+                .collect(Collectors.toList());
+    }
+
     public List<GrupoDto> getAllAtiva() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
                 .stream()

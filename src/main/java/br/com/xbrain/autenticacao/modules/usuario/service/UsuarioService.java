@@ -82,14 +82,13 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
             + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
+    private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
+            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
-            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
-
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -186,7 +185,7 @@ public class UsuarioService {
                 new UsuarioPredicate()
                         .comId(id)
                         .build())
-                        .forceLoad();
+                .forceLoad();
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
@@ -274,9 +273,28 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, null);
         return usuariosCompletoSubordinados.stream()
                 .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
+        return repository.getSuperioresDoUsuario(usuarioId)
+                .stream().map(UsuarioHierarquiaResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioHierarquiaResponse> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return repository.getSuperioresDoUsuarioPorCargo(usuarioId, codigoCargo)
+                .stream().map(UsuarioHierarquiaResponse::new)
                 .collect(Collectors.toList());
     }
 

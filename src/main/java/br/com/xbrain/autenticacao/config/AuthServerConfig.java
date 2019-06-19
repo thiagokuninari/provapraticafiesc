@@ -88,6 +88,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String chamadoApiClient;
     @Value("${app-config.oauth-clients.chamado-api.secret}")
     private String chamadoApiSecret;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.client}")
+    private String funilProspeccaoApiClient;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.secret}")
+    private String funilProspeccaoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -197,6 +201,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(chamadoApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("chamado-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(funilProspeccaoApiClient)
+                .secret(funilProspeccaoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("funil-prospeccao-api")
                 .authorities(ROLE_APPLICATION);
     }
 
