@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -76,7 +77,9 @@ public class UsuarioHistorico {
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
-    public UsuarioHistorico gerarHistoricoAtivacao(Usuario usuarioAlteracao, String observacao, Usuario usuarioAtivado) {
+    public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
+                                                          String observacao,
+                                                          Usuario usuarioAtivado) {
         return UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuarioAtivado)
@@ -84,5 +87,12 @@ public class UsuarioHistorico {
                 .observacao(observacao)
                 .situacao(ESituacao.A)
                 .build();
+    }
+
+    public String getSituacaoComMotivo() {
+        return situacao.getDescricao().toUpperCase()
+                + (!ObjectUtils.isEmpty(motivoInativacao)
+                        ? " / " +  motivoInativacao.getDescricao()
+                        : "");
     }
 }

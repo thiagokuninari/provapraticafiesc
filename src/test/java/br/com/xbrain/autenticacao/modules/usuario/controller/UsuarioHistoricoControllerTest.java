@@ -51,7 +51,10 @@ public class UsuarioHistoricoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].id", is(100)));
+                .andExpect(jsonPath("$[0].id", is(100)))
+                .andExpect(jsonPath("$[0].situacao", is("INATIVO / FÉRIAS")))
+                .andExpect(jsonPath("$[0].cadastro", is("2019-01-04T10:50:00")))
+                .andExpect(jsonPath("$[0].usuarioAlteracao", is("HELPDESK")));
     }
 
 }

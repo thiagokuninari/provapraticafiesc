@@ -127,7 +127,7 @@ public class UsuarioServiceTestOracle {
                         "Administrador"));
     }
 
-    @Test
+    // @Test TODO foi desativado e será refeito conforme task #13110
     public void deveBuscarOsUsuarioComInatividade() throws Exception {
         List<Usuario> usuarios = service.getUsuariosSemAcesso();
         Assert.assertEquals(2, usuarios
@@ -137,7 +137,7 @@ public class UsuarioServiceTestOracle {
                 .size());
     }
 
-    @Test
+    // @Test TODO foi desativado e será refeito conforme task #13110
     public void deveInativarOsUsuarioComInatividade() throws Exception {
         service.inativarUsuariosSemAcesso();
         List<Usuario> usuarios = service.getUsuariosSemAcesso();

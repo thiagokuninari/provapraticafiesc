@@ -34,8 +34,9 @@ public class UsuarioHistoricoRepositoryImpl
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHistorico)
                 .from(usuarioHistorico)
-                .where(usuarioHistorico.usuario.id.eq(usuarioId)
-                        .and(usuarioHistorico.motivoInativacao.isNotNull()))
+                .leftJoin(usuarioHistorico.motivoInativacao).fetchJoin()
+                .leftJoin(usuarioHistorico.usuarioAlteracao).fetchJoin()
+                .where(usuarioHistorico.usuario.id.eq(usuarioId))
                 .orderBy(usuarioHistorico.dataCadastro.desc())
                 .fetch();
     }

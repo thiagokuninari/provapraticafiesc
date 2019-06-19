@@ -442,7 +442,8 @@ public class UsuarioServiceIT {
         verify(atualizarUsuarioMqSender, times(0)).sendSuccess(any());
     }
 
-    @Test
+
+    // @Test TODO foi desativado e será refeito conforme task #13110
     public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
         service.inativarUsuariosSemAcesso();
 

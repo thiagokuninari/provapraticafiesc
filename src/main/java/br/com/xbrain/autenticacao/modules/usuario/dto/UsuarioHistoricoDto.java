@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -16,25 +17,27 @@ import java.time.LocalDate;
 public class UsuarioHistoricoDto {
 
     private Integer id;
-    private String motivo;
+    private String situacao;
     private String observacao;
-    private String cadastro;
+    private LocalDateTime cadastro;
     private LocalDate feriasInicio;
     private LocalDate feriasFim;
+    private String usuarioAlteracao;
 
     public static UsuarioHistoricoDto of(UsuarioHistorico historico) {
         return UsuarioHistoricoDto
                 .builder()
                 .id(historico.getId())
-                .motivo(historico.getMotivoInativacao().getDescricao())
+                .situacao(historico.getSituacaoComMotivo())
                 .observacao(historico.getObservacao())
-                .cadastro(historico.getDataCadastro().toString())
+                .cadastro(historico.getDataCadastro())
                 .feriasInicio(!ObjectUtils.isEmpty(historico.getFerias())
                         ? historico.getFerias().getInicio()
                         : null)
                 .feriasFim(!ObjectUtils.isEmpty(historico.getFerias())
                         ? historico.getFerias().getFim()
                         : null)
+                .usuarioAlteracao(historico.getUsuarioAlteracao().getNome())
                 .build();
     }
 }

@@ -29,7 +29,7 @@ public class UsuarioTimer {
 
     @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     public void inativarUsuariosSemAcesso() {
-        service.inativarUsuariosSemAcesso();
+        //service.inativarUsuariosSemAcesso();  TODO foi desativado e será refeito conforme task #13110
     }
 
     @Transactional

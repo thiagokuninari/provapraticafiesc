@@ -756,10 +756,12 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
-
         validarAtivacao(usuario);
-        Usuario usuarioAtivacao = getUsuarioAtivacao(dto);
-        usuario.adicionarHistorico(new UsuarioHistorico().gerarHistoricoAtivacao(usuarioAtivacao, dto.getObservacao(), usuario));
+        usuario.adicionarHistorico(
+                UsuarioHistorico.criarHistoricoAtivacao(
+                        getUsuarioAtivacao(dto),
+                        dto.getObservacao(),
+                        usuario));
         repository.save(usuario);
     }
 
