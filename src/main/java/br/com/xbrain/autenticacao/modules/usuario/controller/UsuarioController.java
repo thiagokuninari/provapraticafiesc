@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class UsuarioController {
     private UsuarioService usuarioService;
     @Autowired
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
+    @Autowired
+    private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -209,5 +212,10 @@ public class UsuarioController {
     @GetMapping("permissoes-por-usuario")
     public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
+    }
+
+    @GetMapping("usuarios-funil-prospeccao/{cidade}")
+    public Integer findUsuariosProspeccaoByCidade(@PathVariable String cidade) {
+        return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }

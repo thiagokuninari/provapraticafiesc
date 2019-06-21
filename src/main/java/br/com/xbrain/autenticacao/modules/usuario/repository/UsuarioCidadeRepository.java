@@ -1,12 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.List;
+
 public interface UsuarioCidadeRepository extends PagingAndSortingRepository<UsuarioCidade, Integer>,
         UsuarioCidadeRepositoryCustom {
+
+    List<UsuarioCidade> findUsuarioByCidadeIn(List<Cidade> cidades);
 
     @Modifying
     @Query("delete from UsuarioCidade c WHERE c.cidade.id = ?1 AND c.usuario.id = ?2")
