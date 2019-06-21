@@ -17,6 +17,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -48,6 +51,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -145,28 +150,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo) {
-        return entityManager
-                .createNativeQuery(
-                        " SELECT FK_USUARIO"
-                                + "     , U.NOME "
-                                + "     , U.CPF "
-                                + "     , U.EMAIL_01 "
-                                + "     , N.CODIGO AS NIVEL "
-                                + "     , D.CODIGO AS DEPARTAMENTO "
-                                + "     , C.CODIGO AS CARGO "
-                                + "     , C.NOME AS NOME_CARGO "
-                                + " FROM usuario_hierarquia UH"
-                                + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-                                + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
-                                + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
-                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL " + where(codigoCargo)
-                                + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
-                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
-                .setParameter("_usuarioId", usuarioId)
-                .getResultList();
+    public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo) {
+        return jdbcTemplate.query(" SELECT FK_USUARIO AS ID"
+                        + "     , U.NOME "
+                        + "     , U.CPF "
+                        + "     , U.EMAIL_01 AS EMAIL"
+                        + "     , N.CODIGO AS CODIGO_NIVEL "
+                        + "     , D.CODIGO AS CODIGO_DEPARTAMENTO "
+                        + "     , C.CODIGO AS CODIGO_CARGO "
+                        + "     , C.NOME AS NOME_CARGO "
+                        + " FROM usuario_hierarquia UH"
+                        + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                        + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                        + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL " + where(codigoCargo)
+                        + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
+                        + " START WITH FK_USUARIO_SUPERIOR = :usuarioId "
+                        + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR",
+                new MapSqlParameterSource().addValue("usuarioId", usuarioId),
+                new BeanPropertyRowMapper<>(UsuarioSubordinadoDto.class));
     }
 
     private String where(CodigoCargo codigoCargo) {

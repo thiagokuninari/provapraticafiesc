@@ -192,11 +192,10 @@ public class UsuarioServiceTestOracle {
     public void getSubordinadosDoUsuarioPorCargo_deveRetornarSubordinadosDoUsuarioPorCargo_quandoUsuarioPossuirSubordinados() {
         assertThat(service.getSubordinadosDoUsuarioPorCargo(115, EXECUTIVO))
                 .isNotNull()
-                .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
-                .contains(
-                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
+                .extracting("value", "text")
+                .contains(tuple(116, "ALBERTO PEREIRA"),
+                        tuple(117, "ROBERTO ALMEIDA"),
+                        tuple(119, "JOANA OLIVEIRA"));
     }
 
     @Test

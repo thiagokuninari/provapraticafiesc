@@ -95,8 +95,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/hierarquia/subordinados/{id}/{codigoCargo}")
-    public List<UsuarioSubordinadoDto> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
-                                                                        @PathVariable CodigoCargo codigoCargo) {
+    public List<UsuarioAutoComplete> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
+                                                                      @PathVariable CodigoCargo codigoCargo) {
         return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
@@ -133,7 +133,7 @@ public class UsuarioController {
         return usuarioService.findEmpresasDoUsuario(id);
     }
 
-    @RequestMapping(value = "/hierarquia/supervisores", method = RequestMethod.GET)
+    @GetMapping("/hierarquia/supervisores")
     public List<UsuarioResponse> getUsuariosSupervisores(UsuarioFiltrosHierarquia filtrosHierarquia) {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }

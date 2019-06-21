@@ -269,16 +269,13 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, null);
-        return usuariosCompletoSubordinados.stream()
-                .map(this::criarUsuarioSubordinadoResponse)
-                .collect(Collectors.toList());
+        return repository.getUsuariosCompletoSubordinados(usuarioId, null);
     }
 
-    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo);
-        return usuariosCompletoSubordinados.stream()
-                .map(this::criarUsuarioSubordinadoResponse)
+    public List<UsuarioAutoComplete> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo)
+                .stream()
+                .map(UsuarioAutoComplete::of)
                 .collect(Collectors.toList());
     }
 
@@ -915,20 +912,6 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
         return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
-    }
-
-    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
-        int indice = POSICAO_ZERO;
-        return UsuarioSubordinadoDto.builder()
-                .id(objectToInteger(param[indice++]))
-                .nome(objectToString(param[indice++]))
-                .cpf(objectToString(param[indice++]))
-                .email(objectToString(param[indice++]))
-                .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
-                .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
-                .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
-                .nomeCargo(objectToString(param[indice++]))
-                .build();
     }
 
     private UsuarioResponse criarUsuarioResponse(Object[] param) {

@@ -32,7 +32,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
-    List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo);
+    List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo);
 
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
