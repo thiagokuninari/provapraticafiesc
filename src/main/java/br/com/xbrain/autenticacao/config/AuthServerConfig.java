@@ -76,6 +76,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
+    @Value("${app-config.oauth-clients.discadora-eccp-api.client}")
+    private String discadoraEccpApiClient;
+    @Value("${app-config.oauth-clients.discadora-eccp-api.secret}")
+    private String discadoraEccpApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -167,6 +171,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(dashboardApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("dashboard-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(discadoraEccpApiClient)
+                .secret(discadoraEccpApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("discadora-eccp-api")
                 .authorities(ROLE_APPLICATION);
     }
 
