@@ -16,7 +16,13 @@ public enum CodigoFuncionalidade {
     AUT_2023("Gerenciar Cargos"),
     AUT_EMULAR_USUARIO("Emular Usuários"),
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),
-    AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário");
+    AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário"),
+    CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
+    CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
+    CHM_ABRIR_CHAMADO("Abrir chamado"),
+    CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
+    CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
+    CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados");
 
     @Getter
     private String descricao;

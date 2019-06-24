@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -36,7 +37,7 @@ public class UsuarioController {
     @GetMapping
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
-                usuarioService.findById(getUsuarioId(principal)));
+                usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
     @PutMapping("ativar-socio")
@@ -88,9 +89,26 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
     }
 
+    @GetMapping("/hierarquia/superiores/{id}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSuperioresDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/superiores/{id}/{codigoCargo}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuarioPorCargo(@PathVariable Integer id,
+                                                                          @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(id, codigoCargo);
+    }
+
     @GetMapping("/hierarquia/subordinados/{id}")
     public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/subordinados/{id}/{codigoCargo}")
+    public List<UsuarioSubordinadoDto> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
+                                                                        @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
     @PostMapping("/vincula/hierarquia")

@@ -76,10 +76,22 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String dashboardApiClient;
     @Value("${app-config.oauth-clients.dashboard-api.secret}")
     private String dashboardApiSecret;
+    @Value("${app-config.oauth-clients.contato-crn-api.client}")
+    private String contatoCrnApiClient;
+    @Value("${app-config.oauth-clients.contato-crn-api.secret}")
+    private String contatoCrnApiSecret;
     @Value("${app-config.oauth-clients.discadora-eccp-api.client}")
     private String discadoraEccpApiClient;
     @Value("${app-config.oauth-clients.discadora-eccp-api.secret}")
     private String discadoraEccpApiSecret;
+    @Value("${app-config.oauth-clients.chamado-api.client}")
+    private String chamadoApiClient;
+    @Value("${app-config.oauth-clients.chamado-api.secret}")
+    private String chamadoApiSecret;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.client}")
+    private String funilProspeccaoApiClient;
+    @Value("${app-config.oauth-clients.funil-prospeccao-api.secret}")
+    private String funilProspeccaoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -177,6 +189,24 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
                 .secret(discadoraEccpApiSecret)
                 .authorizedGrantTypes("client_credentials")
                 .scopes("discadora-eccp-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(contatoCrnApiClient)
+                .secret(contatoCrnApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("contato-crn-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(chamadoApiClient)
+                .secret(chamadoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("chamado-api")
+                .authorities(ROLE_APPLICATION)
+                .and()
+                .withClient(funilProspeccaoApiClient)
+                .secret(funilProspeccaoApiSecret)
+                .authorizedGrantTypes("client_credentials")
+                .scopes("funil-prospeccao-api")
                 .authorities(ROLE_APPLICATION);
     }
 

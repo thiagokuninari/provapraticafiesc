@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubClusterRepository extends PagingAndSortingRepository<SubCluster, Integer>,
         SubClusterRepositoryCustom {
@@ -18,4 +19,6 @@ public interface SubClusterRepository extends PagingAndSortingRepository<SubClus
     List<SubCluster> findBySituacao(ESituacao situacao, Sort sort);
 
     List<SubCluster> findAll();
+
+    Optional<SubCluster> findById(Integer id);
 }

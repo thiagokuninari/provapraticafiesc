@@ -25,7 +25,7 @@
         <maven.checkstyle.version>3.0.0</maven.checkstyle.version>
         <puppycrawl.checkstyle.version>8.11</puppycrawl.checkstyle.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
-        <xbrain-utils.version>0.2.1</xbrain-utils.version>
+        <xbrain-utils.version>0.4.3</xbrain-utils.version>
         <caelum.stella.core.version>2.1.2</caelum.stella.core.version>
         <glassfish.jaxb.version>2.4.0-b180830.0438</glassfish.jaxb.version>
         <assertj.version>3.12.2</assertj.version>

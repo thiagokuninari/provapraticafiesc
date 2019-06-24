@@ -22,7 +22,7 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         deslogaUsuariosAutenticadosComOMesmoLogin(event);
-        registrarUltimoAcesso(event);
+        //registrarUltimoAcesso(event); TODO foi desativado e será refeito conforme task #13110
     }
 
     private void deslogaUsuariosAutenticadosComOMesmoLogin(AuthenticationSuccessEvent event) {

@@ -56,6 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -81,14 +82,13 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
             + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
+    private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
+            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
             = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
             = new ValidacaoException("Senha atual está incorreta.");
-    private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
-            "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
-
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -152,6 +152,8 @@ public class UsuarioService {
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Autowired
     private EquipeVendaService equipeVendaService;
+    @Autowired
+    private UsuarioFeriasService usuarioFeriasService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -160,13 +162,13 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario findById(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.ignorarAa(true);
-        predicate.comId(id);
-        Usuario usuario = repository.findOne(predicate.build());
-        usuario.forceLoad();
-        return usuario;
+    public Usuario findByIdCompleto(int id) {
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .ignorarAa(true)
+                        .comId(id)
+                        .build())
+                .forceLoad();
     }
 
     @Transactional
@@ -179,9 +181,11 @@ public class UsuarioService {
     }
 
     public Usuario findByIdComAa(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
-        predicate.comId(id);
-        return repository.findOne(predicate.build());
+        return repository.findOne(
+                new UsuarioPredicate()
+                        .comId(id)
+                        .build())
+                .forceLoad();
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
@@ -198,7 +202,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto findByEmail(String email) {
-        return UsuarioDto.convertTo(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
+        return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
     public Optional<UsuarioResponse> findByEmailAa(String email) {
@@ -253,7 +257,7 @@ public class UsuarioService {
                     new Configuracao(
                             usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
         }
-        return UsuarioDto.convertTo(repository.save(usuario));
+        return UsuarioDto.of(repository.save(usuario));
     }
 
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idHierarquia) {
@@ -269,9 +273,28 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId);
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, null);
         return usuariosCompletoSubordinados.stream()
                 .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo);
+        return usuariosCompletoSubordinados.stream()
+                .map(this::criarUsuarioSubordinadoResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
+        return repository.getSuperioresDoUsuario(usuarioId)
+                .stream().map(UsuarioHierarquiaResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioHierarquiaResponse> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return repository.getSuperioresDoUsuarioPorCargo(usuarioId, codigoCargo)
+                .stream().map(UsuarioHierarquiaResponse::new)
                 .collect(Collectors.toList());
     }
 
@@ -298,7 +321,7 @@ public class UsuarioService {
         if (realocado) {
             enviarParaFilaDeUsuariosColaboradores(usuario);
         }
-        return UsuarioDto.convertTo(usuario);
+        return UsuarioDto.of(usuario);
     }
 
     @Transactional
@@ -324,7 +347,7 @@ public class UsuarioService {
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
-            return UsuarioDto.convertTo(usuario);
+            return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
             throw new ValidacaoException("Erro ao cadastrar usuário.");
@@ -377,7 +400,7 @@ public class UsuarioService {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
             Optional<Usuario> usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
-                UsuarioDto usuarioDto = UsuarioDto.convertTo(usuarioAtualizar.get());
+                UsuarioDto usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -658,7 +681,7 @@ public class UsuarioService {
             usuarios
                     .stream()
                     .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
-                    .map(UsuarioDto::convertTo)
+                    .map(UsuarioDto::of)
                     .forEach(usuarioAtualizarColaborador -> usuarioMqSender
                             .sendColaboradoresSuccess(usuarioAtualizarColaborador));
 
@@ -751,10 +774,12 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setSituacao(ESituacao.A);
-
         validarAtivacao(usuario);
-        Usuario usuarioAtivacao = getUsuarioAtivacao(dto);
-        usuario.adicionar(new UsuarioHistorico().gerarHistoricoAtivacao(usuarioAtivacao, dto.getObservacao(), usuario));
+        usuario.adicionarHistorico(
+                UsuarioHistorico.criarHistoricoAtivacao(
+                        getUsuarioAtivacao(dto),
+                        dto.getObservacao(),
+                        usuario));
         repository.save(usuario);
     }
 
@@ -768,6 +793,7 @@ public class UsuarioService {
                 && !encontrouAgenteAutorizadoByUsuarioId(usuario.getId())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
         }
+        repository.save(usuario);
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
@@ -791,21 +817,19 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void inativar(UsuarioInativacaoDto dto) {
-        Usuario usuario = findComplete(dto.getIdUsuario());
+    public void inativar(UsuarioInativacaoDto usuarioInativacao) {
+        Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
-        MotivoInativacao motivoInativacao = carregarMotivoInativacao(dto);
-
-        Usuario usuarioInativacao = !isEmpty(dto.getIdUsuarioInativacao()) ? new Usuario(dto.getIdUsuarioInativacao())
-                : new Usuario(autenticacaoService.getUsuarioId());
-
-        usuario.adicionar(UsuarioHistorico.builder()
+        usuario.adicionarHistorico(UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(motivoInativacao)
+                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
                 .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao)
-                .observacao(dto.getObservacao())
+                .usuarioAlteracao(usuarioInativacao
+                        .getUsuarioInativacaoTratado(autenticacaoService.getUsuarioId()))
+                .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
+                .ferias(usuarioFeriasService
+                        .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
@@ -842,8 +866,7 @@ public class UsuarioService {
     }
 
     private MotivoInativacao carregarMotivoInativacao(UsuarioInativacaoDto dto) {
-        return !isEmpty(dto.getIdMotivoInativacao()) ? new MotivoInativacao(dto.getIdMotivoInativacao()) :
-                motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
+        return motivoInativacaoService.findByCodigoMotivoInativacao(dto.getCodigoMotivoInativacao());
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
@@ -877,7 +900,7 @@ public class UsuarioService {
         List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
         return usuarioList.stream()
-                .map(UsuarioDto::convertTo)
+                .map(UsuarioDto::of)
                 .collect(Collectors.toList());
     }
 
@@ -1073,6 +1096,10 @@ public class UsuarioService {
     public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
 
+        return findPermissoesByUsuario(usuario);
+    }
+
+    public UsuarioPermissaoResponse findPermissoesByUsuario(Usuario usuario) {
         return UsuarioPermissaoResponse.of(
                 cargoDepartamentoFuncionalidadeRepository
                         .findFuncionalidadesPorCargoEDepartamento(
@@ -1240,7 +1267,11 @@ public class UsuarioService {
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
                 equipeVendaService
-                        .getUsuariosPermitidos()
+                        .getUsuariosPermitidos(List.of(
+                                CodigoCargo.SUPERVISOR_OPERACAO,
+                                CodigoCargo.ASSISTENTE_OPERACAO,
+                                CodigoCargo.VENDEDOR_OPERACAO
+                        ))
                         .stream()
                         .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
                 IntStream.of(autenticacaoService.getUsuarioId()))
@@ -1287,4 +1318,14 @@ public class UsuarioService {
                 usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());
     }
 
+    public void reativarUsuariosInativosComFeriasTerminando(LocalDate dataFinalFerias) {
+        usuarioFeriasService.getUsuariosInativosComFeriasEmAberto(dataFinalFerias)
+                .forEach(usuario -> ativar(
+                        UsuarioAtivacaoDto
+                                .builder()
+                                .idUsuario(usuario.getId())
+                                .observacao("Usuário reativado automaticamente devido ao término de férias")
+                                .idUsuarioAtivacao(usuario.getId())
+                                .build()));
+    }
 }

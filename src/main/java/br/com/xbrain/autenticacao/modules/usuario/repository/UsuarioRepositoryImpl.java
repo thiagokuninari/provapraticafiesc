@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -145,7 +146,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId) {
+    public List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo) {
         return entityManager
                 .createNativeQuery(
                         " SELECT FK_USUARIO"
@@ -160,12 +161,37 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                                 + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
                                 + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
-                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
+                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL " + where(codigoCargo)
                                 + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
                                 + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .getResultList();
+    }
+
+    public List<Usuario> getSuperioresDoUsuario(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .fetch();
+    }
+
+    public List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia.usuarioSuperior)
+                .from(usuarioHierarquia)
+                .leftJoin(usuarioHierarquia.usuario, usuario)
+                .where(usuario.id.eq(usuarioId)
+                        .and(usuarioHierarquia.usuarioSuperior.cargo.codigo.eq(codigoCargo)))
+                .fetch();
+    }
+
+    private String where(CodigoCargo codigoCargo) {
+        return Objects.nonNull(codigoCargo)
+                ? " WHERE C.CODIGO LIKE '" + codigoCargo.name().toUpperCase() + "'"
+                : "";
     }
 
     public List<Usuario> getUsuariosFilter(Predicate predicate) {

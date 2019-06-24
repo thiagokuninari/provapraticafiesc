@@ -152,11 +152,20 @@ app-config:
     discadora-eccp-api:
       client: discadora-eccp-api
       secret: d1sc4d0r43ccp4p1
+    contato-crn-api:
+      client: contato-crn-api
+      secret: c0nt4t0crn4p1
+    chamado-api:
+      client: chamado-api
+      secret: ch4m4d04p1
+    funil-prospeccao-api:
+      client: funil-prospeccao-api
+      secret: fun1lpr0sp3cc40
 
   services:
     autenticacao:
-      url: http://localhost:8096
-      #url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      #url: http://localhost:8096
+      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
