@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.ULTIMO_ACESSO;
@@ -28,7 +29,11 @@ public class UsuarioHistoricoService {
     private MotivoInativacaoService motivoInativacaoService;
 
     public List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId) {
-        return usuarioHistoricoRepository.getHistoricoDoUsuario(usuarioId);
+        return usuarioHistoricoRepository
+                .getHistoricoDoUsuario(usuarioId)
+                .stream()
+                .map(UsuarioHistoricoDto::of)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -53,5 +58,4 @@ public class UsuarioHistoricoService {
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {
         return motivoInativacaoService.findByCodigoMotivoInativacao(codigo);
     }
-
 }

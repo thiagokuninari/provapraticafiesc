@@ -88,6 +88,7 @@ public class UsuarioDto implements Serializable {
     private String fotoNomeOriginal;
     private String fotoContentType;
     private Integer organizacaoId;
+    private boolean permiteEditarCompleto;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
@@ -105,8 +106,8 @@ public class UsuarioDto implements Serializable {
         return usuario;
     }
 
-    public static UsuarioDto convertTo(Usuario usuario) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+    public static UsuarioDto of(Usuario usuario) {
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());
         usuarioDto.setCargoCodigo(usuario.getCargoCodigo());
@@ -122,6 +123,12 @@ public class UsuarioDto implements Serializable {
                 .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        return usuarioDto;
+    }
+
+    public static UsuarioDto of(Usuario usuario, boolean permiteEditarCompleto) {
+        var usuarioDto = UsuarioDto.of(usuario);
+        usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
         return usuarioDto;
     }
 

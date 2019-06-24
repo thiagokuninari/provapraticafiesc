@@ -197,13 +197,14 @@ public class AutenticacaoControllerTest {
                 "Agente Autorizado com aceite de contrato pendente."));
     }
 
-    @Test
+    // TODO foi desativado e será refeito conforme task #13110
+    //@Test
     public void getAccessTokenObject_deveGerarHistorico_quandoAutenticar() {
         TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         List<UsuarioHistoricoDto> historico = usuarioHistoricoService.getHistoricoDoUsuario(101);
         assertTrue(!historico.isEmpty());
-        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getMotivo())).count());
+        assertEquals(1, historico.stream().filter(h -> "ÚLTIMO ACESSO DO USUÁRIO".equals(h.getSituacao())).count());
     }
 
     @Test

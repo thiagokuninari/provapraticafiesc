@@ -2,18 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.model.QMotivoInativacao.*;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QMotivoInativacao.motivoInativacao;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHistorico.usuarioHistorico;
 
@@ -32,12 +30,13 @@ public class UsuarioHistoricoRepositoryImpl
     }
 
     @Override
-    public List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId) {
+    public List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioHistoricoDto.class, usuarioHistorico))
+                .select(usuarioHistorico)
                 .from(usuarioHistorico)
-                .where(usuarioHistorico.usuario.id.eq(usuarioId)
-                        .and(usuarioHistorico.motivoInativacao.isNotNull()))
+                .leftJoin(usuarioHistorico.motivoInativacao).fetchJoin()
+                .leftJoin(usuarioHistorico.usuarioAlteracao).fetchJoin()
+                .where(usuarioHistorico.usuario.id.eq(usuarioId))
                 .orderBy(usuarioHistorico.dataCadastro.desc())
                 .fetch();
     }

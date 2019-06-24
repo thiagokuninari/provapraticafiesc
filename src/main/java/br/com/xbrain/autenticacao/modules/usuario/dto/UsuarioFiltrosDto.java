@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Builder
 @Data
 public class UsuarioFiltrosDto {
 

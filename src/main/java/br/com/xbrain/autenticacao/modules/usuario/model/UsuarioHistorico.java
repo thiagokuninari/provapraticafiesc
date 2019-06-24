@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -55,7 +56,11 @@ public class UsuarioHistorico {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @Builder
+    @JoinColumn(name = "FK_USUARIO_FERIAS", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_FERIAS_USU_HIS"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UsuarioFerias ferias;
+
     public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioAlteracao,
                             LocalDateTime dataCadastro, String observacao, ESituacao situacao) {
         this.usuario = usuario;
@@ -72,11 +77,9 @@ public class UsuarioHistorico {
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
-    public void atualizarDataUltimoAcesso() {
-        this.dataCadastro = LocalDateTime.now();
-    }
-
-    public UsuarioHistorico gerarHistoricoAtivacao(Usuario usuarioAlteracao, String observacao, Usuario usuarioAtivado) {
+    public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
+                                                          String observacao,
+                                                          Usuario usuarioAtivado) {
         return UsuarioHistorico.builder()
                 .dataCadastro(LocalDateTime.now())
                 .usuario(usuarioAtivado)
@@ -84,5 +87,12 @@ public class UsuarioHistorico {
                 .observacao(observacao)
                 .situacao(ESituacao.A)
                 .build();
+    }
+
+    public String getSituacaoComMotivo() {
+        return situacao.getDescricao().toUpperCase()
+                + (!ObjectUtils.isEmpty(motivoInativacao)
+                        ? " / " +  motivoInativacao.getDescricao()
+                        : "");
     }
 }

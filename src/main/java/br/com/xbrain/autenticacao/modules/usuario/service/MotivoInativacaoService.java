@@ -16,6 +16,10 @@ public class MotivoInativacaoService {
     @Autowired
     private MotivoInativacaoRepository motivoInativacaoRepository;
 
+    public MotivoInativacao findById(Integer id) {
+        return motivoInativacaoRepository.findOne(id);
+    }
+
     public MotivoInativacao findByCodigoMotivoInativacao(CodigoMotivoInativacao motivo) {
         return motivoInativacaoRepository.findByCodigo(motivo)
                 .orElseThrow(() -> MOTIVO_INATIVACAO_NOT_FOUND);

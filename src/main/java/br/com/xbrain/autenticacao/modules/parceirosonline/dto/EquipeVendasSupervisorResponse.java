@@ -12,4 +12,8 @@ import lombok.NoArgsConstructor;
 public class EquipeVendasSupervisorResponse {
     private String equipeVendasNome;
     private String supervisorNome;
+
+    public static EquipeVendasSupervisorResponse empty() {
+        return new EquipeVendasSupervisorResponse();
+    }
 }
