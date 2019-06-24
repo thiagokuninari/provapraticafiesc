@@ -100,9 +100,9 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
-    @GetMapping("/auto-complete")
-    public List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros) {
-        return usuarioService.findAllAutoComplete(filtros);
+    @GetMapping("/executivos-comerciais")
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
+        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
     @PostMapping("/vincula/hierarquia")

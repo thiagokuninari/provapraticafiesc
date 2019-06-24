@@ -276,8 +276,8 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros) {
-        return repository.findAllAutoComplete(filtros);
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
+        return repository.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
     @Transactional

@@ -104,10 +104,13 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void findAllAutoComplete_deveRetornarUsuarioSuperior_quandoForPopularAutoComplete() {
-        assertThat(service.findAllAutoComplete(getFiltroHierarquia()))
+    public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
+        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
                 .extracting("value", "text")
-                .containsExactly(tuple(104, "operacao_gerente_comercial"));
+                .containsExactly(
+                        tuple(116, "ALBERTO PEREIRA"),
+                        tuple(119, "JOANA OLIVEIRA"),
+                        tuple(117, "ROBERTO ALMEIDA"));
     }
 
     @Test

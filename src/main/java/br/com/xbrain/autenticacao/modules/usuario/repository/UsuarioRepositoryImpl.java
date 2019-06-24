@@ -5,10 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -180,7 +177,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros) {
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
         return new JPAQueryFactory(entityManager)
                 .select(
                         Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
@@ -188,9 +185,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.cargo, cargo)
                 .innerJoin(usuario.departamento, departamento)
                 .innerJoin(departamento.nivel, nivel)
-                .where(cargo.codigo.eq(filtros.getCodigoCargo())
-                        .and(departamento.codigo.eq(filtros.getCodigoDepartamento())
-                                .and(nivel.codigo.eq(filtros.getCodigoNivel()))))
+                .where(cargo.codigo.eq(CodigoCargo.EXECUTIVO)
+                        .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
+                                .and(nivel.codigo.eq(CodigoNivel.OPERACAO))))
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
