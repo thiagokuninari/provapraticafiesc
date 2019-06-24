@@ -215,7 +215,7 @@ public class UsuarioController {
     }
 
     @GetMapping("usuarios-funil-prospeccao/{cidade}")
-    public Integer findUsuariosProspeccaoByCidade(@PathVariable String cidade) {
+    public Integer findUsuarioProspeccaoByCidade(@PathVariable String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }
