@@ -427,4 +427,12 @@ public class Usuario {
 
         this.historicos.add(historico);
     }
+
+    public boolean isAtivo() {
+        return situacao.equals(ESituacao.A);
+    }
+
+    public boolean isCargo(CodigoCargo codigoCargo) {
+        return cargo.getCodigo().equals(codigoCargo);
+    }
 }

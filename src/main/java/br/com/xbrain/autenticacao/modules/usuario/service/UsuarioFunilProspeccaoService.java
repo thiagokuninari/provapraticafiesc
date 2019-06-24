@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -43,7 +42,7 @@ public class UsuarioFunilProspeccaoService {
         List<Integer> usuariosIds = new ArrayList<>();
         usuarios
             .forEach(usuario -> {
-                if (usuario.getUsuario().getSituacao().equals(ESituacao.A)) {
+                if (usuario.getUsuario().isAtivo()) {
                     usuariosIds.add(usuario.getUsuario().getId());
                 }
             });
@@ -67,7 +66,6 @@ public class UsuarioFunilProspeccaoService {
                     return !gerente.isEmpty() ? gerente.get(0) : null;
                 }
             }
-
         }
     }
 
@@ -76,7 +74,7 @@ public class UsuarioFunilProspeccaoService {
         usuarios
             .forEach(
                 usuario -> {
-                    if (usuario.getCargo().getCodigo().equals(EXECUTIVO)) {
+                    if (usuario.isCargo(EXECUTIVO)) {
                         executivo.add(usuario.getId());
                     }
                 }
@@ -89,7 +87,7 @@ public class UsuarioFunilProspeccaoService {
         usuarios
             .forEach(
                 usuario -> {
-                    if (usuario.getCargo().getCodigo().equals(EXECUTIVO_HUNTER)) {
+                    if (usuario.isCargo(EXECUTIVO_HUNTER)) {
                         executivoHunter.add(usuario.getId());
                     }
                 }
@@ -102,7 +100,7 @@ public class UsuarioFunilProspeccaoService {
         usuarios
             .forEach(
                 usuario -> {
-                    if (usuario.getCargo().getCodigo().equals(COORDENADOR_OPERACAO)) {
+                    if (usuario.isCargo(COORDENADOR_OPERACAO)) {
                         coordenador.add(usuario.getId());
                     }
                 }
@@ -115,7 +113,7 @@ public class UsuarioFunilProspeccaoService {
         usuarios
             .forEach(
                 usuario -> {
-                    if (usuario.getCargo().getCodigo().equals(GERENTE_OPERACAO)) {
+                    if (usuario.isCargo(GERENTE_OPERACAO)) {
                         gerente.add(usuario.getId());
                     }
                 }
