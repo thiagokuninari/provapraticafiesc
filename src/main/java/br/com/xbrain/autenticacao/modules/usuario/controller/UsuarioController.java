@@ -18,6 +18,7 @@ import java.security.Principal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -214,8 +215,8 @@ public class UsuarioController {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
-    @GetMapping("usuarios-funil-prospeccao/{cidade}")
-    public Integer findUsuarioProspeccaoByCidade(@PathVariable String cidade) {
+    @GetMapping("usuario-funil-prospeccao")
+    public OptionalInt findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }
