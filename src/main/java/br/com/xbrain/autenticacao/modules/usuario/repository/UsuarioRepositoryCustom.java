@@ -34,9 +34,11 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo);
 
+    List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros);
+
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
-    List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+    List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 

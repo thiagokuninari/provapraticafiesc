@@ -104,6 +104,23 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
+    public void findAllAutoComplete_deveRetornarUsuarioSuperior_quandoForPopularAutoComplete() {
+        assertThat(service.findAllAutoComplete(getFiltroHierarquia()))
+                .extracting("value", "text")
+                .containsExactly(tuple(104, "operacao_gerente_comercial"));
+    }
+
+    @Test
+    public void getUsuariosSuperioresAutoComplete_deveRetornarUsuarioSuperior_quandoForPopularAutoComplete() {
+        assertThat(
+                service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
+                .hasSize(1)
+                .extracting("value", "text")
+                .containsExactly(
+                        tuple(104, "operacao_gerente_comercial"));
+    }
+
+    @Test
     public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
         when(autenticacaoService.getUsuarioAutenticado())
                 .thenReturn(UsuarioAutenticado
@@ -218,12 +235,12 @@ public class UsuarioServiceTestOracle {
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
-        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = new UsuarioFiltrosHierarquia();
-        usuarioFiltrosHierarquia.setUsuarioId(Collections.singletonList(101));
-        usuarioFiltrosHierarquia.setCodigoNivel(OPERACAO);
-        usuarioFiltrosHierarquia.setCodigoDepartamento(COMERCIAL);
-        usuarioFiltrosHierarquia.setCodigoCargo(GERENTE_OPERACAO);
-        return usuarioFiltrosHierarquia;
+        return UsuarioFiltrosHierarquia.builder()
+                .usuarioId(Collections.singletonList(101))
+                .codigoNivel(OPERACAO)
+                .codigoDepartamento(COMERCIAL)
+                .codigoCargo(GERENTE_OPERACAO)
+                .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

@@ -20,4 +20,11 @@ public class UsuarioAutoComplete {
                 .text(usuarioSubordinado.getNome())
                 .build();
     }
+
+    public static UsuarioAutoComplete of(UsuarioResponse usuarioResponse) {
+        return UsuarioAutoComplete.builder()
+                .value(usuarioResponse.getId())
+                .text(usuarioResponse.getNome())
+                .build();
+    }
 }

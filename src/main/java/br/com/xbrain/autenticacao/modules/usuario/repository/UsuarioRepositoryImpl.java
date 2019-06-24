@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspec
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
@@ -177,6 +179,22 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 : "";
     }
 
+    @Override
+    public List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros) {
+        return new JPAQueryFactory(entityManager)
+                .select(
+                        Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .innerJoin(usuario.departamento, departamento)
+                .innerJoin(departamento.nivel, nivel)
+                .where(cargo.codigo.eq(filtros.getCodigoCargo())
+                        .and(departamento.codigo.eq(filtros.getCodigoDepartamento())
+                                .and(nivel.codigo.eq(filtros.getCodigoNivel()))))
+                .orderBy(usuario.nome.asc())
+                .fetch();
+    }
+
     public List<Usuario> getUsuariosFilter(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
                 .select(usuario)
@@ -189,37 +207,40 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros) {
-        return entityManager.createNativeQuery(
-                "SELECT U.ID "
-                        + "     , U.NOME "
-                        + "     , U.CPF "
-                        + "     , U.EMAIL_01 "
-                        + "     , N.CODIGO AS NIVEL "
-                        + "     , D.CODIGO AS DEPARTAMENTO "
-                        + "     , C.CODIGO AS CARGO "
-                        + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS EMPRESAS "
-                        + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS UNIDADES_NEGOCIOS "
-                        + "  FROM USUARIO_HIERARQUIA UH "
-                        + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
-                        + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
-                        + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
-                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
-                        + "  JOIN USUARIO_EMPRESA UE ON UE.FK_USUARIO = U.ID "
-                        + "  JOIN EMPRESA E ON E.ID = UE.FK_EMPRESA "
-                        + "  JOIN USUARIO_UNIDADE_NEGOCIO UNE ON UNE.FK_USUARIO = U.ID "
-                        + "  JOIN UNIDADE_NEGOCIO UN ON UN.ID = UNE.FK_UNIDADE_NEGOCIO "
-                        + " WHERE C.CODIGO = :_codigoCargo "
-                        + "   AND D.CODIGO = :_codigoDepartamento "
-                        + "   AND N.CODIGO = :_codigoNivel "
-                        + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
-                        + "  START WITH UH.FK_USUARIO IN :_idUsuario "
-                        + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
-                .setParameter("_codigoCargo", filtros.getCodigoCargo().toString())
-                .setParameter("_codigoDepartamento", filtros.getCodigoDepartamento().toString())
-                .setParameter("_codigoNivel", filtros.getCodigoNivel().toString())
-                .setParameter("_idUsuario", filtros.getUsuarioId())
-                .getResultList();
+    public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros) {
+        return jdbcTemplate.query("SELECT U.ID "
+                                + "     , U.NOME "
+                                + "     , U.CPF "
+                                + "     , U.EMAIL_01 AS EMAIL"
+                                + "     , N.CODIGO AS CODIGO_NIVEL "
+                                + "     , D.CODIGO AS CODIGO_DEPARTAMENTO "
+                                + "     , C.CODIGO AS CODIGO_CARGO "
+                                + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS CODIGO_EMPRESAS "
+                                + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS CODIGO_UNIDADES_NEGOCIO "
+                                + "  FROM USUARIO_HIERARQUIA UH "
+                                + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
+                                + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                                + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
+                                + "  JOIN USUARIO_EMPRESA UE ON UE.FK_USUARIO = U.ID "
+                                + "  JOIN EMPRESA E ON E.ID = UE.FK_EMPRESA "
+                                + "  JOIN USUARIO_UNIDADE_NEGOCIO UNE ON UNE.FK_USUARIO = U.ID "
+                                + "  JOIN UNIDADE_NEGOCIO UN ON UN.ID = UNE.FK_UNIDADE_NEGOCIO "
+                                + " WHERE C.CODIGO = :codigoCargo "
+                                + "   AND D.CODIGO = :codigoDepartamento "
+                                + "   AND N.CODIGO = :codigoNivel "
+                                + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
+                                + "  START WITH UH.FK_USUARIO IN :usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
+                new MapSqlParameterSource().addValues(getParameters(filtros))
+                        .addValue("usuarioId", filtros.getUsuarioId()),
+                new BeanPropertyRowMapper(UsuarioResponse.class));
+    }
+
+    private Map<String, String> getParameters(UsuarioFiltrosHierarquia filtros) {
+        return Map.of("codigoCargo", filtros.getCodigoCargo().toString(),
+                "codigoDepartamento", filtros.getCodigoDepartamento().toString(),
+                "codigoNivel", filtros.getCodigoNivel().toString());
     }
 
     @Override

@@ -100,6 +100,11 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
     }
 
+    @GetMapping("/auto-complete")
+    public List<UsuarioAutoComplete> findAllAutoComplete(UsuarioFiltrosHierarquia filtros) {
+        return usuarioService.findAllAutoComplete(filtros);
+    }
+
     @PostMapping("/vincula/hierarquia")
     public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios, @RequestParam Integer idUsuarioSuperior) {
         usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
@@ -136,6 +141,11 @@ public class UsuarioController {
     @GetMapping("/hierarquia/supervisores")
     public List<UsuarioResponse> getUsuariosSupervisores(UsuarioFiltrosHierarquia filtrosHierarquia) {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
+    }
+
+    @GetMapping("/hierarquia/supervisores-auto-complete")
+    public List<UsuarioAutoComplete> getUsuariosSupervisoresAutoComplete(UsuarioFiltrosHierarquia filtrosHierarquia) {
+        return usuarioService.getUsuariosSuperioresAutoComplete(filtrosHierarquia);
     }
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
