@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Integer>,
         CidadeRepositoryCustom {

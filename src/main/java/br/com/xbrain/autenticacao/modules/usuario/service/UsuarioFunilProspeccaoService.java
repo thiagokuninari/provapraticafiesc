@@ -1,8 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -45,10 +43,10 @@ public class UsuarioFunilProspeccaoService {
         List<Integer> usuariosIds = new ArrayList<>();
         usuarios
             .forEach(usuario -> {
-                if(usuario.getUsuario().getSituacao().equals(ESituacao.A)) {
+                if (usuario.getUsuario().getSituacao().equals(ESituacao.A)) {
                     usuariosIds.add(usuario.getUsuario().getId());
                 }
-        });
+            });
         return usuariosIds;
     }
 

@@ -450,18 +450,4 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .fetch();
     }
 
-    @Override
-    public List<Usuario> findUsuariosBySituacaoAndCargoIdInAndCidade(Integer cidadeId, List<CodigoCargo> cargos) {
-        return new JPAQueryFactory(entityManager)
-            .select(usuario)
-            .from(usuario)
-            .where(usuario.situacao.eq(ESituacao.A)
-            .and(usuario.cargo.codigo.in(cargos))
-            .and(usuario.id.in(
-                select(usuario.id)
-                .from(usuarioCidade)
-                .where(usuarioCidade.cidade.id.eq(cidadeId))
-            )))
-        .fetch();
-    }
 }

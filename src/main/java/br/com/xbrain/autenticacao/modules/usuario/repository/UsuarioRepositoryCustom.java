@@ -69,5 +69,4 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
-    List<Usuario> findUsuariosBySituacaoAndCargoIdInAndCidade(Integer cidadeId, List<CodigoCargo> cargos);
 }
