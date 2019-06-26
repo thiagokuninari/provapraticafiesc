@@ -1153,6 +1153,19 @@ public class UsuarioService {
     }
 
     @Transactional
+    public void removerRamaisDeConfiguracao(List<UsuarioConfiguracaoDto> dtos) {
+        var numeroRamais = dtos.stream()
+                .map(UsuarioConfiguracaoDto::getRamal)
+                .collect(Collectors.toList());
+
+        var usuariosId = dtos.stream()
+                .map(UsuarioConfiguracaoDto::getUsuario)
+                .collect(Collectors.toList());
+
+        configuracaoRepository.updateRamalToNullByRamalIdsAndUsuariosId(numeroRamais, usuariosId);
+    }
+
+    @Transactional
     public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
         List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
 

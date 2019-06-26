@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -29,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
+import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
@@ -223,17 +222,46 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRemoverRamalConfiguracaoAoUsuario() throws Exception {
-        UsuarioConfiguracaoDto dto = umUsuarioConfiguracaoDto();
-        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+    public void deveRemoverRamalDosUsuarios() throws Exception {
+        long quantidadeAntes = configuracaoRepository.count();
 
-        mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
+        mvc.perform(put("/api/usuarios/remover-configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(dto)))
+                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
                 .andExpect(status().isOk());
 
-        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+        long quantidadeDepois = configuracaoRepository.count();
+
+        Assert.assertTrue(quantidadeAntes > quantidadeDepois);
+    }
+
+    @Test
+    public void removerRamaisDeConfiguracao_deveSetarRamalComoNull_quandoExistirNoBanco() throws Exception {
+        Assert.assertFalse(configuracaoRepository.findByRamal(1008).size() < 2);
+        Assert.assertFalse(configuracaoRepository.findByRamal(7006).isEmpty());
+
+        mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamal())))
+                .andExpect(status().isOk());
+
+        Assert.assertTrue(configuracaoRepository.findByRamal(1008).size() < 2);
+        Assert.assertTrue(configuracaoRepository.findByRamal(7006).isEmpty());
+    }
+
+    @Test
+    public void removerRamaisDeConfiguracao_naoDeveAtualizarRamal_quandoIdDoUsuarioNaoExistir() throws Exception {
+        Assert.assertFalse(configuracaoRepository.findByRamal(1008).size() < 2);
+
+        mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamalInconsistente())))
+                .andExpect(status().isOk());
+
+        Assert.assertEquals(configuracaoRepository.findByRamal(1008).size(), 2);
     }
 
     @Test
@@ -424,33 +452,5 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
-    }
-
-    private UsuarioHierarquiaResponse umUsuarioHierarquia() {
-        return UsuarioHierarquiaResponse.builder()
-                .id(100)
-                .nome("XBRAIN")
-                .cargoNome("COORDENADOR_OPERACAO")
-                .build();
-    }
-
-    private UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {
-        UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
-        dto.setRamal(1000);
-        dto.setUsuario(100);
-        return dto;
-    }
-
-    private UsuarioDadosAcessoRequest umEsqueciSenha() {
-        UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
-        dto.setEmailAtual("HELPDESK@XBRAIN.COM.BR");
-        return dto;
-    }
-
-    private UsuarioConfiguracaoDto umUsuarioComRamalDuplicado() {
-        UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
-        dto.setRamal(1008);
-        dto.setUsuario(105);
-        return dto;
     }
 }
