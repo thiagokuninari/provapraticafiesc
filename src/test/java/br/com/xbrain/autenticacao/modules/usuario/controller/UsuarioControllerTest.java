@@ -65,145 +65,145 @@ public class UsuarioControllerTest {
     @Before
     public void setup() {
         when(autenticacaoService.getUsuarioId())
-                .thenReturn(100);
+            .thenReturn(100);
     }
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/usuarios")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
         mvc.perform(get("/api/usuarios/101")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void deveRetornarTodasAsCidadesDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/100/cidades")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
+            .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
     }
 
     @Test
     public void deveRetornarNenhumaCidadeParaOUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/101/cidades")
-                .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.HELP_DESK))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void deveRetornarUsuariosPorIds() throws Exception {
         mvc.perform(get("/api/usuarios?ids=100,101,104")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)));
     }
 
     @Test
     public void deveNaoRetornarUsuariosPorIdsInativos() throws Exception {
         mvc.perform(get("/api/usuarios?ids=105")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void deveRetornarUsuarioPorIdEVerificarPermissoes() throws Exception {
         mvc.perform(get("/api/usuarios/100")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(100)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.permissoes[0]", is("ROLE_AUT_ATUALIZAR_SENHA_REENVIAR_EMAIL")));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.permissoes[0]", is("ROLE_AUT_ATUALIZAR_SENHA_REENVIAR_EMAIL")));
     }
 
     @Test
     public void deveRetornarUsuarioAutenticadoPorId() throws Exception {
         mvc.perform(get("/api/usuarios/autenticado/101")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(101)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.email", is("HELPDESK@XBRAIN.COM.BR")));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(101)))
+            .andExpect(jsonPath("$.nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.email", is("HELPDESK@XBRAIN.COM.BR")));
     }
 
     @Test
     public void deveRetornarOUsuarioPorEmail() throws Exception {
         mvc.perform(get("/api/usuarios?email=ADMIN@XBRAIN.COM.BR")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(100)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.email", is(Usuarios.ADMIN)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.email", is(Usuarios.ADMIN)));
     }
 
     @Test
     public void deveRetornarUsuarioPorCpf() throws Exception {
         mvc.perform(get("/api/usuarios?cpf=65710871036")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(101)))
-                .andExpect(jsonPath("$.nome", is("HELPDESK")))
-                .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(101)))
+            .andExpect(jsonPath("$.nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
     }
 
     @Test
     public void deveRetornarAsEmpresasDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/100/empresas")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
     public void deveRetornarUsuariosPorNivelDoCargo() throws Exception {
         mvc.perform(get("/api/usuarios?nivel=XBRAIN")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(5)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(5)));
     }
 
     @Test
     public void deveRetornarUsuariosPorPermissaoEspecial() throws Exception {
         mvc.perform(get("/api/usuarios?funcionalidade=POL_AGENTE_AUTORIZADO_APROVACAO_MSO_NOVO_CADASTRO")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
     public void deveRetornarAsConfiguracoesDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ramal", is(7006)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ramal", is(7006)));
     }
 
     @Test
     public void deveAdicionarConfiguracaoAoUsuario() throws Exception {
         mvc.perform(post("/api/usuarios/adicionar-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ramal", is(1000)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.ramal", is(1000)));
     }
 
     @Test
@@ -211,10 +211,10 @@ public class UsuarioControllerTest {
         long quantidadeAntes = configuracaoRepository.count();
 
         mvc.perform(put("/api/usuarios/remover-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
+            .andExpect(status().isOk());
 
         long quantidadeDepois = configuracaoRepository.count();
 
@@ -222,14 +222,14 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRemoverRamalDosUsuarios() throws Exception {
+    public void removerRamaisDeConfiguracao_deveDesconectarOsAgentes_quandoOsRamaisRecebidosEstiveremConectados() throws Exception {
         long quantidadeAntes = configuracaoRepository.count();
 
         mvc.perform(put("/api/usuarios/remover-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
+            .andExpect(status().isOk());
 
         long quantidadeDepois = configuracaoRepository.count();
 
@@ -242,10 +242,10 @@ public class UsuarioControllerTest {
         Assert.assertFalse(configuracaoRepository.findByRamal(7006).isEmpty());
 
         mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamal())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamal())))
+            .andExpect(status().isOk());
 
         Assert.assertTrue(configuracaoRepository.findByRamal(1008).size() < 2);
         Assert.assertTrue(configuracaoRepository.findByRamal(7006).isEmpty());
@@ -256,10 +256,10 @@ public class UsuarioControllerTest {
         Assert.assertFalse(configuracaoRepository.findByRamal(1008).size() < 2);
 
         mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamalInconsistente())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamalInconsistente())))
+            .andExpect(status().isOk());
 
         Assert.assertEquals(configuracaoRepository.findByRamal(1008).size(), 2);
     }
@@ -271,10 +271,10 @@ public class UsuarioControllerTest {
         Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
 
         mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(dto)))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(dto)))
+            .andExpect(status().isOk());
 
         Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
     }
@@ -282,18 +282,18 @@ public class UsuarioControllerTest {
     @Test
     public void deveEnviarConfirmacaoDeResetDeSenhaEmail() throws Exception {
         mvc.perform(put("/api/usuarios/esqueci-senha")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umEsqueciSenha())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umEsqueciSenha())))
+            .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
     public void deveNaoResetarSenhaDoUsuarioComToken() throws Exception {
         mvc.perform(put("/api/usuarios/esqueci-senha")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -301,156 +301,156 @@ public class UsuarioControllerTest {
         String hash = jsonWebTokenService.createJsonWebTokenResetSenha("teste@xbrain.com.br", 2);
 
         mvc.perform(put("/api/usuarios/esqueci-senha?hash=" + hash)
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(umEsqueciSenha())))
-                .andExpect(status().isOk());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(umEsqueciSenha())))
+            .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
     }
 
     @Test
     public void getPermissoesPorCanal_permissoesComCanal_somentePermitidasAoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/permissoes-por-canal")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
-                .andExpect(jsonPath("$[0].canais", hasSize(2)))
-                .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
-                .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
+            .andExpect(jsonPath("$[0].canais", hasSize(2)))
+            .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
+            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
     }
 
     @Test
     public void getSubclustersUsuario_deveRetornarOsSubclusters_conformeUsuarioIdInformado() throws Exception {
         mvc.perform(get("/api/usuarios/100/subclusters")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].value", is(189)))
-                .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].value", is(189)))
+            .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
 
     }
 
     @Test
     public void getPermissoesPorUsuarios_throwException_QuandoParametrosVazios() throws Exception {
         mvc.perform(get("/api/usuarios/permissoes-por-usuario")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "O campo permissoes é obrigatório.",
-                        "O campo usuariosId é obrigatório.")));
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo permissoes é obrigatório.",
+                "O campo usuariosId é obrigatório.")));
     }
 
     @Test
     public void getPermissoesPorUsuarios_usuarioComPermissoes_QuandoFornecidoParametros() throws Exception {
         doReturn(Collections.singletonList(
-                new UsuarioPermissoesResponse(
-                        2844,
-                        Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
-                .when(usuarioService).findUsuariosByPermissoes(any());
+            new UsuarioPermissoesResponse(
+                2844,
+                Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
+            .when(usuarioService).findUsuariosByPermissoes(any());
         mvc.perform(get("/api/usuarios/permissoes-por-usuario?usuariosId=2844&permissoes=ROLE_VDS_TABULACAO_CLICKTOCALL")
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].usuarioId", is(2844)))
-                .andExpect(jsonPath("$[0].permissoes", containsInAnyOrder("ROLE_VDS_TABULACAO_CLICKTOCALL")));
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].usuarioId", is(2844)))
+            .andExpect(jsonPath("$[0].permissoes", containsInAnyOrder("ROLE_VDS_TABULACAO_CLICKTOCALL")));
     }
 
     @Test
     public void getSuperioresByUsuario_deveRetornar_quandoForValido() throws Exception {
         doReturn(Collections.singletonList(umUsuarioHierarquia()))
-                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+            .when(usuarioService).getSuperioresDoUsuario(anyInt());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id", is(100)))
-                .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
     }
 
     @Test
     public void getSuperioresByUsuario_deveRetornarNada_quandoNaoPossuirSuperior() throws Exception {
         doReturn(Collections.emptyList())
-                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+            .when(usuarioService).getSuperioresDoUsuario(anyInt());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void getSuperioresByUsuario_deveRetornarNada_quandoUsuarioNaoExistir() throws Exception {
         doReturn(Collections.emptyList())
-                .when(usuarioService).getSuperioresDoUsuario(anyInt());
+            .when(usuarioService).getSuperioresDoUsuario(anyInt());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/999")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void getSuperioresByUsuario_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1"))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornar_quandoForValido() throws Exception {
         doReturn(Collections.singletonList(umUsuarioHierarquia()))
-                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+            .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id", is(100)))
-                .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("XBRAIN")));
     }
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornarNada_quandoNaoPossuirSuperior() throws Exception {
         doReturn(Collections.emptyList())
-                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+            .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornarNada_quandoUsuarioNaoExistir() throws Exception {
         doReturn(Collections.emptyList())
-                .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
+            .when(usuarioService).getSuperioresDoUsuarioPorCargo(anyInt(), any());
 
         mvc.perform(get("/api/usuarios/hierarquia/superiores/999")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1/COORDENADOR_OPERACAO"))
-                .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getSuperioresByUsuarioPorCargo_deveRetornarBadRequest_quandoCargoNaoExistir() throws Exception {
         mvc.perform(get("/api/usuarios/hierarquia/superiores/1/a")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 }
