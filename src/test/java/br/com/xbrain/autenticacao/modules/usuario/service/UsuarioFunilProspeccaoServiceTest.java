@@ -1,16 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.config.DatabaseConfig;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.FunilProspeccaoUsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -32,11 +28,11 @@ public class UsuarioFunilProspeccaoServiceTest {
     @Autowired
     private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
 
-    private final static String CIDADE_BUSCA_LONDRINA = "LONDRINA";
-    private final static String CIDADE_BUSCA_SAO_PAULO = "SAO PAULO";
-    private final static String CIDADE_BUSCA_RIO_DE_JANEIRO = "RIO DE JANEIRO";
-    private final static String CIDADE_BUSCA_CAPITOLIO = "CAPITOLIO";
-    private final static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION =
+    private static final String CIDADE_BUSCA_LONDRINA = "LONDRINA";
+    private static final String CIDADE_BUSCA_SAO_PAULO = "SAO PAULO";
+    private static final String CIDADE_BUSCA_RIO_DE_JANEIRO = "RIO DE JANEIRO";
+    private static final String CIDADE_BUSCA_CAPITOLIO = "CAPITOLIO";
+    private static final ValidacaoException USUARIO_NOT_FOUND_EXCEPTION =
         new ValidacaoException("Usuário não encontrado");
 
     @Test
