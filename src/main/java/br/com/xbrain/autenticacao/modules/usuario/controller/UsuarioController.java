@@ -181,8 +181,8 @@ public class UsuarioController {
     }
 
     @RequestMapping(value = "/remover-ramais-configuracao", method = RequestMethod.PUT)
-    public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> dtos) {
-        usuarioService.removerRamaisDeConfiguracao(dtos);
+    public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> configuracaoDtoList) {
+        usuarioService.removerRamaisDeConfiguracao(configuracaoDtoList);
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)

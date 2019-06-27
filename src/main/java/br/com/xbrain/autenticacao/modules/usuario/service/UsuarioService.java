@@ -1153,16 +1153,16 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void removerRamaisDeConfiguracao(List<UsuarioConfiguracaoDto> dtos) {
-        var numeroRamais = dtos.stream()
+    public void removerRamaisDeConfiguracao(List<UsuarioConfiguracaoDto> configuracaoDtoList) {
+        var numeroRamais = configuracaoDtoList.stream()
                 .map(UsuarioConfiguracaoDto::getRamal)
                 .collect(Collectors.toList());
 
-        var usuariosId = dtos.stream()
+        var usuariosId = configuracaoDtoList.stream()
                 .map(UsuarioConfiguracaoDto::getUsuario)
                 .collect(Collectors.toList());
 
-        configuracaoRepository.updateRamalToNullByRamalIdsAndUsuariosId(numeroRamais, usuariosId);
+        configuracaoRepository.updateRamaisToNullByRamaisIdsAndUsuariosIds(numeroRamais, usuariosId);
     }
 
     @Transactional

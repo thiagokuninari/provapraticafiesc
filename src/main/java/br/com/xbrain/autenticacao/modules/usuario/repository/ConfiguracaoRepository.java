@@ -18,6 +18,6 @@ public interface ConfiguracaoRepository extends PagingAndSortingRepository<Confi
 
     @Modifying
     @Query("update Configuracao set ramal = null where ramal in :ramaisId and fk_usuario in :usuariosId")
-    void updateRamalToNullByRamalIdsAndUsuariosId(@Param("ramaisId") List<Integer> ramaisId,
-                                                  @Param("usuariosId") List<Integer> usuariosId);
+    void updateRamaisToNullByRamaisIdsAndUsuariosIds(@Param("ramaisId") List<Integer> ramaisId,
+                                                     @Param("usuariosId") List<Integer> usuariosId);
 }
