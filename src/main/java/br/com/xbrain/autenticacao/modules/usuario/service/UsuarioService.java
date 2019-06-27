@@ -1328,4 +1328,9 @@ public class UsuarioService {
                                 .idUsuarioAtivacao(usuario.getId())
                                 .build()));
     }
+
+    @Transactional
+    public void atualizarDataUltimoAcesso(Integer id) {
+        repository.atualizarDataUltimoAcesso(LocalDateTime.now(), id);
+    }
 }

@@ -154,6 +154,9 @@ public class Usuario {
     @Column(name = "DATA_CADASTRO", updatable = false, nullable = false)
     private LocalDateTime dataCadastro;
 
+    @Column(name = "DATA_ULTIMO_ACESSO")
+    private LocalDateTime dataUltimoAcesso;
+
     @NotAudited
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
