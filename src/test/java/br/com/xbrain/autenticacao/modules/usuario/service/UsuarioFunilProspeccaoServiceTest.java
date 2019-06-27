@@ -37,7 +37,7 @@ public class UsuarioFunilProspeccaoServiceTest {
 
     @Test
     public void findUsuarioDirecionadoByCidade_deveRetornarUmGerente_quandoHouverMaisDeUmExecutivoOuCoordenador() {
-        FunilProspeccaoUsuarioDto usuarioRediredionado = usuarioFunilProspeccaoService
+        var usuarioRediredionado = usuarioFunilProspeccaoService
             .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_LONDRINA);
         var usuario = usuarioRepository.findById(usuarioRediredionado.getUsuarioId())
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
@@ -47,7 +47,7 @@ public class UsuarioFunilProspeccaoServiceTest {
 
     @Test
     public void findUsuarioDirecionadoByCidade_deveRetornarUmCoordenador_quandoHouverMaisDeUmExecutivo() {
-        FunilProspeccaoUsuarioDto usuarioRediredionado = usuarioFunilProspeccaoService
+        var usuarioRediredionado = usuarioFunilProspeccaoService
             .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_SAO_PAULO);
         var usuario = usuarioRepository.findById(usuarioRediredionado.getUsuarioId())
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
@@ -57,7 +57,7 @@ public class UsuarioFunilProspeccaoServiceTest {
 
     @Test
     public void findUsuarioDirecionadoByCidade_deveRetornarUmExecutivo_quandoHouverApenasUmNaCidade() {
-        FunilProspeccaoUsuarioDto usuarioRediredionado = usuarioFunilProspeccaoService
+        var usuarioRediredionado = usuarioFunilProspeccaoService
             .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_RIO_DE_JANEIRO);
         var usuario = usuarioRepository.findById(usuarioRediredionado.getUsuarioId())
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
@@ -67,7 +67,7 @@ public class UsuarioFunilProspeccaoServiceTest {
 
     @Test
     public void findUsuarioDirecionadoByCidade_deveRetornarUmExecutivoHunter_quandoHouverApenasUmNaCidade() {
-        FunilProspeccaoUsuarioDto usuarioRediredionado = usuarioFunilProspeccaoService
+        var usuarioRediredionado = usuarioFunilProspeccaoService
             .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_CAPITOLIO);
         var usuario = usuarioRepository.findById(usuarioRediredionado.getUsuarioId())
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
