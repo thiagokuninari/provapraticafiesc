@@ -216,7 +216,7 @@ public class UsuarioController {
     }
 
     @GetMapping("usuario-funil-prospeccao")
-    public OptionalInt findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
+    public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }
