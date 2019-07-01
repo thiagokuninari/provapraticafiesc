@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +19,8 @@ public class UsuarioTimer {
     private UsuarioService service;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private UsuarioAcessoService usuarioAcessoService;
 
     private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
 
@@ -27,9 +30,11 @@ public class UsuarioTimer {
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
-    @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
+//    @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
+    @Scheduled(cron = "10 * * * * *")
+    @Async
     public void inativarUsuariosSemAcesso() {
-        //service.inativarUsuariosSemAcesso();  TODO foi desativado e será refeito conforme task #13110
+        usuarioAcessoService.inativarUsuariosSemAcesso();
     }
 
     @Transactional

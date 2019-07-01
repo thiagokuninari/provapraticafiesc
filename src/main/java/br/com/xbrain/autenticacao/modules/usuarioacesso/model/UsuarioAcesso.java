@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.model;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class UsuarioAcesso {
 
     @Id
@@ -29,6 +31,14 @@ public class UsuarioAcesso {
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "FK_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
+
+    public UsuarioAcesso(LocalDateTime dataCadastro, Integer usuarioId, String usuarioEmail) {
+        this.dataCadastro = dataCadastro;
+        this.usuario = Usuario.builder()
+                .id(usuarioId)
+                .email(usuarioEmail)
+                .build();
+    }
 
     public UsuarioAcesso criaRegistroAcesso(Integer usuarioId) {
         return UsuarioAcesso.builder()

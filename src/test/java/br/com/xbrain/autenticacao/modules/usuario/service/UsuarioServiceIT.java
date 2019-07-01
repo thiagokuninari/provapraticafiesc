@@ -444,20 +444,20 @@ public class UsuarioServiceIT {
 
 
     // @Test TODO foi desativado e será refeito conforme task #13110
-    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
-        service.inativarUsuariosSemAcesso();
-
-        Usuario usuarioInativo = service.findByIdCompleto(101);
-        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
-                .extracting("id", "motivo", "observacao")
-                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
-
-        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
-        assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
-        assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
-        assertEquals(0, service.getUsuariosSemAcesso().size());
-        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
-    }
+//    public void inativarUsuariosSemAcesso_doisUsuariosInativados_quandoUsuarioNaoEfetuarLoginNosUltimosTrintaEDoisDias() {
+//        service.inativarUsuariosSemAcesso();
+//
+//        Usuario usuarioInativo = service.findByIdCompleto(101);
+//        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioInativo.getId()))
+//                .extracting("id", "motivo", "observacao")
+//                .contains(tuple(104, "INATIVIDADE DE ACESSO", "Inativado por falta de acesso"));
+//
+//        assertEquals(ESituacao.I, usuarioInativo.getSituacao());
+//        assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
+//        assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
+//        assertEquals(0, service.getUsuariosSemAcesso().size());
+//        verify(inativarColaboradorMqSender, times(2)).sendSuccess(anyString());
+//    }
 
     @Test
     public void save_cidadesAdicionadas_quandoAdicionarNovasCidadesEManterACidadeExistente() {

@@ -154,6 +154,7 @@ public class Usuario {
     @Column(name = "DATA_CADASTRO", updatable = false, nullable = false)
     private LocalDateTime dataCadastro;
 
+    @NotAudited
     @Column(name = "DATA_ULTIMO_ACESSO")
     private LocalDateTime dataUltimoAcesso;
 
@@ -224,6 +225,11 @@ public class Usuario {
     public Usuario(Collection<Empresa> empresas, Collection<UnidadeNegocio> unidadeNegocios) {
         this.empresas = new ArrayList<>(empresas);
         this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
+    }
+
+    public Usuario(Integer id, String email) {
+        this.id = id;
+        this.email = email;
     }
 
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {

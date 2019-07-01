@@ -84,4 +84,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     @Modifying
     @Query("update Usuario u set u.dataUltimoAcesso = ?1 where u.id = ?2")
     void atualizarDataUltimoAcesso(LocalDateTime data, Integer id);
+
+    @Modifying
+    @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
+    void atualizarParaSituacaoInativo(Integer id);
 }

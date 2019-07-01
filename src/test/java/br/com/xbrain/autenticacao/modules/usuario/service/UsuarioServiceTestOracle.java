@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
@@ -131,33 +129,33 @@ public class UsuarioServiceTestOracle {
     }
 
     // @Test TODO foi desativado e será refeito conforme task #13110
-    public void deveBuscarOsUsuarioComInatividade() throws Exception {
-        List<Usuario> usuarios = service.getUsuariosSemAcesso();
-        Assert.assertEquals(2, usuarios
-                .stream()
-                .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
-                .collect(Collectors.toList())
-                .size());
-    }
+//    public void deveBuscarOsUsuarioComInatividade() throws Exception {
+//        List<Usuario> usuarios = service.getUsuariosSemAcesso();
+//        Assert.assertEquals(2, usuarios
+//                .stream()
+//                .filter(u -> Arrays.asList(104, 101).contains(u.getId()))
+//                .collect(Collectors.toList())
+//                .size());
+//    }
 
-    // @Test TODO foi desativado e será refeito conforme task #13110
-    public void deveInativarOsUsuarioComInatividade() throws Exception {
-        service.inativarUsuariosSemAcesso();
-        List<Usuario> usuarios = service.getUsuariosSemAcesso();
-        Assert.assertEquals(0, usuarios.size());
-
-        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(101).getSituacao());
-        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
-
-        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
-                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-
-        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
-                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
-
-        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
-        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(366).getSituacao());
-    }
+//    // @Test TODO foi desativado e será refeito conforme task #13110
+//    public void deveInativarOsUsuarioComInatividade() throws Exception {
+//        service.inativarUsuariosSemAcesso();
+//        List<Usuario> usuarios = service.getUsuariosSemAcesso();
+//        Assert.assertEquals(0, usuarios.size());
+//
+//        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(101).getSituacao());
+//        Assert.assertEquals(ESituacao.I, service.findByIdCompleto(104).getSituacao());
+//
+//        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(101)
+//                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
+//
+//        Assert.assertEquals(1, usuarioHistoricoService.getHistoricoDoUsuario(104)
+//                .stream().filter(h -> "Inativado por falta de acesso".equals(h.getObservacao())).count());
+//
+//        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(100).getSituacao());
+//        Assert.assertEquals(ESituacao.A, service.findByIdCompleto(366).getSituacao());
+//    }
 
     @Test
     public void getPermissoesPorUsuarios_permissoesComUsuario_conformeParametroUsuarioIdAndPermissao() {

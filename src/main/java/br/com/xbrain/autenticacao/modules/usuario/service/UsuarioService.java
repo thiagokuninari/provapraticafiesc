@@ -80,8 +80,8 @@ public class UsuarioService {
     private static final int MAXIMO_PARAMETROS_IN = 1000;
     private static final ESituacao ATIVO = ESituacao.A;
     private static final ESituacao INATIVO = ESituacao.I;
-    private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
-            + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
+//    private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido na rotina de inativar "
+//            + "usuários que estão a mais de 32 dias sem efetuar login no sistema.";
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
             "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
@@ -132,16 +132,16 @@ public class UsuarioService {
     private UsuarioAtualizacaoMqSender usuarioAtualizacaoMqSender;
     @Autowired
     private AtualizarUsuarioMqSender atualizarUsuarioMqSender;
-    @Autowired
-    private InativarColaboradorMqSender inativarColaboradorMqSender;
+//    @Autowired
+//    private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
-    @Autowired
-    private UsuarioHistoricoService usuarioHistoricoService;
+//    @Autowired
+//    private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -841,24 +841,24 @@ public class UsuarioService {
         }
     }
 
-    @Transactional
-    public void inativarUsuariosSemAcesso() {
-        this.getUsuariosSemAcesso().forEach(usuario -> {
-            try {
-                usuario.setSituacao(ESituacao.I);
-                usuarioHistoricoService.gerarHistoricoUsuarioInativado(usuario);
-                repository.save(usuario);
+//    @Transactional
+//    public void inativarUsuariosSemAcesso() {
+//        this.getUsuariosSemAcesso().forEach(usuario -> {
+//            try {
+//                usuario.setSituacao(ESituacao.I);
+//                usuarioHistoricoService.gerarHistoricoInativacao(usuario);
+//                repository.save(usuario);
+//
+//                inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+//            } catch (Exception exception) {
+//                log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
+//            }
+//        });
+//    }
 
-                inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
-            } catch (Exception exception) {
-                log.error(MSG_ERRO_AO_INATIVAR_USUARIO, exception);
-            }
-        });
-    }
-
-    public List<Usuario> getUsuariosSemAcesso() {
-        return usuarioHistoricoRepository.getUsuariosPorTempoDeInatividade(toPredicate().build());
-    }
+//    public List<Usuario> getUsuariosSemAcesso() {
+//        return usuarioHistoricoRepository.getUsuariosPorTempoDeInatividade(toPredicate().build());
+//    }
 
     private UsuarioHistoricoPredicate toPredicate() {
         return new UsuarioHistoricoPredicate()
