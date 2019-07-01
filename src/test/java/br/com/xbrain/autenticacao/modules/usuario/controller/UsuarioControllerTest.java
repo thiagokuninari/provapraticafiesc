@@ -222,7 +222,8 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void removerRamaisDeConfiguracao_deveDesconectarOsAgentes_quandoOsRamaisRecebidosEstiveremConectados() throws Exception {
+    public void removerRamaisDeConfiguracao_deveDesconectarOsAgentes_quandoOsRamaisRecebidosEstiveremConectados()
+        throws Exception {
         long quantidadeAntes = configuracaoRepository.count();
 
         mvc.perform(put("/api/usuarios/remover-configuracao")
