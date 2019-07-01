@@ -37,7 +37,7 @@ public class UsuarioController {
     @GetMapping
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
-                usuarioService.findByIdCompleto(getUsuarioId(principal)));
+            usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
     @PutMapping("ativar-socio")
@@ -53,14 +53,14 @@ public class UsuarioController {
     @GetMapping("/autenticado/{id}")
     public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
         return new UsuarioAutenticado(
-                usuarioService.findCompleteById(id));
+            usuarioService.findCompleteById(id));
     }
 
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(
-                usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
-                        .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
+            usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
+                .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
@@ -151,7 +151,7 @@ public class UsuarioController {
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
-            @RequestParam String funcionalidade) {
+        @RequestParam String funcionalidade) {
         return usuarioService.getUsuarioByPermissao(funcionalidade);
     }
 
@@ -175,14 +175,9 @@ public class UsuarioController {
         usuarioService.removerConfiguracao(dto);
     }
 
-    @RequestMapping(value = "/remover-ramal-configuracao", method = RequestMethod.PUT)
-    public void removerRamalConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
-        usuarioService.removerRamalConfiguracao(dto);
-    }
-
     @RequestMapping(value = "/remover-ramais-configuracao", method = RequestMethod.PUT)
-    public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> configuracaoDtoList) {
-        usuarioService.removerRamaisDeConfiguracao(configuracaoDtoList);
+    public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> usuarioConfiguracaoDtoList) {
+        usuarioService.removerRamaisDeConfiguracao(usuarioConfiguracaoDtoList);
     }
 
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
@@ -203,10 +198,10 @@ public class UsuarioController {
     @GetMapping("/canais")
     public Iterable<SelectResponse> getCanais() {
         return ECanal.getCanaisAtivos()
-                .stream()
-                .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
-                .sorted(Comparator.comparing(SelectResponse::getLabel))
-                .collect(Collectors.toList());
+            .stream()
+            .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+            .sorted(Comparator.comparing(SelectResponse::getLabel))
+            .collect(Collectors.toList());
     }
 
     @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
