@@ -88,6 +88,11 @@ public class AutenticacaoService {
         logout(usuarioRepository.findOne(usuarioId).getLogin());
     }
 
+    public void logout(List<Integer> usuariosId) {
+        usuarioRepository.findByIdIn(usuariosId)
+            .forEach(usuario -> logout(usuario.getLogin()));
+    }
+
     public void logoutAllUsers() {
         tokenStore
                 .findTokensByClientId(AuthServerConfig.APP_CLIENT)
