@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.config;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Async;

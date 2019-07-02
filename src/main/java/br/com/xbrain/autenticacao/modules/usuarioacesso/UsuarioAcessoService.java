@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
+package br.com.xbrain.autenticacao.modules.usuarioacesso;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
@@ -45,8 +45,8 @@ public class UsuarioAcessoService {
                         usuarioHistoricoService.gerarHistoricoInativacao(usuario);
                         inativarColaboradorPol(usuario);
                     });
-        } catch (Exception e) {
-            log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, e);
+        } catch (Exception ex) {
+            log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, ex);
         }
     }
 

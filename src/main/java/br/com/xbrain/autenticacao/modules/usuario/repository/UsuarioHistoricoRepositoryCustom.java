@@ -11,7 +11,5 @@ public interface UsuarioHistoricoRepositoryCustom {
     
     List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId);
 
-//    List<Usuario> getUsuariosPorTempoDeInatividade(Predicate predicate);
-
     List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
 }

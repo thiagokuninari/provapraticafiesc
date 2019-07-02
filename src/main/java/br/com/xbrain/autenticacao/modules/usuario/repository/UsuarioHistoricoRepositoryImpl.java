@@ -37,17 +37,6 @@ public class UsuarioHistoricoRepositoryImpl
                 .fetch();
     }
 
-//    public List<Usuario> getUsuariosPorTempoDeInatividade(Predicate predicate) {
-//        return new JPAQueryFactory(entityManager)
-//                .selectDistinct(usuarioHistorico.usuario)
-//                .from(usuarioHistorico)
-//                .innerJoin(usuarioHistorico.usuario, usuario)
-//                .where(usuarioHistorico.motivoInativacao.codigo.eq(CodigoMotivoInativacao.ULTIMO_ACESSO)
-//                        .and(usuario.situacao.eq(ESituacao.A))
-//                        .and(predicate))
-//                .fetch();
-//    }
-
     public List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHistorico)

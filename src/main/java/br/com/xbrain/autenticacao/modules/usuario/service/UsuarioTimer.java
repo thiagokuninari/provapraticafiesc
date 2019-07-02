@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
@@ -30,8 +30,7 @@ public class UsuarioTimer {
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
-//    @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
-    @Scheduled(cron = "10 * * * * *")
+    @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
         usuarioAcessoService.inativarUsuariosSemAcesso();
