@@ -824,8 +824,7 @@ public class UsuarioService {
                 .dataCadastro(LocalDateTime.now())
                 .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
                 .usuario(usuario)
-                .usuarioAlteracao(usuarioInativacao
-                        .getUsuarioInativacaoTratado(autenticacaoService.getUsuarioId()))
+                .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
                 .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
                 .ferias(usuarioFeriasService
@@ -833,6 +832,13 @@ public class UsuarioService {
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
         repository.save(usuario);
+    }
+
+    private Usuario getUsuarioInativacaoTratado(UsuarioInativacaoDto usuario) {
+        return autenticacaoService
+            .getUsuarioAutenticadoId()
+            .map(Usuario::new)
+            .orElseGet(() -> new Usuario(usuario.getIdUsuarioInativacao()));
     }
 
     private void inativarUsuarioNaEquipeVendas(Usuario usuario) {

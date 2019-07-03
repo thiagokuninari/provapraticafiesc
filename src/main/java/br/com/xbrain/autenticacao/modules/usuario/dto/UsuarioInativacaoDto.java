@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,13 +35,6 @@ public class UsuarioInativacaoDto {
 
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFim;
-
-    @JsonIgnore
-    public Usuario getUsuarioInativacaoTratado(Integer usuarioAutenticadoId) {
-        return !isEmpty(idUsuarioInativacao)
-                ? new Usuario(idUsuarioInativacao)
-                : new Usuario(usuarioAutenticadoId);
-    }
 
     @JsonIgnore
     public boolean isFerias() {

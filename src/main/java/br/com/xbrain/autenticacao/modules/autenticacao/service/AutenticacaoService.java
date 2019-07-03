@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -53,6 +54,14 @@ public class AutenticacaoService {
 
     public Integer getUsuarioId() {
         return Integer.parseInt(getAuthentication().getName().split(Pattern.quote("-"))[0]);
+    }
+
+    public Optional<Integer> getUsuarioAutenticadoId() {
+        if (!hasAuthentication()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(getUsuarioId());
     }
 
     public UsuarioAutenticado getUsuarioAutenticado() {
