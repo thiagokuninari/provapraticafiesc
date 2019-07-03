@@ -102,6 +102,7 @@ public class UsuarioServiceIT {
     @Before
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101));
     }
 
     @Test
