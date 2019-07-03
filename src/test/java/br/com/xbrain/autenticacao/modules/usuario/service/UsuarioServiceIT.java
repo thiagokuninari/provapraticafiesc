@@ -43,6 +43,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -148,6 +149,21 @@ public class UsuarioServiceIT {
         service.alterarEmailUsuario(usuarioAlteracaoRequest);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getEmail(), "EMAILALTERADO@XBRAIN.COM.BR");
+    }
+
+    @Test
+    public void inativar_deveInativarUmUsuario_seAtivoEProvenienteDaFila() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.empty());
+        var usuarioInativacao = UsuarioInativacaoDto
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.DESCREDENCIADO)
+            .idUsuarioInativacao(101)
+            .build();
+        service.inativar(usuarioInativacao);
+        Usuario usuario = service.findByIdCompleto(100);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
     @Test
