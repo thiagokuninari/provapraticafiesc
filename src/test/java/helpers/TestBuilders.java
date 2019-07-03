@@ -52,4 +52,11 @@ public class TestBuilders {
         dto1.setUsuario(110);
         return List.of(dto1);
     }
+
+    public static List<UsuarioConfiguracaoDto> umaListDeUsuarioConfiguracaoDto() {
+        UsuarioConfiguracaoDto dto = new UsuarioConfiguracaoDto();
+        dto.setRamal(1000);
+        dto.setUsuario(100);
+        return List.of(dto);
+    }
 }

@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -222,62 +221,17 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void removerRamaisDeConfiguracao_deveDesconectarOsAgentes_quandoOsRamaisRecebidosEstiveremConectados()
-        throws Exception {
-        long quantidadeAntes = configuracaoRepository.count();
-
-        mvc.perform(put("/api/usuarios/remover-configuracao")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umUsuarioConfiguracaoDto())))
-            .andExpect(status().isOk());
-
-        long quantidadeDepois = configuracaoRepository.count();
-
-        Assert.assertTrue(quantidadeAntes > quantidadeDepois);
-    }
-
-    @Test
-    public void removerRamaisDeConfiguracao_deveSetarRamalComoNull_quandoExistirNoBanco() throws Exception {
-        Assert.assertFalse(configuracaoRepository.findByRamal(1008).size() < 2);
-        Assert.assertFalse(configuracaoRepository.findByRamal(7006).isEmpty());
+    public void deveRemoverRamalConfiguracaoAoUsuario() throws Exception {
+        var dto = umaListDeUsuarioConfiguracaoDto();
+        Assert.assertFalse(configuracaoRepository.findByRamal(dto.get(0).getRamal()).isEmpty());
 
         mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamal())))
-            .andExpect(status().isOk());
-
-        Assert.assertTrue(configuracaoRepository.findByRamal(1008).size() < 2);
-        Assert.assertTrue(configuracaoRepository.findByRamal(7006).isEmpty());
-    }
-
-    @Test
-    public void removerRamaisDeConfiguracao_naoDeveAtualizarRamal_quandoIdDoUsuarioNaoExistir() throws Exception {
-        Assert.assertFalse(configuracaoRepository.findByRamal(1008).size() < 2);
-
-        mvc.perform(put("/api/usuarios/remover-ramais-configuracao")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaListaDeUsuarioComRamalInconsistente())))
-            .andExpect(status().isOk());
-
-        Assert.assertEquals(configuracaoRepository.findByRamal(1008).size(), 2);
-    }
-
-    @Test
-    public void deveRemoverRamalConfiguracaoUsuarioRamalDuplicado() throws Exception {
-        UsuarioConfiguracaoDto dto = umUsuarioComRamalDuplicado();
-        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
-        Assert.assertFalse(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
-
-        mvc.perform(put("/api/usuarios/remover-ramal-configuracao")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .contentType(MediaType.APPLICATION_JSON)
             .content(convertObjectToJsonBytes(dto)))
             .andExpect(status().isOk());
 
-        Assert.assertTrue(configuracaoRepository.findByRamal(dto.getRamal()).isEmpty());
+        Assert.assertTrue(configuracaoRepository.findByRamal(dto.get(0).getRamal()).isEmpty());
     }
 
     @Test
