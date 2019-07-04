@@ -175,6 +175,11 @@ public class UsuarioController {
         usuarioService.removerConfiguracao(dto);
     }
 
+    @RequestMapping(value = "/remover-ramal-configuracao", method = RequestMethod.PUT)
+    public void removerRamalConfiguracao(@RequestBody UsuarioConfiguracaoDto dto) {
+        usuarioService.removerRamalConfiguracao(dto);
+    }
+
     @RequestMapping(value = "/remover-ramais-configuracao", method = RequestMethod.PUT)
     public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> usuarioConfiguracaoDtoList) {
         usuarioService.removerRamaisDeConfiguracao(usuarioConfiguracaoDtoList);

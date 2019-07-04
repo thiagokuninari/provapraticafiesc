@@ -1144,6 +1144,15 @@ public class UsuarioService {
     }
 
     @Transactional
+    public void removerRamalConfiguracao(UsuarioConfiguracaoDto dto) {
+        List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        configuracao.forEach(config -> {
+            config.removerRamal();
+            configuracaoRepository.save(config);
+        });
+    }
+
+    @Transactional
     public void removerRamaisDeConfiguracao(List<UsuarioConfiguracaoDto> usuarioConfiguracaoDtoList) {
         if (!usuarioConfiguracaoDtoList.isEmpty()) {
             usuarioConfiguracaoDtoList.forEach(usuarioConfig -> {
