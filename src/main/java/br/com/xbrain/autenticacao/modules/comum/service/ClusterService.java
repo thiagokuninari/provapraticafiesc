@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Cluster;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,16 @@ public class ClusterService {
                 .stream()
                 .map(ClusterDto::objectToDto)
                 .collect(Collectors.toList());
+    }
+
+    public ClusterDto findById(Integer clusterId) {
+        var clusterDto = new ClusterDto();
+        repository.findById(clusterId)
+            .forEach(cluster -> {
+                clusterDto.setId(cluster.getId());
+                clusterDto.setNome(cluster.getNome());
+            });
+        return clusterDto;
     }
 
 }

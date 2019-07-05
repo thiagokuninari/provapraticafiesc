@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Cluster;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

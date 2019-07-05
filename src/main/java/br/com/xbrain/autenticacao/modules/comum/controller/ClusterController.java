@@ -27,4 +27,9 @@ public class ClusterController {
     public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@PathVariable Integer grupoId, @PathVariable Integer usuarioId) {
         return service.getAllByGrupoIdAndUsuarioId(grupoId, usuarioId);
     }
+
+    @GetMapping("/{clusterId}")
+    public ClusterDto findById(@PathVariable Integer clusterId) {
+        return service.findById(clusterId);
+    }
 }

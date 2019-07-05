@@ -23,4 +23,13 @@ public class GrupoRepositoryImpl extends CustomRepository<Grupo> implements Grup
                 .orderBy(grupo.nome.asc())
                 .fetch();
     }
+
+    @Override
+    public List<Grupo> findById(Integer grupoId) {
+        return new JPAQueryFactory(entityManager)
+            .select(grupo)
+            .from(grupo)
+            .where(grupo.id.eq(grupoId))
+            .fetch();
+    }
 }

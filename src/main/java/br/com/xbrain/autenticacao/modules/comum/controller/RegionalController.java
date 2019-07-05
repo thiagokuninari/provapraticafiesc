@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
@@ -23,5 +24,10 @@ public class RegionalController {
     @GetMapping("/usuario/{id}")
     public List<SelectResponse> getAllByUsuarioId(@PathVariable("id") int usuarioId) {
         return service.getAllByUsuarioId(usuarioId);
+    }
+
+    @GetMapping("/{regionalId}")
+    public RegionalDto findById(@PathVariable Integer regionalId) {
+        return service.findById(regionalId);
     }
 }

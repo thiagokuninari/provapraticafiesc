@@ -45,4 +45,13 @@ public class RegionalRepositoryImpl extends CustomRepository<Regional> implement
                 .fetch();
     }
 
+    @Override
+    public List<Regional> findById(Integer regionalId) {
+        return new JPAQueryFactory(entityManager)
+            .select(regional)
+            .from(regional)
+            .where(regional.id.eq(regionalId))
+            .fetch();
+    }
+
 }

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.predicate.RegionalPredicate;
@@ -33,5 +34,16 @@ public class RegionalService {
                 .stream()
                 .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
                 .collect(Collectors.toList());
+    }
+
+    public RegionalDto findById(Integer grupoId) {
+        var regionalDto = new RegionalDto();
+        repository.findById(grupoId)
+            .forEach(grupo -> {
+                regionalDto.setId(grupo.getId());
+                regionalDto.setNome(grupo.getNome());
+                regionalDto.setSituacao(grupo.getSituacao());
+            });
+        return regionalDto;
     }
 }

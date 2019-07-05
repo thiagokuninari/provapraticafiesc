@@ -48,4 +48,14 @@ public class GrupoService {
                 .collect(Collectors.toList());
     }
 
+    public GrupoDto findById(Integer grupoId) {
+        var grupoDto = new GrupoDto();
+        repository.findById(grupoId)
+            .forEach(grupo -> {
+                grupoDto.setId(grupo.getId());
+                grupoDto.setNome(grupo.getNome());
+            });
+        return grupoDto;
+    }
+
 }
