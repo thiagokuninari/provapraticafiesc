@@ -46,4 +46,10 @@ public class UsuarioAcesso {
                 .usuario(new Usuario(usuarioId))
                 .build();
     }
+
+    public static UsuarioAcesso of(Usuario usuario) {
+        return UsuarioAcesso.builder()
+                .usuario(usuario)
+                .build();
+    }
 }

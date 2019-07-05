@@ -227,6 +227,11 @@ public class Usuario {
         this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
     }
 
+    public Usuario(Integer id, String email) {
+        this.id = id;
+        this.email = email;
+    }
+
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioMqRequest, usuario);

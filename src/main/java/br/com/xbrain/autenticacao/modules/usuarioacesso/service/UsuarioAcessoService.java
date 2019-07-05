@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuarioacesso;
+package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,16 +40,32 @@ public class UsuarioAcessoService {
     @Transactional
     public void inativarUsuariosSemAcesso() {
         try {
-            usuarioAcessoRepository.findAllUltimoAcessoUsuarios()
-                    .forEach(usuarioAcesso -> {
-                        Usuario usuario = usuarioAcesso.getUsuario();
-                        usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
-                        usuarioHistoricoService.gerarHistoricoInativacao(usuario);
-                        inativarColaboradorPol(usuario);
-                    });
+            buscarUsuariosParaInativar().forEach(usuarioAcesso -> {
+                Usuario usuario = usuarioAcesso.getUsuario();
+                usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
+                usuarioHistoricoService.gerarHistoricoInativacao(usuario);
+                inativarColaboradorPol(usuario);
+            });
         } catch (Exception ex) {
             log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, ex);
         }
+    }
+
+    private List<UsuarioAcesso> buscarUsuariosParaInativar() {
+        List<UsuarioAcesso> usuariosAcesso = usuarioAcessoRepository.findAllUltimoAcessoUsuarios();
+        List<UsuarioAcesso> usuarios = usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
+                .stream()
+                .map(UsuarioAcesso::of)
+                .collect(Collectors.toList());
+
+        if (!usuariosAcesso.isEmpty() && !usuarios.isEmpty()) {
+            usuariosAcesso.addAll(usuarios);
+            return usuariosAcesso;
+        } else if (!usuariosAcesso.isEmpty()) {
+            return usuariosAcesso;
+        }
+
+        return usuarios;
     }
 
     private void inativarColaboradorPol(Usuario usuario) {

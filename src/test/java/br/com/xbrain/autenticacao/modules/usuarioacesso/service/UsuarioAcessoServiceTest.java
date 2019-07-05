@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.UsuarioAcessoService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
