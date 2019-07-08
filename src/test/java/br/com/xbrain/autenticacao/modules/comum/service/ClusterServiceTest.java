@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +49,27 @@ public class ClusterServiceTest {
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(16, "ALAGOAS"));
+    }
+
+    @Test
+    public void findById_deveRetornarUmCluster_seExistir() {
+        assertThat(clusterService.findById(1))
+            .isEqualTo(umClusterDto());
+    }
+
+    @Test
+    public void findById_deveRetornarUmaDtoNula_seIdNaoExistir() {
+        var clusterDto = umClusterDto();
+        clusterDto.setId(null);
+        clusterDto.setNome(null);
+        assertThat(clusterService.findById(100556))
+            .isEqualTo(clusterDto);
+    }
+
+    ClusterDto umClusterDto () {
+        ClusterDto clusterDto = new ClusterDto();
+        clusterDto.setId(1);
+        clusterDto.setNome("PORTO VELHO");
+        return clusterDto;
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,28 @@ public class GrupoServiceTest {
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(4, "NORDESTE"));
+    }
+
+    @Test
+    public void findById_deveRetornarUmGrupo_seExistir() {
+        assertThat(grupoService.findById(1))
+            .isEqualTo(umGrupoDto());
+    }
+
+    @Test
+    public void findById_deveRetornarUmaDtoNula_seIdNaoExistir() {
+        var grupoDto = umGrupoDto();
+        grupoDto.setId(null);
+        grupoDto.setNome(null);
+        assertThat(grupoService.findById(1516516))
+            .isEqualTo(grupoDto);
+    }
+
+    GrupoDto umGrupoDto() {
+        GrupoDto grupoDto = new GrupoDto();
+        grupoDto.setId(1);
+        grupoDto.setNome("CENTRO-OESTE");
+        return grupoDto;
     }
 
 }
