@@ -17,7 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AgendamentoHelpers {
+public class UsuarioAgendamentoHelpers {
 
     public static List<UsuarioAgenteAutorizadoAgendamentoResponse> usuariosMesmoSegmentoAgenteAutorizado1300() {
         return List.of(
