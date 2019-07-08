@@ -1,33 +1,22 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.mailing.dto.AgendamentoAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.mailing.service.TabulacaoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.DistribuirTabulacoesMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,79 +46,13 @@ public class UsuarioAgendamentoService {
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
 
-    private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
-    private final TabulacaoService tabulacaoService;
-    private final ColaboradorVendasService colaboradorVendasService;
-    private final DistribuirTabulacoesMqSender distribuirTabulacoesMqSender;
     private final UsuarioService usuarioService;
     private final CargoService cargoService;
     private final UsuarioRepository usuarioRepository;
 
-    public List<AgendamentoDistribuicaoListagemResponse> getAgendamentoDistribuicaoDoUsuario(Integer usuarioId) {
-        var agendamentos = agruparAgendamentosPorAgenteAutorizado(
-                        tabulacaoService.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(usuarioId));
-
-        var colaboradorVendas =
-                colaboradorVendasService.getEquipeVendasSupervisorDoUsuarioId(usuarioId)
-                .orElseGet(EquipeVendasSupervisorResponse::empty);
-
-        return agenteAutorizadoService.getAgentesAutorizadosPermitidos()
-                .stream()
-                .filter(aaPermitido -> agendamentos.containsKey(aaPermitido.getId()))
-                .map(aaPermitido -> getDistribuicaoListagem(
-                        usuarioId,
-                        colaboradorVendas,
-                        aaPermitido,
-                        agendamentos.get(aaPermitido.getId())))
-                .sorted(Comparator.comparing(AgendamentoDistribuicaoListagemResponse::getCnpjRazaoSocial))
-                .collect(Collectors.toList());
-    }
-
-    private Map<Integer, Long> agruparAgendamentosPorAgenteAutorizado(List<AgendamentoAgenteAutorizadoResponse> agendamentosAa) {
-        return agendamentosAa
-                .stream()
-                .collect(Collectors.toMap(
-                        AgendamentoAgenteAutorizadoResponse::getAgenteAutorizadoId,
-                        AgendamentoAgenteAutorizadoResponse::getQuantidadeAgendamentos));
-    }
-
-    private AgendamentoDistribuicaoListagemResponse getDistribuicaoListagem(Integer usuarioId,
-                                                                            EquipeVendasSupervisorResponse equipeVendasSupervisor,
-                                                                            AgenteAutorizadoPermitidoResponse aaPermitido,
-                                                                            Long quantidadeAgendamentos) {
-        var usuariosAgendamentos = recuperarUsuariosComAgendamentosPredistribuidos(
-                usuarioId,
-                aaPermitido.getId(),
-                quantidadeAgendamentos);
-
-        long agendamentosRestantes = quantidadeAgendamentos % usuariosAgendamentos.size();
-
-        return new AgendamentoDistribuicaoListagemResponse(
-                aaPermitido.getId(),
-                aaPermitido.getCnpjRazaoSocial(),
-                equipeVendasSupervisor.getEquipeVendasNome(),
-                equipeVendasSupervisor.getSupervisorNome(),
-                quantidadeAgendamentos,
-                agendamentosRestantes,
-                usuariosAgendamentos);
-    }
-
-    private List<AgendamentoUsuarioDto> recuperarUsuariosComAgendamentosPredistribuidos(Integer usuarioId,
-                                                                                        Integer agenteAutorizadoId,
-                                                                                        Long quantidadeTotal) {
-        var usuariosAa = recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
-        var totalUsuarios = usuariosAa.size();
-        var agendamentosPorUsuario = quantidadeTotal / totalUsuarios;
-
-        return usuariosAa.stream()
-                .map(usuario -> new AgendamentoUsuarioDto(usuario, agendamentosPorUsuario))
-                .sorted(Comparator.comparing(AgendamentoUsuarioDto::getNome))
-                .collect(Collectors.toList());
-    }
-
-    private List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
-                                                                                               Integer agenteAutorizadoId) {
+    public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
+                                                                                              Integer agenteAutorizadoId) {
         var cargoDoUsuario = cargoService.findByUsuarioId(usuarioId);
 
         var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
@@ -215,38 +138,5 @@ public class UsuarioAgendamentoService {
 
     private boolean isCargoHibrido(CodigoCargo codigoCargo) {
         return CARGOS_HIBRIDOS_PERMITIDOS.contains(codigoCargo);
-    }
-
-    public void distribuirAgendamentosDoUsuario(AgendamentoDistribuicaoRequest request) {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
-        var totalAgendamentos = request.getAgendamentosPorUsuario()
-                .stream()
-                .map(AgendamentoUsuarioDto::getQuantidade)
-                .reduce(0L, Long::sum);
-
-        if (!isQuantidadeAgendamentosValida(request.getAgenteAutorizadoId(), request.getUsuarioOrigemId(), totalAgendamentos)) {
-            throw new ValidacaoException("Quantidade de agendamentos enviada é inválida.");
-        }
-
-        distribuirTabulacoesMqSender.distribuirTabulacoes(new TabulacaoDistribuicaoMqRequest(
-                request.getAgenteAutorizadoId(),
-                request.getUsuarioOrigemId(),
-                request.getAgendamentosPorUsuario(),
-                usuarioAutenticado.getId(),
-                usuarioAutenticado.getNome()));
-    }
-
-    private boolean isQuantidadeAgendamentosValida(Integer aaId, Integer usuarioOrigemId, long totalAgendamentosEnviados) {
-        var totalAgendamentos = new AtomicLong(0L);
-
-        tabulacaoService.getQuantidadeAgendamentosProprietariosDoUsuarioPorAa(usuarioOrigemId)
-                .stream()
-                .filter(a -> a.getAgenteAutorizadoId().equals(aaId))
-                .findFirst()
-                .map(AgendamentoAgenteAutorizadoResponse::getQuantidadeAgendamentos)
-                .ifPresent(totalAgendamentos::set);
-
-        return totalAgendamentosEnviados == totalAgendamentos.get();
     }
 }
