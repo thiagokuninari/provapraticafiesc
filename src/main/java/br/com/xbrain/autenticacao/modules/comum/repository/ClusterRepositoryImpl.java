@@ -23,13 +23,4 @@ public class ClusterRepositoryImpl extends CustomRepository<Cluster> implements 
                 .orderBy(cluster.nome.asc())
                 .fetch();
     }
-
-    @Override
-    public List<Cluster> findById(Integer clusterId) {
-        return new JPAQueryFactory(entityManager)
-            .select(cluster)
-            .from(cluster)
-            .where(cluster.id.eq(clusterId))
-            .fetch();
-    }
 }

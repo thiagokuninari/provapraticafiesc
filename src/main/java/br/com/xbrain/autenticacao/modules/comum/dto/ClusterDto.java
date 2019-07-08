@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Cluster;
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
@@ -19,7 +18,7 @@ public class ClusterDto {
         this.nome = nome;
     }
 
-    public static ClusterDto objectToDto(Cluster cluster) {
+    public static ClusterDto of(Cluster cluster) {
         ClusterDto dto = new ClusterDto();
         BeanUtils.copyProperties(cluster, dto);
         return dto;

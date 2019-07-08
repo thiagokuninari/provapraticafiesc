@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +29,9 @@ public class ClusterServiceTest {
 
     @Autowired
     private ClusterService clusterService;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void getAllByGrupoIdAndUsuarioId_deveRetornarCluster_quandoUsuarioPossuirGrupoNorteDoParana() {
@@ -58,15 +64,13 @@ public class ClusterServiceTest {
     }
 
     @Test
-    public void findById_deveRetornarUmaDtoNula_seIdNaoExistir() {
-        var clusterDto = umClusterDto();
-        clusterDto.setId(null);
-        clusterDto.setNome(null);
-        assertThat(clusterService.findById(100556))
-            .isEqualTo(clusterDto);
+    public void findById_deveLancarException_seClusterNaoExistir() {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Cluster não encontrado.");
+        clusterService.findById(100556);
     }
 
-    ClusterDto umClusterDto () {
+    ClusterDto umClusterDto() {
         ClusterDto clusterDto = new ClusterDto();
         clusterDto.setId(1);
         clusterDto.setNome("PORTO VELHO");

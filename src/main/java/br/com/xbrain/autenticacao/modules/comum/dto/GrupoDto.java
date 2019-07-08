@@ -29,7 +29,7 @@ public class GrupoDto {
                 .collect(Collectors.toList());
     }
 
-    public static GrupoDto objectToDto(Grupo grupo) {
+    public static GrupoDto of(Grupo grupo) {
         GrupoDto dto = new GrupoDto();
         BeanUtils.copyProperties(grupo, dto);
         return dto;

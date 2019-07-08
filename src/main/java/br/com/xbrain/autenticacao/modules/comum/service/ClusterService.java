@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.model.Cluster;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto.of;
 
 @Service
 public class ClusterService {
@@ -29,7 +31,7 @@ public class ClusterService {
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByGrupoId(grupoId, predicate.build())
                 .stream()
-                .map(ClusterDto::objectToDto)
+                .map(ClusterDto::of)
                 .collect(Collectors.toList());
     }
 
@@ -38,25 +40,20 @@ public class ClusterService {
                 .filtrarPermitidos(usuarioId);
         return repository.findAllByGrupoId(grupoId, predicate.build())
                 .stream()
-                .map(ClusterDto::objectToDto)
+                .map(ClusterDto::of)
                 .collect(Collectors.toList());
     }
 
     public List<ClusterDto> getAllAtivo() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
                 .stream()
-                .map(ClusterDto::objectToDto)
+                .map(ClusterDto::of)
                 .collect(Collectors.toList());
     }
 
     public ClusterDto findById(Integer clusterId) {
-        var clusterDto = new ClusterDto();
-        repository.findById(clusterId)
-            .forEach(cluster -> {
-                clusterDto.setId(cluster.getId());
-                clusterDto.setNome(cluster.getNome());
-            });
-        return clusterDto;
+        return of(repository.findById(clusterId)
+            .orElseThrow(() -> new ValidacaoException("Cluster não encontrado.")));
     }
 
 }

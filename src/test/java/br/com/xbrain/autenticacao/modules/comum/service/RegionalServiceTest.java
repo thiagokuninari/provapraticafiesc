@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +26,9 @@ public class RegionalServiceTest {
 
     @Autowired
     private RegionalService regionalService;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionaisSulESp_doUsuarioInformadoPeloParametro() {
@@ -47,16 +53,13 @@ public class RegionalServiceTest {
     }
 
     @Test
-    public void findById_deveRetornarUmaDtoNula_seIdNaoExistir() {
-        var clusterDto = umClusterDto();
-        clusterDto.setId(null);
-        clusterDto.setNome(null);
-        clusterDto.setSituacao(null);
-        assertThat(regionalService.findById(16516))
-            .isEqualTo(clusterDto);
+    public void findById_deveLancarException_seRegionalNaoExistir() {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Regional não encontrada.");
+        regionalService.findById(16516);
     }
 
-    RegionalDto umClusterDto () {
+    RegionalDto umClusterDto() {
         RegionalDto regionalDto = new RegionalDto();
         regionalDto.setId(1);
         regionalDto.setNome("LESTE");
