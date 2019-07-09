@@ -1298,6 +1298,8 @@ public class UsuarioService {
 
     @Transactional
     public void atualizarDataUltimoAcesso(Integer id) {
-        repository.atualizarDataUltimoAcesso(LocalDateTime.now(), id);
+        var dataUltimoAcesso = LocalDateTime.now();
+        repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
+        atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
     }
 }

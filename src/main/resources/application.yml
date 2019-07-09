@@ -108,6 +108,7 @@ app-config:
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
+    usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
 
   oauth-clients:
     autenticacao-api:
