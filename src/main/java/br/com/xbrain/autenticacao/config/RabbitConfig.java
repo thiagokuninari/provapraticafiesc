@@ -71,6 +71,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.inativar-colaborador-pol}")
     private String inativarColaboradorPolMq;
 
+    @Value("${app-config.queue.usuario-logout}")
+    private String usuarioLogoutMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -172,6 +175,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioLogoutMq() {
+        return new Queue(usuarioLogoutMq, false);
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -259,5 +267,10 @@ public class RabbitConfig {
     @Bean
     public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutMq()).to(exchange).with(usuarioLogoutMq);
     }
 }
