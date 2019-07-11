@@ -211,9 +211,10 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getSubordinadosDoUsuarioPorCargo_deveRetornarSubordinadosDoUsuarioPorCargo_quandoUsuarioPossuirSubordinados() {
         assertThat(service.getSubordinadosDoUsuarioPorCargo(115, EXECUTIVO))
-                .isNotNull()
+                .hasSize(3)
                 .extracting("value", "text")
-                .contains(tuple(116, "ALBERTO PEREIRA"),
+                .contains(
+                        tuple(116, "ALBERTO PEREIRA"),
                         tuple(117, "ROBERTO ALMEIDA"),
                         tuple(119, "JOANA OLIVEIRA"));
     }
@@ -224,17 +225,23 @@ public class UsuarioServiceTestOracle {
                 .isEmpty();
     }
 
-    @SuppressWarnings("LineLength")
     @Test
     public void getSubordinadosDoUsuario_deveRetornarTodosSubordinadosDoUsuario_quandoUsuarioPossuirSubordinados() {
         assertThat(service.getSubordinadosDoUsuario(115))
+                .hasSize(5)
                 .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
                 .contains(
-                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO, "Sócio Principal"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
+                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                                "Sócio Principal"),
+                        tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {

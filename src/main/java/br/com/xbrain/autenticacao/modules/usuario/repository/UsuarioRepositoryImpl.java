@@ -172,7 +172,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     private String where(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo)
-                ? " WHERE C.CODIGO LIKE '" + codigoCargo.name().toUpperCase() + "'"
+                ? " WHERE C.CODIGO LIKE '" + codigoCargo.name().toUpperCase() + "' "
+                + "AND U.SITUACAO = 'A'"
                 : "";
     }
 
@@ -187,7 +188,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(departamento.nivel, nivel)
                 .where(cargo.codigo.eq(CodigoCargo.EXECUTIVO)
                         .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
-                                .and(nivel.codigo.eq(CodigoNivel.OPERACAO))))
+                                .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                        .and(usuario.situacao.eq(ESituacao.A)))
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
