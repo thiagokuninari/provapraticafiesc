@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2034;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_2034;
 import static java.util.Comparator.comparing;
 
 @Service
@@ -103,7 +103,7 @@ public class SolicitacaoRamalService {
     private void validarFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
         if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
             verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(AUT_2034)) {
+        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
             throw new ValidacaoException(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO);
         }
     }
