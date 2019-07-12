@@ -911,11 +911,11 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
     }
 
     public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia)
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
                 .stream()
                 .map(UsuarioAutoComplete::of)
                 .collect(Collectors.toList());

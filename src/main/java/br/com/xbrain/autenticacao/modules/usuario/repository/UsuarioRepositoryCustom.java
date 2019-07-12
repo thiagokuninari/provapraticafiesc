@@ -38,7 +38,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
-    List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+    List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros, boolean exibirAtivos);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 

@@ -206,7 +206,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros) {
+    public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros, boolean exibirAtivos) {
         return jdbcTemplate.query("SELECT U.ID "
                                 + "     , U.NOME "
                                 + "     , U.CPF "
@@ -227,13 +227,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + "  JOIN UNIDADE_NEGOCIO UN ON UN.ID = UNE.FK_UNIDADE_NEGOCIO "
                                 + " WHERE C.CODIGO = :codigoCargo "
                                 + "   AND D.CODIGO = :codigoDepartamento "
-                                + "   AND N.CODIGO = :codigoNivel "
+                                + "   AND N.CODIGO = :codigoNivel " + exibirSomenteUsuariosAtivo(exibirAtivos)
                                 + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
                                 + "  START WITH UH.FK_USUARIO IN (:usuarioId) "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
                 new MapSqlParameterSource().addValues(getParameters(filtros))
                         .addValue("usuarioId", filtros.getUsuarioId()),
                 new BeanPropertyRowMapper(UsuarioResponse.class));
+    }
+
+    private String exibirSomenteUsuariosAtivo(boolean exibirAtivos) {
+        return exibirAtivos ? " AND U.SITUACAO = 'A'" : "";
     }
 
     private Map<String, String> getParameters(UsuarioFiltrosHierarquia filtros) {

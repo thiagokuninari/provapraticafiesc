@@ -3,7 +3,10 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -95,12 +98,13 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void deveBuscarSuperioresDoUsuario() {
-        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
-        List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
-        Assert.assertEquals(1, usuariosResponse.size());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
+        assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
+                .hasSize(3)
+                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
+                .containsExactly(
+                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
+                        tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
+                        tuple(370, "HELIO OLIVEIRA", GERENTE_OPERACAO, COMERCIAL, OPERACAO));
     }
 
     @Test
@@ -114,13 +118,14 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void getUsuariosSuperioresAutoComplete_deveRetornarUsuarioSuperior_quandoForPopularAutoComplete() {
+    public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
         assertThat(
                 service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
-                .hasSize(1)
+                .hasSize(2)
                 .extracting("value", "text")
                 .containsExactly(
-                        tuple(104, "operacao_gerente_comercial"));
+                        tuple(104, "operacao_gerente_comercial"),
+                        tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
