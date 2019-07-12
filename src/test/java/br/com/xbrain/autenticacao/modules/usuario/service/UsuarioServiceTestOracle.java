@@ -97,7 +97,7 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void deveBuscarSuperioresDoUsuario() {
+    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoOuInativoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
                 .hasSize(3)
                 .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
