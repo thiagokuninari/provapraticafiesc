@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -94,10 +93,9 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuario(id);
     }
 
-    @GetMapping("/hierarquia/subordinados/{id}/{codigoCargo}")
-    public List<UsuarioAutoComplete> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
-                                                                      @PathVariable CodigoCargo codigoCargo) {
-        return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
+    @GetMapping("/hierarquia/subordinados/gerente/{id}")
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(id);
     }
 
     @GetMapping("/executivos-comerciais")

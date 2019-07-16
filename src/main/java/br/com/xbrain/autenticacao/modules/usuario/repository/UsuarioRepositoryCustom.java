@@ -32,7 +32,9 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
-    List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo);
+    List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
+
+    List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
     List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
 

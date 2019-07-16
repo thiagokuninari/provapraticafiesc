@@ -214,8 +214,8 @@ public class UsuarioServiceTestOracle {
 
     @SuppressWarnings("LineLength")
     @Test
-    public void getSubordinadosDoUsuarioPorCargo_deveRetornarSubordinadosDoUsuarioPorCargo_quandoUsuarioPossuirSubordinados() {
-        assertThat(service.getSubordinadosDoUsuarioPorCargo(115, EXECUTIVO))
+    public void getSubordinadosDoUsuarioPorCargo_deveRetornarUsuariosSubordinados_quandoUsuarioPossuirSubordinadosComCargoExecutivoOuHunter() {
+        assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(115))
                 .hasSize(3)
                 .extracting("value", "text")
                 .contains(
@@ -224,9 +224,10 @@ public class UsuarioServiceTestOracle {
                         tuple(119, "JOANA OLIVEIRA"));
     }
 
+    @SuppressWarnings("LineLength")
     @Test
-    public void getSubordinadosDoUsuarioPorCargo_deveRetornarVazio_quandoUsuarioNaoPossuirSubordinadosPraEsteCargo() {
-        assertThat(service.getSubordinadosDoUsuarioPorCargo(115, ADMINISTRADOR))
+    public void getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter_deveRetornarVazio_quandoUsuarioNaoPossuirSubordinadosComCargoExecutivoOuHunter() {
+        assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(500))
                 .isEmpty();
     }
 
@@ -246,7 +247,7 @@ public class UsuarioServiceTestOracle {
                         tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
                                 OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
+                                OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {

@@ -22,7 +22,6 @@ import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +34,8 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -149,7 +150,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo) {
+    public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS ID"
                         + "     , U.NOME "
                         + "     , U.CPF "
@@ -162,7 +163,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                         + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
                         + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
-                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL " + where(codigoCargo)
+                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
                         + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
                         + " START WITH FK_USUARIO_SUPERIOR = :usuarioId "
                         + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR",
@@ -170,11 +171,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new BeanPropertyRowMapper<>(UsuarioSubordinadoDto.class));
     }
 
-    private String where(CodigoCargo codigoCargo) {
-        return Objects.nonNull(codigoCargo)
-                ? " WHERE C.CODIGO LIKE '" + codigoCargo.name().toUpperCase() + "' "
-                + "AND U.SITUACAO = 'A'"
-                : "";
+    @Override
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId) {
+        return jdbcTemplate.query(" SELECT FK_USUARIO AS VALUE"
+                        + "     , U.NOME AS TEXT"
+                        + " FROM usuario_hierarquia UH"
+                        + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                        + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
+                        + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
+                        + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
+                        + "  WHERE U.SITUACAO = 'A' AND C.CODIGO IN (:codigoCargos)"
+                        + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
+                        + " START WITH FK_USUARIO_SUPERIOR = :usuarioId "
+                        + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR",
+                new MapSqlParameterSource()
+                        .addValue("usuarioId", usuarioId)
+                        .addValue("codigoCargos", List.of(EXECUTIVO.name(), EXECUTIVO_HUNTER.name())),
+                new BeanPropertyRowMapper<>(UsuarioAutoComplete.class));
     }
 
     @Override
@@ -186,7 +199,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.cargo, cargo)
                 .innerJoin(usuario.departamento, departamento)
                 .innerJoin(departamento.nivel, nivel)
-                .where(cargo.codigo.eq(CodigoCargo.EXECUTIVO)
+                .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                         .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
                                 .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
                         .and(usuario.situacao.eq(ESituacao.A)))

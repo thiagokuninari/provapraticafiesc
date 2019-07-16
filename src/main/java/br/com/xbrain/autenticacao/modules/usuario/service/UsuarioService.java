@@ -266,14 +266,11 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        return repository.getUsuariosCompletoSubordinados(usuarioId, null);
+        return repository.getUsuariosCompletoSubordinados(usuarioId);
     }
 
-    public List<UsuarioAutoComplete> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
-        return repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo)
-                .stream()
-                .map(UsuarioAutoComplete::of)
-                .collect(Collectors.toList());
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId) {
+        return repository.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(usuarioId);
     }
 
     public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
