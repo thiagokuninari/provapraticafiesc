@@ -37,12 +37,8 @@ public class UsuarioAcessoRepositoryImpl
     public long deletarHistoricoUsuarioAcesso() {
         return new JPAQueryFactory(entityManager)
                 .delete(usuarioAcesso)
-                .where(usuarioAcesso.id.in(
-                        new JPAQueryFactory(entityManager)
-                                .select(usuarioAcesso.id)
-                                .from(usuarioAcesso)
-                                .where(usuarioAcesso.dataCadastro.before(
-                                        LocalDateTime.now().minusMonths(DOIS_MESES)))))
+                .where(usuarioAcesso.dataCadastro.before(
+                        LocalDateTime.now().minusMonths(DOIS_MESES)))
                 .execute();
     }
 
