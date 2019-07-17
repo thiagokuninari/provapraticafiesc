@@ -479,8 +479,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioResponse> getSupervisores(Integer usuarioId) {
-        List<Integer> subclusterList = new ArrayList<>();
-        getSubclustersUsuario(usuarioId).forEach(subCluster -> subclusterList.add(subCluster.getId()));
+        var subclusterIdList=getSubclustersUsuario(usuarioId)
+                .stream()
+                .map(SubCluster::getId)
+                .collect(Collectors.toList());
 
         return new JPAQueryFactory(entityManager)
                 .select(Projections.bean(UsuarioResponse.class,
@@ -491,7 +493,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuario.cidades, usuarioCidade)
                 .innerJoin(usuarioCidade.cidade, cidade)
                 .innerJoin(cidade.subCluster, subCluster)
-                .where(subCluster.id.in(subclusterList))
+                .where(subCluster.id.in(subclusterIdList))
                 .distinct()
                 .fetch();
     }

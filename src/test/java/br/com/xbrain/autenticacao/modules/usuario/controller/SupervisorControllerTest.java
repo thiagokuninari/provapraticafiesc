@@ -86,4 +86,20 @@ public class SupervisorControllerTest {
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
     }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisorDoSubCluster_doSupervisorPassado() throws Exception{
+        when(supervisorService.getSupervisoresDoSubcluster(any()))
+                .thenReturn(singletonList(
+                        UsuarioResponse.builder().id(11850).nome("RAFAEL MACHADO DA SILVEIRA").build()));
+
+        mvc.perform(get("/api/supervisor/supervisores/140051")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(11850)))
+                .andExpect(jsonPath("$[0].nome", is( "RAFAEL MACHADO DA SILVEIRA")));
+    }
+
 }
