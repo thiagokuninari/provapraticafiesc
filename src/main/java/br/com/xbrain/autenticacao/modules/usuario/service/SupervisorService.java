@@ -57,4 +57,8 @@ public class SupervisorService {
                 CodigoCargo.SUPERVISOR_OPERACAO,
                 ECanal.D2D_PROPRIO);
     }
+
+    public List<UsuarioResponse> getSupervisoresDoSubcluster(Integer usuarioId) {
+        return usuarioRepository.getSupervisores(usuarioId);
+    }
 }

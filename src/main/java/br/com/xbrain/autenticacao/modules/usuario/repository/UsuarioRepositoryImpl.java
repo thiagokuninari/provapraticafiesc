@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -473,6 +474,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .leftJoin(usuario.cargo)
                 .leftJoin(usuario.departamento)
                 .where(usuario.id.in(usuariosIds))
+                .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponse> getSupervisores(Integer usuarioId) {
+        List<Integer> subclusterList = new ArrayList<>();
+        getSubclustersUsuario(usuarioId).forEach(subCluster -> subclusterList.add(subCluster.getId()));
+
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.bean(UsuarioResponse.class,
+                        usuario.id,
+                        usuario.nome))
+                .from(usuarioHierarquia)
+                .innerJoin(usuarioHierarquia.usuarioSuperior, usuario)
+                .innerJoin(usuario.cidades, usuarioCidade)
+                .innerJoin(usuarioCidade.cidade, cidade)
+                .innerJoin(cidade.subCluster, subCluster)
+                .where(subCluster.id.in(subclusterList))
+                .distinct()
                 .fetch();
     }
 }
