@@ -8,6 +8,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -28,5 +30,13 @@ public class UsuarioAcessoRepositoryTest {
                         tuple(303, "ALBERTO@XBRAIN.COM.BR"),
                         tuple(304, "MARIA@XBRAIN.COM.BR"),
                         tuple(305, "EDUARDA@XBRAIN.COM.BR"));
+    }
+
+    @Test
+    public void findAllRegistrosAntigos_deveRetonarRegistros_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
+        assertThat(usuarioAcessoRepository.findAllRegistrosAntigos())
+                .hasSize(4)
+                .extracting("id")
+                .contains(9, 13, 18, 19);
     }
 }

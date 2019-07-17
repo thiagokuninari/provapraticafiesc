@@ -7,4 +7,6 @@ import java.util.List;
 public interface UsuarioAcessoRepositoryCustom {
 
     List<UsuarioAcesso> findAllUltimoAcessoUsuarios();
+
+    List<UsuarioAcesso> findAllRegistrosAntigos();
 }

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.OPERACAO_ASSISTENTE;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,7 +42,7 @@ public class UsuarioAcessoControllerTest {
     @Test
     public void inativarUsuariosSemAcesso_deveRetornarHttpStatusBadRequest_quandoUsuarioNaoForAdmin() throws Exception {
         mvc.perform(get(ENDPOINT_USUARIO_ACESSO + "/inativar")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_ASSISTENTE))
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
@@ -56,5 +57,25 @@ public class UsuarioAcessoControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         verify(usuarioAcessoService, times(1)).inativarUsuariosSemAcesso();
+    }
+
+    @Test
+    public void deletarRegistros_deveRetornarBadRequest_quandoNaoForUsuarioAdmin() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/deletar-registros")
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        verify(usuarioAcessoService, times(0)).deletarRegistros();
+    }
+
+    @Test
+    public void deletarRegistros_deveRetornarOk_quandoUsuarioForAdmin() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/deletar-registros")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        verify(usuarioAcessoService, times(1)).deletarRegistros();
     }
 }
