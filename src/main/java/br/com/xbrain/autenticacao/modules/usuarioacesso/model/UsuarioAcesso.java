@@ -32,10 +32,6 @@ public class UsuarioAcesso {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
-    public UsuarioAcesso(Integer id) {
-        this.id = id;
-    }
-
     public UsuarioAcesso(LocalDateTime dataCadastro, Integer usuarioId, String usuarioEmail) {
         this.dataCadastro = dataCadastro;
         this.usuario = Usuario.builder()

@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -17,6 +16,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Sql(scripts = {"classpath:/tests_usuario_acesso.sql"})
+@Transactional
 public class UsuarioAcessoRepositoryTest {
 
     @Autowired
@@ -29,14 +29,14 @@ public class UsuarioAcessoRepositoryTest {
                 .containsExactly(
                         tuple(303, "ALBERTO@XBRAIN.COM.BR"),
                         tuple(304, "MARIA@XBRAIN.COM.BR"),
-                        tuple(305, "EDUARDA@XBRAIN.COM.BR"));
+                        tuple(305, "EDUARDA@XBRAIN.COM.BR"),
+                        tuple(306, "ERICA@XBRAIN.COM.BR"));
     }
 
     @Test
-    public void findAllRegistrosAntigos_deveRetonarRegistros_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
-        assertThat(usuarioAcessoRepository.findAllRegistrosAntigos())
-                .hasSize(4)
-                .extracting("id")
-                .contains(9, 13, 18, 19);
+    public void deletarHistoricoUsuarioAcesso_deveDeletarQuatroHistorico_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(19);
+        usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(15);
     }
 }

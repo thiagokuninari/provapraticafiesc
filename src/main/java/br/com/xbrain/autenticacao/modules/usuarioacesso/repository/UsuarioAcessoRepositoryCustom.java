@@ -8,5 +8,7 @@ public interface UsuarioAcessoRepositoryCustom {
 
     List<UsuarioAcesso> findAllUltimoAcessoUsuarios();
 
-    List<UsuarioAcesso> findAllRegistrosAntigos();
+    long deletarHistoricoUsuarioAcesso();
+
+    long countUsuarioAcesso();
 }

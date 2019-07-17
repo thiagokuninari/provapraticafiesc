@@ -28,11 +28,11 @@ public class UsuarioAcessoController {
         throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
     }
 
-    @GetMapping("/deletar-registros")
-    public void deletarRegistros() {
+    @DeleteMapping("historico")
+    public void deletarHistoricoUsuarioAcesso() {
         if (autenticacaoService.getUsuarioAutenticado()
                 .isXbrain()) {
-            usuarioAcessoService.deletarRegistros();
+            usuarioAcessoService.deletarHistoricoUsuarioAcesso();
             return;
         }
 

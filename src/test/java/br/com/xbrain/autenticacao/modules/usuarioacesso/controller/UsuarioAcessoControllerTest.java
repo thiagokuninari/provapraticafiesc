@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
-import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,22 +59,22 @@ public class UsuarioAcessoControllerTest {
     }
 
     @Test
-    public void deletarRegistros_deveRetornarBadRequest_quandoNaoForUsuarioAdmin() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/deletar-registros")
+    public void deletarHistoricoUsuarioAcesso_deveRetornarBadRequest_quandoNaoForUsuarioAdmin() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.delete(ENDPOINT_USUARIO_ACESSO + "/historico")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
-        verify(usuarioAcessoService, times(0)).deletarRegistros();
+        verify(usuarioAcessoService, times(0)).deletarHistoricoUsuarioAcesso();
     }
 
     @Test
-    public void deletarRegistros_deveRetornarOk_quandoUsuarioForAdmin() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/deletar-registros")
+    public void deletarHistoricoUsuarioAcesso_deveRetornarOk_quandoUsuarioForAdmin() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.delete(ENDPOINT_USUARIO_ACESSO + "/historico")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        verify(usuarioAcessoService, times(1)).deletarRegistros();
+        verify(usuarioAcessoService, times(1)).deletarHistoricoUsuarioAcesso();
     }
 }

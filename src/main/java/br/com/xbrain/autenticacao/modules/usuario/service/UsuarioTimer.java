@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 
 @Component
 @Profile("!test")
+@Slf4j
 public class UsuarioTimer {
 
     @Autowired
@@ -26,7 +28,7 @@ public class UsuarioTimer {
 
     private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
 
-    private static final String EVERY_DAY_AT_FOR_AM = "0 0 4 * * *";
+    private static final String EVERY_DAY_AT_FOUR_AM = "0 0 4 * * *";
 
     private static final String EVERY_DAY_AT_MIDNIGHT = "0 0 0 * * *";
 
@@ -38,10 +40,11 @@ public class UsuarioTimer {
         usuarioAcessoService.inativarUsuariosSemAcesso();
     }
 
-    @Scheduled(cron = EVERY_DAY_AT_FOR_AM)
+    @Scheduled(cron = EVERY_DAY_AT_FOUR_AM)
     @Async
-    public void deletarRegistrosUsuarioAcesso() {
-        usuarioAcessoService.deletarRegistros();
+    public void deletarHistoricoUsuarioAcesso() {
+        long contadorLinhasDeletadas = usuarioAcessoService.deletarHistoricoUsuarioAcesso();
+        log.info("Total de histórico(s) removido da tabela USUARIO_ACESSO foi de : " + contadorLinhasDeletadas);
     }
 
     @Transactional

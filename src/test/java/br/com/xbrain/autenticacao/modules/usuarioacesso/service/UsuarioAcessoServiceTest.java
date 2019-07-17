@@ -66,8 +66,8 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
-    public void deletarRegistros_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
-        usuarioAcessoService.deletarRegistros();
-        verify(usuarioAcessoRepository, times(1)).findAllRegistrosAntigos();
+    public void deletarHistoricoUsuarioAcesso_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
+        usuarioAcessoService.deletarHistoricoUsuarioAcesso();
+        verify(usuarioAcessoRepository, times(1)).deletarHistoricoUsuarioAcesso();
     }
 }

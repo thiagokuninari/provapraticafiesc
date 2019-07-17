@@ -21,8 +21,8 @@ public class UsuarioAcessoService {
 
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido ao inativar "
             + "usuários que estão a mais de 32 dias sem efetuar login.";
-    private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar " +
-            " os registros antigos da tabela usuário acesso.";
+    private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
+            + " os registros antigos da tabela usuário acesso.";
     @Autowired
     private UsuarioAcessoRepository usuarioAcessoRepository;
     @Autowired
@@ -54,12 +54,13 @@ public class UsuarioAcessoService {
     }
 
     @Transactional
-    public void deletarRegistros() {
+    public long deletarHistoricoUsuarioAcesso() {
         try {
-            usuarioAcessoRepository.delete(usuarioAcessoRepository.findAllRegistrosAntigos());
+            return usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
         } catch (Exception ex) {
             log.warn(MSG_ERRO_AO_DELETAR_REGISTROS, ex);
         }
+        return 0;
     }
 
     private List<UsuarioAcesso> buscarUsuariosParaInativar() {

@@ -34,12 +34,23 @@ public class UsuarioAcessoRepositoryImpl
     }
 
     @Override
-    public List<UsuarioAcesso> findAllRegistrosAntigos() {
+    public long deletarHistoricoUsuarioAcesso() {
         return new JPAQueryFactory(entityManager)
-                .select(constructor(UsuarioAcesso.class, usuarioAcesso.id))
+                .delete(usuarioAcesso)
+                .where(usuarioAcesso.id.in(
+                        new JPAQueryFactory(entityManager)
+                                .select(usuarioAcesso.id)
+                                .from(usuarioAcesso)
+                                .where(usuarioAcesso.dataCadastro.before(
+                                        LocalDateTime.now().minusMonths(DOIS_MESES)))))
+                .execute();
+    }
+
+    @Override
+    public long countUsuarioAcesso() {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioAcesso)
                 .from(usuarioAcesso)
-                .where(usuarioAcesso.dataCadastro.before(
-                        LocalDateTime.now().minusMonths(DOIS_MESES)))
-                .fetch();
+                .fetchCount();
     }
 }
