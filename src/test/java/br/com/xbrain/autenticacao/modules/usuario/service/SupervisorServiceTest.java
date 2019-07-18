@@ -62,8 +62,7 @@ public class SupervisorServiceTest {
                 .extracting("nome", "codigoCargo")
                 .containsExactly(
                         tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                        tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO)
-                );
+                        tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
                 service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
@@ -111,8 +110,7 @@ public class SupervisorServiceTest {
                 .containsExactly(
                         tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                         tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
-                        tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO)
-                );
+                        tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
                 service.getSupervisoresPorAreaAtuacao(GRUPO, singletonList(GRUPO_RS_SERRA)))
