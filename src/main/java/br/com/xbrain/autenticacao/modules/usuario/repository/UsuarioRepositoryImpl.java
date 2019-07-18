@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -478,8 +477,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioResponse> getSupervisores(Integer usuarioId) {
-        var subclusterIdList=getSubclustersUsuario(usuarioId)
+    public List<UsuarioResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
+        var subclusterIdList = getSubclustersUsuario(usuarioId)
                 .stream()
                 .map(SubCluster::getId)
                 .collect(Collectors.toList());

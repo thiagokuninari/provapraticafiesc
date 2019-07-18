@@ -175,4 +175,30 @@ public class SupervisorServiceTest {
                 service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
                 .isEmpty();
     }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassado() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(1))
+                .extracting("id", "nome")
+                .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                        tuple( 2, "SUPERVISOR ARAPONGAS"));
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubCluster() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(5))
+                .extracting("id", "nome")
+                .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                        tuple( 2, "SUPERVISOR ARAPONGAS"),
+                        tuple( 5, "SUPERVISOR CURITIBA"));
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassado() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(8))
+                .extracting("id", "nome")
+                .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                        tuple( 2, "SUPERVISOR ARAPONGAS"),
+                        tuple( 5, "SUPERVISOR CURITIBA"));
+    }
 }

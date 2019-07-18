@@ -73,5 +73,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
-    List<UsuarioResponse> getSupervisores(Integer usuarioId);
+    List<UsuarioResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
 }

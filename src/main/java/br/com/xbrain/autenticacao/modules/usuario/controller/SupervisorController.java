@@ -30,8 +30,8 @@ public class SupervisorController {
         return service.getSupervisoresPorAreaAtuacao(areaAtuacao, Collections.singletonList(id));
     }
 
-    @GetMapping("/supervisores/{id}")
-    public List<UsuarioResponse> getSupervisoresDoSubcluster(@PathVariable Integer id) {
-        return service.getSupervisoresDoSubcluster(id);
+    @GetMapping("/subcluster/usuario/{id}")
+    public List<UsuarioResponse> getSupervisoresDoSubclusterDoUsuario(@PathVariable Integer id) {
+        return service.getSupervisoresDoSubclusterDoUsuario(id);
     }
 }

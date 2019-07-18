@@ -58,7 +58,7 @@ public class SupervisorService {
                 ECanal.D2D_PROPRIO);
     }
 
-    public List<UsuarioResponse> getSupervisoresDoSubcluster(Integer usuarioId) {
-        return usuarioRepository.getSupervisores(usuarioId);
+    public List<UsuarioResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {
+        return usuarioRepository.getSupervisoresSubclusterDoUsuario(usuarioId);
     }
 }
