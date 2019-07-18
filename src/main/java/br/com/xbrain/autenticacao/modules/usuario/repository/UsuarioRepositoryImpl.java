@@ -49,6 +49,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Autowired
     private EntityManager entityManager;
 
+    private static final Integer CARGO_SUPERVISOR_ID = 10;
+
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
                 new JPAQueryFactory(entityManager)
@@ -477,23 +479,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
-        final Integer supervisorId = 10;
-
+    public List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
         var subclusterIdList = getSubclustersUsuario(usuarioId)
                 .stream()
                 .map(SubCluster::getId)
                 .collect(Collectors.toList());
 
         return new JPAQueryFactory(entityManager)
-                .select(Projections.bean(UsuarioResponse.class,
+                .select(Projections.bean(UsuarioNomeResponse.class,
                         usuario.id,
-                        usuario.nome,
-                        usuario.telefone,
-                        usuario.telefone02,
-                        usuario.telefone03,
-                        usuario.email,
-                        usuario.situacao))
+                        usuario.nome))
                 .from(usuarioHierarquia)
                 .innerJoin(usuarioHierarquia.usuarioSuperior, usuario)
                 .innerJoin(usuario.cargo, cargo)
@@ -501,7 +496,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(usuarioCidade.cidade, cidade)
                 .innerJoin(cidade.subCluster, subCluster)
                 .where(subCluster.id.in(subclusterIdList)
-                        .and(cargo.id.eq(supervisorId)))
+                        .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
                 .distinct()
                 .fetch();
     }

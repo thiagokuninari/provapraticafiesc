@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
@@ -31,7 +32,7 @@ public class SupervisorController {
     }
 
     @GetMapping("/subcluster/usuario/{id}")
-    public List<UsuarioResponse> getSupervisoresDoSubclusterDoUsuario(@PathVariable Integer id) {
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(@PathVariable Integer id) {
         return service.getSupervisoresDoSubclusterDoUsuario(id);
     }
 }
