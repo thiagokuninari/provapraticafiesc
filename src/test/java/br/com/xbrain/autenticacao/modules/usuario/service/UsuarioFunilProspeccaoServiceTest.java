@@ -32,6 +32,9 @@ public class UsuarioFunilProspeccaoServiceTest {
     private static final String CIDADE_BUSCA_SAO_PAULO = "SAO PAULO";
     private static final String CIDADE_BUSCA_RIO_DE_JANEIRO = "RIO DE JANEIRO";
     private static final String CIDADE_BUSCA_CAPITOLIO = "CAPITOLIO";
+    private static final String CIDADE_BUSCA_GAMA = "GAMA";
+    private static final String CIDADE_BUSCA_UMUARAMA = "UMUARAMA";
+
     private static final ValidacaoException USUARIO_NOT_FOUND_EXCEPTION =
         new ValidacaoException("Usuário não encontrado");
 
@@ -75,4 +78,20 @@ public class UsuarioFunilProspeccaoServiceTest {
         assertThat(usuario.getCargo().getCodigo()).isEqualTo(EXECUTIVO_HUNTER);
     }
 
+    @Test
+    public void findUsuarioDirecionadoByCidade_deveRetornarUmGerente_quandoNaoHouverUsuarioNaCidade() {
+        var usuarioRediredionado = usuarioFunilProspeccaoService
+            .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_GAMA);
+        var usuario = usuarioRepository.findById(usuarioRediredionado.getUsuarioId())
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
+        assertThat(usuarioRediredionado).isEqualTo(new FunilProspeccaoUsuarioDto(9));
+        assertThat(usuario.getCargo().getCodigo()).isEqualTo(GERENTE_OPERACAO);
+    }
+
+    @Test
+    public void findUsuarioDirecionadoByCidade_deveDtoNula_quandoNaoHouverUsuarioNaCidade() {
+        var usuarioRediredionado = usuarioFunilProspeccaoService
+            .findUsuarioDirecionadoByCidade(CIDADE_BUSCA_UMUARAMA);
+        assertThat(usuarioRepository.findById(usuarioRediredionado.getUsuarioId()).isEmpty()).isTrue();
+    }
 }
