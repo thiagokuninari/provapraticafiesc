@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static java.util.List.of;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 public class UsuarioFunilProspeccaoService {
@@ -29,9 +30,13 @@ public class UsuarioFunilProspeccaoService {
     private CargoRepository cargoRepository;
 
     public FunilProspeccaoUsuarioDto findUsuarioDirecionadoByCidade(String cidadeNome) {
-        return getUsuarioRedirecionado(
-            usuarioRepository.findByIdInAndCargoIn(getIdsDosUsuariosDaCidade(cidadeNome),
-            cargoRepository.findByCodigoIn(of(EXECUTIVO_HUNTER, EXECUTIVO, COORDENADOR_OPERACAO, GERENTE_OPERACAO))));
+        var usuario =  getUsuarioRedirecionado(usuarioRepository.findByIdInAndCargoIn(
+            getIdsDosUsuariosDaCidade(cidadeNome), cargoRepository
+                .findByCodigoIn(of(EXECUTIVO_HUNTER, EXECUTIVO, COORDENADOR_OPERACAO, GERENTE_OPERACAO))));
+        if (isEmpty(usuario.getUsuarioId())) {
+            usuario = buscarGerentePelaUf(cidadeNome);
+        }
+        return usuario;
     }
 
     private List<Integer> getIdsDosUsuariosDaCidade(String cidadeNome) {
@@ -67,6 +72,15 @@ public class UsuarioFunilProspeccaoService {
             .filter(usuario -> usuario.isCargo(codigoCargo))
             .map(Usuario::getId)
             .collect(Collectors.toList());
+    }
+
+    private FunilProspeccaoUsuarioDto buscarGerentePelaUf(String cidade) {
+        var funilProspeccaoUsuario = new FunilProspeccaoUsuarioDto();
+        var cidades = cidadeRepository.findCidadeByNomeLike(cidade);
+        if (!cidades.isEmpty() && !isEmpty(cidades.get(0).getUf().getId())) {
+            funilProspeccaoUsuario = usuarioRepository.findUsuarioGerenteByUf(cidades.get(0).getUf().getId());
+        }
+        return funilProspeccaoUsuario;
     }
 
 }
