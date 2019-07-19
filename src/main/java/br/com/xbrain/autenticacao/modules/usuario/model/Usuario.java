@@ -155,6 +155,10 @@ public class Usuario {
     private LocalDateTime dataCadastro;
 
     @NotAudited
+    @Column(name = "DATA_ULTIMO_ACESSO")
+    private LocalDateTime dataUltimoAcesso;
+
+    @NotAudited
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
             foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
@@ -221,6 +225,11 @@ public class Usuario {
     public Usuario(Collection<Empresa> empresas, Collection<UnidadeNegocio> unidadeNegocios) {
         this.empresas = new ArrayList<>(empresas);
         this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
+    }
+
+    public Usuario(Integer id, String email) {
+        this.id = id;
+        this.email = email;
     }
 
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {

@@ -45,7 +45,7 @@ public class UsuarioHistorico {
     private Usuario usuarioAlteracao;
 
     @NotNull
-    @Column(name = "DATA_CADASTRO", nullable = false)
+    @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
     @Size(max = 250)
@@ -71,8 +71,8 @@ public class UsuarioHistorico {
         this.situacao = situacao;
     }
 
-    public static UsuarioHistorico gerarUltimoAcesso(Integer usuarioId, MotivoInativacao motivo,
-                                                     String observacao, ESituacao situacao) {
+    public static UsuarioHistorico gerarHistorico(Integer usuarioId, MotivoInativacao motivo,
+                                                  String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }

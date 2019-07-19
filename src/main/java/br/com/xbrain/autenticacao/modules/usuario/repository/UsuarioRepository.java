@@ -13,6 +13,7 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,4 +82,12 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     @Query("SELECT x.unidadesNegocios FROM Usuario x WHERE x.id = :id")
     List<UnidadeNegocio> findUnidadesNegociosById(@Param("id") Integer id);
+
+    @Modifying
+    @Query("update Usuario u set u.dataUltimoAcesso = ?1 where u.id = ?2")
+    void atualizarDataUltimoAcesso(LocalDateTime data, Integer id);
+
+    @Modifying
+    @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
+    void atualizarParaSituacaoInativo(Integer id);
 }

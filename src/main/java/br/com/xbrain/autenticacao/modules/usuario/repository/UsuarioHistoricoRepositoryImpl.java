@@ -1,11 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
@@ -38,17 +34,6 @@ public class UsuarioHistoricoRepositoryImpl
                 .leftJoin(usuarioHistorico.usuarioAlteracao).fetchJoin()
                 .where(usuarioHistorico.usuario.id.eq(usuarioId))
                 .orderBy(usuarioHistorico.dataCadastro.desc())
-                .fetch();
-    }
-
-    public List<Usuario> getUsuariosPorTempoDeInatividade(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .selectDistinct(usuarioHistorico.usuario)
-                .from(usuarioHistorico)
-                .innerJoin(usuarioHistorico.usuario, usuario)
-                .where(usuarioHistorico.motivoInativacao.codigo.eq(CodigoMotivoInativacao.ULTIMO_ACESSO)
-                        .and(usuario.situacao.eq(ESituacao.A))
-                        .and(predicate))
                 .fetch();
     }
 

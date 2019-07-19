@@ -36,4 +36,14 @@ public class UsuarioRepositoryTest {
                 .containsExactly(
                         tuple(164, "BRI - LINS - SP"));
     }
+
+    @Test
+    public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
+        assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
+                .hasSize(2)
+                .extracting("id", "email")
+                .containsExactly(
+                        tuple(103, "CARLOS@HOTMAIL.COM"),
+                        tuple(104, "MARIA@HOTMAIL.COM"));
+    }
 }
