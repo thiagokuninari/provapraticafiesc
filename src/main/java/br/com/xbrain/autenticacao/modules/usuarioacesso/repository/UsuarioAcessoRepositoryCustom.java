@@ -7,4 +7,8 @@ import java.util.List;
 public interface UsuarioAcessoRepositoryCustom {
 
     List<UsuarioAcesso> findAllUltimoAcessoUsuarios();
+
+    long deletarHistoricoUsuarioAcesso();
+
+    long countUsuarioAcesso();
 }

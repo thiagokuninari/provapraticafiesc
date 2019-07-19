@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class UsuarioAcesso {
 
     @Id
-    @SequenceGenerator(name = "SEQ_USUARIO_ACESSO", sequenceName = "SEQ_USUARIO_ACESSO")
+    @SequenceGenerator(name = "SEQ_USUARIO_ACESSO", sequenceName = "SEQ_USUARIO_ACESSO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_USUARIO_ACESSO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 

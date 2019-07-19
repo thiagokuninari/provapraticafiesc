@@ -17,6 +17,7 @@ public class UsuarioAcessoRepositoryImpl
         extends CustomRepository<UsuarioHierarquia> implements UsuarioAcessoRepositoryCustom {
 
     private static final int TRINTA_DOIS_DIAS = 32;
+    private static final int DOIS_MESES = 2;
 
     @Override
     public List<UsuarioAcesso> findAllUltimoAcessoUsuarios() {
@@ -30,5 +31,22 @@ public class UsuarioAcessoRepositoryImpl
                         .and(usuarioAcesso.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS))))
                 .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
                 .fetch();
+    }
+
+    @Override
+    public long deletarHistoricoUsuarioAcesso() {
+        return new JPAQueryFactory(entityManager)
+                .delete(usuarioAcesso)
+                .where(usuarioAcesso.dataCadastro.before(
+                        LocalDateTime.now().minusMonths(DOIS_MESES)))
+                .execute();
+    }
+
+    @Override
+    public long countUsuarioAcesso() {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioAcesso)
+                .from(usuarioAcesso)
+                .fetchCount();
     }
 }

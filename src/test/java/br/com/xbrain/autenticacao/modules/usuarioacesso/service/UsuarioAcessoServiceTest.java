@@ -66,4 +66,10 @@ public class UsuarioAcessoServiceTest {
         verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class));
         verify(inativarColaboradorMqSender, times(3)).sendSuccess(anyString());
     }
+
+    @Test
+    public void deletarHistoricoUsuarioAcesso_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
+        usuarioAcessoService.deletarHistoricoUsuarioAcesso();
+        verify(usuarioAcessoRepository, times(1)).deletarHistoricoUsuarioAcesso();
+    }
 }
