@@ -104,10 +104,10 @@ app-config:
     usuario-inativar: usuario-inativar.queue
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
+    usuario-logout: usuario-logout.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
-    distribuir-tabulacoes: distribuir-tabulacoes.queue
 
   oauth-clients:
     autenticacao-api:

@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
 import org.junit.Assert;
@@ -26,11 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.SOCIO_AA;
+import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -45,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioControllerTest {
+    private static final String URL_USUARIOS_AGENDAMENTOS = "/api/usuarios/distribuicao/agendamentos/";
 
     @Autowired
     private MockMvc mvc;
@@ -60,11 +62,15 @@ public class UsuarioControllerTest {
     private JsonWebTokenService jsonWebTokenService;
     @SpyBean
     private UsuarioService usuarioService;
+    @MockBean
+    private UsuarioAgendamentoService usuarioAgendamentoService;
 
     @Before
     public void setup() {
         when(autenticacaoService.getUsuarioId())
             .thenReturn(100);
+        when(usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(eq(131), eq(1300)))
+                .thenReturn(usuariosMesmoSegmentoAgenteAutorizado1300());
     }
 
     @Test
@@ -407,5 +413,32 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornarForbidden_quandoUsuarioNaoPossuirPermissao()
+            throws Exception {
+        mvc.perform(get(URL_USUARIOS_AGENDAMENTOS + "131/agenteautorizado/1300")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, HELP_DESK)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornar200_seUsuarioPossuirPermissao() throws Exception {
+        mvc.perform(get(URL_USUARIOS_AGENDAMENTOS + "131/agenteautorizado/1300")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[0].id", is(130)))
+                .andExpect(jsonPath("$[0].nome", is("JOÃO MARINHO DA SILVA DOS SANTOS")))
+                .andExpect(jsonPath("$[1].id", is(133)))
+                .andExpect(jsonPath("$[1].nome", is("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")))
+                .andExpect(jsonPath("$[2].id", is(134)))
+                .andExpect(jsonPath("$[2].nome", is("MARIA DA SILVA SAURO SANTOS")))
+                .andExpect(jsonPath("$[3].id", is(135)))
+                .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
     }
 }
