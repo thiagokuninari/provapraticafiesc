@@ -56,7 +56,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             User userAuth = (User) authentication.getUserAuthentication().getPrincipal();
 
             usuarioRepository
-                    .findComplete(new Integer(userAuth.getUsername().split(Pattern.quote("-"))[0]))
+                    .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
                     .ifPresent(usuario -> setAdditionalInformation(
                             defaultOAuth2AccessToken,
                             usuario,

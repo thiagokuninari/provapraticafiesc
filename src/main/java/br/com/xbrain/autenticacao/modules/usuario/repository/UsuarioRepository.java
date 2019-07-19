@@ -35,6 +35,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
+    List<Usuario> findByIdIn(List<Integer> ids);
+
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);
 
     List<Usuario> findAllUsuarioByEmailIgnoreCase(String email);
