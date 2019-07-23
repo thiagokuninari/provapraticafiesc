@@ -490,7 +490,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         usuario.id,
                         usuario.nome))
                 .from(usuarioHierarquia)
-                .innerJoin(usuarioHierarquia.usuarioSuperior, usuario)
+                .innerJoin(usuarioHierarquia.usuario, usuario)
                 .innerJoin(usuario.cargo, cargo)
                 .innerJoin(usuario.cidades, usuarioCidade)
                 .innerJoin(usuarioCidade.cidade, cidade)
