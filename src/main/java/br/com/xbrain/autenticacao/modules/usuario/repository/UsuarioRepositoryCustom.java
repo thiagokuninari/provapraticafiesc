@@ -72,4 +72,6 @@ public interface UsuarioRepositoryCustom {
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
+
+    List<Usuario> findAllUsuariosSemDataUltimoAcesso();
 }

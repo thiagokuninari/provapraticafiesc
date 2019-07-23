@@ -20,10 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.ULTIMO_ACESSO;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -45,9 +43,9 @@ public class UsuarioHistoricoServiceTest {
     private EntityManager entityManager;
 
     @Test
-    public void gerarHistoricoUltimoAcessoDoUsuario_umHistoricoGerado_quandoUsuarioEfetuarLoginSemPossuirHistorico() {
+    public void gerarHistoricoInativacao_deveGerarHistorico_quandoUsuarioForInativadoPeloSistema() {
         assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
-        usuarioHistoricoService.gerarHistoricoUltimoAcessoDoUsuario(799);
+        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799));
         refresh();
 
         List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
@@ -55,37 +53,8 @@ public class UsuarioHistoricoServiceTest {
 
         assertThat(usuarioHistoricos.get(0))
                 .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(ESituacao.A, findMotivoInativacaoByCodigo(ULTIMO_ACESSO), null, 799);
-    }
-
-    @Test
-    public void gerarHistoricoUltimoAcessoDoUsuario_umHistoricoAtualizado_quandoUsuarioEfetuarLoginEPossuirHistorico() {
-        usuarioHistoricoService.gerarHistoricoUltimoAcessoDoUsuario(800);
-        refresh();
-
-        List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(800);
-
-        UsuarioHistorico usuarioHistorico = usuarioHistoricos.get(0);
-
-        assertNotEquals(usuarioHistorico.getDataCadastro(), DATA_CADASTRO_DEFAULT);
-
-        assertEquals(1, usuarioHistoricos.size());
-        assertThat(usuarioHistorico)
-                .extracting("id", "situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(204, ESituacao.A, findMotivoInativacaoByCodigo(ULTIMO_ACESSO), null, 800);
-    }
-
-    @Test
-    public void gerarHistoricoUsuarioInativado_umHistoricoInativado_quandoDesejarInativarUmUsuario() {
-        usuarioHistoricoService.gerarHistoricoUsuarioInativado(new Usuario(800));
-        refresh();
-
-        List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(800);
-        assertEquals(1, usuarioHistoricos.size());
-        assertThat(usuarioHistoricos.get(0))
-                .extracting("id", "situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(204, ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
-                        "Inativado por falta de acesso", 800);
+                .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
+                        "INATIVADO POR FALTA DE ACESSO", 799);
     }
 
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {

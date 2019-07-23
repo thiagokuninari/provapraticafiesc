@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,6 +46,8 @@ import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
+
+    private static final int TRINTA_DOIS_DIAS = 32;
 
     @Autowired
     private EntityManager entityManager;
@@ -473,6 +476,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .leftJoin(usuario.cargo)
                 .leftJoin(usuario.departamento)
                 .where(usuario.id.in(usuariosIds))
+                .fetch();
+    }
+
+    @Override
+    public List<Usuario> findAllUsuariosSemDataUltimoAcesso() {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
+                .from(usuario)
+                .where(usuario.situacao.eq(ESituacao.A)
+                        .and(usuario.dataUltimoAcesso.isNull()
+                                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
                 .fetch();
     }
 }
