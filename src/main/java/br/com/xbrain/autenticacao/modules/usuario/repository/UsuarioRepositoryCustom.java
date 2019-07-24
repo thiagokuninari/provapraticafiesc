@@ -32,7 +32,11 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
-    List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId, CodigoCargo codigoCargo);
+    List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
+
+    List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
+
+    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
 
     List<Usuario> getSuperioresDoUsuario(Integer usuarioId);
 
@@ -40,7 +44,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
-    List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+    List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros, boolean exibirAtivos);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 

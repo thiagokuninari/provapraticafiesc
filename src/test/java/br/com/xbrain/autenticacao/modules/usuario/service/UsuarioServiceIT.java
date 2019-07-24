@@ -549,7 +549,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getSuperioresDoUsuario_deveRetornarVazio_quandoNaoPossuirSuperiores() {
-        assertThat(service.getSuperioresDoUsuario(120)).isEmpty();
+        assertThat(service.getSuperioresDoUsuario(123)).isEmpty();
     }
 
     @Test

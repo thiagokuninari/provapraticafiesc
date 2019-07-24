@@ -4,8 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -31,7 +29,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -264,17 +261,15 @@ public class UsuarioService {
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, null);
-        return usuariosCompletoSubordinados.stream()
-            .map(this::criarUsuarioSubordinadoResponse)
-            .collect(Collectors.toList());
+        return repository.getUsuariosCompletoSubordinados(usuarioId);
     }
 
-    public List<UsuarioSubordinadoDto> getSubordinadosDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo) {
-        List<Object[]> usuariosCompletoSubordinados = repository.getUsuariosCompletoSubordinados(usuarioId, codigoCargo);
-        return usuariosCompletoSubordinados.stream()
-            .map(this::criarUsuarioSubordinadoResponse)
-            .collect(Collectors.toList());
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId) {
+        return repository.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(usuarioId);
+    }
+
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
+        return repository.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
@@ -902,47 +897,14 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        List<Object[]> objects = repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
-        return objects.stream().map(this::criarUsuarioResponse).collect(Collectors.toList());
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
     }
 
-    private UsuarioSubordinadoDto criarUsuarioSubordinadoResponse(Object[] param) {
-        int indice = POSICAO_ZERO;
-        return UsuarioSubordinadoDto.builder()
-            .id(objectToInteger(param[indice++]))
-            .nome(objectToString(param[indice++]))
-            .cpf(objectToString(param[indice++]))
-            .email(objectToString(param[indice++]))
-            .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
-            .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
-            .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
-            .nomeCargo(objectToString(param[indice++]))
-            .build();
-    }
-
-    private UsuarioResponse criarUsuarioResponse(Object[] param) {
-        int indice = POSICAO_ZERO;
-        return UsuarioResponse.builder()
-            .id(objectToInteger(param[indice++]))
-            .nome(objectToString(param[indice++]))
-            .cpf(objectToString(param[indice++]))
-            .email(objectToString(param[indice++]))
-            .codigoNivel(CodigoNivel.valueOf(objectToString(param[indice++])))
-            .codigoDepartamento(CodigoDepartamento.valueOf(objectToString(param[indice++])))
-            .codigoCargo(CodigoCargo.valueOf(objectToString(param[indice++])))
-            .codigoEmpresas(tratarEmpresas(param[indice++]))
-            .codigoUnidadesNegocio(tratarUnidadesNegocios(param[indice]))
-            .build();
-    }
-
-    private List<CodigoEmpresa> tratarEmpresas(Object arg) {
-        return Arrays.stream(objectToString(arg).split(","))
-            .map(CodigoEmpresa::valueOf).collect(Collectors.toList());
-    }
-
-    private List<CodigoUnidadeNegocio> tratarUnidadesNegocios(Object arg) {
-        return Arrays.stream(objectToString(arg).split(","))
-            .map(CodigoUnidadeNegocio::valueOf).collect(Collectors.toList());
+    public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
+                .stream()
+            .map(UsuarioAutoComplete::of)
+                .collect(Collectors.toList());
     }
 
     private Integer objectToInteger(Object arg) {
