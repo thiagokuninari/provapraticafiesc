@@ -44,6 +44,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     List<Usuario> findAllByEmailIgnoreCaseOrCpfAndSituacaoNot(String email, String cpf, ESituacao situacao);
 
+    List<Usuario> findByIdInAndCargoIn(List<Integer> usuarios, List<Cargo> cargos);
+
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
             + "recuperarSenhaTentativa = 0 where u.id = ?3")

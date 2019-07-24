@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ public class UsuarioController {
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
     @Autowired
     private UsuarioAgendamentoService usuarioAgendamentoService;
+    @Autowired
+    private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -242,5 +245,10 @@ public class UsuarioController {
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
             @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
+    }
+
+    @GetMapping("usuario-funil-prospeccao")
+    public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
+        return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }

@@ -35,6 +35,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -489,4 +490,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
                 .fetch();
     }
+
+    @Override
+    public FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(
+                FunilProspeccaoUsuarioDto.class,
+                usuarioCidade.usuario.id))
+            .from(usuarioCidade)
+            .innerJoin(usuarioCidade.usuario, usuario)
+            .innerJoin(usuarioCidade.cidade, cidade)
+            .where(usuario.cargo.codigo.eq(GERENTE_OPERACAO)
+                .and(cidade.uf.id.eq(ufId)))
+            .fetchFirst();
+    }
+
 }

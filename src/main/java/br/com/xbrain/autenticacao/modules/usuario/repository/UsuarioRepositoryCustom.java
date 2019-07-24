@@ -74,4 +74,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
     List<Usuario> findAllUsuariosSemDataUltimoAcesso();
+
+    FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
+
 }
