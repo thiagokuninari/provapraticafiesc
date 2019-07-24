@@ -18,7 +18,7 @@ public class ClusterDto {
         this.nome = nome;
     }
 
-    public static ClusterDto objectToDto(Cluster cluster) {
+    public static ClusterDto of(Cluster cluster) {
         ClusterDto dto = new ClusterDto();
         BeanUtils.copyProperties(cluster, dto);
         return dto;

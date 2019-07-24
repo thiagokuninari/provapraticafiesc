@@ -44,5 +44,4 @@ public class RegionalRepositoryImpl extends CustomRepository<Regional> implement
                 .distinct()
                 .fetch();
     }
-
 }

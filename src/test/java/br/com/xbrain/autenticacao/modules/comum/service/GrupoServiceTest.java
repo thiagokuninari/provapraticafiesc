@@ -1,6 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +28,9 @@ public class GrupoServiceTest {
     private static final int REGIONAL_SUL_ID = 3;
     @Autowired
     private GrupoService grupoService;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarGrupo_quandoUsuarioPossuirRegionalSul() {
@@ -53,6 +60,26 @@ public class GrupoServiceTest {
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(4, "NORDESTE"));
+    }
+
+    @Test
+    public void findById_deveRetornarUmGrupo_seExistir() {
+        assertThat(grupoService.findById(1))
+            .isEqualTo(umGrupoDto());
+    }
+
+    @Test
+    public void findById_deveLancarException_seGrupoNaoExistir() {
+        thrown.expect(ValidacaoException.class);
+        thrown.expectMessage("Grupo não encontrado.");
+        grupoService.findById(1516516);
+    }
+
+    GrupoDto umGrupoDto() {
+        GrupoDto grupoDto = new GrupoDto();
+        grupoDto.setId(1);
+        grupoDto.setNome("CENTRO-OESTE");
+        return grupoDto;
     }
 
 }
