@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
@@ -37,6 +38,36 @@ public class UsuarioAgendamentoHelpers {
                         .id(135)
                         .nome("MARCOS AUGUSTO DA SILVA SANTOS")
                         .build());
+    }
+
+    public static List<Usuario> usuariosDoAgenteAutorizado999() {
+        return List.of(
+                Usuario.builder()
+                        .id(9991)
+                        .nome("USUARIO 1 DO AA 999")
+                        .cargo(umCargoVendedorTelevendas())
+                        .build(),
+                Usuario.builder()
+                        .id(9992)
+                        .nome("USUARIO 2 DO AA 999")
+                        .cargo(umCargoVendedorD2d())
+                        .build(),
+                Usuario.builder()
+                        .id(9993)
+                        .nome("USUARIO 3 DO AA 999")
+                        .cargo(umCargoSocioPrincipal())
+                        .build(),
+                Usuario.builder()
+                        .id(9994)
+                        .nome("USUARIO 4 DO AA 999")
+                        .cargo(umCargoSocioPrincipal())
+                        .build(),
+                Usuario.builder()
+                        .id(9995)
+                        .nome("USUARIO 5 DO AA 999")
+                        .cargo(umCargoSupervisor())
+                        .build()
+        );
     }
 
     public static List<Usuario> usuariosDoAgenteAutorizado1300() {
@@ -81,6 +112,14 @@ public class UsuarioAgendamentoHelpers {
                         .id(u.getId())
                         .nome(u.getNome())
                         .build())
+                .collect(Collectors.toList());
+    }
+
+    public static List<UsuarioAgenteAutorizadoEquipeResponse> todosUsuariosDoAgenteAutorizado999() {
+        return usuariosDoAgenteAutorizado999()
+                .stream()
+                .map(u -> new UsuarioAgenteAutorizadoEquipeResponse(u.getId(), u.getNome(),
+                        u.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS ? 999 : null))
                 .collect(Collectors.toList());
     }
 

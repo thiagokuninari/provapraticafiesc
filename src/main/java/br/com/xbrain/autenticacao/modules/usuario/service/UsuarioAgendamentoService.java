@@ -1,12 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -45,8 +51,17 @@ public class UsuarioAgendamentoService {
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
+    private static final List<CodigoCargo> CARGOS_SUPERIORES_LISTAGEM = List.of(
+            CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
+            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
+            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_TEMP,
+            CodigoCargo.AGENTE_AUTORIZADO_SOCIO,
+            CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO
+    );
 
+    private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
+    private final EquipeVendasService equipeVendasService;
     private final UsuarioService usuarioService;
     private final CargoService cargoService;
     private final UsuarioRepository usuarioRepository;
@@ -138,5 +153,50 @@ public class UsuarioAgendamentoService {
 
     private boolean isCargoHibrido(CodigoCargo codigoCargo) {
         return CARGOS_HIBRIDOS_PERMITIDOS.contains(codigoCargo);
+    }
+
+    public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var isUsuarioSupervisor = isSupervisor(usuarioAutenticado.getCargoCodigo());
+        var isCargoValido = isCargoComVisualizacaoGeral(
+                usuarioAutenticado.getCargoCodigo(),
+                usuarioAutenticado.getDepartamentoCodigo());
+
+        if (!isUsuarioSupervisor && !isCargoValido) {
+            return List.of();
+        }
+
+        var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId);
+
+        if (isUsuarioSupervisor) {
+            return getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
+        }
+
+        return usuarios.stream()
+                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgendamentoResponse> getVendedoresSupervisionados(int supervisorId,
+                                                                          List<UsuarioAgenteAutorizadoEquipeResponse> usuarios) {
+        var equipesSupervisionadas = equipeVendasService.getEquipesPorSupervisor(supervisorId)
+                .stream()
+                .map(EquipeVendasSupervisionadasResponse::getId)
+                .collect(Collectors.toList());
+
+        return usuarios.stream()
+                .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendasId()))
+                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isCargoComVisualizacaoGeral(CodigoCargo cargo, CodigoDepartamento departamento) {
+        return CARGOS_SUPERIORES_LISTAGEM.contains(cargo)
+                || isCoordenadorComercial(cargo, departamento);
+    }
+
+    private boolean isCoordenadorComercial(CodigoCargo cargo, CodigoDepartamento departamento) {
+        return cargo == CodigoCargo.COORDENADOR_OPERACAO
+                && departamento == CodigoDepartamento.COMERCIAL;
     }
 }

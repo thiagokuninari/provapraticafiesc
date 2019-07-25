@@ -33,7 +33,7 @@ public interface AgenteAutorizadoClient {
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}")
-    List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
+    List<UsuarioAgenteAutorizadoEquipeResponse> getUsuariosByAaId(
             @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}/{buscarInativos}")
