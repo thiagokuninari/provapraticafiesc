@@ -116,15 +116,6 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
-    public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarVazio_casoNaoSejaCargoValido() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoInvalido());
-
-        var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
-
-        assertThat(response).isEmpty();
-    }
-
-    @Test
     public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarUsuariosDaEquipeVenda_seForSupervisor() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));

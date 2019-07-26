@@ -12,7 +12,6 @@ import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -158,13 +157,6 @@ public class UsuarioAgendamentoService {
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var isUsuarioSupervisor = isSupervisor(usuarioAutenticado.getCargoCodigo());
-        var isCargoValido = isCargoComVisualizacaoGeral(
-                usuarioAutenticado.getCargoCodigo(),
-                usuarioAutenticado.getDepartamentoCodigo());
-
-        if (!isUsuarioSupervisor && !isCargoValido) {
-            return List.of();
-        }
 
         var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId);
 
@@ -185,18 +177,8 @@ public class UsuarioAgendamentoService {
                 .collect(Collectors.toList());
 
         return usuarios.stream()
-                .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendasId()))
+                .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendaId()))
                 .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
                 .collect(Collectors.toList());
-    }
-
-    private boolean isCargoComVisualizacaoGeral(CodigoCargo cargo, CodigoDepartamento departamento) {
-        return CARGOS_SUPERIORES_LISTAGEM.contains(cargo)
-                || isCoordenadorComercial(cargo, departamento);
-    }
-
-    private boolean isCoordenadorComercial(CodigoCargo cargo, CodigoDepartamento departamento) {
-        return cargo == CodigoCargo.COORDENADOR_OPERACAO
-                && departamento == CodigoDepartamento.COMERCIAL;
     }
 }
