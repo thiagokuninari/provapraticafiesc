@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
@@ -105,13 +104,10 @@ public class UsuarioAgendamentoHelpers {
         );
     }
 
-    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado1300() {
+    public static List<UsuarioAgenteAutorizadoEquipeResponse> todosUsuariosDoAgenteAutorizado1300() {
         return usuariosDoAgenteAutorizado1300()
                 .stream()
-                .map(u -> UsuarioAgenteAutorizadoResponse.builder()
-                        .id(u.getId())
-                        .nome(u.getNome())
-                        .build())
+                .map(u -> new UsuarioAgenteAutorizadoEquipeResponse(u.getId(), u.getNome(), null))
                 .collect(Collectors.toList());
     }
 

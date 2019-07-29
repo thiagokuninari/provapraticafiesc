@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
@@ -50,13 +49,6 @@ public class UsuarioAgendamentoService {
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
-    private static final List<CodigoCargo> CARGOS_SUPERIORES_LISTAGEM = List.of(
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE_TEMP,
-            CodigoCargo.AGENTE_AUTORIZADO_SOCIO,
-            CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO
-    );
 
     private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
@@ -69,9 +61,9 @@ public class UsuarioAgendamentoService {
                                                                                               Integer agenteAutorizadoId) {
         var cargoDoUsuario = cargoService.findByUsuarioId(usuarioId);
 
-        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId)
                 .stream()
-                .map(UsuarioAgenteAutorizadoResponse::getId)
+                .map(UsuarioAgenteAutorizadoEquipeResponse::getId)
                 .collect(Collectors.toList());
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosDoAa);
