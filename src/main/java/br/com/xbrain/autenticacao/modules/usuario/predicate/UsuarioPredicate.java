@@ -260,7 +260,7 @@ public class UsuarioPredicate {
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList()));
 
-        } else if (usuario.hasPermissao(AUT_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+        } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                     usuario.getUsuario().getId());
