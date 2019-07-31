@@ -377,7 +377,7 @@ public class UsuarioService {
         return usuarioCopia;
     }
 
-    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior ) {
+    public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
         Usuario usuarioSuperiorNovo = repository.findById(idUsuarioSuperior).orElseThrow(() ->
             new NotFoundException("Usuário não encontrado"));
 
@@ -385,10 +385,8 @@ public class UsuarioService {
             .map(id -> {
                 UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
                 usuario.setUsuarioSuperior(usuarioSuperiorNovo);
-                usuarioHierarquiaRepository.save(usuario);
                 return usuario;
-            })
-            .collect(Collectors.toList());
+            }).forEach(usuarioHierarquiaRepository::save);
     }
 
     public void vincularUsuarioParaNovaHierarquia(List<Integer> idUsuarioNovo, Integer idUsuarioSuperiorNovo,
@@ -402,17 +400,17 @@ public class UsuarioService {
             if (isEmpty(usuarioHierarquia)) {
                 Usuario usuario = repository.findOne(id);
 
-                UsuarioHierarquiaPk usuarioHierarquiaPk = new UsuarioHierarquiaPk();
-                usuarioHierarquiaPk.setUsuario(id);
-                usuarioHierarquiaPk.setUsuarioSuperior(idUsuarioSuperiorNovo);
-
-                UsuarioHierarquia novoUsuarioHierarquia = new UsuarioHierarquia();
-                novoUsuarioHierarquia.setUsuario(usuario);
-                novoUsuarioHierarquia.setUsuarioSuperior(usuarioSuperiorNovo);
-                novoUsuarioHierarquia.setUsuarioHierarquiaPk(usuarioHierarquiaPk);
-                novoUsuarioHierarquia.setDataCadastro(usuarioSuperiorNovo.getDataCadastro());
-                novoUsuarioHierarquia.setUsuarioCadastro(usuario);
-                usuarioHierarquiaRepository.save(novoUsuarioHierarquia);
+                usuarioHierarquiaRepository.save(UsuarioHierarquia.builder()
+                        .usuario(usuario)
+                        .usuarioSuperior(usuarioSuperiorNovo)
+                        .usuarioHierarquiaPk(UsuarioHierarquiaPk
+                                .builder()
+                                .usuario(id)
+                                .usuarioSuperior(idUsuarioSuperiorNovo)
+                                .build())
+                        .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
+                        .usuarioCadastro(usuario)
+                        .build());
             } else {
                 usuarioHierarquia.setUsuarioSuperior(usuarioSuperiorNovo);
                 usuarioHierarquiaRepository.save(usuarioHierarquia);

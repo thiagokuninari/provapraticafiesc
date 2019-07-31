@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 @Data
+@Builder
 @Embeddable
 @EqualsAndHashCode(of = {"usuario", "usuarioSuperior"})
 @ToString(of = {"usuario", "usuarioSuperior"})

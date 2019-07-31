@@ -1,9 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
@@ -12,6 +10,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USUARIO_HIERARQUIA")
+@Builder
+@AllArgsConstructor
 @Data
 @EqualsAndHashCode(of = "usuarioHierarquiaPk")
 @ToString(of = "usuarioHierarquiaPk")
