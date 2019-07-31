@@ -121,11 +121,9 @@ public class UsuarioController {
         usuarioService.vincularUsuario(idsUsuarios, idUsuarioSuperior);
     }
 
-    @PostMapping("/altera/hierarquia")
-    public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios,
-                                            @RequestParam Integer idUsuarioSuperiorNovo,
-                                            @RequestParam Integer idUsuarioSuperiorAntigo) {
-        usuarioService.vincularUsuarioParaNovaHierarquia(idsUsuarios, idUsuarioSuperiorNovo, idUsuarioSuperiorAntigo);
+    @PostMapping("/alterar/hierarquia")
+    public void vincularUsuariosComSuperior(@RequestBody SuperiorDto superiorDto) {
+        usuarioService.vincularUsuarioParaNovaHierarquia(superiorDto);
     }
 
     @RequestMapping(value = "/filter", method = RequestMethod.GET)

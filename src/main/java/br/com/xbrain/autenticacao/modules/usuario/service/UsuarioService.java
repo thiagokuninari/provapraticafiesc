@@ -389,13 +389,13 @@ public class UsuarioService {
             }).forEach(usuarioHierarquiaRepository::save);
     }
 
-    public void vincularUsuarioParaNovaHierarquia(List<Integer> idUsuarioNovo, Integer idUsuarioSuperiorNovo,
-                                                 Integer idUsuarioSuperiorOld ) {
-        Usuario usuarioSuperiorNovo = repository.findById(idUsuarioSuperiorNovo).orElseThrow(() ->
+    public void vincularUsuarioParaNovaHierarquia(SuperiorDto superiorDto) {
+        Usuario usuarioSuperiorNovo = repository.findById(superiorDto.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
-        idUsuarioNovo.forEach(id -> {
-            var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id, idUsuarioSuperiorOld);
+        superiorDto.getUsuarioIds().forEach(id -> {
+            var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
+                    superiorDto.getSupeririorOld());
 
             if (isEmpty(usuarioHierarquia)) {
                 Usuario usuario = repository.findOne(id);
@@ -406,7 +406,7 @@ public class UsuarioService {
                         .usuarioHierarquiaPk(UsuarioHierarquiaPk
                                 .builder()
                                 .usuario(id)
-                                .usuarioSuperior(idUsuarioSuperiorNovo)
+                                .usuarioSuperior(superiorDto.getSuperiorNovo())
                                 .build())
                         .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
                         .usuarioCadastro(usuario)
