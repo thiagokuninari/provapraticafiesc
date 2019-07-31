@@ -19,10 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Before;
@@ -90,6 +87,8 @@ public class UsuarioServiceIT {
     private CargoRepository cargoRepository;
     @Autowired
     private DepartamentoRepository departamentoRepository;
+    @Autowired
+    private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
@@ -588,6 +587,15 @@ public class UsuarioServiceIT {
     @Test
     public void getSuperioresDoUsuarioPorCargo_deveRetornarVazio_quandoNaoExistirUsuario() {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
+        service.vincularUsuarioParaNovaHierarquia(Arrays.asList(100), 113, 110);
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {
