@@ -8,4 +8,6 @@ import java.util.List;
 public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
+
+    boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
 }

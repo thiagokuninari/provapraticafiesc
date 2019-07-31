@@ -26,11 +26,4 @@ public class Uf {
     @NotNull
     @Column(name = "UF")
     private String uf;
-
-    public Uf() {
-    }
-
-    public Uf(Integer id) {
-        this.id = id;
-    }
 }

@@ -40,6 +40,10 @@ public class FeriadoService {
         return repository.findAllByAnoAtual(dataHoraAtual.getData());
     }
 
+    public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
+        return repository.hasFeriadoNacionalOuRegional(LocalDate.now(), cidade, uf);
+    }
+
     public void loadAllFeriados() {
         FeriadoSingleton.getInstance()
                 .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
