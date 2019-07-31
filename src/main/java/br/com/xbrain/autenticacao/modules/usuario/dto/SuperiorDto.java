@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SuperiorDto {
 
-    private List<Integer> UsuarioIds;
+    private List<Integer> usuarioIds;
     private Integer superiorNovo;
     private Integer supeririorOld;
 }
