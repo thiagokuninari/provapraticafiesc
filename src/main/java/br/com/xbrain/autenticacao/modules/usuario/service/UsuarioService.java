@@ -395,7 +395,7 @@ public class UsuarioService {
 
         superiorDto.getUsuarioIds().forEach(id -> {
             var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
-                    superiorDto.getSupeririorOld());
+                    superiorDto.getSuperiorAntigo());
 
             if (isEmpty(usuarioHierarquia)) {
                 Usuario usuario = repository.findOne(id);

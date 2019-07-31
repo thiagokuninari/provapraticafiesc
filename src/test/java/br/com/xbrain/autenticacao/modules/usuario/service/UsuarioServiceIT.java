@@ -593,7 +593,7 @@ public class UsuarioServiceIT {
     public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
                 .builder()
-                .usuarioIds(Arrays.asList(100)).superiorNovo(113).supeririorOld(110)
+                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
                 .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
