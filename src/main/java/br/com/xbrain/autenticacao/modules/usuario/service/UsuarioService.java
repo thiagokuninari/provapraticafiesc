@@ -383,7 +383,7 @@ public class UsuarioService {
 
         idUsuarioNovo.stream()
             .map(id -> {
-                UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                var usuario = usuarioHierarquiaRepository.findOne(id);
                 usuario.setUsuarioSuperior(usuarioSuperiorNovo);
                 return usuario;
             }).forEach(usuarioHierarquiaRepository::save);
