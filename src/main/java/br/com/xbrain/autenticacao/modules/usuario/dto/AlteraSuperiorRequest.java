@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SuperiorDto {
+public class AlteraSuperiorRequest {
 
     private List<Integer> usuarioIds;
     private Integer superiorNovo;

@@ -389,7 +389,7 @@ public class UsuarioService {
             }).forEach(usuarioHierarquiaRepository::save);
     }
 
-    public void vincularUsuarioParaNovaHierarquia(SuperiorDto superiorDto) {
+    public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorDto) {
         Usuario usuarioSuperiorNovo = repository.findById(superiorDto.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 

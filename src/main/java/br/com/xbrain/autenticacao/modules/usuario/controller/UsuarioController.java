@@ -122,7 +122,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/alterar/hierarquia")
-    public void vincularUsuariosComSuperior(@RequestBody SuperiorDto superiorDto) {
+    public void vincularUsuariosComSuperior(@RequestBody AlteraSuperiorRequest superiorDto) {
         usuarioService.vincularUsuarioParaNovaHierarquia(superiorDto);
     }
 

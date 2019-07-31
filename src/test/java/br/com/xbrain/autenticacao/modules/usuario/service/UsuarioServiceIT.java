@@ -591,7 +591,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
-        service.vincularUsuarioParaNovaHierarquia(SuperiorDto
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
                 .builder()
                 .usuarioIds(Arrays.asList(100)).superiorNovo(113).supeririorOld(110)
                 .build());
