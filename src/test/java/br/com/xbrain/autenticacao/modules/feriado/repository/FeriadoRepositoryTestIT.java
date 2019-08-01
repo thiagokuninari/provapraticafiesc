@@ -24,7 +24,7 @@ public class FeriadoRepositoryTestIT {
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarTrue_casoSejaFeriadoNacional() {
 
-        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 9, 30), "Londrina", "PR");
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 30), "LONDRINA", "PR");
 
         assertThat(isFeriado).isTrue();
     }
@@ -32,7 +32,7 @@ public class FeriadoRepositoryTestIT {
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarTrue_casoSejaFeriadoRegional() {
 
-        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 9, 28), "Londrina", "PR");
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 28), "LONDRINA", "PR");
 
         assertThat(isFeriado).isTrue();
     }
@@ -40,7 +40,7 @@ public class FeriadoRepositoryTestIT {
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarFalse_casoNaoSejaFeriadoRegional() {
 
-        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 9, 28), "Arapongas", "PR");
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 28), "ARAPONGAS", "PR");
 
         assertThat(isFeriado).isFalse();
     }
@@ -48,7 +48,7 @@ public class FeriadoRepositoryTestIT {
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarFalse_casoNaoSejaFeriado() {
 
-        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 9, 19), "Londrina", "PR");
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 19), "LONDRINA", "PR");
 
         assertThat(isFeriado).isFalse();
     }
