@@ -389,33 +389,38 @@ public class UsuarioService {
             }).forEach(usuarioHierarquiaRepository::save);
     }
 
-    public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorDto) {
-        Usuario usuarioSuperiorNovo = repository.findById(superiorDto.getSuperiorNovo()).orElseThrow(() ->
+    @Transactional
+    public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorRequest) {
+        Usuario usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
-        superiorDto.getUsuarioIds().forEach(id -> {
+        var usuarios = superiorRequest.getUsuarioIds().stream().map(id -> {
             var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
-                    superiorDto.getSuperiorAntigo());
+                    superiorRequest.getSuperiorAntigo());
 
-            if (isEmpty(usuarioHierarquia)) {
-                Usuario usuario = repository.findOne(id);
+            if (!isEmpty(usuarioHierarquia))
+                usuarioHierarquiaRepository.delete(usuarioHierarquia);
 
-                usuarioHierarquiaRepository.save(UsuarioHierarquia.builder()
-                        .usuario(usuario)
-                        .usuarioSuperior(usuarioSuperiorNovo)
-                        .usuarioHierarquiaPk(UsuarioHierarquiaPk
-                                .builder()
-                                .usuario(id)
-                                .usuarioSuperior(superiorDto.getSuperiorNovo())
-                                .build())
-                        .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
-                        .usuarioCadastro(usuario)
-                        .build());
-            } else {
-                usuarioHierarquia.setUsuarioSuperior(usuarioSuperiorNovo);
-                usuarioHierarquiaRepository.save(usuarioHierarquia);
-            }
-        });
+            Usuario usuario = repository.findOne(id);
+
+            return (UsuarioHierarquia.builder()
+                    .usuario(usuario)
+                    .usuarioSuperior(usuarioSuperiorNovo)
+                    .usuarioHierarquiaPk(criarUsuarioHierarquiaPK(id , superiorRequest))
+                    .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
+                    .usuarioCadastro(usuario)
+                    .build());
+
+        }).collect(Collectors.toList());
+        usuarioHierarquiaRepository.save(usuarios);
+    }
+
+    private UsuarioHierarquiaPk criarUsuarioHierarquiaPK(Integer id, AlteraSuperiorRequest superiorRequest) {
+        return  UsuarioHierarquiaPk
+                .builder()
+                .usuario(id)
+                .usuarioSuperior(superiorRequest.getSuperiorNovo())
+                .build();
     }
 
     private Usuario getUsuarioAtivacao(UsuarioAtivacaoDto usuarioAtivacaoDto) {
