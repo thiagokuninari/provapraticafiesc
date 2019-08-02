@@ -397,23 +397,22 @@ public class UsuarioService {
         var usuarios = superiorRequest.getUsuarioIds()
                 .stream()
                 .map(id -> {
-            var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
-                    superiorRequest.getSuperiorAntigo());
+                    var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
+                            superiorRequest.getSuperiorAntigo());
 
-            if (!isEmpty(usuarioHierarquia)) {
-                usuarioHierarquiaRepository.delete(usuarioHierarquia);
-            }
-            var usuario = repository.findOne(id);
+                    if (!isEmpty(usuarioHierarquia)) {
+                        usuarioHierarquiaRepository.delete(usuarioHierarquia);
+                    }
 
-            return UsuarioHierarquia.builder()
-                    .usuario(usuario)
-                    .usuarioSuperior(usuarioSuperiorNovo)
-                    .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, superiorRequest))
-                    .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
-                    .usuarioCadastro(usuario)
-                    .build();
-
-        }).collect(Collectors.toList());
+                    var usuario = repository.findOne(id);
+                    return UsuarioHierarquia.builder()
+                            .usuario(usuario)
+                            .usuarioSuperior(usuarioSuperiorNovo)
+                            .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, superiorRequest))
+                            .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
+                            .usuarioCadastro(usuario)
+                            .build();
+                }).collect(Collectors.toList());
         usuarioHierarquiaRepository.save(usuarios);
     }
 
