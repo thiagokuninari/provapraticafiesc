@@ -391,32 +391,34 @@ public class UsuarioService {
 
     @Transactional
     public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorRequest) {
-        Usuario usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
+        var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
-        var usuarios = superiorRequest.getUsuarioIds().stream().map(id -> {
+        var usuarios = superiorRequest.getUsuarioIds()
+                .stream()
+                .map(id -> {
             var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                     superiorRequest.getSuperiorAntigo());
 
-            if (!isEmpty(usuarioHierarquia))
+            if (!isEmpty(usuarioHierarquia)) {
                 usuarioHierarquiaRepository.delete(usuarioHierarquia);
+            }
+            var usuario = repository.findOne(id);
 
-            Usuario usuario = repository.findOne(id);
-
-            return (UsuarioHierarquia.builder()
+            return UsuarioHierarquia.builder()
                     .usuario(usuario)
                     .usuarioSuperior(usuarioSuperiorNovo)
-                    .usuarioHierarquiaPk(criarUsuarioHierarquiaPK(id , superiorRequest))
+                    .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, superiorRequest))
                     .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
                     .usuarioCadastro(usuario)
-                    .build());
+                    .build();
 
         }).collect(Collectors.toList());
         usuarioHierarquiaRepository.save(usuarios);
     }
 
-    private UsuarioHierarquiaPk criarUsuarioHierarquiaPK(Integer id, AlteraSuperiorRequest superiorRequest) {
-        return  UsuarioHierarquiaPk
+    private UsuarioHierarquiaPk criarUsuarioHierarquiaPk(Integer id, AlteraSuperiorRequest superiorRequest) {
+        return UsuarioHierarquiaPk
                 .builder()
                 .usuario(id)
                 .usuarioSuperior(superiorRequest.getSuperiorNovo())
