@@ -252,6 +252,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + "     , C.CODIGO AS CODIGO_CARGO "
                                 + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS CODIGO_EMPRESAS "
                                 + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS CODIGO_UNIDADES_NEGOCIO "
+                                + "     , U.SITUACAO "
                                 + "  FROM USUARIO_HIERARQUIA UH "
                                 + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
                                 + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
@@ -264,7 +265,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " WHERE C.CODIGO = :codigoCargo "
                                 + "   AND D.CODIGO = :codigoDepartamento "
                                 + "   AND N.CODIGO = :codigoNivel " + exibirSomenteUsuariosAtivo(exibirAtivos)
-                                + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
+                                + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, U.SITUACAO "
                                 + "  START WITH UH.FK_USUARIO IN (:usuarioId) "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
                 new MapSqlParameterSource().addValues(getParameters(filtros))
