@@ -410,7 +410,7 @@ public class UsuarioService {
                             .usuarioSuperior(usuarioSuperiorNovo)
                             .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, superiorRequest))
                             .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
-                            .usuarioCadastro(repository.findOne(superiorRequest.getUsuarioAutenticadoId()))
+                            .usuarioCadastro(superiorRequest.getUsuarioAutenticado().getUsuario())
                             .build();
                 }).collect(Collectors.toList());
         usuarioHierarquiaRepository.save(usuarios);
