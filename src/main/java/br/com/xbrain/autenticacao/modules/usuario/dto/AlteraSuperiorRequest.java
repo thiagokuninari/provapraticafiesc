@@ -16,4 +16,5 @@ public class AlteraSuperiorRequest {
     private List<Integer> usuarioIds;
     private Integer superiorNovo;
     private Integer superiorAntigo;
+    private Integer usuarioAutenticadoId;
 }
