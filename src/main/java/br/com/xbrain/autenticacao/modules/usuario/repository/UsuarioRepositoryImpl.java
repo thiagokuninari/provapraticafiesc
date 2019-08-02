@@ -220,6 +220,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         + "     , C.CODIGO AS CARGO "
                         + "     , LISTAGG(E.CODIGO, ',') WITHIN GROUP (ORDER BY E.CODIGO) AS EMPRESAS "
                         + "     , LISTAGG(UN.CODIGO, ',') WITHIN GROUP (ORDER BY UN.CODIGO) AS UNIDADES_NEGOCIOS "
+                        + "     , U.SITUACAO  "
                         + "  FROM USUARIO_HIERARQUIA UH "
                         + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
                         + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
@@ -232,7 +233,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         + " WHERE C.CODIGO = :_codigoCargo "
                         + "   AND D.CODIGO = :_codigoDepartamento "
                         + "   AND N.CODIGO = :_codigoNivel "
-                        + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO "
+                        + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, U.SITUACAO "
                         + "  START WITH UH.FK_USUARIO IN :_idUsuario "
                         + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
                 .setParameter("_codigoCargo", filtros.getCodigoCargo().toString())
