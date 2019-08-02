@@ -41,7 +41,7 @@ public class FeriadoService {
     }
 
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
-        return repository.hasFeriadoNacionalOuRegional(LocalDate.now(), cidade, uf);
+        return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
     }
 
     public void loadAllFeriados() {

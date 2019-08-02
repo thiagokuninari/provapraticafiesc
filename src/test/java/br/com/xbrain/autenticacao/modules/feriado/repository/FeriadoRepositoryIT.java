@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 @Sql("classpath:/feriado-repository-test.sql")
-public class FeriadoRepositoryTestIT {
+public class FeriadoRepositoryIT {
 
     @Autowired
     private FeriadoRepository feriadoRepository;
