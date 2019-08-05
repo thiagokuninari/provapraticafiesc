@@ -162,6 +162,9 @@ app-config:
     funil-prospeccao-api:
       client: funil-prospeccao-api
       secret: fun1lpr0sp3cc40
+    discadora-api:
+      client: discadora-api
+      secret: d1sc4d0r4
 
   services:
     autenticacao:
