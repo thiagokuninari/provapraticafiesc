@@ -2,12 +2,14 @@ package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
+import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -24,6 +26,8 @@ import static helpers.Usuarios.ADMIN;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,6 +44,8 @@ public class FeriadoControllerTest {
 
     private static final String URL = "/api/feriado";
 
+    @SpyBean
+    private FeriadoService service;
     @Autowired
     private MockMvc mvc;
     @MockBean
@@ -125,6 +131,7 @@ public class FeriadoControllerTest {
         assertThatExceptionOfType(NestedServletException.class)
                 .isThrownBy(() ->
                         mvc.perform(get(URL + "/cidade/Arapongas/P.R")
+                                .header("Authorization", getAccessToken(mvc, ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn()
                 )
@@ -133,7 +140,9 @@ public class FeriadoControllerTest {
 
     @Test
     public void consultarFeriadoComCidadeUf_deveRetornarOk_seParametrosValidos() throws Exception {
+        doReturn(true).when(service).isFeriadoHojeNaCidadeUf(anyString(), anyString());
         mvc.perform(get(URL + "/cidade/Arapongas/PR")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
