@@ -42,6 +42,8 @@ app-config:
       url: http://172.10.10.77:8095
     equipe-venda:
       url: http://172.10.10.82:8089
+    contato-crn:
+      url: http://172.10.10.64:8084
 
   email:
     enviar: true
