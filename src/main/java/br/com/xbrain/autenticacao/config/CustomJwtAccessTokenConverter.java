@@ -104,6 +104,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
+    private boolean isExclusivoPme(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO && agenteAutorizadoService.isExclusivoPme(usuario.getId());
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
@@ -154,6 +158,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 getAplicacoes(usuario));
         token.getAdditionalInformation().put("equipesSupervisionadas",
                 equipesSupervisionadas);
+        token.getAdditionalInformation().put("aaPme", isExclusivoPme(usuario));
     }
 
     private String getOrganizacao(Usuario usuario) {
