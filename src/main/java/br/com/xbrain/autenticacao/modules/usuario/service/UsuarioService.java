@@ -394,26 +394,28 @@ public class UsuarioService {
         var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
-        var usuarios = superiorRequest.getUsuarioIds()
-                .stream()
-                .map(id -> {
+        superiorRequest.getUsuarioIds()
+                .forEach(id -> {
                     var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                             superiorRequest.getSuperiorAntigo());
 
                     if (!isEmpty(usuarioHierarquia)) {
                         usuarioHierarquiaRepository.delete(usuarioHierarquia);
                     }
+                    usuarioHierarquiaRepository.save(criarHierarquia(id, usuarioSuperiorNovo, superiorRequest));
+                });
+    }
 
-                    var usuario = repository.findOne(id);
-                    return UsuarioHierarquia.builder()
-                            .usuario(usuario)
-                            .usuarioSuperior(usuarioSuperiorNovo)
-                            .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, superiorRequest))
-                            .dataCadastro(usuarioSuperiorNovo.getDataCadastro())
-                            .usuarioCadastro(autenticacaoService.getUsuarioAutenticado().getUsuario())
-                            .build();
-                }).collect(Collectors.toList());
-        usuarioHierarquiaRepository.save(usuarios);
+    private UsuarioHierarquia criarHierarquia(Integer id, Usuario superiorNovo, AlteraSuperiorRequest request) {
+        var usuario = repository.findOne(id);
+
+        return UsuarioHierarquia.builder()
+                .usuario(usuario)
+                .usuarioSuperior(superiorNovo)
+                .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
+                .dataCadastro(superiorNovo.getDataCadastro())
+                .usuarioCadastro(autenticacaoService.getUsuarioAutenticado().getUsuario())
+                .build();
     }
 
     private UsuarioHierarquiaPk criarUsuarioHierarquiaPk(Integer id, AlteraSuperiorRequest superiorRequest) {

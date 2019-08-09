@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -591,6 +592,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
                 .builder()
                 .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
@@ -639,6 +643,15 @@ public class UsuarioServiceIT {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
         return usuario;
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        var usuario = usuarioRepository.findOne(100);
+        return UsuarioAutenticado
+                .builder()
+                .id(110)
+                .usuario(usuario)
+                .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {
