@@ -605,6 +605,33 @@ public class UsuarioServiceIT {
                 .contains(100, 113);
     }
 
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisor_quandoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_naoDeveAtualizarOSupervisor_quandoNaoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(null);
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .isNull();
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);

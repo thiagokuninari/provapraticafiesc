@@ -394,7 +394,7 @@ public class UsuarioService {
         var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         superiorRequest.getUsuarioIds()
                 .forEach(id -> {
