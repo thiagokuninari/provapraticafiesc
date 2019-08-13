@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -403,13 +404,18 @@ public class UsuarioService {
 
                     if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
                         usuarioHierarquiaRepository.delete(usuarioHierarquia);
-                    } else if (!isEmpty(usuarioAutenticado)) {
-                        usuarioHierarquiaRepository.save(criarHierarquia(id, usuarioSuperiorNovo, superiorRequest));
+                    }
+                    if (!isEmpty(usuarioAutenticado)) {
+                        usuarioHierarquiaRepository.save(
+                                criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
                     }
                 });
     }
 
-    private UsuarioHierarquia criarHierarquia(Integer id, Usuario superiorNovo, AlteraSuperiorRequest request) {
+    private UsuarioHierarquia criarHierarquia(Integer id,
+                                              Usuario superiorNovo,
+                                              AlteraSuperiorRequest request,
+                                              UsuarioAutenticado usuarioAutenticado) {
         var usuario = repository.findOne(id);
 
         return UsuarioHierarquia.builder()
@@ -417,7 +423,7 @@ public class UsuarioService {
                 .usuarioSuperior(superiorNovo)
                 .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
                 .dataCadastro(superiorNovo.getDataCadastro())
-                .usuarioCadastro(autenticacaoService.getUsuarioAutenticado().getUsuario())
+                .usuarioCadastro(usuarioAutenticado.getUsuario())
                 .build();
     }
 

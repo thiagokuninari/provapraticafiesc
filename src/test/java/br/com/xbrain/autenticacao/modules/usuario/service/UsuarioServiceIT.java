@@ -611,7 +611,9 @@ public class UsuarioServiceIT {
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
                 .builder()
-                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
                 .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
@@ -625,7 +627,9 @@ public class UsuarioServiceIT {
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
                 .builder()
-                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
                 .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
