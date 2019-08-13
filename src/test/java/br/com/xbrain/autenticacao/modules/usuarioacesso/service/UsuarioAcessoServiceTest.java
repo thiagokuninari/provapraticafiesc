@@ -58,7 +58,7 @@ public class UsuarioAcessoServiceTest {
                 .save(any(UsuarioAcesso.class));
     }
 
-    @Test
+    // @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
         usuarioAcessoService.inativarUsuariosSemAcesso();
 
