@@ -394,15 +394,18 @@ public class UsuarioService {
         var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
                 new NotFoundException("Usuário não encontrado"));
 
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+
         superiorRequest.getUsuarioIds()
                 .forEach(id -> {
                     var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                             superiorRequest.getSuperiorAntigo());
 
-                    if (!isEmpty(usuarioHierarquia)) {
+                    if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
                         usuarioHierarquiaRepository.delete(usuarioHierarquia);
+                    } else if (!isEmpty(usuarioAutenticado)) {
+                        usuarioHierarquiaRepository.save(criarHierarquia(id, usuarioSuperiorNovo, superiorRequest));
                     }
-                    usuarioHierarquiaRepository.save(criarHierarquia(id, usuarioSuperiorNovo, superiorRequest));
                 });
     }
 
