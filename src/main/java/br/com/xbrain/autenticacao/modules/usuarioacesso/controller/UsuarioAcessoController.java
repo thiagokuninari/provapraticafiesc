@@ -16,28 +16,22 @@ public class UsuarioAcessoController {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    // TODO: rotina comentada por apresentar inativação de usuários que estão efetuando login todos os dias no sistema,
-    //  este problema será investigado na tarefa #13654.
     @GetMapping("/inativar")
     @ResponseStatus(HttpStatus.OK)
     public void inativarUsuariosSemAcesso() {
-        //if (autenticacaoService.getUsuarioAutenticado()
-        //        .isXbrain()) {
-        //    usuarioAcessoService.inativarUsuariosSemAcesso();
-        //   return;
-        //}
-
-        //throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
+        if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+            usuarioAcessoService.inativarUsuariosSemAcesso();
+            return;
+        }
+        throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
     }
 
     @DeleteMapping("historico")
     public void deletarHistoricoUsuarioAcesso() {
-        if (autenticacaoService.getUsuarioAutenticado()
-                .isXbrain()) {
+        if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
             usuarioAcessoService.deletarHistoricoUsuarioAcesso();
             return;
         }
-
         throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
     }
 }

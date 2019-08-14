@@ -38,7 +38,7 @@ public class UsuarioAcessoControllerTest {
     @MockBean
     private UsuarioAcessoService usuarioAcessoService;
 
-    // @Test
+    @Test
     public void inativarUsuariosSemAcesso_deveRetornarHttpStatusBadRequest_quandoUsuarioNaoForAdmin() throws Exception {
         mvc.perform(get(ENDPOINT_USUARIO_ACESSO + "/inativar")
                 .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
@@ -48,7 +48,7 @@ public class UsuarioAcessoControllerTest {
         verify(usuarioAcessoService, times(0)).inativarUsuariosSemAcesso();
     }
 
-    // @Test
+    @Test
     public void inativarUsuariosSemAcesso_deveRetornarHttpStatusOk_quandoUsuarioForAdmin() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

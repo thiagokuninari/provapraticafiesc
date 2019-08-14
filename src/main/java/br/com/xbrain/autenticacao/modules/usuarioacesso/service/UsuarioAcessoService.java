@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UsuarioAcessoService {
 
+    private static final int TRINTA_E_DOIS_DIAS = 32;
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido ao inativar "
             + "usuários que estão a mais de 32 dias sem efetuar login.";
     private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
@@ -42,12 +44,14 @@ public class UsuarioAcessoService {
     @Transactional
     public void inativarUsuariosSemAcesso() {
         try {
-            buscarUsuariosParaInativar().forEach(usuarioAcesso -> {
+            List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar();
+            usuarios.forEach(usuarioAcesso -> {
                 Usuario usuario = usuarioAcesso.getUsuario();
                 usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
                 usuarioHistoricoService.gerarHistoricoInativacao(usuario);
                 inativarColaboradorPol(usuario);
             });
+            log.info("Total de usuários inativados: " + usuarios.size());
         } catch (Exception ex) {
             log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, ex);
         }
@@ -63,20 +67,32 @@ public class UsuarioAcessoService {
         return 0;
     }
 
-    private List<UsuarioAcesso> buscarUsuariosParaInativar() {
-        List<UsuarioAcesso> usuariosAcesso = usuarioAcessoRepository.findAllUltimoAcessoUsuarios();
-        List<UsuarioAcesso> usuarios = usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
-                .stream()
-                .map(UsuarioAcesso::of)
-                .collect(Collectors.toList());
+    private boolean ultrapassouTrintaEDoisDiasDesdeUltimoAcesso(UsuarioAcesso usuarioAcesso) {
+        return usuarioAcesso.getDataCadastro()
+            .isBefore(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS));
+    }
 
+    private List<UsuarioAcesso> buscarUsuariosParaInativar() {
+        List<UsuarioAcesso> usuariosAcesso = usuarioAcessoRepository.findAllUltimoAcessoUsuarios()
+            .stream()
+            .filter(this::ultrapassouTrintaEDoisDiasDesdeUltimoAcesso)
+            .collect(Collectors.toList());
+
+        List<UsuarioAcesso> usuarios = usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
+            .stream()
+            .map(UsuarioAcesso::of)
+            .collect(Collectors.toList());
+        return retornarListaUsuariosParaInativar(usuariosAcesso, usuarios);
+    }
+
+    private List<UsuarioAcesso> retornarListaUsuariosParaInativar(List<UsuarioAcesso> usuariosAcesso,
+                                                                  List<UsuarioAcesso> usuarios) {
         if (!usuariosAcesso.isEmpty() && !usuarios.isEmpty()) {
             usuariosAcesso.addAll(usuarios);
             return usuariosAcesso;
         } else if (!usuariosAcesso.isEmpty()) {
             return usuariosAcesso;
         }
-
         return usuarios;
     }
 
