@@ -83,18 +83,6 @@ public class AgenteAutorizadoService {
         }
     }
 
-    public List<UsuarioAgenteAutorizadoEquipeResponse> getUsuariosByAaId(Integer aaId) {
-        try {
-            return agenteAutorizadoClient.getUsuariosByAaId(aaId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                    AgenteAutorizadoService.class.getName(),
-                    EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
     public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
         try {
             return agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(aaId);

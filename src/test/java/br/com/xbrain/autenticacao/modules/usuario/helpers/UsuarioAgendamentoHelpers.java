@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
 import br.com.xbrain.autenticacao.modules.permissao.model.Aplicacao;
@@ -104,17 +104,17 @@ public class UsuarioAgendamentoHelpers {
         );
     }
 
-    public static List<UsuarioAgenteAutorizadoEquipeResponse> todosUsuariosDoAgenteAutorizado1300() {
+    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado1300() {
         return usuariosDoAgenteAutorizado1300()
                 .stream()
-                .map(u -> new UsuarioAgenteAutorizadoEquipeResponse(u.getId(), u.getNome(), null))
+                .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(), null))
                 .collect(Collectors.toList());
     }
 
-    public static List<UsuarioAgenteAutorizadoEquipeResponse> todosUsuariosDoAgenteAutorizado999() {
+    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado999() {
         return usuariosDoAgenteAutorizado999()
                 .stream()
-                .map(u -> new UsuarioAgenteAutorizadoEquipeResponse(u.getId(), u.getNome(),
+                .map(u -> new UsuarioAgenteAutorizadoResponse(u.getId(), u.getNome(),
                         u.getCargoCodigo() == CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS ? 999 : null))
                 .collect(Collectors.toList());
     }

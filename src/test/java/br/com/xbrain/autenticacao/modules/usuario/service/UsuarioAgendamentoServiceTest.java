@@ -52,9 +52,9 @@ public class UsuarioAgendamentoServiceTest {
     public void setup() {
         when(agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(eq(1300), any()))
                 .thenReturn(usuariosMesmoSegmentoAgenteAutorizado1300());
-        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300)))
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
                 .thenReturn(todosUsuariosDoAgenteAutorizado1300());
-        when(agenteAutorizadoService.getUsuariosByAaId(eq(999)))
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(999), eq(false)))
                 .thenReturn(todosUsuariosDoAgenteAutorizado999());
         when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(133).build())))
                 .thenReturn(umaPermissaoDeVendaResponse());

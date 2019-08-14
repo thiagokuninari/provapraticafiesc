@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoEquipeResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
@@ -61,9 +61,9 @@ public class UsuarioAgendamentoService {
                                                                                               Integer agenteAutorizadoId) {
         var cargoDoUsuario = cargoService.findByUsuarioId(usuarioId);
 
-        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId)
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
                 .stream()
-                .map(UsuarioAgenteAutorizadoEquipeResponse::getId)
+                .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosDoAa);
@@ -150,7 +150,7 @@ public class UsuarioAgendamentoService {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var isUsuarioSupervisor = isSupervisor(usuarioAutenticado.getCargoCodigo());
 
-        var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId);
+        var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
 
         if (isUsuarioSupervisor) {
             return getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
@@ -162,7 +162,7 @@ public class UsuarioAgendamentoService {
     }
 
     private List<UsuarioAgendamentoResponse> getVendedoresSupervisionados(int supervisorId,
-                                                                          List<UsuarioAgenteAutorizadoEquipeResponse> usuarios) {
+                                                                          List<UsuarioAgenteAutorizadoResponse> usuarios) {
         var equipesSupervisionadas = equipeVendasService.getEquipesPorSupervisor(supervisorId)
                 .stream()
                 .map(EquipeVendasSupervisionadasResponse::getId)
