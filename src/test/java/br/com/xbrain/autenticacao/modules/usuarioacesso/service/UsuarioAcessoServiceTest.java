@@ -39,15 +39,17 @@ public class UsuarioAcessoServiceTest {
     @Before
     public void setup() {
         when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
-                .thenReturn(List.of(
-                        new UsuarioAcesso(
-                                LocalDateTime.now().minusDays(45), 102, "RENATO@XBRAIN.COM.BR"),
-                        new UsuarioAcesso(
-                                LocalDateTime.now().minusDays(33), 103, "MARIA@XBRAIN.COM.BR"),
-                        new UsuarioAcesso(
-                                LocalDateTime.now().minusDays(32), 104, "JOANA@XBRAIN.COM.BR"),
-                        new UsuarioAcesso(
-                                LocalDateTime.now().minusDays(45), 105, null)));
+            .thenReturn(List.of(
+                new UsuarioAcesso(
+                    LocalDateTime.now().minusDays(45), 102, "RENATO@XBRAIN.COM.BR"),
+                new UsuarioAcesso(
+                    LocalDateTime.now().minusDays(33), 103, "MARIA@XBRAIN.COM.BR"),
+                new UsuarioAcesso(
+                    LocalDateTime.now().minusDays(32), 104, "JOANA@XBRAIN.COM.BR"),
+                new UsuarioAcesso(
+                    LocalDateTime.now().minusDays(45), 105, null),
+                new UsuarioAcesso(
+                    LocalDateTime.now().minusDays(10), 106, "CARLOS@XBRAIN.COM.BR")));
     }
 
     @Test

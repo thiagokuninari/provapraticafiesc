@@ -42,7 +42,6 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
         }
     }
 
-    @Async
     private void registrarAcesso(AuthenticationSuccessEvent event) {
         Authentication authentication = event.getAuthentication();
         if (authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
