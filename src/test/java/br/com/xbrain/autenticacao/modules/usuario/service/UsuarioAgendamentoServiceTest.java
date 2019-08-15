@@ -68,6 +68,20 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
+    public void recuperarUsuariosParaDistribuicao_deveTrazerSupervisor_seForOUsuarioLogado() {
+        when(usuarioRepository.getUsuariosFilter(any())).thenReturn(usuariosDoAgenteAutorizado1300());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoSupervisor());
+        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(135).build())))
+                .thenReturn(umaPermissaoDeVendaResponse());
+
+        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+
+        assertThat(usuariosParaDistribuicao)
+                .flatExtracting("id", "nome")
+                .contains(135, "MARCOS AUGUSTO DA SILVA SANTOS");
+    }
+
+    @Test
     public void recuperarUsuariosParaDistribuicao_naoDeveMostrarSupervisor_seNaoPossuirPermissaoDeVenda() {
         when(usuarioRepository.getUsuariosFilter(any()))
                 .thenReturn(usuariosDoAgenteAutorizado1300());
@@ -181,6 +195,14 @@ public class UsuarioAgendamentoServiceTest {
         UsuarioAutenticado usuarioAutenticado = new UsuarioAutenticado();
         usuarioAutenticado.setId(100);
         usuarioAutenticado.setNome("José");
+        return usuarioAutenticado;
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoSupervisor() {
+        var usuarioAutenticado = new UsuarioAutenticado();
+        usuarioAutenticado.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO);
+        usuarioAutenticado.setId(135);
+        usuarioAutenticado.setNome("MARCOS AUGUSTO DA SILVA SANTOS");
         return usuarioAutenticado;
     }
 }

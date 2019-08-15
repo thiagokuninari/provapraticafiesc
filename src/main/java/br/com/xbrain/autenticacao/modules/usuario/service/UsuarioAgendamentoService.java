@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,8 +60,6 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
-        var cargoDoUsuario = cargoService.findByUsuarioId(usuarioId);
-
         var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
@@ -68,11 +67,12 @@ public class UsuarioAgendamentoService {
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosDoAa);
 
-        var vendedoresDoMesmoCanal = List.<UsuarioAgenteAutorizadoAgendamentoResponse>of();
-
-        if (isVendedor(cargoDoUsuario)) {
-            vendedoresDoMesmoCanal = obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos);
-        }
+        var vendedoresDoMesmoCanal = Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
+                .filter(this::isVendedor)
+                .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
+                .orElseGet(List::of);
+        // TODO: Trazer apenas usuárioas da equipe de vendas do supervisor
+        // Obs: Verificar na chamada abaixo
 
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
 
@@ -98,6 +98,10 @@ public class UsuarioAgendamentoService {
     }
 
     private List<Usuario> obterUsuariosHibridosDoAa(List<Integer> usuariosDoAa) {
+        Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
+                .filter(u -> this.isSupervisor(u.getCargoCodigo()))
+                .ifPresent(u -> usuariosDoAa.add(u.getId()));
+
         return usuarioRepository.getUsuariosFilter(new UsuarioPredicate()
                 .comIds(usuariosDoAa)
                 .build())
