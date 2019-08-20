@@ -22,6 +22,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -34,7 +35,9 @@ import static org.springframework.util.StringUtils.isEmpty;
 @Slf4j
 public class FeriadoImportacaoTest {
 
+    private static final String CABECALHO_CSV = "CIDADE;CODIGO_IBGE;DATA_FERIADO;VALOR_PLANILHA";
     private static final String CAMINHO_ARQUIVO_PROCESSADO = "/home/xbrain/feriados_processados.sql";
+    private static final String CAMINHO_ARQUIVO_PROCESSADO_CSV = "/home/xbrain/feriados_processados.csv";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     private static final DateTimeFormatter DATE_TIME_FORMATTER_SQL = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private static final String DELIMITADOR = ";";
@@ -86,26 +89,51 @@ public class FeriadoImportacaoTest {
                 .filter(Registro::isDiaValido)
                 .filter(this::isDataPermitida)
                 .filter(registro -> registro.valor < VALOR_SABADO)
-                .map(Registro::toInsert)
                 .collect(Collectors.toList());
 
         log.info("Total de feriados: " + registros.size());
 
         escreverArquivoProcessado(registros);
+        escreverArquivoProcessadoCsv(registros);
     }
 
-    private void escreverArquivoProcessado(List<String> registros) throws IOException {
-        var file = new File(CAMINHO_ARQUIVO_PROCESSADO);
+    private void escreverArquivoProcessado(List<Registro> registros) throws IOException {
+        escreverNoArquivo(CAMINHO_ARQUIVO_PROCESSADO, writter -> {
+            try {
+                for (var linha : registros) {
+                    writter.write(linha.toInsert());
+                    writter.newLine();
+                }
+            } catch (IOException ex) {
+                log.error("Erro ao escrever no arquivo: ", ex);
+            }
+        });
+    }
+
+    private void escreverArquivoProcessadoCsv(List<Registro> registros) throws IOException {
+        escreverNoArquivo(CAMINHO_ARQUIVO_PROCESSADO_CSV, writter -> {
+            try {
+                writter.write(CABECALHO_CSV);
+                writter.newLine();
+                for (var linha : registros) {
+                    writter.write(linha.toCsv());
+                    writter.newLine();
+                }
+            } catch (IOException ex) {
+                log.error("Erro ao escrever no arquivo: ", ex);
+            }
+        });
+    }
+
+    private void escreverNoArquivo(String fileName, Consumer<BufferedWriter> writerConsumer) throws IOException {
+        var file = new File(fileName);
         if (file.createNewFile()) {
             log.info("Arquivo criado: " + file.getAbsoluteFile());
         } else {
             log.info("Sobreescrevendo o arquivo: " + file.getAbsoluteFile());
         }
         try (var writter = new BufferedWriter(new FileWriter(file))) {
-            for (var linha : registros) {
-                writter.write(linha);
-                writter.newLine();
-            }
+            writerConsumer.accept(writter);
         }
         log.info("Arquivo exportado com sucesso!");
     }
@@ -159,7 +187,7 @@ public class FeriadoImportacaoTest {
                 .collect(Collectors.toList());
     }
 
-    private static String getEscape(String regex) {
+    private String getEscape(String regex) {
         var res = StringEscapeUtils.escapeJava(regex);
         if ("|".equals(regex)) {
             res = "\\|";
@@ -185,6 +213,10 @@ public class FeriadoImportacaoTest {
                     + "VALUES (SEQ_FERIADO.NEXTVAL, SYSDATE, '" + dataFeriado.format(DATE_TIME_FORMATTER_SQL) + "', 'F', '', "
                     + fkCidade + "); -- " + cidade + " - " + valor;
             return sql;
+        }
+
+        public String toCsv() {
+            return String.join(";", cidade, codigoIbge, dataFeriado.format(DATE_TIME_FORMATTER_SQL), valor.toString());
         }
     }
 }
