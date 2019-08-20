@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,6 +31,7 @@ import static org.springframework.util.StringUtils.isEmpty;
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Slf4j
 public class FeriadoImportacaoTest {
 
     private static final String CAMINHO_ARQUIVO_PROCESSADO = "/home/xbrain/feriados_processados.sql";
@@ -87,7 +89,7 @@ public class FeriadoImportacaoTest {
                 .map(Registro::toInsert)
                 .collect(Collectors.toList());
 
-        System.out.println("Total de registros: " + registros.size());
+        log.info("Total de feriados: " + registros.size());
 
         escreverArquivoProcessado(registros);
     }
@@ -95,9 +97,9 @@ public class FeriadoImportacaoTest {
     private void escreverArquivoProcessado(List<String> registros) throws IOException {
         var file = new File(CAMINHO_ARQUIVO_PROCESSADO);
         if (file.createNewFile()) {
-            System.out.println("Arquivo criado: " + file.getAbsoluteFile());
+            log.info("Arquivo criado: " + file.getAbsoluteFile());
         } else {
-            System.out.println("Sobreescrevendo o arquivo: " + file.getAbsoluteFile());
+            log.info("Sobreescrevendo o arquivo: " + file.getAbsoluteFile());
         }
         try (var writter = new BufferedWriter(new FileWriter(file))) {
             for (var linha : registros) {
@@ -105,7 +107,7 @@ public class FeriadoImportacaoTest {
                 writter.newLine();
             }
         }
-        System.out.println("Arquivo exportado com sucesso!");
+        log.info("Arquivo exportado com sucesso!");
     }
 
     private List<Registro> obterRegistros(int numLinha, String[] linha, String[] cabecalho) {
