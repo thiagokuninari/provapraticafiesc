@@ -32,6 +32,9 @@ public interface AgenteAutorizadoClient {
     @GetMapping(API_AGENTE_AUTORIZADO + "/empresas-matriz-filiais/{usuarioId}")
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 
+    @GetMapping(API_AGENTE_AUTORIZADO + "/{usuarioId}/exclusivo-pme")
+    boolean isExclusivoPme(@PathVariable("usuarioId") Integer usuarioId);
+
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
             @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
