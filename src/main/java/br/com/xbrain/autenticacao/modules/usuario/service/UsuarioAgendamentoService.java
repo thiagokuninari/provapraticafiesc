@@ -32,7 +32,8 @@ public class UsuarioAgendamentoService {
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR,
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP,
-            CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR
+            CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR,
+            CodigoCargo.AGENTE_AUTORIZADO_ACEITE
     );
     private static final List<String> PERMISSOES_DE_VENDA = List.of(
             "VDS_TABULACAO_MANUAL",
