@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -81,4 +82,5 @@ public interface UsuarioRepositoryCustom {
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
+    List<Integer> findAllIds(BooleanBuilder predicate);
 }

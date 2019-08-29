@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
@@ -245,6 +247,58 @@ public class UsuarioPredicate {
 
     private UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
+        return this;
+    }
+
+    public UsuarioPredicate comCanalD2d(boolean todoCanalD2d) {
+        if (todoCanalD2d) {
+            builder.and(usuario.canais.contains(ECanal.D2D_PROPRIO));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCanalAa(boolean todoCanalAa) {
+        if (todoCanalAa) {
+            builder.and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comUsuariosId(List<Integer> usuariosId) {
+        if (!ObjectUtils.isEmpty(usuariosId)) {
+            builder.and(usuario.id.in(usuariosId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCargosId(List<Integer> cargosId) {
+        if (!ObjectUtils.isEmpty(cargosId)) {
+            builder.and(usuario.cargo.id.in(cargosId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCidadesId(List<Integer> cidadesId) {
+        if (!ObjectUtils.isEmpty(cidadesId)) {
+            builder.or(usuario.id.in(JPAExpressions
+                    .select(usuarioCidade.usuario.id)
+                    .from(usuarioCidade)
+                    .where(usuarioCidade.cidade.id.in(cidadesId))));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comNiveisId(List<Integer> niveisId) {
+        if (!ObjectUtils.isEmpty(niveisId)) {
+            builder.and(usuario.cargo.nivel.id.in(niveisId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comUltimaDataDeAcesso(LocalDate data) {
+        if (!ObjectUtils.isEmpty(data)) {
+            builder.and(usuario.dataUltimoAcesso.after(data.atStartOfDay()));
+        }
         return this;
     }
 

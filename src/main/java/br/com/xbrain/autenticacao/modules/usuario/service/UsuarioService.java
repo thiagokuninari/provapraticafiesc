@@ -1283,4 +1283,16 @@ public class UsuarioService {
         repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
     }
+
+    public List<Integer> getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        return repository.findAllIds(new UsuarioPredicate()
+                .comCanalD2d(usuarioFiltros.isTodoCanalD2d())
+                .comCanalAa(usuarioFiltros.isTodoCanalAa())
+                .comUsuariosId(usuarioFiltros.getUsuariosId())
+                .comCargosId(usuarioFiltros.getCargosId())
+                .comCidadesId(usuarioFiltros.getCidadesId())
+                .comNiveisId(usuarioFiltros.getNiveisId())
+                .comUltimaDataDeAcesso(LocalDate.now())
+                .build());
+    }
 }
