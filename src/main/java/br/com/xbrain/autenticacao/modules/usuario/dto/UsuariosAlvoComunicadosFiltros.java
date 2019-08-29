@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.querydsl.core.BooleanBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ public class UsuariosAlvoComunicadosFiltros {
     private List<Integer> cidadesId;
     private List<Integer> niveisId;
 
+    @JsonIgnore
     public BooleanBuilder toPredicate() {
         return new UsuarioPredicate().comCanalD2d(isTodoCanalD2d())
                 .comCanalAa(isTodoCanalAa())
