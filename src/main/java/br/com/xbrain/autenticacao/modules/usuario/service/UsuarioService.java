@@ -1285,14 +1285,6 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
-        return repository.findAllIds(new UsuarioPredicate()
-                .comCanalD2d(usuarioFiltros.isTodoCanalD2d())
-                .comCanalAa(usuarioFiltros.isTodoCanalAa())
-                .comUsuariosId(usuarioFiltros.getUsuariosId())
-                .comCargosId(usuarioFiltros.getCargosId())
-                .comCidadesId(usuarioFiltros.getCidadesId())
-                .comNiveisId(usuarioFiltros.getNiveisId())
-                .comUltimaDataDeAcesso(LocalDate.now())
-                .build());
+        return repository.findAllIds(usuarioFiltros.toPredicate());
     }
 }
