@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -33,6 +35,8 @@ public class UsuarioAcessoService {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     @Transactional
     public void registrarAcesso(Integer usuarioId) {
@@ -43,6 +47,7 @@ public class UsuarioAcessoService {
 
     @Transactional
     public void inativarUsuariosSemAcesso() {
+        usuarioIsXbrain();
         try {
             List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar();
             usuarios.forEach(usuarioAcesso -> {
@@ -59,6 +64,7 @@ public class UsuarioAcessoService {
 
     @Transactional
     public long deletarHistoricoUsuarioAcesso() {
+        usuarioIsXbrain();
         try {
             return usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
         } catch (Exception ex) {
@@ -101,6 +107,12 @@ public class UsuarioAcessoService {
             inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");
+        }
+    }
+
+    private void usuarioIsXbrain() {
+        if (!autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+            throw new PermissaoException();
         }
     }
 }

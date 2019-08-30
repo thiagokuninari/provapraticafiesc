@@ -1,5 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -18,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -35,6 +39,8 @@ public class UsuarioAcessoServiceTest {
     private UsuarioHistoricoService usuarioHistoricoService;
     @MockBean
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Before
     public void setup() {
@@ -62,6 +68,7 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("XBRAIN"));
         usuarioAcessoService.inativarUsuariosSemAcesso();
 
         verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
@@ -70,8 +77,32 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
+    public void inativarUsuariosSemAcesso_deveInativarUsuarios_aa() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado("MSO"));
+
+        assertThatThrownBy(() -> usuarioAcessoService.inativarUsuariosSemAcesso())
+            .isInstanceOf(PermissaoException.class);
+    }
+
+    @Test
     public void deletarHistoricoUsuarioAcesso_deveDeletarRegistros_quandoDataCadastroUltrapassarDoisMeses() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("XBRAIN"));
         usuarioAcessoService.deletarHistoricoUsuarioAcesso();
         verify(usuarioAcessoRepository, times(1)).deletarHistoricoUsuarioAcesso();
+    }
+
+    @Test
+    public void sddssd() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("MSO"));
+        assertThatThrownBy(() -> usuarioAcessoService.deletarHistoricoUsuarioAcesso())
+            .isInstanceOf(PermissaoException.class);
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado(String nivelCodigo) {
+        return UsuarioAutenticado.builder()
+            .id(100)
+            .nivelCodigo(nivelCodigo)
+            .build();
     }
 }

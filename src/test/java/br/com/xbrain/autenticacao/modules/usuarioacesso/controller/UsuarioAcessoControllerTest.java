@@ -18,11 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.OPERACAO_ASSISTENTE;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -39,16 +36,6 @@ public class UsuarioAcessoControllerTest {
     private UsuarioAcessoService usuarioAcessoService;
 
     @Test
-    public void inativarUsuariosSemAcesso_deveRetornarHttpStatusBadRequest_quandoUsuarioNaoForAdmin() throws Exception {
-        mvc.perform(get(ENDPOINT_USUARIO_ACESSO + "/inativar")
-                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(usuarioAcessoService, times(0)).inativarUsuariosSemAcesso();
-    }
-
-    @Test
     public void inativarUsuariosSemAcesso_deveRetornarHttpStatusOk_quandoUsuarioForAdmin() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -56,16 +43,6 @@ public class UsuarioAcessoControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         verify(usuarioAcessoService, times(1)).inativarUsuariosSemAcesso();
-    }
-
-    @Test
-    public void deletarHistoricoUsuarioAcesso_deveRetornarBadRequest_quandoNaoForUsuarioAdmin() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.delete(ENDPOINT_USUARIO_ACESSO + "/historico")
-                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-        verify(usuarioAcessoService, times(0)).deletarHistoricoUsuarioAcesso();
     }
 
     @Test
