@@ -93,7 +93,7 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
-    public void sddssd() {
+    public void deletarHistoricoUsuarioAcesso_deveLancarException_quandoTentarDeletarHistoricoSemPermissaoXbrain() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("MSO"));
         assertThatThrownBy(() -> usuarioAcessoService.deletarHistoricoUsuarioAcesso())
             .isInstanceOf(PermissaoException.class);
