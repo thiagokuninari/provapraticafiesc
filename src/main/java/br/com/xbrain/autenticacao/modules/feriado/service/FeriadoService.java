@@ -7,13 +7,18 @@ import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.xbrainutils.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
+
+@Slf4j
 @Service
 public class FeriadoService {
 
@@ -50,5 +55,10 @@ public class FeriadoService {
                         .stream()
                         .map(Feriado::getDataFeriado)
                         .collect(Collectors.toSet()));
+    }
+
+    @CacheEvict(cacheManager = "concurrentCacheManager", value = FERIADOS_DATA_CACHE_NAME, allEntries = true)
+    public void flushCacheFeriados() {
+        log.info("Flush Cache Feriados por Cidade/Uf");
     }
 }

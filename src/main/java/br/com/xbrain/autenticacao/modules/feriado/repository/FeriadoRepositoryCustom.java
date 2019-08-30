@@ -6,10 +6,12 @@ import org.springframework.cache.annotation.Cacheable;
 import java.time.LocalDate;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
+
 public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
 
-    @Cacheable("feriadoDataCidadeUf")
+    @Cacheable(cacheManager = "concurrentCacheManager", cacheNames = FERIADOS_DATA_CACHE_NAME)
     boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
 }
