@@ -298,7 +298,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario usuario, boolean realocado) {
+    public UsuarioDto save(Usuario usuario, boolean realocado, Integer agenteAutorizadoId) {
         validar(usuario);
         usuario.setAlterarSenha(Eboolean.F);
         if (realocado) {
@@ -310,6 +310,7 @@ public class UsuarioService {
         repository.save(usuario);
         entityManager.flush();
         if (realocado) {
+            usuario.setAgenteAutorizadoId(agenteAutorizadoId);
             enviarParaFilaDeUsuariosColaboradores(usuario);
         }
         return UsuarioDto.of(usuario);
@@ -581,7 +582,7 @@ public class UsuarioService {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
-                save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+                save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado(), usuarioDto.getAgenteAutorizadoId());
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
             }
@@ -675,7 +676,6 @@ public class UsuarioService {
                 .map(UsuarioDto::of)
                 .forEach(usuarioAtualizarColaborador -> usuarioMqSender
                     .sendColaboradoresSuccess(usuarioAtualizarColaborador));
-
         }
     }
 
