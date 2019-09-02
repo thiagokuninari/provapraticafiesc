@@ -52,4 +52,11 @@ public class FeriadoRepositoryIT {
 
         assertThat(isFeriado).isFalse();
     }
+
+    @Test
+    public void hasFeriadoNacionalOuRegional_deveRetornarTrue_seEncontrarFeriadoParaUfComNomePorExtenso() {
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 28), "Londrina", "Parana");
+
+        assertThat(isFeriado).isTrue();
+    }
 }

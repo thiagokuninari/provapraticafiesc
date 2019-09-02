@@ -38,7 +38,8 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                         feriado.dataFeriado.eq(data)
                                 .and(feriado.feriadoNacional.eq(Eboolean.V)
                                         .or(QCidade.cidade.nome.eq(cidade.toUpperCase())
-                                                .and(QUf.uf1.uf.eq(uf.toUpperCase()))))
+                                                .and(QUf.uf1.uf.eq(uf.toUpperCase())
+                                                        .or(QUf.uf1.nome.eq(uf.toUpperCase())))))
                 )
                 .fetchCount() > 0;
 
