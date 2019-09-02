@@ -45,10 +45,6 @@ public class FeriadoService {
         return repository.findAllByAnoAtual(dataHoraAtual.getData());
     }
 
-    public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
-        return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
-    }
-
     public void loadAllFeriados() {
         FeriadoSingleton.getInstance()
                 .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
@@ -57,8 +53,15 @@ public class FeriadoService {
                         .collect(Collectors.toSet()));
     }
 
-    @CacheEvict(cacheManager = "concurrentCacheManager", value = FERIADOS_DATA_CACHE_NAME, allEntries = true)
+    public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
+        return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
+    }
+
+    @CacheEvict(
+            cacheManager = "concurrentCacheManager",
+            cacheNames = FERIADOS_DATA_CACHE_NAME,
+            allEntries = true)
     public void flushCacheFeriados() {
-        log.info("Flush Cache Feriados por Cidade/Uf");
+        log.info("Flush Cache Feriados");
     }
 }

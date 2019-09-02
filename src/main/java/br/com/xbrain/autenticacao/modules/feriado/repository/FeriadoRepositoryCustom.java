@@ -12,6 +12,9 @@ public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
 
-    @Cacheable(cacheManager = "concurrentCacheManager", cacheNames = FERIADOS_DATA_CACHE_NAME)
+    @Cacheable(
+            cacheManager = "concurrentCacheManager",
+            cacheNames = FERIADOS_DATA_CACHE_NAME,
+            unless = "#cidade == null || #uf == null")
     boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
 }
