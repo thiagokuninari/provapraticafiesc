@@ -446,4 +446,14 @@ public class Usuario {
         }
         return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
     }
+
+    @JsonIgnore
+    public boolean isAtivo() {
+        return situacao.equals(ESituacao.A);
+    }
+
+    @JsonIgnore
+    public boolean isCargo(CodigoCargo codigoCargo) {
+        return cargo.getCodigo().equals(codigoCargo);
+    }
 }

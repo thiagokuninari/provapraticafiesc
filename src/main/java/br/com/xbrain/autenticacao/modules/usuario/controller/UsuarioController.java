@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ public class UsuarioController {
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
     @Autowired
     private UsuarioAgendamentoService usuarioAgendamentoService;
+    @Autowired
+    private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -109,10 +112,14 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuario(id);
     }
 
-    @GetMapping("/hierarquia/subordinados/{id}/{codigoCargo}")
-    public List<UsuarioSubordinadoDto> getSubordinadosByUsuarioPorCargo(@PathVariable Integer id,
-                                                                        @PathVariable CodigoCargo codigoCargo) {
-        return usuarioService.getSubordinadosDoUsuarioPorCargo(id, codigoCargo);
+    @GetMapping("/hierarquia/subordinados/gerente/{id}")
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(id);
+    }
+
+    @GetMapping("/executivos-comerciais")
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
+        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
     @PostMapping("/vincula/hierarquia")
@@ -148,9 +155,14 @@ public class UsuarioController {
         return usuarioService.findEmpresasDoUsuario(id);
     }
 
-    @RequestMapping(value = "/hierarquia/supervisores", method = RequestMethod.GET)
+    @GetMapping("/hierarquia/supervisores")
     public List<UsuarioResponse> getUsuariosSupervisores(UsuarioFiltrosHierarquia filtrosHierarquia) {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
+    }
+
+    @GetMapping("/hierarquia/supervisores-auto-complete")
+    public List<UsuarioAutoComplete> getUsuariosSupervisoresAutoComplete(UsuarioFiltrosHierarquia filtrosHierarquia) {
+        return usuarioService.getUsuariosSuperioresAutoComplete(filtrosHierarquia);
     }
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
@@ -242,5 +254,10 @@ public class UsuarioController {
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
             @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
+    }
+
+    @GetMapping("usuario-funil-prospeccao")
+    public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
+        return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
 }

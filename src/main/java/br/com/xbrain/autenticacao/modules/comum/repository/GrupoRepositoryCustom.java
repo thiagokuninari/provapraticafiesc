@@ -8,5 +8,4 @@ import java.util.List;
 public interface GrupoRepositoryCustom {
 
     List<Grupo> findAllByRegionalId(Integer regionalId, Predicate predicate);
-
 }

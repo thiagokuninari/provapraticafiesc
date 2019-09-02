@@ -27,4 +27,9 @@ public class GrupoController {
     public List<GrupoDto> getAllByRegionalIdAndUsuarioId(@PathVariable Integer regionalId, @PathVariable Integer usuarioId) {
         return service.getAllByRegionalIdAndUsuarioId(regionalId, usuarioId);
     }
+
+    @GetMapping("/{grupoId}")
+    public GrupoDto findById(@PathVariable Integer grupoId) {
+        return service.findById(grupoId);
+    }
 }

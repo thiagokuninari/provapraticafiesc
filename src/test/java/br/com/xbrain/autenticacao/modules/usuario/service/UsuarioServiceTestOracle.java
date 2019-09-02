@@ -2,7 +2,10 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -92,13 +95,35 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void deveBuscarSuperioresDoUsuario() {
-        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = getFiltroHierarquia();
-        List<UsuarioResponse> usuariosResponse = service.getUsuariosSuperiores(getFiltroHierarquia());
-        Assert.assertEquals(1, usuariosResponse.size());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoCargo(), usuarioFiltrosHierarquia.getCodigoCargo());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoDepartamento(), usuarioFiltrosHierarquia.getCodigoDepartamento());
-        Assert.assertEquals(usuariosResponse.get(0).getCodigoNivel(), usuarioFiltrosHierarquia.getCodigoNivel());
+    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoOuInativoComCargoGerenteOperacao() {
+        assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
+                .hasSize(3)
+                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
+                .containsExactly(
+                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
+                        tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
+                        tuple(370, "HELIO OLIVEIRA", GERENTE_OPERACAO, COMERCIAL, OPERACAO));
+    }
+
+    @Test
+    public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
+        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
+                .extracting("value", "text")
+                .containsExactly(
+                        tuple(116, "ALBERTO PEREIRA"),
+                        tuple(119, "JOANA OLIVEIRA"),
+                        tuple(117, "ROBERTO ALMEIDA"));
+    }
+
+    @Test
+    public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
+        assertThat(
+                service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
+                .hasSize(2)
+                .extracting("value", "text")
+                .containsExactly(
+                        tuple(104, "operacao_gerente_comercial"),
+                        tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
@@ -158,42 +183,49 @@ public class UsuarioServiceTestOracle {
 
     @SuppressWarnings("LineLength")
     @Test
-    public void getSubordinadosDoUsuarioPorCargo_deveRetornarSubordinadosDoUsuarioPorCargo_quandoUsuarioPossuirSubordinados() {
-        assertThat(service.getSubordinadosDoUsuarioPorCargo(115, EXECUTIVO))
-                .isNotNull()
-                .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
+    public void getSubordinadosDoUsuarioPorCargo_deveRetornarUsuariosSubordinados_quandoUsuarioPossuirSubordinadosComCargoExecutivoOuHunter() {
+        assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(115))
+                .hasSize(3)
+                .extracting("value", "text")
                 .contains(
-                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
-    }
-
-    @Test
-    public void getSubordinadosDoUsuarioPorCargo_deveRetornarVazio_quandoUsuarioNaoPossuirSubordinadosPraEsteCargo() {
-        assertThat(service.getSubordinadosDoUsuarioPorCargo(115, ADMINISTRADOR))
-                .isEmpty();
+                        tuple(116, "ALBERTO PEREIRA"),
+                        tuple(117, "ROBERTO ALMEIDA"),
+                        tuple(119, "JOANA OLIVEIRA"));
     }
 
     @SuppressWarnings("LineLength")
     @Test
+    public void getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter_deveRetornarVazio_quandoUsuarioNaoPossuirSubordinadosComCargoExecutivoOuHunter() {
+        assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(500))
+                .isEmpty();
+    }
+
+    @Test
     public void getSubordinadosDoUsuario_deveRetornarTodosSubordinadosDoUsuario_quandoUsuarioPossuirSubordinados() {
         assertThat(service.getSubordinadosDoUsuario(115))
+                .hasSize(5)
                 .extracting("id", "nome", "cpf", "email", "codigoNivel", "codigoDepartamento", "codigoCargo", "nomeCargo")
                 .contains(
-                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO, "Sócio Principal"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM", OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"));
+                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                                "Sócio Principal"),
+                        tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                                OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
-        UsuarioFiltrosHierarquia usuarioFiltrosHierarquia = new UsuarioFiltrosHierarquia();
-        usuarioFiltrosHierarquia.setUsuarioId(Collections.singletonList(101));
-        usuarioFiltrosHierarquia.setCodigoNivel(OPERACAO);
-        usuarioFiltrosHierarquia.setCodigoDepartamento(COMERCIAL);
-        usuarioFiltrosHierarquia.setCodigoCargo(GERENTE_OPERACAO);
-        return usuarioFiltrosHierarquia;
+        return UsuarioFiltrosHierarquia.builder()
+                .usuarioId(Collections.singletonList(101))
+                .codigoNivel(OPERACAO)
+                .codigoDepartamento(COMERCIAL)
+                .codigoCargo(GERENTE_OPERACAO)
+                .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

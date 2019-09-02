@@ -21,4 +21,6 @@ public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Int
     void updateUsuarioAprovador(Integer usuarioId, Integer cidadeId);
 
     List<Cidade> findAllByNetUno(Eboolean netUno);
+
+    List<Cidade> findCidadeByNomeLike(String cidade);
 }
