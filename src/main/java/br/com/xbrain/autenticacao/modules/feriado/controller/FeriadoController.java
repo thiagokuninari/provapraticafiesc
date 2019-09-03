@@ -43,4 +43,9 @@ public class FeriadoController {
                                                @PathVariable @NotEmpty String uf) {
         return service.isFeriadoHojeNaCidadeUf(cidade, uf);
     }
+
+    @DeleteMapping("cache/clear")
+    public void cacheClearFeriados() {
+        service.flushCacheFeriados();
+    }
 }
