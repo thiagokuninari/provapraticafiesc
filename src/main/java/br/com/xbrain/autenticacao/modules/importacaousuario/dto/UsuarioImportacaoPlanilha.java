@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -16,9 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Data
-@Builder
-@AllArgsConstructor
 public class UsuarioImportacaoPlanilha {
+    private static final int CELULAR_LENGTH = 14;
     private final List<Integer> unidadesNegociosId = Arrays.asList(1, 2);
     private final List<Integer> empresasId = Arrays.asList(1, 2, 3);
 
@@ -39,6 +37,37 @@ public class UsuarioImportacaoPlanilha {
     private ESituacao situacao;
     private List<String> motivoNaoImportacao;
 
+    @Builder
+    public UsuarioImportacaoPlanilha(
+            Cargo cargo,
+            String nome,
+            String cpf,
+            String email,
+            boolean senhaPadrao,
+            LocalDateTime nascimento,
+            String telefone,
+            String senha,
+            List<String> motivoNaoImportacao,
+            Departamento departamento,
+            Nivel nivel
+    ) {
+        this.cargo = cargo;
+        this.nome = nome;
+        this.cpf = cpf;
+        this.email = email;
+        this.senhaPadrao = senhaPadrao;
+        this.nascimento = nascimento;
+        this.telefone = telefone;
+        this.nivel = nivel;
+        this.senha = senha;
+        this.departamento = departamento;
+        this.alterarSenha = Eboolean.V;
+        this.dataCadastro = LocalDateTime.now();
+        this.situacao = ESituacao.A;
+        this.recuperarSenhaTentativa = 0;
+        this.motivoNaoImportacao = motivoNaoImportacao;
+    }
+
     public static Usuario of(UsuarioImportacaoPlanilha usuario) {
         Usuario response = new Usuario();
         BeanUtils.copyProperties(usuario, response);
@@ -53,6 +82,6 @@ public class UsuarioImportacaoPlanilha {
     }
 
     private static boolean isTelefoneCelular(String telefone) {
-        return telefone.length() > 14;
+        return telefone.length() > CELULAR_LENGTH;
     }
 }
