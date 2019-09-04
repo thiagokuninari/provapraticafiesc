@@ -181,8 +181,7 @@ public class UsuarioUploadFileService {
     }
 
     protected Usuario salvarUsuario(UsuarioImportacaoPlanilha usuario) {
-        Usuario usuarioConvertido = UsuarioImportacaoPlanilha.convertFrom(usuario);
-        return usuarioRepository.save(usuarioConvertido);
+        return usuarioRepository.save(UsuarioImportacaoPlanilha.of(usuario));
     }
 
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {
