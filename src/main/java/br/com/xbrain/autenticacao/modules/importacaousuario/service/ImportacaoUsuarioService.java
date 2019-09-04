@@ -5,10 +5,9 @@ import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportaca
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoResponse;
 import br.com.xbrain.autenticacao.modules.importacaousuario.util.NumeroCelulaUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,9 +17,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@Slf4j
 public class ImportacaoUsuarioService {
 
-    private final Logger log = LoggerFactory.getLogger(ImportacaoUsuarioService.class);
+    private static final String ERRO_ARQUIVO_INVALIDO = "Erro. Arquivo Inválido.";
     @Autowired
     private PlanilhaService planilhaService;
     @Autowired
@@ -31,7 +31,7 @@ public class ImportacaoUsuarioService {
             Sheet sheet = planilhaService.getSheet(file);
             if (sheet.getRow(NumeroCelulaUtil.PRIMEIRA_LINHA).getLastCellNum() < NumeroCelulaUtil.QNT_COL
                     || !validarColunas(sheet.getRow(NumeroCelulaUtil.PRIMEIRA_LINHA))) {
-                throw new ValidacaoException("Erro. Arquivo Inválido.");
+                throw new ValidacaoException(ERRO_ARQUIVO_INVALIDO);
             }
             return StreamSupport
                     .stream(sheet.spliterator(), false)
@@ -41,9 +41,8 @@ public class ImportacaoUsuarioService {
                     .map(row -> usuarioUploadFile.processarUsuarios(row, usuario))
                     .collect(Collectors.toList());
         } catch (ValidacaoException ex) {
-            log.error("Erro. Arquivo Inválido.", ex);
-            throw new ValidacaoException("Erro. Arquivo Inválido.");
-
+            log.error(ERRO_ARQUIVO_INVALIDO, ex);
+            throw new ValidacaoException(ERRO_ARQUIVO_INVALIDO);
         }
     }
 
