@@ -61,6 +61,6 @@ public class ImportacaoUsuarioService {
         List<UsuarioImportacaoPlanilha> usuarioUploadFiles = readFile(
                 file, usuario);
 
-        return UsuarioImportacaoResponse.convertFrom(usuarioUploadFiles);
+        return UsuarioImportacaoResponse.of(usuarioUploadFiles);
     }
 }
