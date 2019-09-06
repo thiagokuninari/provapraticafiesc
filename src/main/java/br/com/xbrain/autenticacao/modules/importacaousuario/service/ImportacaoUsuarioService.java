@@ -41,7 +41,6 @@ public class ImportacaoUsuarioService {
                     .map(row -> usuarioUploadFile.processarUsuarios(row, usuario))
                     .collect(Collectors.toList());
         } catch (ValidacaoException ex) {
-            log.error(ERRO_ARQUIVO_INVALIDO, ex);
             throw new ValidacaoException(ERRO_ARQUIVO_INVALIDO);
         }
     }

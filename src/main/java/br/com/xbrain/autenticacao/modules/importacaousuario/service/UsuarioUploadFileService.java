@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -141,34 +140,15 @@ public class UsuarioUploadFileService {
     }
 
     protected Departamento recuperarDepartamento(String departamentoStr, Nivel nivel) {
-        if (!ObjectUtils.isEmpty(nivel)) {
-            try {
-                Optional<Departamento> optionalDepartamento = departamentoRepository
-                    .findByCodigoAndNivelId(CodigoDepartamento.valueOf(trataString(departamentoStr)), nivel.getId());
-                if (optionalDepartamento.isPresent()) {
-                    return optionalDepartamento.get();
-                } else {
-                    log.error("Não foi possível encontrar o departamento" + departamentoStr + " com o nivelId "
-                        + nivel.getId());
-                }
-            } catch (Exception exception) {
-                log.error("Erro ao recuperar departamento.", exception);
-            }
-        }
-        return null;
+        return departamentoRepository
+            .findByCodigoAndNivelId(CodigoDepartamento.valueOf(trataString(departamentoStr)), nivel.getId())
+            .orElse(null);
     }
 
     protected Cargo recuperarCargo(String nome, Nivel nivel) {
-        if (!ObjectUtils.isEmpty(nivel)) {
-            Optional<Cargo> optionalCargo = cargoRepository
-                .findFirstByNomeIgnoreCaseAndNivelId(nome.trim(), nivel.getId());
-            if (optionalCargo.isPresent()) {
-                return optionalCargo.get();
-            } else {
-                log.error("Não foi possível encontrar o cargo " + nome + " com o nivelId " + nivel.getId());
-            }
-        }
-        return null;
+        return cargoRepository
+            .findFirstByNomeIgnoreCaseAndNivelId(nome.trim(), nivel.getId())
+            .orElse(null);
     }
 
     protected Nivel recuperarNivel(String codigoNivelStr) {
