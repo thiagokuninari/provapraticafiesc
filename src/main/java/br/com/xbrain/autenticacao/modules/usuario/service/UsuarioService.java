@@ -897,11 +897,11 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
     }
 
     public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia)
                 .stream()
             .map(UsuarioAutoComplete::of)
                 .collect(Collectors.toList());
