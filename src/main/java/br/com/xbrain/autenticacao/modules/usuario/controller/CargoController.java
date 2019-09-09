@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoComNivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,14 @@ public class CargoController {
         return service.getPermitidosPorNivel(nivelId)
                 .stream()
                 .map(CargoResponse::of)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("com-nivel")
+    public List<CargoComNivelResponse> getAllComNivelConcatenado(Integer nivelId) {
+        return service.getPermitidosPorNivel(nivelId)
+                .stream()
+                .map(CargoComNivelResponse::of)
                 .collect(Collectors.toList());
     }
 }

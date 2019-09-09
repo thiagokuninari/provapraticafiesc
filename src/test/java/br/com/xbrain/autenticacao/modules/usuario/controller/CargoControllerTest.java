@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,13 +50,35 @@ public class CargoControllerTest {
     @Test
     public void getAll_deveRetornarOsCargos_conformeNivelFiltrado() throws Exception {
         when(cargoService.getPermitidosPorNivel(eq(1)))
-                .thenReturn(List.of(Cargo.builder().nome("teste").build()));
+                .thenReturn(List.of(umCargo()));
 
         mvc.perform(get("/api/cargos?nivelId=1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(empty())))
-                .andExpect(jsonPath("$[0].nome", is("teste")));
+                .andExpect(jsonPath("$[0].nome", is("Vendedor")));
+    }
+
+    @Test
+    public void getAll_deveRetornarOsCargosComNomeNivel_conformeNivelFiltrado() throws Exception {
+        when(cargoService.getPermitidosPorNivel(eq(1)))
+                .thenReturn(List.of(umCargo()));
+
+        mvc.perform(get("/api/cargos/com-nivel?nivelId=1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", not(empty())))
+                .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
+    }
+
+    private Cargo umCargo() {
+        return Cargo.builder()
+                .nivel(Nivel.builder()
+                        .nome("Xbrain")
+                        .build())
+                .nome("Vendedor")
+                .build();
     }
 }
