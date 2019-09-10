@@ -185,6 +185,8 @@ app-config:
     equipe-venda:
       #url: http://localhost:8089
       url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+    comunicados:
+      url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
 
 flyway:
   enabled: true
@@ -209,6 +211,9 @@ zuul:
     equipe-venda:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.equipe-venda.url}
+    comunicados:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.comunicados.url}
 
   host:
     connect-timeout-millis: 1800000
