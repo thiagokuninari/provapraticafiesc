@@ -16,7 +16,8 @@ import java.util.List;
 
 @Data
 public class UsuarioImportacaoPlanilha {
-    private static final int CELULAR_LENGTH = 14;
+    private static final int CELULAR_LENGTH = 13;
+
     private final List<Integer> unidadesNegociosId = Arrays.asList(1, 2);
     private final List<Integer> empresasId = Arrays.asList(1, 2, 3);
 
@@ -82,6 +83,7 @@ public class UsuarioImportacaoPlanilha {
     }
 
     private static boolean isTelefoneCelular(String telefone) {
-        return telefone.length() > CELULAR_LENGTH;
+        return telefone.replace("-", "")
+            .length() > CELULAR_LENGTH;
     }
 }
