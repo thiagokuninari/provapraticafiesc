@@ -16,21 +16,19 @@ import static com.querydsl.core.types.Projections.constructor;
 public class UsuarioAcessoRepositoryImpl
         extends CustomRepository<UsuarioHierarquia> implements UsuarioAcessoRepositoryCustom {
 
-    private static final int TRINTA_DOIS_DIAS = 32;
     private static final int DOIS_MESES = 2;
 
     @Override
     public List<UsuarioAcesso> findAllUltimoAcessoUsuarios() {
         return new JPAQueryFactory(entityManager)
-                .select(constructor(
-                        UsuarioAcesso.class, usuarioAcesso.dataCadastro.max(),
-                        usuarioAcesso.usuario.id, usuarioAcesso.usuario.email))
-                .from(usuarioAcesso)
-                .innerJoin(usuarioAcesso.usuario, usuario)
-                .where(usuario.situacao.eq(ESituacao.A)
-                        .and(usuarioAcesso.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS))))
-                .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
-                .fetch();
+            .select(constructor(
+                UsuarioAcesso.class, usuarioAcesso.dataCadastro.max(),
+                usuarioAcesso.usuario.id, usuarioAcesso.usuario.email))
+            .from(usuarioAcesso)
+            .innerJoin(usuarioAcesso.usuario, usuario)
+            .where(usuario.situacao.eq(ESituacao.A))
+            .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
+            .fetch();
     }
 
     @Override
