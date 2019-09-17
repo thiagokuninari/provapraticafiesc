@@ -25,12 +25,14 @@ public class UsuarioAcessoRepositoryTest {
     @Test
     public void findAllUltimoAcessoUsuarios_deveRetornarUsuarios_queNaoEfetuaramAcessoAoSistemaDuranteTrintaEDoisDias() {
         assertThat(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
-                .extracting("usuario.id", "usuario.email")
-                .containsExactly(
-                        tuple(303, "ALBERTO@XBRAIN.COM.BR"),
-                        tuple(304, "MARIA@XBRAIN.COM.BR"),
-                        tuple(305, "EDUARDA@XBRAIN.COM.BR"),
-                        tuple(306, "ERICA@XBRAIN.COM.BR"));
+            .extracting("usuario.id", "usuario.email")
+            .containsExactly(
+                tuple(301, "JOAO@XBRAIN.COM.BR"),
+                tuple(302, "CAIO@XBRAIN.COM.BR"),
+                tuple(303, "ALBERTO@XBRAIN.COM.BR"),
+                tuple(304, "MARIA@XBRAIN.COM.BR"),
+                tuple(305, "EDUARDA@XBRAIN.COM.BR"),
+                tuple(306, "ERICA@XBRAIN.COM.BR"));
     }
 
     @Test

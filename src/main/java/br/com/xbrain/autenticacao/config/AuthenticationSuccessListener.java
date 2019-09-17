@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -42,7 +41,6 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
         }
     }
 
-    @Async
     private void registrarAcesso(AuthenticationSuccessEvent event) {
         Authentication authentication = event.getAuthentication();
         if (authentication.isAuthenticated() && authentication.getPrincipal() instanceof User) {
