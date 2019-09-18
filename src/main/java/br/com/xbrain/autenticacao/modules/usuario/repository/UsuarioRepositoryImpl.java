@@ -211,6 +211,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
+    @Override
+    public List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> idsPermitidos) {
+        return new JPAQueryFactory(entityManager)
+            .select(
+                Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(usuario.departamento, departamento)
+            .innerJoin(departamento.nivel, nivel)
+            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
+                .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
+                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                .and(usuario.situacao.eq(ESituacao.A))
+            .and(usuario.id.in(idsPermitidos)))
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
     public List<Usuario> getSuperioresDoUsuario(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHierarquia.usuarioSuperior)

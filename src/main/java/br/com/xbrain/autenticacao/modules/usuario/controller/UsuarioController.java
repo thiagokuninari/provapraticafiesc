@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -120,6 +122,11 @@ public class UsuarioController {
     @GetMapping("/executivos-comerciais")
     public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
         return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
+    }
+
+    @GetMapping("/executivos-comerciais-agente-autorizado")
+    public List<UsuarioAutoComplete> findExecutivosPorIds(@RequestParam List<Integer> usuariosExecutivos) {
+        return usuarioService.findExecutivosPorIds(usuariosExecutivos);
     }
 
     @PostMapping("/vincula/hierarquia")

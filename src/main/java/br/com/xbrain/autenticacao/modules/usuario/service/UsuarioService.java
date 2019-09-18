@@ -272,6 +272,10 @@ public class UsuarioService {
         return repository.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
+    public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {
+        return repository.findAllExecutivosDosIds(idsPermitidos);
+    }
+
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
         return repository.getSuperioresDoUsuario(usuarioId)
             .stream().map(UsuarioHierarquiaResponse::new)

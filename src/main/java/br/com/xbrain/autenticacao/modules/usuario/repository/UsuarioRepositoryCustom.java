@@ -38,6 +38,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
 
+    List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> agenteAutorizadoId);
+
     List<Usuario> getSuperioresDoUsuario(Integer usuarioId);
 
     List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo);
