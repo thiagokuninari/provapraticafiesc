@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -35,5 +36,16 @@ public class FeriadoController {
     @GetMapping
     public Iterable<Feriado> findAllByAnoAtual() {
         return service.findAllByAnoAtual();
+    }
+
+    @GetMapping("cidade/{cidade}/{uf}")
+    public boolean consultarFeriadoComCidadeUf(@PathVariable @NotEmpty String cidade,
+                                               @PathVariable @NotEmpty String uf) {
+        return service.isFeriadoHojeNaCidadeUf(cidade, uf);
+    }
+
+    @DeleteMapping("cache/clear")
+    public void cacheClearFeriados() {
+        service.flushCacheFeriados();
     }
 }
