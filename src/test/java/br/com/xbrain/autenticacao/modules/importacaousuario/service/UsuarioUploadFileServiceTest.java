@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.importacaousuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoPlanilha;
 import br.com.xbrain.autenticacao.modules.importacaousuario.dto.UsuarioImportacaoRequest;
@@ -232,10 +233,11 @@ public class UsuarioUploadFileServiceTest {
     }
 
     @Test
-    public void deveRetornarErroCasoNaoLocalizeONivel() {
-        UsuarioImportacaoPlanilha usuario = usuarioUploadFileService
-                .buildUsuario(umaLinha(3), "102030", false);
-        assertEquals(usuario.getMotivoNaoImportacao().get(0), "Falha ao recuperar cargo/nível");
+    public void buildUsuario_cargoDeveEstarNulo_quandoNomeDoNivelEstiverIncorreto() {
+        assertThat(usuarioUploadFileService.buildUsuario(umaLinha(3), "102030", false))
+            .extracting("nome", "cpf", "email", "telefone", "situacao", "cargo.nome")
+            .contains("ADRIANA DE LIMA BEZERRA", "70159931479", "n.adriana.lbezerra@aec.com.br",
+                "51991301817", ESituacao.A, "Vendedor Receptivo");
     }
 
     @Test

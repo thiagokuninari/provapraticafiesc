@@ -12,16 +12,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 public class PlanilhaService {
 
     public static boolean compararColunas(Cell cell, String valorColuna) {
-        return cell != null && cell.getRichStringCellValue()
-                .toString()
-                .trim()
-                .toUpperCase()
-                .equals(valorColuna);
+        return Objects.nonNull(cell) && cell.getRichStringCellValue()
+            .toString()
+            .trim()
+            .equalsIgnoreCase(valorColuna);
     }
 
     public static Row converterTipoCelulaParaString(Row linha) {

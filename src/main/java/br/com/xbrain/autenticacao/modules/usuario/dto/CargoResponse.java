@@ -17,6 +17,7 @@ public class CargoResponse {
     public static CargoResponse of(Cargo cargo) {
         CargoResponse response = new CargoResponse();
         BeanUtils.copyProperties(cargo, response);
+        response.setCodigo(cargo.getCodigo().name());
         response.setPossuiCargoSuperior(!CollectionUtils.isEmpty(cargo.getSuperiores()));
         return response;
     }
