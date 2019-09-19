@@ -5,7 +5,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -35,9 +38,8 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -204,7 +206,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.departamento, departamento)
             .innerJoin(departamento.nivel, nivel)
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
-                .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
+                .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
                 .and(usuario.situacao.eq(ESituacao.A)))
             .orderBy(usuario.nome.asc())
@@ -221,7 +223,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.departamento, departamento)
             .innerJoin(departamento.nivel, nivel)
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
-                .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
+                .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
                 .and(usuario.situacao.eq(ESituacao.A))
             .and(usuario.id.in(idsPermitidos)))
@@ -290,8 +292,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new BeanPropertyRowMapper(UsuarioResponse.class));
     }
 
+    @Override
+    public List<Usuario> getUsuariosSuperioresDoExecutivoDoAa(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .leftJoin(usuario.cargo, cargo).fetchJoin()
+            .leftJoin(usuario.departamento, departamento).fetchJoin()
+            .where(usuario.id.in(
+                select(usuarioHierarquia.usuarioSuperior.id)
+                    .from(usuarioHierarquia)
+                    .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+            )
+                .and(usuario.cargo.codigo.in(COORDENADOR_OPERACAO, GERENTE_OPERACAO))
+                .and(usuario.departamento.codigo.eq(COMERCIAL)))
+            .fetch();
+    }
+
     private String exibirSomenteUsuariosAtivo(boolean exibirAtivos) {
-        return exibirAtivos ? " AND U.SITUACAO = 'A'" : "";
+        return exibirAtivos ? " " : "";
     }
 
     private Map<String, String> getParameters(UsuarioFiltrosHierarquia filtros) {

@@ -906,9 +906,16 @@ public class UsuarioService {
 
     public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
         return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
-                .stream()
+            .stream()
             .map(UsuarioAutoComplete::of)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(Integer executivoId) {
+        return repository.getUsuariosSuperioresDoExecutivoDoAa(executivoId)
+            .stream()
+            .map(UsuarioSuperiorAutoComplete::of)
+            .collect(Collectors.toList());
     }
 
     private Integer objectToInteger(Object arg) {

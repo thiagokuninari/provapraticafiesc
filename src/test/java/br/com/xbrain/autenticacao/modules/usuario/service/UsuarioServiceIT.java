@@ -24,6 +24,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoReposit
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Sets;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -571,6 +572,25 @@ public class UsuarioServiceIT {
     @Test
     public void getSuperioresDoUsuarioPorCargo_deveRetornarVazio_quandoNaoExistirUsuario() {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
+    }
+
+    @Test
+    public void getUsuariosSupervisoresDoAaAutoComplete_deveRetornarCoordenadoresGerentes_quandoEstiverAtivo() {
+        assertThat(
+            service.getUsuariosSupervisoresDoAaAutoComplete(149))
+            .hasSize(2)
+            .extracting("id", "nome", "email", "cargo")
+            .containsExactly(
+                Assertions.tuple(150, "USUARIO DE COORDENADOR", "MARIA@NET2.COM", "Coordenador"),
+                Assertions.tuple(151, "USUARIO DE GERENTE", "LUISFLORIDO@XBRAIN2.COM.BR", "Gerente"));
+    }
+
+    @Test
+    public void getUsuariosSuperioresAutoComplete_deveRetornarListaVazia_quandoUsuarioNaoTiverCoordenadorGerente() {
+        assertThat(
+            service.getUsuariosSupervisoresDoAaAutoComplete(119))
+            .hasSize(0)
+            .isEmpty();
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {

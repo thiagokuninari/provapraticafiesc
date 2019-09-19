@@ -170,6 +170,11 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperioresAutoComplete(filtrosHierarquia);
     }
 
+    @GetMapping("/hierarquia/supervisores-aa-auto-complete/{executivoId}")
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(@PathVariable Integer executivoId) {
+        return usuarioService.getUsuariosSupervisoresDoAaAutoComplete(executivoId);
+    }
+
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
         @RequestParam String funcionalidade) {

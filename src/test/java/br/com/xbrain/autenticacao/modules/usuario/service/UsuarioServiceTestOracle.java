@@ -112,7 +112,8 @@ public class UsuarioServiceTestOracle {
             .containsExactly(
                 tuple(116, "ALBERTO PEREIRA"),
                 tuple(119, "JOANA OLIVEIRA"),
-                tuple(117, "ROBERTO ALMEIDA"));
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(149, "USUARIO INFERIOR"));
     }
 
     @Test
@@ -134,11 +135,12 @@ public class UsuarioServiceTestOracle {
     public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
         assertThat(
                 service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
-                .hasSize(2)
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial"),
-                        tuple(369, "MARIA AUGUSTA"));
+            .hasSize(3)
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(370, "HELIO OLIVEIRA"));
     }
 
     @Test
