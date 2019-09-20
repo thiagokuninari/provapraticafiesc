@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.junit.Test;
@@ -49,13 +50,17 @@ public class CargoControllerTest {
     @Test
     public void getAll_deveRetornarOsCargos_conformeNivelFiltrado() throws Exception {
         when(cargoService.getPermitidosPorNivel(eq(1)))
-                .thenReturn(List.of(Cargo.builder().nome("teste").build()));
+                .thenReturn(List.of(Cargo.builder()
+                    .codigo(CodigoCargo.OPERACAO_TECNICO)
+                    .nome("OPERADORACAO TECNICO")
+                    .build()));
 
         mvc.perform(get("/api/cargos?nivelId=1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(empty())))
-                .andExpect(jsonPath("$[0].nome", is("teste")));
+                .andExpect(jsonPath("$[0].codigo", is(CodigoCargo.OPERACAO_TECNICO.name())))
+                .andExpect(jsonPath("$[0].nome", is("OPERADORACAO TECNICO")));
     }
 }

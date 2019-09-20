@@ -13,7 +13,7 @@ public interface CargoRepository extends PagingAndSortingRepository<Cargo, Integ
 
     List<Cargo> findByCodigoIn(List<CodigoCargo> codigoCargo);
 
-    Optional<Cargo> findFirstByNomeIgnoreCaseContainingAndNivelId(String nome, int nivelId);
+    Optional<Cargo> findFirstByNomeIgnoreCaseAndNivelId(String nome, int nivelId);
 
     Optional<Cargo> findById(Integer id);
 

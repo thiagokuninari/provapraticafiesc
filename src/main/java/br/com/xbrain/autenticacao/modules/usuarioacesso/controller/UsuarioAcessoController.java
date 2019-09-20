@@ -1,7 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,31 +11,15 @@ public class UsuarioAcessoController {
 
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
 
-    // TODO: rotina comentada por apresentar inativação de usuários que estão efetuando login todos os dias no sistema,
-    //  este problema será investigado na tarefa #13654.
     @GetMapping("/inativar")
     @ResponseStatus(HttpStatus.OK)
     public void inativarUsuariosSemAcesso() {
-        //if (autenticacaoService.getUsuarioAutenticado()
-        //        .isXbrain()) {
-        //    usuarioAcessoService.inativarUsuariosSemAcesso();
-        //   return;
-        //}
-
-        //throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
+        usuarioAcessoService.inativarUsuariosSemAcesso();
     }
 
     @DeleteMapping("historico")
     public void deletarHistoricoUsuarioAcesso() {
-        if (autenticacaoService.getUsuarioAutenticado()
-                .isXbrain()) {
-            usuarioAcessoService.deletarHistoricoUsuarioAcesso();
-            return;
-        }
-
-        throw new ValidacaoException("Endpoint protegido, somente usuários ADMIN podem acessar.");
+        usuarioAcessoService.deletarHistoricoUsuarioAcesso();
     }
 }

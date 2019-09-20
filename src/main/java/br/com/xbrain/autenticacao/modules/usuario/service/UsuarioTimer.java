@@ -26,7 +26,7 @@ public class UsuarioTimer {
 
     private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
 
-    // private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
+    private static final String EVERY_DAY_AT_TWO_AM = "0 0 2 * * *";
 
     private static final String EVERY_DAY_AT_FOUR_AM = "0 0 4 * * *";
 
@@ -34,9 +34,7 @@ public class UsuarioTimer {
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
-    // TODO: rotina comentada por apresentar inativação de usuários que estão efetuando login todos os dias no sistema,
-    //  este problema será investigado na tarefa #13654.
-    // @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
+    @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
         usuarioAcessoService.inativarUsuariosSemAcesso();

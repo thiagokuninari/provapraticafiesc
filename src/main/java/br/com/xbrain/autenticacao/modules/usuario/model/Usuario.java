@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -45,6 +46,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 @Entity
 @Table(name = "USUARIO")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@DynamicUpdate
 public class Usuario {
 
     @Id
