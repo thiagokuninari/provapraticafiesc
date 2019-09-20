@@ -1283,4 +1283,8 @@ public class UsuarioService {
         repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
     }
+
+    public List<Integer> getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        return repository.findAllIds(usuarioFiltros.toPredicate());
+    }
 }

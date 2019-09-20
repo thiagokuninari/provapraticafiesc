@@ -260,4 +260,9 @@ public class UsuarioController {
     public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
     }
+
+    @GetMapping("ids/alvo/comunicado")
+    public List<Integer> findUsuarioIdsAlvoDosComunicados(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        return usuarioService.getIdDosUsuariosAlvoDoComunicado(usuarioFiltros);
+    }
 }

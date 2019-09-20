@@ -573,6 +573,78 @@ public class UsuarioServiceIT {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
     }
 
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .cargosId(List.of(20, 40)).build());
+        assertThat(usuarios).isEqualTo(List.of(114, 366, 367, 368, 246));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .todoCanalAa(true).build());
+        assertThat(usuarios).isEqualTo(List.of(105, 366, 369));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .todoCanalD2d(true).build());
+        assertThat(usuarios).isEqualTo(List.of(233, 234, 235, 236, 237, 238, 239, 240));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 104, 105));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .niveisId(List.of(4, 3)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .cidadesId(List.of(5578)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 104, 233, 234, 235, 236, 237, 238, 239, 240, 369, 370));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .niveisId(List.of(4, 3))
+                .usuariosId(List.of(100, 101))
+                .cidadesId(List.of(5578)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 101));
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
