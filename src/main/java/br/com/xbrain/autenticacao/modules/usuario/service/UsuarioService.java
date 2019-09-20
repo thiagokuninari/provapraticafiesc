@@ -670,7 +670,6 @@ public class UsuarioService {
                 .map(UsuarioDto::of)
                 .forEach(usuarioAtualizarColaborador -> usuarioMqSender
                     .sendColaboradoresSuccess(usuarioAtualizarColaborador));
-
         }
     }
 

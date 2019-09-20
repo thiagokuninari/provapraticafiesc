@@ -220,6 +220,9 @@ public class Usuario {
     @Transient
     private List<Integer> cidadesId;
 
+    @Transient
+    private Integer agenteAutorizadoId;
+
     public Usuario(Integer id) {
         this.id = id;
     }
