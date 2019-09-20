@@ -23,7 +23,7 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,7 +51,7 @@ public class CargoControllerTest {
 
     @Test
     public void getAll_deveRetornarOsCargos_conformeNivelFiltrado() throws Exception {
-        when(cargoService.getPermitidosPorNiveis(anyList()))
+        when(cargoService.getPermitidosPorNivel(eq(1)))
                 .thenReturn(List.of(Cargo.builder()
                     .codigo(CodigoCargo.OPERACAO_TECNICO)
                     .nome("OPERADORACAO TECNICO")
