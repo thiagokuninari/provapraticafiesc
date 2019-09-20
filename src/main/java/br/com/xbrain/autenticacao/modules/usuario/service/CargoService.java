@@ -40,6 +40,18 @@ public class CargoService {
                         .build());
     }
 
+    public List<Cargo> getPermitidosPorNiveis(List<Integer> nivelId) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        return repository.findAll(
+                new CargoPredicate()
+                        .comNiveis(nivelId)
+                        .filtrarPermitidos(
+                                usuarioAutenticado,
+                                cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()))
+                        .build());
+    }
+
     public Cargo findByUsuarioId(Integer usuarioId) {
         return usuarioRepository.findById(usuarioId)
                 .map(Usuario::getCargo)

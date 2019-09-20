@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -27,6 +28,13 @@ public class CargoPredicate extends PredicateBase {
     public CargoPredicate comNivel(Integer operacaoId) {
         if (operacaoId != null) {
             builder.and(cargo.nivel.id.eq(operacaoId));
+        }
+        return this;
+    }
+
+    public CargoPredicate comNiveis(List<Integer> niveisId) {
+        if (!ObjectUtils.isEmpty(niveisId)) {
+            builder.and(cargo.nivel.id.in(niveisId));
         }
         return this;
     }
