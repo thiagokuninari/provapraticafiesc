@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
@@ -95,14 +97,14 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoOuInativoComCargoGerenteOperacao() {
+    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
-                .hasSize(3)
-                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
-                        tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
-                        tuple(370, "HELIO OLIVEIRA", GERENTE_OPERACAO, COMERCIAL, OPERACAO));
+            .hasSize(2)
+            .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel",
+                "situacao")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A),
+                tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO, ESituacao.A));
     }
 
     @Test
