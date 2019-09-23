@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
@@ -1290,6 +1291,25 @@ public class UsuarioService {
     }
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
+            var usuariosDoAgente = usuarioFiltros.getAgentesAutorizadosId()
+                    .stream()
+                    .flatMap(this::getUsuariosDoAgenteAutorizado)
+                    .collect(Collectors.toList());
+            if (!usuariosDoAgente.isEmpty()) {
+                if (isEmpty(usuarioFiltros.getUsuariosId())) {
+                    usuarioFiltros.setUsuariosId(usuariosDoAgente);
+                } else {
+                    usuarioFiltros.getUsuariosId().addAll(usuariosDoAgente);
+                }
+            }
+        }
         return repository.findAllNomesIds(usuarioFiltros.toPredicate());
+    }
+
+    private Stream<Integer> getUsuariosDoAgenteAutorizado(Integer aaId) {
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
+                .stream()
+                .map(UsuarioAgenteAutorizadoResponse::getId);
     }
 }
