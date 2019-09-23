@@ -295,9 +295,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comUltimaDataDeAcesso(LocalDate data) {
-        if (!ObjectUtils.isEmpty(data)) {
-            builder.and(usuario.dataUltimoAcesso.after(data.atStartOfDay()));
+    public UsuarioPredicate comUsuariosLogadosHoje(boolean comUsuariosLogadosHoje) {
+        if (comUsuariosLogadosHoje) {
+            builder.and(usuario.dataUltimoAcesso.after(LocalDate.now().atStartOfDay()));
         }
         return this;
     }
@@ -328,4 +328,5 @@ public class UsuarioPredicate {
     public BooleanBuilder build() {
         return this.builder;
     }
+
 }

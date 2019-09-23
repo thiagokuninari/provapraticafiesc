@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -18,10 +17,12 @@ import java.util.List;
 public class UsuariosAlvoComunicadosFiltros {
     private boolean todoCanalD2d;
     private boolean todoCanalAa;
+    private List<Integer> agentesAutorizadosId;
     private List<Integer> usuariosId;
     private List<Integer> cargosId;
     private List<Integer> cidadesId;
     private List<Integer> niveisId;
+    private boolean comUsuariosLogadosHoje;
 
     @JsonIgnore
     public BooleanBuilder toPredicate() {
@@ -31,7 +32,7 @@ public class UsuariosAlvoComunicadosFiltros {
                 .comCargosId(getCargosId())
                 .comCidadesId(getCidadesId())
                 .comNiveisId(getNiveisId())
-                .comUltimaDataDeAcesso(LocalDate.now())
+                .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
                 .build();
     }
 }

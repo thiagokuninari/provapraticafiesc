@@ -1285,6 +1285,11 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        usuarioFiltros.setComUsuariosLogadosHoje(true);
         return repository.findAllIds(usuarioFiltros.toPredicate());
+    }
+
+    public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        return repository.findAllNomesIds(usuarioFiltros.toPredicate());
     }
 }

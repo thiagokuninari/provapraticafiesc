@@ -553,4 +553,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .fetch();
     }
 
+    @Override
+    public List<UsuarioNomeResponse> findAllNomesIds(BooleanBuilder predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+                .from(usuario)
+                .where(predicate)
+                .fetch();
+    }
+
 }

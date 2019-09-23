@@ -83,4 +83,6 @@ public interface UsuarioRepositoryCustom {
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
     List<Integer> findAllIds(BooleanBuilder predicate);
+
+    List<UsuarioNomeResponse> findAllNomesIds(BooleanBuilder predicate);
 }

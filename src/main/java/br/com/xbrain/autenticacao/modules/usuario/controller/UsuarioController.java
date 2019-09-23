@@ -265,4 +265,9 @@ public class UsuarioController {
     public List<Integer> findUsuarioIdsAlvoDosComunicados(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
         return usuarioService.getIdDosUsuariosAlvoDoComunicado(usuarioFiltros);
     }
+
+    @GetMapping("alvo/comunicado")
+    public List<UsuarioNomeResponse> findUsuarioAlvoDosComunicados(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+        return usuarioService.getUsuariosAlvoDoComunicado(usuarioFiltros);
+    }
 }
