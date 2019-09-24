@@ -3,10 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
-import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
-import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
-import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -26,10 +22,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
+import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
+import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
@@ -178,11 +177,11 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                     JPAExpressions.select(cidade.id)
                             .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .join(QCluster.cluster.grupo, QGrupo.grupo)
-                            .join(QGrupo.grupo.regional, QRegional.regional)
-                            .where(QRegional.regional.id.eq(regionalId))
+                            .join(cidade.subCluster, subCluster)
+                            .join(subCluster.cluster, cluster)
+                            .join(cluster.grupo, grupo)
+                            .join(grupo.regional, regional)
+                            .where(regional.id.eq(regionalId))
             ));
         }
         return this;
@@ -193,10 +192,10 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                     JPAExpressions.select(cidade.id)
                             .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .join(QCluster.cluster.grupo, QGrupo.grupo)
-                            .where(QGrupo.grupo.id.eq(grupoId))
+                            .join(cidade.subCluster, subCluster)
+                            .join(subCluster.cluster, cluster)
+                            .join(cluster.grupo, grupo)
+                            .where(grupo.id.eq(grupoId))
             ));
         }
         return this;
@@ -207,9 +206,9 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                     JPAExpressions.select(cidade.id)
                             .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .where(QCluster.cluster.id.eq(clusterId))
+                            .join(cidade.subCluster, subCluster)
+                            .join(subCluster.cluster, cluster)
+                            .where(cluster.id.eq(clusterId))
             ));
         }
         return this;
@@ -220,8 +219,8 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                     JPAExpressions.select(cidade.id)
                             .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .where(QSubCluster.subCluster.id.eq(subClusterId))
+                            .join(cidade.subCluster, subCluster)
+                            .where(subCluster.id.eq(subClusterId))
             ));
         }
         return this;
@@ -278,12 +277,18 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCidadesId(List<Integer> cidadesId) {
+    public UsuarioPredicate comCidadesId(List<Integer> cidadesId, Integer clusterId, Integer grupoId,
+                                         Integer regionalId, Integer subClusterId) {
         if (!ObjectUtils.isEmpty(cidadesId)) {
-            builder.or(usuario.id.in(JPAExpressions
-                    .select(usuarioCidade.usuario.id)
-                    .from(usuarioCidade)
-                    .where(usuarioCidade.cidade.id.in(cidadesId))));
+            comCidade(cidadesId);
+        } else if (!ObjectUtils.isEmpty(subClusterId)) {
+            comSubCluster(subClusterId);
+        } else if (!ObjectUtils.isEmpty(clusterId)) {
+            comCluster(clusterId);
+        } else if (!ObjectUtils.isEmpty(grupoId)) {
+            comGrupo(grupoId);
+        } else if (!ObjectUtils.isEmpty(regionalId)) {
+            comRegional(regionalId);
         }
         return this;
     }

@@ -645,8 +645,9 @@ public class UsuarioServiceIT {
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
                 .niveisId(List.of(4, 3))
                 .usuariosId(List.of(100, 101))
-                .cidadesId(List.of(5578)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101));
+                .cidadesId(List.of(5578))
+                .build());
+        assertThat(usuarios).isEqualTo(List.of(100));
     }
 
     @Test
@@ -762,7 +763,7 @@ public class UsuarioServiceIT {
                 .usuariosId(List.of(100, 101))
                 .cidadesId(List.of(5578)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
-                tuple(100, "ADMIN"), tuple(101, "HELPDESK")
+                tuple(100, "ADMIN")
         );
     }
 

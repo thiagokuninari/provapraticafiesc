@@ -23,6 +23,10 @@ public class UsuariosAlvoComunicadosFiltros {
     private List<Integer> cidadesId;
     private List<Integer> niveisId;
     private boolean comUsuariosLogadosHoje;
+    private Integer clusterId;
+    private Integer grupoId;
+    private Integer regionalId;
+    private Integer subClusterId;
 
     @JsonIgnore
     public BooleanBuilder toPredicate() {
@@ -30,7 +34,7 @@ public class UsuariosAlvoComunicadosFiltros {
                 .comCanalAa(isTodoCanalAa())
                 .comUsuariosId(getUsuariosId())
                 .comCargosId(getCargosId())
-                .comCidadesId(getCidadesId())
+                .comCidadesId(getCidadesId(), clusterId, grupoId, regionalId, subClusterId)
                 .comNiveisId(getNiveisId())
                 .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
                 .build();
