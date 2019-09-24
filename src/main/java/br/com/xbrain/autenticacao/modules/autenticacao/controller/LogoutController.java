@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
