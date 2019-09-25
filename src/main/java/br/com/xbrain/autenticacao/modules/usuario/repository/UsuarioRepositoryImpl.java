@@ -282,8 +282,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var usuarioSuperior = new QUsuario("usuarioSuperior");
 
         return new JPAQueryFactory(entityManager)
-            .select(usuarioHierarquia)
-            .from(usuarioHierarquia)
+            .selectFrom(usuarioHierarquia)
             .innerJoin(usuarioHierarquia.usuarioSuperior, usuarioSuperior).fetchJoin()
             .innerJoin(usuarioSuperior.cargo, cargo)
             .innerJoin(usuarioSuperior.departamento, departamento)
