@@ -896,7 +896,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
     }
 
     public List<UsuarioAutoComplete> findAllLideresComerciaisDoExecutivo(Integer executivoId) {
