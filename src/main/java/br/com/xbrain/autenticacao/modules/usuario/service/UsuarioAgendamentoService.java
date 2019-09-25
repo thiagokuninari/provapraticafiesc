@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
@@ -60,19 +61,29 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
-        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosIds = usuariosDoAa
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
 
-        var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosDoAa);
+        var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
 
         var vendedoresDoMesmoCanal = Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
                 .filter(this::isVendedor)
                 .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
                 .orElseGet(List::of);
-        // TODO: Trazer apenas usuárioas da equipe de vendas do supervisor
-        // Obs: Verificar na chamada abaixo
+
+        if (isUsuarioAutenticadoSupervisor()) {
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+            var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+            // TODO: Trazer apenas usuárioas da equipe de vendas do supervisor
+            // TODO: Trazer apenas caso for do mesmo segmento da equipe de venda
+            // Obs: Verificar na chamada abaixo
+            var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
+            System.out.println(usuariosSupervisionados);
+            return List.of();
+        }
 
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
 
@@ -152,11 +163,10 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        var isUsuarioSupervisor = isSupervisor(usuarioAutenticado.getCargoCodigo());
 
         var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
 
-        if (isUsuarioSupervisor) {
+        if (isUsuarioAutenticadoSupervisor()) {
             return getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
         }
 
@@ -176,5 +186,12 @@ public class UsuarioAgendamentoService {
                 .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendaId()))
                 .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
                 .collect(Collectors.toList());
+    }
+
+    private boolean isUsuarioAutenticadoSupervisor() {
+        return Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
+                .map(UsuarioAutenticado::getCargoCodigo)
+                .map(this::isSupervisor)
+                .orElse(false);
     }
 }

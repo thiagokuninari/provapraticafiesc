@@ -13,6 +13,7 @@ import java.util.Objects;
 public class UsuarioAgenteAutorizadoAgendamentoResponse {
     private Integer id;
     private String nome;
+    private Integer equipeVendasId;
     private String equipeVendasNome;
     private String supervisorNome;
 
