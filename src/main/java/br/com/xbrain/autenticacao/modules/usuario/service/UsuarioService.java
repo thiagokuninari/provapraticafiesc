@@ -899,11 +899,11 @@ public class UsuarioService {
         return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
     }
 
-    public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
-                .stream()
+    public List<UsuarioAutoComplete> findAllLideresComerciaisDoExecutivo(Integer executivoId) {
+        return repository.findAllLideresComerciaisDoExecutivo(executivoId)
+            .stream()
             .map(UsuarioAutoComplete::of)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
     }
 
     private Integer objectToInteger(Object arg) {

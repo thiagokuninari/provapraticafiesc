@@ -160,9 +160,9 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
-    @GetMapping("/hierarquia/supervisores-auto-complete")
-    public List<UsuarioAutoComplete> getUsuariosSupervisoresAutoComplete(UsuarioFiltrosHierarquia filtrosHierarquia) {
-        return usuarioService.getUsuariosSuperioresAutoComplete(filtrosHierarquia);
+    @GetMapping("/hierarquia/supervisores/{executivoId}")
+    public List<UsuarioAutoComplete> getAllLideresComerciaisDoExecutivo(@PathVariable Integer executivoId) {
+        return usuarioService.findAllLideresComerciaisDoExecutivo(executivoId);
     }
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)

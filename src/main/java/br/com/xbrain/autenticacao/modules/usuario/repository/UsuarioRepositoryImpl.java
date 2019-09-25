@@ -35,9 +35,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -281,6 +279,28 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return Map.of("codigoCargo", filtros.getCodigoCargo().toString(),
                 "codigoDepartamento", filtros.getCodigoDepartamento().toString(),
                 "codigoNivel", filtros.getCodigoNivel().toString());
+    }
+
+    @Override
+    public List<Usuario> findAllLideresComerciaisDoExecutivo(Integer executivoId) {
+        var usuarioSuperior = new QUsuario("usuarioSuperior");
+
+        return new JPAQueryFactory(entityManager)
+            .select(usuarioHierarquia)
+            .from(usuarioHierarquia)
+            .innerJoin(usuarioHierarquia.usuarioSuperior, usuarioSuperior).fetchJoin()
+            .innerJoin(usuarioSuperior.cargo, cargo)
+            .innerJoin(usuarioSuperior.departamento, departamento)
+            .innerJoin(cargo.nivel, nivel)
+            .where(usuarioHierarquia.usuario.id.eq(executivoId)
+                .and(usuarioSuperior.situacao.eq(ESituacao.A))
+                .and(cargo.codigo.in(GERENTE_OPERACAO, COORDENADOR_OPERACAO))
+                .and(departamento.codigo.eq(CodigoDepartamento.COMERCIAL)
+                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO))))
+            .fetch()
+            .stream()
+            .map(UsuarioHierarquia::getUsuarioSuperior)
+            .collect(Collectors.toList());
     }
 
     @Override

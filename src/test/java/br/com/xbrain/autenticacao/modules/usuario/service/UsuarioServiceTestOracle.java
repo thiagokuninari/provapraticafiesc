@@ -97,11 +97,10 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoOuInativoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
-                .hasSize(3)
+                .hasSize(2)
                 .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
                 .containsExactly(
                         tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
-                        tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
                         tuple(370, "HELIO OLIVEIRA", GERENTE_OPERACAO, COMERCIAL, OPERACAO));
     }
 
@@ -116,14 +115,13 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
-        assertThat(
-                service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
-                .hasSize(2)
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial"),
-                        tuple(369, "MARIA AUGUSTA"));
+    public void findAllLideresComerciaisDoExecutivo_deveRetornarLideresComerciaisDoExecutivo_quandoLiderEstiverAtivo() {
+        assertThat(service.findAllLideresComerciaisDoExecutivo(101))
+            .hasSize(2)
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
@@ -248,5 +246,4 @@ public class UsuarioServiceTestOracle {
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idUsuarioSuperior) {
         return UsuarioHierarquia.criar(usuario, idUsuarioSuperior, usuario.getId());
     }
-
 }
