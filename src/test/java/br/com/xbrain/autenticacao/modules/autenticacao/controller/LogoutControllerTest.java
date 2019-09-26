@@ -66,15 +66,15 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception {
-        String token = getAccessToken(mvc, ADMIN);
+    public void logoutPorId_deveFazerOLogoutDoUsuarioPassadoPorParametro() throws Exception {
+        var token = getAccessToken(mvc, ADMIN);
 
         requestEmpresas(token).andExpect(status().isOk());
 
-        mvc.perform(get("/api/logout/usuario/100")
+        mvc.perform(get("/api/logout/{usuarioId}", 100)
                 .header("Authorization", token)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                    .andExpect(status().isOk());
 
         verify(tokenStore, atLeastOnce()).removeAccessToken(any());
         requestEmpresas(token).andExpect(status().isUnauthorized());
