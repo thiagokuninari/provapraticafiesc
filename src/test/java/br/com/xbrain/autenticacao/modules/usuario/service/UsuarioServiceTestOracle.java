@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
@@ -99,12 +98,10 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
-            .hasSize(2)
-            .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel",
-                "situacao")
-            .containsExactly(
-                tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A),
-                tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO, ESituacao.A));
+                .hasSize(1)
+                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel", "situacao")
+                .containsExactly(
+                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A));
     }
 
     @Test
@@ -118,14 +115,13 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
-        assertThat(
-                service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
-                .hasSize(2)
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial"),
-                        tuple(369, "MARIA AUGUSTA"));
+    public void findAllLideresComerciaisDoExecutivo_deveRetornarLideresComerciaisDoExecutivo_quandoLiderEstiverAtivo() {
+        assertThat(service.findAllLideresComerciaisDoExecutivo(101))
+            .hasSize(2)
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
@@ -250,5 +246,4 @@ public class UsuarioServiceTestOracle {
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idUsuarioSuperior) {
         return UsuarioHierarquia.criar(usuario, idUsuarioSuperior, usuario.getId());
     }
-
 }

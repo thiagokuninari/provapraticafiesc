@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,5 +27,12 @@ public class UsuarioAutoComplete {
                 .value(usuarioResponse.getId())
                 .text(usuarioResponse.getNome())
                 .build();
+    }
+
+    public static UsuarioAutoComplete of(Usuario usuario) {
+        return UsuarioAutoComplete.builder()
+            .value(usuario.getId())
+            .text(usuario.getNome())
+            .build();
     }
 }

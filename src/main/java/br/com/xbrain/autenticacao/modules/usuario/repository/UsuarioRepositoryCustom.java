@@ -46,6 +46,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
 
+    List<Usuario> findAllLideresComerciaisDoExecutivo(Integer executivoId);
+
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 
     List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId);
