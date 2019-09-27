@@ -60,6 +60,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -83,6 +85,9 @@ public class UsuarioService {
         = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
         = new ValidacaoException("Senha atual está incorreta.");
+    private static final Integer EXECUTIVO_ID = 5;
+    private static final Integer EXECUTIVO_HUNTER_ID = 95;
+
     @Autowired
     @Setter
     private UsuarioRepository repository;

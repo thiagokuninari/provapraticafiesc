@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
@@ -225,7 +226,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                 .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
-                .and(usuario.situacao.eq(ESituacao.A))
+                .and(usuario.situacao.eq(A))
             .and(usuario.id.in(idsPermitidos)))
             .orderBy(usuario.nome.asc())
             .fetch();
@@ -305,7 +306,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     .where(usuarioHierarquia.usuario.id.eq(usuarioId))
             )
                 .and(usuario.cargo.codigo.in(COORDENADOR_OPERACAO, GERENTE_OPERACAO))
-                .and(usuario.departamento.codigo.eq(COMERCIAL)))
+                .and(usuario.departamento.codigo.eq(COMERCIAL))
+                .and(usuario.situacao.eq(A)))
             .fetch();
     }
 
