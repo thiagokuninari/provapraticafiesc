@@ -209,7 +209,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                 .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
-                .and(usuario.situacao.eq(ESituacao.A)))
+                .and(usuario.situacao.eq(A)))
             .orderBy(usuario.nome.asc())
             .fetch();
     }
@@ -486,7 +486,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 select(usuarioCidade.cidade.id)
                                         .from(usuarioCidade)
                                         .where(usuarioCidade.usuario.id.eq(usuarioId))))
-                        .and(usuario.situacao.eq(ESituacao.A)))
+                        .and(usuario.situacao.eq(A)))
                 .distinct()
                 .fetch();
     }
@@ -563,7 +563,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
                 .from(usuario)
-                .where(usuario.situacao.eq(ESituacao.A)
+                .where(usuario.situacao.eq(A)
                         .and(usuario.dataUltimoAcesso.isNull()
                                 .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
                 .fetch();
