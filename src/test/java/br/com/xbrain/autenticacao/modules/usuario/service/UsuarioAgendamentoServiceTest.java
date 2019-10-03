@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasSe
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Before;
@@ -119,6 +120,7 @@ public class UsuarioAgendamentoServiceTest {
 
     @Test
     public void recuperarUsuariosParaDistribuicao_naoDeveMostrarVendedor_seForMesmoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(usuarioRepository.getUsuariosFilter(any()))
                 .thenReturn(usuariosDoAgenteAutorizado1300());
 
@@ -127,6 +129,26 @@ public class UsuarioAgendamentoServiceTest {
         assertThat(usuariosParaDistribuicao)
                 .flatExtracting("id", "nome")
                 .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"));
+    }
+
+    @Test
+    public void recuperarUsuariosParaDistribuicao_deveRetornarUsuariosSupervisionadosAndSupervisor_seForSupervisor() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
+        when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
+        when(agenteAutorizadoService.getUsuariosByAaId(eq(1300), eq(false)))
+                .thenReturn(todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas());
+        when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(102).build())))
+                .thenReturn(umaPermissaoDeVendaResponse());
+        var usuariosParaDistribuicao = usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(130, 1300);
+
+        assertThat(usuariosParaDistribuicao)
+                .hasSize(3)
+                .flatExtracting("id", "nome")
+                .doesNotContain(tuple(130, "JOÃO MARINHO DA SILVA DOS SANTOS"))
+                .containsSequence(
+                    102, "SUPERVISOR",
+                    133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR",
+                    135, "MARCOS AUGUSTO DA SILVA SANTOS");
     }
 
     @Test
@@ -170,6 +192,14 @@ public class UsuarioAgendamentoServiceTest {
         var usuarioAutenticado = new UsuarioAutenticado();
         usuarioAutenticado.setId(102);
         usuarioAutenticado.setNome("SUPERVISOR");
+        usuarioAutenticado.setUsuario(Usuario.builder()
+                .id(102)
+                .nome("SUPERVISOR")
+                .cargo(Cargo
+                        .builder()
+                        .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+                        .build())
+                .build());
         usuarioAutenticado.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR);
         return usuarioAutenticado;
     }
@@ -194,6 +224,7 @@ public class UsuarioAgendamentoServiceTest {
     private UsuarioAutenticado umUsuarioAutenticado() {
         UsuarioAutenticado usuarioAutenticado = new UsuarioAutenticado();
         usuarioAutenticado.setId(100);
+        usuarioAutenticado.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO);
         usuarioAutenticado.setNome("José");
         return usuarioAutenticado;
     }
@@ -202,6 +233,14 @@ public class UsuarioAgendamentoServiceTest {
         var usuarioAutenticado = new UsuarioAutenticado();
         usuarioAutenticado.setCargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO);
         usuarioAutenticado.setId(135);
+        usuarioAutenticado.setUsuario(Usuario.builder()
+                .id(135)
+                .nome("MARCOS AUGUSTO DA SILVA SANTOS")
+                .cargo(Cargo
+                        .builder()
+                        .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO)
+                        .build())
+                .build());
         usuarioAutenticado.setNome("MARCOS AUGUSTO DA SILVA SANTOS");
         return usuarioAutenticado;
     }

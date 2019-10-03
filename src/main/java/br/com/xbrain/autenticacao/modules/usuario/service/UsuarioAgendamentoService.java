@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,20 +70,23 @@ public class UsuarioAgendamentoService {
 
         var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
 
-        var vendedoresDoMesmoCanal = Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
-                .filter(this::isVendedor)
-                .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
-                .orElseGet(List::of);
+        var vendedoresDoMesmoCanal = getVendedoresDoMesmoCanal(usuarioId, agenteAutorizadoId, usuariosHibridos);
 
         if (isUsuarioAutenticadoSupervisor()) {
-            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-            var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
-            // TODO: Trazer apenas usuárioas da equipe de vendas do supervisor
-            // TODO: Trazer apenas caso for do mesmo segmento da equipe de venda
-            // Obs: Verificar na chamada abaixo
-            var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
-            System.out.println(usuariosSupervisionados);
-            return List.of();
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+            var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(
+                    Collections.singletonList(usuarioAutenticado));
+            var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuariosDoAa)
+                    .stream()
+                    .map(UsuarioAgendamentoResponse::getId)
+
+                    .collect(Collectors.toList());
+            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresDoMesmoCanal.stream())
+                    .filter(u -> !u.isUsuarioSolicitante(usuarioId)
+                            && (usuariosSupervisionados.contains(u.getId())
+                                || Objects.equals(u.getId(), usuarioAutenticado.getId())))
+                    .distinct()
+                    .collect(Collectors.toList());
         }
 
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
@@ -91,6 +95,15 @@ public class UsuarioAgendamentoService {
                 .filter(u -> !u.isUsuarioSolicitante(usuarioId))
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> getVendedoresDoMesmoCanal(Integer usuarioId,
+                                                                                       Integer agenteAutorizadoId,
+                                                                                       List<Usuario> usuariosHibridos) {
+        return Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
+                .filter(this::isVendedor)
+                .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
+                .orElseGet(List::of);
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> obterVendedoresDoMesmoCanalSemSupervisores(

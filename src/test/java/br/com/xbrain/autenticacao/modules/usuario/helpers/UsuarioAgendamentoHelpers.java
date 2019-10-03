@@ -111,6 +111,17 @@ public class UsuarioAgendamentoHelpers {
                 .collect(Collectors.toList());
     }
 
+    public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado1300ComEquipesDeVendas() {
+        return List.of(
+                new UsuarioAgenteAutorizadoResponse(130, "JOÃO MARINHO DA SILVA DOS SANTOS", 999),
+                new UsuarioAgenteAutorizadoResponse(131, "ANTONIO ARYLDO DE SOUZA RODRIGUES", 980),
+                new UsuarioAgenteAutorizadoResponse(132, "LUIZ BARRETTO DE AZEVEDO NETO", 755),
+                new UsuarioAgenteAutorizadoResponse(133, "JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR", 999),
+                new UsuarioAgenteAutorizadoResponse(134, "PAULO JUNIO COLARES MIRANDA", null),
+                new UsuarioAgenteAutorizadoResponse(135, "LEONARDO DOS SANTOS GONCALVES REIS", 999)
+        );
+    }
+
     public static List<UsuarioAgenteAutorizadoResponse> todosUsuariosDoAgenteAutorizado999() {
         return usuariosDoAgenteAutorizado999()
                 .stream()
