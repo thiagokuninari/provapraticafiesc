@@ -227,7 +227,33 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(departamento.codigo.eq(COMERCIAL)
                     .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
                 .and(usuario.situacao.eq(A))
-            .and(usuario.id.in(idsPermitidos)))
+                .and(usuario.id.in(idsPermitidos)))
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenador(List<Integer> idsPermitidos, Usuario usuarioLogado) {
+        return new JPAQueryFactory(entityManager)
+            .select(
+                Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(usuario.departamento, departamento)
+            .innerJoin(departamento.nivel, nivel)
+            .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
+                .and(departamento.codigo.eq(COMERCIAL)
+                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                .and(usuario.situacao.eq(A))
+                .and(usuario.id.in(idsPermitidos))
+                .and(usuario.id.in(
+                    new JPAQueryFactory(entityManager)
+                        .select(usuarioHierarquia.usuario.id)
+                        .from(usuarioHierarquia)
+                        .where(usuarioHierarquia.usuario.id.in(idsPermitidos)
+                            .and(usuarioHierarquia.usuarioSuperior.id.eq(usuarioLogado.getId()))
+                        )
+                )))
             .orderBy(usuario.nome.asc())
             .fetch();
     }

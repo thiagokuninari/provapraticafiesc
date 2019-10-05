@@ -84,4 +84,5 @@ public interface UsuarioRepositoryCustom {
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
+    List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenador(List<Integer> agenteAutorizadoId, Usuario usuario);
 }
