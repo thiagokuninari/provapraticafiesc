@@ -118,6 +118,9 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void findExecutivosPorIds_deveRetornarExecutivos_quandoEstiveremVinculadosAosIdsDaListagem() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(EXECUTIVO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
         assertThat(service.findExecutivosPorIds(List.of(119)))
             .extracting("value", "text")
             .containsExactly(
@@ -126,6 +129,9 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void findExecutivosPorIds_deveListaVazia_quandoIdsNaoForemDeUsuariosExecutivosComerciais() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(COORDENADOR_OPERACAO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
         assertThat(service.findExecutivosPorIds(List.of(110)))
             .extracting("value", "text")
             .isEmpty();
