@@ -233,7 +233,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenador(List<Integer> idsPermitidos, Usuario usuarioLogado) {
+    public List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> idsPermitidos, Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
             .select(
                 Projections.constructor(UsuarioAutoComplete.class, usuario.id, usuario.nome))
@@ -251,7 +251,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         .select(usuarioHierarquia.usuario.id)
                         .from(usuarioHierarquia)
                         .where(usuarioHierarquia.usuario.id.in(idsPermitidos)
-                            .and(usuarioHierarquia.usuarioSuperior.id.eq(usuarioLogado.getId()))
+                            .and(usuarioHierarquia.usuarioSuperior.id.eq(usuarioId))
                         )
                 )))
             .orderBy(usuario.nome.asc())

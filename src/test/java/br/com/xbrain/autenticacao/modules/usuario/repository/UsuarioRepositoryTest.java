@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllExecutivosDosIdsCoordenador_deveRetornarExecutivosEspecificos_quandoUsuarioForCoordenador() {
-        assertThat(repository.findAllExecutivosDosIdsCoordenador(List.of(107, 108, 109), new Usuario(109)))
+        assertThat(repository.findAllExecutivosDosIdsCoordenadorGerente(List.of(107, 108, 109), 109))
             .hasSize(2)
             .extracting("value", "text")
             .containsExactly(
@@ -62,7 +61,7 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllExecutivosDosIdsCoordenador_deveRetornarListaVazia_quandoExecutivoNaoPertencerAoCoordenador() {
-        assertThat(repository.findAllExecutivosDosIdsCoordenador(List.of(100, 101, 102), new Usuario(109)))
+        assertThat(repository.findAllExecutivosDosIdsCoordenadorGerente(List.of(100, 101, 102), 109))
             .hasSize(0)
             .isEmpty();
     }

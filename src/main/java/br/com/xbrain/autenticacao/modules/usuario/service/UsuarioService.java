@@ -277,8 +277,7 @@ public class UsuarioService {
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado();
         if (usuarioLogado.isCoordenadorOperacao() || usuarioLogado.isGerenteOperacao()) {
             return repository
-                .findAllExecutivosDosIdsCoordenador(idsPermitidos,
-                    autenticacaoService.getUsuarioAutenticado().getUsuario());
+                .findAllExecutivosDosIdsCoordenadorGerente(idsPermitidos, usuarioLogado.getId());
         }
         return repository.findAllExecutivosDosIds(idsPermitidos);
     }
@@ -919,20 +918,10 @@ public class UsuarioService {
     }
 
     public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(Integer executivoId) {
-        var usuarioLogado = autenticacaoService.getUsuarioAutenticado();
-        if (usuarioLogado.isCoordenadorOperacao()) {
-            if (usuarioHierarquiaRepository
-                .existsByUsuarioAndUsuarioSuperior(new Usuario(executivoId), new Usuario(usuarioLogado.getId()))) {
-                return List.of(UsuarioSuperiorAutoComplete.of(usuarioLogado));
-            } else {
-                throw new ValidacaoException("Esse executivo não está na hierarquia do coordenador.");
-            }
-        } else {
-            return repository.getUsuariosSuperioresDoExecutivoDoAa(executivoId)
-                .stream()
-                .map(UsuarioSuperiorAutoComplete::of)
-                .collect(Collectors.toList());
-        }
+        return repository.getUsuariosSuperioresDoExecutivoDoAa(executivoId)
+            .stream()
+            .map(UsuarioSuperiorAutoComplete::of)
+            .collect(Collectors.toList());
     }
 
     private Integer objectToInteger(Object arg) {
