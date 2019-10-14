@@ -100,16 +100,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public Optional<Usuario> findComCidade(Integer id) {
+    public Optional<List<Cidade>> findComCidade(Integer id) {
         return Optional.ofNullable(
                 new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .leftJoin(usuario.cidades).fetchJoin()
-                        .where(usuario.id.eq(id))
-                        .distinct()
-                        .orderBy(usuario.id.asc())
-                        .fetchOne()
+                        .select(cidade)
+                        .from(cidade)
+                        .leftJoin(cidade.cidadeUsuarios, usuarioCidade).fetchJoin()
+                        .leftJoin(cidade.uf).fetchJoin()
+                        .where(usuarioCidade.usuario.id.eq(id))
+                        .fetch()
         );
     }
 

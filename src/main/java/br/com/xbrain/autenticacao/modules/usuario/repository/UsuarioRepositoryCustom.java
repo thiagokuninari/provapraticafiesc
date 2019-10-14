@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
@@ -26,7 +27,7 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findComplete(Integer id);
 
-    Optional<Usuario> findComCidade(Integer id);
+    Optional<List<Cidade>> findComCidade(Integer id);
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 

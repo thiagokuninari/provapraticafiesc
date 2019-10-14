@@ -177,10 +177,10 @@ public class UsuarioService {
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
-        Usuario usuario = repository.findComCidade(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        return usuario.getCidades()
+        return repository.findComCidade(usuarioId)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
-            .map(c -> CidadeResponse.parse(c.getCidade()))
+            .map(CidadeResponse::parse)
             .collect(Collectors.toList());
     }
 
