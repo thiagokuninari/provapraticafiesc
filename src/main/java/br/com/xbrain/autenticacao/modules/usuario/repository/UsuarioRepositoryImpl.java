@@ -145,6 +145,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                                 + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                                 + " WHERE C.CODIGO = :_codigoCargo"
+                                + " AND U.SITUACAO = 'A'"
                                 + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                                 + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
