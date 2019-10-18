@@ -81,4 +81,5 @@ public interface UsuarioRepositoryCustom {
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
+    long deleteUsuarioHierarquia(Integer usarioId);
 }

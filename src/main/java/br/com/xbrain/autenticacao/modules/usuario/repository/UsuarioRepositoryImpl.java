@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -145,7 +146,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                                 + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                                 + " WHERE C.CODIGO = :_codigoCargo"
-                                + " AND U.SITUACAO = 'A'"
                                 + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                                 + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
@@ -266,6 +266,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " WHERE C.CODIGO = :codigoCargo "
                                 + "   AND D.CODIGO = :codigoDepartamento "
                                 + "   AND N.CODIGO = :codigoNivel " + exibirSomenteUsuariosAtivo(exibirAtivos)
+                                + "   AND U.SITUACAO = 'A'"
                                 + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, U.SITUACAO "
                                 + "  START WITH UH.FK_USUARIO IN (:usuarioId) "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
@@ -546,4 +547,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetchFirst();
     }
 
+    @Override
+    public long deleteUsuarioHierarquia(Integer usarioId) {
+        return new JPADeleteClause(entityManager, usuarioHierarquia)
+        .where(usuarioHierarquia.usuario.id.eq(usarioId))
+                .execute();
+    }
 }

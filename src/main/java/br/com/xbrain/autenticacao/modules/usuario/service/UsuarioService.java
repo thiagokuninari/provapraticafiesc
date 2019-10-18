@@ -60,6 +60,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -817,7 +818,14 @@ public class UsuarioService {
                         .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario);
+        removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
+    }
+
+    private void removerHierarquiaDoUsuarioEquipe(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isUsuarioEquipeVendas() && motivoInativacao.getCodigo().equals(DEMISSAO)) {
+            repository.deleteUsuarioHierarquia(usuario.getId());
+        }
     }
 
     private Usuario getUsuarioInativacaoTratado(UsuarioInativacaoDto usuario) {
@@ -884,6 +892,13 @@ public class UsuarioService {
         return usuarios.stream()
             .map(UsuarioResponse::convertFrom)
             .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> idsUsuarios) {
+        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, idsUsuarios);
+        return usuarios.stream()
+                .map(UsuarioResponse::convertFrom)
+                .collect(Collectors.toList());
     }
 
     @Transactional

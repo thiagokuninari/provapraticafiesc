@@ -137,6 +137,11 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
+    @RequestMapping(params = "usuariosIds", method = RequestMethod.GET)
+    public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.getUsuariosInativosByIds(usuariosIds);
+    }
+
     @GetMapping(params = "email")
     public UsuarioResponse getUsuarioByEmail(@RequestParam String email) {
         Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email);
