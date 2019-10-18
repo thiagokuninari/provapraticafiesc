@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -24,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoReposit
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Sets;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -573,6 +576,31 @@ public class UsuarioServiceIT {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
     }
 
+    @Test
+    public void getUsuariosSupervisoresDoAaAutoComplete_deveRetornarCoordenadoresGerentes_quandoEstiverAtivo() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(EXECUTIVO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(
+            service.getUsuariosSupervisoresDoAaAutoComplete(149))
+            .hasSize(2)
+            .extracting("id", "nome", "email", "cargo")
+            .containsExactly(
+                Assertions.tuple(150, "USUARIO DE COORDENADOR", "MARIA@NET2.COM", "Coordenador"),
+                Assertions.tuple(151, "USUARIO DE GERENTE", "LUISFLORIDO@XBRAIN2.COM.BR", "Gerente"));
+    }
+
+    @Test
+    public void getUsuariosSuperioresAutoComplete_deveRetornarListaVazia_quandoUsuarioNaoTiverCoordenadorGerente() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(EXECUTIVO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(
+            service.getUsuariosSupervisoresDoAaAutoComplete(119))
+            .hasSize(0)
+            .isEmpty();
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
@@ -664,5 +692,16 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setUsuarioCadastroId(100);
         usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return UsuarioAutenticado
+            .builder()
+            .id(1)
+            .nome("USUARIO")
+            .email("USUARIO@TESTE.COM")
+            .cargoCodigo(GERENTE_OPERACAO)
+            .nivelCodigo(OPERACAO.name())
+            .build();
     }
 }

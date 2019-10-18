@@ -165,6 +165,16 @@ public class UsuarioController {
         return usuarioService.findAllLideresComerciaisDoExecutivo(executivoId);
     }
 
+    @GetMapping("/hierarquia/supervisores-aa-auto-complete/{executivoId}")
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(@PathVariable Integer executivoId) {
+        return usuarioService.getUsuariosSupervisoresDoAaAutoComplete(executivoId);
+    }
+
+    @GetMapping("/executivos-comerciais-agente-autorizado")
+    public List<UsuarioAutoComplete> findExecutivosPorIds(@RequestParam List<Integer> usuariosExecutivos) {
+        return usuarioService.findExecutivosPorIds(usuariosExecutivos);
+    }
+
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
         @RequestParam String funcionalidade) {

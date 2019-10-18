@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-
 public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmail(String email);
@@ -39,6 +38,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
 
+    List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> agenteAutorizadoId);
+
     List<Usuario> getSuperioresDoUsuario(Integer usuarioId);
 
     List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo);
@@ -48,6 +49,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
 
     List<Usuario> findAllLideresComerciaisDoExecutivo(Integer executivoId);
+
+    List<Usuario> getUsuariosSuperioresDoExecutivoDoAa(Integer executivoId);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 
@@ -84,4 +87,5 @@ public interface UsuarioRepositoryCustom {
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
+    List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
 }

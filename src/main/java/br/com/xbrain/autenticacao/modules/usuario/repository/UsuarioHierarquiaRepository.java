@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -11,4 +12,6 @@ public interface UsuarioHierarquiaRepository extends PagingAndSortingRepository<
         QueryDslPredicateExecutor<UsuarioHierarquia>, UsuarioHierarquiaRepositoryCustom {
 
     Set<UsuarioHierarquia> findByUsuarioIdIn(List<Integer> hierarquiasId);
+
+    Boolean existsByUsuarioAndUsuarioSuperior(Usuario usuario, Usuario usuarioSuperior);
 }

@@ -107,11 +107,33 @@ public class UsuarioServiceTestOracle {
     @Test
     public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
         assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(116, "ALBERTO PEREIRA"),
-                        tuple(119, "JOANA OLIVEIRA"),
-                        tuple(117, "ROBERTO ALMEIDA"));
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(119, "JOANA OLIVEIRA"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(149, "USUARIO INFERIOR"));
+    }
+
+    @Test
+    public void findExecutivosPorIds_deveRetornarExecutivos_quandoEstiveremVinculadosAosIdsDaListagem() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(EXECUTIVO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(service.findExecutivosPorIds(List.of(119)))
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(119, "JOANA OLIVEIRA"));
+    }
+
+    @Test
+    public void findExecutivosPorIds_deveListaVazia_quandoIdsNaoForemDeUsuariosExecutivosComerciais() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(COORDENADOR_OPERACAO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(service.findExecutivosPorIds(List.of(110)))
+            .extracting("value", "text")
+            .isEmpty();
     }
 
     @Test

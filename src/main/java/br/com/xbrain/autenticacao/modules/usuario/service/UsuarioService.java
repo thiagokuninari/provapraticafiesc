@@ -83,6 +83,7 @@ public class UsuarioService {
         = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
         = new ValidacaoException("Senha atual está incorreta.");
+
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -270,6 +271,15 @@ public class UsuarioService {
 
     public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
         return repository.findAllExecutivosOperacaoDepartamentoComercial();
+    }
+
+    public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {
+        var usuarioLogado = autenticacaoService.getUsuarioAutenticado();
+        if (usuarioLogado.isCoordenadorOperacao() || usuarioLogado.isGerenteOperacao()) {
+            return repository
+                .findAllExecutivosDosIdsCoordenadorGerente(idsPermitidos, usuarioLogado.getId());
+        }
+        return repository.findAllExecutivosDosIds(idsPermitidos);
     }
 
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
@@ -903,6 +913,13 @@ public class UsuarioService {
         return repository.findAllLideresComerciaisDoExecutivo(executivoId)
             .stream()
             .map(UsuarioAutoComplete::of)
+            .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(Integer executivoId) {
+        return repository.getUsuariosSuperioresDoExecutivoDoAa(executivoId)
+            .stream()
+            .map(UsuarioSuperiorAutoComplete::of)
             .collect(Collectors.toList());
     }
 

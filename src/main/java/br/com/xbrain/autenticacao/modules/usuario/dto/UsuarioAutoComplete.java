@@ -24,9 +24,9 @@ public class UsuarioAutoComplete {
 
     public static UsuarioAutoComplete of(UsuarioResponse usuarioResponse) {
         return UsuarioAutoComplete.builder()
-                .value(usuarioResponse.getId())
-                .text(usuarioResponse.getNome())
-                .build();
+            .value(usuarioResponse.getId())
+            .text(usuarioResponse.getNome())
+            .build();
     }
 
     public static UsuarioAutoComplete of(Usuario usuario) {
