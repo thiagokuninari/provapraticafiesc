@@ -266,7 +266,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 + " WHERE C.CODIGO = :codigoCargo "
                                 + "   AND D.CODIGO = :codigoDepartamento "
                                 + "   AND N.CODIGO = :codigoNivel " + exibirSomenteUsuariosAtivo(exibirAtivos)
-                                + "   AND U.SITUACAO = 'A'"
                                 + " GROUP BY U.ID, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, U.SITUACAO "
                                 + "  START WITH UH.FK_USUARIO IN (:usuarioId) "
                                 + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
@@ -548,9 +547,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public long deleteUsuarioHierarquia(Integer usarioId) {
+    public long deleteUsuarioHierarquia(Integer usuarioId) {
         return new JPADeleteClause(entityManager, usuarioHierarquia)
-        .where(usuarioHierarquia.usuario.id.eq(usarioId))
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
                 .execute();
     }
 }

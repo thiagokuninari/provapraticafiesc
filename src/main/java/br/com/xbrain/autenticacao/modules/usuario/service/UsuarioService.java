@@ -894,8 +894,9 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> idsUsuarios) {
-        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, idsUsuarios);
+    public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
+        var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
+
         return usuarios.stream()
                 .map(UsuarioResponse::convertFrom)
                 .collect(Collectors.toList());

@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -26,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
@@ -422,6 +425,22 @@ public class UsuarioControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, HELP_DESK)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void getUsuariosInativosByIds_deveRetornarUsuarioInvativo_quandoForPassadoId()  throws Exception {
+        when(usuarioService.getUsuariosInativosByIds(List.of(101)))
+                .thenReturn(List.of(UsuarioResponse.builder()
+                        .id(101)
+                        .situacao(ESituacao.I).build()));
+
+        mvc.perform(get("/api/usuarios/inativos/101")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(101)))
+                .andExpect(jsonPath("$[0].situacao", is(ESituacao.I.name())));;
     }
 
     @Test

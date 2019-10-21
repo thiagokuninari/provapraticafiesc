@@ -573,6 +573,13 @@ public class UsuarioServiceIT {
         assertThat(service.getSuperioresDoUsuario(121)).isEmpty();
     }
 
+    @Test
+    public void getUsuariosInativosByIds_retornarUsuriosInativos_quandoForPassadoIds() {
+        assertThat(service.getUsuariosInativosByIds(List.of(100, 101, 105, 370)))
+                .hasSize(2).extracting("id", "situacao")
+                .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);

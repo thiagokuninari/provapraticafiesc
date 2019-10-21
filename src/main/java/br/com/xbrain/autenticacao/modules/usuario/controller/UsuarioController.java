@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "api/usuarios")
 public class UsuarioController {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -137,9 +138,12 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
-    @RequestMapping(params = "usuariosIds", method = RequestMethod.GET)
-    public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosIds) {
-        return usuarioService.getUsuariosInativosByIds(usuariosIds);
+    @GetMapping("inativos/{usuariosInativosIds}")
+    public List<UsuarioResponse> getUsuariosInativosByIds(@PathVariable List<Integer> usuariosInativosIds) {
+        return usuarioService.getUsuariosInativosByIds(usuariosInativosIds
+                .stream()
+                .limit(QTD_MAX_IN_NO_ORACLE)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping(params = "email")
