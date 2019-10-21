@@ -428,19 +428,24 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void getUsuariosInativosByIds_deveRetornarUsuarioInvativo_quandoForPassadoId()  throws Exception {
-        when(usuarioService.getUsuariosInativosByIds(List.of(101)))
-                .thenReturn(List.of(UsuarioResponse.builder()
-                        .id(101)
-                        .situacao(ESituacao.I).build()));
+    public void getUsuariosInativosByIds_deveRetornarUsuariosInativos_quandoForPassadoIds() throws Exception {
 
-        mvc.perform(get("/api/usuarios/inativos/101")
+        when(usuarioService.getUsuariosInativosByIds(List.of(101, 102, 103)))
+                .thenReturn(List.of(umUsuarioResponseInativo(101),
+                        umUsuarioResponseInativo(102),
+                        umUsuarioResponseInativo(103)));
+
+        mvc.perform(get("/api/usuarios/inativos?usuariosInativosIds=101,102,103")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].id", is(101)))
-                .andExpect(jsonPath("$[0].situacao", is(ESituacao.I.name())));;
+                .andExpect(jsonPath("$[0].situacao", is(ESituacao.I.name())))
+                .andExpect(jsonPath("$[1].id", is(102)))
+                .andExpect(jsonPath("$[1].situacao", is(ESituacao.I.name())))
+                .andExpect(jsonPath("$[2].id", is(103)))
+                .andExpect(jsonPath("$[2].situacao", is(ESituacao.I.name())));
     }
 
     @Test
@@ -459,5 +464,12 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$[2].nome", is("MARIA DA SILVA SAURO SANTOS")))
                 .andExpect(jsonPath("$[3].id", is(135)))
                 .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
+    }
+
+    private UsuarioResponse umUsuarioResponseInativo(Integer id) {
+        return UsuarioResponse.builder()
+                .id(id)
+                .situacao(ESituacao.I)
+                .build();
     }
 }

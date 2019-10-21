@@ -13,11 +13,13 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoServ
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -138,12 +140,14 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
-    @GetMapping("inativos/{usuariosInativosIds}")
-    public List<UsuarioResponse> getUsuariosInativosByIds(@PathVariable List<Integer> usuariosInativosIds) {
-        return usuarioService.getUsuariosInativosByIds(usuariosInativosIds
+    @GetMapping("inativos")
+    public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
+
+        return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE )
                 .stream()
-                .limit(QTD_MAX_IN_NO_ORACLE)
-                .collect(Collectors.toList()));
+                .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @GetMapping(params = "email")
