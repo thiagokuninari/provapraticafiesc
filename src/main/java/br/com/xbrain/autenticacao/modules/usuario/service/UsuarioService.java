@@ -83,6 +83,7 @@ public class UsuarioService {
         = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
         = new ValidacaoException("Senha atual está incorreta.");
+
     @Autowired
     @Setter
     private UsuarioRepository repository;
@@ -177,10 +178,10 @@ public class UsuarioService {
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
-        Usuario usuario = repository.findComCidade(usuarioId).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        return usuario.getCidades()
+        return repository.findComCidade(usuarioId)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
-            .map(c -> CidadeResponse.parse(c.getCidade()))
+            .map(CidadeResponse::parse)
             .collect(Collectors.toList());
     }
 
@@ -270,6 +271,15 @@ public class UsuarioService {
 
     public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
         return repository.findAllExecutivosOperacaoDepartamentoComercial();
+    }
+
+    public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {
+        var usuarioLogado = autenticacaoService.getUsuarioAutenticado();
+        if (usuarioLogado.isCoordenadorOperacao() || usuarioLogado.isGerenteOperacao()) {
+            return repository
+                .findAllExecutivosDosIdsCoordenadorGerente(idsPermitidos, usuarioLogado.getId());
+        }
+        return repository.findAllExecutivosDosIds(idsPermitidos);
     }
 
     public List<UsuarioHierarquiaResponse> getSuperioresDoUsuario(Integer usuarioId) {
@@ -670,7 +680,6 @@ public class UsuarioService {
                 .map(UsuarioDto::of)
                 .forEach(usuarioAtualizarColaborador -> usuarioMqSender
                     .sendColaboradoresSuccess(usuarioAtualizarColaborador));
-
         }
     }
 
@@ -897,14 +906,21 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, false);
+        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia);
     }
 
-    public List<UsuarioAutoComplete> getUsuariosSuperioresAutoComplete(UsuarioFiltrosHierarquia usuarioFiltrosHierarquia) {
-        return repository.getUsuariosSuperiores(usuarioFiltrosHierarquia, true)
-                .stream()
+    public List<UsuarioAutoComplete> findAllLideresComerciaisDoExecutivo(Integer executivoId) {
+        return repository.findAllLideresComerciaisDoExecutivo(executivoId)
+            .stream()
             .map(UsuarioAutoComplete::of)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(Integer executivoId) {
+        return repository.getUsuariosSuperioresDoExecutivoDoAa(executivoId)
+            .stream()
+            .map(UsuarioSuperiorAutoComplete::of)
+            .collect(Collectors.toList());
     }
 
     private Integer objectToInteger(Object arg) {

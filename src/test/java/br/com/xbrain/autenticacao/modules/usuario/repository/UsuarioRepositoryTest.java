@@ -9,6 +9,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -45,5 +47,22 @@ public class UsuarioRepositoryTest {
                 .containsExactly(
                         tuple(103, "CARLOS@HOTMAIL.COM"),
                         tuple(104, "MARIA@HOTMAIL.COM"));
+    }
+
+    @Test
+    public void findAllExecutivosDosIdsCoordenador_deveRetornarExecutivosEspecificos_quandoUsuarioForCoordenador() {
+        assertThat(repository.findAllExecutivosDosIdsCoordenadorGerente(List.of(107, 108, 109), 109))
+            .hasSize(2)
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"));
+    }
+
+    @Test
+    public void findAllExecutivosDosIdsCoordenador_deveRetornarListaVazia_quandoExecutivoNaoPertencerAoCoordenador() {
+        assertThat(repository.findAllExecutivosDosIdsCoordenadorGerente(List.of(100, 101, 102), 109))
+            .hasSize(0)
+            .isEmpty();
     }
 }

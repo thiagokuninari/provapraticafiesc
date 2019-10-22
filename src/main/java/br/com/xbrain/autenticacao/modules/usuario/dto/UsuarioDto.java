@@ -89,6 +89,7 @@ public class UsuarioDto implements Serializable {
     private String fotoContentType;
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
+    private Integer agenteAutorizadoId;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();

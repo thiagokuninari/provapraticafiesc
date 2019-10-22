@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
@@ -95,35 +96,54 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
-    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoOuInativoComCargoGerenteOperacao() {
+    public void getUsuariosSuperiores_deveRetonarUsuariosSuperiores_comSituacaoAtivoComCargoGerenteOperacao() {
         assertThat(service.getUsuariosSuperiores(getFiltroHierarquia()))
-                .hasSize(3)
-                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel")
+                .hasSize(1)
+                .extracting("id", "nome", "codigoCargo", "codigoDepartamento", "codigoNivel", "situacao")
                 .containsExactly(
-                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
-                        tuple(369, "MARIA AUGUSTA", GERENTE_OPERACAO, COMERCIAL, OPERACAO),
-                        tuple(370, "HELIO OLIVEIRA", GERENTE_OPERACAO, COMERCIAL, OPERACAO));
+                        tuple(104, "operacao_gerente_comercial", GERENTE_OPERACAO, COMERCIAL, OPERACAO, A));
     }
 
     @Test
     public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
         assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(116, "ALBERTO PEREIRA"),
-                        tuple(119, "JOANA OLIVEIRA"),
-                        tuple(117, "ROBERTO ALMEIDA"));
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(119, "JOANA OLIVEIRA"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(149, "USUARIO INFERIOR"));
     }
 
     @Test
-    public void getUsuariosSuperioresAutoComplete_deveRetornarSuperioresDoUsuario_quandoSuperiorEstiverAtivo() {
-        assertThat(
-                service.getUsuariosSuperioresAutoComplete(getFiltroHierarquia()))
-                .hasSize(2)
-                .extracting("value", "text")
-                .containsExactly(
-                        tuple(104, "operacao_gerente_comercial"),
-                        tuple(369, "MARIA AUGUSTA"));
+    public void findExecutivosPorIds_deveRetornarExecutivos_quandoEstiveremVinculadosAosIdsDaListagem() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(EXECUTIVO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(service.findExecutivosPorIds(List.of(119)))
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(119, "JOANA OLIVEIRA"));
+    }
+
+    @Test
+    public void findExecutivosPorIds_deveListaVazia_quandoIdsNaoForemDeUsuariosExecutivosComerciais() {
+        var usuarioLogado = umUsuarioAutenticado();
+        usuarioLogado.setCargoCodigo(COORDENADOR_OPERACAO);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioLogado);
+        assertThat(service.findExecutivosPorIds(List.of(110)))
+            .extracting("value", "text")
+            .isEmpty();
+    }
+
+    @Test
+    public void findAllLideresComerciaisDoExecutivo_deveRetornarLideresComerciaisDoExecutivo_quandoLiderEstiverAtivo() {
+        assertThat(service.findAllLideresComerciaisDoExecutivo(101))
+            .hasSize(2)
+            .extracting("value", "text")
+            .containsExactly(
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
@@ -248,5 +268,4 @@ public class UsuarioServiceTestOracle {
     private UsuarioHierarquia criarUsuarioHierarquia(Usuario usuario, Integer idUsuarioSuperior) {
         return UsuarioHierarquia.criar(usuario, idUsuarioSuperior, usuario.getId());
     }
-
 }

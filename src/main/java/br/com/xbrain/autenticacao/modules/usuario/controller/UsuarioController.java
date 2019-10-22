@@ -160,9 +160,19 @@ public class UsuarioController {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
-    @GetMapping("/hierarquia/supervisores-auto-complete")
-    public List<UsuarioAutoComplete> getUsuariosSupervisoresAutoComplete(UsuarioFiltrosHierarquia filtrosHierarquia) {
-        return usuarioService.getUsuariosSuperioresAutoComplete(filtrosHierarquia);
+    @GetMapping("/hierarquia/supervisores/{executivoId}")
+    public List<UsuarioAutoComplete> getAllLideresComerciaisDoExecutivo(@PathVariable Integer executivoId) {
+        return usuarioService.findAllLideresComerciaisDoExecutivo(executivoId);
+    }
+
+    @GetMapping("/hierarquia/supervisores-aa-auto-complete/{executivoId}")
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(@PathVariable Integer executivoId) {
+        return usuarioService.getUsuariosSupervisoresDoAaAutoComplete(executivoId);
+    }
+
+    @GetMapping("/executivos-comerciais-agente-autorizado")
+    public List<UsuarioAutoComplete> findExecutivosPorIds(@RequestParam List<Integer> usuariosExecutivos) {
+        return usuarioService.findExecutivosPorIds(usuariosExecutivos);
     }
 
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
