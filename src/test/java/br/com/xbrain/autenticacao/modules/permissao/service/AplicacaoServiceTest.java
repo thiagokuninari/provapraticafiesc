@@ -38,7 +38,8 @@ public class AplicacaoServiceTest {
                 tuple(17, "RELATÓRIOS", CodigoAplicacao.REL),
                 tuple(18, "OUVIDORIA", CodigoAplicacao.OUV),
                 tuple(19, "BRIEFING", CodigoAplicacao.BRF),
-                tuple(20, "CONTROLE", CodigoAplicacao.CTR)
+                tuple(20, "CONTROLE", CodigoAplicacao.CTR),
+                tuple(21, "COMUNICADO", CodigoAplicacao.CMD)
         );
     }
 
