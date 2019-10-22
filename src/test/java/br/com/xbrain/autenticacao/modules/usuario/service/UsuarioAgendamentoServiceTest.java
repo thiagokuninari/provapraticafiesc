@@ -152,7 +152,9 @@ public class UsuarioAgendamentoServiceTest {
     }
 
     @Test
-    public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarUsuariosDaEquipeVenda_seForSupervisor() {
+    public void getUsuariosDisponiveisParaDistribuicao_usuariosDaEquipeVenda_seForSupervisorSemPermissaoDeVenda() {
+        when(usuarioService.findPermissoesByUsuario(any(Usuario.class)))
+                .thenReturn(umaPermissaoResponseVazia());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
 
@@ -162,6 +164,21 @@ public class UsuarioAgendamentoServiceTest {
                 .hasSize(1)
                 .extracting(UsuarioAgendamentoResponse::getId, UsuarioAgendamentoResponse::getNome)
                 .contains(tuple(9991, "USUARIO 1 DO AA 999"));
+    }
+
+    @Test
+    public void getUsuariosDisponiveisParaDistribuicao_usuariosDaEquipeVendaAndSupervisor_seForSupervisorComPermissaoDeVenda() {
+        when(usuarioService.findPermissoesByUsuario(any(Usuario.class)))
+                .thenReturn(umaPermissaoDeVendaResponse());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
+        when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
+
+        var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
+
+        assertThat(response)
+                .hasSize(2)
+                .extracting(UsuarioAgendamentoResponse::getId, UsuarioAgendamentoResponse::getNome)
+                .contains(tuple(102, "SUPERVISOR"), tuple(9991, "USUARIO 1 DO AA 999"));
     }
 
     @Test

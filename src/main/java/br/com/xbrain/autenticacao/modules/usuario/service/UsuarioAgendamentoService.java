@@ -175,12 +175,20 @@ public class UsuarioAgendamentoService {
     }
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
 
         if (isUsuarioAutenticadoSupervisor()) {
-            return getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+            var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(List.of(usuarioAutenticado))
+                    .stream()
+                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                    .collect(Collectors.toList());
+            var vendedoresSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
+
+            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresSupervisionados.stream())
+                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                    .collect(Collectors.toList());
         }
 
         return usuarios.stream()
