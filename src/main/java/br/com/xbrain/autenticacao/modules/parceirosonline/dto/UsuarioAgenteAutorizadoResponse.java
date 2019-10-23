@@ -14,8 +14,15 @@ public class UsuarioAgenteAutorizadoResponse {
     private Integer id;
     private String nome;
     private String email;
+    private Integer equipeVendaId;
 
     public UsuarioAgenteAutorizadoResponse(Integer id) {
         this.id = id;
+    }
+
+    public UsuarioAgenteAutorizadoResponse(Integer id, String nome, Integer equipeVendaId) {
+        this.id = id;
+        this.nome = nome;
+        this.equipeVendaId = equipeVendaId;
     }
 }

@@ -260,6 +260,11 @@ public class UsuarioController {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
+    @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
+    public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+        return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
+    }
+
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
             @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
