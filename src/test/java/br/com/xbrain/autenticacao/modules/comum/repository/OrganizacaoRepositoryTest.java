@@ -23,11 +23,12 @@ public class OrganizacaoRepositoryTest {
     @Test
     public void findAll_todasOrganizacoes_quandoPesquisar() {
         assertThat(organizacaoRepository.findAll())
-                .hasSize(4)
+                .hasSize(5)
                 .extracting("codigo", "nome")
                 .contains(tuple("BCC", "Brasil Center"),
                         tuple("CALLINK", "Callink"),
                         tuple("PROPRIO", "Próprio"),
-                        tuple("ATENTO", "Atento"));
+                        tuple("ATENTO", "Atento"),
+                        tuple("VGX", "VGX"));
     }
 }
