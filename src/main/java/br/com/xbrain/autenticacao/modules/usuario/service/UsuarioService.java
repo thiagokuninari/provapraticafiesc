@@ -817,7 +817,7 @@ public class UsuarioService {
                 .ferias(usuarioFeriasService
                         .save(usuario, usuarioInativacao).orElse(null))
                 .build());
-        inativarUsuarioNaEquipeVendas(usuario);
+        inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
     }
@@ -835,8 +835,8 @@ public class UsuarioService {
             .orElseGet(() -> new Usuario(usuario.getIdUsuarioInativacao()));
     }
 
-    private void inativarUsuarioNaEquipeVendas(Usuario usuario) {
-        if (usuario.isUsuarioEquipeVendas()) {
+    private void inativarUsuarioNaEquipeVendas(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isUsuarioEquipeVendas() && motivoInativacao.getCodigo().equals(DEMISSAO)) {
             equipeVendaMqSender.sendInativar(UsuarioEquipeVendasDto.createFromUsuario(usuario));
         }
     }
