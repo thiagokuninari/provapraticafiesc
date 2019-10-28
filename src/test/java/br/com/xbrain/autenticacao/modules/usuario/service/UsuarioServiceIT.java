@@ -220,7 +220,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoAssistente() {
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoAssistenteComMotivoDemissao() {
         doReturn(umUsuarioAssistente()).when(service).findComplete(204);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
@@ -232,7 +232,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoVendedorD2d() {
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoVendedorD2dComMotivoDemissao() {
         doReturn(umUsuarioVendedorD2d()).when(service).findComplete(203);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
