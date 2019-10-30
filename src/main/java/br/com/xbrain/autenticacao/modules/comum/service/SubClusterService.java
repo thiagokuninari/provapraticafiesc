@@ -74,7 +74,7 @@ public class SubClusterService {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         SubClusterPredicate predicate = new SubClusterPredicate()
                 .filtrarPermitidos(usuarioAutenticado);
-        return repository.findAll(predicate.build())
+        return repository.findAllAtivo(predicate.build())
                 .stream()
                 .map(SubClusterDto::of)
                 .collect(Collectors.toList());
