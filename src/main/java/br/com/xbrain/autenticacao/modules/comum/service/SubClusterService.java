@@ -71,7 +71,7 @@ public class SubClusterService {
     }
 
     public List<SubClusterDto> getAllSubclustersByUsuarioAutenticado() {
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         SubClusterPredicate predicate = new SubClusterPredicate()
                 .filtrarPermitidos(usuarioAutenticado);
         return repository.findAllAtivo(predicate.build())
