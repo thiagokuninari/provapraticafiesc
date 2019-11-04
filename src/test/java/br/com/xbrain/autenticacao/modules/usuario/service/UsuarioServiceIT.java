@@ -10,7 +10,9 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -101,6 +103,8 @@ public class UsuarioServiceIT {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
+    @SpyBean
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
     public void setUp() {
@@ -547,7 +551,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getSuperioresDoUsuario_deveRetornar_quandoPossuirSuperiores() {
-        assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactly(112, 113);
+        assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
     }
 
     @Test
@@ -563,7 +567,7 @@ public class UsuarioServiceIT {
     @Test
     public void getSuperioresDoUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR))
-                .hasSize(2).extracting("id").containsExactly(112, 113);
+                .hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
     }
 
     @Test
@@ -680,8 +684,182 @@ public class UsuarioServiceIT {
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .niveisId(List.of(4, 3))
                 .usuariosId(List.of(100, 101))
+                .cidadesId(List.of(5578))
+                .build());
+        assertThat(usuarios).isEqualTo(List.of(100));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .cargosId(List.of(20, 40)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(114, "mso_analistaadm_claromovel_pessoal"),
+                tuple(366, "mso_analistaadm_claromovel_pessoal"),
+                tuple(367, "mso_analistaadm_claromovel_pessoal"),
+                tuple(368, "mso_analistaadm_claromovel_pessoal_dois"),
+                tuple(246, "JOAO FONSECA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .todoCanalAa(true).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(105, "INATIVO"),
+                tuple(366, "mso_analistaadm_claromovel_pessoal"),
+                tuple(369, "MARIA AUGUSTA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .todoCanalD2d(true).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(101, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(105, "INATIVO"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .niveisId(List.of(4, 3)).build());
+        assertThat(usuarios).extracting("id", "nome")
+                .containsExactlyInAnyOrder(
+                        tuple(100, "ADMIN"),
+                        tuple(101, "HELPDESK"),
+                        tuple(105, "INATIVO"),
+                        tuple(110, "ADMIN"),
+                        tuple(111, "HELPDESK"),
+                        tuple(112, "INATIVO"),
+                        tuple(113, "INATIVO"),
+                        tuple(118, "HENRIQUE ALVES"),
+                        tuple(121, "LUIS GUILHERME"),
+                        tuple(243, "VENDEDOR AA TELEVENDAS 3"),
+                        tuple(245, "ALBERTO ALVES"),
+                        tuple(246, "JOAO FONSECA"),
+                        tuple(247, "VENDEDOR AA D2D 3"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
                 .cidadesId(List.of(5578)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101));
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(370, "HELIO OLIVEIRA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .niveisId(List.of(4, 3))
+                .usuariosId(List.of(100, 101))
+                .cidadesId(List.of(5578)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+                tuple(100, "ADMIN")
+        );
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveTrazerTodos_seNaoPossuirFiltro() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .agentesAutorizadosId(List.of(100))
+                .build());
+        assertThat(usuarios).hasSize(43);
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarPorAA_seRetornarUsuario() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .agentesAutorizadosId(List.of(100))
+                .build());
+        assertThat(usuarios).hasSize(43);
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdAA() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        doReturn(umaListaUsuarioResponse(100))
+                .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
+
+        doReturn(umaListaUsuarioResponse(104))
+                .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
+        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+                .agentesAutorizadosId(List.of(10, 20))
+                .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+                .containsExactlyInAnyOrder(
+                        tuple(100, "ADMIN"),
+                        tuple(101, "HELPDESK"),
+                        tuple(104, "operacao_gerente_comercial"),
+                        tuple(105, "INATIVO"));
+    }
+
+    private List<UsuarioAgenteAutorizadoResponse> umaListaUsuarioResponse(Integer id) {
+        return List.of(UsuarioAgenteAutorizadoResponse.builder()
+                        .id(id)
+                        .nome("nome " + id)
+                        .build(),
+                UsuarioAgenteAutorizadoResponse.builder()
+                        .id(id + 1)
+                        .nome("nome " + id + 1)
+                        .build());
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {

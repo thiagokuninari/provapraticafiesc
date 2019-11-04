@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,8 @@ import java.util.List;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,5 +64,27 @@ public class CargoControllerTest {
                 .andExpect(jsonPath("$", not(empty())))
                 .andExpect(jsonPath("$[0].codigo", is(CodigoCargo.OPERACAO_TECNICO.name())))
                 .andExpect(jsonPath("$[0].nome", is("OPERADORACAO TECNICO")));
+    }
+
+    @Test
+    public void getAll_deveRetornarOsCargosComNomeNivel_conformeNivelFiltrado() throws Exception {
+        when(cargoService.getPermitidosPorNiveis(anyList()))
+                .thenReturn(List.of(umCargo()));
+
+        mvc.perform(get("/api/cargos/com-nivel?niveisId=1,2,3")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", not(empty())))
+                .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
+    }
+
+    private Cargo umCargo() {
+        return Cargo.builder()
+                .nivel(Nivel.builder()
+                        .nome("Xbrain")
+                        .build())
+                .nome("Vendedor")
+                .build();
     }
 }

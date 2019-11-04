@@ -90,4 +90,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
 
     List<Integer> findAllIds(Predicate predicate);
+
+    List<UsuarioNomeResponse> findAllNomesIds(Predicate predicate);
 }

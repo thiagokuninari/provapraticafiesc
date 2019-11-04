@@ -1304,6 +1304,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         adicionarFiltroAgenteAutorizado(usuarioFiltros);
         usuarioFiltros.setUsuarioService(this);
+        usuarioFiltros.setComUsuariosLogadosHoje(true);
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
 
@@ -1333,5 +1334,28 @@ public class UsuarioService {
             log.error("Erro ao recuperar usuarios do agente autorizado.");
             return List.of();
         }
+    }
+
+    public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
+            var usuariosDoAgente = usuarioFiltros.getAgentesAutorizadosId()
+                    .stream()
+                    .flatMap(this::getUsuariosDoAgenteAutorizado)
+                    .collect(Collectors.toList());
+            if (!usuariosDoAgente.isEmpty()) {
+                if (isEmpty(usuarioFiltros.getUsuariosId())) {
+                    usuarioFiltros.setUsuariosId(usuariosDoAgente);
+                } else {
+                    usuarioFiltros.getUsuariosId().addAll(usuariosDoAgente);
+                }
+            }
+        }
+        return repository.findAllNomesIds(usuarioFiltros.toPredicate());
+    }
+
+    private Stream<Integer> getUsuariosDoAgenteAutorizado(Integer aaId) {
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
+                .stream()
+                .map(UsuarioAgenteAutorizadoResponse::getId);
     }
 }
