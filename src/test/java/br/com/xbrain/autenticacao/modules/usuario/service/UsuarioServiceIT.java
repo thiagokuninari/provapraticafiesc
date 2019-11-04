@@ -694,7 +694,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .cargosId(List.of(20, 40)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(114, "mso_analistaadm_claromovel_pessoal"),
                 tuple(366, "mso_analistaadm_claromovel_pessoal"),
@@ -708,7 +708,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .todoCanalAa(true).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(105, "INATIVO"),
                 tuple(366, "mso_analistaadm_claromovel_pessoal"),
@@ -720,7 +720,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .todoCanalD2d(true).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(233, "VENDEDOR OPERACAO 3"),
                 tuple(234, "COORDENADOR OPERACAO 2"),
@@ -737,7 +737,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
                 tuple(100, "ADMIN"),
@@ -751,7 +751,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .niveisId(List.of(4, 3)).build());
         assertThat(usuarios).extracting("id", "nome")
                 .containsExactlyInAnyOrder(
@@ -775,7 +775,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .cidadesId(List.of(5578)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
                 tuple(100, "ADMIN"),
@@ -797,7 +797,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .niveisId(List.of(4, 3))
                 .usuariosId(List.of(100, 101))
                 .cidadesId(List.of(5578)).build());
@@ -811,7 +811,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(100))
                 .build());
         assertThat(usuarios).hasSize(43);
@@ -824,7 +824,7 @@ public class UsuarioServiceIT {
         doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(100))
                 .build());
         assertThat(usuarios).hasSize(43);
@@ -839,7 +839,7 @@ public class UsuarioServiceIT {
 
         doReturn(umaListaUsuarioResponse(104))
                 .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
-        var usuarios = service.getUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(10, 20))
                 .build());
 
