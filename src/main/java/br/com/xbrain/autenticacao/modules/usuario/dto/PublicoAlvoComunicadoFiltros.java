@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,23 +17,37 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class UsuariosAlvoComunicadosFiltros {
+public class PublicoAlvoComunicadoFiltros {
     private boolean todoCanalD2d;
     private boolean todoCanalAa;
     private List<Integer> usuariosId;
     private List<Integer> cargosId;
     private List<Integer> cidadesId;
     private List<Integer> niveisId;
+    private List<Integer> agentesAutorizadosId;
+    private Integer clusterId;
+    private Integer grupoId;
+    private Integer regionalId;
+    private Integer subClusterId;
+
+    private UsuarioAutenticado usuarioAutenticado;
+    private UsuarioService usuarioService;
 
     @JsonIgnore
-    public BooleanBuilder toPredicate() {
-        return new UsuarioPredicate().comCanalD2d(isTodoCanalD2d())
+    public Predicate toPredicate() {
+        return new UsuarioPredicate()
+                .comCanalD2d(isTodoCanalD2d())
                 .comCanalAa(isTodoCanalAa())
                 .comUsuariosId(getUsuariosId())
                 .comCargosId(getCargosId())
                 .comCidadesId(getCidadesId())
                 .comNiveisId(getNiveisId())
                 .comUltimaDataDeAcesso(LocalDate.now())
+                .comCluster(clusterId)
+                .comGrupo(grupoId)
+                .comRegional(regionalId)
+                .comSubCluster(subClusterId)
+                .filtraPermitidos(usuarioAutenticado, usuarioService)
                 .build();
     }
 }

@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
@@ -1300,7 +1301,37 @@ public class UsuarioService {
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
     }
 
-    public List<Integer> getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros usuarioFiltros) {
+    public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        adicionarFiltroAgenteAutorizado(usuarioFiltros);
+        usuarioFiltros.setUsuarioService(this);
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
+
         return repository.findAllIds(usuarioFiltros.toPredicate());
+    }
+
+    private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+
+        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
+            var usuarios = new ArrayList<Integer>();
+            usuarioFiltros.getAgentesAutorizadosId()
+                    .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
+            if (usuarios.isEmpty()) {
+                throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");
+            }
+            usuarioFiltros.getUsuariosId().addAll(usuarios);
+        }
+    }
+
+    private List<Integer> getIdUsuariosAa(Integer aaId) {
+        try {
+            return agenteAutorizadoClient.getUsuariosByAaId(aaId)
+                    .stream()
+                    .map(UsuarioAgenteAutorizadoResponse::getId)
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Erro ao recuperar usuarios do agente autorizado.");
+            return List.of();
+        }
     }
 }

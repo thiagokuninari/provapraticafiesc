@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -303,6 +304,9 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        if (ObjectUtils.isEmpty(usuario)) {
+            return this;
+        }
         ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
         ignorarXbrain(!usuario.isXbrain());
 
@@ -325,7 +329,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public BooleanBuilder build() {
+    public Predicate build() {
         return this.builder;
     }
 }

@@ -47,13 +47,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -606,7 +606,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .cargosId(List.of(20, 40)).build());
         assertThat(usuarios).isEqualTo(List.of(114, 366, 367, 368, 246));
     }
@@ -616,7 +616,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .todoCanalAa(true).build());
         assertThat(usuarios).isEqualTo(List.of(105, 366, 369));
     }
@@ -626,7 +626,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .todoCanalD2d(true).build());
         assertThat(usuarios).isEqualTo(List.of(233, 234, 235, 236, 237, 238, 239, 240));
     }
@@ -636,7 +636,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 101, 104, 105));
     }
@@ -646,7 +646,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .niveisId(List.of(4, 3)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
     }
@@ -656,9 +656,20 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .cidadesId(List.of(5578)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 104, 233, 234, 235, 236, 237, 238, 239, 240, 369, 370));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveLancarException_quandoNaoEncontrarNenhumUsuarioDoAa() {
+        usuarioRepository.findAll()
+                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+                        .agentesAutorizadosId(List.of(5578)).build()))
+                .withMessage("Não foi encontrado nenhum usuário do agente autorizado");
+
     }
 
     @Test
@@ -666,7 +677,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
-        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(UsuariosAlvoComunicadosFiltros.builder()
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .niveisId(List.of(4, 3))
                 .usuariosId(List.of(100, 101))
                 .cidadesId(List.of(5578)).build());
