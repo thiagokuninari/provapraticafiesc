@@ -1,4 +1,4 @@
-FROM openjdk:11.0.2-jdk-slim
+FROM openjdk:11.0.5-jdk-slim
 VOLUME /tmp
 
 #Configura o timezone do container
