@@ -165,6 +165,9 @@ app-config:
     discadora-api:
       client: discadora-api
       secret: d1sc4d0r4
+    asterisk-ura-api:
+      client: asterisk-ura-api
+      secret: 4st3r1skur44p1
 
   services:
     autenticacao:

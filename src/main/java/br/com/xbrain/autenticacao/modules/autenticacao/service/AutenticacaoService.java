@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 @Service
 public class AutenticacaoService {
 
+    private static final String USUARIO_AUTENTICADO_KEY = "usuarioAutenticado";
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
@@ -68,19 +69,21 @@ public class AutenticacaoService {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)
                 ((OAuth2Authentication) authentication).getUserAuthentication().getDetails();
-        UsuarioAutenticado usuarioAutenticado = null;
 
-        if (details.get("usuarioAutenticado") == null) {
-            Usuario usuario = usuarioRepository.findComplete(getUsuarioId()).get();
-            usuario.forceLoad();
-            usuarioAutenticado = new UsuarioAutenticado(usuario, authentication.getAuthorities());
-
-            details.put("usuarioAutenticado", usuarioAutenticado);
-        }
-        return usuarioAutenticado;
+        return Optional.ofNullable(details.get(USUARIO_AUTENTICADO_KEY))
+                .map(usuarioAutenticadoObj -> (UsuarioAutenticado)usuarioAutenticadoObj)
+                .or(() -> usuarioRepository.findComplete(getUsuarioId())
+                    .map(Usuario::forceLoad)
+                    .map(usuario -> new UsuarioAutenticado(usuario, authentication.getAuthorities()))
+                    .map(usuarioAutenticado -> {
+                        details.putIfAbsent(USUARIO_AUTENTICADO_KEY, usuarioAutenticado);
+                        return usuarioAutenticado;
+                    }))
+                .orElse(null);
     }
 
     public void logout(String login) {

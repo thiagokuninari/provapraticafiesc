@@ -3,18 +3,15 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/usuarios/gerencia")
@@ -45,16 +42,9 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping
-    public PageImpl<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        Page<Usuario> page = service.getAll(pageRequest, filtros);
-        return new PageImpl<>(
-                page
-                        .getContent()
-                        .stream()
-                        .map(UsuarioConsultaDto::new)
-                        .collect(Collectors.toList()),
-                pageRequest,
-                page.getTotalElements());
+    public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
+        return service.getAll(pageRequest, filtros)
+            .map(UsuarioConsultaDto::convertFrom);
     }
 
     @GetMapping("/hierarquia/{nivelId}")
