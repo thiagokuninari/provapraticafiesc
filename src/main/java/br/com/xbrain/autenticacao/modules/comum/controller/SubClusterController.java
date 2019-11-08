@@ -48,4 +48,9 @@ public class SubClusterController {
         return service.getAll();
     }
 
+    @GetMapping("usuario-autenticado")
+    public List<SubClusterDto> getAllSubclustersByUsuarioAutenticado() {
+        return service.getAllSubclustersByUsuarioAutenticado();
+    }
+
 }

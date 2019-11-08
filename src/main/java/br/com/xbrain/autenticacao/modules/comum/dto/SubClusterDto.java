@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -20,5 +23,12 @@ public class SubClusterDto {
                 .id(subCluster.getId())
                 .nome(subCluster.getNomeComMarca())
                 .build();
+    }
+
+    public static List<SubClusterDto> of(List<SubCluster> subclusters) {
+        return subclusters
+                .stream()
+                .map(SubClusterDto::of)
+                .collect(Collectors.toList());
     }
 }

@@ -130,7 +130,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(8)))
+                .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
@@ -140,11 +140,14 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(4)))
-                .andExpect(jsonPath("$.content[0].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].nome", is("Assistente NET")))
-                .andExpect(jsonPath("$.content[2].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.content[3].nome", is("Mso Analista Adm Claro Pessoal")));
+                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
+                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
+                .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
+                .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
+                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")));
     }
 
     @Test
@@ -155,8 +158,8 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$.content", hasSize(3)))
                 .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
                 .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.content[1].nome", is("Assistente NET")))
-                .andExpect(jsonPath("$.content[1].email", is("ASSISTENTE@NET.COM.BR")))
+                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
                 .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
                 .andExpect(jsonPath("$.content[2].email",
                     is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")));
