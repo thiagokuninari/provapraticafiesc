@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -26,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
@@ -425,6 +428,27 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void getUsuariosInativosByIds_deveRetornarUsuariosInativos_quandoForPassadoIds() throws Exception {
+
+        when(usuarioService.getUsuariosInativosByIds(List.of(101, 102, 103)))
+                .thenReturn(List.of(umUsuarioResponseInativo(101),
+                        umUsuarioResponseInativo(102),
+                        umUsuarioResponseInativo(103)));
+
+        mvc.perform(get("/api/usuarios/inativos?usuariosInativosIds=101,102,103")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].id", is(101)))
+                .andExpect(jsonPath("$[0].situacao", is(ESituacao.I.name())))
+                .andExpect(jsonPath("$[1].id", is(102)))
+                .andExpect(jsonPath("$[1].situacao", is(ESituacao.I.name())))
+                .andExpect(jsonPath("$[2].id", is(103)))
+                .andExpect(jsonPath("$[2].situacao", is(ESituacao.I.name())));
+    }
+
+    @Test
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornar200_seUsuarioPossuirPermissao() throws Exception {
         mvc.perform(get(URL_USUARIOS_AGENDAMENTOS + "131/agenteautorizado/1300")
                 .accept(MediaType.APPLICATION_JSON)
@@ -440,5 +464,12 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$[2].nome", is("MARIA DA SILVA SAURO SANTOS")))
                 .andExpect(jsonPath("$[3].id", is(135)))
                 .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
+    }
+
+    private UsuarioResponse umUsuarioResponseInativo(Integer id) {
+        return UsuarioResponse.builder()
+                .id(id)
+                .situacao(ESituacao.I)
+                .build();
     }
 }

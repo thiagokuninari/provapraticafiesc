@@ -88,4 +88,6 @@ public interface UsuarioRepositoryCustom {
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
     List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
+
+    long deleteUsuarioHierarquia(Integer usuarioId);
 }
