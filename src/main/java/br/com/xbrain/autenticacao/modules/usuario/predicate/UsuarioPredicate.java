@@ -33,6 +33,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
@@ -60,7 +61,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comSituacao(ESituacao situacao, boolean realocado) {
-        if (Objects.nonNull(situacao) && !realocado) {
+        if (nonNull(situacao) && !realocado) {
             builder.and(usuario.situacao.eq(situacao));
             builder.and(usuario.situacao.notIn(ESituacao.R));
         } else if (Objects.isNull(situacao) && realocado) {
@@ -103,6 +104,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate comNivel(List<Integer> nivelIds) {
         if (!CollectionUtils.isEmpty(nivelIds)) {
             builder.and(usuario.cargo.nivel.id.in(nivelIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comOrganizacaoId(Integer organizacaoId) {
+        if (nonNull(organizacaoId)) {
+            builder.and(usuario.organizacao.id.eq(organizacaoId));
         }
         return this;
     }

@@ -1,10 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -15,8 +20,10 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,26 +54,40 @@ public class UsuarioAgendamentoService {
             CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_TEMP
     );
 
+    private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
+    private final EquipeVendasService equipeVendasService;
     private final UsuarioService usuarioService;
     private final CargoService cargoService;
     private final UsuarioRepository usuarioRepository;
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
-        var cargoDoUsuario = cargoService.findByUsuarioId(usuarioId);
-
-        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false)
+        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosIds = usuariosDoAa
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
 
-        var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosDoAa);
+        var usuariosHibridos = obterUsuariosHibridosDoAa(usuariosIds);
 
-        var vendedoresDoMesmoCanal = List.<UsuarioAgenteAutorizadoAgendamentoResponse>of();
+        var vendedoresDoMesmoCanal = getVendedoresDoMesmoCanal(usuarioId, agenteAutorizadoId, usuariosHibridos);
 
-        if (isVendedor(cargoDoUsuario)) {
-            vendedoresDoMesmoCanal = obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos);
+        if (isUsuarioAutenticadoSupervisor()) {
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+            var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(
+                    Collections.singletonList(usuarioAutenticado));
+            var usuariosSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuariosDoAa)
+                    .stream()
+                    .map(UsuarioAgendamentoResponse::getId)
+
+                    .collect(Collectors.toList());
+            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresDoMesmoCanal.stream())
+                    .filter(u -> !u.isUsuarioSolicitante(usuarioId)
+                            && (usuariosSupervisionados.contains(u.getId())
+                                || Objects.equals(u.getId(), usuarioAutenticado.getId())))
+                    .distinct()
+                    .collect(Collectors.toList());
         }
 
         var usuariosHibridosValidos = filtrarSupervisoresSemPermissaoDeVenda(usuariosHibridos);
@@ -75,6 +96,15 @@ public class UsuarioAgendamentoService {
                 .filter(u -> !u.isUsuarioSolicitante(usuarioId))
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgenteAutorizadoAgendamentoResponse> getVendedoresDoMesmoCanal(Integer usuarioId,
+                                                                                       Integer agenteAutorizadoId,
+                                                                                       List<Usuario> usuariosHibridos) {
+        return Optional.ofNullable(cargoService.findByUsuarioId(usuarioId))
+                .filter(this::isVendedor)
+                .map(u -> obterVendedoresDoMesmoCanalSemSupervisores(agenteAutorizadoId, usuarioId, usuariosHibridos))
+                .orElseGet(List::of);
     }
 
     private List<UsuarioAgenteAutorizadoAgendamentoResponse> obterVendedoresDoMesmoCanalSemSupervisores(
@@ -93,6 +123,10 @@ public class UsuarioAgendamentoService {
     }
 
     private List<Usuario> obterUsuariosHibridosDoAa(List<Integer> usuariosDoAa) {
+        Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
+                .filter(u -> this.isSupervisor(u.getCargoCodigo()))
+                .ifPresent(u -> usuariosDoAa.add(u.getId()));
+
         return usuarioRepository.getUsuariosFilter(new UsuarioPredicate()
                 .comIds(usuariosDoAa)
                 .build())
@@ -139,5 +173,47 @@ public class UsuarioAgendamentoService {
 
     private boolean isCargoHibrido(CodigoCargo codigoCargo) {
         return CARGOS_HIBRIDOS_PERMITIDOS.contains(codigoCargo);
+    }
+
+    public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
+
+        var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+
+        if (isUsuarioAutenticadoSupervisor()) {
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+            var supervisorComPermissaoVenda = filtrarSupervisoresSemPermissaoDeVenda(List.of(usuarioAutenticado))
+                    .stream()
+                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                    .collect(Collectors.toList());
+            var vendedoresSupervisionados = getVendedoresSupervisionados(usuarioAutenticado.getId(), usuarios);
+
+            return Stream.concat(supervisorComPermissaoVenda.stream(), vendedoresSupervisionados.stream())
+                    .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                    .collect(Collectors.toList());
+        }
+
+        return usuarios.stream()
+                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgendamentoResponse> getVendedoresSupervisionados(int supervisorId,
+                                                                          List<UsuarioAgenteAutorizadoResponse> usuarios) {
+        var equipesSupervisionadas = equipeVendasService.getEquipesPorSupervisor(supervisorId)
+                .stream()
+                .map(EquipeVendasSupervisionadasResponse::getId)
+                .collect(Collectors.toList());
+
+        return usuarios.stream()
+                .filter(u -> equipesSupervisionadas.contains(u.getEquipeVendaId()))
+                .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isUsuarioAutenticadoSupervisor() {
+        return Optional.ofNullable(autenticacaoService.getUsuarioAutenticado())
+                .map(UsuarioAutenticado::getCargoCodigo)
+                .map(this::isSupervisor)
+                .orElse(false);
     }
 }

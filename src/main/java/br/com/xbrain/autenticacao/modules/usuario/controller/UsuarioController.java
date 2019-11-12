@@ -13,11 +13,13 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoServ
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "api/usuarios")
 public class UsuarioController {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -135,6 +138,16 @@ public class UsuarioController {
     @RequestMapping(params = "ids", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByIds(@RequestParam List<Integer> ids) {
         return usuarioService.getUsuariosByIds(ids);
+    }
+
+    @GetMapping("inativos")
+    public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
+
+        return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE )
+                .stream()
+                .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @GetMapping(params = "email")
@@ -258,6 +271,11 @@ public class UsuarioController {
     @GetMapping("permissoes-por-usuario")
     public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
+    }
+
+    @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
+    public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+        return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
     }
 
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")

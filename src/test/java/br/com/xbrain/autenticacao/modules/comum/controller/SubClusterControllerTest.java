@@ -93,4 +93,26 @@ public class SubClusterControllerTest {
         mvc.perform(get(API_SUBCLUSTER + "/45"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioCidadeCadastradas() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_SUPERVISOR))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")))
+                .andExpect(jsonPath("$[1].nome", is("MARINGÁ")));
+    }
+
+    @Test
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioPossuiPermissaoVisuazarGeral()
+            throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
+                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(245)))
+                .andExpect(jsonPath("$[0].nome", is("ABCDM")));
+    }
 }

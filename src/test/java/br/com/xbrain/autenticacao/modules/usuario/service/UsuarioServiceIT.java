@@ -220,31 +220,31 @@ public class UsuarioServiceIT {
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(205);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoAssistente() {
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoAssistenteComMotivoDemissao() {
         doReturn(umUsuarioAssistente()).when(service).findComplete(204);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(204);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
-    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoVendedorD2d() {
+    public void inativar_deveEnviarParaInativarNoEquipeVendas_sePossuirCargoVendedorD2dComMotivoDemissao() {
         doReturn(umUsuarioVendedorD2d()).when(service).findComplete(203);
 
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(203);
-        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
+        usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
         verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
@@ -860,6 +860,13 @@ public class UsuarioServiceIT {
                         .id(id + 1)
                         .nome("nome " + id + 1)
                         .build());
+    }
+
+    @Test
+    public void getUsuariosInativosByIds_retornarUsuriosInativos_quandoForPassadoIds() {
+        assertThat(service.getUsuariosInativosByIds(List.of(100, 101, 105, 370)))
+                .hasSize(2).extracting("id", "situacao")
+                .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {

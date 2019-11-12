@@ -96,6 +96,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String discadoraApiClient;
     @Value("${app-config.oauth-clients.discadora-api.secret}")
     private String discadoraApiSecret;
+    @Value("${app-config.oauth-clients.asterisk-ura-api.client}")
+    private String asteriskUraApiClient;
+    @Value("${app-config.oauth-clients.asterisk-ura-api.secret}")
+    private String asteriskuraApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -217,6 +221,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(discadoraApiSecret)
             .authorizedGrantTypes("client_credentials")
             .scopes("discadora-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(asteriskUraApiClient)
+            .secret(asteriskuraApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("asterisk-ura-api")
             .authorities(ROLE_APPLICATION);
     }
 

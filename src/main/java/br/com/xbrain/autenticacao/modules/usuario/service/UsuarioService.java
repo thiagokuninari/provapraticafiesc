@@ -61,6 +61,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -826,8 +827,15 @@ public class UsuarioService {
                 .ferias(usuarioFeriasService
                         .save(usuario, usuarioInativacao).orElse(null))
                 .build());
-        inativarUsuarioNaEquipeVendas(usuario);
+        inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
+        removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
+    }
+
+    private void removerHierarquiaDoUsuarioEquipe(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isUsuarioEquipeVendas() && motivoInativacao.getCodigo().equals(DEMISSAO)) {
+            repository.deleteUsuarioHierarquia(usuario.getId());
+        }
     }
 
     private Usuario getUsuarioInativacaoTratado(UsuarioInativacaoDto usuario) {
@@ -837,8 +845,8 @@ public class UsuarioService {
             .orElseGet(() -> new Usuario(usuario.getIdUsuarioInativacao()));
     }
 
-    private void inativarUsuarioNaEquipeVendas(Usuario usuario) {
-        if (usuario.isUsuarioEquipeVendas()) {
+    private void inativarUsuarioNaEquipeVendas(Usuario usuario, MotivoInativacao motivoInativacao) {
+        if (usuario.isUsuarioEquipeVendas() && motivoInativacao.getCodigo().equals(DEMISSAO)) {
             equipeVendaMqSender.sendInativar(UsuarioEquipeVendasDto.createFromUsuario(usuario));
         }
     }
@@ -894,6 +902,14 @@ public class UsuarioService {
         return usuarios.stream()
             .map(UsuarioResponse::convertFrom)
             .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
+        var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
+
+        return usuarios.stream()
+                .map(UsuarioResponse::convertFrom)
+                .collect(Collectors.toList());
     }
 
     @Transactional

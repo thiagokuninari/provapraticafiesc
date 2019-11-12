@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -645,4 +646,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .fetch();
     }
 
+    @Override
+    public long deleteUsuarioHierarquia(Integer usuarioId) {
+        return new JPADeleteClause(entityManager, usuarioHierarquia)
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .execute();
+    }
 }

@@ -92,4 +92,6 @@ public interface UsuarioRepositoryCustom {
     List<Integer> findAllIds(Predicate predicate);
 
     List<UsuarioNomeResponse> findAllNomesIds(Predicate predicate);
+
+    long deleteUsuarioHierarquia(Integer usuarioId);
 }

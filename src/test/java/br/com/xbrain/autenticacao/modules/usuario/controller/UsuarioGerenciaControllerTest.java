@@ -58,16 +58,18 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.thymeleaf.util.StringUtils.concat;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Sql(scripts = {"classpath:/tests_database.sql"})
+@Sql("classpath:/tests_database.sql")
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
+    private static final String API_URI = "/api/usuarios/gerencia";
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -87,22 +89,23 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia")
+        mvc.perform(get(API_URI)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getAll_deveRetornarForbidden_quandoNaoTiverPermissaoParaGerenciaDeUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia")
+        mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
 
     @Test
+
     public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/" + ID_USUARIO_HELPDESK)
+        mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -113,7 +116,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getAll_deveFiltrarPorEmail_quandoOFiltroForPassado() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?email=HELPDESK@XBRAIN.COM.BR")
+        mvc.perform(get(API_URI + "?email=HELPDESK@XBRAIN.COM.BR")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -123,30 +126,48 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getAll_deveRetornarTodosOsUsuarios_quandoForAdmin() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia")
+        mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(8)))
+                .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("ADMIN")));
     }
 
     @Test
     public void getAll_deveNaoRetornarOsUsuariosXbrain_quandoForNivelMso() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia")
+        mvc.perform(get(API_URI)
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(4)))
-                .andExpect(jsonPath("$.content[0].nome", is("operacao_gerente_comercial")))
-                .andExpect(jsonPath("$.content[1].nome", is("Assistente NET")))
-                .andExpect(jsonPath("$.content[2].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-                .andExpect(jsonPath("$.content[3].nome", is("Mso Analista Adm Claro Pessoal")));
+                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
+                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
+                .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
+                .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
+                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")));
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarios_quandoFiltroForComOrganizacaoId() throws Exception {
+        mvc.perform(get(API_URI + "?organizacaoId=2")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
+                .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
+                .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
+                .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
+                .andExpect(jsonPath("$.content[2].email",
+                    is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")));
     }
 
     @Test
     public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
-        mvc.perform(post("/api/usuarios/gerencia/cargo-superior/4")
+        mvc.perform(post(API_URI + "/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(
@@ -165,7 +186,7 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97")
+        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -178,7 +199,7 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=A")
+        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=A")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -192,7 +213,7 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get("/api/usuarios/gerencia?cnpjAa=09.489.617/0001-97&situacao=I")
+        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -201,7 +222,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveFiltrarPorNome() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?nome=ADMIN")
+        mvc.perform(get(API_URI + "?nome=ADMIN")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -210,7 +231,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void filtrarUser_deveFiltrarPorInativo_quandoSituacaoForInativo() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?situacao=I&realocado=false")
+        mvc.perform(get(API_URI + "?situacao=I&realocado=false")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -220,7 +241,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void filtrarUser_deveFiltrarPorRealocado_quandoRealocadoForTrue() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia?realocado=true")
+        mvc.perform(get(API_URI + "?realocado=true")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -231,7 +252,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload("/api/usuarios/gerencia")
+                .fileUpload(API_URI)
                 .file(umUsuario(new UsuarioDto()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
@@ -251,7 +272,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveSalvarSemFoto() throws Exception {
         UsuarioDto usuario = umUsuario("JOAO");
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload("/api/usuarios/gerencia")
+                .fileUpload(API_URI)
                 .file(umUsuario(usuario))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
@@ -272,7 +293,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveSalvarComFoto() throws Exception {
         UsuarioDto usuario = umUsuario("JOAO");
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload("/api/usuarios/gerencia")
+                .fileUpload(API_URI)
                 .file(umFileFoto())
                 .file(umUsuario(usuario))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -295,7 +316,7 @@ public class UsuarioGerenciaControllerTest {
         UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
         dto.setUsuarioId(ID_USUARIO_HELPDESK);
         dto.setRamal(1234);
-        mvc.perform(post("/api/usuarios/gerencia/configuracao")
+        mvc.perform(post(API_URI + "/configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -307,7 +328,7 @@ public class UsuarioGerenciaControllerTest {
         UsuarioConfiguracaoSaveDto dto = new UsuarioConfiguracaoSaveDto();
         dto.setUsuarioId(100);
         dto.setRamal(6666);
-        mvc.perform(post("/api/usuarios/gerencia/configuracao")
+        mvc.perform(post(API_URI + "/configuracao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -319,7 +340,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void deveEditarSemFoto() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload("/api/usuarios/gerencia")
+                .fileUpload(API_URI)
                 .file(umUsuario(umUsuarioParaEditar()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
@@ -331,7 +352,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void deveEditarComFoto() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload("/api/usuarios/gerencia")
+                .fileUpload(API_URI)
                 .file(umFileFoto())
                 .file(umUsuario(umUsuarioParaEditar()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -343,7 +364,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveInativarUmUsuario() throws Exception {
-        mvc.perform(post("/api/usuarios/gerencia/inativar")
+        mvc.perform(post(API_URI + "/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umUsuarioParaInativar())))
@@ -354,7 +375,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarASenhaDeUmUsuarioEEnviarPorEmail() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/100/senha")
+        mvc.perform(put(API_URI + "/100/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -363,7 +384,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveRetornarAsPermissoesDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/100/permissoes")
+        mvc.perform(get(API_URI + "/100/permissoes")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -373,7 +394,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveRetornarAsCidadesAtreladasAoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/100/cidades")
+        mvc.perform(get(API_URI + "/100/cidades")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -382,7 +403,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarOEmailDoUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/acesso/email")
+        mvc.perform(put(API_URI + "/acesso/email")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoEmail())))
@@ -394,7 +415,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveNaoTrocarOEmailDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
         UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
         dto.setEmailAtual("EMAILERRADO@XBRAIN.COM.BR");
-        mvc.perform(put("/api/usuarios/gerencia/acesso/email")
+        mvc.perform(put(API_URI + "/acesso/email")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -403,7 +424,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveAlterarASenhaDoUsuario() throws Exception {
-        mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
+        mvc.perform(put(API_URI + "/acesso/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
@@ -429,7 +450,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveNaoTrocarASenhaDoUsuarioQuandoForDiferenteDoDaBase() throws Exception {
         UsuarioDadosAcessoRequest dto = umRequestDadosAcessoSenha();
         dto.setSenhaAtual("SENHAINCORRETA");
-        mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
+        mvc.perform(put(API_URI + "/acesso/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(dto)))
@@ -438,7 +459,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveRetornarOSuperiorDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/101/supervisor")
+        mvc.perform(get(API_URI + "/101/supervisor")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -449,7 +470,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveRetornarOSuperioresDoUsuario() throws Exception {
-        mvc.perform(get("/api/usuarios/gerencia/101/supervisores")
+        mvc.perform(get(API_URI + "/101/supervisores")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -459,7 +480,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void getCsv_CsvFormatadoCorretamente_QuandoRetornadoDoisUsuarios() throws Exception {
         doReturn(doisUsuariosCsvResponse()).when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
-        String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
+        String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -480,7 +501,7 @@ public class UsuarioGerenciaControllerTest {
     public void getCsv_CsvFormatadoCorretamente_QuandoUsuarioNaoPossuirEmpresaEUnidadeNegocio() throws Exception {
         doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
                 .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
-        String csv = mvc.perform(get("/api/usuarios/gerencia/csv")
+        String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
