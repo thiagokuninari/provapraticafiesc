@@ -814,7 +814,7 @@ public class UsuarioServiceIT {
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(100))
                 .build());
-        assertThat(usuarios).hasSize(43);
+        assertThat(usuarios).hasSize(46);
     }
 
     @Test
@@ -827,7 +827,7 @@ public class UsuarioServiceIT {
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(100))
                 .build());
-        assertThat(usuarios).hasSize(43);
+        assertThat(usuarios).hasSize(46);
     }
 
     @Test
