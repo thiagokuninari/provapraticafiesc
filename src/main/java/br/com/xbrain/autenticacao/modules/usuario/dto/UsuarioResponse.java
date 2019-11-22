@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public class UsuarioResponse {
     private String telefone02;
     private String telefone03;
     private ESituacao situacao;
+    private LocalDateTime dataCadastro;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
     private CodigoCargo codigoCargo;
