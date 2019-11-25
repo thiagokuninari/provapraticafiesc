@@ -66,6 +66,11 @@ public class UsuarioController {
             usuarioService.findCompleteById(id));
     }
 
+    @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
+        return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
+    }
+
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
         return UsuarioResponse.convertFrom(

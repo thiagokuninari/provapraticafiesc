@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
@@ -176,6 +177,10 @@ public class UsuarioService {
                 .comId(id)
                 .build())
             .forceLoad();
+    }
+
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(Integer cargoId) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
     }
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {

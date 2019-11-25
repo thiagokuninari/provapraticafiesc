@@ -90,4 +90,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
 
     long deleteUsuarioHierarquia(Integer usuarioId);
+
+    List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
 }

@@ -32,6 +32,7 @@ public class UsuarioResponse {
     private ESituacao situacao;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
+    private String nomeCargo;
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
@@ -40,6 +41,14 @@ public class UsuarioResponse {
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
         this.nome = nome;
+        this.codigoCargo = codigoCargo;
+    }
+
+    public UsuarioResponse(Integer id, String nome, String email, String nomeCargo, CodigoCargo codigoCargo) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.nomeCargo = nomeCargo;
         this.codigoCargo = codigoCargo;
     }
 
