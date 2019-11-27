@@ -467,7 +467,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void findById_deveRetornarUsuarioResponse_quandoSolicitado() throws Exception {
+    public void findById_deveRetornarUsuarioResponseSemPermissoes_quandoSolicitado() throws Exception {
         doReturn(UsuarioResponse.builder()
             .id(1)
             .nome("RENATO")
