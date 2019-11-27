@@ -466,6 +466,27 @@ public class UsuarioControllerTest {
                 .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
     }
 
+    @Test
+    public void findById_deveRetornarUsuarioResponse_quandoSolicitado() throws Exception {
+        doReturn(UsuarioResponse.builder()
+            .id(1)
+            .nome("RENATO")
+            .situacao(ESituacao.A)
+            .email("RENATO@GMAIL.COM")
+            .build())
+            .when(usuarioService).findById(1);
+
+        mvc.perform(get("/api/usuarios/1/sem-permissoes")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("RENATO")))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.email", is("RENATO@GMAIL.COM")))
+            .andExpect(jsonPath("$.permissoes", nullValue()));
+    }
+
     private UsuarioResponse umUsuarioResponseInativo(Integer id) {
         return UsuarioResponse.builder()
                 .id(id)

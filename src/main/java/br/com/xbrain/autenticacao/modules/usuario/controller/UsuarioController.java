@@ -68,7 +68,7 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
-        return UsuarioResponse.convertFrom(
+        return UsuarioResponse.of(
             usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
@@ -287,5 +287,10 @@ public class UsuarioController {
     @GetMapping("usuario-funil-prospeccao")
     public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
+    }
+
+    @GetMapping("{id}/sem-permissoes")
+    public UsuarioResponse findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
     }
 }
