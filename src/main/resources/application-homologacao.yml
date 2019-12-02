@@ -47,7 +47,7 @@ app-config:
     enviar: true
     empresa-alias: XBRAIN
     emails: angelica@xbrain.com.br,valdecir@xbrain.com.br,higor@xbrain.com.br
-    emails-solicitacao-ramal: angelica@xbrain.com.br, higor@xbrain.com.br, valdecir@xbrain.com.br
+    emails-solicitacao-ramal: angelica@xbrain.com.br, higor@xbrain.com.br, valdecir@xbrain.com.br, jose@xbrain.com.br
 
 logging:
   level:
