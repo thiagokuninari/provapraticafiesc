@@ -293,4 +293,9 @@ public class UsuarioController {
     public UsuarioResponse findById(@PathVariable Integer id) {
         return usuarioService.findById(id);
     }
+
+    @GetMapping("/cargo/{codigoCargo}")
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
+    }
 }

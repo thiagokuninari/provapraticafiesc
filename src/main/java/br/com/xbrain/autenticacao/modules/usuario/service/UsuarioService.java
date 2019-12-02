@@ -1321,4 +1321,10 @@ public class UsuarioService {
             .map(UsuarioResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
+
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
+        return repository.findUsuariosByCodigoCargo(codigoCargo).stream()
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
+    }
 }
