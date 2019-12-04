@@ -77,4 +77,5 @@ public class UsuarioRepositoryTest {
                 tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
                 tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
     }
+
 }
