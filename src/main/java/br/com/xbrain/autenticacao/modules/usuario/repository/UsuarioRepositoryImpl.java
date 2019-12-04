@@ -639,10 +639,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
         return new JPAQueryFactory(entityManager)
             .selectDistinct(usuario)
-            .from(usuarioHierarquia)
-            .innerJoin(usuarioHierarquia.usuario, usuario)
+            .from(usuario)
             .innerJoin(usuario.cargo, cargo)
-            .where(cargo.codigo.eq(codigoCargo))
+            .where(cargo.codigo.eq(codigoCargo)
+                .and(usuario.situacao.eq(A)))
             .fetch();
     }
 }
