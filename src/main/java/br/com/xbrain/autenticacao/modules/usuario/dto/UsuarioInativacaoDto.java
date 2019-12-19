@@ -42,4 +42,11 @@ public class UsuarioInativacaoDto {
                 && !isEmpty(dataInicio)
                 && !isEmpty(dataFim);
     }
+
+    @JsonIgnore
+    public  boolean isAfastamento() {
+        return codigoMotivoInativacao == CodigoMotivoInativacao.AFASTAMENTO
+                && !isEmpty(dataInicio)
+                && !isEmpty(dataFim);
+    }
 }

@@ -144,6 +144,8 @@ public class UsuarioService {
     private EquipeVendaService equipeVendaService;
     @Autowired
     private UsuarioFeriasService usuarioFeriasService;
+    @Autowired
+    private UsuarioAfastamentoService usuarioAfastamentoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -824,6 +826,8 @@ public class UsuarioService {
                 .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
                 .ferias(usuarioFeriasService
+                        .save(usuario, usuarioInativacao).orElse(null))
+                .afastamento(usuarioAfastamentoService
                         .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
