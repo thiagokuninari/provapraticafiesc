@@ -46,7 +46,7 @@ public class CargoServiceTest {
 
         assertThat(service.getPermitidosPorNivel(1))
                 .extracting("id", "nome")
-                .containsExactly(
+                .containsExactlyInAnyOrder(
                         tuple(1, "Analista"),
                         tuple(2, "Assistente"),
                         tuple(3, "Consultor"),
@@ -56,7 +56,9 @@ public class CargoServiceTest {
                         tuple(7, "Gerente"),
                         tuple(10, "Supervisor"),
                         tuple(9, "Técnico"),
-                        tuple(8, "Vendedor"));
+                        tuple(8, "Vendedor"),
+                        tuple(94, "Assistente Hunter"),
+                        tuple(95, "Executivo Hunter"));
     }
 
     @Test

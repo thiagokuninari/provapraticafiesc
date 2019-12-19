@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
@@ -50,6 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class UsuarioControllerTest {
     private static final String URL_USUARIOS_AGENDAMENTOS = "/api/usuarios/distribuicao/agendamentos/";
+    private static final String USUARIOS_ENDPOINT = "/api/usuarios";
 
     @Autowired
     private MockMvc mvc;
@@ -451,25 +453,45 @@ public class UsuarioControllerTest {
     @Test
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornar200_seUsuarioPossuirPermissao() throws Exception {
         mvc.perform(get(URL_USUARIOS_AGENDAMENTOS + "131/agenteautorizado/1300")
-                .accept(MediaType.APPLICATION_JSON)
-                .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].id", is(130)))
-                .andExpect(jsonPath("$[0].nome", is("JOÃO MARINHO DA SILVA DOS SANTOS")))
-                .andExpect(jsonPath("$[1].id", is(133)))
-                .andExpect(jsonPath("$[1].nome", is("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")))
-                .andExpect(jsonPath("$[2].id", is(134)))
-                .andExpect(jsonPath("$[2].nome", is("MARIA DA SILVA SAURO SANTOS")))
-                .andExpect(jsonPath("$[3].id", is(135)))
-                .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].id", is(130)))
+            .andExpect(jsonPath("$[0].nome", is("JOÃO MARINHO DA SILVA DOS SANTOS")))
+            .andExpect(jsonPath("$[1].id", is(133)))
+            .andExpect(jsonPath("$[1].nome", is("JOSÉ MARINHO DA SILVA DOS SANTOS JÚNIOR")))
+            .andExpect(jsonPath("$[2].id", is(134)))
+            .andExpect(jsonPath("$[2].nome", is("MARIA DA SILVA SAURO SANTOS")))
+            .andExpect(jsonPath("$[3].id", is(135)))
+            .andExpect(jsonPath("$[3].nome", is("MARCOS AUGUSTO DA SILVA SANTOS")));
+    }
+
+    @Test
+    public void getUsuariosExecutivos_deveRetornarStatusCode200() throws Exception {
+        when(usuarioService.buscarExecutivosPorSituacao(ESituacao.A))
+            .thenReturn(List.of(umUsuarioExecutivo(1, "seiya@cdz.com", "SEIYA"),
+                umUsuarioExecutivo(2, "ikki@cdz.com", "IKKI")));
+
+        mvc.perform(get(USUARIOS_ENDPOINT + "/executivos")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("SEIYA")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("IKKI")));
     }
 
     private UsuarioResponse umUsuarioResponseInativo(Integer id) {
         return UsuarioResponse.builder()
-                .id(id)
-                .situacao(ESituacao.I)
-                .build();
+            .id(id)
+            .situacao(ESituacao.I)
+            .build();
+    }
+
+    private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
+        return new UsuarioExecutivoResponse(id, email, nome);
     }
 }

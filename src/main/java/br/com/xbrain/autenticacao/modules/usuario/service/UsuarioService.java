@@ -1315,4 +1315,8 @@ public class UsuarioService {
         repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
     }
+
+    public List<UsuarioExecutivoResponse> buscarExecutivosPorSituacao(ESituacao situacao) {
+        return repository.findAllExecutivosBySituacao(situacao);
+    }
 }

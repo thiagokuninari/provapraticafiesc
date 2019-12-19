@@ -634,4 +634,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .where(usuarioHierarquia.usuario.id.eq(usuarioId))
                 .execute();
     }
+
+    @Override
+    public List<UsuarioExecutivoResponse> findAllExecutivosBySituacao(ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioExecutivoResponse.class,
+                usuario.id, usuario.email, usuario.nome))
+            .from(usuario)
+            .join(usuario.cargo, cargo)
+            .where(usuario.situacao.eq(situacao)
+            .and(usuario.cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)))
+            .fetch();
+    }
 }
