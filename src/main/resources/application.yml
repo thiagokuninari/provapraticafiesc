@@ -168,6 +168,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    indicacao-api:
+      client: indicacao-api
+      secret: 1nd1c4c40
 
   services:
     autenticacao:
