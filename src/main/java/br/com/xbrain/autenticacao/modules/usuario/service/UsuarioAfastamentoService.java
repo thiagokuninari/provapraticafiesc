@@ -32,4 +32,8 @@ public class UsuarioAfastamentoService {
     public List<Usuario> getUsuariosInativosComAfastamentoEmAberto(LocalDate dataFimAfastamento) {
         return repository.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento);
     }
+
+    public Long atualizaDataFimAfastamento(Integer usuarioId) {
+        return repository.atualizaDataFim(usuarioId);
+    }
 }

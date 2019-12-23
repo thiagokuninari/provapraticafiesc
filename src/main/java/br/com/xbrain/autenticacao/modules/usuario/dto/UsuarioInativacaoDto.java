@@ -47,6 +47,6 @@ public class UsuarioInativacaoDto {
     public  boolean isAfastamento() {
         return codigoMotivoInativacao == CodigoMotivoInativacao.AFASTAMENTO
                 && !isEmpty(dataInicio)
-                && !isEmpty(dataFim);
+                && isEmpty(dataFim);
     }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface UsuarioAfastamentoRepositoryCustom {
     List<Usuario> getUsuariosInativosComAfastamentoEmAberto(LocalDate dataFimAfastamento);
+
+    Long atualizaDataFim(Integer usuarioId);
 }

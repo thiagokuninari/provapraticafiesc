@@ -39,8 +39,7 @@ public class UsuarioAfastamento {
     @Column(name = "INICIO", nullable = false)
     private LocalDate inicio;
 
-    @NotNull
-    @Column(name = "FIM", nullable = false)
+    @Column(name = "FIM", nullable = true)
     private LocalDate fim;
 
     public static UsuarioAfastamento of(Usuario usuario, LocalDate inicio, LocalDate fim) {
