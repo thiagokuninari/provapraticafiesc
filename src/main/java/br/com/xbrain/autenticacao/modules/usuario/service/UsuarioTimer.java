@@ -58,4 +58,9 @@ public class UsuarioTimer {
     public void reativarUsuariosComFeriasComTerminoFinalizado() {
         service.reativarUsuariosInativosComFeriasTerminando(LocalDate.now().minusDays(1));
     }
+
+    @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
+    public void reativarUsuariosComAfastamentoComTerminoFinalizado() {
+        service.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now().minusDays(1));
+    }
 }

@@ -7,6 +7,8 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioAfastamentoR
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.*;
@@ -25,5 +27,9 @@ public class UsuarioAfastamentoService {
                             usuarioInativacao.getDataFim())));
         }
         return empty();
+    }
+
+    public List<Usuario> getUsuariosInativosComAfastamentoEmAberto(LocalDate dataFimAfastamento) {
+        return repository.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento);
     }
 }

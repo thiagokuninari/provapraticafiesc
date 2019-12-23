@@ -1313,6 +1313,18 @@ public class UsuarioService {
                     .build()));
     }
 
+    public void reativarUsuariosInativosComAfastamentoTerminando(LocalDate dataFimAfastamento) {
+        usuarioAfastamentoService.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento)
+                .forEach(usuario -> ativar(
+                        UsuarioAtivacaoDto
+                                .builder()
+                                .idUsuario(usuario.getId())
+                                .observacao("Usuário reativado automaticamente devido ao término do afastamento")
+                                .idUsuarioAtivacao(usuario.getId())
+                                .build()
+                ));
+    }
+
     @Transactional
     public void atualizarDataUltimoAcesso(Integer id) {
         var dataUltimoAcesso = LocalDateTime.now();
