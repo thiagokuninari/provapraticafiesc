@@ -30,7 +30,8 @@ public class UsuarioAfastamentoRepositoryImpl extends CustomRepository<UsuarioAf
     public Long atualizaDataFim(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .update(usuarioAfastamento)
-                .where(usuarioAfastamento.usuario.id.eq(usuarioId))
+                .where(usuarioAfastamento.usuario.id.eq(usuarioId)
+                        .and(usuarioAfastamento.fim.isNull()))
                 .set(usuarioAfastamento.fim, LocalDate.now())
                 .execute();
     }
