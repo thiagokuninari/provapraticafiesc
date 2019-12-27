@@ -50,7 +50,7 @@ public class UsuarioAfastamentoServiceIT {
     }
 
     @Test
-    public void save_deveNaoGerarORegistroDeAfastamento_quandoOMotivoDeInativacaoNaoForAfastamento() {
+    public void save_deveNaoGerarORegistroDeAfastamento_quandoNaoConterDataInicialEDataFim() {
         service.save(
                 usuarioService.findByIdCompleto(101),
                 UsuarioInativacaoDto
