@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
@@ -73,6 +74,17 @@ public class CargoService {
         copyProperties(cargo, cargoToUpdate);
 
         return repository.save(cargoToUpdate);
+    }
+
+    public Cargo situacao(CargoRequest cargoRequest) {
+        Cargo cargoToUpdate = repository.findById(cargoRequest.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        cargoToUpdate.setSituacao(cargoRequest.getSituacao());
+
+        return repository.save(cargoToUpdate);
+    }
+
+    public Cargo findCargoById(Integer cargoId) {
+        return repository.findById(cargoId).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public boolean validaCargoExiste(Cargo cargo) {
