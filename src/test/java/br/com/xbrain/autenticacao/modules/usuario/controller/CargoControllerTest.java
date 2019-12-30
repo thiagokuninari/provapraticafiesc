@@ -60,7 +60,7 @@ public class CargoControllerTest {
         when(cargoService.getPermitidosPorNivel(eq(1)))
                 .thenReturn(List.of(Cargo.builder()
                         .codigo(CodigoCargo.OPERACAO_TECNICO)
-                        .nome("OPERADORACAO TECNICO")
+                        .nome("OPERADOR TECNICO")
                         .build()));
 
         mvc.perform(get(API_CARGO + "?nivelId=1")
@@ -69,7 +69,7 @@ public class CargoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(empty())))
                 .andExpect(jsonPath("$[0].codigo", is(CodigoCargo.OPERACAO_TECNICO.name())))
-                .andExpect(jsonPath("$[0].nome", is("OPERADORACAO TECNICO")));
+                .andExpect(jsonPath("$[0].nome", is("OPERADOR TECNICO")));
     }
 
     @Test

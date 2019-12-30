@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -35,7 +34,7 @@ public class CargoService {
     private CargoSuperiorRepository cargoSuperiorRepository;
 
     public List<Cargo> getPermitidosPorNivel(Integer nivelId) {
-        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         return repository.findAll(
                 new CargoPredicate()
@@ -65,14 +64,14 @@ public class CargoService {
     }
 
     public Cargo update(Cargo cargo) {
-        Cargo cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var cargoToUpdate = repository.findById(cargo.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         copyProperties(cargo, cargoToUpdate);
 
         return repository.save(cargoToUpdate);
     }
 
     public Cargo situacao(CargoRequest cargoRequest) {
-        Cargo cargoToUpdate = repository.findById(cargoRequest.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var cargoToUpdate = repository.findById(cargoRequest.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
