@@ -96,9 +96,6 @@ public class CargoServiceTest {
 
     @Test
     public void update_deveRetonarCargo_quandoForAtualizado() throws Exception {
-        when(cargoRepository.exists(any()))
-                .thenReturn(true);
-
         when(cargoRepository.findById(any()))
                 .thenReturn(Optional.of(umCargo(1, "Assistente", ESituacao.A)));
 
