@@ -88,7 +88,7 @@ public class CargoControllerTest {
     @Test
     public void findCargoById_deveRetornarCargo_quandoForPassadoId() throws Exception {
         when(cargoService.findById(any()))
-                .thenReturn(umCargo(1, "Administrador"));
+                .thenReturn(umCargoNivelAdministrador(1, "Administrador"));
 
         mvc.perform(get(API_CARGO + "/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -100,7 +100,7 @@ public class CargoControllerTest {
     @Test
     public void save_deveRetornarCargo_quandoForSalvo() throws Exception {
         when(cargoService.save(any()))
-                .thenReturn(umCargo(2, "Administrador"));
+                .thenReturn(umCargoNivelAdministrador(2, "Administrador"));
 
         mvc.perform(post(API_CARGO)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -113,7 +113,7 @@ public class CargoControllerTest {
     @Test
     public void update_deveRetornarCargo_quandoForAtualizado() throws Exception {
         when(cargoService.update(any()))
-                .thenReturn(umCargo(2, "Vendedor"));
+                .thenReturn(umCargoNivelAdministrador(2, "Vendedor"));
 
         mvc.perform(put(API_CARGO)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -126,7 +126,7 @@ public class CargoControllerTest {
     @Test
     public void situacao_deveRetornarCargo_quandoSituacaoForAlterado() throws Exception {
         when(cargoService.situacao(any()))
-                .thenReturn(umCargo(2, "Vendedor"));
+                .thenReturn(umCargoNivelAdministrador(2, "Vendedor"));
 
         mvc.perform(put(API_CARGO + "/altera-situacao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -148,7 +148,7 @@ public class CargoControllerTest {
                 .build()));
     }
 
-    public Cargo umCargo(Integer id, String nome) {
+    public Cargo umCargoNivelAdministrador(Integer id, String nome) {
         return Cargo.builder()
                 .id(id)
                 .nome(nome)
