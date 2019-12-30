@@ -36,7 +36,7 @@ public class CargoController {
 
     @GetMapping("/{id}")
     public CargoResponse findCargoById(@PathVariable Integer id) {
-        return CargoResponse.of(service.findCargoById(id));
+        return CargoResponse.of(service.findById(id));
     }
 
     @PostMapping

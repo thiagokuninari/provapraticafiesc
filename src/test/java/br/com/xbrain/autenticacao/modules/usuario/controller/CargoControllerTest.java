@@ -87,7 +87,7 @@ public class CargoControllerTest {
 
     @Test
     public void findCargoById_deveRetornarCargo_quandoForPassadoId() throws Exception {
-        when(cargoService.findCargoById(any()))
+        when(cargoService.findById(any()))
                 .thenReturn(umCargo(1, "Administrador"));
 
         mvc.perform(get(API_CARGO + "/1")
