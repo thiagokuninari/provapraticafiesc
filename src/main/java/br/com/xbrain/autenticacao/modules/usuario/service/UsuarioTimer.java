@@ -61,6 +61,6 @@ public class UsuarioTimer {
 
     @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
     public void reativarUsuariosComAfastamentoComTerminoFinalizado() {
-        service.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now().minusDays(1));
+        service.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now());
     }
 }
