@@ -488,20 +488,21 @@ public class UsuarioControllerTest {
     @Test
     public void findUsuariosByIds_deveRetornarUsuarios_quandoForPassadoIdsDosUsuarios() throws Exception {
         when(usuarioService.findUsuariosByIds(List.of(100, 101)))
-                .thenReturn(List.of(
-                        umUsuarioSituacaoResponse(100, "ADMIN", ESituacao.A ),
-                        umUsuarioSituacaoResponse(101, "HELPDESK", ESituacao.A)));
+            .thenReturn(List.of(
+                    umUsuarioSituacaoResponse(100, "ADMIN", ESituacao.A ),
+                    umUsuarioSituacaoResponse(101, "HELPDESK", ESituacao.A)));
 
-        mvc.perform(get(USUARIOS_ENDPOINT + "/usuario-situacao?usuariosIds=100,101")
-                .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id", is(100)))
-                .andExpect(jsonPath("$[0].nome", is("ADMIN")))
-                .andExpect(jsonPath("$[0].situacao", is(ESituacao.A.name())))
-                .andExpect(jsonPath("$[1].id", is(101)))
-                .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
-                .andExpect(jsonPath("$[1].situacao", is(ESituacao.A.name())));
+        mvc.perform(get(USUARIOS_ENDPOINT + "/usuario-situacao")
+            .param("usuariosIds", "100,101")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$[0].situacao", is(ESituacao.A.name())))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$[1].situacao", is(ESituacao.A.name())));
     }
 
     private UsuarioResponse umUsuarioResponseInativo(Integer id) {
@@ -517,10 +518,10 @@ public class UsuarioControllerTest {
 
     private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
         return UsuarioSituacaoResponse
-                .builder()
-                .id(id)
-                .nome(nome)
-                .situacao(situacao)
-                .build();
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
     }
 }

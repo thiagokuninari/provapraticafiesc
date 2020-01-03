@@ -35,11 +35,12 @@ public class UsuarioServiceTest {
     }
 
     private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
-        return UsuarioSituacaoResponse.builder()
-                .id(id)
-                .nome(nome)
-                .situacao(situacao)
-                .build();
+        return UsuarioSituacaoResponse
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
     }
 
     @Test
@@ -71,14 +72,14 @@ public class UsuarioServiceTest {
     @Test
     public void findUsuariosByIds_deveRetonarUsuarios_quandoForPassadoIdsDosUsuarios() {
         when(usuarioRepository.findUsuariosByIds(any()))
-                .thenReturn(List.of(
-                        umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
-                        umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
+            .thenReturn(List.of(
+                umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
+                umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
 
         assertThat(usuarioService.findUsuariosByIds(List.of(1, 2)))
-                .hasSize(2)
-                .extracting("id", "nome", "situacao")
-                .contains(tuple(1, "JONATHAN", ESituacao.A),
-                        tuple(2, "FLAVIA", ESituacao.I));
+            .extracting("id", "nome", "situacao")
+            .containsExactlyInAnyOrder(
+                tuple(1, "JONATHAN", ESituacao.A),
+                tuple(2, "FLAVIA", ESituacao.I));
     }
 }

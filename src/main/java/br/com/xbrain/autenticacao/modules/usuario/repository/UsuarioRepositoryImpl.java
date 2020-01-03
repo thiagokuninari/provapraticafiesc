@@ -650,13 +650,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioSituacaoResponse.class,
-                        usuario.id,
-                        usuario.nome,
-                        usuario.situacao))
-                .from(usuario)
-                .where(usuario.id.in(usuariosIds))
-                .fetch();
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                    usuario.id,
+                    usuario.nome,
+                    usuario.situacao))
+            .from(usuario)
+            .where(usuario.id.in(usuariosIds))
+            .fetch();
     }
 
 }

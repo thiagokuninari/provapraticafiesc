@@ -296,7 +296,7 @@ public class UsuarioController {
     }
 
     @GetMapping("usuario-situacao")
-    List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
-        return  usuarioService.findUsuariosByIds(usuariosIds);
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.findUsuariosByIds(usuariosIds);
     }
 }
