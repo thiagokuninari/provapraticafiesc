@@ -1309,7 +1309,7 @@ public class UsuarioService {
                 UsuarioAtivacaoDto
                     .builder()
                     .idUsuario(usuario.getId())
-                    .observacao("Usuário reativado automaticamente devido ao término de férias")
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DE FÉRIAS")
                     .idUsuarioAtivacao(usuario.getId())
                     .build()));
     }
@@ -1320,7 +1320,7 @@ public class UsuarioService {
                         UsuarioAtivacaoDto
                                 .builder()
                                 .idUsuario(usuario.getId())
-                                .observacao("Usuário reativado automaticamente devido ao término do afastamento")
+                                .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
                                 .idUsuarioAtivacao(usuario.getId())
                                 .build()
                 ));
