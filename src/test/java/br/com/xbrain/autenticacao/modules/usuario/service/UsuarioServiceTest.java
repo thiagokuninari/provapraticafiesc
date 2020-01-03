@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
@@ -30,6 +32,14 @@ public class UsuarioServiceTest {
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
+    }
+
+    private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
+        return UsuarioSituacaoResponse.builder()
+                .id(id)
+                .nome(nome)
+                .situacao(situacao)
+                .build();
     }
 
     @Test
@@ -56,5 +66,19 @@ public class UsuarioServiceTest {
             .extracting("id", "nome")
             .containsExactly(
                 tuple(1, "BAKUGO"));
+    }
+
+    @Test
+    public void findUsuariosByIds_deveRetonarUsuarios_quandoForPassadoIdsDosUsuarios() {
+        when(usuarioRepository.findUsuariosByIds(any()))
+                .thenReturn(List.of(
+                        umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
+                        umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
+
+        assertThat(usuarioService.findUsuariosByIds(List.of(1, 2)))
+                .hasSize(2)
+                .extracting("id", "nome", "situacao")
+                .contains(tuple(1, "JONATHAN", ESituacao.A),
+                        tuple(2, "FLAVIA", ESituacao.I));
     }
 }
