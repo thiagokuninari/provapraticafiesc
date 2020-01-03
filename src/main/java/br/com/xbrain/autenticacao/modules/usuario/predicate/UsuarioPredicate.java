@@ -15,12 +15,10 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +30,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarqui
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
@@ -58,14 +57,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacao(ESituacao situacao, boolean realocado) {
-        if (nonNull(situacao) && !realocado) {
-            builder.and(usuario.situacao.eq(situacao));
-            builder.and(usuario.situacao.notIn(ESituacao.R));
-        } else if (Objects.isNull(situacao) && realocado) {
-            builder.and(usuario.situacao.eq(ESituacao.R));
-        } else {
-            builder.and(usuario.situacao.notIn(ESituacao.R));
+    public UsuarioPredicate comSituacoes(List<ESituacao> situacoes) {
+        if (!isEmpty(situacoes)) {
+            builder.and(usuario.situacao.in(situacoes));
         }
         return this;
     }
@@ -149,20 +143,20 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comUnidadeNegocio(Integer unidadeNegocioId) {
-        if (!ObjectUtils.isEmpty(unidadeNegocioId)) {
+        if (!isEmpty(unidadeNegocioId)) {
             builder.and(usuario.unidadesNegocios.any().id.eq(unidadeNegocioId));
         }
         return this;
     }
 
     public UsuarioPredicate comCidade(List<Integer> cidadesIds) {
-        if (!ObjectUtils.isEmpty(cidadesIds)) {
+        if (!isEmpty(cidadesIds)) {
             builder.and(
-                    ExpressionUtils.anyOf(
-                            Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
-                                    .stream()
-                                    .map(ids -> usuario.cidades.any().cidade.id.in(ids))
-                                    .collect(Collectors.toList())));
+                ExpressionUtils.anyOf(
+                    Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(ids -> usuario.cidades.any().cidade.id.in(ids))
+                        .collect(Collectors.toList())));
         }
         return this;
     }
@@ -234,7 +228,7 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comCanal(ECanal canal) {
-        if (!ObjectUtils.isEmpty(canal)) {
+        if (!isEmpty(canal)) {
             builder.and(usuario.canais.any().eq(canal));
         }
         return this;
