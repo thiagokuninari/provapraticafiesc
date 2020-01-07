@@ -19,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -288,15 +287,5 @@ public class UsuarioController {
     @GetMapping("usuario-funil-prospeccao")
     public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
-    }
-
-    @GetMapping("reativar-usuario")
-    public void reativarUsuarioAfastamento() {
-        usuarioService.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now().minusDays(1));
-    }
-
-    @GetMapping("ferias/reativar-usuario")
-    public void reativarusuarioFerias() {
-        usuarioService.reativarUsuariosInativosComFeriasTerminando(LocalDate.now().minusDays(1));
     }
 }
