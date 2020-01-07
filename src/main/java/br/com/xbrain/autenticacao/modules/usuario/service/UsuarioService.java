@@ -62,6 +62,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -71,6 +72,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioService {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
@@ -1318,5 +1320,13 @@ public class UsuarioService {
 
     public List<UsuarioExecutivoResponse> buscarExecutivosPorSituacao(ESituacao situacao) {
         return repository.findAllExecutivosBySituacao(situacao);
+    }
+
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                .stream()
+                .map(ids -> repository.findUsuariosByIds(ids))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 }

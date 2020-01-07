@@ -646,4 +646,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .and(usuario.cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)))
             .fetch();
     }
+
+    @Override
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                    usuario.id,
+                    usuario.nome,
+                    usuario.situacao))
+            .from(usuario)
+            .where(usuario.id.in(usuariosIds))
+            .fetch();
+    }
+
 }

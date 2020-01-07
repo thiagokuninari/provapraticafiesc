@@ -294,4 +294,9 @@ public class UsuarioController {
     public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
         return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
     }
+
+    @GetMapping("usuario-situacao")
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.findUsuariosByIds(usuariosIds);
+    }
 }

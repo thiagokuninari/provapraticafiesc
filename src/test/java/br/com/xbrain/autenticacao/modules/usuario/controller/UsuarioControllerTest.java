@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -484,6 +485,26 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].nome", is("IKKI")));
     }
 
+    @Test
+    public void findUsuariosByIds_deveRetornarUsuarios_quandoForPassadoIdsDosUsuarios() throws Exception {
+        when(usuarioService.findUsuariosByIds(List.of(100, 101)))
+            .thenReturn(List.of(
+                    umUsuarioSituacaoResponse(100, "ADMIN", ESituacao.A ),
+                    umUsuarioSituacaoResponse(101, "HELPDESK", ESituacao.A)));
+
+        mvc.perform(get(USUARIOS_ENDPOINT + "/usuario-situacao")
+            .param("usuariosIds", "100,101")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$[0].situacao", is(ESituacao.A.name())))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$[1].situacao", is(ESituacao.A.name())));
+    }
+
     private UsuarioResponse umUsuarioResponseInativo(Integer id) {
         return UsuarioResponse.builder()
             .id(id)
@@ -493,5 +514,14 @@ public class UsuarioControllerTest {
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
         return new UsuarioExecutivoResponse(id, email, nome);
+    }
+
+    private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
+        return UsuarioSituacaoResponse
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
     }
 }

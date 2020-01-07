@@ -88,4 +88,15 @@ public class UsuarioRepositoryTest {
             .extracting("id", "email")
             .contains(tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"));
     }
+
+    @Test
+    public void findUsuarioByIds_deveRetornarUsuarios_quandoForPassadoIdsDosUsuarios() {
+        assertThat(repository.findUsuariosByIds(List.of(107, 108, 110, 111)))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"),
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
+    }
 }
