@@ -294,4 +294,9 @@ public class UsuarioController {
     public void reativarUsuarioAfastamento() {
         usuarioService.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now().minusDays(1));
     }
+
+    @GetMapping("ferias/reativar-usuario")
+    public void reativarusuarioFerias() {
+        usuarioService.reativarUsuariosInativosComFeriasTerminando(LocalDate.now().minusDays(1));
+    }
 }
