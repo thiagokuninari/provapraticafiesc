@@ -142,9 +142,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comUnidadeNegocio(Integer unidadeNegocioId) {
-        if (!isEmpty(unidadeNegocioId)) {
-            builder.and(usuario.unidadesNegocios.any().id.eq(unidadeNegocioId));
+    public UsuarioPredicate comUnidadeNegocio(List<Integer> unidadeNegocioIds) {
+        if (!isEmpty(unidadeNegocioIds)) {
+            builder.and(usuario.unidadesNegocios.any().id.in(unidadeNegocioIds));
         }
         return this;
     }

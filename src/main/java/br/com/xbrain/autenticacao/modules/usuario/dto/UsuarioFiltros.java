@@ -20,7 +20,7 @@ public class UsuarioFiltros {
     private Integer regionalId;
     private Integer grupoId;
     private Integer clusterId;
-    private Integer unidadeNegocioId;
+    private List<Integer> unidadeNegocioIds;
     private Integer subClusterId;
     private Integer nivelId;
     private Integer departamentoId;
@@ -41,7 +41,7 @@ public class UsuarioFiltros {
             .comCluster(clusterId)
             .comRegional(regionalId)
             .comSubCluster(subClusterId)
-            .comUnidadeNegocio(unidadeNegocioId)
+            .comUnidadeNegocio(unidadeNegocioIds)
             .comOrganizacaoId(organizacaoId)
             .comNivel(!ObjectUtils.isEmpty(nivelId)
                 ? Collections.singletonList(nivelId) : null)
