@@ -5,16 +5,20 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class EquipeVendaService {
 
@@ -39,8 +43,8 @@ public class EquipeVendaService {
     public List<EquipeVendaDto> getEquipeVendas(Integer id) {
         try {
             EquipeVendaUsuarioRequest request = EquipeVendaUsuarioRequest.builder()
-                    .usuarioId(id)
-                    .build();
+                .usuarioId(id)
+                .build();
             Map map = new ObjectMapper().convertValue(request, Map.class);
             return equipeVendaClient.getUsuario(map);
         } catch (Exception ex) {
@@ -59,12 +63,26 @@ public class EquipeVendaService {
             return equipeVendaClient.getUsuariosPermitidos(cargos);
         } catch (Exception ex) {
             throw new IntegracaoException(ex, EquipeVendaService.class.getName(),
-                    EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
+                EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
         }
     }
 
     @SuppressWarnings({"PMD.UnusedPrivateMethod", "PMD.UnusedFormalParameter"})
     private List<EquipeVendaUsuarioResponse> getUsuariosPermitidosOnError(List<CodigoCargo> cargos) {
         return Collections.emptyList();
+    }
+
+    public List<UsuarioResponse> filtrarUsuariosSemEquipe(List<UsuarioResponse> vendedores) {
+        try {
+            var usuarioIdsSemEquipes = equipeVendaClient.filtrarUsuariosSemEquipeByUsuarioIdIn(vendedores.stream()
+                .map(UsuarioResponse::getId)
+                .collect(Collectors.toList()));
+            return vendedores.stream()
+                .filter(vendedor -> usuarioIdsSemEquipes.contains(vendedor.getId()))
+                .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Erro ao recuperar vendedores sem equipe", ex);
+            return List.of();
+        }
     }
 }

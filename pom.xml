@@ -79,6 +79,13 @@
             <artifactId>spring-cloud-starter-feign</artifactId>
             <version>${springcloud.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-openfeign-core -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-openfeign-core</artifactId>
+            <version>2.0.1.RELEASE</version>
+        </dependency>
+
         <!-- query dsl -->
         <dependency>
             <groupId>com.querydsl</groupId>

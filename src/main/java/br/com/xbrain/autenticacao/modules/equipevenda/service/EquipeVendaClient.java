@@ -28,4 +28,7 @@ public interface EquipeVendaClient {
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
+    List<Integer> filtrarUsuariosSemEquipeByUsuarioIdIn(List<Integer> usuarios);
 }

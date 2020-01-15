@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -23,19 +24,27 @@ public class SupervisorService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private EquipeVendaService equipeVendaService;
+
     public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId) {
+
         return Stream.concat(
-                getAssistentesDoSupervisor(supervisorId).stream(),
-                getVendedoresDoSupervisor(supervisorId).stream())
-                .sorted(Comparator.comparing(UsuarioResponse::getNome))
-                .collect(Collectors.toList());
+            getAssistentesDoSupervisor(supervisorId).stream(),
+            removerVendedoresComEquipe(getVendedoresDoSupervisor(supervisorId)).stream())
+            .sorted(Comparator.comparing(UsuarioResponse::getNome))
+            .collect(Collectors.toList());
+    }
+
+    private List<UsuarioResponse> removerVendedoresComEquipe(List<UsuarioResponse> vendedoresDoSupervisor) {
+        return equipeVendaService.filtrarUsuariosSemEquipe(vendedoresDoSupervisor);
     }
 
     private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
-                supervisorId,
-                List.of(CodigoCargo.ASSISTENTE_OPERACAO),
-                ECanal.D2D_PROPRIO);
+            supervisorId,
+            List.of(CodigoCargo.ASSISTENTE_OPERACAO),
+            ECanal.D2D_PROPRIO);
     }
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
