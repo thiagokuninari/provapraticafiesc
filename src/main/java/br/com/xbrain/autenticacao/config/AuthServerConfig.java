@@ -100,9 +100,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String asteriskUraApiClient;
     @Value("${app-config.oauth-clients.asterisk-ura-api.secret}")
     private String asteriskuraApiSecret;
-    @Value("${app-config.oauth-clients.agente-autoriado-api.client}")
+    @Value("${app-config.oauth-clients.agente-autorizado-api.client}")
     private String agenteAutorizadoApiClient;
-    @Value("${app-config.oauth-clients.agente-autoriado-api.secret}")
+    @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
     private String agenteAutorizadoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
