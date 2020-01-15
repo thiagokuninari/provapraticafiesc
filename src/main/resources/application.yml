@@ -168,6 +168,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    agente-autorizado-api:
+      client: agente-autorizado-api
+      secret: 4g3nt34ut0r1z4d0
 
   services:
     autenticacao:
@@ -191,6 +194,8 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    agente-autorizado:
+      url: http://localhost:8300
 
 flyway:
   enabled: true
