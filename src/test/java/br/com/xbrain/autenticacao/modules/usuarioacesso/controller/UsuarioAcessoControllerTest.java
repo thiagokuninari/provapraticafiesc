@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -53,5 +54,37 @@ public class UsuarioAcessoControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         verify(usuarioAcessoService, times(1)).deletarHistoricoUsuarioAcesso();
+    }
+
+    @Test
+    public void exportRegistrosToCsv_deveGerarCsv_quandoExistir() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/relatorio")
+            .param("dataInicio", "01/01/2020")
+            .param("dataFim", "10/01/2020")
+            .param("tipo", "LOGIN")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.ALL_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        verify(usuarioAcessoService, times(1)).exportRegistrosToCsv(any(), any());
+    }
+
+    @Test
+    public void filtrar_deveRetornarRegistrosDeUsuarioAcesso_quandoExistir() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO)
+            .param("dataInicio", "01/01/2020")
+            .param("dataFim", "10/01/2020")
+            .param("tipo", "LOGIN")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.ALL_VALUE))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        verify(usuarioAcessoService, times(1)).getAll(any(), any());
     }
 }

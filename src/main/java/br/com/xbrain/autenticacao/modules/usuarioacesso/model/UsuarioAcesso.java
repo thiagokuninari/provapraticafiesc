@@ -23,7 +23,6 @@ public class UsuarioAcesso {
     @GeneratedValue(generator = "SEQ_USUARIO_ACESSO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @NotNull
     @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
 
@@ -31,6 +30,9 @@ public class UsuarioAcesso {
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "FK_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
+
+    @Column(name = "DATA_LOGOUT", updatable = false)
+    private LocalDateTime dataLogout;
 
     public UsuarioAcesso(LocalDateTime dataCadastro, Integer usuarioId, String usuarioEmail) {
         this.dataCadastro = dataCadastro;
@@ -51,5 +53,12 @@ public class UsuarioAcesso {
         return UsuarioAcesso.builder()
                 .usuario(usuario)
                 .build();
+    }
+
+    public static UsuarioAcesso criaRegistroLogout(Integer usuarioId) {
+        return UsuarioAcesso.builder()
+            .dataLogout(LocalDateTime.now())
+            .usuario(new Usuario(usuarioId))
+            .build();
     }
 }

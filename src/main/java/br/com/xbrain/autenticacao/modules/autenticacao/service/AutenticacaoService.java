@@ -4,10 +4,12 @@ import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ public class AutenticacaoService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private UsuarioAcessoService usuarioAcessoService;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -89,10 +93,13 @@ public class AutenticacaoService {
     public void logout(String login) {
         if (somenteUmLoginPorUsuario(login)) {
             tokenStore
-                    .findTokensByClientIdAndUserName(
-                            AuthServerConfig.APP_CLIENT,
-                            login)
-                    .forEach(token -> tokenStore.removeAccessToken(token));
+                .findTokensByClientIdAndUserName(
+                    AuthServerConfig.APP_CLIENT,
+                    login)
+                .forEach(token -> {
+                    getUsuarioAutenticadoId().ifPresent(usuarioAcessoService::registrarLogout);
+                    tokenStore.removeAccessToken(token);
+                });
         }
     }
 
@@ -107,8 +114,15 @@ public class AutenticacaoService {
 
     public void logoutAllUsers() {
         tokenStore
-                .findTokensByClientId(AuthServerConfig.APP_CLIENT)
-                .forEach(token -> tokenStore.removeAccessToken(token));
+            .findTokensByClientId(AuthServerConfig.APP_CLIENT)
+            .forEach(token -> {
+                tokenStore.removeAccessToken(token);
+                usuarioAcessoService.registrarLogout(getUsuarioIdFromToken(token));
+            });
+    }
+
+    private Integer getUsuarioIdFromToken(OAuth2AccessToken token) {
+        return (Integer) token.getAdditionalInformation().get("usuarioId");
     }
 
     public boolean isEmulacao() {

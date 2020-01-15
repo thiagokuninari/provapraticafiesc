@@ -99,6 +99,14 @@ public class UsuarioAcessoServiceTest {
             .isInstanceOf(PermissaoException.class);
     }
 
+    @Test
+    public void registrarLogout_deveRegistrarOlogoutDoUsuario_quandoDeslogarDoSistema() {
+        usuarioAcessoService.registrarLogout(100);
+
+        verify(usuarioAcessoRepository, times(1))
+            .save(any(UsuarioAcesso.class));
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado(String nivelCodigo) {
         return UsuarioAutenticado.builder()
             .id(100)
