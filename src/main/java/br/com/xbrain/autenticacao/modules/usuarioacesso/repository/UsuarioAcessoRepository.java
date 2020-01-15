@@ -9,8 +9,7 @@ import java.util.List;
 public interface UsuarioAcessoRepository
     extends UsuarioAcessoRepositoryCustom,
     PagingAndSortingRepository<UsuarioAcesso, Integer>,
-    QueryDslPredicateExecutor<UsuarioAcesso>
-{
+    QueryDslPredicateExecutor<UsuarioAcesso> {
 
     List<UsuarioAcesso> findAllByUsuarioId(Integer usuarioId);
 }
