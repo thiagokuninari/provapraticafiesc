@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.config.CustomTokenEndpointAuthenticationFilter
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -67,7 +67,7 @@ public class AutenticacaoControllerTest {
     @Autowired
     private TokenStore tokenStore;
     @MockBean
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
 
@@ -265,14 +265,14 @@ public class AutenticacaoControllerTest {
         HttpServletResponse res = mock(HttpServletResponse.class);
         FilterChain chain = mock(FilterChain.class);
 
-        when(equipeVendaService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
+        when(equipeVendaD2dService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
         when(req.getRequestURI()).thenReturn("/oauth/token");
         when(req.getContentType()).thenReturn("multipart/form-data");
         when(req.getParameter(eq("username"))).thenReturn("MATEUS@XBRAIN.COM.BR");
 
         customTokenEndpointAuthenticationFilter.doFilter(req, res, chain);
 
-        verify(equipeVendaService, times(1)).verificaPausaEmAndamento(eq("MATEUS@XBRAIN.COM.BR"));
+        verify(equipeVendaD2dService, times(1)).verificaPausaEmAndamento(eq("MATEUS@XBRAIN.COM.BR"));
     }
 
     @Test
@@ -282,13 +282,13 @@ public class AutenticacaoControllerTest {
         HttpServletResponse res = mock(HttpServletResponse.class);
         FilterChain chain = mock(FilterChain.class);
 
-        when(equipeVendaService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
+        when(equipeVendaD2dService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
         when(req.getRequestURI()).thenReturn("/oauth/token");
         when(req.getContentType()).thenReturn("multipart/form-data");
         when(req.getParameter(eq("username"))).thenReturn(null);
 
         customTokenEndpointAuthenticationFilter.doFilter(req, res, chain);
 
-        verify(equipeVendaService, times(0)).verificaPausaEmAndamento(any());
+        verify(equipeVendaD2dService, times(0)).verificaPausaEmAndamento(any());
     }
 }

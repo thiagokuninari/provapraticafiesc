@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -25,7 +25,7 @@ public class SupervisorService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId) {
 
@@ -37,7 +37,7 @@ public class SupervisorService {
     }
 
     private List<UsuarioResponse> removerVendedoresComEquipe(List<UsuarioResponse> vendedoresDoSupervisor) {
-        return equipeVendaService.filtrarUsuariosSemEquipe(vendedoresDoSupervisor);
+        return equipeVendaD2dService.filtrarUsuariosSemEquipe(vendedoresDoSupervisor);
     }
 
     private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId) {

@@ -20,17 +20,17 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class EquipeVendaService {
+public class EquipeVendaD2dService {
 
     @Autowired
-    private EquipeVendaClient equipeVendaClient;
+    private EquipeVendaD2dClient equipeVendaD2dClient;
 
     @HystrixCommand(fallbackMethod = "verificaPausaEmAndamentoOnError")
     public boolean verificaPausaEmAndamento(String username) {
         try {
-            return equipeVendaClient.verificarPausaEmAndamento(username);
+            return equipeVendaD2dClient.verificarPausaEmAndamento(username);
         } catch (Exception ex) {
-            throw new IntegracaoException(ex, EquipeVendaService.class.getName(), EErrors.ERRO_VERIFICAR_PAUSA);
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(), EErrors.ERRO_VERIFICAR_PAUSA);
         }
     }
 
@@ -46,9 +46,9 @@ public class EquipeVendaService {
                 .usuarioId(id)
                 .build();
             Map map = new ObjectMapper().convertValue(request, Map.class);
-            return equipeVendaClient.getUsuario(map);
+            return equipeVendaD2dClient.getUsuario(map);
         } catch (Exception ex) {
-            throw new IntegracaoException(ex, EquipeVendaService.class.getName(), EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIO);
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(), EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIO);
         }
     }
 
@@ -60,9 +60,9 @@ public class EquipeVendaService {
     @HystrixCommand(fallbackMethod = "getUsuariosPermitidosOnError")
     public List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(List<CodigoCargo> cargos) {
         try {
-            return equipeVendaClient.getUsuariosPermitidos(cargos);
+            return equipeVendaD2dClient.getUsuariosPermitidos(cargos);
         } catch (Exception ex) {
-            throw new IntegracaoException(ex, EquipeVendaService.class.getName(),
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(),
                 EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
         }
     }
@@ -74,7 +74,7 @@ public class EquipeVendaService {
 
     public List<UsuarioResponse> filtrarUsuariosSemEquipe(List<UsuarioResponse> vendedores) {
         try {
-            var usuarioIdsSemEquipes = equipeVendaClient.filtrarUsuariosSemEquipeByUsuarioIdIn(vendedores.stream()
+            var usuarioIdsSemEquipes = equipeVendaD2dClient.filtrarUsuariosSemEquipeByUsuarioIdIn(vendedores.stream()
                 .map(UsuarioResponse::getId)
                 .collect(Collectors.toList()));
             return vendedores.stream()

@@ -1,10 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepositoryImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -12,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -21,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -53,15 +57,17 @@ public class SupervisorServiceTest {
     private SupervisorService service;
     @SpyBean
     private UsuarioRepositoryImpl usuarioRepository;
+    @MockBean
+    private EquipeVendaD2dClient equipeVendasClient;
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
 
         assertThat(
-                service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
-                .extracting("nome", "codigoCargo")
-                .containsExactly(
-                        tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO));
+            service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO));
 
         assertThat(
                 service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
@@ -134,36 +140,59 @@ public class SupervisorServiceTest {
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
                 .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
+        when(equipeVendasClient.filtrarUsuariosSemEquipeByUsuarioIdIn(List.of(1))).thenReturn(List.of(1));
         assertThat(
-                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
-                .extracting("nome", "codigoCargo")
-                .containsExactly(
-                        tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
-                        tuple("VENDEDOR", VENDEDOR_OPERACAO));
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
+                tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
-                .extracting("nome", "codigoCargo")
-                .containsExactly(
-                        tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
-                        tuple("VENDEDOR", VENDEDOR_OPERACAO));
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
+                tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
-                .isEmpty();
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
+            .isEmpty();
+    }
+
+    @Test
+    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
+
+        doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+
+        when(equipeVendasClient.filtrarUsuariosSemEquipeByUsuarioIdIn(List.of(1, 2, 3))).thenReturn(List.of(1, 3));
+
+        assertThat(
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
+            .extracting("id", "nome", "codigoCargo")
+            .containsExactly(
+                tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
+                tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
+                tuple(3, "VENDEDOR3", VENDEDOR_OPERACAO));
+
+    }
+
+    private Object[] umVendedorComId(int id) {
+        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
     }
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
-                .isEmpty();
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
+            .isEmpty();
     }
 
     @Test

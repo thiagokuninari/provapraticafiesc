@@ -15,7 +15,7 @@ import java.util.Map;
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.equipe-venda.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)
-public interface EquipeVendaClient {
+public interface EquipeVendaD2dClient {
 
     String EQUIPE_VENDAS_ENDPOINT = "api/equipes-vendas";
     String PAUSA_AGENDADA_ENDPOINT = "api/pausa-agendada";
@@ -30,5 +30,5 @@ public interface EquipeVendaClient {
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
-    List<Integer> filtrarUsuariosSemEquipeByUsuarioIdIn(List<Integer> usuarios);
+    List<Integer> filtrarUsuariosSemEquipeByUsuarioIdIn(@RequestParam("usuariosId")  List<Integer> usuariosId);
 }

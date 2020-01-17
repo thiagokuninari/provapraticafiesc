@@ -16,7 +16,7 @@ import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -143,7 +143,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Autowired
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
     @Autowired
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
@@ -1253,7 +1253,7 @@ public class UsuarioService {
 
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
-            equipeVendaService
+            equipeVendaD2dService
                 .getUsuariosPermitidos(List.of(
                     CodigoCargo.SUPERVISOR_OPERACAO,
                     CodigoCargo.ASSISTENTE_OPERACAO,
