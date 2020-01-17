@@ -181,10 +181,6 @@ public class SupervisorServiceTest {
 
     }
 
-    private Object[] umVendedorComId(int id) {
-        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
-    }
-
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
@@ -198,10 +194,14 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-                service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
-                .isEmpty();
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
+            .isEmpty();
+    }
+
+    private Object[] umVendedorComId(int id) {
+        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
     }
 }
