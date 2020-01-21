@@ -13,6 +13,8 @@ app-config:
       url: http://172.10.10.37:8095
     equipe-venda:
       url: http://172.10.10.22:8089
+    comunicados:
+      url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

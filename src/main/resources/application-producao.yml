@@ -50,6 +50,8 @@ app-config:
       url: http://172.10.10.77:8095
     equipe-venda:
       url: http://172.10.10.80:8089
+    comunicados:
+      url: http://api.conexaoclarobrasil.com.br/comunicados/
 
   email:
     enviar: true
