@@ -25,7 +25,7 @@ public class UsuarioAcessoFiltros {
     private static final int PERIODO_MAXIMO_FILTRO = 30;
 
     private String nome;
-    private String cpf; //todo: remover mascara do cpf
+    private String cpf;
     private String email;
     private Integer aaId;
     private List<Integer> agenteAutorizadosIds;
