@@ -10,9 +10,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.ObjectUtils;
+import org.thymeleaf.util.StringUtils;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,18 +33,12 @@ public class UsuarioAcessoResponse {
     }
 
     public static UsuarioAcessoResponse of(UsuarioAcesso usuarioAcesso) {
-        var data = LocalDateTime.now();
-        if (!ObjectUtils.isEmpty(usuarioAcesso.getDataCadastro())) {
-            data = usuarioAcesso.getDataCadastro();
-        } else {
-            data = usuarioAcesso.getDataLogout();
-        }
         return UsuarioAcessoResponse.builder()
             .id(usuarioAcesso.getUsuario().getId())
             .nome(usuarioAcesso.getUsuario().getNome())
-            .cpf(usuarioAcesso.getUsuario().getCpf())
+            .cpf(gerarCpfComMascara(usuarioAcesso.getUsuario().getCpf()))
             .email(usuarioAcesso.getUsuario().getEmail())
-            .dataHora(DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA, data))
+            .dataHora(DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA, usuarioAcesso.getDataCadastro()))
             .build();
     }
 
@@ -53,8 +47,8 @@ public class UsuarioAcessoResponse {
         return "ID;"
             + "NOME;"
             + "CPF;"
-            + "EMAIL;"
-            + "DATA/HORA LOGIN;"
+            + "E-MAIL;"
+            + "DATA;"
             + "\n";
     }
 
@@ -68,6 +62,18 @@ public class UsuarioAcessoResponse {
             this.dataHora
         ).map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));
+    }
+
+    @SuppressWarnings("magicnumber")
+    private static String gerarCpfComMascara(String cpfUsr) {
+        var cpf = Optional.ofNullable(cpfUsr).orElse("");
+        if (cpf.length() == 0 || cpf.length() < 11) {
+            return cpf + "";
+        }
+        return StringUtils.concat(cpf.substring(0,3),".",
+            cpf.substring(3,6), ".",
+            cpf.substring(6,9), "-",
+            cpf.substring(9,11));
     }
 
 }

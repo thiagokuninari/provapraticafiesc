@@ -14,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -24,7 +25,7 @@ public class UsuarioAcessoFiltros {
     private static final int PERIODO_MAXIMO_FILTRO = 30;
 
     private String nome;
-    private String cpf;
+    private String cpf; //todo: remover mascara do cpf
     private String email;
     private Integer aaId;
     private List<Integer> agenteAutorizadosIds;
@@ -41,7 +42,7 @@ public class UsuarioAcessoFiltros {
     public BooleanBuilder toPredicate() {
         return new UsuarioAcessoPredicate()
             .porNome(nome)
-            .porCpf(cpf)
+            .porCpf(retirarMascaraCpf(cpf))
             .porEmail(email)
             .porPeriodo(dataInicio, dataFim, tipo)
             .porAa(aaId, agenteAutorizadosIds)
@@ -50,5 +51,11 @@ public class UsuarioAcessoFiltros {
 
     public void validarPeriodoMaiorQue30Dias() {
         DateUtil.validarPeriodoMaximo(dataInicio.toString(), dataFim.toString(), PERIODO_MAXIMO_FILTRO);
+    }
+
+    private String retirarMascaraCpf(String cpfUsr) {
+        var cpf = Optional.ofNullable(cpfUsr).orElse("");
+
+        return cpf.replaceAll("[.-]", "");
     }
 }

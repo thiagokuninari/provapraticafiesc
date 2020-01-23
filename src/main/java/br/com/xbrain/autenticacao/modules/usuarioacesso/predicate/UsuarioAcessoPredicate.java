@@ -49,12 +49,14 @@ public class UsuarioAcessoPredicate {
 
     public UsuarioAcessoPredicate porPeriodo(
         LocalDate dataInicio, LocalDate dataFim, ETipo tipo) {
-        if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim) && tipo.equals(ETipo.LOGIN)) {
+        if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim) && tipo.equals(ETipo.LOGOUT)) {
             builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
-                .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))));
+                .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
+                .and(usuarioAcesso.flagLogout.eq("V"));
         } else {
-            builder.and(usuarioAcesso.dataLogout.after(dataInicio.atTime(LocalTime.MIN))
-                .and(usuarioAcesso.dataLogout.before(dataFim.atTime(LocalTime.MAX))));
+            builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
+                .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
+                .and(usuarioAcesso.flagLogout.eq("F"));
         }
         return this;
     }
