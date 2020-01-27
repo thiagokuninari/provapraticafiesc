@@ -11,6 +11,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 import static br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService.HEADER_USUARIO_EMULADOR;
 
@@ -25,19 +26,23 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        if (isValidTokenRequest(servletRequest)
-                && equipeVendaService.verificaPausaEmAndamento(servletRequest.getParameter("username"))) {
+        throws IOException, ServletException {
+        if (isValidTokenRequest(servletRequest) && verificarPausaCasoPossuaUsername(servletRequest)) {
             sendErrorValidation(servletResponse);
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
+    private boolean verificarPausaCasoPossuaUsername(ServletRequest servletRequest) {
+        var username = servletRequest.getParameter("username");
+        return Objects.nonNull(username) && equipeVendaService.verificaPausaEmAndamento(username);
+    }
+
     private boolean isValidTokenRequest(ServletRequest servletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         return !(servletRequest instanceof SecurityContextHolderAwareRequestWrapper)
-                && request.getRequestURI().contains(URL_OAUTH_TOKEN)
-                && request.getContentType().contains(CONTENT_TYPE_TOKEN_REQUEST);
+            && request.getRequestURI().contains(URL_OAUTH_TOKEN)
+            && request.getContentType().contains(CONTENT_TYPE_TOKEN_REQUEST);
     }
 
     private void sendErrorValidation(ServletResponse servletResponse) throws IOException {

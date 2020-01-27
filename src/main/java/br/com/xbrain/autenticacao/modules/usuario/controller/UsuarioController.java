@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -280,13 +281,18 @@ public class UsuarioController {
 
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
-            @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
+        @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
     }
 
     @GetMapping("usuario-funil-prospeccao")
     public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
+    }
+
+    @GetMapping("executivos")
+    public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
+        return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
     }
 
     @GetMapping("ids/alvo/comunicado")
@@ -297,5 +303,10 @@ public class UsuarioController {
     @GetMapping("alvo/comunicado")
     public List<UsuarioNomeResponse> findUsuarioAlvoDosComunicados(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         return usuarioService.getUsuariosAlvoDoComunicado(usuarioFiltros);
+    }
+
+    @GetMapping("usuario-situacao")
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.findUsuariosByIds(usuariosIds);
     }
 }

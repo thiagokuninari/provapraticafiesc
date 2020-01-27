@@ -63,6 +63,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -72,6 +73,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioService {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
@@ -145,6 +147,8 @@ public class UsuarioService {
     private EquipeVendaService equipeVendaService;
     @Autowired
     private UsuarioFeriasService usuarioFeriasService;
+    @Autowired
+    private UsuarioAfastamentoService usuarioAfastamentoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -778,6 +782,7 @@ public class UsuarioService {
                 dto.getObservacao(),
                 usuario));
         repository.save(usuario);
+        usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
     }
 
     private void validarAtivacao(Usuario usuario) {
@@ -818,14 +823,16 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
-                .usuario(usuario)
-                .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
-                .observacao(usuarioInativacao.getObservacao())
-                .situacao(ESituacao.I)
-                .ferias(usuarioFeriasService
-                        .save(usuario, usuarioInativacao).orElse(null))
+            .dataCadastro(LocalDateTime.now())
+            .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
+            .usuario(usuario)
+            .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
+            .observacao(usuarioInativacao.getObservacao())
+            .situacao(ESituacao.I)
+            .ferias(usuarioFeriasService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .afastamento(usuarioAfastamentoService
+                .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
@@ -1305,9 +1312,21 @@ public class UsuarioService {
                 UsuarioAtivacaoDto
                     .builder()
                     .idUsuario(usuario.getId())
-                    .observacao("Usuário reativado automaticamente devido ao término de férias")
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DE FÉRIAS")
                     .idUsuarioAtivacao(usuario.getId())
                     .build()));
+    }
+
+    public void reativarUsuariosInativosComAfastamentoTerminando(LocalDate dataFimAfastamento) {
+        usuarioAfastamentoService.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento)
+            .forEach(usuario -> ativar(
+                UsuarioAtivacaoDto
+                    .builder()
+                    .idUsuario(usuario.getId())
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
+                    .idUsuarioAtivacao(usuario.getId())
+                    .build()
+            ));
     }
 
     @Transactional
@@ -1315,6 +1334,18 @@ public class UsuarioService {
         var dataUltimoAcesso = LocalDateTime.now();
         repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
+    }
+
+    public List<UsuarioExecutivoResponse> buscarExecutivosPorSituacao(ESituacao situacao) {
+        return repository.findAllExecutivosBySituacao(situacao);
+    }
+
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(ids -> repository.findUsuariosByIds(ids))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -1332,7 +1363,7 @@ public class UsuarioService {
         if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
             var usuarios = new ArrayList<Integer>();
             usuarioFiltros.getAgentesAutorizadosId()
-                    .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
+                .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
             if (usuarios.isEmpty()) {
                 throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");
             }
@@ -1343,9 +1374,9 @@ public class UsuarioService {
     private List<Integer> getIdUsuariosAa(Integer aaId) {
         try {
             return agenteAutorizadoClient.getUsuariosByAaId(aaId)
-                    .stream()
-                    .map(UsuarioAgenteAutorizadoResponse::getId)
-                    .collect(Collectors.toList());
+                .stream()
+                .map(UsuarioAgenteAutorizadoResponse::getId)
+                .collect(Collectors.toList());
         } catch (Exception ex) {
             log.error("Erro ao recuperar usuarios do agente autorizado.");
             return List.of();
@@ -1355,9 +1386,9 @@ public class UsuarioService {
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
             var usuariosDoAgente = usuarioFiltros.getAgentesAutorizadosId()
-                    .stream()
-                    .flatMap(this::getUsuariosDoAgenteAutorizado)
-                    .collect(Collectors.toList());
+                .stream()
+                .flatMap(this::getUsuariosDoAgenteAutorizado)
+                .collect(Collectors.toList());
             if (!usuariosDoAgente.isEmpty()) {
                 if (isEmpty(usuarioFiltros.getUsuariosId())) {
                     usuarioFiltros.setUsuariosId(usuariosDoAgente);
@@ -1371,7 +1402,7 @@ public class UsuarioService {
 
     private Stream<Integer> getUsuariosDoAgenteAutorizado(Integer aaId) {
         return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
-                .stream()
-                .map(UsuarioAgenteAutorizadoResponse::getId);
+            .stream()
+            .map(UsuarioAgenteAutorizadoResponse::getId);
     }
 }

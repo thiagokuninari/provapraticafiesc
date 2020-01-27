@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
+import br.com.xbrain.autenticacao.config.CustomTokenEndpointAuthenticationFilter;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
@@ -12,7 +14,6 @@ import helpers.TestsHelper;
 import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +38,9 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,6 +67,10 @@ public class AutenticacaoControllerTest {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private TokenStore tokenStore;
+    @MockBean
+    private EquipeVendaService equipeVendaService;
+    @Autowired
+    private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
 
     @Test
     public void getAccessToken_deveAutenticar_quandoAsCredenciaisEstiveremValidas() {
@@ -117,7 +130,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirOsAAsPermitidos_quandoForNivelAgenteAutorizado() throws Exception {
-        Mockito.when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
@@ -132,7 +145,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirAsEmpresasDoAa_quandoForNivelAgenteAutorizado() throws Exception {
-        Mockito.when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
                 .thenReturn(Arrays.asList(
                         new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
                         new Empresa(2, "NET", CodigoEmpresa.NET)
@@ -152,7 +165,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        Mockito.when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
                 .thenReturn(true);
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
@@ -166,7 +179,7 @@ public class AutenticacaoControllerTest {
     }
 
     public void getAccessToken_deveNaoRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        Mockito.when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
                 .thenReturn(false);
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
@@ -238,11 +251,45 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessTokenObject_deveNaoGerarHistorico_quandoNaoAutenticar() {
-        long totalRegistrosAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistrosAntes = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
 
         TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
 
-        long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistroApos = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
         assertTrue(totalRegistrosAntes == totalRegistroApos);
+    }
+
+    @Test
+    @SuppressWarnings("VariableDeclarationUsageDistance")
+    public void deveValidarPausa_void_quandoPossuirUsernameRequest() throws IOException, ServletException {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse res = mock(HttpServletResponse.class);
+        FilterChain chain = mock(FilterChain.class);
+
+        when(equipeVendaService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
+        when(req.getRequestURI()).thenReturn("/oauth/token");
+        when(req.getContentType()).thenReturn("multipart/form-data");
+        when(req.getParameter(eq("username"))).thenReturn("MATEUS@XBRAIN.COM.BR");
+
+        customTokenEndpointAuthenticationFilter.doFilter(req, res, chain);
+
+        verify(equipeVendaService, times(1)).verificaPausaEmAndamento(eq("MATEUS@XBRAIN.COM.BR"));
+    }
+
+    @Test
+    @SuppressWarnings("VariableDeclarationUsageDistance")
+    public void naoDeveValidarPausa_void_quandoNaoPossuirUsernameRequest() throws IOException, ServletException {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse res = mock(HttpServletResponse.class);
+        FilterChain chain = mock(FilterChain.class);
+
+        when(equipeVendaService.verificaPausaEmAndamento(anyString())).thenReturn(Boolean.TRUE);
+        when(req.getRequestURI()).thenReturn("/oauth/token");
+        when(req.getContentType()).thenReturn("multipart/form-data");
+        when(req.getParameter(eq("username"))).thenReturn(null);
+
+        customTokenEndpointAuthenticationFilter.doFilter(req, res, chain);
+
+        verify(equipeVendaService, times(0)).verificaPausaEmAndamento(any());
     }
 }

@@ -642,14 +642,39 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
                 .from(usuario)
-                .where(predicate)
-                .fetch();
+            .where(predicate)
+            .fetch();
     }
 
     @Override
     public long deleteUsuarioHierarquia(Integer usuarioId) {
         return new JPADeleteClause(entityManager, usuarioHierarquia)
-                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
-                .execute();
+            .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+            .execute();
     }
+
+    @Override
+    public List<UsuarioExecutivoResponse> findAllExecutivosBySituacao(ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioExecutivoResponse.class,
+                usuario.id, usuario.email, usuario.nome))
+            .from(usuario)
+            .join(usuario.cargo, cargo)
+            .where(usuario.situacao.eq(situacao)
+                .and(usuario.cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.situacao))
+            .from(usuario)
+            .where(usuario.id.in(usuariosIds))
+            .fetch();
+    }
+
 }
