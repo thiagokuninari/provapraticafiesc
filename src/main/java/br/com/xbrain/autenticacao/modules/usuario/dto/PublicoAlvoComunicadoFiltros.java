@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,18 +37,19 @@ public class PublicoAlvoComunicadoFiltros {
     @JsonIgnore
     public Predicate toPredicate() {
         return new UsuarioPredicate()
-                .comCanalD2d(isTodoCanalD2d())
-                .comCanalAa(isTodoCanalAa())
-                .comUsuariosId(getUsuariosId())
-                .comCargosId(getCargosId())
-                .comCidadesId(getCidadesId(), clusterId, grupoId, regionalId, subClusterId)
-                .comNiveisId(getNiveisId())
-                .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
-                .comCluster(clusterId)
-                .comGrupo(grupoId)
-                .comRegional(regionalId)
-                .comSubCluster(subClusterId)
-                .filtraPermitidos(usuarioAutenticado, usuarioService)
-                .build();
+            .comCanalD2d(isTodoCanalD2d())
+            .comCanalAa(isTodoCanalAa())
+            .comUsuariosId(getUsuariosId())
+            .comCargosId(getCargosId())
+            .comCidadesId(getCidadesId(), clusterId, grupoId, regionalId, subClusterId)
+            .comNiveisId(getNiveisId())
+            .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
+            .comCluster(clusterId)
+            .isAtivo(Eboolean.V)
+            .comGrupo(grupoId)
+            .comRegional(regionalId)
+            .comSubCluster(subClusterId)
+            .filtraPermitidos(usuarioAutenticado, usuarioService)
+            .build();
     }
 }
