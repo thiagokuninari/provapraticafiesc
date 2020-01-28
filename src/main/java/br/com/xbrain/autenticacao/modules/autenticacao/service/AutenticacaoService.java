@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,8 +117,15 @@ public class AutenticacaoService {
     }
 
     public boolean somenteUmLoginPorUsuario(String login) {
-        return emailsPermitidosComMultiplosLogins
+        return !isUsuarioGeradorLeads(login)
+            && emailsPermitidosComMultiplosLogins
                 .stream()
                 .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
+    }
+
+    private boolean isUsuarioGeradorLeads(String login) {
+        return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
+            .map(usuario -> usuario.getNivelCodigo().equals(CodigoNivel.GERADOR_LEADS))
+            .orElse(Boolean.FALSE);
     }
 }
