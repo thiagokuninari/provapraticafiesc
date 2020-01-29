@@ -25,9 +25,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -165,7 +163,7 @@ public class UsuarioAcessoService {
         }
     }
 
-    private List<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+    private Set<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         if (!ObjectUtils.isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
         }
@@ -173,11 +171,11 @@ public class UsuarioAcessoService {
             .stream(usuarioAcessoRepository
                 .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
             .map(UsuarioAcessoResponse::of)
-            .sorted(Comparator.comparing(UsuarioAcessoResponse::getNome))
-            .collect(Collectors.toList());
+            .sorted(Comparator.comparing(UsuarioAcessoResponse::getDataHora))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    public String getCsv(List<UsuarioAcessoResponse> lista) {
+    public String getCsv(Set<UsuarioAcessoResponse> lista) {
         return UsuarioAcessoResponse.getCabecalhoCsv()
             + (!lista.isEmpty()
             ? lista.stream()
