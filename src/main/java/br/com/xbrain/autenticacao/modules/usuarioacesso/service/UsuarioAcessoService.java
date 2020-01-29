@@ -25,10 +25,10 @@ import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Transactional
@@ -165,7 +165,7 @@ public class UsuarioAcessoService {
         }
     }
 
-    public Set<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+    public List<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
         if (!ObjectUtils.isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
         }
@@ -173,26 +173,17 @@ public class UsuarioAcessoService {
             .stream(usuarioAcessoRepository
                 .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
             .map(UsuarioAcessoResponse::of)
-            .sorted(Comparator.comparing(UsuarioAcessoResponse::getDataHora))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+            .distinct()
+            .sorted(Comparator.comparing(UsuarioAcessoResponse::getDataHora).reversed())
+            .collect(Collectors.toList());
     }
 
-    public String getCsv(Set<UsuarioAcessoResponse> lista) {
+    public String getCsv(List<UsuarioAcessoResponse> lista) {
         return UsuarioAcessoResponse.getCabecalhoCsv()
             + (!lista.isEmpty()
             ? lista.stream()
             .map(UsuarioAcessoResponse::toCsv)
-            .collect(reverseStream())
             .collect(Collectors.joining("\n"))
             : "Registros não encontrados.");
-    }
-
-    public static <T> Collector<T, ?, Stream<T>> reverseStream() {
-        return Collectors
-            .collectingAndThen(Collectors.toList(),
-                list -> {
-                    Collections.reverse(list);
-                    return list.stream();
-                });
     }
 }

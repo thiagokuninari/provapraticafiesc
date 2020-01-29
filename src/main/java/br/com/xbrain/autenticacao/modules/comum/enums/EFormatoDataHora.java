@@ -11,6 +11,7 @@ public enum EFormatoDataHora {
     DATA_BANCO("yyyy-MM-dd"),
     DATA_HORA_BANCO("yyyy-MM-dd HH:mm:ss"),
     DATA_HORA("dd/MM/yyyy HH:mm"),
+    DATA_HORA_SEG("dd/MM/yyyy HH:mm:ss"),
     DATA_HORA_T("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
     DATA_HORA_NOME_ARQUIVO("yyyy-MM-dd_HH-mm-ss"),
     DATA_HORA_NOT_FORMAT("yyyyMMdd_HHmmss");

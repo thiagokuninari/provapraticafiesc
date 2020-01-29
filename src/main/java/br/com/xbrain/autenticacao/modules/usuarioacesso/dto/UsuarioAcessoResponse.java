@@ -38,7 +38,7 @@ public class UsuarioAcessoResponse {
             .nome(usuarioAcesso.getUsuario().getNome())
             .cpf(gerarCpfComMascara(usuarioAcesso.getUsuario().getCpf()))
             .email(usuarioAcesso.getUsuario().getEmail())
-            .dataHora(DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA, usuarioAcesso.getDataCadastro()))
+            .dataHora(DateUtil.formatarDataHora(EFormatoDataHora.DATA_HORA_SEG, usuarioAcesso.getDataCadastro()))
             .build();
     }
 

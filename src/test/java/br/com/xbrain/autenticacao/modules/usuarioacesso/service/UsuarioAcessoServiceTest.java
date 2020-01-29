@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -116,22 +118,36 @@ public class UsuarioAcessoServiceTest {
     public void getRegistros_retornaRegistrosOrdenados_quandoExistir() {
         var listaUsuarioAcesso = List.of(umUsuarioAcesso(1, 14, 29),
             umUsuarioAcesso(1, 14, 29),
-            umUsuarioAcesso(2, 13, 29),
-            umUsuarioAcesso(3, 16, 28));
+            umUsuarioAcesso(3, 13, 29),
+            umUsuarioAcesso(2, 16, 28));
 
         when(usuarioAcessoRepository.findAll(umUsuarioAcessoFiltros().toPredicate()))
             .thenReturn(listaUsuarioAcesso);
 
-        usuarioAcessoService.getRegistros(umUsuarioAcessoFiltros()).stream()
-            .forEach(System.out::println);
-
         assertThat(usuarioAcessoService.getRegistros(umUsuarioAcessoFiltros()))
             .extracting("id", "dataHora")
             .containsExactly(
-                Tuple.tuple(3, "28/01/2020 16:00"),
-                Tuple.tuple(2, "29/01/2020 13:00"),
-                Tuple.tuple(1, "29/01/2020 14:00")
+                Tuple.tuple(1, "29/01/2020 14:00:00"),
+                Tuple.tuple(3, "29/01/2020 13:00:00"),
+                Tuple.tuple(2, "28/01/2020 16:00:00")
             );
+    }
+
+    @Test
+    public void getCsv_retornaStringCsvOrdemReversa_quandoExistirRegistros() {
+        var listaUsuarioAcesso = List.of(umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(2, 13, 29),
+            umUsuarioAcesso(3, 16, 28)).stream()
+            .map(UsuarioAcessoResponse::of)
+            .distinct()
+            .collect(Collectors.toList());
+
+        assertThat(usuarioAcessoService.getCsv(listaUsuarioAcesso))
+            .isEqualTo("ID;NOME;CPF;E-MAIL;DATA;\n"
+                + "1;;;;29/01/2020 14:00:00\n"
+                + "2;;;;29/01/2020 13:00:00\n"
+                + "3;;;;28/01/2020 16:00:00");
     }
 
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
