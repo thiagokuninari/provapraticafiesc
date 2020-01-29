@@ -7,8 +7,11 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
+import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,9 +21,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -105,6 +110,44 @@ public class UsuarioAcessoServiceTest {
 
         verify(usuarioAcessoRepository, times(1))
             .save(any(UsuarioAcesso.class));
+    }
+
+    @Test
+    public void getRegistros_retornaRegistrosOrdenados_quandoExistir() {
+        var listaUsuarioAcesso = List.of(umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(1, 14, 29),
+            umUsuarioAcesso(2, 13, 29),
+            umUsuarioAcesso(3, 16, 28));
+
+        when(usuarioAcessoRepository.findAll(umUsuarioAcessoFiltros().toPredicate()))
+            .thenReturn(listaUsuarioAcesso);
+
+        usuarioAcessoService.getRegistros(umUsuarioAcessoFiltros()).stream()
+            .forEach(System.out::println);
+
+        assertThat(usuarioAcessoService.getRegistros(umUsuarioAcessoFiltros()))
+            .extracting("id", "dataHora")
+            .containsExactly(
+                Tuple.tuple(3, "28/01/2020 16:00"),
+                Tuple.tuple(2, "29/01/2020 13:00"),
+                Tuple.tuple(1, "29/01/2020 14:00")
+            );
+    }
+
+    private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
+        return UsuarioAcesso.builder()
+            .id(id)
+            .dataCadastro(LocalDateTime.of(2020,01, dia, hora,00))
+            .usuario(Usuario.builder().id(id).build())
+            .build();
+    }
+
+    private UsuarioAcessoFiltros umUsuarioAcessoFiltros() {
+        return UsuarioAcessoFiltros.builder()
+            .dataInicio(LocalDate.now().minusDays(1))
+            .dataFim(LocalDate.now())
+            .tipo(ETipo.LOGIN)
+            .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(String nivelCodigo) {
