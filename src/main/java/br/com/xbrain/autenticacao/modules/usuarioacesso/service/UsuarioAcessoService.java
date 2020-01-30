@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcesso
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -143,8 +144,13 @@ public class UsuarioAcessoService {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
         }
 
-        return usuarioAcessoRepository.findAll(usuarioAcessoFiltros.toPredicate(), pageRequest)
-            .map(UsuarioAcessoResponse::of);
+        var lista = StreamSupport
+            .stream(usuarioAcessoRepository
+                .findAll(usuarioAcessoFiltros.toPredicate(), pageRequest).spliterator(), false)
+            .map(UsuarioAcessoResponse::of)
+            .distinct()
+            .collect(Collectors.toList());
+        return new PageImpl<>(lista, pageRequest, usuarioAcessoRepository.count(usuarioAcessoFiltros.toPredicate()));
     }
 
     private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {

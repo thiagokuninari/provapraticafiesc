@@ -136,11 +136,9 @@ public class UsuarioAcessoServiceTest {
     @Test
     public void getCsv_retornaStringCsvOrdemReversa_quandoExistirRegistros() {
         var listaUsuarioAcesso = List.of(umUsuarioAcesso(1, 14, 29),
-            umUsuarioAcesso(1, 14, 29),
             umUsuarioAcesso(2, 13, 29),
             umUsuarioAcesso(3, 16, 28)).stream()
             .map(UsuarioAcessoResponse::of)
-            .distinct()
             .collect(Collectors.toList());
 
         assertThat(usuarioAcessoService.getCsv(listaUsuarioAcesso))
