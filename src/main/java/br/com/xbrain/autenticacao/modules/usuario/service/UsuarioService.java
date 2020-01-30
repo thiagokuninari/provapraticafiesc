@@ -182,6 +182,10 @@ public class UsuarioService {
             .forceLoad();
     }
 
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(Integer cargoId) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         return repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO)
