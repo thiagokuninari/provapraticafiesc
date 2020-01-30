@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -1404,5 +1405,11 @@ public class UsuarioService {
         return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId);
+    }
+
+    public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
+
+        return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
+            .orElseThrow(PermissaoException::new));
     }
 }

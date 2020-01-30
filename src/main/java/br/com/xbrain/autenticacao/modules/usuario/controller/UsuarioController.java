@@ -300,6 +300,11 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosAlvoDoComunicado(usuarioFiltros);
     }
 
+    @GetMapping("cidades")
+    public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
+        return usuarioService.findCidadesDoUsuarioLogado();
+    }
+
     @GetMapping("alvo/comunicado")
     public List<UsuarioNomeResponse> findUsuarioAlvoDosComunicados(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         return usuarioService.getUsuariosAlvoDoComunicado(usuarioFiltros);
