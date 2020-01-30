@@ -20,7 +20,7 @@ public class OrganizacaoController {
     @GetMapping("select")
     public List<SelectResponse> getAllSelect() {
         return service.getAllSelect().stream()
-                .map(organizacao -> SelectResponse.convertFrom(organizacao.getId(), organizacao.getNome()))
+                .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getNome()))
                 .collect(Collectors.toList());
     }
 }

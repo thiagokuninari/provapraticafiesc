@@ -1296,7 +1296,7 @@ public class UsuarioService {
         return repository
             .getSubclustersUsuario(usuarioId)
             .stream()
-            .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
+            .map(s -> SelectResponse.of(s.getId(), s.getNomeComMarca()))
             .collect(Collectors.toList());
     }
 
@@ -1345,5 +1345,9 @@ public class UsuarioService {
                 .map(ids -> repository.findUsuariosByIds(ids))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
+        return repository.findAllAtivosByNivelOperacao();
     }
 }

@@ -35,7 +35,7 @@ public class RegionalService {
     public List<SelectResponse> getAllByUsuarioId(Integer usuarioId) {
         return repository.getAllByUsuarioId(usuarioId)
                 .stream()
-                .map(s -> SelectResponse.convertFrom(s.getId(), s.getNome()))
+                .map(s -> SelectResponse.of(s.getId(), s.getNome()))
                 .collect(Collectors.toList());
     }
 

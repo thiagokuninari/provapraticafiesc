@@ -51,6 +51,11 @@ public class UsuarioController {
             usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
+    @GetMapping("ativos-operacao")
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
+        return usuarioService.buscarUsuariosAtivosNivelOperacao();
+    }
+
     @PutMapping("ativar-socio")
     public void ativarSocioPrincipal(@RequestParam String email) {
         usuarioService.ativarSocioPrincipal(email);
@@ -244,7 +249,7 @@ public class UsuarioController {
     public Iterable<SelectResponse> getCanais() {
         return ECanal.getCanaisAtivos()
             .stream()
-            .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+            .map(item -> SelectResponse.of(item.name(), item.getDescricao()))
             .sorted(Comparator.comparing(SelectResponse::getLabel))
             .collect(Collectors.toList());
     }
