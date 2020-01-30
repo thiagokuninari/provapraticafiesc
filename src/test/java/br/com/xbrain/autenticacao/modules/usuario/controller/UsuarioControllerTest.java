@@ -507,7 +507,7 @@ public class UsuarioControllerTest {
 
     @Test
     public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() throws Exception {
-        mvc.perform(get("/api/usuarios/ativos-operacao")
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
