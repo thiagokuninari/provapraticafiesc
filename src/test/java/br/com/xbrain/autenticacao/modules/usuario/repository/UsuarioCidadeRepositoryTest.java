@@ -22,7 +22,6 @@ public class UsuarioCidadeRepositoryTest {
     @Test
     public void findCidadesIdByUsuarioId_deveRetornarOsIdsDasCidades_quandoEncontrarCidadesPorUsuarioId() {
         assertThat(repository.findCidadesIdByUsuarioId(100))
-            .hasSize(5)
             .containsExactlyInAnyOrder(3237, 2466, 1443, 3022, 2617);
     }
 
@@ -39,7 +38,7 @@ public class UsuarioCidadeRepositoryTest {
                 "idCluster", "nomeCluster",
                 "idSubCluster", "nomeSubCluster",
                 "idCidade", "nomeCidade")
-            .contains(
+            .containsExactlyInAnyOrder(
                 tuple(3237, "ARAPONGAS", 189, "LONDRINA", 45, "NORTE DO PARANÁ", 20, "NORTE DO PARANÁ", 3, "SUL"),
                 tuple(1443, "BELO VALE", 95, "BRI - ITAÚNA - MG", 21, "METROPOLITANA BH", 6, "MINAS GERAIS", 1, "LESTE"),
                 tuple(2466, "BELTERRA", 33, "BRI - SANTARÉM - PA", 9, "PA/AP", 2, "NORTE", 1, "LESTE"),
