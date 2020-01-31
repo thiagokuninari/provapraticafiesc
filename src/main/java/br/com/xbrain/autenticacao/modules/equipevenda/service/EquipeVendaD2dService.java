@@ -74,11 +74,11 @@ public class EquipeVendaD2dService {
 
     public List<UsuarioResponse> filtrarUsuariosSemEquipe(List<UsuarioResponse> vendedores) {
         try {
-            var usuarioIdsSemEquipes = equipeVendaD2dClient.filtrarUsuariosSemEquipeByUsuarioIdIn(vendedores.stream()
+            var usuarioIdsComEquipes = equipeVendaD2dClient.filtrarUsuariosComEquipeByUsuarioIdIn(vendedores.stream()
                 .map(UsuarioResponse::getId)
                 .collect(Collectors.toList()));
             return vendedores.stream()
-                .filter(vendedor -> usuarioIdsSemEquipes.contains(vendedor.getId()))
+                .filter(vendedor -> !usuarioIdsComEquipes.contains(vendedor.getId()))
                 .collect(Collectors.toList());
         } catch (Exception ex) {
             log.error("Erro ao recuperar vendedores sem equipe", ex);

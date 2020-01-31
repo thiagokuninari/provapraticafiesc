@@ -140,7 +140,7 @@ public class SupervisorServiceTest {
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
                 .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
-        when(equipeVendasClient.filtrarUsuariosSemEquipeByUsuarioIdIn(List.of(1))).thenReturn(List.of(1));
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdIn(List.of(1))).thenReturn(List.of(1));
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
             .extracting("nome", "codigoCargo")
@@ -169,7 +169,7 @@ public class SupervisorServiceTest {
         doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
-        when(equipeVendasClient.filtrarUsuariosSemEquipeByUsuarioIdIn(List.of(1, 2, 3))).thenReturn(List.of(1, 3));
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdIn(List.of(1, 2, 3))).thenReturn(List.of(1, 3));
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
