@@ -1355,8 +1355,7 @@ public class UsuarioService {
         usuarioFiltros.setComUsuariosLogadosHoje(true);
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
-
-        return repository.findAllIds(usuarioFiltros.toPredicate());
+        return repository.findAllIds( usuarioFiltros.toPredicate());
     }
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
