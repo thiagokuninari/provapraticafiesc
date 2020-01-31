@@ -150,7 +150,16 @@ public class UsuarioAcessoService {
             .map(UsuarioAcessoResponse::of)
             .distinct()
             .collect(Collectors.toList());
-        return new PageImpl<>(lista, pageRequest, usuarioAcessoRepository.count(usuarioAcessoFiltros.toPredicate()));
+        return new PageImpl<>(lista, pageRequest, getCountDistinct(usuarioAcessoFiltros));
+    }
+
+    private long getCountDistinct(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        return StreamSupport
+            .stream(usuarioAcessoRepository
+                .findAll(usuarioAcessoFiltros.toPredicate()).spliterator(), false)
+            .map(UsuarioAcessoResponse::of)
+            .distinct()
+            .count();
     }
 
     private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
