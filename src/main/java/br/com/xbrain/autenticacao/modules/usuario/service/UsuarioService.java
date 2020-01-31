@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -29,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -148,6 +151,8 @@ public class UsuarioService {
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Autowired
+    private UsuarioGeradorLeadsCadastroSuccessoMqSender usuarioGeradorLeadsCadastroSuccessoMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -358,6 +363,59 @@ public class UsuarioService {
         }
     }
 
+    public void salvaUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+        try {
+            validarCpfCadastrado(usuarioDto.getCpf(), usuarioDto.getUsuarioId());
+            validarEmailCadastrado(usuarioDto.getEmail(), usuarioDto.getUsuarioId());
+
+            var usuario = UsuarioGeradorLeadsMqDto.criarUsuario(usuarioDto);
+            usuario.setCargo(getCargo(CodigoCargo.GERADOR_LEADS));
+            usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.GERADOR_LEADS));
+            usuario.setUnidadesNegocios(unidadeNegocioRepository
+                                        .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
+            usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
+
+            boolean enviarEmail = false;
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            if (usuarioDto.isNovoCadastro()) {
+                configurarSenhaUsuarioGeradorLeads(usuario, senhaDescriptografada);
+                enviarEmail = true;
+            } else {
+                usuario.setAlterarSenha(Eboolean.F);
+            }
+            usuario = repository.save(usuario);
+            entityManager.flush();
+
+            usuario = salvaUsuarioCadastroCasoAutocadastro(usuario);
+
+            if (enviarEmail) {
+                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+            }
+
+            usuarioGeradorLeadsCadastroSuccessoMqSender.sendCadastroSuccessoMensagem(
+                UsuarioCadastroSuccessoMqDto.of(usuario, usuarioDto));
+        } catch (PersistenceException ex) {
+            log.error("Erro de persistência ao salvar o Usuario. ", ex);
+            throw new ValidacaoException("Erro ao cadastrar usuário.");
+        } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
+            throw ex;
+        }
+    }
+
+    private Usuario salvaUsuarioCadastroCasoAutocadastro(Usuario usuario) {
+        if (isEmpty(usuario.getUsuarioCadastro())) {
+            usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
+            usuario = repository.save(usuario);
+        }
+        return usuario;
+    }
+
+    private void configurarSenhaUsuarioGeradorLeads(Usuario usuario, String senhaDescriptografada) {
+        usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+        usuario.setAlterarSenha(Eboolean.V);
+    }
+
     public void salvarUsuarioRealocado(Usuario usuario) {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuarioARealocar.setSituacao(ESituacao.R);
@@ -413,6 +471,32 @@ public class UsuarioService {
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
         return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+    }
+
+    public boolean validarSeUsuarioCpfEmailNaoCadastrados(UsuarioExistenteValidacaoRequest usuario) {
+        validarCpfCadastrado(usuario.getCpf(), usuario.getId());
+        validarEmailCadastrado(usuario.getEmail(), usuario.getId());
+        return true;
+    }
+
+    private void validarCpfCadastrado(String cpf, Integer usuarioId) {
+        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
+            .ifPresent(usuario -> {
+                if (isEmpty(usuarioId)
+                    || !usuarioId.equals(usuario.getId())) {
+                    throw new ValidacaoException("CPF já cadastrado.");
+                }
+            });
+    }
+
+    private void validarEmailCadastrado(String email, Integer usuarioId) {
+        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
+            .ifPresent(usuario -> {
+                if (isEmpty(usuarioId)
+                    || !usuarioId.equals(usuario.getId())) {
+                    throw new ValidacaoException("Email já cadastrado.");
+                }
+            });
     }
 
     private void validar(Usuario usuario) {

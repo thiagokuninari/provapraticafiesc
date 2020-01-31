@@ -85,6 +85,7 @@ app-config:
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
+    gerador-leads: gerador-leads.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -109,6 +110,10 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    cadastro-usuario-gerador-leads: cadastro-usuario-gerador-leads.queue
+    cadastro-usuario-gerador-leads-failure: cadastro-usuario-gerador-leads-failure.queue
+    sucesso-cadastro-usuario-gerador-leads: sucesso-cadastro-usuario-gerador-leads.queue
+    sucesso-cadastro-usuario-gerador-leads-failure: sucesso-cadastro-usuario-gerador-leads-failure.queue
 
   oauth-clients:
     autenticacao-api:

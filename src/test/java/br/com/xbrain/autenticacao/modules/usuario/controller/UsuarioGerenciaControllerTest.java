@@ -52,6 +52,7 @@ import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -516,6 +517,41 @@ public class UsuarioGerenciaControllerTest {
                         + ";;A\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
                         + ";;A", csv);
+    }
+
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveRetornarTrue_quandoEmailECpfNaoExistem() throws Exception {
+
+        mvc.perform(get(API_URI + "/validar-usuario-existente")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("email", "JOHN@GMAIL.COM")
+            .param("cpf", "48503182076"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Boolean.TRUE)));
+    }
+
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
+
+       mvc.perform(get(API_URI + "/validar-usuario-existente")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("cpf", "48503182076")
+            .param("email", "HELPDESK@XBRAIN.COM.BR"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Email já cadastrado.")));
+    }
+
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoCpfCadastrado() throws Exception {
+
+        mvc.perform(get(API_URI + "/validar-usuario-existente")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("cpf", "99898798782")
+            .param("email", "JOHN@GMAIL.COM"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "CPF já cadastrado.")));
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

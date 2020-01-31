@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +10,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+
+    private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+    private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
+
 
     @Value("${app-config.topic.autenticacao}")
     private String autenticacaoTopic;
@@ -76,6 +77,18 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
+
+    @Value("${app-config.queue.sucesso-cadastro-usuario-gerador-leads}")
+    private String sucessoCadastroUsuarioGeradorLeadsMq;
+
+    @Value("${app-config.queue.sucesso-cadastro-usuario-gerador-leads-failure}")
+    private String sucessoCadastroUsuarioGeradorLeadsFailureMq;
+
+//    @Value("${app-config.queue.cadastro-usuario-gerador-leads}")
+//    private String cadastroUsuarioGeradorLeadsMq;
+//
+//    @Value("${app-config.queue.cadastro-usuario-gerador-leads-failure")
+//    private String cadastroUsuarioGeradorLeadsFailureMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -188,6 +201,34 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue sucessoCadastroUsuarioGeradorLeadsMq() {
+        return QueueBuilder
+            .durable(sucessoCadastroUsuarioGeradorLeadsMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, sucessoCadastroUsuarioGeradorLeadsFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue sucessoCadastroUsuarioGeradorLeadsFailureMq() {
+        return QueueBuilder.durable(sucessoCadastroUsuarioGeradorLeadsFailureMq).build();
+    }
+
+//    @Bean
+//    Queue cadastroUsuarioGeradorLeadsMq() {
+//        return QueueBuilder
+//            .durable(cadastroUsuarioGeradorLeadsMq)
+//            .withArgument(DEAD_LETTER_EXCHANGE, "")
+//            .withArgument(DEAD_LETTER_ROUTING_KEY, cadastroUsuarioGeradorLeadsFailureMq)
+//            .build();
+//    }
+//
+//    @Bean
+//    Queue cadastroUsuarioGeradorLeadsFailureMq() {
+//        return QueueBuilder.durable(cadastroUsuarioGeradorLeadsFailureMq).build();
+//    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -286,4 +327,29 @@ public class RabbitConfig {
     public Binding usuarioUltimoAcessoPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioUltimoAcessoPol()).to(exchange).with(usuarioUltimoAcessoPolMq);
     }
+
+    @Bean
+    public Binding sucessoCadastroUsuarioGeradorLeadsMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(sucessoCadastroUsuarioGeradorLeadsMq())
+            .to(exchange).with(sucessoCadastroUsuarioGeradorLeadsMq);
+    }
+
+    @Bean
+    public Binding sucessoCadastroUsuarioGeradorLeadsMqFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(sucessoCadastroUsuarioGeradorLeadsFailureMq())
+            .to(exchange)
+            .with(sucessoCadastroUsuarioGeradorLeadsFailureMq);
+    }
+
+//    @Bean
+//    public Binding cadastroUsuarioGeradorLeadsMqBinding(TopicExchange exchange) {
+//        return BindingBuilder.bind(cadastroUsuarioGeradorLeadsMq()).to(exchange).with(cadastroUsuarioGeradorLeadsMq);
+//    }
+//
+//    @Bean
+//    public Binding cadastroUsuarioGeradorLeadsMqFailureBinding(TopicExchange exchange) {
+//        return BindingBuilder.bind(cadastroUsuarioGeradorLeadsFailureMq())
+//            .to(exchange)
+//            .with(cadastroUsuarioGeradorLeadsFailureMq);
+//    }
 }

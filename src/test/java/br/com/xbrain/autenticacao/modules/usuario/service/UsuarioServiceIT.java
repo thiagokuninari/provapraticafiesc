@@ -608,6 +608,8 @@ public class UsuarioServiceIT {
                 .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
     }
 
+
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
