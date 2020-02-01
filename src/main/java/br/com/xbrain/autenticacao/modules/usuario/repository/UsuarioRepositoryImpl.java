@@ -649,6 +649,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(codigoCargo)
+                .and(usuario.situacao.eq(A)))
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioSituacaoResponse.class,

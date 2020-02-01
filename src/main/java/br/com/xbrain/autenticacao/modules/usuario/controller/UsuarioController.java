@@ -74,7 +74,7 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
-        return UsuarioResponse.convertFrom(
+        return UsuarioResponse.of(
             usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
@@ -298,6 +298,16 @@ public class UsuarioController {
     @GetMapping("executivos")
     public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
         return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
+    }
+
+    @GetMapping("{id}/sem-permissoes")
+    public UsuarioResponse findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
+    }
+
+    @GetMapping("/cargo/{codigoCargo}")
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
     }
 
     @GetMapping("usuario-situacao")

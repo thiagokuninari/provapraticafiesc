@@ -96,4 +96,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds);
 
     List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
+
+    List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 }
