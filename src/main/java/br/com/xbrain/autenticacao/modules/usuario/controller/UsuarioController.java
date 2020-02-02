@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -66,9 +67,14 @@ public class UsuarioController {
             usuarioService.findCompleteById(id));
     }
 
+    @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
+        return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
+    }
+
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
-        return UsuarioResponse.convertFrom(
+        return UsuarioResponse.of(
             usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
@@ -287,5 +293,25 @@ public class UsuarioController {
     @GetMapping("usuario-funil-prospeccao")
     public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
         return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
+    }
+
+    @GetMapping("executivos")
+    public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
+        return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
+    }
+
+    @GetMapping("{id}/sem-permissoes")
+    public UsuarioResponse findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
+    }
+
+    @GetMapping("/cargo/{codigoCargo}")
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
+    }
+
+    @GetMapping("usuario-situacao")
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.findUsuariosByIds(usuariosIds);
     }
 }

@@ -62,6 +62,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
+import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -71,6 +72,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioService {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
@@ -144,6 +146,8 @@ public class UsuarioService {
     private EquipeVendaService equipeVendaService;
     @Autowired
     private UsuarioFeriasService usuarioFeriasService;
+    @Autowired
+    private UsuarioAfastamentoService usuarioAfastamentoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -178,6 +182,10 @@ public class UsuarioService {
             .forceLoad();
     }
 
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(Integer cargoId) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         return repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO)
@@ -198,13 +206,13 @@ public class UsuarioService {
     public Optional<UsuarioResponse> findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        return usuarioOptional.map(UsuarioResponse::convertFrom);
+        return usuarioOptional.map(UsuarioResponse::of);
     }
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf) {
         return repository
             .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
-            .map(UsuarioResponse::convertFrom);
+            .map(UsuarioResponse::of);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -777,6 +785,7 @@ public class UsuarioService {
                 dto.getObservacao(),
                 usuario));
         repository.save(usuario);
+        usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
     }
 
     private void validarAtivacao(Usuario usuario) {
@@ -824,6 +833,8 @@ public class UsuarioService {
                 .observacao(usuarioInativacao.getObservacao())
                 .situacao(ESituacao.I)
                 .ferias(usuarioFeriasService
+                        .save(usuario, usuarioInativacao).orElse(null))
+                .afastamento(usuarioAfastamentoService
                         .save(usuario, usuarioInativacao).orElse(null))
                 .build());
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
@@ -899,7 +910,7 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
         List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
         return usuarios.stream()
-            .map(UsuarioResponse::convertFrom)
+            .map(UsuarioResponse::of)
             .collect(Collectors.toList());
     }
 
@@ -907,7 +918,7 @@ public class UsuarioService {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
         return usuarios.stream()
-                .map(UsuarioResponse::convertFrom)
+                .map(UsuarioResponse::of)
                 .collect(Collectors.toList());
     }
 
@@ -953,14 +964,14 @@ public class UsuarioService {
         if (usuarioHierarquia == null) {
             return new UsuarioResponse();
         }
-        return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
+        return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
     }
 
     public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
         List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
         return usuariosHierarquia
             .stream()
-            .map(uh -> UsuarioResponse.convertFrom(uh.getUsuarioSuperior()))
+            .map(uh -> UsuarioResponse.of(uh.getUsuarioSuperior()))
             .collect(Collectors.toList());
     }
 
@@ -968,7 +979,7 @@ public class UsuarioService {
         List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(funcionalidade);
         return permissoes.stream()
             .map(PermissaoEspecial::getUsuario)
-            .map(UsuarioResponse::convertFrom)
+            .map(UsuarioResponse::of)
             .collect(Collectors.toList());
     }
 
@@ -1084,7 +1095,7 @@ public class UsuarioService {
 
     public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
         return repository.getUsuariosByNivel(codigoNivel).stream()
-            .map(UsuarioResponse::convertFrom).collect(Collectors.toList());
+            .map(UsuarioResponse::of).collect(Collectors.toList());
     }
 
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
@@ -1304,9 +1315,21 @@ public class UsuarioService {
                 UsuarioAtivacaoDto
                     .builder()
                     .idUsuario(usuario.getId())
-                    .observacao("Usuário reativado automaticamente devido ao término de férias")
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DE FÉRIAS")
                     .idUsuarioAtivacao(usuario.getId())
                     .build()));
+    }
+
+    public void reativarUsuariosInativosComAfastamentoTerminando(LocalDate dataFimAfastamento) {
+        usuarioAfastamentoService.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento)
+                .forEach(usuario -> ativar(
+                        UsuarioAtivacaoDto
+                                .builder()
+                                .idUsuario(usuario.getId())
+                                .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
+                                .idUsuarioAtivacao(usuario.getId())
+                                .build()
+                ));
     }
 
     @Transactional
@@ -1314,5 +1337,29 @@ public class UsuarioService {
         var dataUltimoAcesso = LocalDateTime.now();
         repository.atualizarDataUltimoAcesso(dataUltimoAcesso, id);
         atualizarUsuarioMqSender.sendUltimoAcessoPol(new UsuarioUltimoAcessoPol(id, dataUltimoAcesso));
+    }
+
+    public List<UsuarioExecutivoResponse> buscarExecutivosPorSituacao(ESituacao situacao) {
+        return repository.findAllExecutivosBySituacao(situacao);
+    }
+
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                .stream()
+                .map(ids -> repository.findUsuariosByIds(ids))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    public UsuarioResponse findById(Integer id) {
+        return repository.findById(id)
+            .map(UsuarioResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
+        return repository.findUsuariosByCodigoCargo(codigoCargo).stream()
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
     }
 }

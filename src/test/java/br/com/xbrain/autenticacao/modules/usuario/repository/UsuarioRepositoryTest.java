@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -42,11 +45,13 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
-                .hasSize(2)
-                .extracting("id", "email")
-                .containsExactly(
-                        tuple(103, "CARLOS@HOTMAIL.COM"),
-                        tuple(104, "MARIA@HOTMAIL.COM"));
+            .hasSize(4)
+            .extracting("id", "email")
+            .containsExactly(
+                tuple(103, "CARLOS@HOTMAIL.COM"),
+                tuple(104, "MARIA@HOTMAIL.COM"),
+                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
@@ -65,4 +70,46 @@ public class UsuarioRepositoryTest {
             .hasSize(0)
             .isEmpty();
     }
+
+    @Test
+    public void findAllExecutivosBySituacao_deveRetornarExecutivosAtivos() {
+        assertThat(repository.findAllExecutivosBySituacao(ESituacao.A))
+            .hasSize(4)
+            .extracting("id", "email")
+            .containsExactly(
+                tuple(107, "EXECUTIVO1@TESTE.COM"),
+                tuple(108, "EXECUTIVO2@TESTE.COM"),
+                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
+    }
+
+    @Test
+    public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
+        assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
+            .hasSize(1)
+            .extracting("id", "email")
+            .contains(tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"));
+    }
+
+    @Test
+    public void findUsuarioByIds_deveRetornarUsuarios_quandoForPassadoIdsDosUsuarios() {
+        assertThat(repository.findUsuariosByIds(List.of(107, 108, 110, 111)))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"),
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
+    }
+
+    @Test
+    public void findUsuariosByCodigoCargo_deveRetornarDoisUsuariosAtivos_peloCodigoDoCargo() {
+        assertThat(repository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
+            .hasSize(2)
+            .extracting("id", "nome", "email", "situacao")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
+                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
+    }
+
 }

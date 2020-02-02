@@ -61,6 +61,11 @@ public class UsuarioHistorico {
     @ManyToOne(fetch = FetchType.LAZY)
     private UsuarioFerias ferias;
 
+    @JoinColumn(name = "FK_USUARIO_AFASTAMENTO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_AFASTAMENTO_USU_HIS"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UsuarioAfastamento afastamento;
+
     public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioAlteracao,
                             LocalDateTime dataCadastro, String observacao, ESituacao situacao) {
         this.usuario = usuario;
