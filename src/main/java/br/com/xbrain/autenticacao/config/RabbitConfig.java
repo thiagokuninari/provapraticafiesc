@@ -77,6 +77,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
 
+    @Value("${app-config.queue.atualizar-permissao-gerador-lead}")
+    private String atualizarPermissaoGeradorLeadMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -90,6 +93,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroMq() {
         return new Queue(usuarioCadastroMq, false);
+    }
+
+    @Bean
+    Queue atualizarPermissaoGeradorLeadMq() {
+        return new Queue(atualizarPermissaoGeradorLeadMq, false);
     }
 
     @Bean
@@ -190,6 +198,11 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoGeradorLeadBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoGeradorLeadMq()).to(exchange).with(atualizarPermissaoGeradorLeadMq);
     }
 
     @Bean
