@@ -167,8 +167,8 @@ public class UsuarioServiceTestOracle {
                 .containsExactly(tuple(
                         "USUARIO TESTE",
                         "USUARIO_TESTE@GMAIL.COM",
-                        "Xbrain.NET",
-                        "Pessoal.Xbrain",
+                        "NET.Xbrain",
+                        "Xbrain.Pessoal",
                         "Vendedor",
                         "Administrador"));
     }
