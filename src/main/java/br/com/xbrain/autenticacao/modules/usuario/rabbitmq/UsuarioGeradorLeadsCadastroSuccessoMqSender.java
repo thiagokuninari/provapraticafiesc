@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCadastroSuccessoMqDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCadastroSucessoMqDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,11 +17,11 @@ public class UsuarioGeradorLeadsCadastroSuccessoMqSender {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public void sendCadastroSuccessoMensagem(UsuarioCadastroSuccessoMqDto usuarioCadastroSuccessoMqDto) {
+    public void sendCadastroSuccessoMensagem(UsuarioCadastroSucessoMqDto usuarioCadastroSucessoMqDto) {
         try {
-            rabbitTemplate.convertAndSend(usuarioGeradorLeadsCadastroSuccesso, usuarioCadastroSuccessoMqDto);
+            rabbitTemplate.convertAndSend(usuarioGeradorLeadsCadastroSuccesso, usuarioCadastroSucessoMqDto);
         } catch (Exception ex) {
-            log.error("Erro ao enviar o cadastro successo mensagem do usuario " + usuarioCadastroSuccessoMqDto.getUsuarioId(),
+            log.error("Erro ao enviar o cadastro successo mensagem do usuario " + usuarioCadastroSucessoMqDto.getUsuarioId(),
                 ex);
         }
     }

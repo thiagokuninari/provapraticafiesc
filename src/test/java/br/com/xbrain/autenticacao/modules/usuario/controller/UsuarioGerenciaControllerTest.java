@@ -52,7 +52,6 @@ import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -533,7 +532,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
 
-       mvc.perform(get(API_URI + "/validar-usuario-existente")
+        mvc.perform(get(API_URI + "/validar-usuario-existente")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .param("cpf", "48503182076")
             .param("email", "HELPDESK@XBRAIN.COM.BR"))

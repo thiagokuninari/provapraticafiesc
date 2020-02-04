@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UsuarioCadastroSuccessoMqDto {
+public class UsuarioCadastroSucessoMqDto {
     private Integer geradorLeadsId;
     private Integer usuarioId;
     private Integer usuarioCadastroId;
 
-    public static UsuarioCadastroSuccessoMqDto of(Usuario usuario, UsuarioGeradorLeadsMqDto usuarioDto) {
-        return UsuarioCadastroSuccessoMqDto.builder()
+    public static UsuarioCadastroSucessoMqDto of(Usuario usuario, UsuarioGeradorLeadsMqDto usuarioDto) {
+        return UsuarioCadastroSucessoMqDto.builder()
             .geradorLeadsId(usuarioDto.getGeradorLeadsId())
             .usuarioId(usuario.getId())
             .usuarioCadastroId(usuario.getUsuarioCadastro().getId())

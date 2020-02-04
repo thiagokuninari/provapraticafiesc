@@ -33,6 +33,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -363,37 +364,34 @@ public class UsuarioService {
         }
     }
 
-    public void salvaUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+    public void salvarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
         try {
             validarCpfCadastrado(usuarioDto.getCpf(), usuarioDto.getUsuarioId());
             validarEmailCadastrado(usuarioDto.getEmail(), usuarioDto.getUsuarioId());
 
-            var usuario = UsuarioGeradorLeadsMqDto.criarUsuario(usuarioDto);
-            usuario.setCargo(getCargo(CodigoCargo.GERADOR_LEADS));
-            usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.GERADOR_LEADS));
-            usuario.setUnidadesNegocios(unidadeNegocioRepository
-                                        .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
-            usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
-
+            var usuario = new Usuario();
             boolean enviarEmail = false;
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+
             if (usuarioDto.isNovoCadastro()) {
+                usuario = criarUsuarioNovoGeradorLeads(usuarioDto);
                 configurarSenhaUsuarioGeradorLeads(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
+                usuario = criarUsuarioGeradorLeads(usuarioDto);
                 usuario.setAlterarSenha(Eboolean.F);
             }
-            usuario = repository.save(usuario);
-            entityManager.flush();
 
-            usuario = salvaUsuarioCadastroCasoAutocadastro(usuario);
+            usuario = repository.save(usuario);
+            usuario = salvarUsuarioCadastroCasoAutocadastro(usuario);
+            entityManager.flush();
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
 
             usuarioGeradorLeadsCadastroSuccessoMqSender.sendCadastroSuccessoMensagem(
-                UsuarioCadastroSuccessoMqDto.of(usuario, usuarioDto));
+                UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario. ", ex);
             throw new ValidacaoException("Erro ao cadastrar usuário.");
@@ -403,8 +401,25 @@ public class UsuarioService {
         }
     }
 
-    private Usuario salvaUsuarioCadastroCasoAutocadastro(Usuario usuario) {
-        if (isEmpty(usuario.getUsuarioCadastro())) {
+    private Usuario criarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+        var usuario = findCompleteById(usuarioDto.getUsuarioId());
+        BeanUtils.copyProperties(usuarioDto, usuario);
+        return usuario;
+    }
+
+    private Usuario criarUsuarioNovoGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+        var usuario = UsuarioGeradorLeadsMqDto.criarUsuarioNovo(usuarioDto);
+        usuario.setCargo(getCargo(CodigoCargo.GERADOR_LEADS));
+        usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.GERADOR_LEADS));
+        usuario.setUnidadesNegocios(unidadeNegocioRepository
+            .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
+        usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
+        usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO));
+        return usuario;
+    }
+
+    private Usuario salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
+        if (isEmpty(usuario.getUsuarioCadastro().getId())) {
             usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
             usuario = repository.save(usuario);
         }

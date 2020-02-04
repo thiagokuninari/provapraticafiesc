@@ -19,7 +19,7 @@ public class UsuarioGeradorLeadsCadastroMqListener {
     @Transactional
     public void salvarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioGeradorLeadsDto) {
         try {
-            usuarioService.salvaUsuarioGeradorLeads(usuarioGeradorLeadsDto);
+            usuarioService.salvarUsuarioGeradorLeads(usuarioGeradorLeadsDto);
         } catch (Exception ex) {
             log.error("Erro ao processar fila do cadastro dos usuarios Gerador de Leads", ex);
         }
