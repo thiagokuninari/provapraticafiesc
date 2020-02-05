@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
