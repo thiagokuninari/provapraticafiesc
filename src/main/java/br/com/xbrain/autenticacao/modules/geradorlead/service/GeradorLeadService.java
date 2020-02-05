@@ -1,10 +1,13 @@
 package br.com.xbrain.autenticacao.modules.geradorlead.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.geradorlead.dto.AgenteAutorizadoGeradorLeadDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,23 +19,48 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.FUNCIONALIDADE_GERENCIAR_LEAD_ID;
+import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.OBSERVACAO;
 
 @Service
 public class GeradorLeadService {
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
 
     @Transactional
     public void atualizarPermissaoGeradorLead(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
         if (agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
-            salvarPermissoesEspeciais(getNovasPermissoesEspeciais(agenteAutorizadoGeradorLeadDto));
+            var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoGeradorLeadDto);
+            salvarPermissoesEspeciais(permissoes);
+            gerarUsuarioHistorico(getUsuariosIds(permissoes));
         } else if (!agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
-            var usuarios = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds();
-            usuarios.add(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId());
+            var usuariosIds = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds();
+            usuariosIds.add(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId());
 
-            removerPermissoesEspeciais(usuarios);
+            removerPermissoesEspeciais(usuariosIds);
+            inativarUsuarioHistorico(usuariosIds);
         }
+    }
+
+    private void gerarUsuarioHistorico(List<Integer> usuariosIds) {
+        if (!ObjectUtils.isEmpty(usuariosIds)) {
+            usuarioHistoricoService.save(UsuarioHistorico.gerarHistorico(usuariosIds, OBSERVACAO, ESituacao.A));
+        }
+    }
+
+    private void inativarUsuarioHistorico(List<Integer> usuariosIds) {
+        if (!ObjectUtils.isEmpty(usuariosIds)) {
+            usuarioHistoricoService.inativarUsuarioHistoricoGeradorLead(usuariosIds);
+        }
+    }
+
+    private List<Integer> getUsuariosIds(List<PermissaoEspecial> permissoes) {
+        return permissoes.stream()
+            .map(PermissaoEspecial::getUsuario)
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 
     private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {

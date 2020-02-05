@@ -12,4 +12,6 @@ public interface UsuarioHistoricoRepositoryCustom {
     List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId);
 
     List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
+
+    void inativarUsuarioHistoricoGeradorLead(List<Integer> usuariosIds);
 }

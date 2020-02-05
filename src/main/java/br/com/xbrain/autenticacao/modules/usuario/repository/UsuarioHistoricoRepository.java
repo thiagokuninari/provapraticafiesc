@@ -20,4 +20,7 @@ public interface UsuarioHistoricoRepository
             + "uh.motivoInativacao = ?4 WHERE uh.usuario.id = ?5")
     void updateUsuarioHistorico(LocalDateTime dataCadastro, String obs,
                                 ESituacao situacao, MotivoInativacao motivoInativacao, Integer usuarioId);
+
+    List<UsuarioHistorico> findBySituacao(ESituacao situacao);
+
 }
