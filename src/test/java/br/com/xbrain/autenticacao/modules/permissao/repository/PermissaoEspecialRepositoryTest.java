@@ -26,4 +26,10 @@ public class PermissaoEspecialRepositoryTest {
         repository.deletarPermissaoEspecialBy(List.of(9000, 9001), List.of(300, 303));
         assertEquals(repository.findAll().size(), 2);
     }
+
+    @Test
+    public void deletarPermissaoEspecialBy_naoDeveRemoverPermissaoEspecial_quandoNaoEncontrarFuncionalidadeEUsuario() {
+        repository.deletarPermissaoEspecialBy(List.of(9009, 9010), List.of(300, 303));
+        assertEquals(repository.findAll().size(), 4);
+    }
 }
