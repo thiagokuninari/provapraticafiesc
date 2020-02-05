@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -19,4 +20,7 @@ public class AgenteAutorizadoGeradorLeadDto {
     private Eboolean geradorLead;
     private List<Integer> colaboradoresVendasIds;
 
+    public boolean isGeradorLead() {
+        return Objects.equals(geradorLead, Eboolean.V);
+    }
 }

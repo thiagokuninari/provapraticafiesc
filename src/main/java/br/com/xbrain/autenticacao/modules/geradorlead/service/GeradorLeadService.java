@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.geradorlead.service;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.geradorlead.dto.AgenteAutorizadoGeradorLeadDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -13,7 +12,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,19 +25,26 @@ public class GeradorLeadService {
 
     @Transactional
     public void atualizarPermissaoGeradorLead(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
-        if (Objects.equals(agenteAutorizadoGeradorLeadDto.getGeradorLead(), Eboolean.V)) {
-            var usuariosParaSalvarNovaPermissaoEspecial = getNovasPermissoesEspeciais(agenteAutorizadoGeradorLeadDto);
-
-            if (!ObjectUtils.isEmpty(usuariosParaSalvarNovaPermissaoEspecial)) {
-                permissaoEspecialRepository.save(usuariosParaSalvarNovaPermissaoEspecial);
-            }
-        } else {
+        if (agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
+            salvarPermissoesEspeciais(getNovasPermissoesEspeciais(agenteAutorizadoGeradorLeadDto));
+        } else if (!agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
             var usuarios = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds();
             usuarios.add(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId());
-            permissaoEspecialRepository.deletarPermissaoEspecialBy(
-                List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID),
-                usuarios);
+
+            removerPermissoesEspeciais(usuarios);
         }
+    }
+
+    private void salvarPermissoesEspeciais(List<PermissaoEspecial> permissoesEspeciais) {
+        if (!ObjectUtils.isEmpty(permissoesEspeciais)) {
+            permissaoEspecialRepository.save(permissoesEspeciais);
+        }
+    }
+
+    private void removerPermissoesEspeciais(List<Integer> usuarios) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(
+            List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID),
+            usuarios);
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
