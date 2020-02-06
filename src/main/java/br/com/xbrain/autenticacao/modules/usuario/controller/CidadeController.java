@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSubClusterResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -88,5 +85,10 @@ public class CidadeController {
     @GetMapping("net-uno")
     public List<CidadeResponse> getAllCidadeNetUno() {
         return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
+    }
+
+    @GetMapping("uf-cidade-ids/{uf}/{cidade}")
+    public CidadeUfResponse buscarCidadeUfIds(@PathVariable String uf, @PathVariable String cidade) {
+        return CidadeUfResponse.of(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 }

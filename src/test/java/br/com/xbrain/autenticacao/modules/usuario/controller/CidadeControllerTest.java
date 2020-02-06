@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,18 +53,28 @@ public class CidadeControllerTest {
     public void deveRetornarTodosPorUf() throws Exception {
         mvc.perform(get("/api/cidades?idUf=1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(8)));
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(8)));
     }
 
     @Test
     public void deveRetornarCidadePorUfAndCidadeNome() throws Exception {
         mvc.perform(get("/api/cidades/uf-cidade/PR/LONDRINA")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome", is("LONDRINA")));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nome", is("LONDRINA")));
+    }
+
+    @Test
+    public void buscarCidadeUfIds_deveRetornarOsIdsDaCidadeEUf() throws Exception {
+        mvc.perform(get("/api/cidades/uf-cidade-ids/PR/ARAPONGAS")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cidadeId", is(3237)))
+            .andExpect(jsonPath("$.ufId", is(1)));
     }
 
     @Test
