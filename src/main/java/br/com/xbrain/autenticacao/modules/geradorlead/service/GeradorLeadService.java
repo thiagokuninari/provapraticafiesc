@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.FUNCIONALIDADE_GERENCIAR_LEAD_ID;
-import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.OBSERVACAO;
+import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.*;
 
 @Service
 public class GeradorLeadService {
@@ -34,25 +33,23 @@ public class GeradorLeadService {
         if (agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
             var permissoes = getNovasPermissoesEspeciais(agenteAutorizadoGeradorLeadDto);
             salvarPermissoesEspeciais(permissoes);
-            gerarUsuarioHistorico(getUsuariosIds(permissoes));
+            gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
         } else if (!agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
             var usuariosIds = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds();
             usuariosIds.add(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId());
 
             removerPermissoesEspeciais(usuariosIds);
-            inativarUsuarioHistorico(usuariosIds);
+            gerarUsuarioHistorico(usuariosIds, false);
         }
     }
 
-    private void gerarUsuarioHistorico(List<Integer> usuariosIds) {
+    private void gerarUsuarioHistorico(List<Integer> usuariosIds, boolean geradorLeads) {
         if (!ObjectUtils.isEmpty(usuariosIds)) {
-            usuarioHistoricoService.save(UsuarioHistorico.gerarHistorico(usuariosIds, OBSERVACAO, ESituacao.A));
-        }
-    }
-
-    private void inativarUsuarioHistorico(List<Integer> usuariosIds) {
-        if (!ObjectUtils.isEmpty(usuariosIds)) {
-            usuarioHistoricoService.inativarUsuarioHistoricoGeradorLead(usuariosIds);
+            usuarioHistoricoService.save(
+                UsuarioHistorico.gerarHistorico(usuariosIds, geradorLeads
+                    ? OBSERVACAO_GERADOR_LEADS
+                    : OBSERVACAO_NAO_GERADOR_LEADS,
+                    ESituacao.A));
         }
     }
 
@@ -71,7 +68,7 @@ public class GeradorLeadService {
 
     private void removerPermissoesEspeciais(List<Integer> usuarios) {
         permissaoEspecialRepository.deletarPermissaoEspecialBy(
-            List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID),
+            List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, FUNCIONALIDADE_TRATAR_LEAD_ID),
             usuarios);
     }
 
@@ -86,8 +83,8 @@ public class GeradorLeadService {
         return vendedoresIds.stream()
             .filter(vendedorId ->
                 permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
-                    vendedorId, GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID).isEmpty())
-            .map(vendedorId -> criarPermissaoEspecial(vendedorId, GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID))
+                    vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID).isEmpty())
+            .map(vendedorId -> criarPermissaoEspecial(vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID))
             .collect(Collectors.toList());
     }
 

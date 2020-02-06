@@ -13,5 +13,4 @@ public interface UsuarioHistoricoRepositoryCustom {
 
     List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
 
-    void inativarUsuarioHistoricoGeradorLead(List<Integer> usuariosIds);
 }

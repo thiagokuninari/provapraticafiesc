@@ -43,11 +43,6 @@ public class UsuarioHistoricoService {
     }
 
     @Transactional
-    public void inativarUsuarioHistoricoGeradorLead(List<Integer> usuariosIds) {
-        usuarioHistoricoRepository.inativarUsuarioHistoricoGeradorLead(usuariosIds);
-    }
-
-    @Transactional
     public void save(List<UsuarioHistorico> historicos) {
         usuarioHistoricoRepository.save(historicos);
     }

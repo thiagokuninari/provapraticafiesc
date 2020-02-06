@@ -40,7 +40,6 @@ public class GeradorLeadServiceTest {
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
         verify(permissaoEspecialRepository, times(1)).save(anyList());
         verify(usuarioHistoricoService, times(1)).save(anyList());
-        verify(usuarioHistoricoService, times(0)).inativarUsuarioHistoricoGeradorLead(anyList());
     }
 
     @Test
@@ -56,7 +55,6 @@ public class GeradorLeadServiceTest {
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
         verify(permissaoEspecialRepository, times(0)).save(anyList());
         verify(usuarioHistoricoService, times(0)).save(anyList());
-        verify(usuarioHistoricoService, times(0)).inativarUsuarioHistoricoGeradorLead(anyList());
     }
 
     @Test
@@ -73,7 +71,7 @@ public class GeradorLeadServiceTest {
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
         verify(permissaoEspecialRepository, times(1)).deletarPermissaoEspecialBy(anyList(), anyList());
-        verify(usuarioHistoricoService, times(1)).inativarUsuarioHistoricoGeradorLead(List.of(100, 102, 10));
+        verify(usuarioHistoricoService, times(1)).save(anyList());
     }
 
     private AgenteAutorizadoGeradorLeadDto umAgenteAutorizadoGeradorLeadDto() {

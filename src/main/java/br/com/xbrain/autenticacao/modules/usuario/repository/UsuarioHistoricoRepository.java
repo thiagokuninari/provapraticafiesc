@@ -21,6 +21,4 @@ public interface UsuarioHistoricoRepository
     void updateUsuarioHistorico(LocalDateTime dataCadastro, String obs,
                                 ESituacao situacao, MotivoInativacao motivoInativacao, Integer usuarioId);
 
-    List<UsuarioHistorico> findBySituacao(ESituacao situacao);
-
 }

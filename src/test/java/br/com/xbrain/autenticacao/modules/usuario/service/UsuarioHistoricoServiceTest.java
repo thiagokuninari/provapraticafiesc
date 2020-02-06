@@ -25,14 +25,6 @@ public class UsuarioHistoricoServiceTest {
     private UsuarioHistoricoRepository repository;
 
     @Test
-    public void inativarUsuarioHistoricoGeradorLead_deveInativarHistoricoDoUsuarioByUsuariosIds() {
-        assertThatCode(() -> service.inativarUsuarioHistoricoGeradorLead(List.of(100, 102)))
-            .doesNotThrowAnyException();
-
-        verify(repository, times(1)).inativarUsuarioHistoricoGeradorLead(List.of(100, 102));
-    }
-
-    @Test
     public void save_deveSalvarListaDeUsuarioHistorico() {
         assertThatCode(() -> service.save(List.of(new UsuarioHistorico(), new UsuarioHistorico())))
             .doesNotThrowAnyException();
