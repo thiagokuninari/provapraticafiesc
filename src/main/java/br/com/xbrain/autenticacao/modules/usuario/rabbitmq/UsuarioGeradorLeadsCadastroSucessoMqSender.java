@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class UsuarioGeradorLeadsCadastroSuccessoMqSender {
+public class UsuarioGeradorLeadsCadastroSucessoMqSender {
 
     @Value("${app-config.queue.sucesso-cadastro-usuario-gerador-leads}")
     private String usuarioGeradorLeadsCadastroSuccesso;

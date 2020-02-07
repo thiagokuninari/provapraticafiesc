@@ -29,7 +29,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
             "/api/public/disparar-timer-inativar-usuarios",
-            "/api/usuarios/usuario-funil-prospeccao"
+            "/api/usuarios/usuario-funil-prospeccao",
+            "/api/usuarios/gerencia/validar-usuario-existente**"
         };
 
         http

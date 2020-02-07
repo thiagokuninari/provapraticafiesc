@@ -153,7 +153,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Autowired
-    private UsuarioGeradorLeadsCadastroSuccessoMqSender usuarioGeradorLeadsCadastroSuccessoMqSender;
+    private UsuarioGeradorLeadsCadastroSucessoMqSender usuarioGeradorLeadsCadastroSucessoMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -364,6 +364,7 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
     public void salvarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
         try {
             validarCpfCadastrado(usuarioDto.getCpf(), usuarioDto.getUsuarioId());
@@ -383,15 +384,15 @@ public class UsuarioService {
             }
 
             usuario = repository.save(usuario);
-            usuario = salvarUsuarioCadastroCasoAutocadastro(usuario);
+            salvarUsuarioCadastroCasoAutocadastro(usuario);
             entityManager.flush();
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+                usuarioGeradorLeadsCadastroSucessoMqSender.sendCadastroSuccessoMensagem(
+                   UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
             }
 
-            usuarioGeradorLeadsCadastroSuccessoMqSender.sendCadastroSuccessoMensagem(
-                UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario. ", ex);
             throw new ValidacaoException("Erro ao cadastrar usuário.");
@@ -418,12 +419,11 @@ public class UsuarioService {
         return usuario;
     }
 
-    private Usuario salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
-        if (isEmpty(usuario.getUsuarioCadastro().getId())) {
+    private void salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
+        if (isEmpty(usuario.getUsuarioCadastro())) {
             usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
-            usuario = repository.save(usuario);
+            repository.save(usuario);
         }
-        return usuario;
     }
 
     private void configurarSenhaUsuarioGeradorLeads(Usuario usuario, String senhaDescriptografada) {

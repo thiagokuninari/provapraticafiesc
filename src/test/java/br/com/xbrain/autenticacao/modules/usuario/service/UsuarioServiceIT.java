@@ -103,7 +103,7 @@ public class UsuarioServiceIT {
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
     @MockBean
-    private UsuarioGeradorLeadsCadastroSuccessoMqSender usuarioGeradorLeadsCadastroSuccessoMqSender;
+    private UsuarioGeradorLeadsCadastroSucessoMqSender usuarioGeradorLeadsCadastroSucessoMqSender;
 
     @Before
     public void setUp() {
@@ -624,7 +624,7 @@ public class UsuarioServiceIT {
                 CodigoNivel.GERADOR_LEADS, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
-        verify(usuarioGeradorLeadsCadastroSuccessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+        verify(usuarioGeradorLeadsCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
     }
 
     @Test
@@ -645,7 +645,7 @@ public class UsuarioServiceIT {
                 CodigoNivel.GERADOR_LEADS, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
-        verify(usuarioGeradorLeadsCadastroSuccessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+        verify(usuarioGeradorLeadsCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
     }
 
     @Test
@@ -658,7 +658,7 @@ public class UsuarioServiceIT {
             .withMessageContaining("CPF já cadastrado.");
 
         verify(notificacaoService, never()).enviarEmailDadosDeAcesso(any(), any());
-        verify(usuarioGeradorLeadsCadastroSuccessoMqSender, never()).sendCadastroSuccessoMensagem(any());
+        verify(usuarioGeradorLeadsCadastroSucessoMqSender, never()).sendCadastroSuccessoMensagem(any());
     }
 
     @Test
@@ -671,7 +671,7 @@ public class UsuarioServiceIT {
             .withMessageContaining("Email já cadastrado.");
 
         verify(notificacaoService, never()).enviarEmailDadosDeAcesso(any(), any());
-        verify(usuarioGeradorLeadsCadastroSuccessoMqSender, never()).sendCadastroSuccessoMensagem(any());
+        verify(usuarioGeradorLeadsCadastroSucessoMqSender, never()).sendCadastroSuccessoMensagem(any());
     }
 
     @Test
@@ -693,7 +693,7 @@ public class UsuarioServiceIT {
                 CodigoNivel.GERADOR_LEADS, List.of(2), Eboolean.F);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
-        verify(usuarioGeradorLeadsCadastroSuccessoMqSender, times(2)).sendCadastroSuccessoMensagem(any());
+        verify(usuarioGeradorLeadsCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {

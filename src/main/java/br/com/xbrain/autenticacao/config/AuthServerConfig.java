@@ -100,6 +100,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String asteriskUraApiClient;
     @Value("${app-config.oauth-clients.asterisk-ura-api.secret}")
     private String asteriskuraApiSecret;
+    @Value("${app-config.oauth-clients.gerador-lead-api.client}")
+    private String geradorLeadApiClient;
+    @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
+    private String geradorLeadApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -227,6 +231,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(asteriskuraApiSecret)
             .authorizedGrantTypes("client_credentials")
             .scopes("asterisk-ura-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(geradorLeadApiClient)
+            .secret(geradorLeadApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("gerador-lead-api")
             .authorities(ROLE_APPLICATION);
     }
 
