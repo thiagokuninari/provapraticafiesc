@@ -78,7 +78,7 @@ public class EquipeVendaD2dService {
                 .map(UsuarioResponse::getId)
                 .collect(Collectors.toList()));
             return vendedores.stream()
-                .filter(vendedor -> !usuarioIdsComEquipes.contains(vendedor.getId()))
+                .filter(vendedor -> usuarioIdsComEquipes.contains(vendedor.getId()))
                 .collect(Collectors.toList());
         } catch (Exception ex) {
             log.error("Erro ao recuperar vendedores sem equipe", ex);

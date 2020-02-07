@@ -145,14 +145,15 @@ public class SupervisorServiceTest {
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
             .extracting("nome", "codigoCargo")
             .containsExactly(
-                tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO));
+                tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
+                tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
             .extracting("nome", "codigoCargo")
             .containsExactly(
-                tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO)
-            );
+                tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
+                tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
@@ -175,7 +176,8 @@ public class SupervisorServiceTest {
             .extracting("id", "nome", "codigoCargo")
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
-                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO));
+                tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
+                tuple(3, "VENDEDOR3", VENDEDOR_OPERACAO));
 
     }
 
