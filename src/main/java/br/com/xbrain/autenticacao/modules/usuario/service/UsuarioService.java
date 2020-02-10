@@ -390,7 +390,7 @@ public class UsuarioService {
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
                 usuarioGeradorLeadsCadastroSucessoMqSender.sendCadastroSuccessoMensagem(
-                   UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
+                    UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
             }
 
         } catch (PersistenceException ex) {
