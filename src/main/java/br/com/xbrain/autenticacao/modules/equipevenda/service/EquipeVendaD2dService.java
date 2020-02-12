@@ -72,11 +72,12 @@ public class EquipeVendaD2dService {
         return Collections.emptyList();
     }
 
-    public List<UsuarioResponse> filtrarUsuariosSemEquipe(List<UsuarioResponse> vendedores) {
+    public List<UsuarioResponse> filtrarUsuariosQuePodemAderirAEquipe(List<UsuarioResponse> vendedores, Integer equipeId) {
         try {
-            var usuarioIdsComEquipes = equipeVendaD2dClient.filtrarUsuariosComEquipeByUsuarioIdIn(vendedores.stream()
-                .map(UsuarioResponse::getId)
-                .collect(Collectors.toList()));
+            var usuarioIdsComEquipes = equipeVendaD2dClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(
+                vendedores.stream()
+                    .map(UsuarioResponse::getId)
+                    .collect(Collectors.toList()), equipeId);
             return vendedores.stream()
                 .filter(vendedor -> usuarioIdsComEquipes.contains(vendedor.getId()))
                 .collect(Collectors.toList());

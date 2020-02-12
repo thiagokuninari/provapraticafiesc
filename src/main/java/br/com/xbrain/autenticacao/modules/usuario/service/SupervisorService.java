@@ -31,13 +31,14 @@ public class SupervisorService {
 
         return Stream.concat(
             getAssistentesDoSupervisor(supervisorId).stream(),
-            removerVendedoresComEquipe(getVendedoresDoSupervisor(supervisorId)).stream())
+            getVendedoresDoSupervisor(supervisorId).stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
     }
 
-    private List<UsuarioResponse> removerVendedoresComEquipe(List<UsuarioResponse> vendedoresDoSupervisor) {
-        return equipeVendaD2dService.filtrarUsuariosSemEquipe(vendedoresDoSupervisor);
+    private List<UsuarioResponse> filtrarUsuariosParaAderirAEquipe(Integer equipeId,
+                                                                   List<UsuarioResponse> vendedoresDoSupervisor) {
+        return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
     private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId) {
@@ -61,9 +62,17 @@ public class SupervisorService {
     public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                                List<Integer> areasAtuacaoId) {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
-                areaAtuacao,
-                areasAtuacaoId,
-                CodigoCargo.SUPERVISOR_OPERACAO,
-                ECanal.D2D_PROPRIO);
+            areaAtuacao,
+            areasAtuacaoId,
+            CodigoCargo.SUPERVISOR_OPERACAO,
+            ECanal.D2D_PROPRIO);
+    }
+
+    public List<UsuarioResponse> getAssistentesEVendedoresD2dDo(Integer supervisorId, Integer equipeId) {
+        return Stream.concat(
+            getAssistentesDoSupervisor(supervisorId).stream(),
+            filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId)).stream())
+            .sorted(Comparator.comparing(UsuarioResponse::getNome))
+            .collect(Collectors.toList());
     }
 }

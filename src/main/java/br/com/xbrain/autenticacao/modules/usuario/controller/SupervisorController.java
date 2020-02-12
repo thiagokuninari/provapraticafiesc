@@ -24,6 +24,11 @@ public class SupervisorController {
         return service.getAssistentesEVendedoresD2dDoSupervisor(id);
     }
 
+    @GetMapping("{id}/equipe/{equipeId}/assistentes-vendedores/")
+    public List<UsuarioResponse> getAssistentesEVendedoresDaEquipe(@PathVariable Integer id, @PathVariable Integer equipeId) {
+        return service.getAssistentesEVendedoresD2dDo(id, equipeId);
+    }
+
     @GetMapping("/por-area-atuacao/{areaAtuacao}/{id}")
     public List<UsuarioResponse> getPorAreaAtuacao(@PathVariable AreaAtuacao areaAtuacao,
                                                    @PathVariable Integer id) {

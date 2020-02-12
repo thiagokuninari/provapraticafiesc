@@ -30,5 +30,6 @@ public interface EquipeVendaD2dClient {
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
-    List<Integer> filtrarUsuariosComEquipeByUsuarioIdIn(@RequestParam("usuariosId")  List<Integer> usuariosId);
+    List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
+                                                                  @RequestParam("equipeId") Integer equipeId);
 }
