@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -27,11 +28,14 @@ public class SupervisorService {
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
 
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId) {
+    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
+        var vendedoresDoSupervisor = ObjectUtils.isEmpty(equipeId)
+            ? getVendedoresDoSupervisor(supervisorId)
+            : filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
             getAssistentesDoSupervisor(supervisorId).stream(),
-            getVendedoresDoSupervisor(supervisorId).stream())
+            vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
     }
@@ -66,13 +70,5 @@ public class SupervisorService {
             areasAtuacaoId,
             CodigoCargo.SUPERVISOR_OPERACAO,
             ECanal.D2D_PROPRIO);
-    }
-
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDo(Integer supervisorId, Integer equipeId) {
-        return Stream.concat(
-            getAssistentesDoSupervisor(supervisorId).stream(),
-            filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId)).stream())
-            .sorted(Comparator.comparing(UsuarioResponse::getNome))
-            .collect(Collectors.toList());
     }
 }

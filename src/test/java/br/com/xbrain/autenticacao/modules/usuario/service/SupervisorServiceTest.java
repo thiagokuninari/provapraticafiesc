@@ -140,14 +140,14 @@ public class SupervisorServiceTest {
                 .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
@@ -157,7 +157,7 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
             .isEmpty();
     }
 
@@ -168,7 +168,7 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
             .extracting("id", "nome", "codigoCargo")
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
@@ -184,7 +184,7 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
     }
 
@@ -194,7 +194,7 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
     }
 
