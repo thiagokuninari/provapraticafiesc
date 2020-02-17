@@ -1,9 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("api/usuario-acesso")
@@ -12,7 +19,7 @@ public class UsuarioAcessoController {
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
 
-    @GetMapping("/inativar")
+    @GetMapping("inativar")
     @ResponseStatus(HttpStatus.OK)
     public void inativarUsuariosSemAcesso() {
         usuarioAcessoService.inativarUsuariosSemAcesso();
@@ -21,5 +28,16 @@ public class UsuarioAcessoController {
     @DeleteMapping("historico")
     public void deletarHistoricoUsuarioAcesso() {
         usuarioAcessoService.deletarHistoricoUsuarioAcesso();
+    }
+
+    @GetMapping
+    public Page<UsuarioAcessoResponse> filtrar(PageRequest pageRequest, @Validated UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        usuarioAcessoFiltros.validarPeriodoMaiorQue30Dias();
+        return usuarioAcessoService.getAll(pageRequest, usuarioAcessoFiltros);
+    }
+
+    @GetMapping("relatorio")
+    public void exportRegistrosToCsv(@Validated UsuarioAcessoFiltros usuarioAcessoFiltros, HttpServletResponse response) {
+        this.usuarioAcessoService.exportRegistrosToCsv(response, usuarioAcessoFiltros);
     }
 }

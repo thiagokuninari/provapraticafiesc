@@ -50,12 +50,14 @@ app-config:
       url: http://172.10.10.77:8095
     equipe-venda:
       url: http://172.10.10.80:8089
+    contato-crn:
+      url: http://172.10.10.95:8084
 
   email:
     enviar: true
     empresa-alias: XBRAIN
     emails:
-    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, alison@xbrain.com.br, wilian@xbrain.com.br
+    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, alison@xbrain.com.br, henrique@xbrain.com.br
 
 logging:
   level:

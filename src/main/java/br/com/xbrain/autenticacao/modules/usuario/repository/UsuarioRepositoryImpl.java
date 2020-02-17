@@ -42,6 +42,7 @@ import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
@@ -208,7 +209,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(departamento.nivel, nivel)
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                 .and(departamento.codigo.eq(COMERCIAL)
-                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                    .and(nivel.codigo.eq(OPERACAO)))
                 .and(usuario.situacao.eq(A)))
             .orderBy(usuario.nome.asc())
             .fetch();
@@ -225,7 +226,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(departamento.nivel, nivel)
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                 .and(departamento.codigo.eq(COMERCIAL)
-                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                    .and(nivel.codigo.eq(OPERACAO)))
                 .and(usuario.situacao.eq(A))
                 .and(usuario.id.in(idsPermitidos)))
             .orderBy(usuario.nome.asc())
@@ -243,7 +244,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(departamento.nivel, nivel)
             .where(cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)
                 .and(departamento.codigo.eq(COMERCIAL)
-                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO)))
+                    .and(nivel.codigo.eq(OPERACAO)))
                 .and(usuario.situacao.eq(A))
                 .and(usuario.id.in(idsPermitidos))
                 .and(usuario.id.in(
@@ -359,7 +360,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuarioSuperior.situacao.eq(A))
                 .and(cargo.codigo.in(GERENTE_OPERACAO, COORDENADOR_OPERACAO))
                 .and(departamento.codigo.eq(COMERCIAL)
-                    .and(nivel.codigo.eq(CodigoNivel.OPERACAO))))
+                    .and(nivel.codigo.eq(OPERACAO))))
             .fetch()
             .stream()
             .map(UsuarioHierarquia::getUsuarioSuperior)
@@ -633,5 +634,62 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPADeleteClause(entityManager, usuarioHierarquia)
                 .where(usuarioHierarquia.usuario.id.eq(usuarioId))
                 .execute();
+    }
+
+    @Override
+    public List<UsuarioExecutivoResponse> findAllExecutivosBySituacao(ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioExecutivoResponse.class,
+                usuario.id, usuario.email, usuario.nome))
+            .from(usuario)
+            .join(usuario.cargo, cargo)
+            .where(usuario.situacao.eq(situacao)
+            .and(usuario.cargo.codigo.in(EXECUTIVO, EXECUTIVO_HUNTER)))
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(codigoCargo)
+                .and(usuario.situacao.eq(A)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                    usuario.id,
+                    usuario.nome,
+                    usuario.situacao))
+            .from(usuario)
+            .where(usuario.id.in(usuariosIds))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(
+                UsuarioResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.email,
+                cargo.nome,
+                cargo.codigo))
+            .from(usuario)
+            .leftJoin(usuario.departamento, departamento)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(cargo.nivel, nivel)
+            .where(usuario.situacao.eq(A)
+                .and(departamento.codigo.eq(COMERCIAL))
+                .and(nivel.codigo.eq(OPERACAO))
+                .and(cargo.id.eq(cargoId)))
+            .orderBy(usuario.id.asc())
+            .fetch();
     }
 }
