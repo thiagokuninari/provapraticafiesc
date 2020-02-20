@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -138,6 +139,8 @@ public class SupervisorServiceTest {
 
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
                 .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
+            .thenReturn(List.of(1, 2));
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
@@ -166,6 +169,8 @@ public class SupervisorServiceTest {
 
         doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
+            .thenReturn(List.of(1, 2));
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
@@ -173,8 +178,7 @@ public class SupervisorServiceTest {
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
-                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO),
-                tuple(3, "VENDEDOR3", VENDEDOR_OPERACAO));
+                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO));
 
     }
 
