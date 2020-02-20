@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -29,9 +28,7 @@ public class SupervisorService {
     private EquipeVendaD2dService equipeVendaD2dService;
 
     public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
-        var vendedoresDoSupervisor = ObjectUtils.isEmpty(equipeId)
-            ? getVendedoresDoSupervisor(supervisorId)
-            : filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
+        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
             getAssistentesDoSupervisor(supervisorId).stream(),
