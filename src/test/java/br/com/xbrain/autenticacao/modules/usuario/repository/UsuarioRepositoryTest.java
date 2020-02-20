@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -99,4 +101,15 @@ public class UsuarioRepositoryTest {
                 tuple(110, "HUNTER 1"),
                 tuple(111, "HUNTER 2"));
     }
+
+    @Test
+    public void findUsuariosByCodigoCargo_deveRetornarDoisUsuariosAtivos_peloCodigoDoCargo() {
+        assertThat(repository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
+            .hasSize(2)
+            .extracting("id", "nome", "email", "situacao")
+            .containsExactly(
+                tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
+                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
+    }
+
 }

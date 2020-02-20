@@ -199,7 +199,9 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=A")
+        mvc.perform(get(API_URI)
+                .param("cnpjAa", "09.489.617/0001-97")
+                .param("situacoes", "A")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -213,7 +215,9 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=I")
+        mvc.perform(get(API_URI)
+                .param("cnpjAa", "09.489.617/0001-97")
+                .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -231,7 +235,8 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void filtrarUser_deveFiltrarPorInativo_quandoSituacaoForInativo() throws Exception {
-        mvc.perform(get(API_URI + "?situacao=I&realocado=false")
+        mvc.perform(get(API_URI)
+                .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -240,8 +245,9 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void filtrarUser_deveFiltrarPorRealocado_quandoRealocadoForTrue() throws Exception {
-        mvc.perform(get(API_URI + "?realocado=true")
+    public void filtrarUser_deveFiltrarPorRealocado_quandoSituacaoForRealocado() throws Exception {
+        mvc.perform(get(API_URI)
+                .param("situacoes", "R")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
