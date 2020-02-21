@@ -92,6 +92,6 @@ public class CidadeController {
 
     @GetMapping("cidade-dbm/{codigoCidadeDbm}")
     public CidadeResponse getCidadeByCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
-        return CidadeResponse.parse(service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm));
+        return CidadeResponse.of(service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm));
     }
 }
