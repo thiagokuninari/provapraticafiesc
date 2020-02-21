@@ -22,13 +22,13 @@ public class CidadeRepositoryIT {
 
     @Test
     public void findFirstByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() throws Exception {
-        var cidade = cidadeRepository.findFirstByCodigoCidadeDbm(3).get();
+        var cidade = cidadeRepository.findByCodigoCidadeDbm(3).get();
         assertEquals("LONDRINA", cidade.getNome());
     }
 
     @Test
     public void findFirstByCodigoCidadeDbm_deveRetornarOptionalEmpty_quandoNaoExistirCidadeComCodigoCidadeDbm() throws Exception {
-        assertThat(cidadeRepository.findFirstByCodigoCidadeDbm(4)).isNotPresent();
+        assertThat(cidadeRepository.findByCodigoCidadeDbm(4)).isNotPresent();
     }
 
 }

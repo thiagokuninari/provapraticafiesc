@@ -85,6 +85,6 @@ public class CidadeService {
     }
 
     public Cidade getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return repository.findFirstByCodigoCidadeDbm(codigoCidadeDbm).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return repository.findByCodigoCidadeDbm(codigoCidadeDbm).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }

@@ -28,5 +28,5 @@ public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Int
     @Query(value = "select * from Cidade c where c.codigo_ibge = ? and c.fk_cidade IS NULL", nativeQuery = true)
     Optional<Cidade> findCidadeByCodigoIbge(String codigoIbge);
 
-    Optional<Cidade> findFirstByCodigoCidadeDbm(Integer codigoCidadeDbm);
+    Optional<Cidade> findByCodigoCidadeDbm(Integer codigoCidadeDbm);
 }
