@@ -171,6 +171,21 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void inativar_deveInativarUmUsuario_seAtivoEComMotivoInativo() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.empty());
+        var usuarioInativacao = UsuarioInativacaoDto
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.INATIVO)
+            .idUsuarioInativacao(101)
+            .build();
+        service.inativar(usuarioInativacao);
+        Usuario usuario = service.findByIdCompleto(100);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
     public void inativar_deveInativarUmUsuario_seAtivo() {
         UsuarioInativacaoDto usuarioInativacaoDto = new UsuarioInativacaoDto();
         usuarioInativacaoDto.setIdUsuario(100);
