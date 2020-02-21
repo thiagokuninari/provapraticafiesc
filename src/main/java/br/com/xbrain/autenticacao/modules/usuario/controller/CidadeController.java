@@ -89,4 +89,9 @@ public class CidadeController {
     public List<CidadeResponse> getAllCidadeNetUno() {
         return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
     }
+
+    @GetMapping("cidade-dbm/{codigoCidadeDbm}")
+    public CidadeResponse getCidadeByCodigoCidadeDbm(@PathVariable("codigoCidadeDbm") Integer codigoCidadeDbm) {
+        return CidadeResponse.parse(service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm));
+    }
 }

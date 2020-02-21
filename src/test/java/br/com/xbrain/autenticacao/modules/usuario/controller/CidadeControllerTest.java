@@ -182,6 +182,16 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @Test
+    public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() throws Exception {
+        doReturn(umaCidade()).when(cidadeService).getCidadeByCodigoCidadeDbm(any());
+        mvc.perform(get("/api/cidades/cidade-dbm/1")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(5578)));
+    }
+
     private Cidade umaCidade() {
 
         return Cidade.builder()
