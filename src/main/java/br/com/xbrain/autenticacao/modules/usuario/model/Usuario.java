@@ -1,10 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -14,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -32,8 +35,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 
 @Data
 @ToString(of = "id")
@@ -44,6 +46,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDE
 @Entity
 @Table(name = "USUARIO")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@DynamicUpdate
 public class Usuario {
 
     @Id
@@ -58,7 +61,7 @@ public class Usuario {
     @NotNull
     @Email
     @Size(max = 80)
-    @Column(name = "EMAIL_01", nullable = false, length = 80, unique = false)
+    @Column(name = "EMAIL_01", nullable = false, length = 80)
     private String email;
 
     @Email
@@ -82,7 +85,7 @@ public class Usuario {
 
     @NotNull
     @CPF
-    @Column(name = "CPF", length = 14, unique = false)
+    @Column(name = "CPF", length = 14)
     private String cpf;
 
     @Size(max = 25)
@@ -154,6 +157,10 @@ public class Usuario {
     private LocalDateTime dataCadastro;
 
     @NotAudited
+    @Column(name = "DATA_ULTIMO_ACESSO")
+    private LocalDateTime dataUltimoAcesso;
+
+    @NotAudited
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
             foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
@@ -202,11 +209,19 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Organizacao organizacao;
+
     @Transient
     private List<Integer> hierarquiasId;
 
     @Transient
     private List<Integer> cidadesId;
+
+    @Transient
+    private Integer agenteAutorizadoId;
 
     public Usuario(Integer id) {
         this.id = id;
@@ -215,6 +230,11 @@ public class Usuario {
     public Usuario(Collection<Empresa> empresas, Collection<UnidadeNegocio> unidadeNegocios) {
         this.empresas = new ArrayList<>(empresas);
         this.unidadesNegocios = new ArrayList<>(unidadeNegocios);
+    }
+
+    public Usuario(Integer id, String email) {
+        this.id = id;
+        this.email = email;
     }
 
     public static Usuario parse(UsuarioMqRequest usuarioMqRequest) {
@@ -228,7 +248,7 @@ public class Usuario {
         return id == null;
     }
 
-    public void forceLoad() {
+    public Usuario forceLoad() {
         empresas.size();
         cidades.size();
         usuariosHierarquia.forEach(u -> u.getUsuarioSuperior().getId());
@@ -236,6 +256,7 @@ public class Usuario {
         unidadesNegocios.size();
         departamento.getId();
         canais.size();
+        return this;
     }
 
     public List<Integer> getEmpresasId() {
@@ -391,8 +412,8 @@ public class Usuario {
     }
 
     public boolean isUsuarioEquipeVendas() {
-        return !ObjectUtils.isEmpty(cargo)
-                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO)
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
+                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)
                 .contains(cargo.getCodigo());
     }
 
@@ -410,11 +431,34 @@ public class Usuario {
                 && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
-    public void adicionar(UsuarioHistorico historico) {
+    public boolean isSocioPrincipal() {
+        return Objects.nonNull(this.cargo)
+                && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
+    }
+
+    public void adicionarHistorico(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
         }
 
         this.historicos.add(historico);
+    }
+
+    @JsonIgnore
+    public boolean permiteEditar(UsuarioAutenticado usuarioAutenticado) {
+        if (usuarioAutenticado.isUsuarioEquipeVendas()) {
+            return Objects.equals(getCargoCodigo(), VENDEDOR_OPERACAO);
+        }
+        return usuarioAutenticado.isXbrain() || usuarioAutenticado.getId() != id;
+    }
+
+    @JsonIgnore
+    public boolean isAtivo() {
+        return situacao.equals(ESituacao.A);
+    }
+
+    @JsonIgnore
+    public boolean isCargo(CodigoCargo codigoCargo) {
+        return cargo.getCodigo().equals(codigoCargo);
     }
 }

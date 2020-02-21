@@ -12,15 +12,12 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.infra.JoinDescriptor.innerJoin;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
-import static java.util.Arrays.asList;
 
 public class CargoRepositoryImpl extends CustomRepository<Cargo> implements CargoRepositoryCustom {
 
     public Page<Cargo> findAll(Predicate predicate, Pageable pageable) {
         return super.findAll(
-                asList(
-                        innerJoin(cargo.nivel)
-                ),
+                List.of(innerJoin(cargo.nivel)),
                 predicate,
                 pageable);
     }

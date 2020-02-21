@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.rabbitmq;
 
 import br.com.xbrain.autenticacao.config.IgnoreRabbitProfile;
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -14,6 +15,8 @@ public class UsuarioMqListener {
 
     @Autowired
     private UsuarioService service;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     @RabbitListener(queues = "${app-config.queue.usuario-cadastro}")
     public void save(UsuarioMqRequest usuarioMqRequest) {
@@ -65,5 +68,9 @@ public class UsuarioMqListener {
         service.alterarSituacao(usuario);
     }
 
+    @RabbitListener(queues = "${app-config.queue.usuario-logout}")
+    public void logoutUsuarios(UsuarioLogoutDto usuarioLogoutDto) {
+        autenticacaoService.logout(usuarioLogoutDto.getUsuariosIds());
+    }
 }
 

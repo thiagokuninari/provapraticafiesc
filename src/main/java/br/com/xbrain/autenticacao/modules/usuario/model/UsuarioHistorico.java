@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -44,7 +45,7 @@ public class UsuarioHistorico {
     private Usuario usuarioAlteracao;
 
     @NotNull
-    @Column(name = "DATA_CADASTRO", nullable = false)
+    @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
     @Size(max = 250)
@@ -55,7 +56,16 @@ public class UsuarioHistorico {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    @Builder
+    @JoinColumn(name = "FK_USUARIO_FERIAS", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_FERIAS_USU_HIS"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UsuarioFerias ferias;
+
+    @JoinColumn(name = "FK_USUARIO_AFASTAMENTO", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_AFASTAMENTO_USU_HIS"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UsuarioAfastamento afastamento;
+
     public UsuarioHistorico(Usuario usuario, MotivoInativacao motivoInativacao, Usuario usuarioAlteracao,
                             LocalDateTime dataCadastro, String observacao, ESituacao situacao) {
         this.usuario = usuario;
@@ -66,13 +76,28 @@ public class UsuarioHistorico {
         this.situacao = situacao;
     }
 
-    public static UsuarioHistorico gerarUltimoAcesso(Integer usuarioId, MotivoInativacao motivo,
-                                                     String observacao, ESituacao situacao) {
+    public static UsuarioHistorico gerarHistorico(Integer usuarioId, MotivoInativacao motivo,
+                                                  String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
-    public void atualizarDataUltimoAcesso() {
-        this.dataCadastro = LocalDateTime.now();
+    public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
+                                                          String observacao,
+                                                          Usuario usuarioAtivado) {
+        return UsuarioHistorico.builder()
+                .dataCadastro(LocalDateTime.now())
+                .usuario(usuarioAtivado)
+                .usuarioAlteracao(usuarioAlteracao)
+                .observacao(observacao)
+                .situacao(ESituacao.A)
+                .build();
+    }
+
+    public String getSituacaoComMotivo() {
+        return situacao.getDescricao().toUpperCase()
+                + (!ObjectUtils.isEmpty(motivoInativacao)
+                        ? " / " +  motivoInativacao.getDescricao()
+                        : "");
     }
 }

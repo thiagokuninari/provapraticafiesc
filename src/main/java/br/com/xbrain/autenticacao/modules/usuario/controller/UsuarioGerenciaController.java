@@ -1,19 +1,17 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/usuarios/gerencia")
@@ -21,6 +19,8 @@ public class UsuarioGerenciaController {
 
     @Autowired
     private UsuarioService service;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
@@ -28,57 +28,52 @@ public class UsuarioGerenciaController {
         return service.save(UsuarioDto.convertFrom(usuario), foto);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping
     public void alterar(@Validated @RequestBody UsuarioDto usuario) {
         service.save(UsuarioDto.convertFrom(usuario));
     }
 
-    @RequestMapping("{id}")
+    @GetMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
-        Usuario aa = service.findByIdComAa(id);
-        aa.forceLoad();
-        return UsuarioDto.convertTo(aa);
+        var usuario = service.findByIdComAa(id);
+        return UsuarioDto.of(
+                service.findByIdComAa(id),
+                usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
     @GetMapping
-    public PageImpl<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        Page<Usuario> page = service.getAll(pageRequest, filtros);
-        return new PageImpl<>(
-                page
-                        .getContent()
-                        .stream()
-                        .map(UsuarioConsultaDto::new)
-                        .collect(Collectors.toList()),
-                pageRequest,
-                page.getTotalElements());
+    public Page<UsuarioConsultaDto> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
+        return service.getAll(pageRequest, filtros)
+            .map(UsuarioConsultaDto::convertFrom);
     }
 
-    @RequestMapping(value = "/hierarquia/{nivelId}", method = RequestMethod.GET)
+    @GetMapping("/hierarquia/{nivelId}")
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(@PathVariable int nivelId) {
         return service.getUsuariosHierarquia(nivelId);
     }
 
-    @GetMapping(value = "/cargo-superior/{cargoId}")
-    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId) {
-        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId));
+    @PostMapping(value = "/cargo-superior/{cargoId}")
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
+                                                                    @RequestBody UsuarioCargoSuperiorPost post) {
+        return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
     }
 
-    @RequestMapping(params = "email")
+    @GetMapping(params = "email")
     public UsuarioDto getByEmail(@RequestParam String email) {
         return service.findByEmail(email);
     }
 
-    @RequestMapping(value = "/configuracao", method = RequestMethod.POST)
+    @PostMapping("/configuracao")
     public UsuarioDto saveConfiguracao(@Validated @RequestBody UsuarioConfiguracaoSaveDto dto) {
         return service.saveUsuarioConfiguracao(dto);
     }
 
-    @RequestMapping(value = "/inativar", method = RequestMethod.POST)
+    @PostMapping("/inativar")
     public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
         service.inativar(dto);
     }
 
-    @RequestMapping(value = "/ativar", method = RequestMethod.PUT)
+    @PutMapping("/ativar")
     public void ativar(@Validated @RequestBody UsuarioAtivacaoDto dto) {
         service.ativar(dto);
     }
@@ -88,37 +83,37 @@ public class UsuarioGerenciaController {
         service.limparCpfUsuario(id);
     }
 
-    @RequestMapping(value = "/{idUsuario}/permissoes", method = RequestMethod.GET)
+    @GetMapping("/{idUsuario}/permissoes")
     public UsuarioPermissaoResponse getFuncionalidadeByUsuario(@PathVariable Integer idUsuario) {
         return service.findPermissoesByUsuario(idUsuario);
     }
 
-    @RequestMapping(value = "/{idUsuario}/senha", method = RequestMethod.PUT)
+    @PutMapping("/{idUsuario}/senha")
     public void alterarSenhaEReenviarPorEmail(@PathVariable Integer idUsuario) {
         service.alterarSenhaEReenviarPorEmail(idUsuario);
     }
 
-    @RequestMapping(value = "/{idUsuario}/cidades", method = RequestMethod.GET)
+    @GetMapping("/{idUsuario}/cidades")
     public List<UsuarioCidadeDto> getCidadesByUsuario(@PathVariable Integer idUsuario) {
         return service.getCidadeByUsuario(idUsuario);
     }
 
-    @RequestMapping(value = "/acesso/email", method = RequestMethod.PUT)
+    @PutMapping("/acesso/email")
     public void alterarDadosAcessoEmail(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         service.alterarDadosAcessoEmail(usuarioDadosAcessoRequest);
     }
 
-    @RequestMapping(value = "/acesso/senha", method = RequestMethod.PUT)
+    @PutMapping("/acesso/senha")
     public Integer alterarDadosAcessoSenha(@RequestBody UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         return service.alterarDadosAcessoSenha(usuarioDadosAcessoRequest);
     }
 
-    @RequestMapping(value = "{idUsuario}/supervisor", method = RequestMethod.GET)
+    @GetMapping("{idUsuario}/supervisor")
     public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);
     }
 
-    @RequestMapping(value = "{idUsuario}/supervisores", method = RequestMethod.GET)
+    @GetMapping("{idUsuario}/supervisores")
     public List<UsuarioResponse> getUsuarioSuperiores(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperiores(idUsuario);
     }

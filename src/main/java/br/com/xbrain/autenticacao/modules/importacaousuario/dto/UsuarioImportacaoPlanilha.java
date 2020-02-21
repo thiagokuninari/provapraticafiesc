@@ -16,6 +16,8 @@ import java.util.List;
 
 @Data
 public class UsuarioImportacaoPlanilha {
+    private static final int CELULAR_LENGTH_ONLY_NUMBER = 11;
+
     private final List<Integer> unidadesNegociosId = Arrays.asList(1, 2);
     private final List<Integer> empresasId = Arrays.asList(1, 2, 3);
 
@@ -67,10 +69,21 @@ public class UsuarioImportacaoPlanilha {
         this.motivoNaoImportacao = motivoNaoImportacao;
     }
 
-    public static Usuario convertFrom(UsuarioImportacaoPlanilha usuario) {
+    public static Usuario of(UsuarioImportacaoPlanilha usuario) {
         Usuario response = new Usuario();
         BeanUtils.copyProperties(usuario, response);
         response.setRecuperarSenhaTentativa(usuario.getRecuperarSenhaTentativa());
+
+        if (!isTelefoneCelular(usuario.getTelefone())) {
+            response.setTelefone(null);
+            response.setTelefone02(usuario.getTelefone());
+        }
+
         return response;
+    }
+
+    private static boolean isTelefoneCelular(String telefone) {
+        return telefone.replaceAll("[^0-9]", "")
+            .length() == CELULAR_LENGTH_ONLY_NUMBER;
     }
 }

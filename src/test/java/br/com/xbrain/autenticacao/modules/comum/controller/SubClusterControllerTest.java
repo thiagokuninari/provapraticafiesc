@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class SubClusterControllerTest {
 
+    private static String API_SUBCLUSTER = "/api/subclusters";
+
     @Autowired
     private MockMvc mvc;
 
@@ -56,13 +58,58 @@ public class SubClusterControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("LONDRINA")));
+                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")));
     }
 
     @Test
     public void deveRetornarOsSubClustersAtivos() throws Exception {
         mvc.perform(get("/api/subclusters")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(245)))
+                .andExpect(jsonPath("$[0].nome", is("ABCDM")));
+    }
+
+    @Test
+    public void getById_deveRetornar_quandoORequestForValido() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/45")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(45)));
+    }
+
+    @Test
+    public void getById_deveRetornarNotFound_quandoOSubClusterNaoExistir() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/999")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getById_deveRetornarUnauthorized_quandoNaoInformarToken() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/45"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioCidadeCadastradas() throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_SUPERVISOR))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("LONDRINA - Claro")))
+                .andExpect(jsonPath("$[1].nome", is("MARINGÁ")));
+    }
+
+    @Test
+    public void getAllSubClustersDoUsuarioAutenticado_deveRetornarLista_quandoUsuarioPossuiPermissaoVisuazarGeral()
+            throws Exception {
+        mvc.perform(get(API_SUBCLUSTER + "/usuario-autenticado")
+                .header("Authorization", getAccessToken(mvc, Usuarios.MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(245)))

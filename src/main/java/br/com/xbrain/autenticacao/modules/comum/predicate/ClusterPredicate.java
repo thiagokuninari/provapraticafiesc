@@ -31,4 +31,9 @@ public class ClusterPredicate extends PredicateBase {
         }
         return this;
     }
+
+    public ClusterPredicate filtrarPermitidos(Integer usuarioId) {
+        daClusterUsuarioPorUsuario(usuarioId);
+        return this;
+    }
 }

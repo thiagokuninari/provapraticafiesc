@@ -3,7 +3,6 @@ server:
   compression:
     enabled: true
     mime-types: text/html,text/css,application/javascript,application/json
-  max-http-header-size: 10000000
 
 spring:
   redis:
@@ -85,6 +84,7 @@ app-config:
 
   topic:
     autenticacao: autenticacao.topic
+    mailing: mailing.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -103,9 +103,12 @@ app-config:
     usuario-inativar: usuario-inativar.queue
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
+    usuario-logout: usuario-logout.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
+    distribuir-tabulacoes: distribuir-tabulacoes.queue
+    usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
 
   oauth-clients:
     autenticacao-api:
@@ -120,6 +123,9 @@ app-config:
     integracao-vendas-api:
       client: integracao-vendas-api
       secret: 1nt3gr4c40v3nd4s4p1
+    integracao-brscan-api:
+      client: integracao-brscan-api
+      secret: 1nt3gr4c40brsc4n
     vendas-api:
       client: vendas-api
       secret: v3nd4s4p1
@@ -144,6 +150,24 @@ app-config:
     dashboard-api:
       client: dashboard-api
       secret: d4shb04rd
+    discadora-eccp-api:
+      client: discadora-eccp-api
+      secret: d1sc4d0r43ccp4p1
+    contato-crn-api:
+      client: contato-crn-api
+      secret: c0nt4t0crn4p1
+    chamado-api:
+      client: chamado-api
+      secret: ch4m4d04p1
+    funil-prospeccao-api:
+      client: funil-prospeccao-api
+      secret: fun1lpr0sp3cc40
+    discadora-api:
+      client: discadora-api
+      secret: d1sc4d0r4
+    asterisk-ura-api:
+      client: asterisk-ura-api
+      secret: 4st3r1skur44p1
 
   services:
     autenticacao:
@@ -156,14 +180,17 @@ app-config:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
     vendas:
-      #url: http://localhost:8097
+      # url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-      #url: http://localhost:8095
+      # url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
       url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+    contato-crn:
+      #url: http://localhost:8084
+      url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
 
 flyway:
   enabled: true
@@ -188,6 +215,9 @@ zuul:
     equipe-venda:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.equipe-venda.url}
+    contato-crn:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.contato-crn.url}
 
   host:
     connect-timeout-millis: 1800000
@@ -200,6 +230,7 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 300000
+  shareSecurityContext: true
 
 keys:
   public: |

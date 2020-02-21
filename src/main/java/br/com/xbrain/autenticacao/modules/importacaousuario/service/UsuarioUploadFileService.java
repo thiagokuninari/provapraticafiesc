@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,28 +93,20 @@ public class UsuarioUploadFileService {
     }
 
     protected UsuarioImportacaoPlanilha buildUsuario(Row row, String senha, boolean resetarSenhaUsuarioSalvo) {
-
         Nivel nivel = recuperarNivel(row.getCell(CELULA_NIVEL).getStringCellValue());
 
-        Departamento departamento = recuperarDepartamento(
-                row.getCell(CELULA_DEPARTAMENTO)
-                        .getStringCellValue(), nivel);
-
-        Cargo cargo = recuperarCargo(row.getCell(CELULA_CARGO)
-                .getStringCellValue(), nivel);
-
         UsuarioImportacaoPlanilha usuario = UsuarioImportacaoPlanilha
-                .builder()
-                .nome(recuperarValorCelula(row, CELULA_NOME))
-                .cpf(NumberUtils.getOnlyNumbers(recuperarValorCelula(row, CELULA_CPF)))
-                .email(recuperarValorCelula(row, CELULA_EMAIL))
-                .nascimento(trataData(row.getCell(CELULA_NACIMENTO)))
-                .telefone(recuperarValorCelula(row, CELULA_TELEFONE))
-                .senha(passwordEncoder.encode(senha))
-                .departamento(departamento)
-                .cargo(cargo)
-                .nivel(nivel)
-                .build();
+            .builder()
+            .nome(recuperarValorCelula(row, CELULA_NOME))
+            .cpf(NumberUtils.getOnlyNumbers(recuperarValorCelula(row, CELULA_CPF)))
+            .email(recuperarValorCelula(row, CELULA_EMAIL))
+            .nascimento(trataData(row.getCell(CELULA_NACIMENTO)))
+            .telefone(recuperarValorCelula(row, CELULA_TELEFONE))
+            .senha(passwordEncoder.encode(senha))
+            .departamento(recuperarDepartamento(row.getCell(CELULA_DEPARTAMENTO).getStringCellValue(), nivel))
+            .cargo(recuperarCargo(row.getCell(CELULA_CARGO).getStringCellValue(), nivel))
+            .nivel(nivel)
+            .build();
 
         return validarUsuario(usuario, resetarSenhaUsuarioSalvo);
     }
@@ -149,53 +140,28 @@ public class UsuarioUploadFileService {
     }
 
     protected Departamento recuperarDepartamento(String departamentoStr, Nivel nivel) {
-        Departamento departamento = null;
-        if (!ObjectUtils.isEmpty(nivel)) {
-            try {
-                CodigoDepartamento codigoDepartamento = CodigoDepartamento.valueOf(trataString(departamentoStr));
-                Optional<Departamento> optionalDepartamento = departamentoRepository
-                        .findByCodigoAndNivelId(codigoDepartamento, nivel.getId());
-                if (optionalDepartamento.isPresent()) {
-                    departamento = optionalDepartamento.get();
-                } else {
-                    log.error("Não foi encontrado nenhum departamento com o nivelId "
-                            + nivel.getId() + " e com o departamento " + departamentoStr);
-                }
-            } catch (IllegalArgumentException ex) {
-                log.error("Erro ao recuperar departamento.", ex);
-            }
-        }
-        return departamento;
+        return departamentoRepository
+            .findByCodigoAndNivelId(CodigoDepartamento.valueOf(trataString(departamentoStr)), nivel.getId())
+            .orElse(null);
     }
 
     protected Cargo recuperarCargo(String nome, Nivel nivel) {
-        Cargo cargo = null;
-        if (!ObjectUtils.isEmpty(nivel)) {
-            Optional<Cargo> optionalCargo = cargoRepository
-                    .findFirstByNomeIgnoreCaseContainingAndNivelId(nome, nivel.getId());
-            if (optionalCargo.isPresent()) {
-                cargo = optionalCargo.get();
-            } else {
-                log.error("Não foi encontrado nenhum cargo com o nivelId " + nivel.getId() + " e com o nome " + nome);
-            }
-        }
-        return cargo;
+        return cargoRepository
+            .findFirstByNomeIgnoreCaseAndNivelId(nome.trim(), nivel.getId())
+            .orElse(null);
     }
 
     protected Nivel recuperarNivel(String codigoNivelStr) {
-        Nivel nivelCanal = null;
         try {
-            CodigoNivel codigoNivel = CodigoNivel.valueOf(trataString(codigoNivelStr));
-            nivelCanal = nivelRepository.findByCodigo(codigoNivel);
+            return nivelRepository.findByCodigo(CodigoNivel.valueOf(trataString(codigoNivelStr)));
         } catch (IllegalArgumentException ex) {
             log.error("Erro ao recuperar nivel.", ex);
         }
-        return nivelCanal;
+        return null;
     }
 
     protected Usuario salvarUsuario(UsuarioImportacaoPlanilha usuario) {
-        Usuario usuarioConvertido = UsuarioImportacaoPlanilha.convertFrom(usuario);
-        return usuarioRepository.save(usuarioConvertido);
+        return usuarioRepository.save(UsuarioImportacaoPlanilha.of(usuario));
     }
 
     protected String validarUsuarioExistente(UsuarioImportacaoPlanilha usuario, boolean resetarSenhaUsuarioSalvo) {

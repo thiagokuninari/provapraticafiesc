@@ -27,9 +27,12 @@ public class UsuarioResponse {
     private String cpf;
     private String email;
     private String telefone;
+    private String telefone02;
+    private String telefone03;
     private ESituacao situacao;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
+    private String nomeCargo;
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
@@ -41,7 +44,15 @@ public class UsuarioResponse {
         this.codigoCargo = codigoCargo;
     }
 
-    public static UsuarioResponse convertFrom(Usuario usuario) {
+    public UsuarioResponse(Integer id, String nome, String email, String nomeCargo, CodigoCargo codigoCargo) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.nomeCargo = nomeCargo;
+        this.codigoCargo = codigoCargo;
+    }
+
+    public static UsuarioResponse of(Usuario usuario) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
@@ -52,7 +63,7 @@ public class UsuarioResponse {
         return usuarioResponse;
     }
 
-    public static UsuarioResponse convertFrom(Usuario usuario, List<String> permissoes) {
+    public static UsuarioResponse of(Usuario usuario, List<String> permissoes) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());

@@ -3,16 +3,24 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioServiceEsqueciSenha;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +31,15 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "api/usuarios")
 public class UsuarioController {
 
+    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
     private UsuarioServiceEsqueciSenha usuarioServiceEsqueciSenha;
+    @Autowired
+    private UsuarioAgendamentoService usuarioAgendamentoService;
+    @Autowired
+    private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -35,7 +48,7 @@ public class UsuarioController {
     @GetMapping
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
-                usuarioService.findById(getUsuarioId(principal)));
+            usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
     @PutMapping("ativar-socio")
@@ -51,14 +64,19 @@ public class UsuarioController {
     @GetMapping("/autenticado/{id}")
     public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
         return new UsuarioAutenticado(
-                usuarioService.findCompleteById(id));
+            usuarioService.findCompleteById(id));
+    }
+
+    @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
+        return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
     }
 
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
-        return UsuarioResponse.convertFrom(
-                usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
-                        .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
+        return UsuarioResponse.of(
+            usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
+                .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
@@ -87,9 +105,30 @@ public class UsuarioController {
         return usuarioService.getIdDosUsuariosSubordinados(id, true);
     }
 
+    @GetMapping("/hierarquia/superiores/{id}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuario(@PathVariable Integer id) {
+        return usuarioService.getSuperioresDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/superiores/{id}/{codigoCargo}")
+    public List<UsuarioHierarquiaResponse> getSuperioresByUsuarioPorCargo(@PathVariable Integer id,
+                                                                          @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(id, codigoCargo);
+    }
+
     @GetMapping("/hierarquia/subordinados/{id}")
     public List<UsuarioSubordinadoDto> getSubordinadosByUsuario(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoUsuario(id);
+    }
+
+    @GetMapping("/hierarquia/subordinados/gerente/{id}")
+    public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(@PathVariable Integer id) {
+        return usuarioService.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(id);
+    }
+
+    @GetMapping("/executivos-comerciais")
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
+        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
     }
 
     @PostMapping("/vincula/hierarquia")
@@ -105,6 +144,16 @@ public class UsuarioController {
     @RequestMapping(params = "ids", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByIds(@RequestParam List<Integer> ids) {
         return usuarioService.getUsuariosByIds(ids);
+    }
+
+    @GetMapping("inativos")
+    public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
+
+        return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE )
+                .stream()
+                .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @GetMapping(params = "email")
@@ -125,14 +174,29 @@ public class UsuarioController {
         return usuarioService.findEmpresasDoUsuario(id);
     }
 
-    @RequestMapping(value = "/hierarquia/supervisores", method = RequestMethod.GET)
+    @GetMapping("/hierarquia/supervisores")
     public List<UsuarioResponse> getUsuariosSupervisores(UsuarioFiltrosHierarquia filtrosHierarquia) {
         return usuarioService.getUsuariosSuperiores(filtrosHierarquia);
     }
 
+    @GetMapping("/hierarquia/supervisores/{executivoId}")
+    public List<UsuarioAutoComplete> getAllLideresComerciaisDoExecutivo(@PathVariable Integer executivoId) {
+        return usuarioService.findAllLideresComerciaisDoExecutivo(executivoId);
+    }
+
+    @GetMapping("/hierarquia/supervisores-aa-auto-complete/{executivoId}")
+    public List<UsuarioSuperiorAutoComplete> getUsuariosSupervisoresDoAaAutoComplete(@PathVariable Integer executivoId) {
+        return usuarioService.getUsuariosSupervisoresDoAaAutoComplete(executivoId);
+    }
+
+    @GetMapping("/executivos-comerciais-agente-autorizado")
+    public List<UsuarioAutoComplete> findExecutivosPorIds(@RequestParam List<Integer> usuariosExecutivos) {
+        return usuarioService.findExecutivosPorIds(usuariosExecutivos);
+    }
+
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
-            @RequestParam String funcionalidade) {
+        @RequestParam String funcionalidade) {
         return usuarioService.getUsuarioByPermissao(funcionalidade);
     }
 
@@ -161,6 +225,11 @@ public class UsuarioController {
         usuarioService.removerRamalConfiguracao(dto);
     }
 
+    @RequestMapping(value = "/remover-ramais-configuracao", method = RequestMethod.PUT)
+    public void removerRamaisDeConfiguracao(@RequestBody List<UsuarioConfiguracaoDto> usuarioConfiguracaoDtoList) {
+        usuarioService.removerRamaisDeConfiguracao(usuarioConfiguracaoDtoList);
+    }
+
     @RequestMapping(value = "/esqueci-senha", method = RequestMethod.PUT)
     public void esqueceuSenha(@RequestBody UsuarioDadosAcessoRequest dto) {
         usuarioServiceEsqueciSenha.enviarConfirmacaoResetarSenha(dto.getEmailAtual());
@@ -179,10 +248,10 @@ public class UsuarioController {
     @GetMapping("/canais")
     public Iterable<SelectResponse> getCanais() {
         return ECanal.getCanaisAtivos()
-                .stream()
-                .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
-                .sorted(Comparator.comparing(SelectResponse::getLabel))
-                .collect(Collectors.toList());
+            .stream()
+            .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+            .sorted(Comparator.comparing(SelectResponse::getLabel))
+            .collect(Collectors.toList());
     }
 
     @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
@@ -203,5 +272,46 @@ public class UsuarioController {
     @GetMapping("permissoes-por-canal")
     public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
+    }
+
+    @GetMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+        return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
+    }
+
+    @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
+    public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
+        return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
+    }
+
+    @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
+    public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
+            @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
+        return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
+    }
+
+    @GetMapping("usuario-funil-prospeccao")
+    public FunilProspeccaoUsuarioDto findUsuarioProspeccaoByCidade(@RequestParam String cidade) {
+        return usuarioFunilProspeccaoService.findUsuarioDirecionadoByCidade(cidade);
+    }
+
+    @GetMapping("executivos")
+    public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
+        return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
+    }
+
+    @GetMapping("{id}/sem-permissoes")
+    public UsuarioResponse findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
+    }
+
+    @GetMapping("/cargo/{codigoCargo}")
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
+    }
+
+    @GetMapping("usuario-situacao")
+    public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
+        return usuarioService.findUsuariosByIds(usuariosIds);
     }
 }

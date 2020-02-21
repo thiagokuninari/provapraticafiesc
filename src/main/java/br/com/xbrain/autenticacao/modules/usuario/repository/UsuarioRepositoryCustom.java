@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.Predicate;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-
 public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findByEmail(String email);
@@ -26,17 +26,31 @@ public interface UsuarioRepositoryCustom {
 
     Optional<Usuario> findComplete(Integer id);
 
-    Optional<Usuario> findComCidade(Integer id);
+    Optional<List<Cidade>> findComCidade(Integer id);
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
 
-    List<Object[]> getUsuariosCompletoSubordinados(Integer usuarioId);
+    List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
+
+    List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
+
+    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
+
+    List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> agenteAutorizadoId);
+
+    List<Usuario> getSuperioresDoUsuario(Integer usuarioId);
+
+    List<Usuario> getSuperioresDoUsuarioPorCargo(Integer usuarioId, CodigoCargo codigoCargo);
 
     List<Usuario> getUsuariosFilter(Predicate predicate);
 
-    List<Object[]> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+    List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
+
+    List<Usuario> findAllLideresComerciaisDoExecutivo(Integer executivoId);
+
+    List<Usuario> getUsuariosSuperioresDoExecutivoDoAa(Integer executivoId);
 
     Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId);
 
@@ -66,4 +80,22 @@ public interface UsuarioRepositoryCustom {
                                                     ECanal canal);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
+
+    List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
+
+    List<Usuario> findAllUsuariosSemDataUltimoAcesso();
+
+    FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
+
+    List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
+
+    long deleteUsuarioHierarquia(Integer usuarioId);
+
+    List<UsuarioExecutivoResponse> findAllExecutivosBySituacao(ESituacao situacao);
+
+    List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds);
+
+    List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
+
+    List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 }

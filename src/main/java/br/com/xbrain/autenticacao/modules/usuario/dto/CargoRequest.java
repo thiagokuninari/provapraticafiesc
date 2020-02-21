@@ -4,7 +4,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.constraints.NotNull;
@@ -12,6 +15,9 @@ import javax.validation.constraints.NotNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CargoRequest {
 
     private Integer id;

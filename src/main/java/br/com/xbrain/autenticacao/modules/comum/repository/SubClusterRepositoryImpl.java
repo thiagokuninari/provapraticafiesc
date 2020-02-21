@@ -36,4 +36,14 @@ public class SubClusterRepositoryImpl extends CustomRepository<SubCluster> imple
                 .fetch();
     }
 
+    @Override
+    public List<SubCluster> findAllAtivo(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                .select(subCluster)
+                .from(subCluster)
+                .where(subCluster.situacao.eq(ESituacao.A)
+                        .and(predicate))
+                .orderBy(subCluster.nome.asc())
+                .fetch();
+    }
 }

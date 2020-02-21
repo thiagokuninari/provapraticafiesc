@@ -42,12 +42,14 @@ app-config:
       url: http://172.10.10.77:8095
     equipe-venda:
       url: http://172.10.10.82:8089
+    contato-crn:
+      url: http://172.10.10.64:8084
 
   email:
     enviar: true
     empresa-alias: XBRAIN
     emails: angelica@xbrain.com.br,valdecir@xbrain.com.br,higor@xbrain.com.br
-    emails-solicitacao-ramal: angelica@xbrain.com.br, higor@xbrain.com.br, valdecir@xbrain.com.br
+    emails-solicitacao-ramal: angelica@xbrain.com.br, higor@xbrain.com.br, valdecir@xbrain.com.br, jose@xbrain.com.br
 
 logging:
   level:

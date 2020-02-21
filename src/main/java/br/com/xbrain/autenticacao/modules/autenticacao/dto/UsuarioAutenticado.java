@@ -121,4 +121,16 @@ public class UsuarioAutenticado extends OAuth2Request {
     public CodigoNivel getNivelCodigoEnum() {
         return CodigoNivel.valueOf(nivelCodigo);
     }
+
+    public boolean isUsuarioEquipeVendas() {
+        return !ObjectUtils.isEmpty(usuario) && usuario.isUsuarioEquipeVendas();
+    }
+
+    public boolean isCoordenadorOperacao() {
+        return cargoCodigo.equals(CodigoCargo.COORDENADOR_OPERACAO);
+    }
+
+    public boolean isGerenteOperacao() {
+        return cargoCodigo.equals(CodigoCargo.GERENTE_OPERACAO);
+    }
 }

@@ -4,10 +4,12 @@ import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
@@ -15,11 +17,13 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
 public class AutenticacaoService {
 
+    private static final String USUARIO_AUTENTICADO_KEY = "usuarioAutenticado";
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
@@ -29,6 +33,8 @@ public class AutenticacaoService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private TokenStore tokenStore;
+    @Autowired
+    private UsuarioAcessoService usuarioAcessoService;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -55,32 +61,45 @@ public class AutenticacaoService {
         return Integer.parseInt(getAuthentication().getName().split(Pattern.quote("-"))[0]);
     }
 
+    public Optional<Integer> getUsuarioAutenticadoId() {
+        if (!hasAuthentication()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(getUsuarioId());
+    }
+
     public UsuarioAutenticado getUsuarioAutenticado() {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)
                 ((OAuth2Authentication) authentication).getUserAuthentication().getDetails();
-        UsuarioAutenticado usuarioAutenticado = null;
 
-        if (details.get("usuarioAutenticado") == null) {
-            Usuario usuario = usuarioRepository.findComplete(getUsuarioId()).get();
-            usuario.forceLoad();
-            usuarioAutenticado = new UsuarioAutenticado(usuario, authentication.getAuthorities());
-
-            details.put("usuarioAutenticado", usuarioAutenticado);
-        }
-        return usuarioAutenticado;
+        return Optional.ofNullable(details.get(USUARIO_AUTENTICADO_KEY))
+                .map(usuarioAutenticadoObj -> (UsuarioAutenticado)usuarioAutenticadoObj)
+                .or(() -> usuarioRepository.findComplete(getUsuarioId())
+                    .map(Usuario::forceLoad)
+                    .map(usuario -> new UsuarioAutenticado(usuario, authentication.getAuthorities()))
+                    .map(usuarioAutenticado -> {
+                        details.putIfAbsent(USUARIO_AUTENTICADO_KEY, usuarioAutenticado);
+                        return usuarioAutenticado;
+                    }))
+                .orElse(null);
     }
 
     public void logout(String login) {
         if (somenteUmLoginPorUsuario(login)) {
             tokenStore
-                    .findTokensByClientIdAndUserName(
-                            AuthServerConfig.APP_CLIENT,
-                            login)
-                    .forEach(token -> tokenStore.removeAccessToken(token));
+                .findTokensByClientIdAndUserName(
+                    AuthServerConfig.APP_CLIENT,
+                    login)
+                .forEach(token -> {
+                    getUsuarioAutenticadoId().ifPresent(usuarioAcessoService::registrarLogout);
+                    tokenStore.removeAccessToken(token);
+                });
         }
     }
 
@@ -88,10 +107,22 @@ public class AutenticacaoService {
         logout(usuarioRepository.findOne(usuarioId).getLogin());
     }
 
+    public void logout(List<Integer> usuariosId) {
+        usuarioRepository.findByIdIn(usuariosId)
+            .forEach(usuario -> logout(usuario.getLogin()));
+    }
+
     public void logoutAllUsers() {
         tokenStore
-                .findTokensByClientId(AuthServerConfig.APP_CLIENT)
-                .forEach(token -> tokenStore.removeAccessToken(token));
+            .findTokensByClientId(AuthServerConfig.APP_CLIENT)
+            .forEach(token -> {
+                tokenStore.removeAccessToken(token);
+                usuarioAcessoService.registrarLogout(getUsuarioIdFromToken(token));
+            });
+    }
+
+    private Integer getUsuarioIdFromToken(OAuth2AccessToken token) {
+        return (Integer) token.getAdditionalInformation().get("usuarioId");
     }
 
     public boolean isEmulacao() {

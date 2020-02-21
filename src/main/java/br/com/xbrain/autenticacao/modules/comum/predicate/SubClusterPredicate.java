@@ -19,7 +19,8 @@ public class SubClusterPredicate extends PredicateBase {
                         .leftJoin(usuario.cidades, usuarioCidade)
                         .leftJoin(usuarioCidade.cidade, QCidade.cidade)
                         .leftJoin(QCidade.cidade.subCluster, subCluster)
-                        .where(usuarioCidade.dataBaixa.isNull().and(usuario.id.eq(usuarioId)))));
+                        .where(usuarioCidade.dataBaixa.isNull().and(usuario.id.eq(usuarioId)))
+                        .distinct()));
         return this;
     }
 
@@ -27,6 +28,11 @@ public class SubClusterPredicate extends PredicateBase {
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             daSubClusterUsuarioPorUsuario(usuarioAutenticado.getId());
         }
+        return this;
+    }
+
+    public SubClusterPredicate filtrarPermitidos(Integer usuarioId) {
+        daSubClusterUsuarioPorUsuario(usuarioId);
         return this;
     }
 }

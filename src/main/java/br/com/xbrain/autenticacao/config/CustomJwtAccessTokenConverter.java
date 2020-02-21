@@ -56,7 +56,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             User userAuth = (User) authentication.getUserAuthentication().getPrincipal();
 
             usuarioRepository
-                    .findComplete(new Integer(userAuth.getUsername().split(Pattern.quote("-"))[0]))
+                    .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
                     .ifPresent(usuario -> setAdditionalInformation(
                             defaultOAuth2AccessToken,
                             usuario,
@@ -104,6 +104,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
+    private boolean isExclusivoPme(Usuario usuario) {
+        return usuario.getNivelCodigo() == AGENTE_AUTORIZADO && agenteAutorizadoService.isExclusivoPme(usuario.getId());
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
@@ -129,6 +133,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
         token.getAdditionalInformation().put("canais", getCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
+        token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -153,6 +158,11 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 getAplicacoes(usuario));
         token.getAdditionalInformation().put("equipesSupervisionadas",
                 equipesSupervisionadas);
+        token.getAdditionalInformation().put("aaPme", isExclusivoPme(usuario));
+    }
+
+    private String getOrganizacao(Usuario usuario) {
+        return !ObjectUtils.isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getCodigo() : "";
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {

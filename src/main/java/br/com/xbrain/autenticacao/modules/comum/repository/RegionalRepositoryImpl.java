@@ -8,8 +8,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
+import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class RegionalRepositoryImpl extends CustomRepository<Regional> implements RegionalRepositoryCustom {
 
     @Override
@@ -22,4 +28,20 @@ public class RegionalRepositoryImpl extends CustomRepository<Regional> implement
                 .fetch();
     }
 
+    @Override
+    public List<Regional> getAllByUsuarioId(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+                .select(regional)
+                .from(usuarioCidade)
+                .innerJoin(usuarioCidade.cidade, cidade)
+                .innerJoin(cidade.subCluster, subCluster)
+                .innerJoin(subCluster.cluster, cluster)
+                .innerJoin(cluster.grupo, grupo)
+                .innerJoin(grupo.regional, regional)
+                .where(usuarioCidade.usuario.id.eq(usuarioId)
+                        .and(usuarioCidade.dataBaixa.isNull()))
+                .orderBy(regional.nome.asc())
+                .distinct()
+                .fetch();
+    }
 }

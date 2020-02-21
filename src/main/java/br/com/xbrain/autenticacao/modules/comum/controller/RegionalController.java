@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/regionais")
@@ -17,5 +19,15 @@ public class RegionalController {
     @RequestMapping(method = RequestMethod.GET)
     public Iterable<Regional> getAtivos() {
         return service.getAll();
+    }
+
+    @GetMapping("/usuario/{id}")
+    public List<SelectResponse> getAllByUsuarioId(@PathVariable("id") int usuarioId) {
+        return service.getAllByUsuarioId(usuarioId);
+    }
+
+    @GetMapping("/{regionalId}")
+    public RegionalDto findById(@PathVariable Integer regionalId) {
+        return service.findById(regionalId);
     }
 }

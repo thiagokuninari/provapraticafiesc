@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -15,7 +16,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
 @NoArgsConstructor
@@ -85,6 +87,9 @@ public class UsuarioDto implements Serializable {
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
+    private Integer organizacaoId;
+    private boolean permiteEditarCompleto;
+    private Integer agenteAutorizadoId;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
@@ -93,14 +98,17 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
-        if (!ObjectUtils.isEmpty(usuarioDto.getUsuarioCadastroId())) {
+        if (!isEmpty(usuarioDto.getOrganizacaoId())) {
+            usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
+        }
+        if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         }
         return usuario;
     }
 
-    public static UsuarioDto convertTo(Usuario usuario) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+    public static UsuarioDto of(Usuario usuario) {
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuario, usuarioDto);
         usuarioDto.setCargoId(usuario.getCargoId());
         usuarioDto.setCargoCodigo(usuario.getCargoCodigo());
@@ -115,7 +123,18 @@ public class UsuarioDto implements Serializable {
                 .map(UsuarioHierarquia::getUsuarioSuperiorId)
                 .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
+        usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
         return usuarioDto;
+    }
+
+    public static UsuarioDto of(Usuario usuario, boolean permiteEditarCompleto) {
+        var usuarioDto = UsuarioDto.of(usuario);
+        usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
+        return usuarioDto;
+    }
+
+    private static Integer getOrganizacaoId(Usuario usuario) {
+        return !isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
@@ -125,7 +144,7 @@ public class UsuarioDto implements Serializable {
     }
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
-        return !CollectionUtils.isEmpty(usuario.getUnidadesNegociosId())
+        return !isEmpty(usuario.getUnidadesNegociosId())
                 ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
 }

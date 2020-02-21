@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Integer>,
         CidadeRepositoryCustom {
@@ -21,4 +22,9 @@ public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Int
     void updateUsuarioAprovador(Integer usuarioId, Integer cidadeId);
 
     List<Cidade> findAllByNetUno(Eboolean netUno);
+
+    List<Cidade> findCidadeByNomeLike(String cidade);
+
+    @Query(value = "select * from Cidade c where c.codigo_ibge = ? and c.fk_cidade IS NULL", nativeQuery = true)
+    Optional<Cidade> findCidadeByCodigoIbge(String codigoIbge);
 }

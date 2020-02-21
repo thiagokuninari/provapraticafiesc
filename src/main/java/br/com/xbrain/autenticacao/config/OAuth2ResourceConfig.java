@@ -28,7 +28,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
-            "/api/public/disparar-timer-inativar-usuarios"
+            "/api/public/disparar-timer-inativar-usuarios",
+            "/api/usuarios/usuario-funil-prospeccao"
         };
 
         http
@@ -49,8 +50,11 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/api/permissoes-especiais")
                     .hasRole(CodigoFuncionalidade.AUT_GER_PERMISSAO_ESPECIAL_USUARIO.name())
                 .antMatchers("/api/solicitacao-ramal")
-                    .hasAnyRole(CodigoFuncionalidade.AUT_2033.name(), CodigoFuncionalidade.AUT_2034.name())
-                .antMatchers("/api/solicitacao-ramal/gerencia/**").hasRole(CodigoFuncionalidade.AUT_2034.name())
+                    .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name())
+                .antMatchers("/api/solicitacao-ramal/gerencia/**")
+                    .hasRole(CodigoFuncionalidade.CTR_2034.name())
+                .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
+                .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
                 .anyRequest().authenticated();
     }
 
