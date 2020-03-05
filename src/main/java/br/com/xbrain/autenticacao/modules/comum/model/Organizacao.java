@@ -32,10 +32,10 @@ public class Organizacao {
     private String codigo;
 
     @JoinTable(name = "ORGANIZACAO_NIVEL", joinColumns = {
-            @JoinColumn(name = "FK_NIVEL", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_ORG_NIVEL_NIVEL"))}, inverseJoinColumns = {
             @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_ORG_NIVEL_ORGANIZACAO"))})
+                    foreignKey = @ForeignKey(name = "FK_ORG_NIVEL_ORGANIZACAO"))}, inverseJoinColumns =  {
+            @JoinColumn(name = "FK_NIVEL", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "FK_ORG_NIVEL_NIVEL"))})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Nivel> niveis;
 

@@ -9,8 +9,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -18,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.Usuarios;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -263,15 +263,39 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(7)))
+                .andExpect(jsonPath("$", hasSize(5)))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "O campo nome é obrigatório.",
                         "O campo cpf é obrigatório.",
                         "O campo email é obrigatório.",
-                        "O campo unidadesNegociosId é obrigatório.",
-                        "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoUnidadeNegocioVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setUnidadesNegociosId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoEmpresaVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setEmpresasId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test
@@ -315,6 +339,29 @@ public class UsuarioGerenciaControllerTest {
         assertEquals(usuarios.get(0).getNome(), usuario.getNome());
         assertEquals(usuarios.get(0).getCpf(), "09723864592");
         assertEquals(usuarios.get(0).getCanais(), Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
+    }
+
+    @Test
+    public void deveSalvarUsuario_usuarioBackoffice_quandoNivelBackoffice() throws Exception {
+        var usuario = umUsuario("USUARIO BACKOFFICE");
+        usuario.setUnidadesNegociosId(null);
+        usuario.setEmpresasId(null);
+        usuario.setNivelId(18);
+        usuario.setCargoId(110);
+        usuario.setDepartamentoId(69);
+        usuario.setOrganizacaoId(5);
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(usuario))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk());
+
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+
+        Assertions.assertThat(repository.findOne(new UsuarioPredicate().comNome(usuario.getNome()).build()))
+            .extracting("nome", "cargo.nivel.codigo", "cargo.codigo")
+            .contains("USUARIO BACKOFFICE", CodigoNivel.BACKOFFICE, CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_ONLINE);
     }
 
     @Test

@@ -31,4 +31,12 @@ public class OrganizacaoRepositoryTest {
                         tuple("ATENTO", "Atento"),
                         tuple("VGX", "VGX"));
     }
+
+    @Test
+    public void findAll_organizacoesFiltradas_quandoPorNivelId() {
+        assertThat(organizacaoRepository.findAllByNiveisIdIn(1))
+                .hasSize(1)
+                .extracting("codigo", "nome")
+                .contains(tuple("BCC", "Brasil Center"));
+    }
 }

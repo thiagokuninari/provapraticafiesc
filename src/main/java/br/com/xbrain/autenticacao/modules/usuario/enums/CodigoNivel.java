@@ -18,5 +18,6 @@ public enum CodigoNivel {
     ATIVO_LOCAL_COLABORADOR,
     OUVIDORIA,
     INTEGRACAO,
+    GERADOR_LEADS,
     BACKOFFICE;
 }

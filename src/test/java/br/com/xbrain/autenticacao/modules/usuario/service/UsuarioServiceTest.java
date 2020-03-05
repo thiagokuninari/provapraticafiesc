@@ -1,8 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
+import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -12,14 +16,20 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.persistence.EntityManager;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +47,24 @@ public class UsuarioServiceTest {
     private UsuarioService usuarioService;
     @Mock
     private UsuarioRepository usuarioRepository;
+    @Mock
+    private NotificacaoService notificacaoService;
+    @Mock
+    private EmpresaRepository empresaRepository;
+    @Mock
+    private UnidadeNegocioRepository unidadeNegocioRepository;
+    @Mock
+    private CargoRepository cargoRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private AutenticacaoService autenticacaoService;
+    @Mock
+    private EntityManager entityManager;
+    @Mock
+    private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
+    @Mock
+    private UsuarioCidadeRepository usuarioCidadeRepository;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -116,6 +144,16 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
     }
 
+    @Test
+    public void deveSalvarUsuario_usuarioBackoffice_parametrosValidos() {
+        when(cargoRepository.findOne(any())).thenReturn(umCargoOperadorBackoffice());
+
+        usuarioService.save(umUsuarioBackoffice());
+
+        verify(empresaRepository, atLeastOnce()).findAllAtivo();
+        verify(unidadeNegocioRepository, atLeastOnce()).findAllAtivo();
+    }
+
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             Usuario.builder()
@@ -169,5 +207,29 @@ public class UsuarioServiceTest {
             .containsExactlyInAnyOrder(
                 tuple(1, "JONATHAN", ESituacao.A),
                 tuple(2, "FLAVIA", ESituacao.I));
+    }
+
+    private Usuario umUsuarioBackoffice() {
+        return Usuario.builder()
+                .id(1)
+                .nome("Backoffice")
+                .cargo(new Cargo(110))
+                .departamento(new Departamento(69))
+                .cpf("097.238.645-92")
+                .email("usuario@teste.com")
+                .telefone("43995565661")
+                .hierarquiasId(List.of())
+                .usuariosHierarquia(new HashSet<>())
+                .build();
+    }
+
+    private Cargo umCargoOperadorBackoffice() {
+        return Cargo.builder()
+                .codigo(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO_ONLINE)
+                .nivel(Nivel
+                        .builder()
+                        .codigo(CodigoNivel.BACKOFFICE)
+                        .build())
+                .build();
     }
 }

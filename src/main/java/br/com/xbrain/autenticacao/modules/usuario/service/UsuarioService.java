@@ -81,6 +81,10 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    public static final ValidacaoException UNIDADE_NEGOCIO_OBRIGATORIO_EXCEPTION
+            = new ValidacaoException("O campo unidadesNegociosId é obrigatório.");
+    public static final ValidacaoException EMPRESA_OBRIGATORIO_EXCEPTION
+            = new ValidacaoException("O campo empresasId é obrigatório.");
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -334,8 +338,8 @@ public class UsuarioService {
         try {
             validar(usuario);
 
-            boolean enviarEmail = false;
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            var enviarEmail = false;
+            var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             if (usuario.isNovoCadastro()) {
                 configurar(usuario, senhaDescriptografada);
                 enviarEmail = true;
@@ -348,7 +352,7 @@ public class UsuarioService {
 
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario);
-
+            tratarUnidadesNegocioEmpresas(usuario);
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
             }
@@ -422,8 +426,18 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
+        validarEmpresaAndUnidadeNegocio(usuario);
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
+    }
+
+    private void validarEmpresaAndUnidadeNegocio(Usuario usuario) {
+        usuario.setCargo(cargoRepository.findOne(usuario.getCargoId()));
+        if (!usuario.isBackoffice() && isEmpty(usuario.getUnidadesNegociosId())) {
+            throw UNIDADE_NEGOCIO_OBRIGATORIO_EXCEPTION;
+        } else if (!usuario.isBackoffice() && isEmpty(usuario.getEmpresasId())) {
+            throw EMPRESA_OBRIGATORIO_EXCEPTION;
+        }
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -551,6 +565,14 @@ public class UsuarioService {
         var cidadesAdicionadas = Sets.difference(cidadesModificadas, cidadesAtuais);
         removerUsuarioCidade(usuario, cidadesRemovidas);
         adicionarUsuarioCidade(usuario, cidadesAdicionadas);
+    }
+
+    private void tratarUnidadesNegocioEmpresas(Usuario usuario) {
+        if (usuario.isBackoffice()) {
+            usuario.setEmpresas(empresaRepository.findAllAtivo());
+            usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
+            repository.save(usuario);
+        }
     }
 
     private void removerUsuarioCidade(Usuario usuario, Set<Integer> cidadesId) {
