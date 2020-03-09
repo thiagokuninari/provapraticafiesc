@@ -380,7 +380,6 @@ public class UsuarioService {
                 enviarEmail = true;
             } else {
                 usuario = criarUsuarioGeradorLeads(usuarioDto);
-                usuario.setAlterarSenha(Eboolean.F);
             }
 
             usuario = repository.save(usuario);

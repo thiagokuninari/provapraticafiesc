@@ -690,7 +690,7 @@ public class UsuarioServiceIT {
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JONNY@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
                 LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
-                CodigoNivel.GERADOR_LEADS, List.of(2), Eboolean.F);
+                CodigoNivel.GERADOR_LEADS, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
         verify(usuarioGeradorLeadsCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
