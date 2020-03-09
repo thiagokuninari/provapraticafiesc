@@ -92,9 +92,9 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return permissoes != null
-                && permissoes
-                .stream()
-                .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
+            && permissoes
+            .stream()
+            .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
     public boolean isXbrain() {
@@ -108,8 +108,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
                                                    List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
-                && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
-                || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
+            && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
+            || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
     }

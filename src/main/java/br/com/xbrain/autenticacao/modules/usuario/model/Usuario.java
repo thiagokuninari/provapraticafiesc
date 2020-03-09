@@ -223,6 +223,9 @@ public class Usuario {
     @Transient
     private Integer agenteAutorizadoId;
 
+    @Transient
+    private String senhaDescriptografada;
+
     public Usuario(Integer id) {
         this.id = id;
     }

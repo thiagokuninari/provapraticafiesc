@@ -38,6 +38,7 @@ import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -81,10 +82,6 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
-    public static final ValidacaoException UNIDADE_NEGOCIO_OBRIGATORIO_EXCEPTION
-            = new ValidacaoException("O campo unidadesNegociosId é obrigatório.");
-    public static final ValidacaoException EMPRESA_OBRIGATORIO_EXCEPTION
-            = new ValidacaoException("O campo empresasId é obrigatório.");
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -192,7 +189,7 @@ public class UsuarioService {
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         return repository.findComCidade(usuarioId)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
             .map(CidadeResponse::parse)
             .collect(Collectors.toList());
@@ -337,25 +334,14 @@ public class UsuarioService {
     public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
-
-            var enviarEmail = false;
-            var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-            if (usuario.isNovoCadastro()) {
-                configurar(usuario, senhaDescriptografada);
-                enviarEmail = true;
-            } else {
-                atualizarUsuariosParceiros(usuario);
-                usuario.setAlterarSenha(Eboolean.F);
-            }
+            tratarCadastroUsuario(usuario);
             repository.save(usuario);
             entityManager.flush();
 
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario);
-            tratarUnidadesNegocioEmpresas(usuario);
-            if (enviarEmail) {
-                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-            }
+            enviarEmailDadosAcesso(usuario);
+
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
@@ -363,6 +349,36 @@ public class UsuarioService {
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
+        }
+    }
+
+    public Usuario salvarUsuarioBackoffice(Usuario usuario) {
+        tratarUsuarioBackoffice(usuario);
+        validar(usuario);
+        tratarCadastroUsuario(usuario);
+        repository.save(usuario);
+
+        enviarEmailDadosAcesso(usuario);
+        return usuario;
+    }
+
+    private void tratarUsuarioBackoffice(Usuario usuario) {
+        usuario.setEmpresas(empresaRepository.findAllAtivo());
+        usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
+    }
+
+    private void enviarEmailDadosAcesso(Usuario usuario) {
+        if (usuario.isNovoCadastro()) {
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, usuario.getSenhaDescriptografada());
+        }
+    }
+
+    private void tratarCadastroUsuario(Usuario usuario) {
+        if (usuario.isNovoCadastro()) {
+            configurar(usuario, getSenhaRandomica(MAX_CARACTERES_SENHA));
+        } else {
+            atualizarUsuariosParceiros(usuario);
+            usuario.setAlterarSenha(Eboolean.F);
         }
     }
 
@@ -426,18 +442,8 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
-        validarEmpresaAndUnidadeNegocio(usuario);
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
-    }
-
-    private void validarEmpresaAndUnidadeNegocio(Usuario usuario) {
-        usuario.setCargo(cargoRepository.findOne(usuario.getCargoId()));
-        if (!usuario.isBackoffice() && isEmpty(usuario.getUnidadesNegociosId())) {
-            throw UNIDADE_NEGOCIO_OBRIGATORIO_EXCEPTION;
-        } else if (!usuario.isBackoffice() && isEmpty(usuario.getEmpresasId())) {
-            throw EMPRESA_OBRIGATORIO_EXCEPTION;
-        }
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -567,14 +573,6 @@ public class UsuarioService {
         adicionarUsuarioCidade(usuario, cidadesAdicionadas);
     }
 
-    private void tratarUnidadesNegocioEmpresas(Usuario usuario) {
-        if (usuario.isBackoffice()) {
-            usuario.setEmpresas(empresaRepository.findAllAtivo());
-            usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
-            repository.save(usuario);
-        }
-    }
-
     private void removerUsuarioCidade(Usuario usuario, Set<Integer> cidadesId) {
         cidadesId.forEach(cidadeId -> usuarioCidadeRepository.deleteByCidadeAndUsuario(cidadeId, usuario.getId()));
     }
@@ -589,6 +587,7 @@ public class UsuarioService {
 
     public void configurar(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+        usuario.setSenhaDescriptografada(senhaDescriptografada);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
         usuario.setSituacao(ESituacao.A);
@@ -848,17 +847,17 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
-                .usuario(usuario)
-                .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
-                .observacao(usuarioInativacao.getObservacao())
-                .situacao(ESituacao.I)
-                .ferias(usuarioFeriasService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .afastamento(usuarioAfastamentoService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .build());
+            .dataCadastro(LocalDateTime.now())
+            .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
+            .usuario(usuario)
+            .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
+            .observacao(usuarioInativacao.getObservacao())
+            .situacao(ESituacao.I)
+            .ferias(usuarioFeriasService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .afastamento(usuarioAfastamentoService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .build());
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
@@ -940,8 +939,8 @@ public class UsuarioService {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
         return usuarios.stream()
-                .map(UsuarioResponse::of)
-                .collect(Collectors.toList());
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
     }
 
     @Transactional
@@ -1344,14 +1343,14 @@ public class UsuarioService {
 
     public void reativarUsuariosInativosComAfastamentoTerminando(LocalDate dataFimAfastamento) {
         usuarioAfastamentoService.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento)
-                .forEach(usuario -> ativar(
-                        UsuarioAtivacaoDto
-                                .builder()
-                                .idUsuario(usuario.getId())
-                                .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
-                                .idUsuarioAtivacao(usuario.getId())
-                                .build()
-                ));
+            .forEach(usuario -> ativar(
+                UsuarioAtivacaoDto
+                    .builder()
+                    .idUsuario(usuario.getId())
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
+                    .idUsuarioAtivacao(usuario.getId())
+                    .build()
+            ));
     }
 
     @Transactional
@@ -1367,10 +1366,10 @@ public class UsuarioService {
 
     public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
         return partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(ids -> repository.findUsuariosByIds(ids))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+            .stream()
+            .map(ids -> repository.findUsuariosByIds(ids))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     public UsuarioResponse findById(Integer id) {
