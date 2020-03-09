@@ -184,6 +184,10 @@ public class UsuarioService {
             .forceLoad();
     }
 
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(Integer cargoId) {
+        return repository.findUsuariosAtivosOperacaoComercialByCargoId(cargoId);
+    }
+
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         return repository.findComCidade(usuarioId)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO)
@@ -204,13 +208,13 @@ public class UsuarioService {
     public Optional<UsuarioResponse> findByEmailAa(String email) {
         Optional<Usuario> usuarioOptional = repository.findByEmail(email);
 
-        return usuarioOptional.map(UsuarioResponse::convertFrom);
+        return usuarioOptional.map(UsuarioResponse::of);
     }
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf) {
         return repository
             .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
-            .map(UsuarioResponse::convertFrom);
+            .map(UsuarioResponse::of);
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -908,7 +912,7 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
         List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
         return usuarios.stream()
-            .map(UsuarioResponse::convertFrom)
+            .map(UsuarioResponse::of)
             .collect(Collectors.toList());
     }
 
@@ -916,7 +920,7 @@ public class UsuarioService {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
         return usuarios.stream()
-                .map(UsuarioResponse::convertFrom)
+                .map(UsuarioResponse::of)
                 .collect(Collectors.toList());
     }
 
@@ -962,14 +966,14 @@ public class UsuarioService {
         if (usuarioHierarquia == null) {
             return new UsuarioResponse();
         }
-        return UsuarioResponse.convertFrom(usuarioHierarquia.getUsuarioSuperior());
+        return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
     }
 
     public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
         List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
         return usuariosHierarquia
             .stream()
-            .map(uh -> UsuarioResponse.convertFrom(uh.getUsuarioSuperior()))
+            .map(uh -> UsuarioResponse.of(uh.getUsuarioSuperior()))
             .collect(Collectors.toList());
     }
 
@@ -977,7 +981,7 @@ public class UsuarioService {
         List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(funcionalidade);
         return permissoes.stream()
             .map(PermissaoEspecial::getUsuario)
-            .map(UsuarioResponse::convertFrom)
+            .map(UsuarioResponse::of)
             .collect(Collectors.toList());
     }
 
@@ -1093,7 +1097,7 @@ public class UsuarioService {
 
     public List<UsuarioResponse> getUsuarioByNivel(CodigoNivel codigoNivel) {
         return repository.getUsuariosByNivel(codigoNivel).stream()
-            .map(UsuarioResponse::convertFrom).collect(Collectors.toList());
+            .map(UsuarioResponse::of).collect(Collectors.toList());
     }
 
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
@@ -1414,5 +1418,17 @@ public class UsuarioService {
 
         return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
             .orElseThrow(PermissaoException::new));
+    }
+
+    public UsuarioResponse findById(Integer id) {
+        return repository.findById(id)
+            .map(UsuarioResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(CodigoCargo codigoCargo) {
+        return repository.findUsuariosByCodigoCargo(codigoCargo).stream()
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
     }
 }

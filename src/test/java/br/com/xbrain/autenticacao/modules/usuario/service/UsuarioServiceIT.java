@@ -869,6 +869,18 @@ public class UsuarioServiceIT {
                 .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
     }
 
+    @Test
+    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo() {
+        assertThat(service.buscarColaboradoresAtivosOperacaoComericialPorCargo(5))
+            .hasSize(3)
+            .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
+            .containsExactly(
+                tuple(116, "ALBERTO PEREIRA", "ALBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(117, "ROBERTO ALMEIDA", "ROBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
+            );
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);

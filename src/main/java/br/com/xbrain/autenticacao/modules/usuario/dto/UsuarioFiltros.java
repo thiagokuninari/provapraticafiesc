@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Collections;
+import java.util.List;
 
 @Data
 public class UsuarioFiltros {
@@ -19,35 +20,34 @@ public class UsuarioFiltros {
     private Integer regionalId;
     private Integer grupoId;
     private Integer clusterId;
-    private Integer unidadeNegocioId;
+    private List<Integer> unidadeNegocioIds;
     private Integer subClusterId;
     private Integer nivelId;
     private Integer departamentoId;
     private Integer cargoId;
     private ECanal canal;
-    private ESituacao situacao;
+    private List<ESituacao> situacoes;
     private Integer organizacaoId;
-    private boolean realocado;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
         return new UsuarioPredicate()
-                .comCpf(cpf)
-                .comNome(nome)
-                .comEmail(emailUsuario)
-                .comCanal(canal)
-                .comSituacao(situacao, realocado)
-                .comGrupo(grupoId)
-                .comCluster(clusterId)
-                .comRegional(regionalId)
-                .comSubCluster(subClusterId)
-                .comUnidadeNegocio(unidadeNegocioId)
-                .comOrganizacaoId(organizacaoId)
-                .comNivel(!ObjectUtils.isEmpty(nivelId)
-                        ? Collections.singletonList(nivelId) : null)
-                .comCargo(!ObjectUtils.isEmpty(cargoId)
-                        ? Collections.singletonList(cargoId) : null)
-                .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
-                        ? Collections.singletonList(departamentoId) : null);
+            .comCpf(cpf)
+            .comNome(nome)
+            .comEmail(emailUsuario)
+            .comCanal(canal)
+            .comSituacoes(situacoes)
+            .comGrupo(grupoId)
+            .comCluster(clusterId)
+            .comRegional(regionalId)
+            .comSubCluster(subClusterId)
+            .comUnidadeNegocio(unidadeNegocioIds)
+            .comOrganizacaoId(organizacaoId)
+            .comNivel(!ObjectUtils.isEmpty(nivelId)
+                ? Collections.singletonList(nivelId) : null)
+            .comCargo(!ObjectUtils.isEmpty(cargoId)
+                ? Collections.singletonList(cargoId) : null)
+            .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
+                ? Collections.singletonList(departamentoId) : null);
     }
 }

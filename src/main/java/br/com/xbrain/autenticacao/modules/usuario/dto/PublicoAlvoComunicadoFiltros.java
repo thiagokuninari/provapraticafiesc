@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,7 +50,7 @@ public class PublicoAlvoComunicadoFiltros {
             .comNiveisId(getNiveisId())
             .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
             .comCluster(clusterId)
-            .comSituacao(null, false)
+            .comSituacoes(List.of(ESituacao.A, ESituacao.I))
             .comGrupo(grupoId)
             .comRegional(regionalId)
             .comSubCluster(subClusterId)

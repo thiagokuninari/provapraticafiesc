@@ -67,9 +67,14 @@ public class UsuarioController {
             usuarioService.findCompleteById(id));
     }
 
+    @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
+    public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
+        return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
+    }
+
     @GetMapping("/{id}")
     public UsuarioResponse getUsuarioById(@PathVariable("id") int id) {
-        return UsuarioResponse.convertFrom(
+        return UsuarioResponse.of(
             usuarioService.findByIdComAa(id), usuarioService.getFuncionalidadeByUsuario(id).stream()
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
@@ -308,6 +313,16 @@ public class UsuarioController {
     @GetMapping("alvo/comunicado")
     public List<UsuarioNomeResponse> findUsuarioAlvoDosComunicados(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         return usuarioService.getUsuariosAlvoDoComunicado(usuarioFiltros);
+    }
+
+    @GetMapping("{id}/sem-permissoes")
+    public UsuarioResponse findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
+    }
+
+    @GetMapping("/cargo/{codigoCargo}")
+    public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
     }
 
     @GetMapping("usuario-situacao")

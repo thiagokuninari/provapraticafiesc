@@ -23,7 +23,6 @@ public class UsuarioAcesso {
     @GeneratedValue(generator = "SEQ_USUARIO_ACESSO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @NotNull
     @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
 
@@ -32,24 +31,36 @@ public class UsuarioAcesso {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
+    @Column(name = "FLAG_LOGOUT", updatable = false)
+    private String flagLogout;
+
     public UsuarioAcesso(LocalDateTime dataCadastro, Integer usuarioId, String usuarioEmail) {
         this.dataCadastro = dataCadastro;
         this.usuario = Usuario.builder()
-                .id(usuarioId)
-                .email(usuarioEmail)
-                .build();
-    }
-
-    public UsuarioAcesso criaRegistroAcesso(Integer usuarioId) {
-        return UsuarioAcesso.builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(new Usuario(usuarioId))
-                .build();
+            .id(usuarioId)
+            .email(usuarioEmail)
+            .build();
     }
 
     public static UsuarioAcesso of(Usuario usuario) {
         return UsuarioAcesso.builder()
-                .usuario(usuario)
-                .build();
+            .usuario(usuario)
+            .build();
+    }
+
+    public static UsuarioAcesso criaRegistroLogout(Integer usuarioId) {
+        return UsuarioAcesso.builder()
+            .dataCadastro(LocalDateTime.now())
+            .flagLogout("V")
+            .usuario(new Usuario(usuarioId))
+            .build();
+    }
+
+    public UsuarioAcesso criaRegistroAcesso(Integer usuarioId) {
+        return UsuarioAcesso.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(new Usuario(usuarioId))
+            .flagLogout("F")
+            .build();
     }
 }

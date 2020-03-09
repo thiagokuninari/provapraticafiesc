@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -516,6 +517,73 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].id", is(101)))
             .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
             .andExpect(jsonPath("$[1].situacao", is(ESituacao.A.name())));
+    }
+
+    @Test
+    public void findById_deveRetornarUsuarioResponseSemPermissoes_quandoSolicitado() throws Exception {
+        doReturn(UsuarioResponse.builder()
+            .id(1)
+            .nome("RENATO")
+            .situacao(ESituacao.A)
+            .email("RENATO@GMAIL.COM")
+            .build())
+            .when(usuarioService).findById(1);
+
+        mvc.perform(get("/api/usuarios/1/sem-permissoes")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(1)))
+            .andExpect(jsonPath("$.nome", is("RENATO")))
+            .andExpect(jsonPath("$.situacao", is("A")))
+            .andExpect(jsonPath("$.email", is("RENATO@GMAIL.COM")))
+            .andExpect(jsonPath("$.permissoes", nullValue()));
+    }
+
+    @Test
+    public void findUsuariosByCodigoCargo_deveRetornar400_quandoInformarUmCodigoCargoNaoExistente()
+        throws Exception {
+        mvc.perform(get("/api/usuarios/cargo/UM_CODIGO_CARGO_NAO_EXISTENTE")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest());
+
+        verify(usuarioService, times(0)).findUsuariosByCodigoCargo(any());
+    }
+
+    @Test
+    public void findUsuariosByCodigoCargo_deveRetornar200_quandoInformarUmCargoCodigoExistente()
+        throws Exception {
+        doReturn(umaListaUsuariosExecutivosAtivo())
+            .when(usuarioService).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+
+        mvc.perform(get("/api/usuarios/cargo/EXECUTIVO")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("RENATO")))
+            .andExpect(jsonPath("$[0].situacao", is("A")))
+            .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
+
+        verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+    }
+
+    private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
+        return List.of(
+            UsuarioResponse.builder()
+                .id(1)
+                .nome("RENATO")
+                .situacao(ESituacao.A)
+                .email("RENATO@GMAIL.COM")
+                .build(),
+            UsuarioResponse.builder()
+                .id(2)
+                .nome("VALDECIR")
+                .situacao(ESituacao.A)
+                .email("VALDECIR@GMAIL.COM")
+                .build()
+        );
     }
 
     private UsuarioResponse umUsuarioResponseInativo(Integer id) {
