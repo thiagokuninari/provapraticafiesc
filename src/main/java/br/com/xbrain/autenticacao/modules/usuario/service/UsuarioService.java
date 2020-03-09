@@ -1367,7 +1367,7 @@ public class UsuarioService {
             if (usuarios.isEmpty()) {
                 throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");
             }
-            usuarioFiltros.getUsuariosId().addAll(usuarios);
+            usuarioFiltros.adicionarUsuariosId(usuarios);
         }
     }
 

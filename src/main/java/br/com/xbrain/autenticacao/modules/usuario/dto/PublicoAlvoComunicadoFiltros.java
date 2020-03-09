@@ -10,7 +10,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.isNull;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -50,5 +54,12 @@ public class PublicoAlvoComunicadoFiltros {
             .comSubCluster(subClusterId)
             .filtraPermitidos(usuarioAutenticado, usuarioService)
             .build();
+    }
+
+    public void adicionarUsuariosId(ArrayList<Integer> usuariosIdNovos) {
+        if (isNull(usuariosId)) {
+            usuariosId = newArrayList();
+        }
+        usuariosId.addAll(usuariosIdNovos);
     }
 }
