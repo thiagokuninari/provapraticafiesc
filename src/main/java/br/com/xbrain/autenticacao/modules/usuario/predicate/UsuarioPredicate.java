@@ -316,7 +316,8 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+    public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                             boolean incluirProprio) {
         if (ObjectUtils.isEmpty(usuario)) {
             return this;
         }
@@ -325,16 +326,16 @@ public class UsuarioPredicate {
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
-                    usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
-                    singletonList(usuario.getUsuario().getId()))
+                usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                singletonList(usuario.getUsuario().getId()))
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
-                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
-                    usuario.getUsuario().getId());
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                usuario.getUsuario().getId());
 
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();

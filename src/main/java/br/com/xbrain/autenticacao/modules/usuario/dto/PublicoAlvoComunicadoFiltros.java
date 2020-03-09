@@ -32,6 +32,7 @@ public class PublicoAlvoComunicadoFiltros {
     private Integer grupoId;
     private Integer regionalId;
     private Integer subClusterId;
+    private boolean incluirProprio = true;
 
     private UsuarioAutenticado usuarioAutenticado;
     private UsuarioService usuarioService;
@@ -52,7 +53,7 @@ public class PublicoAlvoComunicadoFiltros {
             .comGrupo(grupoId)
             .comRegional(regionalId)
             .comSubCluster(subClusterId)
-            .filtraPermitidos(usuarioAutenticado, usuarioService)
+            .filtraPermitidos(usuarioAutenticado, usuarioService, incluirProprio)
             .build();
     }
 

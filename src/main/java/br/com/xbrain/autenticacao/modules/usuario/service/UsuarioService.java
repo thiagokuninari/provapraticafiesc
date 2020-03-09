@@ -865,7 +865,7 @@ public class UsuarioService {
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
-        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
@@ -873,7 +873,7 @@ public class UsuarioService {
     public List<Usuario> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
         return repository.getUsuariosFilter(
             new UsuarioPredicate()
-                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .build());
@@ -1246,7 +1246,7 @@ public class UsuarioService {
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
         }
@@ -1397,6 +1397,10 @@ public class UsuarioService {
                 }
             }
         }
+
+        usuarioFiltros.setUsuarioAutenticado(autenticacaoService.getUsuarioAutenticado());
+        usuarioFiltros.setUsuarioService(this);
+        usuarioFiltros.setIncluirProprio(false);
         return repository.findAllNomesIds(usuarioFiltros.toPredicate());
     }
 
