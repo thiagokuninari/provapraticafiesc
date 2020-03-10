@@ -16,6 +16,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
@@ -46,6 +47,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
     private CodigoCargo cargoCodigo;
+    private Integer organizacaoId;
+    private String organizacaoCodigo;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -68,6 +71,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        getOrganizacao(usuario);
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
@@ -88,6 +92,15 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        getOrganizacao(usuario);
+    }
+
+    private void getOrganizacao(Usuario usuario) {
+        Optional.ofNullable(usuario.getOrganizacao())
+            .ifPresent(organizacao -> {
+                this.organizacaoId = organizacao.getId();
+                this.organizacaoCodigo = organizacao.getCodigo();
+            });
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
@@ -132,5 +145,9 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isGerenteOperacao() {
         return cargoCodigo.equals(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    public boolean isBackoffice() {
+        return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
     }
 }

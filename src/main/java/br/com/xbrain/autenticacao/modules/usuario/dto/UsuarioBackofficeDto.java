@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -14,6 +15,7 @@ import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Data
 public class UsuarioBackofficeDto {
@@ -42,10 +44,14 @@ public class UsuarioBackofficeDto {
     private ESituacao situacao;
     @NotNull
     private Integer departamentoId;
+    private Integer organizacaoId;
 
     public static Usuario of(UsuarioBackofficeDto usuarioBackoffice) {
         var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioBackoffice, usuario);
+        Optional.ofNullable(usuarioBackoffice.getOrganizacaoId())
+            .map(Organizacao::new)
+            .ifPresent(usuario::setOrganizacao);
         usuario.setCargo(new Cargo(usuarioBackoffice.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioBackoffice.getDepartamentoId()));
         usuario.setNascimento(usuarioBackoffice.getNascimento().atStartOfDay());

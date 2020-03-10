@@ -17,6 +17,7 @@ import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -245,6 +246,17 @@ public class UsuarioPredicate {
         return this;
     }
 
+    private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService, boolean incluirProrio) {
+        var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
+        if (incluirProrio) {
+            usuariosIds.add(usuario.getId());
+        }
+        comIds(usuariosIds);
+        comOrganizacaoId(usuario.getOrganizacaoId());
+
+        return this;
+    }
+
     private UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
         return this;
@@ -267,6 +279,8 @@ public class UsuarioPredicate {
                     usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                     usuario.getUsuario().getId());
 
+        } else if (usuario.isBackoffice()) {
+            somenteUsuariosBackoffice(usuario, usuarioService, true);
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }

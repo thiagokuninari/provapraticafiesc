@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
@@ -363,6 +364,8 @@ public class UsuarioService {
     }
 
     private void tratarUsuarioBackoffice(Usuario usuario) {
+        usuario.setOrganizacao(Optional.ofNullable(usuario.getOrganizacao())
+            .orElse(new Organizacao(autenticacaoService.getUsuarioAutenticado().getOrganizacaoId())));
         usuario.setEmpresas(empresaRepository.findAllAtivo());
         usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
     }
@@ -1382,5 +1385,14 @@ public class UsuarioService {
         return repository.findUsuariosByCodigoCargo(codigoCargo).stream()
             .map(UsuarioResponse::of)
             .collect(Collectors.toList());
+    }
+
+    public List<Integer> buscarIdsUsuariosDeCargosInferiores(Integer nivelId) {
+        return repository.buscarIdsUsuariosPorCargosIds(
+            cargoService.getPermitidosPorNivel(nivelId)
+            .stream()
+            .map(Cargo::getId)
+            .collect(Collectors.toList())
+        );
     }
 }
