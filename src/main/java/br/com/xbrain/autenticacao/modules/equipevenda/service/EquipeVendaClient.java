@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.equipe-venda.url}",
@@ -18,6 +19,7 @@ import java.util.Map;
 public interface EquipeVendaClient {
 
     String EQUIPE_VENDAS_ENDPOINT = "api/equipes-vendas";
+    String USUARIOS_EQUIPE_ENDPOINT = "api/usuarios-equipe";
     String PAUSA_AGENDADA_ENDPOINT = "api/pausa-agendada";
 
     @GetMapping(PAUSA_AGENDADA_ENDPOINT + "/verificar-pausa/{username}")
@@ -28,4 +30,7 @@ public interface EquipeVendaClient {
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
+
+    @GetMapping(USUARIOS_EQUIPE_ENDPOINT)
+    Set<Integer> getVendedoresPorEquipe(@RequestParam("equipeVendaIds") List<Integer> equipeVendaIds) ;
 }

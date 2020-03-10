@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResp
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class EquipeVendaService {
 
     @Autowired
@@ -59,12 +61,21 @@ public class EquipeVendaService {
             return equipeVendaClient.getUsuariosPermitidos(cargos);
         } catch (Exception ex) {
             throw new IntegracaoException(ex, EquipeVendaService.class.getName(),
-                    EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
+                EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
         }
     }
 
     @SuppressWarnings({"PMD.UnusedPrivateMethod", "PMD.UnusedFormalParameter"})
     private List<EquipeVendaUsuarioResponse> getUsuariosPermitidosOnError(List<CodigoCargo> cargos) {
         return Collections.emptyList();
+    }
+
+    public List<Integer> getVendedoresPorEquipe(List<Integer> equipesIds) {
+        try {
+            return List.copyOf(equipeVendaClient.getVendedoresPorEquipe(equipesIds));
+        } catch (Exception ex) {
+            log.error("Erro ao tentar recuperar usuários da equipe.", ex);
+            return List.of();
+        }
     }
 }

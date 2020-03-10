@@ -1353,13 +1353,13 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-        adicionarFiltroAgenteAutorizado(usuarioFiltros);
-        usuarioFiltros.setUsuarioService(this);
-        usuarioFiltros.setComUsuariosLogadosHoje(true);
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
-        return repository.findAllIds( usuarioFiltros.toPredicate());
+    private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        if (!isEmpty(usuarioFiltros.getEquipeVendasIds())) {
+            var usuarios = equipeVendaService.getVendedoresPorEquipe(usuarioFiltros.getEquipeVendasIds());
+            if (!usuarios.isEmpty()) {
+                usuarioFiltros.adicionarUsuariosId(usuarios);
+            }
+        }
     }
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -1368,50 +1368,44 @@ public class UsuarioService {
             var usuarios = new ArrayList<Integer>();
             usuarioFiltros.getAgentesAutorizadosId()
                 .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
-            if (usuarios.isEmpty()) {
-                throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");
+            if (!usuarios.isEmpty()) {
+                usuarioFiltros.adicionarUsuariosId(usuarios);
             }
-            usuarioFiltros.adicionarUsuariosId(usuarios);
         }
     }
 
     private List<Integer> getIdUsuariosAa(Integer aaId) {
+
         try {
-            return agenteAutorizadoClient.getUsuariosByAaId(aaId)
+            return agenteAutorizadoService.getUsuariosByAaId(aaId, true)
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
         } catch (Exception ex) {
-            log.error("Erro ao recuperar usuarios do agente autorizado.");
+            log.error("Erro ao recuperar usuarios do agente autorizado.", ex);
             return List.of();
         }
     }
 
-    public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
-            var usuariosDoAgente = usuarioFiltros.getAgentesAutorizadosId()
-                .stream()
-                .flatMap(this::getUsuariosDoAgenteAutorizado)
-                .collect(Collectors.toList());
-            if (!usuariosDoAgente.isEmpty()) {
-                if (isEmpty(usuarioFiltros.getUsuariosId())) {
-                    usuarioFiltros.setUsuariosId(usuariosDoAgente);
-                } else {
-                    usuarioFiltros.getUsuariosId().addAll(usuariosDoAgente);
-                }
-            }
-        }
+    public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
 
-        usuarioFiltros.setUsuarioAutenticado(autenticacaoService.getUsuarioAutenticado());
-        usuarioFiltros.setUsuarioService(this);
-        usuarioFiltros.setIncluirProprio(false);
-        return repository.findAllNomesIds(usuarioFiltros.toPredicate());
+        montarPredicate(usuarioFiltros);
+        usuarioFiltros.setComUsuariosLogadosHoje(true);
+        return repository.findAllIds(usuarioFiltros.toPredicate());
     }
 
-    private Stream<Integer> getUsuariosDoAgenteAutorizado(Integer aaId) {
-        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
-            .stream()
-            .map(UsuarioAgenteAutorizadoResponse::getId);
+    private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        adicionarFiltroAgenteAutorizado(usuarioFiltros);
+        adicionarFiltroEquipeVendas(usuarioFiltros);
+        usuarioFiltros.setUsuarioService(this);
+        usuarioFiltros.setIncluirProprio(false);
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
+    }
+
+    public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        montarPredicate(usuarioFiltros);
+        return repository.findAllNomesIds(usuarioFiltros.toPredicate());
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {

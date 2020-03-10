@@ -44,10 +44,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
@@ -612,7 +609,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .cargosId(List.of(20, 40)).build());
-        assertThat(usuarios).isEqualTo(List.of(114, 366, 367, 368, 246));
+        assertThat(usuarios).isEqualTo(List.of(114, 366, 368, 246));
     }
 
     @Test
@@ -666,17 +663,6 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void getIdDosUsuariosAlvoDoComunicado_deveLancarException_quandoNaoEncontrarNenhumUsuarioDoAa() {
-        usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                        .agentesAutorizadosId(List.of(5578)).build()))
-                .withMessage("Não foi encontrado nenhum usuário do agente autorizado");
-
-    }
-
-    @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
@@ -698,7 +684,6 @@ public class UsuarioServiceIT {
                 .cargosId(List.of(20, 40)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(114, "mso_analistaadm_claromovel_pessoal"),
                 tuple(366, "mso_analistaadm_claromovel_pessoal"),
-                tuple(367, "mso_analistaadm_claromovel_pessoal"),
                 tuple(368, "mso_analistaadm_claromovel_pessoal_dois"),
                 tuple(246, "JOAO FONSECA"));
     }
@@ -814,31 +799,57 @@ public class UsuarioServiceIT {
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(100))
                 .build());
-        assertThat(usuarios).hasSize(46);
+        assertThat(usuarios).hasSize(45);
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorAA_seRetornarUsuario() {
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
-        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .agentesAutorizadosId(List.of(100))
-                .build());
-        assertThat(usuarios).hasSize(46);
+            .agentesAutorizadosId(List.of(100))
+            .build());
+        assertThat(usuarios).hasSize(45);
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarVazio() {
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(Set.of());
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .equipeVendasIds(List.of(100))
+            .build());
+        assertThat(usuarios).hasSize(45);
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarUsuario() {
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(Set.of(100, 111, 104, 115));
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .equipeVendasIds(List.of(100))
+            .build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(111, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(115, "joao silveira"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdAA() {
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
-                .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
 
         doReturn(umaListaUsuarioResponse(104))
-                .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
+            .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
+
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
                 .agentesAutorizadosId(List.of(10, 20))
                 .build());

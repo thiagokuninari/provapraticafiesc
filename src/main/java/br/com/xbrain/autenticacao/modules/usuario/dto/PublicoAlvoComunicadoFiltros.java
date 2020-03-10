@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -25,6 +24,7 @@ public class PublicoAlvoComunicadoFiltros {
     private boolean todoCanalD2d;
     private boolean todoCanalAa;
     private List<Integer> agentesAutorizadosId;
+    private List<Integer> equipeVendasIds;
     private List<Integer> usuariosId;
     private List<Integer> cargosId;
     private List<Integer> cidadesId;
@@ -58,7 +58,7 @@ public class PublicoAlvoComunicadoFiltros {
             .build();
     }
 
-    public void adicionarUsuariosId(ArrayList<Integer> usuariosIdNovos) {
+    public void adicionarUsuariosId(List<Integer> usuariosIdNovos) {
         if (isNull(usuariosId)) {
             usuariosId = newArrayList();
         }
