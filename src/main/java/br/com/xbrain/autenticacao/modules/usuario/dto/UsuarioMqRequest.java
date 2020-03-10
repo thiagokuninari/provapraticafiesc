@@ -37,6 +37,6 @@ public class UsuarioMqRequest {
     private Integer usuarioCadastroId;
     private String exception;
     private Set<ECanal> canais;
-    private boolean realocado;
-    private Integer agenteAutorizadoId;
+    private Integer colaboradorVendasId;
+    private Integer AgenteAutorizadoId;
 }

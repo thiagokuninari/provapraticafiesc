@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -312,24 +311,6 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioDto save(Usuario usuario, boolean realocado) {
-        validar(usuario);
-        usuario.setAlterarSenha(Eboolean.F);
-        if (realocado) {
-            salvarUsuarioRealocado(usuario);
-            usuario = criaNovoUsuarioAPartirDoRealocado(usuario);
-        } else {
-            atualizarUsuariosParceiros(usuario);
-        }
-        repository.save(usuario);
-        entityManager.flush();
-        if (realocado) {
-            enviarParaFilaDeUsuariosColaboradores(usuario);
-        }
-        return UsuarioDto.of(usuario);
-    }
-
-    @Transactional
     public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
@@ -362,29 +343,9 @@ public class UsuarioService {
         }
     }
 
-    public void salvarUsuarioRealocado(Usuario usuario) {
-        Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        usuarioARealocar.setSituacao(ESituacao.R);
-        repository.save(usuarioARealocar);
-    }
-
-    private Usuario criaNovoUsuarioAPartirDoRealocado(Usuario usuario) {
-        Usuario usuarioCopia = new Usuario();
-        BeanUtils.copyProperties(usuario, usuarioCopia);
-        if (!isEmpty(repository.findAllByCpf(usuario.getCpf()))
-            && usuario.getSituacao().equals(ESituacao.A)) {
-            usuarioCopia.setSenha(repository.findById(usuario.getId())
-                .orElseThrow(() -> new NotFoundException("Usuário não encontrado")).getSenha());
-            usuarioCopia.setDataCadastro(LocalDateTime.now());
-            usuarioCopia.setSituacao(ESituacao.A);
-            usuarioCopia.setId(null);
-        }
-        return usuarioCopia;
-    }
-
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
-        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior).orElseThrow(() ->
-            new NotFoundException("Usuário não encontrado"));
+        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
         idUsuarioNovo.stream()
             .map(id -> {
                 UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
@@ -595,7 +556,7 @@ public class UsuarioService {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
-                save(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest.isRealocado());
+                save(UsuarioDto.convertFrom(usuarioDto));
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
             }
@@ -606,9 +567,50 @@ public class UsuarioService {
         }
     }
 
+    public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
+        try {
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            configurarUsuario(usuarioMqRequest, usuarioDto);
+            duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
+        } catch (Exception ex) {
+            log.error("erro ao atualizar usuário da fila.", ex);
+        }
+    }
+
+    @Transactional
+    private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+        salvarUsuarioRemanejado(usuario);
+        var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
+        repository.save(usuarioNovo);
+        enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
+    }
+
+    public void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
+        usuarioRemanejado.setAlterarSenha(Eboolean.F);
+        usuarioRemanejado.setSituacao(ESituacao.R);
+        repository.save(usuarioRemanejado);
+    }
+
+    private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
+        validarUsuarioComCpfAtivo(usuario);
+        usuario.setDataCadastro(LocalDateTime.now());
+        usuario.setSituacao(ESituacao.A);
+        usuario.setSenha(repository.findById(usuario.getId())
+            .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
+        usuario.setId(null);
+        return usuario;
+    }
+
+    private void validarUsuarioComCpfAtivo(Usuario usuario) {
+        if (!isEmpty(repository.findAllByCpfAndSituacao(usuario.getCpf(), ESituacao.A))) {
+            throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
+                + "ativo para este CPF.");
+        }
+    }
+
     public boolean isAlteracaoCpf(Usuario usuario) {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
-            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
@@ -680,24 +682,16 @@ public class UsuarioService {
         usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
 
-    private void enviarParaFilaDeUsuariosColaboradores(Usuario usuario) {
-        List<Usuario> usuarios = repository.findAllByCpf(usuario.getCpf());
-        if (!usuarios.isEmpty()) {
-            usuarios
-                .stream()
-                .filter(usuarioColaborador -> usuarioColaborador.getSituacao().equals(ESituacao.A))
-                .map(UsuarioDto::of)
-                .forEach(usuarioAtualizarColaborador -> usuarioMqSender
-                    .sendColaboradoresSuccess(usuarioAtualizarColaborador));
-        }
-    }
-
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccess(usuarioDto);
     }
 
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
+    }
+
+    private void enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
+        atualizarUsuarioMqSender.sendUsuarioRemanejadoAut(request);
     }
 
     private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {
@@ -1204,7 +1198,7 @@ public class UsuarioService {
         List<String> emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
             Usuario usuario = repository.findByEmail(colaborador)
-                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
             usuario.setSituacao(INATIVO);
             repository.save(usuario);
         });

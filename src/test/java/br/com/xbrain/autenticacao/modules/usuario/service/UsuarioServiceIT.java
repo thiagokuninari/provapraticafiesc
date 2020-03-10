@@ -47,7 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -247,14 +248,6 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() {
-        Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setId(366);
-        service.salvarUsuarioRealocado(usuarioRealocar);
-        assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
-    }
-
-    @Test
     public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() {
         UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
         usuarioMqRequest.setId(368);
@@ -289,25 +282,6 @@ public class UsuarioServiceIT {
         assertThatExceptionOfType(ValidacaoException.class)
                 .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
                 .withMessage("CPF já cadastrado.");
-    }
-
-    @Test
-    public void updateFromQueue_naoRealocaUsuario_quandoSituacaoForInativa() {
-        service.updateFromQueue(umUsuarioInativo());
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
-        assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
-        assertEquals(1, usuarios.size());
-    }
-
-    @Test
-    public void updateFromQueue_naoRealocaUsuario_quandoAFlagRealocadoForFalse() {
-        UsuarioMqRequest naoRealocar = umUsuarioARealocar();
-        naoRealocar.setRealocado(false);
-        service.updateFromQueue(naoRealocar);
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
-        assertThat(usuarios)
-                .extracting(Usuario::getSituacao)
-                .containsOnly(ESituacao.A);
     }
 
     @Test
@@ -627,7 +601,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.A);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 
@@ -638,7 +611,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.I);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 
@@ -709,7 +681,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
-        usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
     }
 
