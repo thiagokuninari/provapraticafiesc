@@ -38,5 +38,5 @@ public class UsuarioMqRequest {
     private String exception;
     private Set<ECanal> canais;
     private Integer colaboradorVendasId;
-    private Integer AgenteAutorizadoId;
+    private Integer agenteAutorizadoId;
 }
