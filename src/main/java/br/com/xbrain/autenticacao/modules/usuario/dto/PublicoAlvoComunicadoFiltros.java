@@ -24,7 +24,7 @@ public class PublicoAlvoComunicadoFiltros {
     private boolean todoCanalD2d;
     private boolean todoCanalAa;
     private List<Integer> agentesAutorizadosId;
-    private List<Integer> equipeVendasIds;
+    private List<Integer> equipesVendasId;
     private List<Integer> usuariosId;
     private List<Integer> cargosId;
     private List<Integer> cidadesId;

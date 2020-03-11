@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
 @Service
@@ -32,13 +33,31 @@ public class NivelService {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         return nivelRepository.getAll(
-                new NivelPredicate()
-                        .isAtivo()
-                        .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
-                        .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
-                        .exibeProprioNivelSeNaoVisualizarGeral(
-                                usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
-                                usuarioAutenticado.getNivelCodigoEnum())
+            new NivelPredicate()
+                .isAtivo()
+                .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
+                .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
+                .exibeProprioNivelSeNaoVisualizarGeral(
+                    usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
+                    usuarioAutenticado.getNivelCodigoEnum(), false)
+                .build());
+    }
+
+    public List<Nivel> getPermitidosParaComunicados() {
+        UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var isGerenciaOperacao = List.of(GERENTE_OPERACAO,
+            COORDENADOR_OPERACAO,
+            DIRETOR_OPERACAO)
+            .contains(usuarioAutenticado.getCargoCodigo());
+
+        return nivelRepository.getAll(
+            new NivelPredicate()
+                .isAtivo()
+                .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
+                .exibeProprioNivelSeNaoVisualizarGeral(
+                    usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
+                    usuarioAutenticado.getNivelCodigoEnum(),
+                    isGerenciaOperacao)
                 .build());
     }
 }

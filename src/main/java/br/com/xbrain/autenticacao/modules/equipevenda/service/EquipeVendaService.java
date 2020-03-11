@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -72,7 +75,14 @@ public class EquipeVendaService {
 
     public List<Integer> getVendedoresPorEquipe(List<Integer> equipesIds) {
         try {
-            return List.copyOf(equipeVendaClient.getVendedoresPorEquipe(equipesIds));
+            return equipeVendaClient.getVendedoresPorEquipe(EquipeVendaUsuarioFiltros.builder()
+                .equipeVendaIds(equipesIds)
+                .ativo(Boolean.TRUE)
+                .build()
+                .toMap()).stream()
+                .map(SelectResponse::getValueInt)
+                .collect(Collectors.toList());
+
         } catch (Exception ex) {
             log.error("Erro ao tentar recuperar usuários da equipe.", ex);
             return List.of();

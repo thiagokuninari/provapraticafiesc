@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -44,13 +45,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -795,9 +798,7 @@ public class UsuarioServiceIT {
     public void getUsuariosAlvoDoComunicado_deveTrazerTodos_seNaoPossuirFiltro() {
         usuarioRepository.findAll()
                 .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .agentesAutorizadosId(List.of(100))
                 .build());
         assertThat(usuarios).hasSize(45);
     }
@@ -806,31 +807,50 @@ public class UsuarioServiceIT {
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorAA_seRetornarUsuario() {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        doReturn(List.of()).when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+        doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
+            .when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosId(List.of(100))
             .build());
-        assertThat(usuarios).hasSize(45);
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(111, "HELPDESK"),
+                tuple(115, "joao silveira"));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveLancarException_quandoNaoEncontrarNenhumUsuarioDoAa() {
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+                .agentesAutorizadosId(List.of(5578)).build()))
+            .withMessage("Não foi encontrado nenhum usuário do agente autorizado");
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarVazio() {
-        usuarioRepository.findAll()
-            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(Set.of());
-        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .equipeVendasIds(List.of(100))
-            .build());
-        assertThat(usuarios).hasSize(45);
+
+        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(List.of());
+        assertThatThrownBy(() -> service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .equipesVendasId(List.of(100))
+            .build()))
+            .hasMessage("Não foi encontrado nenhum usuário desta equipe de vendas");
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarUsuario() {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(Set.of(100, 111, 104, 115));
+        when(equipeVendaClient.getVendedoresPorEquipe(any()))
+            .thenReturn(List.of(umUsuarioResponse(100),
+                umUsuarioResponse(111),
+                umUsuarioResponse(104),
+                umUsuarioResponse(115)));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .equipeVendasIds(List.of(100))
+            .equipesVendasId(List.of(100))
             .build());
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
@@ -855,29 +875,29 @@ public class UsuarioServiceIT {
                 .build());
 
         assertThat(usuarios).extracting("id", "nome")
-                .containsExactlyInAnyOrder(
-                        tuple(100, "ADMIN"),
-                        tuple(101, "HELPDESK"),
-                        tuple(104, "operacao_gerente_comercial"),
-                        tuple(105, "INATIVO"));
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(101, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(105, "INATIVO"));
     }
 
     private List<UsuarioAgenteAutorizadoResponse> umaListaUsuarioResponse(Integer id) {
-        return List.of(UsuarioAgenteAutorizadoResponse.builder()
-                        .id(id)
-                        .nome("nome " + id)
-                        .build(),
-                UsuarioAgenteAutorizadoResponse.builder()
-                        .id(id + 1)
-                        .nome("nome " + id + 1)
-                        .build());
+        return List.of(umUsuarioAa(id), umUsuarioAa(id + 1));
+    }
+
+    private UsuarioAgenteAutorizadoResponse umUsuarioAa(int id) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("nome " + id)
+            .build();
     }
 
     @Test
     public void getUsuariosInativosByIds_retornarUsuriosInativos_quandoForPassadoIds() {
         assertThat(service.getUsuariosInativosByIds(List.of(100, 101, 105, 370)))
-                .hasSize(2).extracting("id", "situacao")
-                .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
+            .hasSize(2).extracting("id", "situacao")
+            .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
     }
 
     @Test
@@ -930,6 +950,13 @@ public class UsuarioServiceIT {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
         return usuario;
+    }
+
+    private SelectResponse umUsuarioResponse(int id) {
+        return SelectResponse.builder()
+            .value(id)
+            .label("usuario " + id)
+            .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {

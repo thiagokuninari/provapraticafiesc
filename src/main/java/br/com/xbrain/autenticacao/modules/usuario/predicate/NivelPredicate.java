@@ -20,9 +20,14 @@ public class NivelPredicate {
         return this;
     }
 
-    public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel) {
+    public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel,
+                                                                boolean isGerenciaOperacao) {
         if (!visualizaGeral) {
-            builder.and(nivel.codigo.eq(codigoNivel));
+            if (isGerenciaOperacao) {
+                builder.and(nivel.codigo.in(codigoNivel, CodigoNivel.AGENTE_AUTORIZADO));
+            } else {
+                builder.and(nivel.codigo.eq(codigoNivel));
+            }
         }
         return this;
     }

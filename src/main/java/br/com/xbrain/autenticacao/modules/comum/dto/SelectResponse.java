@@ -1,11 +1,15 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-
-import java.io.Serializable;
+import lombok.NoArgsConstructor;
 
 @Data
-public class SelectResponse implements Serializable {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class SelectResponse {
 
     private Object value;
     private String label;
@@ -15,5 +19,9 @@ public class SelectResponse implements Serializable {
         selectResponse.setValue(value);
         selectResponse.setLabel(label);
         return selectResponse;
+    }
+
+    public static Integer getValueInt(SelectResponse usuarioSelectResponse) {
+        return (Integer) usuarioSelectResponse.value;
     }
 }

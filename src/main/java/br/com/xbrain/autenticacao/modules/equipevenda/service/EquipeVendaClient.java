@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @FeignClient(name = "equipeVendaClient",
         url = "${app-config.services.equipe-venda.url}",
@@ -31,6 +31,6 @@ public interface EquipeVendaClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
 
-    @GetMapping(USUARIOS_EQUIPE_ENDPOINT)
-    Set<Integer> getVendedoresPorEquipe(@RequestParam("equipeVendaIds") List<Integer> equipeVendaIds) ;
+    @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
+    List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);
 }
