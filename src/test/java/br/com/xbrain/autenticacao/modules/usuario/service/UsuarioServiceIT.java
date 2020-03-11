@@ -47,8 +47,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_TV;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.CLARO_RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -61,7 +63,8 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
+    "classpath:/tests_usuario_remanejamento.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -248,24 +251,8 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() {
-        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
-        usuarioMqRequest.setId(368);
-        service.updateFromQueue(usuarioMqRequest);
-        usuarioRepository.findAllByCpf("21145664523")
-                .forEach(usuario -> {
-                    if (usuario.getSituacao().equals(ESituacao.A)) {
-                        assertEquals(ESituacao.A, usuario.getSituacao());
-                    } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        assertEquals(ESituacao.R, usuario.getSituacao());
-                    }
-                });
-        assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
-    }
-
-    @Test
     public void updateFromQueue_deveAlterarCpf_seNovoCpfValido() throws Exception {
-        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        UsuarioMqRequest usuarioMqRequest = umUsuarioTrocaCpf();
         usuarioMqRequest.setId(368);
         usuarioMqRequest.setCpf("43185104099");
         service.updateFromQueue(usuarioMqRequest);
@@ -585,16 +572,53 @@ public class UsuarioServiceIT {
     @Test
     public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo() {
         assertThat(service.buscarColaboradoresAtivosOperacaoComericialPorCargo(5))
-            .hasSize(3)
+            .hasSize(5)
             .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple(116, "ALBERTO PEREIRA", "ALBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO),
                 tuple(117, "ROBERTO ALMEIDA", "ROBERTO@NET.COM", "Executivo", EXECUTIVO),
-                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
+                tuple(998, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO),
+                tuple(1000, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
             );
     }
 
-    private UsuarioMqRequest umUsuarioARealocar() {
+    @Test
+    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+        usuarioMqRequest.setId(999);
+        usuarioMqRequest.setCpf("21145664523");
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
+
+        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+
+        var usuariosAntesRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAntesRemanejar.size()).isEqualTo(1);
+        assertThat(usuariosAntesRemanejar.get(0).getId()).isEqualTo(1000);
+        assertThat(usuariosAntesRemanejar.get(0).getSituacao()).isEqualTo(ESituacao.A);
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAposRemanejar.size()).isEqualTo(2);
+        assertThat(usuariosAposRemanejar.get(0).getId()).isNotEqualTo(1000);
+        assertThat(usuariosAposRemanejar.get(0).getSituacao()).isEqualTo(ESituacao.A);
+        assertThat(usuariosAposRemanejar.get(1).getId()).isEqualTo(1000);
+        assertThat(usuariosAposRemanejar.get(1).getSituacao()).isEqualTo(ESituacao.R);
+
+        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
+    }
+
+    private UsuarioMqRequest umUsuarioTrocaCpf() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("21145664523");
@@ -602,6 +626,21 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.A);
         return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioRemanejamento() {
+        return UsuarioMqRequest
+            .builder()
+            .id(1000)
+            .nome("USUARIO REMANEJAR")
+            .email("MARIA@NET3.COM")
+            .cpf("95512593005")
+            .cargo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .nivel(AGENTE_AUTORIZADO)
+            .unidadesNegocio(List.of(CLARO_RESIDENCIAL))
+            .empresa(List.of(CLARO_TV))
+            .build();
     }
 
     private UsuarioMqRequest umUsuarioInativo() {
