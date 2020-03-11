@@ -837,7 +837,7 @@ public class UsuarioServiceIT {
         assertThatThrownBy(() -> service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .equipesVendasId(List.of(100))
             .build()))
-            .hasMessage("Não foi encontrado nenhum usuário desta equipe de vendas");
+            .hasMessage("Nenhum usuário desta equipe de vendas foi encontrado");
     }
 
     @Test

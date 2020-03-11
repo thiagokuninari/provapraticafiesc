@@ -1357,7 +1357,7 @@ public class UsuarioService {
         if (!isEmpty(usuarioFiltros.getEquipesVendasId())) {
             var usuarios = equipeVendaService.getVendedoresPorEquipe(usuarioFiltros.getEquipesVendasId());
             if (usuarios.isEmpty()) {
-                throw new ValidacaoException("Não foi encontrado nenhum usuário desta equipe de vendas");
+                throw new ValidacaoException("Nenhum usuário desta equipe de vendas foi encontrado");
             }
             usuarioFiltros.adicionarUsuariosId(usuarios);
         }
