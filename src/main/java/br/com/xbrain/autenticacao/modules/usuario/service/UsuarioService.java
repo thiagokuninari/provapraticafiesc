@@ -572,7 +572,7 @@ public class UsuarioService {
             configurarUsuario(usuarioMqRequest, usuarioDto);
             duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
         } catch (Exception ex) {
-            log.error("erro ao atualizar usuário da fila.", ex);
+            enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
             throw ex;
         }
     }
@@ -594,15 +594,15 @@ public class UsuarioService {
     }
 
     private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
-        validarUsuarioComCpfAtivo(usuario);
+        validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         usuario.setId(null);
         return usuario;
     }
 
-    private void validarUsuarioComCpfAtivo(Usuario usuario) {
-        if (!isEmpty(repository.findAllByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R))) {
+    private void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
+        if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)) {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
         }
@@ -692,6 +692,10 @@ public class UsuarioService {
 
     private void enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
         atualizarUsuarioMqSender.sendUsuarioRemanejadoAut(request);
+    }
+
+    private void enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest request) {
+        atualizarUsuarioMqSender.sendErrorUsuarioRemanejadoAut(request);
     }
 
     private void enviarParaFilaDeErroCadastroUsuarios(UsuarioMqRequest usuarioMqRequest) {

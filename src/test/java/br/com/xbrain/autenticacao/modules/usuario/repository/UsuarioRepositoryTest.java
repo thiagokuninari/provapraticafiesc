@@ -86,7 +86,6 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
-            .hasSize(2)
             .extracting("id", "email")
             .contains(
                 tuple(110, "RENATO@TESTE.COM"),

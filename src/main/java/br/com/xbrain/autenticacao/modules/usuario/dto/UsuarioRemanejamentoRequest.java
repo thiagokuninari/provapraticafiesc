@@ -28,4 +28,14 @@ public class UsuarioRemanejamentoRequest {
             .agenteAutorizadoId(request.getAgenteAutorizadoId())
             .build();
     }
+
+    public static UsuarioRemanejamentoRequest of(UsuarioMqRequest request) {
+        return UsuarioRemanejamentoRequest
+            .builder()
+            .usuarioNome(request.getNome())
+            .usuarioEmail(request.getEmail())
+            .colaboradorVendasId(request.getColaboradorVendasId())
+            .agenteAutorizadoId(request.getAgenteAutorizadoId())
+            .build();
+    }
 }

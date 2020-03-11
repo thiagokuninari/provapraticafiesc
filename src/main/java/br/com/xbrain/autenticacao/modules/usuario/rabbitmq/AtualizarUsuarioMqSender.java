@@ -20,6 +20,9 @@ public class AtualizarUsuarioMqSender {
     @Value("${app-config.queue.usuario-remanejado-aut}")
     private String usuarioRemanejadoAut;
 
+    @Value("${app-config.queue.usuario-remanejado-aut-failure}")
+    private String usuarioRemanejadoAutFailure;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -33,5 +36,9 @@ public class AtualizarUsuarioMqSender {
 
     public void sendUsuarioRemanejadoAut(UsuarioRemanejamentoRequest request) {
         rabbitTemplate.convertAndSend(usuarioRemanejadoAut, request);
+    }
+
+    public void sendErrorUsuarioRemanejadoAut(UsuarioRemanejamentoRequest request) {
+        rabbitTemplate.convertAndSend(usuarioRemanejadoAutFailure, request);
     }
 }

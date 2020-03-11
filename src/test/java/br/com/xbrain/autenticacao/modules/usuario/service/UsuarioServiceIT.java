@@ -570,9 +570,8 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo() {
+    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo_quandoInformadoPorId() {
         assertThat(service.buscarColaboradoresAtivosOperacaoComericialPorCargo(5))
-            .hasSize(5)
             .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
             .containsExactlyInAnyOrder(
                 tuple(116, "ALBERTO PEREIRA", "ALBERTO@NET.COM", "Executivo", EXECUTIVO),
@@ -587,12 +586,13 @@ public class UsuarioServiceIT {
     public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);
-        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCpf("87458480092");
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
 
         verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     @Test
@@ -601,21 +601,20 @@ public class UsuarioServiceIT {
 
         var usuariosAntesRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
 
-        assertThat(usuariosAntesRemanejar.size()).isEqualTo(1);
-        assertThat(usuariosAntesRemanejar.get(0).getId()).isEqualTo(1000);
-        assertThat(usuariosAntesRemanejar.get(0).getSituacao()).isEqualTo(ESituacao.A);
+        assertThat(usuariosAntesRemanejar)
+            .extracting("id", "situacao")
+            .containsExactly(tuple(1000, ESituacao.A));
 
         service.remanejarUsuario(usuarioMqRequest);
 
         var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
 
-        assertThat(usuariosAposRemanejar.size()).isEqualTo(2);
-        assertThat(usuariosAposRemanejar.get(0).getId()).isNotEqualTo(1000);
-        assertThat(usuariosAposRemanejar.get(0).getSituacao()).isEqualTo(ESituacao.A);
-        assertThat(usuariosAposRemanejar.get(1).getId()).isEqualTo(1000);
-        assertThat(usuariosAposRemanejar.get(1).getSituacao()).isEqualTo(ESituacao.R);
+        assertThat(usuariosAposRemanejar)
+            .extracting("id", "situacao")
+            .containsExactly(tuple(2, ESituacao.A), tuple(1000, ESituacao.R));
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {
