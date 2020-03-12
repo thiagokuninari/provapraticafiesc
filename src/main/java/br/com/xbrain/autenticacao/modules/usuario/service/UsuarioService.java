@@ -39,7 +39,6 @@ import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -336,12 +335,10 @@ public class UsuarioService {
         try {
             validar(usuario);
             tratarCadastroUsuario(usuario);
-            repository.save(usuario);
-            entityManager.flush();
-
-            tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
-            tratarCidadesUsuario(usuario);
-            enviarEmailDadosAcesso(usuario);
+            var enviarEmail = usuario.isNovoCadastro();
+            repository.saveAndFlush(usuario);
+            configurarCadastro(usuario);
+            enviarEmailDadosAcesso(usuario, enviarEmail);
 
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
@@ -357,10 +354,16 @@ public class UsuarioService {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
+        var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
-        enviarEmailDadosAcesso(usuario);
+        enviarEmailDadosAcesso(usuario, enviarEmail);
         return usuario;
+    }
+
+    private void configurarCadastro(Usuario usuario) {
+        tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
+        tratarCidadesUsuario(usuario);
     }
 
     private void tratarUsuarioBackoffice(Usuario usuario) {
@@ -370,8 +373,8 @@ public class UsuarioService {
         usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
     }
 
-    private void enviarEmailDadosAcesso(Usuario usuario) {
-        if (usuario.isNovoCadastro()) {
+    private void enviarEmailDadosAcesso(Usuario usuario, boolean enviarEmail) {
+        if (enviarEmail) {
             notificacaoService.enviarEmailDadosDeAcesso(usuario, usuario.getSenhaDescriptografada());
         }
     }
@@ -1390,9 +1393,9 @@ public class UsuarioService {
     public List<Integer> buscarIdsUsuariosDeCargosInferiores(Integer nivelId) {
         return repository.buscarIdsUsuariosPorCargosIds(
             cargoService.getPermitidosPorNivel(nivelId)
-            .stream()
-            .map(Cargo::getId)
-            .collect(Collectors.toList())
+                .stream()
+                .map(Cargo::getId)
+                .collect(Collectors.toList())
         );
     }
 }

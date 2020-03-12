@@ -50,8 +50,8 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(103, "CARLOS@HOTMAIL.COM"),
                 tuple(104, "MARIA@HOTMAIL.COM"),
-                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(111, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(112, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
@@ -79,16 +79,17 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO1@TESTE.COM"),
                 tuple(108, "EXECUTIVO2@TESTE.COM"),
-                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(111, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(112, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
-            .hasSize(1)
+            .hasSize(2)
             .extracting("id", "email")
-            .contains(tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"));
+            .containsExactlyInAnyOrder(tuple(110, "RENATO@TESTE.COM"),
+                tuple(113, "EXECUTIVOHUNTER3@TESTE.COM"));
     }
 
     @Test
@@ -98,8 +99,8 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"),
-                tuple(110, "HUNTER 1"),
-                tuple(111, "HUNTER 2"));
+                tuple(110, "EXECUTIVO 3 INATIVO"),
+                tuple(111, "HUNTER 1"));
     }
 
     @Test

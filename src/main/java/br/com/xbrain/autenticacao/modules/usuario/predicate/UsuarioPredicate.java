@@ -17,7 +17,6 @@ import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -177,13 +176,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate comRegional(Integer regionalId) {
         if (regionalId != null) {
             builder.and(usuario.cidades.any().cidade.id.in(
-                    JPAExpressions.select(cidade.id)
-                            .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .join(QCluster.cluster.grupo, QGrupo.grupo)
-                            .join(QGrupo.grupo.regional, QRegional.regional)
-                            .where(QRegional.regional.id.eq(regionalId))
+                JPAExpressions.select(cidade.id)
+                    .from(cidade)
+                    .join(cidade.subCluster, QSubCluster.subCluster)
+                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                    .join(QCluster.cluster.grupo, QGrupo.grupo)
+                    .join(QGrupo.grupo.regional, QRegional.regional)
+                    .where(QRegional.regional.id.eq(regionalId))
             ));
         }
         return this;
@@ -192,12 +191,12 @@ public class UsuarioPredicate {
     public UsuarioPredicate comGrupo(Integer grupoId) {
         if (grupoId != null) {
             builder.and(usuario.cidades.any().cidade.id.in(
-                    JPAExpressions.select(cidade.id)
-                            .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .join(QCluster.cluster.grupo, QGrupo.grupo)
-                            .where(QGrupo.grupo.id.eq(grupoId))
+                JPAExpressions.select(cidade.id)
+                    .from(cidade)
+                    .join(cidade.subCluster, QSubCluster.subCluster)
+                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                    .join(QCluster.cluster.grupo, QGrupo.grupo)
+                    .where(QGrupo.grupo.id.eq(grupoId))
             ));
         }
         return this;
@@ -206,11 +205,11 @@ public class UsuarioPredicate {
     public UsuarioPredicate comCluster(Integer clusterId) {
         if (clusterId != null) {
             builder.and(usuario.cidades.any().cidade.id.in(
-                    JPAExpressions.select(cidade.id)
-                            .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                            .where(QCluster.cluster.id.eq(clusterId))
+                JPAExpressions.select(cidade.id)
+                    .from(cidade)
+                    .join(cidade.subCluster, QSubCluster.subCluster)
+                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
+                    .where(QCluster.cluster.id.eq(clusterId))
             ));
         }
         return this;
@@ -219,10 +218,10 @@ public class UsuarioPredicate {
     public UsuarioPredicate comSubCluster(Integer subClusterId) {
         if (subClusterId != null) {
             builder.and(usuario.cidades.any().cidade.id.in(
-                    JPAExpressions.select(cidade.id)
-                            .from(cidade)
-                            .join(cidade.subCluster, QSubCluster.subCluster)
-                            .where(QSubCluster.subCluster.id.eq(subClusterId))
+                JPAExpressions.select(cidade.id)
+                    .from(cidade)
+                    .join(cidade.subCluster, QSubCluster.subCluster)
+                    .where(QSubCluster.subCluster.id.eq(subClusterId))
             ));
         }
         return this;
@@ -237,16 +236,18 @@ public class UsuarioPredicate {
 
     private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
-                JPAExpressions
-                        .select(usuario.id)
-                        .from(usuario)
-                        .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
-                        .where(usuarioHierarquia.usuario.id.in(ids)
-                                .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+            JPAExpressions
+                .select(usuario.id)
+                .from(usuario)
+                .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
+                .where(usuarioHierarquia.usuario.id.in(ids)
+                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
         return this;
     }
 
-    private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService, boolean incluirProrio) {
+    private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                       boolean incluirProrio) {
+        
         var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
         if (incluirProrio) {
             usuariosIds.add(usuario.getId());
@@ -268,16 +269,16 @@ public class UsuarioPredicate {
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
-                    usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
-                    singletonList(usuario.getUsuario().getId()))
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList()));
+                usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+                singletonList(usuario.getUsuario().getId()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             daCarteiraHierarquiaOuUsuarioCadastro(
-                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
-                    usuario.getUsuario().getId());
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+                usuario.getUsuario().getId());
 
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);

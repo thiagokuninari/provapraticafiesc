@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 public class OrganizacaoServiceTest {
 
     @InjectMocks
-    private OrganizacaoService organizacaoService = new OrganizacaoService();
+    private OrganizacaoService organizacaoService;
 
     @Mock
     private OrganizacaoRepository organizacaoRepository;
@@ -27,29 +27,28 @@ public class OrganizacaoServiceTest {
     @Test
     public void findAll_todasOrganizacoes_quandoPesquisar() {
         when(organizacaoRepository.findAll())
-                .thenReturn(List.of(
-                        umaOrganizacao(1, "BCC"),
-                        umaOrganizacao(2, "CALLINK")));
+            .thenReturn(List.of(
+                umaOrganizacao(1, "BCC"),
+                umaOrganizacao(2, "CALLINK")));
 
         assertThat(organizacaoService.getAllSelect(null))
-                .hasSize(2)
-                .extracting("id", "codigo", "nome")
-                .contains(tuple(1, "BCC", "BCC"),
-                        tuple(2, "CALLINK", "CALLINK"));
+            .hasSize(2)
+            .extracting("id", "codigo", "nome")
+            .contains(tuple(1, "BCC", "BCC"),
+                tuple(2, "CALLINK", "CALLINK"));
     }
 
     @Test
     public void findAll_organizacoesFiltradas_quandoParametroNivelId() {
-        when(organizacaoRepository.findAll(any())).thenReturn(List.of());
         when(organizacaoRepository.findAllByNiveisIdIn(any()))
-                .thenReturn(List.of(
-                        umaOrganizacao(8, "CSU"),
-                        umaOrganizacao(9, "MOTIVA")));
+            .thenReturn(List.of(
+                umaOrganizacao(8, "CSU"),
+                umaOrganizacao(9, "MOTIVA")));
 
         assertThat(organizacaoService.getAllSelect(15))
-                .hasSize(2)
-                .extracting("id", "codigo", "nome")
-                .contains(tuple(8, "CSU", "CSU"),
-                        tuple(9, "MOTIVA", "MOTIVA"));
+            .hasSize(2)
+            .extracting("id", "codigo", "nome")
+            .contains(tuple(8, "CSU", "CSU"),
+                tuple(9, "MOTIVA", "MOTIVA"));
     }
 }

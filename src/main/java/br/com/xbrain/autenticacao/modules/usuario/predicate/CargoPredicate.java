@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import com.querydsl.core.BooleanBuilder;
 
 import java.util.List;
