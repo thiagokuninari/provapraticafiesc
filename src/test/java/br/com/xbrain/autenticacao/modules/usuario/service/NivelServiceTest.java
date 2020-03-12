@@ -4,7 +4,9 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -82,6 +85,30 @@ public class NivelServiceTest {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado
                 .builder()
+                .usuario(Usuario
+                    .builder()
+                    .canais(Set.of(ECanal.D2D_PROPRIO))
+                    .build())
+                .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                .nivelCodigo(CodigoNivel.OPERACAO.name())
+                .build());
+
+        assertThat(service.getPermitidosParaComunicados())
+            .extracting("id", "nome")
+            .contains(
+                tuple(1, "Operação")
+            );
+    }
+
+    @Test
+    public void getPermitidosPorNivel_deveVisualizarSeuNivel_quandoSemPermisaoeSendoGerenciaOperacao() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .usuario(Usuario
+                    .builder()
+                    .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+                    .build())
                 .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
                 .nivelCodigo(CodigoNivel.OPERACAO.name())
                 .build());
