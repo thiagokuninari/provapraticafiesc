@@ -35,7 +35,7 @@ public class UsuarioTimer {
 
     private static final String EVERY_DAY_AT_MIDNIGHT = "0 0 0 * * *";
 
-    private static final String EVERY_30_MINUTE = "0 */1 * * * *";
+    private static final String EVERY_30_MINUTE = "0 */30 * * * *";
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
