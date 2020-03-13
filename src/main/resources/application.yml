@@ -37,7 +37,7 @@ spring:
             database/feriados.sql
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.16:1521/dev
+    url: jdbc:oracle:thin:@//192.168.1.16:1521/hmlg
     username: AUTENTICACAO
     password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
