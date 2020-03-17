@@ -360,7 +360,7 @@ public class UsuarioPredicate {
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             Set<Integer> idDosUsuariosSubordinados = newHashSet();
-            if (usuario.possuiCargoGargoSuperiorOperacao()) {
+            if (usuario.possuiCargoSuperiorOperacao()) {
                 idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId());
             }
             idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
