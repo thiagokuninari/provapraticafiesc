@@ -15,10 +15,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -39,20 +36,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
@@ -189,12 +184,12 @@ public class UsuarioServiceIT {
     @Test
     public void inativar_deveGerarUsuarioFerias_quandoOMotivoDaInativacaoForFerias() {
         service.inativar(UsuarioInativacaoDto
-                .builder()
-                .idUsuario(100)
-                .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
-                .dataInicio(LocalDate.of(2019, 1, 1))
-                .dataFim(LocalDate.of(2019, 2, 1))
-                .build());
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
+            .dataInicio(LocalDate.of(2019, 1, 1))
+            .dataFim(LocalDate.of(2019, 2, 1))
+            .build());
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
@@ -264,13 +259,13 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setId(368);
         service.updateFromQueue(usuarioMqRequest);
         usuarioRepository.findAllByCpf("21145664523")
-                .forEach(usuario -> {
-                    if (usuario.getSituacao().equals(ESituacao.A)) {
-                        assertEquals(ESituacao.A, usuario.getSituacao());
-                    } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                        assertEquals(ESituacao.R, usuario.getSituacao());
-                    }
-                });
+            .forEach(usuario -> {
+                if (usuario.getSituacao().equals(ESituacao.A)) {
+                    assertEquals(ESituacao.A, usuario.getSituacao());
+                } else if (usuario.getSituacao().equals(ESituacao.R)) {
+                    assertEquals(ESituacao.R, usuario.getSituacao());
+                }
+            });
         assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
     }
 
@@ -281,7 +276,7 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCpf("43185104099");
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
-                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+            .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         Assert.assertNotNull(usuario);
     }
 
@@ -291,8 +286,8 @@ public class UsuarioServiceIT {
         usuarioDto.setId(368);
         usuarioDto.setCpf("41842888803");
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
-                .withMessage("CPF já cadastrado.");
+            .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+            .withMessage("CPF já cadastrado.");
     }
 
     @Test
@@ -310,25 +305,25 @@ public class UsuarioServiceIT {
         service.updateFromQueue(naoRealocar);
         List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
         assertThat(usuarios)
-                .extracting(Usuario::getSituacao)
-                .containsOnly(ESituacao.A);
+            .extracting(Usuario::getSituacao)
+            .containsOnly(ESituacao.A);
     }
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
         when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(245)
-                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-                .build());
+            .idUsuario(245)
+            .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+            .build());
 
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
-                .extracting("id", "nome", "email", "cpf", "situacao")
-                .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
         assertThat(usuarioLocalizado.getHistoricos())
-                .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
-                .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
+            .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
+            .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
     }
 
     @Test
@@ -336,9 +331,9 @@ public class UsuarioServiceIT {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativado por não possuir CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(246)
-                .observacao("ATIVANDO UM USUÁRIO")
-                .build());
+            .idUsuario(246)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
     }
 
     @Test
@@ -346,11 +341,11 @@ public class UsuarioServiceIT {
         when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
-                + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
+            + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(245)
-                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-                .build());
+            .idUsuario(245)
+            .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+            .build());
     }
 
     @Test
@@ -359,9 +354,9 @@ public class UsuarioServiceIT {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(243)
-                .observacao("Teste ativar")
-                .build());
+            .idUsuario(243)
+            .observacao("Teste ativar")
+            .build());
     }
 
     @Test
@@ -395,7 +390,7 @@ public class UsuarioServiceIT {
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
-                + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+            + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
 
@@ -405,7 +400,7 @@ public class UsuarioServiceIT {
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
-                + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
+            + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComProximoUsuarioComoSuperior();
         service.hierarquiaIsValida(usuario);
 
@@ -476,35 +471,35 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(100);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(5)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578),
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(5)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578),
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
     }
 
     @Test
     public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
         var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet(
-                Arrays.asList(
-                        UsuarioCidade.criar(usuario, 3237, 100),
-                        UsuarioCidade.criar(usuario, 1443, 100),
-                        UsuarioCidade.criar(usuario, 2466, 100),
-                        UsuarioCidade.criar(usuario, 3022, 100))));
+            Arrays.asList(
+                UsuarioCidade.criar(usuario, 3237, 100),
+                UsuarioCidade.criar(usuario, 1443, 100),
+                UsuarioCidade.criar(usuario, 2466, 100),
+                UsuarioCidade.criar(usuario, 3022, 100))));
         service.save(usuario);
         var usuarioComCidadesAtualizadas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesAtualizadas.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
     }
 
     @Test
@@ -523,10 +518,10 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioAtualizado = service.findByIdCompleto(100);
         assertThat(usuarioAtualizado.getCidades())
-                .hasSize(1)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578));
+            .hasSize(1)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578));
     }
 
     @Test
@@ -540,13 +535,13 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(101);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(101, 3237),
-                        tuple(101, 1443),
-                        tuple(101, 2466),
-                        tuple(101, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(101, 3237),
+                tuple(101, 1443),
+                tuple(101, 2466),
+                tuple(101, 3022));
     }
 
     @Test
@@ -567,7 +562,7 @@ public class UsuarioServiceIT {
     @Test
     public void getSuperioresDoUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR))
-                .hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
+            .hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
     }
 
     @Test
@@ -607,110 +602,128 @@ public class UsuarioServiceIT {
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .cargosId(List.of(20, 40)).build());
+            .cargosId(List.of(20, 40)).build());
         assertThat(usuarios).isEqualTo(List.of(114, 366, 368, 246));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalAa(true).build());
+            .todoCanalAa(true).build());
         assertThat(usuarios).isEqualTo(List.of(105, 366, 369));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalD2d(true).build());
+            .todoCanalD2d(true).build());
         assertThat(usuarios).isEqualTo(List.of(233, 234, 235, 236, 237, 238, 239, 240));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+            .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 101, 104, 105));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .niveisId(List.of(4, 3)).build());
+            .niveisId(List.of(4, 3)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .cidadesId(List.of(5578)).build());
+            .cidadesId(List.of(5578)).build());
         assertThat(usuarios).isEqualTo(List.of(100, 104, 233, 234, 235, 236, 237, 238, 239, 240, 369, 370));
     }
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .niveisId(List.of(4, 3))
-                .usuariosId(List.of(100, 101))
-                .cidadesId(List.of(5578))
-                .build());
+            .niveisId(List.of(4, 3))
+            .usuariosId(List.of(100, 101))
+            .cidadesId(List.of(5578))
+            .build());
         assertThat(usuarios).isEqualTo(List.of(100));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .cargosId(List.of(20, 40)).build());
+            .cargosId(List.of(20, 40)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(114, "mso_analistaadm_claromovel_pessoal"),
-                tuple(366, "mso_analistaadm_claromovel_pessoal"),
-                tuple(368, "mso_analistaadm_claromovel_pessoal_dois"),
-                tuple(246, "JOAO FONSECA"));
+            tuple(366, "mso_analistaadm_claromovel_pessoal"),
+            tuple(368, "mso_analistaadm_claromovel_pessoal_dois"),
+            tuple(246, "JOAO FONSECA"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalAa(true).build());
+            .todoCanalAa(true).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(105, "INATIVO"),
-                tuple(366, "mso_analistaadm_claromovel_pessoal"),
-                tuple(369, "MARIA AUGUSTA"));
+            tuple(366, "mso_analistaadm_claromovel_pessoal"),
+            tuple(369, "MARIA AUGUSTA"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .todoCanalD2d(true).build());
-        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(233, "VENDEDOR OPERACAO 3"),
+            .todoCanalD2d(true).build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(tuple(233, "VENDEDOR OPERACAO 3"),
                 tuple(234, "COORDENADOR OPERACAO 2"),
                 tuple(235, "SUPERVISOR OPERACAO 3"),
                 tuple(236, "VENDEDOR OPERACAO 2"),
@@ -722,89 +735,95 @@ public class UsuarioServiceIT {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+            .usuariosId(List.of(100, 101, 102, 103, 104, 105, 106)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
-                tuple(100, "ADMIN"),
-                tuple(101, "HELPDESK"),
-                tuple(104, "operacao_gerente_comercial"),
-                tuple(105, "INATIVO"));
+            tuple(100, "ADMIN"),
+            tuple(101, "HELPDESK"),
+            tuple(104, "operacao_gerente_comercial"),
+            tuple(105, "INATIVO"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .niveisId(List.of(4, 3)).build());
+            .niveisId(List.of(4, 3)).build());
         assertThat(usuarios).extracting("id", "nome")
-                .containsExactlyInAnyOrder(
-                        tuple(100, "ADMIN"),
-                        tuple(101, "HELPDESK"),
-                        tuple(105, "INATIVO"),
-                        tuple(110, "ADMIN"),
-                        tuple(111, "HELPDESK"),
-                        tuple(112, "INATIVO"),
-                        tuple(113, "INATIVO"),
-                        tuple(118, "HENRIQUE ALVES"),
-                        tuple(121, "LUIS GUILHERME"),
-                        tuple(243, "VENDEDOR AA TELEVENDAS 3"),
-                        tuple(245, "ALBERTO ALVES"),
-                        tuple(246, "JOAO FONSECA"),
-                        tuple(247, "VENDEDOR AA D2D 3"));
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(101, "HELPDESK"),
+                tuple(105, "INATIVO"),
+                tuple(110, "ADMIN"),
+                tuple(111, "HELPDESK"),
+                tuple(112, "INATIVO"),
+                tuple(113, "INATIVO"),
+                tuple(118, "HENRIQUE ALVES"),
+                tuple(121, "LUIS GUILHERME"),
+                tuple(243, "VENDEDOR AA TELEVENDAS 3"),
+                tuple(245, "ALBERTO ALVES"),
+                tuple(246, "JOAO FONSECA"),
+                tuple(247, "VENDEDOR AA D2D 3"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .cidadesId(List.of(5578)).build());
+            .cidadesId(List.of(5578)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
-                tuple(100, "ADMIN"),
-                tuple(104, "operacao_gerente_comercial"),
-                tuple(233, "VENDEDOR OPERACAO 3"),
-                tuple(234, "COORDENADOR OPERACAO 2"),
-                tuple(235, "SUPERVISOR OPERACAO 3"),
-                tuple(236, "VENDEDOR OPERACAO 2"),
-                tuple(237, "VENDEDOR OPERACAO 3"),
-                tuple(238, "COORDENADOR OPERACAO 3"),
-                tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3"),
-                tuple(369, "MARIA AUGUSTA"),
-                tuple(370, "HELIO OLIVEIRA"));
+            tuple(100, "ADMIN"),
+            tuple(104, "operacao_gerente_comercial"),
+            tuple(233, "VENDEDOR OPERACAO 3"),
+            tuple(234, "COORDENADOR OPERACAO 2"),
+            tuple(235, "SUPERVISOR OPERACAO 3"),
+            tuple(236, "VENDEDOR OPERACAO 2"),
+            tuple(237, "VENDEDOR OPERACAO 3"),
+            tuple(238, "COORDENADOR OPERACAO 3"),
+            tuple(239, "VENDEDOR OPERACAO 2"),
+            tuple(240, "VENDEDOR OPERACAO 3"),
+            tuple(369, "MARIA AUGUSTA"),
+            tuple(370, "HELIO OLIVEIRA"));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .niveisId(List.of(4, 3))
-                .usuariosId(List.of(100, 101))
-                .cidadesId(List.of(5578)).build());
+            .niveisId(List.of(4, 3))
+            .usuariosId(List.of(100, 101))
+            .cidadesId(List.of(5578)).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
-                tuple(100, "ADMIN")
+            tuple(100, "ADMIN")
         );
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveTrazerTodos_seNaoPossuirFiltro() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
-                .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .build());
+            .build());
         assertThat(usuarios).hasSize(45);
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorAA_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
@@ -822,6 +841,8 @@ public class UsuarioServiceIT {
 
     @Test
     public void getIdDosUsuariosAlvoDoComunicado_deveLancarException_quandoNaoEncontrarNenhumUsuarioDoAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         assertThatExceptionOfType(ValidacaoException.class)
@@ -832,6 +853,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarVazio() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(List.of());
         assertThatThrownBy(() -> service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
@@ -842,6 +864,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         when(equipeVendaClient.getVendedoresPorEquipe(any()))
@@ -862,6 +885,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdAA() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
@@ -871,8 +895,8 @@ public class UsuarioServiceIT {
             .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-                .agentesAutorizadosId(List.of(10, 20))
-                .build());
+            .agentesAutorizadosId(List.of(10, 20))
+            .build());
 
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
@@ -1018,8 +1042,14 @@ public class UsuarioServiceIT {
             .id(1)
             .nome("USUARIO")
             .email("USUARIO@TESTE.COM")
-            .cargoCodigo(GERENTE_OPERACAO)
-            .nivelCodigo(OPERACAO.name())
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN)
+            .nivelCodigo(XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
             .build();
     }
 }

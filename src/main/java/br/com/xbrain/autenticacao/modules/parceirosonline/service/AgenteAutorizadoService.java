@@ -169,7 +169,19 @@ public class AgenteAutorizadoService {
             return agenteAutorizadoClient.existeAaAtivoByUsuarioId(usuarioId);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(
-                    ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
+                ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
+        }
+    }
+
+    public List<Integer> getIdsUsuariosPermitidosDoUsuario() {
+        try {
+            return agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario();
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 }

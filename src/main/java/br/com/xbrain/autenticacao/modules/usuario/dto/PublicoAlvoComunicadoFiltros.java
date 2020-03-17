@@ -54,7 +54,7 @@ public class PublicoAlvoComunicadoFiltros {
             .comGrupo(grupoId)
             .comRegional(regionalId)
             .comSubCluster(subClusterId)
-            .filtraPermitidos(usuarioAutenticado, usuarioService, incluirProprio)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService, incluirProprio)
             .build();
     }
 

@@ -272,6 +272,13 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public Set<Integer> getIdDosUsuariosSubordinados(Integer usuarioId) {
+        var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuarioId));
+        usuariosSubordinados.addAll(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario());
+
+        return usuariosSubordinados;
+    }
+
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
         return repository.getUsuariosCompletoSubordinados(usuarioId);
     }
@@ -1390,7 +1397,6 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
         return repository.findAllIds(usuarioFiltros.toPredicate());

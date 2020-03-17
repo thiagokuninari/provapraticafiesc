@@ -62,4 +62,10 @@ public class CargoController {
             .map(CargoComNivelResponse::of)
             .collect(Collectors.toList());
     }
+
+    @GetMapping("comunicados")
+    public List<CargoResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
+        return service.getPermitidosAosComunicados(niveisId);
+
+    }
 }

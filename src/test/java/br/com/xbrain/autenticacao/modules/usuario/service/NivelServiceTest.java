@@ -40,8 +40,13 @@ public class NivelServiceTest {
     public void getPermitidosPorNivel_deveRetornarXbrain_quandoOUsuarioForXbrain() {
         when(autenticacaoService.getUsuarioAutenticado())
                 .thenReturn(UsuarioAutenticado
+                    .builder()
+                    .usuario(Usuario
                         .builder()
-                        .nivelCodigo("XBRAIN")
+                        .canais(Set.of(ECanal.D2D_PROPRIO))
+                        .build())
+                    .cargoCodigo(CodigoCargo.EXECUTIVO)
+                    .nivelCodigo("XBRAIN")
                         .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
                         .build());
 
@@ -55,7 +60,13 @@ public class NivelServiceTest {
     public void getPermitidosPorNivel_deveIgnorarXbrain_quandoOUsuarioNaoForXbrain() {
         when(autenticacaoService.getUsuarioAutenticado())
                 .thenReturn(UsuarioAutenticado
+                    .builder()
+                    .usuario(Usuario
                         .builder()
+                        .canais(Set.of(ECanal.D2D_PROPRIO))
+                        .build())
+                    .cargoCodigo(CodigoCargo.EXECUTIVO)
+                    .cargoCodigo(CodigoCargo.EXECUTIVO)
                         .nivelCodigo("MSO")
                         .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
                         .build());
@@ -71,6 +82,11 @@ public class NivelServiceTest {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado
                 .builder()
+                .usuario(Usuario
+                    .builder()
+                    .canais(Set.of(ECanal.D2D_PROPRIO))
+                    .build())
+                .cargoCodigo(CodigoCargo.EXECUTIVO)
                 .nivelCodigo("MSO")
                 .build());
 
@@ -93,7 +109,7 @@ public class NivelServiceTest {
                 .nivelCodigo(CodigoNivel.OPERACAO.name())
                 .build());
 
-        assertThat(service.getPermitidosParaComunicados())
+        assertThat(service.getPermitidos(NivelTipoVisualizacao.CADASTRO))
             .extracting("id", "nome")
             .contains(
                 tuple(1, "Operação")
@@ -126,6 +142,11 @@ public class NivelServiceTest {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado
                 .builder()
+                .usuario(Usuario
+                    .builder()
+                    .canais(Set.of(ECanal.D2D_PROPRIO))
+                    .build())
+                .cargoCodigo(CodigoCargo.EXECUTIVO)
                         .nivelCodigo("MSO")
                         .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
                         .build());

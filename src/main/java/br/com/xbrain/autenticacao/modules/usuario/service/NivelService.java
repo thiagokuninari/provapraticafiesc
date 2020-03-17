@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.NivelPredicate;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
 @Service
@@ -47,10 +45,6 @@ public class NivelService {
     public List<Nivel> getPermitidosParaComunicados() {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
-        var isGerenciaOperacaoD2d = List.of(GERENTE_OPERACAO, COORDENADOR_OPERACAO, DIRETOR_OPERACAO)
-            .contains(usuarioAutenticado.getCargoCodigo())
-            && usuarioAutenticado.getUsuario().getCanais().contains(ECanal.AGENTE_AUTORIZADO);
-
         return nivelRepository.getAll(
             new NivelPredicate()
                 .isAtivo()
@@ -58,7 +52,7 @@ public class NivelService {
                 .exibeProprioNivelSeNaoVisualizarGeral(
                     usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
                     usuarioAutenticado.getNivelCodigoEnum(),
-                    isGerenciaOperacaoD2d)
+                    usuarioAutenticado.possuiCargoGargoSuperiorOperacao())
                 .build());
     }
 }
