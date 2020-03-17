@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
 @Service
@@ -83,34 +83,14 @@ public class CargoService {
 
     private List<CodigoCargo> getCodigosAgenteAutorizado(List<Integer> niveisIds) {
         return niveisIds.contains(nivelRepository.findByCodigo(CodigoNivel.AGENTE_AUTORIZADO).getId())
-            ? List.of(AGENTE_AUTORIZADO_ACEITE,
-            AGENTE_AUTORIZADO_SOCIO,
-            AGENTE_AUTORIZADO_SOCIO_SECUNDARIO,
-            AGENTE_AUTORIZADO_SUPERVISOR,
-            AGENTE_AUTORIZADO_GERENTE,
-            AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
-            AGENTE_AUTORIZADO_SUPERVISOR_RECEPTIVO,
-            AGENTE_AUTORIZADO_GERENTE_RECEPTIVO,
-            AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS_RECEPTIVO,
-            AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
-            AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS_RECEPTIVO,
-            AGENTE_AUTORIZADO_VENDEDOR_D2D,
-            AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO,
-            AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
-            AGENTE_AUTORIZADO_BACKOFFICE_D2D,
-            AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS,
-            AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
-            AGENTE_AUTORIZADO_SUPERVISOR_TEMP,
-            AGENTE_AUTORIZADO_GERENTE_TEMP,
-            AGENTE_AUTORIZADO_VENDEDOR_TEMP,
-            AGENTE_AUTORIZADO_BACKOFFICE_TEMP,
-            AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TEMP,
-            AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN,
-            AGENTE_AUTORIZADO_COORDENADOR,
-            AGENTE_AUTORIZADO_EMPRESARIO,
-            AGENTE_AUTORIZADO_APRENDIZ,
-            AGENTE_AUTORIZADO_ASSISTENTE)
+            ? Stream.of(CodigoCargo.values())
+            .filter(this::isAgenteAutorizado)
+            .collect(Collectors.toList())
             : List.of();
+    }
+
+    private boolean isAgenteAutorizado(CodigoCargo codigoCargo) {
+        return codigoCargo.name().contains("AGENTE_AUTORIZADO");
     }
 
     public Cargo findByUsuarioId(Integer usuarioId) {

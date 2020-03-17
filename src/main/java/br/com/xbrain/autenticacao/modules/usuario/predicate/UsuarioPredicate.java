@@ -344,33 +344,16 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario,
                                                          UsuarioService usuarioService, boolean incluirProprio) {
-        if (isEmpty(usuario)) {
-            return this;
-        }
-        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
-        ignorarXbrain(!usuario.isXbrain());
-
-        if (usuario.isUsuarioEquipeVendas()) {
-            comIds(Stream.of(
-                usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
-                singletonList(usuario.getUsuario().getId()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList()));
-
-        } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
+        if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             Set<Integer> idDosUsuariosSubordinados = newHashSet();
             if (usuario.possuiCargoSuperiorOperacao()) {
                 idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId());
             }
             idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
                 incluirProprio));
-
-            daCarteiraHierarquiaOuUsuarioCadastro(List.copyOf(idDosUsuariosSubordinados), usuario.getUsuario().getId());
-
-        } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
-            ignorarTodos();
+            return daCarteiraHierarquiaOuUsuarioCadastro(List.copyOf(idDosUsuariosSubordinados),
+                usuario.getUsuario().getId());
         }
-        return this;
+        return filtraPermitidos(usuario, usuarioService, incluirProprio);
     }
 }
