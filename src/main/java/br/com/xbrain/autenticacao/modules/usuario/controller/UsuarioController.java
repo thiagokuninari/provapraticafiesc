@@ -314,4 +314,9 @@ public class UsuarioController {
     public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
+
+    @GetMapping("{id}/com-login-netsales")
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(@PathVariable Integer id) {
+        return usuarioService.getUsuarioByIdComLoginNetSales(id);
+    }
 }

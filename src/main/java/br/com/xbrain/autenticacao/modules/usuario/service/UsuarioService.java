@@ -1362,4 +1362,10 @@ public class UsuarioService {
             .map(UsuarioResponse::of)
             .collect(Collectors.toList());
     }
+
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
+        return repository.findById(usuarioId)
+                .map(UsuarioComLoginNetSalesResponse::of)
+                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }
