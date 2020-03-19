@@ -171,9 +171,14 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacao);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+
         assertThat(usuario.getHistoricos()).isNotNull();
-        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
-            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, CodigoMotivoInativacao.DESCREDENCIADO)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -186,9 +191,14 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+
         assertThat(usuario.getHistoricos()).isNotNull();
-        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
-            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "observacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, "Teste inativar", CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -204,9 +214,14 @@ public class UsuarioServiceIT {
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+
         assertThat(usuario.getHistoricos()).isNotNull();
-        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
-            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(usuarioFeriasService, atLeastOnce()).save(eq(usuario), any());
     }
 
@@ -219,6 +234,16 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
+
+        var usuarioCompleto = usuarioRepository.findById(227).get();
+
+        assertThat(usuarioCompleto.getHistoricos()).isNotNull();
+        assertThat(usuarioCompleto.getHistoricos())
+            .extracting("situacao", "observacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, "Teste inativar", CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -231,7 +256,6 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -266,7 +290,14 @@ public class UsuarioServiceIT {
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
                 .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
-        Assert.assertNotNull(usuario);
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getCpf()).isEqualTo("43185104099");
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsExactlyInAnyOrder(
+                tuple(ESituacao.A, "Alteração de CPF do usuário.")
+            );
     }
 
     @Test
@@ -449,6 +480,13 @@ public class UsuarioServiceIT {
                         tuple(100, 1443),
                         tuple(100, 2466),
                         tuple(100, 3022));
+
+        assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
+        assertThat(usuarioComNovasCidades.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+            );
     }
 
     @Test
@@ -470,6 +508,13 @@ public class UsuarioServiceIT {
                         tuple(100, 1443),
                         tuple(100, 2466),
                         tuple(100, 3022));
+
+        assertThat(usuarioComCidadesAtualizadas.getHistoricos()).isNotNull();
+        assertThat(usuarioComCidadesAtualizadas.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+            );
     }
 
     @Test
@@ -479,6 +524,12 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComCidadesRemovidas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesRemovidas.getCidades()).isEmpty();
+        assertThat(usuarioComCidadesRemovidas.getHistoricos()).isNotNull();
+        assertThat(usuarioComCidadesRemovidas.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+            );
     }
 
     @Test
@@ -492,6 +543,13 @@ public class UsuarioServiceIT {
                 .extracting("usuario.id", "cidade.id")
                 .containsExactlyInAnyOrder(
                         tuple(100, 5578));
+
+        assertThat(usuarioAtualizado.getHistoricos()).isNotNull();
+        assertThat(usuarioAtualizado.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+            );
     }
 
     @Test
@@ -512,6 +570,13 @@ public class UsuarioServiceIT {
                         tuple(101, 1443),
                         tuple(101, 2466),
                         tuple(101, 3022));
+
+        assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
+        assertThat(usuarioComNovasCidades.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+            );
     }
 
     @Test
