@@ -67,7 +67,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 @Slf4j
-@SuppressWarnings("PMD.TooManyStaticImports")
+@SuppressWarnings({"PMD.TooManyStaticImports", "VariableDeclarationUsageDistance"})
 public class UsuarioService {
 
     private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
@@ -314,8 +314,8 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto save(Usuario usuario) {
         try {
-            var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             validar(usuario);
+            var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarDadosIniciaisDoUsuario(usuario);
             repository.save(usuario);
             entityManager.flush();
