@@ -26,7 +26,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRep
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
