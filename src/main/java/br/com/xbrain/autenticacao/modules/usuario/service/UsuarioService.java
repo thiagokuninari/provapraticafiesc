@@ -637,11 +637,14 @@ public class UsuarioService {
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
-    @Transactional
     public void saveUsuarioAlteracaoCpf(Usuario usuario) {
-        validarCpfExistente(usuario);
-        usuario.removerCaracteresDoCpf();
-        repository.updateCpf(usuario.getCpf(), usuario.getId());
+        var usuarioExistente = repository.findComplete(usuario.getId())
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
+        usuarioExistente.setCpf(usuario.getCpf());
+        validarCpfExistente(usuarioExistente);
+        usuarioExistente.removerCaracteresDoCpf();
+        usuarioExistente.adicionarHistorico(UsuarioHistorico.criarHistoricoAlteracaoCpf(usuarioExistente));
+        repository.save(usuarioExistente);
     }
 
     @Transactional
