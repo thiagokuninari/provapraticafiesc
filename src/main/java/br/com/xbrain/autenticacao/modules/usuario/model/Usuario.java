@@ -464,8 +464,4 @@ public class Usuario {
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
     }
-
-    public boolean isEnvioEmail() {
-        return isNovoCadastro();
-    }
 }
