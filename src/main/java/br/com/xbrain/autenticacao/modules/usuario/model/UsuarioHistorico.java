@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.util.ObjectUtils;
@@ -82,6 +83,15 @@ public class UsuarioHistorico {
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
+    public static UsuarioHistorico gerarHistorico(Usuario usuario, EObservacaoHistorico observacao) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao(observacao.getObservacao())
+            .situacao(usuario.getSituacao())
+            .build();
+    }
+
     public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
                                                           String observacao,
                                                           Usuario usuarioAtivado) {
@@ -99,34 +109,5 @@ public class UsuarioHistorico {
                 + (!ObjectUtils.isEmpty(motivoInativacao)
                         ? " / " +  motivoInativacao.getDescricao()
                         : "");
-    }
-
-    public static UsuarioHistorico criarHistoricoAlteracaoDados(Usuario usuario, ESituacao situacaoAnterior) {
-        return UsuarioHistorico.builder()
-            .dataCadastro(LocalDateTime.now())
-            .usuario(usuario)
-            .observacao(usuario.getSituacao().equals(situacaoAnterior) && usuario.isAtivo()
-                ? "Alteração nos dados de cadastro do usuário."
-                : "Ativação do usuário pelo Parceiros Online.")
-            .situacao(usuario.getSituacao())
-            .build();
-    }
-
-    public static UsuarioHistorico criarHistoricoRemanejamentoUsuario(Usuario usuario) {
-        return UsuarioHistorico.builder()
-            .dataCadastro(LocalDateTime.now())
-            .usuario(usuario)
-            .observacao("Remanejamento de usuário para outro Agente Autorizado.")
-            .situacao(usuario.getSituacao())
-            .build();
-    }
-
-    public static UsuarioHistorico criarHistoricoAlteracaoCpf(Usuario usuario) {
-        return UsuarioHistorico.builder()
-            .dataCadastro(LocalDateTime.now())
-            .usuario(usuario)
-            .observacao("Alteração de CPF do usuário.")
-            .situacao(usuario.getSituacao())
-            .build();
     }
 }

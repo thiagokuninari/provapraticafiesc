@@ -48,7 +48,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,6 +58,7 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
@@ -316,19 +316,35 @@ public class UsuarioService {
         try {
             validar(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
-            tratarDadosIniciaisDoUsuario(usuario);
-            repository.save(usuario);
-            entityManager.flush();
-            tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
-            tratarCidadesUsuario(usuario);
+            tratarCadastroUsuario(usuario);
+            var enviarEmail = usuario.isNovoCadastro();
+            repository.saveAndFlush(usuario);
+            configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
+            enviarEmailDadosAcesso(usuario, enviarEmail);
             return UsuarioDto.of(usuario);
-        } catch (PersistenceException ex) {
-            log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
-            throw new ValidacaoException("Erro ao cadastrar usuário.");
         } catch (Exception ex) {
-            log.error("Erro ao salvar Usuário.", ex);
-            throw ex;
+            throw new ValidacaoException("Erro ao cadastrar Usuário.", ex);
+        }
+    }
+
+    private void tratarCadastroUsuario(Usuario usuario) {
+        if (usuario.isNovoCadastro()) {
+            configurar(usuario, getSenhaRandomica(MAX_CARACTERES_SENHA));
+        } else {
+            atualizarUsuariosParceiros(usuario);
+            usuario.setAlterarSenha(Eboolean.F);
+        }
+    }
+
+    private void configurarCadastro(Usuario usuario) {
+        tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
+        tratarCidadesUsuario(usuario);
+    }
+
+    private void enviarEmailDadosAcesso(Usuario usuario, boolean enviarEmail) {
+        if (enviarEmail) {
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, usuario.getSenhaDescriptografada());
         }
     }
 
@@ -339,22 +355,10 @@ public class UsuarioService {
     }
 
     private void gerarHistoricoAlteracaoCadastro(Usuario usuario, ESituacao situacaoAnterior) {
-        usuario.adicionarHistorico(UsuarioHistorico.criarHistoricoAlteracaoDados(usuario, situacaoAnterior));
+        usuario.adicionarHistorico(usuario.getSituacao().equals(situacaoAnterior) && usuario.isAtivo()
+            ? UsuarioHistorico.gerarHistorico(usuario, ALTERACAO_CADASTRO)
+            : UsuarioHistorico.gerarHistorico(usuario, ATIVACAO_POL));
         repository.save(usuario);
-    }
-
-    private void tratarDadosIniciaisDoUsuario(Usuario usuario) {
-        var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-
-        if (usuario.isNovoCadastro()) {
-            configurar(usuario, senhaDescriptografada);
-        } else {
-            atualizarUsuariosParceiros(usuario);
-            usuario.setAlterarSenha(Eboolean.F);
-        }
-        if (usuario.isEnvioEmail()) {
-            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-        }
     }
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
@@ -606,7 +610,7 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
-        usuarioRemanejado.adicionarHistorico(UsuarioHistorico.criarHistoricoRemanejamentoUsuario(usuarioRemanejado));
+        usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
         repository.save(usuarioRemanejado);
     }
 
@@ -627,7 +631,7 @@ public class UsuarioService {
 
     private void gerarHistoricoAtivoAposRemanejamento(Usuario usuario) {
         usuario.getHistoricos().clear();
-        usuario.adicionarHistorico(UsuarioHistorico.criarHistoricoRemanejamentoUsuario(usuario));
+        usuario.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuario, REMANEJAMENTO));
     }
 
     public boolean isAlteracaoCpf(Usuario usuario) {
@@ -643,7 +647,7 @@ public class UsuarioService {
         usuarioExistente.setCpf(usuario.getCpf());
         validarCpfExistente(usuarioExistente);
         usuarioExistente.removerCaracteresDoCpf();
-        usuarioExistente.adicionarHistorico(UsuarioHistorico.criarHistoricoAlteracaoCpf(usuarioExistente));
+        usuarioExistente.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioExistente, ALTERACAO_CPF));
         repository.save(usuarioExistente);
     }
 
