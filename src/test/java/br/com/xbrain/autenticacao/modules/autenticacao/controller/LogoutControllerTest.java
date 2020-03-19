@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class LogoutControllerTest {
     @SpyBean
     private TokenStore tokenStore;
     @MockBean
-    private EquipeVendaClient equipeVendaClient;
+    private EquipeVendaD2dClient equipeVendaD2dClient;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
