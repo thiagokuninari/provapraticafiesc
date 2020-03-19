@@ -84,6 +84,8 @@ public class UsuarioService {
         = new ValidacaoException("Email atual está incorreto.");
     private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
         = new ValidacaoException("Senha atual está incorreta.");
+    private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
+        = new ValidacaoException("O usuário não foi encontrado.");
 
     @Autowired
     @Setter
@@ -312,26 +314,14 @@ public class UsuarioService {
     @Transactional
     public UsuarioDto save(Usuario usuario) {
         try {
+            var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             validar(usuario);
-
-            boolean enviarEmail = false;
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
-            if (usuario.isNovoCadastro()) {
-                configurar(usuario, senhaDescriptografada);
-                enviarEmail = true;
-            } else {
-                atualizarUsuariosParceiros(usuario);
-                usuario.setAlterarSenha(Eboolean.F);
-            }
+            tratarDadosIniciaisDoUsuario(usuario);
             repository.save(usuario);
             entityManager.flush();
-
             tratarHierarquiaUsuario(usuario, usuario.getHierarquiasId());
             tratarCidadesUsuario(usuario);
-
-            if (enviarEmail) {
-                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-            }
+            gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
             log.error("Erro de persistência ao salvar o Usuario.", ex.getMessage());
@@ -339,6 +329,31 @@ public class UsuarioService {
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
+        }
+    }
+
+    private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
+        return usuario.isNovoCadastro()
+            ? ESituacao.A
+            : repository.findById(usuario.getId()).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION).getSituacao();
+    }
+
+    private void gerarHistoricoAlteracaoCadastro(Usuario usuario, ESituacao situacaoAnterior) {
+        usuario.adicionarHistorico(UsuarioHistorico.criarHistoricoAlteracaoDados(usuario, situacaoAnterior));
+        repository.save(usuario);
+    }
+
+    private void tratarDadosIniciaisDoUsuario(Usuario usuario) {
+        var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+
+        if (usuario.isNovoCadastro()) {
+            configurar(usuario, senhaDescriptografada);
+        } else {
+            atualizarUsuariosParceiros(usuario);
+            usuario.setAlterarSenha(Eboolean.F);
+        }
+        if (usuario.isEnvioEmail()) {
+            notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
         }
     }
 
@@ -581,6 +596,7 @@ public class UsuarioService {
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
+        gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
     }
@@ -590,6 +606,7 @@ public class UsuarioService {
         usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
+        usuarioRemanejado.adicionarHistorico(UsuarioHistorico.criarHistoricoRemanejamentoUsuario(usuarioRemanejado));
         repository.save(usuarioRemanejado);
     }
 
@@ -606,6 +623,11 @@ public class UsuarioService {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
         }
+    }
+
+    private void gerarHistoricoAtivoAposRemanejamento(Usuario usuario) {
+        usuario.getHistoricos().clear();
+        usuario.adicionarHistorico(UsuarioHistorico.criarHistoricoRemanejamentoUsuario(usuario));
     }
 
     public boolean isAlteracaoCpf(Usuario usuario) {
@@ -823,21 +845,26 @@ public class UsuarioService {
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
-        usuario.adicionarHistorico(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
-                .usuario(usuario)
-                .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
-                .observacao(usuarioInativacao.getObservacao())
-                .situacao(ESituacao.I)
-                .ferias(usuarioFeriasService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .afastamento(usuarioAfastamentoService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .build());
+        usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
+    }
+
+    private UsuarioHistorico gerarDadosDeHistoricoDeInativacao(UsuarioInativacaoDto usuarioInativacao,
+                                                               Usuario usuario) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
+            .usuario(usuario)
+            .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
+            .observacao(usuarioInativacao.getObservacao())
+            .situacao(usuario.getSituacao())
+            .ferias(usuarioFeriasService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .afastamento(usuarioAfastamentoService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .build();
     }
 
     private void removerHierarquiaDoUsuarioEquipe(Usuario usuario, MotivoInativacao motivoInativacao) {

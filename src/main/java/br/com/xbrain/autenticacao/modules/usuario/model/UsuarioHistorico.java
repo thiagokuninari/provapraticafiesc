@@ -100,4 +100,33 @@ public class UsuarioHistorico {
                         ? " / " +  motivoInativacao.getDescricao()
                         : "");
     }
+
+    public static UsuarioHistorico criarHistoricoAlteracaoDados(Usuario usuario, ESituacao situacaoAnterior) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao(usuario.getSituacao().equals(situacaoAnterior) && usuario.isAtivo()
+                ? "Alteração nos dados de cadsatro do usuário."
+                : "Ativação do usuário pelo Parceiros Online.")
+            .situacao(usuario.getSituacao())
+            .build();
+    }
+
+    public static UsuarioHistorico criarHistoricoRemanejamentoUsuario(Usuario usuario) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao("Remanejamento de usuário para outro Agente Autorizado.")
+            .situacao(usuario.getSituacao())
+            .build();
+    }
+
+    public static UsuarioHistorico criarHistoricoAlteracaoCpf(Usuario usuario) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao("Alteração de CPF do usuário.")
+            .situacao(usuario.getSituacao())
+            .build();
+    }
 }

@@ -171,6 +171,9 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacao);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
+            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -183,6 +186,9 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
+            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -198,7 +204,9 @@ public class UsuarioServiceIT {
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
-
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos().get(0).getMotivoInativacao().getCodigo())
+            .isEqualTo(CodigoMotivoInativacao.ULTIMO_ACESSO);
         verify(usuarioFeriasService, atLeastOnce()).save(eq(usuario), any());
     }
 
