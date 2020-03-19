@@ -106,7 +106,7 @@ public class UsuarioHistorico {
             .dataCadastro(LocalDateTime.now())
             .usuario(usuario)
             .observacao(usuario.getSituacao().equals(situacaoAnterior) && usuario.isAtivo()
-                ? "Alteração nos dados de cadsatro do usuário."
+                ? "Alteração nos dados de cadastro do usuário."
                 : "Ativação do usuário pelo Parceiros Online.")
             .situacao(usuario.getSituacao())
             .build();

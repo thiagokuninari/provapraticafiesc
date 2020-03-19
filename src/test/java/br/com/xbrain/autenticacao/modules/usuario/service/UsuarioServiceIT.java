@@ -484,7 +484,7 @@ public class UsuarioServiceIT {
         assertThat(usuarioComNovasCidades.getHistoricos())
             .extracting("situacao", "observacao")
             .containsAnyOf(
-                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
     }
 
@@ -512,7 +512,7 @@ public class UsuarioServiceIT {
         assertThat(usuarioComCidadesAtualizadas.getHistoricos())
             .extracting("situacao", "observacao")
             .containsAnyOf(
-                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
     }
 
@@ -527,7 +527,7 @@ public class UsuarioServiceIT {
         assertThat(usuarioComCidadesRemovidas.getHistoricos())
             .extracting("situacao", "observacao")
             .containsAnyOf(
-                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
     }
 
@@ -547,7 +547,7 @@ public class UsuarioServiceIT {
         assertThat(usuarioAtualizado.getHistoricos())
             .extracting("situacao", "observacao")
             .containsAnyOf(
-                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
     }
 
@@ -574,7 +574,7 @@ public class UsuarioServiceIT {
         assertThat(usuarioComNovasCidades.getHistoricos())
             .extracting("situacao", "observacao")
             .containsAnyOf(
-                tuple(ESituacao.A, "Alteração nos dados de cadsatro do usuário.")
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
     }
 
