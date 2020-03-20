@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 @Data
 @Builder
@@ -24,5 +25,9 @@ public class UsuarioComLoginNetSalesResponse {
                 .loginNetSales(usuario.getLoginNetSales())
                 .nivelCodigo(usuario.getNivelCodigo().name())
                 .build();
+    }
+
+    public boolean hasLoginNetSales() {
+        return !StringUtils.isEmpty(loginNetSales);
     }
 }

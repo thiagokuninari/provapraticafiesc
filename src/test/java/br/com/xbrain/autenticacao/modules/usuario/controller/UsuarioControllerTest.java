@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -554,6 +555,57 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
 
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarOk_seUsuarioPossuirLoginNetSales() {
+        final var umUsuarioId = 227;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(227)))
+            .andExpect(jsonPath("$.nome", is("VENDEDOR AA")))
+            .andExpect(jsonPath("$.loginNetSales", is("um login netsales")))
+            .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarBadRequest_seUsuarioNaoPossuirLoginNetSales() {
+        final var umUsuarioId = 226;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "Usuário não encontrado e/ou não possui login NetSales válido.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarBadRequest_seUsuarioNaoEncontrado() {
+        final var umUsuarioId = 999;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "Usuário não encontrado e/ou não possui login NetSales válido.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        final var umUsuarioId = 1000;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {

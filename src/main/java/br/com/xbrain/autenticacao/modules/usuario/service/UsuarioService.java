@@ -81,6 +81,9 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
+            "Usuário não encontrado e/ou não possui login NetSales válido."
+    );
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -1366,6 +1369,7 @@ public class UsuarioService {
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return repository.findById(usuarioId)
                 .map(UsuarioComLoginNetSalesResponse::of)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+                .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
+                .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
     }
 }

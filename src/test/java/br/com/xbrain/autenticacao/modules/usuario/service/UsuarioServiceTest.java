@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioComLoginNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -34,9 +35,9 @@ import static org.mockito.Mockito.*;
 public class UsuarioServiceTest {
 
     @InjectMocks
-    private UsuarioService usuarioService;
+    private UsuarioService service;
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepository repository;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -53,12 +54,12 @@ public class UsuarioServiceTest {
 
     @Test
     public void getSubclustersUsuario_deveConverterORetornoEmSelectResponse_conformeListaDeSubclusters() {
-        when(usuarioRepository.getSubclustersUsuario(anyInt()))
+        when(repository.getSubclustersUsuario(anyInt()))
             .thenReturn(List.of(
                 SubCluster.of(1, "TESTE1"),
                 SubCluster.of(2, "TESTE2")));
 
-        assertThat(usuarioService.getSubclusterUsuario(1))
+        assertThat(service.getSubclusterUsuario(1))
             .extracting("value", "label")
             .containsExactly(
                 tuple(1, "TESTE1"),
@@ -67,10 +68,10 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarExecutivosPorSituacao_deveRetornarOsExecutivos() {
-        when(usuarioRepository.findAllExecutivosBySituacao(eq(ESituacao.A)))
+        when(repository.findAllExecutivosBySituacao(eq(ESituacao.A)))
             .thenReturn(List.of(umUsuarioExecutivo()));
 
-        assertThat(usuarioService.buscarExecutivosPorSituacao(ESituacao.A))
+        assertThat(service.buscarExecutivosPorSituacao(ESituacao.A))
             .hasSize(1)
             .extracting("id", "nome")
             .containsExactly(
@@ -79,33 +80,33 @@ public class UsuarioServiceTest {
 
     @Test
     public void findById_deveRetornarUsuarioResponse_quandoSolicitado() {
-        when(usuarioRepository.findById(1))
+        when(repository.findById(1))
             .thenReturn(Optional.of(Usuario.builder()
                 .id(1)
                 .nome("RENATO")
                 .build()));
 
-        assertThat(usuarioService.findById(1))
+        assertThat(service.findById(1))
             .extracting("id", "nome")
             .containsExactly(1, "RENATO");
     }
 
     @Test
     public void findById_deveRetornarException_quandoNaoEncontrarUsuarioById() {
-        when(usuarioRepository.findById(1))
+        when(repository.findById(1))
             .thenReturn(Optional.empty());
 
-        assertThatCode(() -> usuarioService.findById(1))
+        assertThatCode(() -> service.findById(1))
             .hasMessage("Usuário não encontrado.")
             .isInstanceOf(ValidacaoException.class);
     }
 
     @Test
     public void findUsuariosByCodigoCargo_deveRetornarUsuariosAtivos_peloCodigoDoCargo() {
-        when(usuarioRepository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
+        when(repository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
             .thenReturn(umaListaUsuariosExecutivosAtivo());
 
-        assertThat(usuarioService.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
+        assertThat(service.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
             .extracting("id", "nome", "email", "codigoNivel", "codigoCargo", "codigoDepartamento", "situacao")
             .containsExactly(
                 tuple(1, "JOSÉ", "JOSE@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
@@ -113,7 +114,7 @@ public class UsuarioServiceTest {
                 tuple(2, "HIGOR", "HIGOR@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
                     CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, ESituacao.A));
 
-        verify(usuarioRepository, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+        verify(repository, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -159,15 +160,74 @@ public class UsuarioServiceTest {
 
     @Test
     public void findUsuariosByIds_deveRetonarUsuarios_quandoForPassadoIdsDosUsuarios() {
-        when(usuarioRepository.findUsuariosByIds(any()))
+        when(repository.findUsuariosByIds(any()))
             .thenReturn(List.of(
                 umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
                 umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
 
-        assertThat(usuarioService.findUsuariosByIds(List.of(1, 2)))
+        assertThat(service.findUsuariosByIds(List.of(1, 2)))
             .extracting("id", "nome", "situacao")
             .containsExactlyInAnyOrder(
                 tuple(1, "JONATHAN", ESituacao.A),
                 tuple(2, "FLAVIA", ESituacao.I));
+    }
+
+    @Test
+    public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSales() {
+        var umUsuarioComLogin = 1000;
+
+        when(repository.findById(umUsuarioComLogin))
+                .thenReturn(Optional.of(umUsuarioComLoginNetSales(umUsuarioComLogin)));
+
+        var response = service.getUsuarioByIdComLoginNetSales(umUsuarioComLogin);
+
+        assertThat(response)
+                .extracting(UsuarioComLoginNetSalesResponse::getId,
+                        UsuarioComLoginNetSalesResponse::getNome,
+                        UsuarioComLoginNetSalesResponse::getLoginNetSales,
+                        UsuarioComLoginNetSalesResponse::getNivelCodigo)
+                .containsExactly(umUsuarioComLogin, "UM USUARIO COM LOGIN", "UM LOGIN NETSALES", "ATIVO_LOCAL_PROPRIO");
+    }
+
+    @Test
+    public void getUsuarioByIdComLoginNetSales_deveLancarException_seUsuarioNaoPossuirLoginNetSales() {
+        var umUsuarioSemLogin = 1001;
+
+        when(repository.findById(umUsuarioSemLogin))
+                .thenReturn(Optional.of(umUsuarioSemLoginNetSales(umUsuarioSemLogin)));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioSemLogin))
+                .withMessage("Usuário não encontrado e/ou não possui login NetSales válido.");
+    }
+
+    @Test
+    public void getUsuarioByIdComLoginNetSales_deveLancarException_seUsuarioNaoEncontrado() {
+        var umUsuarioInexistente = 1002;
+
+        when(repository.findById(umUsuarioInexistente))
+                .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+                .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioInexistente))
+                .withMessage("Usuário não encontrado e/ou não possui login NetSales válido.");
+    }
+
+    private Usuario umUsuarioComLoginNetSales(int id) {
+        return Usuario.builder()
+                .id(id)
+                .nome("UM USUARIO COM LOGIN")
+                .loginNetSales("UM LOGIN NETSALES")
+                .cargo(Cargo.builder()
+                        .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
+                        .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
+                        .build())
+                .build();
+    }
+
+    private Usuario umUsuarioSemLoginNetSales(int id) {
+        var usuario = umUsuarioComLoginNetSales(id);
+        usuario.setLoginNetSales(null);
+        return usuario;
     }
 }
