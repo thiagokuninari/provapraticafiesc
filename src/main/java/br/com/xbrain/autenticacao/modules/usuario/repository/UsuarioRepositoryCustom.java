@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UsuarioRepositoryCustom {
 
@@ -30,7 +31,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
@@ -72,12 +73,12 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                               List<CodigoCargo> cargos,
-                                                              ECanal canal);
+                                                              Set<ECanal> canais);
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
                                                     CodigoCargo cargo,
-                                                    ECanal canal);
+                                                    Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 

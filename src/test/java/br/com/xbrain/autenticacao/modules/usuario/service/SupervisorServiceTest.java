@@ -132,7 +132,7 @@ public class SupervisorServiceTest {
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
-                .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+                .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
 
         assertThat(
                 service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID))
@@ -149,7 +149,7 @@ public class SupervisorServiceTest {
                         tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
 
         assertThat(
                 service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
@@ -159,7 +159,7 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
                 service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))
@@ -169,7 +169,7 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         doReturn(emptyList())
-                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+                .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
                 service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID))

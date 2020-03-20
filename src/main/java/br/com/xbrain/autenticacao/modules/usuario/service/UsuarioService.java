@@ -60,6 +60,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -188,7 +189,7 @@ public class UsuarioService {
 
     public List<CidadeResponse> findCidadesByUsuario(int usuarioId) {
         return repository.findComCidade(usuarioId)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
             .map(CidadeResponse::parse)
             .collect(Collectors.toList());
@@ -416,7 +417,7 @@ public class UsuarioService {
     }
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
-        return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+        return AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
     private void validar(Usuario usuario) {
@@ -826,17 +827,17 @@ public class UsuarioService {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
-                .usuario(usuario)
-                .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
-                .observacao(usuarioInativacao.getObservacao())
-                .situacao(ESituacao.I)
-                .ferias(usuarioFeriasService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .afastamento(usuarioAfastamentoService
-                        .save(usuario, usuarioInativacao).orElse(null))
-                .build());
+            .dataCadastro(LocalDateTime.now())
+            .motivoInativacao(carregarMotivoInativacao(usuarioInativacao))
+            .usuario(usuario)
+            .usuarioAlteracao(getUsuarioInativacaoTratado(usuarioInativacao))
+            .observacao(usuarioInativacao.getObservacao())
+            .situacao(ESituacao.I)
+            .ferias(usuarioFeriasService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .afastamento(usuarioAfastamentoService
+                .save(usuario, usuarioInativacao).orElse(null))
+            .build());
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         repository.save(usuario);
@@ -918,8 +919,8 @@ public class UsuarioService {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
         return usuarios.stream()
-                .map(UsuarioResponse::of)
-                .collect(Collectors.toList());
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
     }
 
     @Transactional
@@ -1211,7 +1212,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId,
+            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name()))
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1259,9 +1261,9 @@ public class UsuarioService {
         return IntStream.concat(
             equipeVendaService
                 .getUsuariosPermitidos(List.of(
-                    CodigoCargo.SUPERVISOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO,
-                    CodigoCargo.VENDEDOR_OPERACAO
+                    SUPERVISOR_OPERACAO,
+                    ASSISTENTE_OPERACAO,
+                    VENDEDOR_OPERACAO
                 ))
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
@@ -1290,7 +1292,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdsSubordinadosDaHierarquia(Integer usuarioId, String codigoCargo) {
-        return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
+        return repository.getSubordinadosPorCargo(usuarioId, Set.of(codigoCargo))
             .stream()
             .map(row -> objectToInteger(row[POSICAO_ZERO]))
             .collect(Collectors.toList());
@@ -1322,14 +1324,14 @@ public class UsuarioService {
 
     public void reativarUsuariosInativosComAfastamentoTerminando(LocalDate dataFimAfastamento) {
         usuarioAfastamentoService.getUsuariosInativosComAfastamentoEmAberto(dataFimAfastamento)
-                .forEach(usuario -> ativar(
-                        UsuarioAtivacaoDto
-                                .builder()
-                                .idUsuario(usuario.getId())
-                                .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
-                                .idUsuarioAtivacao(usuario.getId())
-                                .build()
-                ));
+            .forEach(usuario -> ativar(
+                UsuarioAtivacaoDto
+                    .builder()
+                    .idUsuario(usuario.getId())
+                    .observacao("USUÁRIO REATIVADO AUTOMATICAMENTE DEVIDO AO TÉRMINO DO AFASTAMENTO")
+                    .idUsuarioAtivacao(usuario.getId())
+                    .build()
+            ));
     }
 
     @Transactional
@@ -1345,10 +1347,10 @@ public class UsuarioService {
 
     public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
         return partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(ids -> repository.findUsuariosByIds(ids))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+            .stream()
+            .map(ids -> repository.findUsuariosByIds(ids))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     public UsuarioResponse findById(Integer id) {
