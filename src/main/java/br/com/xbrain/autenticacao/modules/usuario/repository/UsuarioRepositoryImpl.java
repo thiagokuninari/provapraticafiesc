@@ -57,6 +57,7 @@ import static com.querydsl.jpa.JPAExpressions.select;
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     private static final int TRINTA_DOIS_DIAS = 32;
+    private static final Integer CARGO_SUPERVISOR_ID = 10;
 
     @Autowired
     private EntityManager entityManager;
@@ -660,12 +661,35 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
+        var subclusterIdList = getSubclustersUsuario(usuarioId)
+            .stream()
+            .map(SubCluster::getId)
+            .collect(Collectors.toList());
+
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.bean(UsuarioNomeResponse.class,
+                usuario.id,
+                usuario.nome))
+            .from(usuarioHierarquia)
+            .innerJoin(usuarioHierarquia.usuario, usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(usuario.cidades, usuarioCidade)
+            .innerJoin(usuarioCidade.cidade, cidade)
+            .innerJoin(cidade.subCluster, subCluster)
+            .where(subCluster.id.in(subclusterIdList)
+                .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
+            .distinct()
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioSituacaoResponse.class,
-                    usuario.id,
-                    usuario.nome,
-                    usuario.situacao))
+                usuario.id,
+                usuario.nome,
+                usuario.situacao))
             .from(usuario)
             .where(usuario.id.in(usuariosIds))
             .fetch();
