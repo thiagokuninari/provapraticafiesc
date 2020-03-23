@@ -92,7 +92,8 @@ public class UsuarioRepositoryTest {
             .containsExactlyInAnyOrder(
                 tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"),
                 tuple(113, "RENATO@TESTE.COM"),
-                tuple(119, "EXECUTIVOHUNTER3@TESTE.COM"));    }
+                tuple(119, "EXECUTIVOHUNTER3@TESTE.COM"));
+    }
 
     @Test
     public void findUsuarioByIds_deveRetornarUsuarios_quandoForPassadoIdsDosUsuarios() {
