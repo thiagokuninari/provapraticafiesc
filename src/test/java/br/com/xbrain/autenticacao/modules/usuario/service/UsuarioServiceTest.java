@@ -185,8 +185,14 @@ public class UsuarioServiceTest {
                 .extracting(UsuarioComLoginNetSalesResponse::getId,
                         UsuarioComLoginNetSalesResponse::getNome,
                         UsuarioComLoginNetSalesResponse::getLoginNetSales,
-                        UsuarioComLoginNetSalesResponse::getNivelCodigo)
-                .containsExactly(umUsuarioComLogin, "UM USUARIO COM LOGIN", "UM LOGIN NETSALES", "ATIVO_LOCAL_PROPRIO");
+                        UsuarioComLoginNetSalesResponse::getNivelCodigo,
+                        UsuarioComLoginNetSalesResponse::getCpfNetSales)
+                .containsExactly(
+                        umUsuarioComLogin,
+                        "UM USUARIO COM LOGIN",
+                        "UM LOGIN NETSALES",
+                        "ATIVO_LOCAL_PROPRIO",
+                        "123.456.887-91");
     }
 
     @Test
@@ -222,6 +228,7 @@ public class UsuarioServiceTest {
                         .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
                         .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
                         .build())
+                .cpf("123.456.887-91")
                 .build();
     }
 

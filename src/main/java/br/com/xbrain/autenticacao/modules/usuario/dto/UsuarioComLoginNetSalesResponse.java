@@ -20,6 +20,7 @@ public class UsuarioComLoginNetSalesResponse {
     private String loginNetSales;
     private String nivelCodigo;
     private String razaoSocialEmpresa;
+    private String cpfNetSales;
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
         return UsuarioComLoginNetSalesResponse.builder()
@@ -28,6 +29,7 @@ public class UsuarioComLoginNetSalesResponse {
                 .loginNetSales(usuario.getLoginNetSales())
                 .nivelCodigo(usuario.getNivelCodigo().name())
                 .razaoSocialEmpresa(CLARO_SA)
+                .cpfNetSales(usuario.getCpf())
                 .build();
     }
 
