@@ -192,6 +192,9 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    gerador-lead:
+      #url: http://localhost:8102
+      url: https://api-dev.conexaoclarobrasil.com.br/gerador-lead/
 
 flyway:
   enabled: true
@@ -219,6 +222,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    gerador-lead:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gerador-lead.url}
 
   host:
     connect-timeout-millis: 1800000
