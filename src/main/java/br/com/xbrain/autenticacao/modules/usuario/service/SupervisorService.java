@@ -32,7 +32,7 @@ public class SupervisorService {
 
     private static final Set<ECanal> CANAIS_PADRAO = Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO);
 
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId) {
+    public List<UsuarioResponse> getAssistentesEVendedoresDoSupervisor(Integer supervisorId) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         var canais = CANAIS_PADRAO;
         if (!isEmpty(usuarioAutenticado) && !usuarioAutenticado.getCanais().isEmpty()) {

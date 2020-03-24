@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
@@ -41,6 +42,9 @@ public class SupervisorControllerTest {
     @MockBean
     private SupervisorService supervisorService;
 
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+
     @Test
     public void getAssistentesEVendedores_isUnauthorized_quandoNaoPassarAToken() throws Exception {
         mvc.perform(get("/api/supervisor/assistentes-vendedores/1")
@@ -59,7 +63,7 @@ public class SupervisorControllerTest {
 
     @Test
     public void getAssistentesEVendedores_deveRetornarOsAssistentesEVendedores_doSupervisorPassado() throws Exception {
-        when(supervisorService.getAssistentesEVendedoresD2dDoSupervisor(any()))
+        when(supervisorService.getAssistentesEVendedoresDoSupervisor(any()))
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
