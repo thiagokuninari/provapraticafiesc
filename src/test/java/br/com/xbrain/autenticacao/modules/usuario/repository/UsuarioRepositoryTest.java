@@ -87,7 +87,7 @@ public class UsuarioRepositoryTest {
     public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
             .extracting("id", "email")
-            .contains(
+            .containsExactlyInAnyOrder(
                 tuple(110, "RENATO@TESTE.COM"),
                 tuple(112, "EXECUTIVOHUNTER3@TESTE.COM")
             );

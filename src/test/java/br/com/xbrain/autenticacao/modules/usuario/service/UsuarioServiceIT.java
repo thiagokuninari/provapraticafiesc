@@ -9,7 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -93,7 +93,7 @@ public class UsuarioServiceIT {
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
-    private EquipeVendaClient equipeVendaClient;
+    private EquipeVendaD2dClient equipeVendaD2dClient;
     @MockBean
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
@@ -161,6 +161,21 @@ public class UsuarioServiceIT {
             .builder()
             .idUsuario(100)
             .codigoMotivoInativacao(CodigoMotivoInativacao.DESCREDENCIADO)
+            .idUsuarioInativacao(101)
+            .build();
+        service.inativar(usuarioInativacao);
+        Usuario usuario = service.findByIdCompleto(100);
+        assertEquals(usuario.getSituacao(), ESituacao.I);
+        verify(equipeVendaMqSender, never()).sendInativar(any());
+    }
+
+    @Test
+    public void inativar_deveInativarUmUsuario_seAtivoEComMotivoInativo() {
+        when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.empty());
+        var usuarioInativacao = UsuarioInativacaoDto
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.INATIVO)
             .idUsuarioInativacao(101)
             .build();
         service.inativar(usuarioInativacao);
@@ -855,7 +870,7 @@ public class UsuarioServiceIT {
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarVazio() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
-        when(equipeVendaClient.getVendedoresPorEquipe(any())).thenReturn(List.of());
+        when(equipeVendaD2dClient.getVendedoresPorEquipe(any())).thenReturn(List.of());
         assertThatThrownBy(() -> service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .equipesVendasId(List.of(100))
             .build()))
@@ -867,7 +882,7 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(equipeVendaClient.getVendedoresPorEquipe(any()))
+        when(equipeVendaD2dClient.getVendedoresPorEquipe(any()))
             .thenReturn(List.of(umUsuarioResponse(100),
                 umUsuarioResponse(111),
                 umUsuarioResponse(104),

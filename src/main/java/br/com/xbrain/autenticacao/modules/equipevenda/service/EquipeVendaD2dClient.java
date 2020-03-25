@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 @FeignClient(name = "equipeVendaClient",
-        url = "${app-config.services.equipe-venda.url}",
-        configuration = FeignSkipBadRequestsConfiguration.class)
-public interface EquipeVendaClient {
+    url = "${app-config.services.equipe-venda.url}",
+    configuration = FeignSkipBadRequestsConfiguration.class)
+public interface EquipeVendaD2dClient {
 
     String EQUIPE_VENDAS_ENDPOINT = "api/equipes-vendas";
     String USUARIOS_EQUIPE_ENDPOINT = "api/usuarios-equipe";
@@ -30,6 +30,10 @@ public interface EquipeVendaClient {
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
+    List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
+                                                                  @RequestParam("equipeId") Integer equipeId);
 
     @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
     List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);

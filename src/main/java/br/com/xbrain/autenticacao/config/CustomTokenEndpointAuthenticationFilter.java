@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
@@ -22,7 +22,7 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
     private static final String CONTENT_TYPE_TOKEN_REQUEST = "multipart/form-data";
 
     @Autowired
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -35,7 +35,7 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
 
     private boolean verificarPausaCasoPossuaUsername(ServletRequest servletRequest) {
         var username = servletRequest.getParameter("username");
-        return Objects.nonNull(username) && equipeVendaService.verificaPausaEmAndamento(username);
+        return Objects.nonNull(username) && equipeVendaD2dService.verificaPausaEmAndamento(username);
     }
 
     private boolean isValidTokenRequest(ServletRequest servletRequest) {

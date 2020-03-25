@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -83,7 +83,7 @@ public class UsuarioGerenciaControllerTest {
     @MockBean
     private FileService fileService;
     @MockBean
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
@@ -103,7 +103,6 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-
     public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
         mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -272,6 +271,32 @@ public class UsuarioGerenciaControllerTest {
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoUnidadeNegocioVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setUnidadesNegociosId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoEmpresaVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setEmpresasId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test

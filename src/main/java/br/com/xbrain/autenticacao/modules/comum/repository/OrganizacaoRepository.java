@@ -8,4 +8,6 @@ import java.util.List;
 public interface OrganizacaoRepository extends CrudRepository<Organizacao, Integer> {
 
     List<Organizacao> findAll();
+
+    List<Organizacao> findAllByNiveisIdIn(Integer nivelId);
 }
