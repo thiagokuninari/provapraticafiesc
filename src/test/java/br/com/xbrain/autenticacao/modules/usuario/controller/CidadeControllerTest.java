@@ -42,16 +42,8 @@ public class CidadeControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/cidades")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     public void deveRetornarTodosPorUf() throws Exception {
         mvc.perform(get("/api/cidades?idUf=1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(8)));
