@@ -1347,7 +1347,7 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
-        return repository.findAllAtivosByNivelOperacao();
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 }

@@ -4,11 +4,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,10 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ActiveProfiles("test")
-@SpringBootTest
 @RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_usuario_repository.sql"})
+@DataJpaTest
+@Sql("classpath:/tests_usuario_repository.sql")
 public class UsuarioRepositoryTest {
 
     @Autowired
@@ -98,5 +96,15 @@ public class UsuarioRepositoryTest {
                 tuple(108, "EXECUTIVO 2"),
                 tuple(110, "HUNTER 1"),
                 tuple(111, "HUNTER 2"));
+    }
+
+    @Test
+    public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2")
+            );
     }
 }

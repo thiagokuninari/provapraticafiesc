@@ -96,5 +96,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioSituacaoResponse> findUsuariosByIds(List<Integer> usuariosIds);
 
-    List<SelectResponse> findAllAtivosByNivelOperacao();
+    List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 }

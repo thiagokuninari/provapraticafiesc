@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -81,5 +83,27 @@ public class UsuarioServiceTest {
             .containsExactlyInAnyOrder(
                 tuple(1, "JONATHAN", ESituacao.A),
                 tuple(2, "FLAVIA", ESituacao.I));
+    }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
+        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
+            .thenReturn(umaListaSelectResponse());
+
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(100, "JOSÉ"),
+                tuple(101, "JOÃO")
+            );
+
+        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    private List<SelectResponse> umaListaSelectResponse() {
+        return List.of(
+            SelectResponse.of(100, "JOSÉ"),
+            SelectResponse.of(101, "JOÃO")
+        );
     }
 }

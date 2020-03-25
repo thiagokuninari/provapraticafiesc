@@ -51,9 +51,9 @@ public class UsuarioController {
             usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
-    @GetMapping("ativos/nivel/operacao")
-    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
-        return usuarioService.buscarUsuariosAtivosNivelOperacao();
+    @GetMapping("ativos/nivel/operacao/canal-aa")
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa();
     }
 
     @PutMapping("ativar-socio")
