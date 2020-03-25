@@ -15,8 +15,6 @@ app-config:
       url: http://172.10.10.22:8089
     contato-crn:
       url: http://172.10.10.65:8084
-    gerador-lead:
-      url: http://172.10.10.103:8102
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
