@@ -25,6 +25,7 @@ public interface AgenteAutorizadoClient {
     String API_COLABORADOR_VENDAS = "api/colaboradores-vendas";
     String API_AGENTE_AUTORIZADO_PERMITIDOS = "api/agentes-autorizados-permitidos";
     String API_USUARIO_AGENTE_AUTORIZADO = "api/usuarios-agente-autorizado";
+    String API_AGENTE_AUTORIZADO_USUARIO = "api/agentes-autorizados-usuario";
 
     @GetMapping(API_AGENTE_AUTORIZADO + "/agente-autorizado-por-cnpj")
     AgenteAutorizadoResponse getAaByCpnj(@RequestParam Map request);
@@ -74,6 +75,6 @@ public interface AgenteAutorizadoClient {
         @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
         @PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/subordinados")
+    @GetMapping(API_AGENTE_AUTORIZADO_USUARIO + "/subordinados")
     List<Integer> getIdsUsuariosPermitidosDoUsuario();
 }
