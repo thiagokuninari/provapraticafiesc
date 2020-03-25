@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.ObjectUtils;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 
@@ -17,6 +18,13 @@ public class NivelPredicate {
 
     public NivelPredicate isAtivo() {
         builder.and(nivel.situacao.eq(ESituacao.A));
+        return this;
+    }
+
+    public NivelPredicate semCodigoNivel(CodigoNivel codigoNivel) {
+        if (!ObjectUtils.isEmpty(codigoNivel)) {
+            builder.and(nivel.codigo.ne(codigoNivel));
+        }
         return this;
     }
 
