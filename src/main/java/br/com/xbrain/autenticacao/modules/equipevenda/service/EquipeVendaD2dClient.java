@@ -37,4 +37,7 @@ public interface EquipeVendaD2dClient {
 
     @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
     List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);
+
+    @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select/usuarios")
+    List<SelectResponse> getUsuariosDaEquipe(@RequestParam Map filtros);
 }

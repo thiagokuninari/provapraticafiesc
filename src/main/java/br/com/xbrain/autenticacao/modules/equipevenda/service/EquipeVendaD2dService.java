@@ -104,4 +104,20 @@ public class EquipeVendaD2dService {
             return List.of();
         }
     }
+
+    public List<Integer> getUsuariosDaEquipe(List<Integer> equipesVendasId) {
+        try {
+            return equipeVendaD2dClient.getUsuariosDaEquipe(EquipeVendaUsuarioFiltros.builder()
+                .equipeVendaIds(equipesVendasId)
+                .ativo(Boolean.TRUE)
+                .build()
+                .toMap()).stream()
+                .map(SelectResponse::getValueInt)
+                .collect(Collectors.toList());
+
+        } catch (Exception ex) {
+            log.error("Erro ao tentar recuperar usuários da equipe.", ex);
+            return List.of();
+        }
+    }
 }

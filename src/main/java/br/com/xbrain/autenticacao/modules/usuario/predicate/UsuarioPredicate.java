@@ -366,6 +366,11 @@ public class UsuarioPredicate {
             }
             idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
                 incluirProprio));
+
+            daCarteiraHierarquiaOuUsuarioCadastro(
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                usuario.getUsuario().getId());
+
             return daCarteiraHierarquiaOuUsuarioCadastro(List.copyOf(idDosUsuariosSubordinados),
                 usuario.getUsuario().getId());
         }

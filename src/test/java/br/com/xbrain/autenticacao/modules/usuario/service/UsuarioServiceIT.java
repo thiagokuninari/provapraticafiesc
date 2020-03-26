@@ -882,7 +882,7 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(equipeVendaD2dClient.getVendedoresPorEquipe(any()))
+        when(equipeVendaD2dClient.getUsuariosDaEquipe(any()))
             .thenReturn(List.of(umUsuarioResponse(100),
                 umUsuarioResponse(111),
                 umUsuarioResponse(104),

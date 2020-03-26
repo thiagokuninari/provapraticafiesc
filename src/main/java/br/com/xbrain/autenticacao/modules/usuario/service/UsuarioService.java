@@ -1389,7 +1389,7 @@ public class UsuarioService {
 
     private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         if (!isEmpty(usuarioFiltros.getEquipesVendasId())) {
-            var usuarios = equipeVendaD2dService.getVendedoresPorEquipe(usuarioFiltros.getEquipesVendasId());
+            var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasId());
             if (usuarios.isEmpty()) {
                 throw new ValidacaoException("Nenhum usuário desta equipe de vendas foi encontrado");
             }
