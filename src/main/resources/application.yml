@@ -110,6 +110,7 @@ app-config:
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
     atualizar-permissao-gerador-lead: atualizar-permissao-gerador-lead.queue
+    atualizar-permissao-gerador-lead-failure: atualizar-permissao-gerador-lead-failure.queue
 
   oauth-clients:
     autenticacao-api:

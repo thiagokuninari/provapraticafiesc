@@ -17,6 +17,7 @@ public class AgenteAutorizadoGeradorLeadDto {
 
     private Integer id;
     private Integer usuarioProprietarioId;
+    private Integer usuarioCadastroId;
     private Eboolean geradorLead;
     private List<Integer> colaboradoresVendasIds;
 

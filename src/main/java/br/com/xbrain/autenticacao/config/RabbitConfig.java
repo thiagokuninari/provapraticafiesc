@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+    private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+    private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
     @Value("${app-config.topic.autenticacao}")
     private String autenticacaoTopic;
@@ -80,6 +79,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.atualizar-permissao-gerador-lead}")
     private String atualizarPermissaoGeradorLeadMq;
 
+    @Value("${app-config.queue.atualizar-permissao-gerador-lead-failure}")
+    private String atualizarPermissaoGeradorLeadFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -97,7 +99,16 @@ public class RabbitConfig {
 
     @Bean
     Queue atualizarPermissaoGeradorLeadMq() {
-        return new Queue(atualizarPermissaoGeradorLeadMq, false);
+        return QueueBuilder
+            .durable(atualizarPermissaoGeradorLeadMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoGeradorLeadFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoGeradorLeadFailureMq() {
+        return QueueBuilder.durable(atualizarPermissaoGeradorLeadFailureMq).build();
     }
 
     @Bean
@@ -203,6 +214,12 @@ public class RabbitConfig {
     @Bean
     public Binding atualizarPermissaoGeradorLeadBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoGeradorLeadMq()).to(exchange).with(atualizarPermissaoGeradorLeadMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoGeradorLeadFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoGeradorLeadFailureMq())
+            .to(exchange).with(atualizarPermissaoGeradorLeadFailureMq);
     }
 
     @Bean

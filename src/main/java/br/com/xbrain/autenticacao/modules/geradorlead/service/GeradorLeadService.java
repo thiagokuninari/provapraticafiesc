@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.*;
@@ -27,6 +27,8 @@ public class GeradorLeadService {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Transactional
     public void atualizarPermissaoGeradorLead(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
@@ -35,7 +37,9 @@ public class GeradorLeadService {
             salvarPermissoesEspeciais(permissoes);
             gerarUsuarioHistorico(getUsuariosIds(permissoes), true);
         } else if (!agenteAutorizadoGeradorLeadDto.isGeradorLead()) {
-            var usuariosIds = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds();
+            var usuariosIds = agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds().stream()
+                .filter(usuarioId -> usuarioRepository.exists(usuarioId))
+                .collect(Collectors.toList());
             usuariosIds.add(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId());
 
             removerPermissoesEspeciais(usuariosIds);
@@ -67,38 +71,43 @@ public class GeradorLeadService {
     }
 
     private void removerPermissoesEspeciais(List<Integer> usuarios) {
-        permissaoEspecialRepository.deletarPermissaoEspecialBy(
-            List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, FUNCIONALIDADE_TRATAR_LEAD_ID),
-            usuarios);
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_GERADOR_LEADS_PARA_AA, usuarios);
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
-        var permissoesEspeciais = getPermissoesEspeciaisDosVendedores(agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds());
-        getPermissaoEspecialSocioPrincipal(agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId())
-            .ifPresent(permissoesEspeciais::add);
+        var permissoesEspeciais = getPermissoesEspeciaisDosVendedores(agenteAutorizadoGeradorLeadDto.getColaboradoresVendasIds(),
+                                                                    agenteAutorizadoGeradorLeadDto.getUsuarioCadastroId());
+        permissoesEspeciais.addAll(getPermissaoEspecialSocioPrincipal(
+            agenteAutorizadoGeradorLeadDto.getUsuarioProprietarioId(),
+            agenteAutorizadoGeradorLeadDto.getUsuarioCadastroId()));
         return permissoesEspeciais;
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisDosVendedores(List<Integer> vendedoresIds) {
+    private List<PermissaoEspecial> getPermissoesEspeciaisDosVendedores(List<Integer> vendedoresIds,
+                                                                        Integer usuarioCadastroId) {
         return vendedoresIds.stream()
+            .filter(vendedorId -> usuarioRepository.findById(vendedorId)
+                .map(usuario -> !usuario.getSituacao().equals(ESituacao.R))
+                .orElse(false))
             .filter(vendedorId ->
                 permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
                     vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID).isEmpty())
-            .map(vendedorId -> criarPermissaoEspecial(vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID))
+            .map(vendedorId -> criarPermissaoEspecial(vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID, usuarioCadastroId))
             .collect(Collectors.toList());
     }
 
-    private Optional<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId) {
-        return permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
-            socioPrincipalId, FUNCIONALIDADE_GERENCIAR_LEAD_ID).isEmpty()
-            ? Optional.of(criarPermissaoEspecial(socioPrincipalId, FUNCIONALIDADE_GERENCIAR_LEAD_ID))
-            : Optional.empty();
+    private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId, Integer usuarioCadastroId) {
+        return FUNCIONALIDADES_GERADOR_LEADS_PARA_AA.stream()
+            .filter(funcionalidadeId -> permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
+                socioPrincipalId, FUNCIONALIDADE_GERENCIAR_LEAD_ID).isEmpty())
+            .map(funcionalidadeId -> criarPermissaoEspecial(socioPrincipalId, funcionalidadeId, usuarioCadastroId))
+            .collect(Collectors.toList());
     }
 
-    private PermissaoEspecial criarPermissaoEspecial(Integer usuarioId, Integer funcionalidadeId) {
+    private PermissaoEspecial criarPermissaoEspecial(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
         return PermissaoEspecial.builder()
             .funcionalidade(new Funcionalidade(funcionalidadeId))
-            .usuarioCadastro(new Usuario(usuarioId))
+            .usuarioCadastro(new Usuario(usuarioCadastroId))
             .usuario(new Usuario(usuarioId))
             .dataCadastro(LocalDateTime.now())
             .build();

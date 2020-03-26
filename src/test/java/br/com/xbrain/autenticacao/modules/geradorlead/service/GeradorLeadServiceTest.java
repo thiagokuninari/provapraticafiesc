@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.geradorlead.dto.AgenteAutorizadoGeradorLeadDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -15,8 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.FUNCIONALIDADE_GERENCIAR_LEAD_ID;
-import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.FUNCIONALIDADE_TRATAR_LEAD_ID;
+import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,6 +29,8 @@ public class GeradorLeadServiceTest {
     private PermissaoEspecialRepository permissaoEspecialRepository;
     @Mock
     private UsuarioHistoricoService usuarioHistoricoService;
+    @Mock
+    private UsuarioRepository usuarioRepository;
 
     @Test
     public void atualizarPermissaoGeradorLead_deveSalvarPermissoesEspeciais_quandoUsuariosNaoPossuiremAsPermissoes() {
@@ -61,16 +63,16 @@ public class GeradorLeadServiceTest {
     public void atualizarPermissaoGeradorLead_deveRemoverPermissaoGeradorLead_quandoAaNaoForGeradorDeLead() {
         var aaNaoGeradorLead = umAgenteAutorizadoGeradorLeadDto();
         aaNaoGeradorLead.setGeradorLead(Eboolean.F);
+        when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoGeradorLead(aaNaoGeradorLead);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                List.of(FUNCIONALIDADE_GERENCIAR_LEAD_ID, FUNCIONALIDADE_TRATAR_LEAD_ID),
+                FUNCIONALIDADES_GERADOR_LEADS_PARA_AA,
                 List.of(100, 102, 10));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
-        verify(permissaoEspecialRepository, times(1)).deletarPermissaoEspecialBy(anyList(), anyList());
         verify(usuarioHistoricoService, times(1)).save(anyList());
     }
 
@@ -78,6 +80,7 @@ public class GeradorLeadServiceTest {
         return AgenteAutorizadoGeradorLeadDto.builder()
             .colaboradoresVendasIds(Lists.newArrayList(100, 102))
             .usuarioProprietarioId(10)
+            .usuarioCadastroId(999)
             .id(30)
             .build();
     }
