@@ -11,6 +11,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -39,4 +40,9 @@ public class UsuarioMqRequest {
     private Set<ECanal> canais;
     private boolean realocado;
     private Integer agenteAutorizadoId;
+    private boolean isCadastroSocioPrincipal;
+
+    public boolean isNovoCadastroSocioPrincipal() {
+        return Objects.isNull(id) && isCadastroSocioPrincipal;
+    }
 }
