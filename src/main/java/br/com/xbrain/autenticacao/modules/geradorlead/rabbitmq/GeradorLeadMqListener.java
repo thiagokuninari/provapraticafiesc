@@ -17,7 +17,6 @@ public class GeradorLeadMqListener {
     @RabbitListener(queues = "${app-config.queue.atualizar-permissao-gerador-lead}")
     public void atualizarPermissaoGeradorLead(AgenteAutorizadoGeradorLeadDto agenteAutorizadoGeradorLeadDto) {
         try {
-            System.out.println("Mensagem chegou: " + agenteAutorizadoGeradorLeadDto);
             service.atualizarPermissaoGeradorLead(agenteAutorizadoGeradorLeadDto);
         } catch (Exception ex) {
             log.error("Erro ao processar fila de mensagem de atualizar permissões de gerador de leads", ex);
