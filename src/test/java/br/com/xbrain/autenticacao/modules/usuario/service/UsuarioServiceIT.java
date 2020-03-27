@@ -12,10 +12,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClie
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -24,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -42,10 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
@@ -725,7 +720,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
-        usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
     }
 
@@ -737,6 +731,31 @@ public class UsuarioServiceIT {
             .email("USUARIO@TESTE.COM")
             .cargoCodigo(GERENTE_OPERACAO)
             .nivelCodigo(OPERACAO.name())
+            .build();
+    }
+
+    @Test
+    public void saveFromQueue_salvarEEnviarParaFilaDeSocioPrincipalSalvoComSucesso_quandoFlagSocioPrincipalForTrue() {
+        usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
+
+        verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(1)
+            .usuarioCadastroNome("RENATO")
+            .nome("JOSÉ")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("333.333.333-11")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("renato@hotmail.com")
+            .isCadastroSocioPrincipal(true)
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CodigoEmpresa.CLARO_RESIDENCIAL))
             .build();
     }
 }
