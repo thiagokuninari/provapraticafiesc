@@ -64,6 +64,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERADOR_LEADS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -409,7 +410,7 @@ public class UsuarioService {
 
     private Usuario criarUsuarioNovoGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
         var usuario = UsuarioGeradorLeadsMqDto.criarUsuarioNovo(usuarioDto);
-        usuario.setCargo(getCargo(CodigoCargo.GERADOR_LEADS));
+        usuario.setCargo(getCargo(GERADOR_LEADS));
         usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.GERADOR_LEADS));
         usuario.setUnidadesNegocios(unidadeNegocioRepository
             .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
