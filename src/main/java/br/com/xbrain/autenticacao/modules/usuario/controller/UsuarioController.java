@@ -314,4 +314,9 @@ public class UsuarioController {
     public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
+
+    @GetMapping("{id}/assistentes-vendedores/mesmos-subclusters/ids")
+    public List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(@PathVariable Integer id) {
+        return usuarioService.findUsuariosIdsBySubclustersDoUsuarioId(id);
+    }
 }

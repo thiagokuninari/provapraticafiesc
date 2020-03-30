@@ -34,6 +34,8 @@ import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +45,12 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
+
+    private static final int GERENTE_OPERACAO_SEM_USUARIOS = 9999;
+    private static final int GERENTE_OPERACAO_COM_USUARIOS = 9998;
+    private static final List<Integer> USUARIOS_MESMO_SUBCLUSTER = IntStream.range(1000, 1100)
+            .boxed()
+            .collect(Collectors.toList());
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -245,6 +253,24 @@ public class UsuarioServiceTest {
             .containsExactlyInAnyOrder(
                 tuple(1, "JONATHAN", ESituacao.A),
                 tuple(2, "FLAVIA", ESituacao.I));
+    }
+
+    @Test
+    public void findUsuariosIdsBySubclustersDoUsuarioId_deveRetornarListaUsuarios_seForemDoMesmoSubcluster() {
+        when(usuarioRepository.findUsuariosIdsBySubclustersDoUsuarioId(eq(GERENTE_OPERACAO_COM_USUARIOS)))
+                .thenReturn(USUARIOS_MESMO_SUBCLUSTER);
+
+        assertThat(usuarioService.findUsuariosIdsBySubclustersDoUsuarioId(GERENTE_OPERACAO_COM_USUARIOS))
+                .containsAll(USUARIOS_MESMO_SUBCLUSTER);
+    }
+
+    @Test
+    public void findUsuariosIdsBySubclustersDoUsuarioId_deveRetornarListaVazia_seNaoForemDoMesmoSubcluster() {
+        when(usuarioRepository.findUsuariosIdsBySubclustersDoUsuarioId(eq(GERENTE_OPERACAO_SEM_USUARIOS)))
+                .thenReturn(List.of());
+
+        assertThat(usuarioService.findUsuariosIdsBySubclustersDoUsuarioId(GERENTE_OPERACAO_SEM_USUARIOS))
+                .isEmpty();
     }
 
     private Usuario umUsuarioBackoffice() {

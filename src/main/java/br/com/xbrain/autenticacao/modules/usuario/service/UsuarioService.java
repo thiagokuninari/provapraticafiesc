@@ -1398,4 +1398,8 @@ public class UsuarioService {
                 .collect(Collectors.toList())
         );
     }
+
+    public List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(Integer usuarioSuperiorId) {
+        return repository.findUsuariosIdsBySubclustersDoUsuarioId(usuarioSuperiorId);
+    }
 }

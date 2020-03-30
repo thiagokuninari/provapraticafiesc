@@ -52,6 +52,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.us
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
+import static com.querydsl.jpa.JPAExpressions.selectDistinct;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
@@ -701,5 +702,32 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(cargo.id.eq(cargoId)))
             .orderBy(usuario.id.asc())
             .fetch();
+    }
+
+    @Override
+    public List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(Integer usuarioSuperiorId) {
+        return new JPAQueryFactory(entityManager)
+                .selectDistinct(usuario.id)
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .innerJoin(cargo.nivel, nivel)
+                .innerJoin(usuario.cidades, usuarioCidade)
+                .innerJoin(usuarioCidade.cidade, cidade)
+                .innerJoin(cidade.subCluster, subCluster)
+                .where(subCluster.id.in(
+                        selectDistinct(subCluster.id)
+                                .from(subCluster)
+                                .innerJoin(subCluster.cidades, cidade)
+                                .innerJoin(cidade.cidadeUsuarios, usuarioCidade)
+                                .innerJoin(usuarioCidade.usuario, usuario)
+                                .innerJoin(usuario.cargo, cargo)
+                                .innerJoin(cargo.nivel, nivel)
+                                .where(usuarioCidade.usuario.id.eq(usuarioSuperiorId)
+                                        .and(cargo.codigo.in(GERENTE_OPERACAO, COORDENADOR_OPERACAO, ASSISTENTE_OPERACAO))
+                                        .and(nivel.codigo.eq(OPERACAO))))
+                        .and(usuario.situacao.eq(A))
+                        .and(nivel.codigo.eq(OPERACAO)
+                        .and(cargo.codigo.in(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO))))
+                .fetch();
     }
 }
