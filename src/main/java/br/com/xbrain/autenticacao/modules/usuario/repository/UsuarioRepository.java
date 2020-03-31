@@ -92,4 +92,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Modifying
     @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
+
+    List<Usuario> findByOrganizacaoId(Integer id);
 }

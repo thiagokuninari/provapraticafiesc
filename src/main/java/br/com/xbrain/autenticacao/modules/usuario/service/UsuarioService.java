@@ -1398,4 +1398,10 @@ public class UsuarioService {
                 .collect(Collectors.toList())
         );
     }
+
+    public List<SelectResponse> findUsuariosByOrganizacao(Integer id) {
+        return repository.findByOrganizacaoId(id).stream()
+            .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
+    }
 }
