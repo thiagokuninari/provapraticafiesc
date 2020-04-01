@@ -41,7 +41,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
-    public void deslogarUsuariosInativados_deveDeslogarOsUsuariosInativarEAtualizarParaDeslogado_quandoExistirRegistrosNaTabelaComUsuarioAtivo() {
+    public void deslogarUsuariosInativados_deveDeslogarsInativarAtualizarParaDeslogado_quandoExistirNaTabelaComUsuarioAtivo() {
         when(repository.findAllByDeslogado(any())).thenReturn(umaListaDeUsuariosParaDeslogar());
         when(usuarioRepository.findById(anyInt())).thenReturn(umUsuarioComSituacao(ESituacao.A));
 
@@ -58,7 +58,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     }
 
     @Test
-    public void deslogarUsuariosInativados_deveDeslogarOsUsuariosEAtualizarParaDeslogado_quandoExistirRegistrosNaTabelaComUsuarioInativo() {
+    public void deslogarUsuariosInativados_deveDeslogarAtualizarParaDeslogado_quandoExistirNaTabelaComUsuarioInativo() {
         when(repository.findAllByDeslogado(any())).thenReturn(umaListaDeUsuariosParaDeslogar());
         when(usuarioRepository.findById(anyInt())).thenReturn(umUsuarioComSituacao(ESituacao.I));
 

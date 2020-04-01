@@ -44,6 +44,7 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
         } else {
             log.info("\nNão foram encontrados usuários bloqueados.");
         }
+        zerarVariaveisGlobais();
     }
 
     private void gerarRelatorioDeLogsDeBloqueio(Integer totalRegistrosBloqueados) {
@@ -51,6 +52,11 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
         var totalDeslogados = format("\nUsuários deslogados por excesso de uso de API: %d", qtdUsuariosDeslogados);
         var totalInativados = format("\nUsuários inativados: %d", qtdUsuariosInativados);
         log.info(concat(totalRegistros, totalDeslogados, totalInativados));
+    }
+
+    private void zerarVariaveisGlobais() {
+        qtdUsuariosInativados = 0;
+        qtdUsuariosDeslogados = 0;
     }
 
     private void deslogarUsuarios(List<UsuarioParaDeslogar> usuarios) {
