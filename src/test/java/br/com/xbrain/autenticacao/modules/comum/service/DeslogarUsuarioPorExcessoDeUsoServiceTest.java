@@ -1,10 +1,13 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +37,13 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     private UsuarioParaDeslogarRepository repository;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private UsuarioRepository usuarioRepository;
 
     @Test
-    public void deslogarUsuariosInativados_deveDeslogarOsUsuariosEAtualizarParaDeslogado_quandoExistirRegistrosNaTabela() {
+    public void deslogarUsuariosInativados_deveDeslogarOsUsuariosInativarEAtualizarParaDeslogado_quandoExistirRegistrosNaTabelaComUsuarioAtivo() {
         when(repository.findAllByDeslogado(any())).thenReturn(umaListaDeUsuariosParaDeslogar());
+        when(usuarioRepository.findById(anyInt())).thenReturn(umUsuarioComSituacao(ESituacao.A));
 
         service.deslogarUsuariosInativados();
 
@@ -47,6 +53,24 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
                 .map(UsuarioParaDeslogar::getUsuarioId)
                 .anyMatch(integer -> Objects.equals(integer, usuarioId))));
 
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+        verify(repository, times(4)).save(any(UsuarioParaDeslogar.class));
+    }
+
+    @Test
+    public void deslogarUsuariosInativados_deveDeslogarOsUsuariosEAtualizarParaDeslogado_quandoExistirRegistrosNaTabelaComUsuarioInativo() {
+        when(repository.findAllByDeslogado(any())).thenReturn(umaListaDeUsuariosParaDeslogar());
+        when(usuarioRepository.findById(anyInt())).thenReturn(umUsuarioComSituacao(ESituacao.I));
+
+        service.deslogarUsuariosInativados();
+
+        verify(autenticacaoService, times(4))
+            .logout(intThat(usuarioId -> umaListaDeUsuariosParaDeslogar()
+                .stream()
+                .map(UsuarioParaDeslogar::getUsuarioId)
+                .anyMatch(integer -> Objects.equals(integer, usuarioId))));
+
+        verify(usuarioRepository, times(0)).save(any(Usuario.class));
         verify(repository, times(4)).save(any(UsuarioParaDeslogar.class));
     }
 
@@ -100,6 +124,17 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
             new UsuarioParaDeslogar(2, LocalDateTime.now(), Eboolean.F),
             new UsuarioParaDeslogar(3, LocalDateTime.now(), Eboolean.F),
             new UsuarioParaDeslogar(4, LocalDateTime.now(), Eboolean.F));
+    }
+
+    private Optional<Usuario> umUsuarioComSituacao(ESituacao situacao) {
+        return Optional.of(
+            Usuario
+                .builder()
+                .id(1)
+                .email("TESTE@TESTE.COM")
+                .situacao(situacao)
+                .build()
+        );
     }
 
     private List<UsuarioParaDeslogar> umaListaDeUsuariosDeslogados() {
