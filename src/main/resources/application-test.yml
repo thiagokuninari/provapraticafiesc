@@ -14,13 +14,9 @@ spring:
     password:
     driverClassName: org.hsqldb.jdbcDriver
 
-#  redis:
-#    host: 192.168.1.40
-#    port: 6381
-
   redis:
-    host: 127.0.0.1
-    port: 6379
+    host: 192.168.1.40
+    port: 6381
 
 flyway:
   enabled: false

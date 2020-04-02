@@ -87,8 +87,6 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaService equipeVendaService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
-    @MockBean
-    private AutenticacaoService autenticacaoService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -433,7 +431,6 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(umRequestDadosAcessoSenha())))
                 .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
-        verify(autenticacaoService, times(1)).forcarLogoutGeradorLeads(any());
     }
 
     @Test
@@ -448,7 +445,6 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(objTest)))
                 .andExpect(status().isOk());
         verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
-        verify(autenticacaoService, times(1)).forcarLogoutGeradorLeads(any());
     }
 
     @Test
