@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
@@ -437,7 +436,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveAlterarASenhaDoUsuarioIgnorandoSenhaAtual() throws Exception {
         UsuarioDadosAcessoRequest objTest = umRequestDadosAcessoSenha();
         objTest.setIgnorarSenhaAtual(Boolean.TRUE);
-        objTest.setSenhaAtual("");
+        objTest.setSenhaAtual("");.
 
         mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
