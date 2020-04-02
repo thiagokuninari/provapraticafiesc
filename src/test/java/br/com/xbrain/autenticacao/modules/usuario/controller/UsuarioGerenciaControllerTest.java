@@ -436,7 +436,7 @@ public class UsuarioGerenciaControllerTest {
     public void deveAlterarASenhaDoUsuarioIgnorandoSenhaAtual() throws Exception {
         UsuarioDadosAcessoRequest objTest = umRequestDadosAcessoSenha();
         objTest.setIgnorarSenhaAtual(Boolean.TRUE);
-        objTest.setSenhaAtual("");.
+        objTest.setSenhaAtual("");
 
         mvc.perform(put("/api/usuarios/gerencia/acesso/senha")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
