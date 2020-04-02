@@ -1134,6 +1134,7 @@ public class UsuarioService {
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+        autenticacaoService.forcarLogoutGeradorLeads(usuario);
         return usuario.getId();
     }
 

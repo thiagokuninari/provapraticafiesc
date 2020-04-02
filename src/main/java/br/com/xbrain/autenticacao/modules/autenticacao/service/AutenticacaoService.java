@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -110,6 +111,16 @@ public class AutenticacaoService {
         tokenStore
                 .findTokensByClientId(AuthServerConfig.APP_CLIENT)
                 .forEach(token -> tokenStore.removeAccessToken(token));
+    }
+
+    public void forcarLogoutGeradorLeads(Usuario usuario) {
+        if (usuario.isCargo(CodigoCargo.GERADOR_LEADS)) {
+            tokenStore
+                .findTokensByClientIdAndUserName(
+                    AuthServerConfig.APP_CLIENT,
+                    usuario.getLogin())
+                .forEach(token -> tokenStore.removeAccessToken(token));
+        }
     }
 
     public boolean isEmulacao() {
