@@ -39,8 +39,8 @@ public class EquipeVendaService {
     public List<EquipeVendaDto> getEquipeVendas(Integer id) {
         try {
             EquipeVendaUsuarioRequest request = EquipeVendaUsuarioRequest.builder()
-                    .usuarioId(id)
-                    .build();
+                .usuarioId(id)
+                .build();
             Map map = new ObjectMapper().convertValue(request, Map.class);
             return equipeVendaClient.getUsuario(map);
         } catch (Exception ex) {
@@ -59,7 +59,7 @@ public class EquipeVendaService {
             return equipeVendaClient.getUsuariosPermitidos(cargos);
         } catch (Exception ex) {
             throw new IntegracaoException(ex, EquipeVendaService.class.getName(),
-                    EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
+                EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS);
         }
     }
 

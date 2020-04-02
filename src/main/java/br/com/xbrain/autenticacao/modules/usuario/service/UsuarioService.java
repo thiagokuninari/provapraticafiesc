@@ -1263,7 +1263,8 @@ public class UsuarioService {
                 .getUsuariosPermitidos(List.of(
                     SUPERVISOR_OPERACAO,
                     ASSISTENTE_OPERACAO,
-                    VENDEDOR_OPERACAO
+                    VENDEDOR_OPERACAO,
+                    OPERACAO_TELEVENDAS
                 ))
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),

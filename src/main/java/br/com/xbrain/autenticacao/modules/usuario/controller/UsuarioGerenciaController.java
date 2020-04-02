@@ -37,8 +37,8 @@ public class UsuarioGerenciaController {
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
         return UsuarioDto.of(
-                service.findByIdComAa(id),
-                usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+            service.findByIdComAa(id),
+            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
     @GetMapping
@@ -121,8 +121,8 @@ public class UsuarioGerenciaController {
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
         service.exportUsuariosToCsv(
-                service.getAllForCsv(filtros),
-                response
+            service.getAllForCsv(filtros),
+            response
         );
     }
 }

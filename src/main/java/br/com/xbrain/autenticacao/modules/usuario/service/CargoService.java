@@ -42,6 +42,7 @@ public class CargoService {
                         .filtrarPermitidos(
                                 usuarioAutenticado,
                                 cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()))
+                    .filtrarCargoPorUsuarioLogado(usuarioAutenticado.getUsuario())
                         .build());
     }
 
