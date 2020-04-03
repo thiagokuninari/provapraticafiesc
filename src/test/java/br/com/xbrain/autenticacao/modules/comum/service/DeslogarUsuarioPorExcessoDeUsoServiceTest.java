@@ -7,9 +7,13 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExcessoUsoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.MotivoInativacaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,19 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     private UsuarioRepository usuarioRepository;
     @MockBean
     private AtualizarUsuarioMqSender sender;
+    @MockBean
+    private MotivoInativacaoRepository motivoInativacaoRepository;
+
+    @Before
+    public void setup() {
+        when(motivoInativacaoRepository.findByCodigo(any())).thenReturn(Optional.of(MotivoInativacao
+            .builder()
+            .id(9)
+            .codigo(CodigoMotivoInativacao.INATIVADO_EXCESSO_USO)
+            .descricao("INATIVADO POR EXCESSO DE USO DA API")
+            .situacao(ESituacao.A)
+            .build()));
+    }
 
     @Test
     public void deslogarUsuariosInativados_deveDeslogarsInativarAtualizarParaDeslogado_quandoExistirNaTabelaComUsuarioAtivo() {

@@ -8,8 +8,10 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExcessoUsoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.repository.MotivoInativacaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico.gerarHistoricoDeBloqueioPorExcessoDeUso;
 import static java.lang.String.format;
 import static org.thymeleaf.util.StringUtils.concat;
 
@@ -37,6 +40,8 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private AtualizarUsuarioMqSender sender;
+    @Autowired
+    private MotivoInativacaoRepository motivoInativacaoRepository;
 
     @Transactional
     public void deslogarUsuariosInativados() {
@@ -94,10 +99,18 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
     private void inativarUsuario(Usuario usuario, String mensagem) {
         if (usuario.isAtivo()) {
             usuario.setSituacao(ESituacao.I);
+            inserirHistoricoDeBloqueioPorExcessoDeUsoDaApi(usuario);
             usuarioRepository.save(usuario);
             log.info(concat(mensagem, " foi inativado."));
             qtdUsuariosInativados++;
         }
+    }
+
+    private void inserirHistoricoDeBloqueioPorExcessoDeUsoDaApi(Usuario usuario) {
+        var motivoInativacao = motivoInativacaoRepository
+            .findByCodigo(CodigoMotivoInativacao.INATIVADO_EXCESSO_USO)
+            .orElseThrow(() -> new ValidacaoException("O motivo de inativação não foi encontrado."));
+        usuario.adicionarHistorico(gerarHistoricoDeBloqueioPorExcessoDeUso(usuario, motivoInativacao));
     }
 
     private void atualizarUsuariosParaDeslogados(List<UsuarioParaDeslogar> usuarios) {
