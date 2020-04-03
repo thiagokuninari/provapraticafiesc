@@ -6,7 +6,9 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExcessoUsoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +41,8 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private UsuarioRepository usuarioRepository;
+    @MockBean
+    private AtualizarUsuarioMqSender sender;
 
     @Test
     public void deslogarUsuariosInativados_deveDeslogarsInativarAtualizarParaDeslogado_quandoExistirNaTabelaComUsuarioAtivo() {
@@ -53,6 +57,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
                 .map(UsuarioParaDeslogar::getUsuarioId)
                 .anyMatch(integer -> Objects.equals(integer, usuarioId))));
 
+        verify(sender, times(1)).inativarPorExcessoDeUso(any(UsuarioExcessoUsoRequest.class));
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
         verify(repository, times(4)).save(any(UsuarioParaDeslogar.class));
     }
@@ -70,6 +75,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
                 .map(UsuarioParaDeslogar::getUsuarioId)
                 .anyMatch(integer -> Objects.equals(integer, usuarioId))));
 
+        verify(sender, times(1)).inativarPorExcessoDeUso(any(UsuarioExcessoUsoRequest.class));
         verify(usuarioRepository, times(0)).save(any(Usuario.class));
         verify(repository, times(4)).save(any(UsuarioParaDeslogar.class));
     }
@@ -80,6 +86,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
         service.deslogarUsuariosInativados();
 
+        verify(sender, times(0)).inativarPorExcessoDeUso(any(UsuarioExcessoUsoRequest.class));
         verify(autenticacaoService, times(0)).logout(anyInt());
         verify(repository, times(0)).save(any(UsuarioParaDeslogar.class));
     }
@@ -90,6 +97,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
         service.deslogarUsuariosInativados();
 
+        verify(sender, times(0)).inativarPorExcessoDeUso(any(UsuarioExcessoUsoRequest.class));
         verify(autenticacaoService, times(0)).logout(anyInt());
         verify(repository, times(0)).save(any(UsuarioParaDeslogar.class));
     }

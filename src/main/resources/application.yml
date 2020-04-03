@@ -109,6 +109,7 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    inativar-por-excesso-uso: inativar-por-excesso-uso.queue
 
   oauth-clients:
     autenticacao-api:

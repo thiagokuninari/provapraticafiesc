@@ -7,7 +7,9 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExcessoUsoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.thymeleaf.util.StringUtils.concat;
@@ -32,12 +35,15 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
     private UsuarioParaDeslogarRepository repository;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private AtualizarUsuarioMqSender sender;
 
     @Transactional
     public void deslogarUsuariosInativados() {
         log.info("\nIniciando timer de busca por usuários logados e bloqueados por excesso de uso da API.");
         var usuarios = repository.findAllByDeslogado(Eboolean.F);
         if (!usuarios.isEmpty()) {
+            enviarUsuariosParaFilaInativacao(usuarios);
             deslogarUsuarios(usuarios);
             atualizarUsuariosParaDeslogados(usuarios);
             gerarRelatorioDeLogsDeBloqueio(usuarios.size());
@@ -45,6 +51,13 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
             log.info("\nNão foram encontrados usuários bloqueados.");
         }
         zerarVariaveisGlobais();
+    }
+
+    private void enviarUsuariosParaFilaInativacao(List<UsuarioParaDeslogar> usuarios) {
+        sender.inativarPorExcessoDeUso(new UsuarioExcessoUsoRequest(usuarios
+            .stream()
+            .map(UsuarioParaDeslogar::getUsuarioId)
+            .collect(Collectors.toList())));
     }
 
     private void gerarRelatorioDeLogsDeBloqueio(Integer totalRegistrosBloqueados) {
