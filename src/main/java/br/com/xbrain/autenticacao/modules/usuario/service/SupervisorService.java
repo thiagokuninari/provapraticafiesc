@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -67,5 +68,9 @@ public class SupervisorService {
             areasAtuacaoId,
             CodigoCargo.SUPERVISOR_OPERACAO,
             ECanal.D2D_PROPRIO);
+    }
+
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {
+        return usuarioRepository.getSupervisoresSubclusterDoUsuario(usuarioId);
     }
 }

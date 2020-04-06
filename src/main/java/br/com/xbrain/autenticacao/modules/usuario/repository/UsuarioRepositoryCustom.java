@@ -104,4 +104,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
+
+    List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
 }
