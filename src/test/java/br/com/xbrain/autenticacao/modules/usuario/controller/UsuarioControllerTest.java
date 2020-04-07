@@ -286,7 +286,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
-            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
+            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO_PROPRIO")));
     }
 
     @Test
