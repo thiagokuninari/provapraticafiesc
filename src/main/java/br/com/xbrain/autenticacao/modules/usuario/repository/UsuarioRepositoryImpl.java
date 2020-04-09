@@ -371,14 +371,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public Optional<UsuarioHierarquia> getUsuarioSuperior(Integer usuarioId) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuarioHierarquia)
-                        .from(usuarioHierarquia)
-                        .join(usuarioHierarquia.usuario).fetchJoin()
-                        .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
-                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
-                        .distinct()
-                        .fetchOne());
+            new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia)
+                .from(usuarioHierarquia)
+                .join(usuarioHierarquia.usuario).fetchJoin()
+                .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
+                .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .orderBy(usuarioHierarquia.dataCadastro.desc())
+                .distinct()
+                .fetchFirst());
     }
 
     @Override
