@@ -223,6 +223,9 @@ public class Usuario {
     @Transient
     private Integer agenteAutorizadoId;
 
+    @Transient
+    private String senhaDescriptografada;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -360,10 +363,12 @@ public class Usuario {
     }
 
     public Set<CodigoCargo> getCodigoCargoByCanais() {
-        if (this.canais.size() > 1) {
-            return Set.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO);
-        } else if (this.canais.contains(ECanal.ATIVO_PROPRIO)) {
-            return Set.of(OPERACAO_TELEVENDAS);
+        if (!ObjectUtils.isEmpty(canais)) {
+            if (this.canais.size() > 1) {
+                return Set.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO);
+            } else if (this.canais.contains(ECanal.ATIVO_PROPRIO)) {
+                return Set.of(OPERACAO_TELEVENDAS);
+            }
         }
         return Set.of(VENDEDOR_OPERACAO);
     }
@@ -443,6 +448,11 @@ public class Usuario {
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
             && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
+    }
+
+    public boolean isBackoffice() {
+        return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
+            && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
     }
 
     public void adicionarHistorico(UsuarioHistorico historico) {

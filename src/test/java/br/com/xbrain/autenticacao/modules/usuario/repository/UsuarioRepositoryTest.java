@@ -45,13 +45,14 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
-            .hasSize(4)
             .extracting("id", "email")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple(103, "CARLOS@HOTMAIL.COM"),
                 tuple(104, "MARIA@HOTMAIL.COM"),
                 tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
@@ -74,23 +75,24 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosAtivos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.A))
-            .hasSize(4)
             .extracting("id", "email")
             .containsExactly(
                 tuple(107, "EXECUTIVO1@TESTE.COM"),
                 tuple(108, "EXECUTIVO2@TESTE.COM"),
                 tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
-            .hasSize(2)
             .extracting("id", "email")
-            .contains(
-                tuple(105, "RENATO@TESTE.COM"),
-                tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"));
+            .containsExactlyInAnyOrder(
+                tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"),
+                tuple(113, "RENATO@TESTE.COM"),
+                tuple(119, "EXECUTIVOHUNTER3@TESTE.COM"));
     }
 
     @Test

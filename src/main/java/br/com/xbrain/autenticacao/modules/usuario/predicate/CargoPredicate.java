@@ -34,7 +34,7 @@ public class CargoPredicate extends PredicateBase {
         return this;
     }
 
-    private CargoPredicate comId(List<Integer> cargosId) {
+    public CargoPredicate comId(List<Integer> cargosId) {
         builder.and(cargo.id.in(cargosId));
         return this;
     }

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
@@ -34,22 +35,25 @@ public class CargoService {
     private CargoSuperiorRepository cargoSuperiorRepository;
 
     public List<Cargo> getPermitidosPorNivel(Integer nivelId) {
+        var predicate = new CargoPredicate().comNivel(nivelId);
+        filtrarPermitidos(predicate);
+
+        return repository.findAll(predicate.build());
+    }
+
+    private void filtrarPermitidos(CargoPredicate predicate) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
-        return repository.findAll(
-                new CargoPredicate()
-                        .comNivel(nivelId)
-                        .filtrarPermitidos(
-                                usuarioAutenticado,
-                                cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()))
-                    .filtrarCargoPorUsuarioLogado(usuarioAutenticado.getUsuario())
-                        .build());
+        predicate.filtrarCargoPorUsuarioLogado(usuarioAutenticado.getUsuario());
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+            predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
+        }
     }
 
     public Cargo findByUsuarioId(Integer usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(Usuario::getCargo)
-                .orElse(null);
+            .map(Usuario::getCargo)
+            .orElse(null);
     }
 
     public Cargo findById(Integer id) {

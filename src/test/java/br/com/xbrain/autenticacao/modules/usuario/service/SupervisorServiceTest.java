@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepositoryImpl;
 import helpers.TestBuilders;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -57,6 +59,8 @@ public class SupervisorServiceTest {
     private SupervisorService service;
     @SpyBean
     private UsuarioRepositoryImpl usuarioRepository;
+    @MockBean
+    private EquipeVendaD2dClient equipeVendasClient;
 
     @MockBean
     private AutenticacaoService autenticacaoService;
@@ -69,7 +73,8 @@ public class SupervisorServiceTest {
             service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
-                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
             service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
@@ -85,7 +90,8 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
             service.getSupervisoresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_CHAPECO_ID)))
@@ -101,7 +107,8 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
             service.getSupervisoresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_PASSO_FUNDO_ID)))
@@ -117,7 +124,8 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
             service.getSupervisoresPorAreaAtuacao(GRUPO, singletonList(GRUPO_RS_SERRA)))
@@ -133,7 +141,8 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
 
         assertThat(
             service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_LESTE_ID)))
@@ -146,16 +155,18 @@ public class SupervisorServiceTest {
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
+            .thenReturn(List.of(1, 2));
 
         assertThat(
-            service.getAssistentesEVendedoresDoSupervisor(SUPERVISOR_LONDRINA_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
-            service.getAssistentesEVendedoresDoSupervisor(SUPERVISOR_ARAPONGAS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
@@ -165,8 +176,27 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
 
         assertThat(
-            service.getAssistentesEVendedoresDoSupervisor(SUPERVISOR_SEM_CIDADE_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
             .isEmpty();
+    }
+
+    @Test
+    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
+        when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
+            .thenReturn(List.of(1, 2));
+
+        assertThat(
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
+            .extracting("id", "nome", "codigoCargo")
+            .containsExactly(
+                tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
+                tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
+                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO));
+
     }
 
     @Test
@@ -177,7 +207,7 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
-            service.getAssistentesEVendedoresDoSupervisor(SUPERVISOR_LINS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
     }
 
@@ -189,7 +219,38 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
-            service.getAssistentesEVendedoresDoSupervisor(SUPERVISOR_LINS_ID))
+            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassado() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(1))
+            .extracting("id", "nome")
+            .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                tuple(2, "SUPERVISOR ARAPONGAS"),
+                tuple(5, "SUPERVISOR CURITIBA"));
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubCluster() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(5))
+            .extracting("id", "nome")
+            .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                tuple(2, "SUPERVISOR ARAPONGAS"),
+                tuple(5, "SUPERVISOR CURITIBA"));
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassado() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuario(8))
+            .extracting("id", "nome")
+            .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
+                tuple(2, "SUPERVISOR ARAPONGAS"),
+                tuple(5, "SUPERVISOR CURITIBA"));
+    }
+
+    private Object[] umVendedorComId(int id) {
+        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
     }
 }

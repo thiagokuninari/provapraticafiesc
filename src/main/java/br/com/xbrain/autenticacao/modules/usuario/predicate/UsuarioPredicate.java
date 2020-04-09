@@ -252,6 +252,19 @@ public class UsuarioPredicate {
         return this;
     }
 
+    private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                       boolean incluirProrio) {
+
+        var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
+        if (incluirProrio) {
+            usuariosIds.add(usuario.getId());
+        }
+        comIds(usuariosIds);
+        comOrganizacaoId(usuario.getOrganizacaoId());
+
+        return this;
+    }
+
     private UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
         return this;
@@ -274,6 +287,8 @@ public class UsuarioPredicate {
                 usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
                 usuario.getUsuario().getId());
 
+        } else if (usuario.isBackoffice()) {
+            somenteUsuariosBackoffice(usuario, usuarioService, true);
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }

@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -28,11 +30,15 @@ public class SupervisorService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    private EquipeVendaD2dService equipeVendaD2dService;
+
+    @Autowired
     private AutenticacaoService autenticacaoService;
 
     private static final Set<ECanal> CANAIS_PADRAO = Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO);
 
-    public List<UsuarioResponse> getAssistentesEVendedoresDoSupervisor(Integer supervisorId) {
+    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
+        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         var canais = CANAIS_PADRAO;
         if (!isEmpty(usuarioAutenticado) && !usuarioAutenticado.getCanais().isEmpty()) {
@@ -40,9 +46,14 @@ public class SupervisorService {
         }
         return Stream.concat(
             getAssistentesDoSupervisor(supervisorId, canais).stream(),
-            getVendedoresDoSupervisor(supervisorId).stream())
+            vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
+    }
+
+    private List<UsuarioResponse> filtrarUsuariosParaAderirAEquipe(Integer equipeId,
+                                                                   List<UsuarioResponse> vendedoresDoSupervisor) {
+        return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
     private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId, Set<ECanal> canais) {
@@ -75,5 +86,9 @@ public class SupervisorService {
             areasAtuacaoId,
             SUPERVISOR_OPERACAO,
             canais);
+    }
+
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {
+        return usuarioRepository.getSupervisoresSubclusterDoUsuario(usuarioId);
     }
 }

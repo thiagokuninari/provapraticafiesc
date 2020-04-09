@@ -63,7 +63,7 @@ public class SupervisorControllerTest {
 
     @Test
     public void getAssistentesEVendedores_deveRetornarOsAssistentesEVendedores_doSupervisorPassado() throws Exception {
-        when(supervisorService.getAssistentesEVendedoresDoSupervisor(any()))
+        when(supervisorService.getAssistentesEVendedoresD2dDoSupervisor(any(), any()))
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
