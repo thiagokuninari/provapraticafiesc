@@ -959,9 +959,9 @@ public class UsuarioService {
     }
 
     public UsuarioResponse getUsuarioSuperior(Integer idUsuario) {
-        UsuarioHierarquia usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
+        var usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
             .orElse(null);
-        if (usuarioHierarquia == null) {
+        if (Objects.isNull(usuarioHierarquia)) {
             return new UsuarioResponse();
         }
         return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
