@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,13 +25,22 @@ public class UsuarioComLoginNetSalesResponse {
 
     public static UsuarioComLoginNetSalesResponse of(Usuario usuario) {
         return UsuarioComLoginNetSalesResponse.builder()
-                .id(usuario.getId())
-                .nome(usuario.getNome())
-                .loginNetSales(usuario.getLoginNetSales())
-                .nivelCodigo(usuario.getNivelCodigo().name())
-                .razaoSocialEmpresa(CLARO_SA)
-                .cpfNetSales(usuario.getCpf())
-                .build();
+            .id(usuario.getId())
+            .nome(usuario.getNome())
+            .loginNetSales(usuario.getLoginNetSales())
+            .nivelCodigo(getNivelCodigo(usuario))
+            .razaoSocialEmpresa(CLARO_SA)
+            .cpfNetSales(usuario.getCpf())
+            .build();
+    }
+
+    public static String getNivelCodigo(Usuario usuario) {
+        if (CodigoNivel.OPERACAO.equals(usuario.getNivelCodigo())) {
+            return CodigoNivel.OPERACAO.name() + "_" + usuario.getCanais().iterator().next().name();
+        } else if (CodigoNivel.RECEPTIVO.equals(usuario.getNivelCodigo())) {
+            return CodigoNivel.RECEPTIVO + "_" + usuario.getOrganizacao().getCodigo();
+        }
+        return usuario.getNivelCodigo().name();
     }
 
     public boolean hasLoginNetSales() {
