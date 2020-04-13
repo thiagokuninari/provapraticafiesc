@@ -77,9 +77,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
 
-    @Value("${app-config.queue.inativar-por-excesso-uso}")
-    private String inativarPorExcessoDeUso;
-
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -191,11 +188,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue inativarPorExcessoDeUso() {
-        return new Queue(inativarPorExcessoDeUso, false);
-    }
-
-    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -293,10 +285,5 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioUltimoAcessoPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioUltimoAcessoPol()).to(exchange).with(usuarioUltimoAcessoPolMq);
-    }
-
-    @Bean
-    public Binding inativarPorExcessoDeUsoBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(inativarPorExcessoDeUso()).to(exchange).with(inativarPorExcessoDeUso);
     }
 }
