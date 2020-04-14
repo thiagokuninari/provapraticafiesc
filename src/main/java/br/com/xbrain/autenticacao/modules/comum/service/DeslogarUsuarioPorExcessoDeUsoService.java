@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.MotivoInativacaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +35,6 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
     private UsuarioParaDeslogarRepository repository;
     @Autowired
     private UsuarioRepository usuarioRepository;
-    @Autowired
-    private AtualizarUsuarioMqSender sender;
     @Autowired
     private MotivoInativacaoRepository motivoInativacaoRepository;
 
@@ -98,7 +95,7 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
 
     private void inserirHistoricoDeBloqueioPorExcessoDeUsoDaApi(Usuario usuario) {
         var motivoInativacao = motivoInativacaoRepository
-            .findByCodigo(CodigoMotivoInativacao.INATIVADO_EXCESSO_USO)
+            .findByCodigo(CodigoMotivoInativacao.INATIVADO_SIMULACOES)
             .orElseThrow(() -> new ValidacaoException("O motivo de inativação não foi encontrado."));
         usuario.adicionarHistorico(gerarHistoricoDeBloqueioPorExcessoDeUso(usuario, motivoInativacao));
     }

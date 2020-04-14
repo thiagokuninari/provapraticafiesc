@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRe
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.AtualizarUsuarioMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.MotivoInativacaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.junit.Before;
@@ -45,17 +44,15 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     @MockBean
     private UsuarioRepository usuarioRepository;
     @MockBean
-    private AtualizarUsuarioMqSender sender;
-    @MockBean
     private MotivoInativacaoRepository motivoInativacaoRepository;
 
     @Before
     public void setup() {
         when(motivoInativacaoRepository.findByCodigo(any())).thenReturn(Optional.of(MotivoInativacao
             .builder()
-            .id(9)
-            .codigo(CodigoMotivoInativacao.INATIVADO_EXCESSO_USO)
-            .descricao("INATIVADO POR EXCESSO DE USO DA API")
+            .id(7)
+            .codigo(CodigoMotivoInativacao.INATIVADO_SIMULACOES)
+            .descricao("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES")
             .situacao(ESituacao.A)
             .build()));
     }
