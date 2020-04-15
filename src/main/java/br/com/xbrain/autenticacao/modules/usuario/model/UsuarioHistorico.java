@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.util.ObjectUtils;
@@ -80,6 +81,15 @@ public class UsuarioHistorico {
                                                   String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
+    }
+
+    public static UsuarioHistorico gerarHistorico(Usuario usuario, EObservacaoHistorico observacao) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao(observacao.getObservacao())
+            .situacao(usuario.getSituacao())
+            .build();
     }
 
     public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,

@@ -103,7 +103,6 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-
     public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
         mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -272,6 +271,32 @@ public class UsuarioGerenciaControllerTest {
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoUnidadeNegocioVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setUnidadesNegociosId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoEmpresaVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setEmpresasId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test
