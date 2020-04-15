@@ -137,10 +137,10 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
     private List<UsuarioParaDeslogar> umaListaDeUsuariosParaDeslogar() {
         return List.of(
-            new UsuarioParaDeslogar(1, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(2, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(3, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(4, LocalDateTime.now(), Eboolean.F));
+            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.F),
+            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.F),
+            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.F),
+            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.F));
     }
 
     private Optional<Usuario> umUsuarioComSituacao(ESituacao situacao) {
@@ -156,9 +156,9 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
     private List<UsuarioParaDeslogar> umaListaDeUsuariosDeslogados() {
         return List.of(
-            new UsuarioParaDeslogar(1, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(2, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(3, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(4, LocalDateTime.now(), Eboolean.V));
+            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.V),
+            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.V),
+            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.V),
+            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.V));
     }
 }

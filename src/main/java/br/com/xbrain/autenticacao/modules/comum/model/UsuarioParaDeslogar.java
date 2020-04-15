@@ -16,6 +16,11 @@ import java.time.LocalDateTime;
 public class UsuarioParaDeslogar {
 
     @Id
+    @SequenceGenerator(name = "SEQ_USUARIOS_DESLOGAR",
+        sequenceName = "SEQ_USUARIOS_DESLOGAR", allocationSize = 1)
+    @GeneratedValue(generator = "SEQ_USUARIOS_DESLOGAR", strategy = GenerationType.SEQUENCE)
+    private Integer id;
+
     @Column(name = "USUARIO_ID")
     private Integer usuarioId;
 
