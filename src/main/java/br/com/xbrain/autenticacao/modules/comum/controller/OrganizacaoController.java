@@ -21,7 +21,7 @@ public class OrganizacaoController {
     @GetMapping("select")
     public List<SelectResponse> getAllSelect(@RequestParam(value = "nivelId", required = false) Integer nivelId) {
         return service.getAllSelect(nivelId).stream()
-                .map(organizacao -> SelectResponse.convertFrom(organizacao.getId(), organizacao.getNome()))
+                .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getNome()))
                 .collect(Collectors.toList());
     }
 }

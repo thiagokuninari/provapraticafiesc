@@ -819,4 +819,38 @@ public class UsuarioServiceIT {
             .nivelCodigo(OPERACAO.name())
             .build();
     }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() {
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacao())
+            .hasSize(27)
+            .extracting("value", "label")
+            .containsAnyOf(
+                tuple(116,"ALBERTO PEREIRA"),
+                tuple(228,"COORDENADOR OPERACAO 1"),
+                tuple(234,"COORDENADOR OPERACAO 2"),
+                tuple(238,"COORDENADOR OPERACAO 3"),
+                tuple(227,"GERENTE OPERACAO"),
+                tuple(119,"JOANA OLIVEIRA"),
+                tuple(369,"MARIA AUGUSTA"),
+                tuple(117,"ROBERTO ALMEIDA"),
+                tuple(229,"SUPERVISOR OPERACAO 1"),
+                tuple(231,"SUPERVISOR OPERACAO 2"),
+                tuple(235,"SUPERVISOR OPERACAO 3"),
+                tuple(150,"USUARIO DE COORDENADOR"),
+                tuple(151,"USUARIO DE GERENTE"),
+                tuple(149,"USUARIO INFERIOR"),
+                tuple(500,"USUARIO TESTE"),
+                tuple(230,"VENDEDOR OPERACAO 1"),
+                tuple(239,"VENDEDOR OPERACAO 2"),
+                tuple(241,"VENDEDOR OPERACAO 2"),
+                tuple(232,"VENDEDOR OPERACAO 2"),
+                tuple(236,"VENDEDOR OPERACAO 2"),
+                tuple(240,"VENDEDOR OPERACAO 3"),
+                tuple(233,"VENDEDOR OPERACAO 3"),
+                tuple(242,"VENDEDOR OPERACAO 3"),
+                tuple(237,"VENDEDOR OPERACAO 3"),
+                tuple(104,"operacao_gerente_comercial")
+            );
+    }
 }
