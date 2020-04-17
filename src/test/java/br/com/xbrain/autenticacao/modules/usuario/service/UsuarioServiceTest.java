@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioComLoginNetSalesResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
@@ -9,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
@@ -23,6 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -177,22 +180,72 @@ public class UsuarioServiceTest {
         var umUsuarioComLogin = 1000;
 
         when(repository.findById(umUsuarioComLogin))
-                .thenReturn(Optional.of(umUsuarioComLoginNetSales(umUsuarioComLogin)));
+            .thenReturn(Optional.of(umUsuarioComLoginNetSales(umUsuarioComLogin)));
 
         var response = service.getUsuarioByIdComLoginNetSales(umUsuarioComLogin);
 
         assertThat(response)
-                .extracting(UsuarioComLoginNetSalesResponse::getId,
-                        UsuarioComLoginNetSalesResponse::getNome,
-                        UsuarioComLoginNetSalesResponse::getLoginNetSales,
-                        UsuarioComLoginNetSalesResponse::getNivelCodigo,
-                        UsuarioComLoginNetSalesResponse::getCpfNetSales)
-                .containsExactly(
-                        umUsuarioComLogin,
-                        "UM USUARIO COM LOGIN",
-                        "UM LOGIN NETSALES",
-                        "ATIVO_LOCAL_PROPRIO",
-                        "123.456.887-91");
+            .extracting(UsuarioComLoginNetSalesResponse::getId,
+                UsuarioComLoginNetSalesResponse::getNome,
+                UsuarioComLoginNetSalesResponse::getLoginNetSales,
+                UsuarioComLoginNetSalesResponse::getNivelCodigo,
+                UsuarioComLoginNetSalesResponse::getCpfNetSales)
+            .containsExactly(
+                umUsuarioComLogin,
+                "UM USUARIO COM LOGIN",
+                "UM LOGIN NETSALES",
+                "ATIVO_LOCAL_PROPRIO",
+                "123.456.887-91");
+    }
+
+    @Test
+    public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForOperador() {
+        var umUsuarioComLogin = 1000;
+        var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
+        user.setCanais(Set.of(ECanal.AGENTE_AUTORIZADO));
+        user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.OPERACAO).build());
+        when(repository.findById(umUsuarioComLogin))
+            .thenReturn(Optional.of(user));
+
+        var response = service.getUsuarioByIdComLoginNetSales(umUsuarioComLogin);
+
+        assertThat(response)
+            .extracting(UsuarioComLoginNetSalesResponse::getId,
+                UsuarioComLoginNetSalesResponse::getNome,
+                UsuarioComLoginNetSalesResponse::getLoginNetSales,
+                UsuarioComLoginNetSalesResponse::getNivelCodigo,
+                UsuarioComLoginNetSalesResponse::getCpfNetSales)
+            .containsExactly(
+                umUsuarioComLogin,
+                "UM USUARIO COM LOGIN",
+                "UM LOGIN NETSALES",
+                "OPERACAO_AGENTE_AUTORIZADO",
+                "123.456.887-91");
+    }
+
+    @Test
+    public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForReceptivo() {
+        var umUsuarioComLogin = 1000;
+        var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
+        user.setOrganizacao(Organizacao.builder().codigo("ATENTO").build());
+        user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build());
+        when(repository.findById(umUsuarioComLogin))
+            .thenReturn(Optional.of(user));
+
+        var response = service.getUsuarioByIdComLoginNetSales(umUsuarioComLogin);
+
+        assertThat(response)
+            .extracting(UsuarioComLoginNetSalesResponse::getId,
+                UsuarioComLoginNetSalesResponse::getNome,
+                UsuarioComLoginNetSalesResponse::getLoginNetSales,
+                UsuarioComLoginNetSalesResponse::getNivelCodigo,
+                UsuarioComLoginNetSalesResponse::getCpfNetSales)
+            .containsExactly(
+                umUsuarioComLogin,
+                "UM USUARIO COM LOGIN",
+                "UM LOGIN NETSALES",
+                "RECEPTIVO_ATENTO",
+                "123.456.887-91");
     }
 
     @Test
