@@ -1388,8 +1388,8 @@ public class UsuarioService {
     }
 
     private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-        if (!isEmpty(usuarioFiltros.getEquipesVendasId())) {
-            var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasId());
+        if (!isEmpty(usuarioFiltros.getEquipesVendasIds())) {
+            var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasIds());
             if (usuarios.isEmpty()) {
                 throw new ValidacaoException("Nenhum usuário desta equipe de vendas foi encontrado");
             }
@@ -1399,9 +1399,9 @@ public class UsuarioService {
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
 
-        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosId())) {
+        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosIds())) {
             var usuarios = new ArrayList<Integer>();
-            usuarioFiltros.getAgentesAutorizadosId()
+            usuarioFiltros.getAgentesAutorizadosIds()
                 .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
             if (usuarios.isEmpty()) {
                 throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");

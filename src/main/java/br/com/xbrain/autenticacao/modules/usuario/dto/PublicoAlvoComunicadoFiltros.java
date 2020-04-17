@@ -23,12 +23,12 @@ import static java.util.Objects.isNull;
 public class PublicoAlvoComunicadoFiltros {
     private boolean todoCanalD2d;
     private boolean todoCanalAa;
-    private List<Integer> agentesAutorizadosId;
-    private List<Integer> equipesVendasId;
-    private List<Integer> usuariosId;
-    private List<Integer> cargosId;
-    private List<Integer> cidadesId;
-    private List<Integer> niveisId;
+    private List<Integer> agentesAutorizadosIds;
+    private List<Integer> equipesVendasIds;
+    private List<Integer> usuariosIds;
+    private List<Integer> cargosIds;
+    private List<Integer> cidadesIds;
+    private List<Integer> niveisIds;
     private Integer clusterId;
     private Integer grupoId;
     private Integer regionalId;
@@ -44,10 +44,10 @@ public class PublicoAlvoComunicadoFiltros {
         return new UsuarioPredicate()
             .comCanalD2d(isTodoCanalD2d())
             .comCanalAa(isTodoCanalAa())
-            .comUsuariosId(getUsuariosId())
-            .comCargosId(getCargosId())
-            .comCidadesId(getCidadesId(), clusterId, grupoId, regionalId, subClusterId)
-            .comNiveisId(getNiveisId())
+            .comUsuariosIds(getUsuariosIds())
+            .comCargosIds(getCargosIds())
+            .comCidadesIds(getCidadesIds(), clusterId, grupoId, regionalId, subClusterId)
+            .comNiveisIds(getNiveisIds())
             .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
             .comCluster(clusterId)
             .comSituacoes(List.of(ESituacao.A, ESituacao.I))
@@ -59,9 +59,9 @@ public class PublicoAlvoComunicadoFiltros {
     }
 
     public void adicionarUsuariosId(List<Integer> usuariosIdNovos) {
-        if (isNull(usuariosId)) {
-            usuariosId = newArrayList();
+        if (isNull(usuariosIds)) {
+            usuariosIds = newArrayList();
         }
-        usuariosId.addAll(usuariosIdNovos);
+        usuariosIds.addAll(usuariosIdNovos);
     }
 }

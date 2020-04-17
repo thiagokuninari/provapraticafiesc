@@ -280,24 +280,24 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comUsuariosId(List<Integer> usuariosId) {
-        if (!isEmpty(usuariosId)) {
-            builder.and(usuario.id.in(usuariosId));
+    public UsuarioPredicate comUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.and(usuario.id.in(usuariosIds));
         }
         return this;
     }
 
-    public UsuarioPredicate comCargosId(List<Integer> cargosId) {
-        if (!isEmpty(cargosId)) {
-            builder.and(usuario.cargo.id.in(cargosId));
+    public UsuarioPredicate comCargosIds(List<Integer> cargosIds) {
+        if (!isEmpty(cargosIds)) {
+            builder.and(usuario.cargo.id.in(cargosIds));
         }
         return this;
     }
 
-    public UsuarioPredicate comCidadesId(List<Integer> cidadesId, Integer clusterId, Integer grupoId,
-                                         Integer regionalId, Integer subClusterId) {
-        if (!isEmpty(cidadesId)) {
-            comCidade(cidadesId);
+    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, Integer clusterId, Integer grupoId,
+                                          Integer regionalId, Integer subClusterId) {
+        if (!isEmpty(cidadesIds)) {
+            comCidade(cidadesIds);
         } else if (!isEmpty(subClusterId)) {
             comSubCluster(subClusterId);
         } else if (!isEmpty(clusterId)) {
@@ -310,9 +310,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comNiveisId(List<Integer> niveisId) {
-        if (!isEmpty(niveisId)) {
-            builder.and(usuario.cargo.nivel.id.in(niveisId));
+    public UsuarioPredicate comNiveisIds(List<Integer> niveisIds) {
+        if (!isEmpty(niveisIds)) {
+            builder.and(usuario.cargo.nivel.id.in(niveisIds));
         }
         return this;
     }
