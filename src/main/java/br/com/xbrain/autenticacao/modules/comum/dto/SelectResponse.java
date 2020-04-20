@@ -14,7 +14,7 @@ public class SelectResponse {
     private Object value;
     private String label;
 
-    public static SelectResponse convertFrom(Object value, String label) {
+    public static SelectResponse of(Object value, String label) {
         SelectResponse selectResponse = new SelectResponse();
         selectResponse.setValue(value);
         selectResponse.setLabel(label);

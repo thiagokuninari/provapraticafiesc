@@ -26,7 +26,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRep
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,8 +44,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_TV;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.CLARO_RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -57,7 +60,8 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql"})
+@Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
+    "classpath:/tests_usuario_remanejamento.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -166,6 +170,14 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacao);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, CodigoMotivoInativacao.DESCREDENCIADO)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -193,6 +205,14 @@ public class UsuarioServiceIT {
         service.inativar(usuarioInativacaoDto);
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
+
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "observacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, "Teste inativar", CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -209,6 +229,13 @@ public class UsuarioServiceIT {
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
 
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(usuarioFeriasService, atLeastOnce()).save(eq(usuario), any());
     }
 
@@ -221,6 +248,16 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.FERIAS);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
+
+        var usuarioCompleto = usuarioRepository.findById(227).get();
+
+        assertThat(usuarioCompleto.getHistoricos()).isNotNull();
+        assertThat(usuarioCompleto.getHistoricos())
+            .extracting("situacao", "observacao", "motivoInativacao.codigo")
+            .containsAnyOf(
+                tuple(ESituacao.I, "Teste inativar", CodigoMotivoInativacao.FERIAS)
+            );
+
         verify(equipeVendaMqSender, never()).sendInativar(any());
     }
 
@@ -233,7 +270,6 @@ public class UsuarioServiceIT {
         usuarioInativacaoDto.setCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO);
         usuarioInativacaoDto.setObservacao("Teste inativar");
         service.inativar(usuarioInativacaoDto);
-        verify(equipeVendaMqSender, atLeastOnce()).sendInativar(any());
     }
 
     @Test
@@ -261,38 +297,21 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void salvarUsuarioRealocado_deveRealocarUsuario_quandoUsuarioEstiverAtivo() {
-        Usuario usuarioRealocar = new Usuario();
-        usuarioRealocar.setId(366);
-        service.salvarUsuarioRealocado(usuarioRealocar);
-        assertEquals(ESituacao.R, usuarioRepository.findById(usuarioRealocar.getId()).get().getSituacao());
-    }
-
-    @Test
-    public void updateFromQueue_deveCriarNovoUsuario_quandoAntigoRealocado() {
-        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
-        usuarioMqRequest.setId(368);
-        service.updateFromQueue(usuarioMqRequest);
-        usuarioRepository.findAllByCpf("21145664523")
-            .forEach(usuario -> {
-                if (usuario.getSituacao().equals(ESituacao.A)) {
-                    assertEquals(ESituacao.A, usuario.getSituacao());
-                } else if (usuario.getSituacao().equals(ESituacao.R)) {
-                    assertEquals(ESituacao.R, usuario.getSituacao());
-                }
-            });
-        assertEquals(2, usuarioRepository.findAllByCpf("21145664523").size());
-    }
-
-    @Test
     public void updateFromQueue_deveAlterarCpf_seNovoCpfValido() throws Exception {
-        UsuarioMqRequest usuarioMqRequest = umUsuarioARealocar();
+        UsuarioMqRequest usuarioMqRequest = umUsuarioTrocaCpf();
         usuarioMqRequest.setId(368);
         usuarioMqRequest.setCpf("43185104099");
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
             .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
-        Assert.assertNotNull(usuario);
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getCpf()).isEqualTo("43185104099");
+        assertThat(usuario.getHistoricos()).isNotNull();
+        assertThat(usuario.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsExactlyInAnyOrder(
+                tuple(ESituacao.A, "Alteração de CPF do usuário.")
+            );
     }
 
     @Test
@@ -303,25 +322,6 @@ public class UsuarioServiceIT {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
             .withMessage("CPF já cadastrado.");
-    }
-
-    @Test
-    public void updateFromQueue_naoRealocaUsuario_quandoSituacaoForInativa() {
-        service.updateFromQueue(umUsuarioInativo());
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf("41842888803");
-        assertEquals(ESituacao.I, usuarios.get(0).getSituacao());
-        assertEquals(1, usuarios.size());
-    }
-
-    @Test
-    public void updateFromQueue_naoRealocaUsuario_quandoAFlagRealocadoForFalse() {
-        UsuarioMqRequest naoRealocar = umUsuarioARealocar();
-        naoRealocar.setRealocado(false);
-        service.updateFromQueue(naoRealocar);
-        List<Usuario> usuarios = usuarioRepository.findAllByCpf("21145664523");
-        assertThat(usuarios)
-            .extracting(Usuario::getSituacao)
-            .containsOnly(ESituacao.A);
     }
 
     @Test
@@ -494,6 +494,13 @@ public class UsuarioServiceIT {
                 tuple(100, 1443),
                 tuple(100, 2466),
                 tuple(100, 3022));
+
+        assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
+        assertThat(usuarioComNovasCidades.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
+            );
     }
 
     @Test
@@ -515,6 +522,13 @@ public class UsuarioServiceIT {
                 tuple(100, 1443),
                 tuple(100, 2466),
                 tuple(100, 3022));
+
+        assertThat(usuarioComCidadesAtualizadas.getHistoricos()).isNotNull();
+        assertThat(usuarioComCidadesAtualizadas.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
+            );
     }
 
     @Test
@@ -524,6 +538,12 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComCidadesRemovidas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesRemovidas.getCidades()).isEmpty();
+        assertThat(usuarioComCidadesRemovidas.getHistoricos()).isNotNull();
+        assertThat(usuarioComCidadesRemovidas.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
+            );
     }
 
     @Test
@@ -537,6 +557,13 @@ public class UsuarioServiceIT {
             .extracting("usuario.id", "cidade.id")
             .containsExactlyInAnyOrder(
                 tuple(100, 5578));
+
+        assertThat(usuarioAtualizado.getHistoricos()).isNotNull();
+        assertThat(usuarioAtualizado.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
+            );
     }
 
     @Test
@@ -557,6 +584,13 @@ public class UsuarioServiceIT {
                 tuple(101, 1443),
                 tuple(101, 2466),
                 tuple(101, 3022));
+
+        assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
+        assertThat(usuarioComNovasCidades.getHistoricos())
+            .extracting("situacao", "observacao")
+            .containsAnyOf(
+                tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
+            );
     }
 
     @Test
@@ -833,7 +867,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(45);
+        assertThat(usuarios).hasSize(47);
     }
 
     @Test
@@ -940,26 +974,76 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo() {
+    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo_quandoInformadoPorId() {
         assertThat(service.buscarColaboradoresAtivosOperacaoComericialPorCargo(5))
-            .hasSize(3)
             .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple(116, "ALBERTO PEREIRA", "ALBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO),
                 tuple(117, "ROBERTO ALMEIDA", "ROBERTO@NET.COM", "Executivo", EXECUTIVO),
-                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
+                tuple(998, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO),
+                tuple(1000, "USUARIO REMANEJAR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
             );
     }
 
-    private UsuarioMqRequest umUsuarioARealocar() {
+    @Test
+    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+        usuarioMqRequest.setId(999);
+        usuarioMqRequest.setCpf("87458480092");
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
+
+        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemanejarAntigoEDuplicarCriandoUmNovo_quandoDadosEstiveremCorretos() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+
+        var usuariosAntesRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAntesRemanejar)
+            .extracting("id", "situacao")
+            .containsExactly(tuple(1000, ESituacao.A));
+
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuariosAposRemanejar = usuarioRepository.findAllByCpf(usuarioMqRequest.getCpf());
+
+        assertThat(usuariosAposRemanejar)
+            .extracting("id", "situacao")
+            .containsExactly(tuple(2, ESituacao.A), tuple(1000, ESituacao.R));
+
+        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    private UsuarioMqRequest umUsuarioTrocaCpf() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("21145664523");
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.A);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioRemanejamento() {
+        return UsuarioMqRequest
+            .builder()
+            .id(1000)
+            .nome("USUARIO REMANEJAR")
+            .email("MARIA@NET3.COM")
+            .cpf("95512593005")
+            .cargo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .nivel(AGENTE_AUTORIZADO)
+            .unidadesNegocio(List.of(CLARO_RESIDENCIAL))
+            .empresa(List.of(CLARO_TV))
+            .build();
     }
 
     private UsuarioMqRequest umUsuarioInativo() {
@@ -969,7 +1053,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.I);
-        usuarioMqRequest.setRealocado(true);
         return usuarioMqRequest;
     }
 
@@ -1047,7 +1130,6 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
         usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
-        usuarioMqRequest.setRealocado(false);
         return usuarioMqRequest;
     }
 
@@ -1066,5 +1148,39 @@ public class UsuarioServiceIT {
                 new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
                 new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
             .build();
+    }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() {
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacao())
+            .hasSize(27)
+            .extracting("value", "label")
+            .containsAnyOf(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(228, "COORDENADOR OPERACAO 1"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(227, "GERENTE OPERACAO"),
+                tuple(119, "JOANA OLIVEIRA"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(229, "SUPERVISOR OPERACAO 1"),
+                tuple(231, "SUPERVISOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(150, "USUARIO DE COORDENADOR"),
+                tuple(151, "USUARIO DE GERENTE"),
+                tuple(149, "USUARIO INFERIOR"),
+                tuple(500, "USUARIO TESTE"),
+                tuple(230, "VENDEDOR OPERACAO 1"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(241, "VENDEDOR OPERACAO 2"),
+                tuple(232, "VENDEDOR OPERACAO 2"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(242, "VENDEDOR OPERACAO 3"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(104, "operacao_gerente_comercial")
+            );
     }
 }

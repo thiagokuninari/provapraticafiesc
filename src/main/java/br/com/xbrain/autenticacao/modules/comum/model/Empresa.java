@@ -4,8 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,6 +15,9 @@ import java.io.Serializable;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(of = {"id"})
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Empresa implements Serializable {
 
     @Id
@@ -47,9 +49,6 @@ public class Empresa implements Serializable {
     @Column(name = "SITUACAO", length = 1, nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
-
-    public Empresa() {
-    }
 
     public Empresa(Integer id) {
         this.id = id;
