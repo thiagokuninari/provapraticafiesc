@@ -61,6 +61,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -82,6 +83,8 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    private static final List<CodigoCargo> cargosOperadoresBackoffice
+        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -442,7 +445,7 @@ public class UsuarioService {
     }
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
-        return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+        return AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
     private void validar(Usuario usuario) {
@@ -1238,7 +1241,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId, VENDEDOR_OPERACAO.name())
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1286,9 +1289,9 @@ public class UsuarioService {
         return IntStream.concat(
             equipeVendaD2dService
                 .getUsuariosPermitidos(List.of(
-                    CodigoCargo.SUPERVISOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO,
-                    CodigoCargo.VENDEDOR_OPERACAO
+                    SUPERVISOR_OPERACAO,
+                    ASSISTENTE_OPERACAO,
+                    VENDEDOR_OPERACAO
                 ))
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
@@ -1399,8 +1402,8 @@ public class UsuarioService {
         );
     }
 
-    public List<SelectResponse> findUsuariosByOrganizacao(Integer id) {
-        return repository.findByOrganizacaoId(id).stream()
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer id) {
+        return repository.findByOrganizacaoIdAndCargo_CodigoIn(id, cargosOperadoresBackoffice).stream()
             .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }
