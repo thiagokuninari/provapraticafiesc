@@ -1402,8 +1402,9 @@ public class UsuarioService {
         );
     }
 
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer id) {
-        return repository.findByOrganizacaoIdAndCargo_CodigoIn(id, cargosOperadoresBackoffice).stream()
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(String organizacaoCodigo) {
+        return repository.findByOrganizacaoCodigoAndCargo_CodigoIn(organizacaoCodigo, cargosOperadoresBackoffice)
+            .stream()
             .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }
