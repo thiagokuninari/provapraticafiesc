@@ -2,8 +2,9 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.predicate.OrganizacaoPredicate;
+import br.com.xbrain.autenticacao.modules.comum.filtros.OrganizacaoFiltros;
 import br.com.xbrain.autenticacao.modules.comum.repository.OrganizacaoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +45,7 @@ public class OrganizacaoServiceTest {
                 umaOrganizacao(1, "BCC"),
                 umaOrganizacao(2, "CALLINK")));
 
-        assertThat(organizacaoService.getAllSelect(null))
+        assertThat(organizacaoService.getAllSelect(null, null))
             .hasSize(2)
             .extracting("id", "codigo", "nome")
             .contains(tuple(1, "BCC", "BCC"),
@@ -53,12 +54,13 @@ public class OrganizacaoServiceTest {
 
     @Test
     public void findAll_organizacoesFiltradas_quandoParametroNivelId() {
-        when(organizacaoRepository.findByPredicate(any()))
+        var filtros = OrganizacaoFiltros.builder().nivelId(15).build();
+        when(organizacaoRepository.findByPredicate(eq(filtros.toPredicate())))
             .thenReturn(List.of(
                 umaOrganizacao(8, "CSU"),
                 umaOrganizacao(9, "MOTIVA")));
 
-        assertThat(organizacaoService.getAllSelect(15))
+        assertThat(organizacaoService.getAllSelect(15, null))
             .hasSize(2)
             .extracting("id", "codigo", "nome")
             .contains(tuple(8, "CSU", "CSU"),
@@ -68,15 +70,30 @@ public class OrganizacaoServiceTest {
     @Test
     public void findAll_organizacoesFiltradas_quandoUsuarioBackoffice() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
-        var predicate = new OrganizacaoPredicate().comId(1);
+        var filtros = OrganizacaoFiltros.builder().organizacaoId(1).build();
 
-        when(organizacaoRepository.findByPredicate(eq(predicate.build())))
+        when(organizacaoRepository.findByPredicate(eq(filtros.toPredicate())))
                 .thenReturn(List.of(umaOrganizacao(1, "MOTIVA")));
 
-        assertThat(organizacaoService.getAllSelect(null))
+        assertThat(organizacaoService.getAllSelect(null, null))
                 .hasSize(1)
                 .extracting("id", "codigo", "nome")
                 .contains(tuple(1, "MOTIVA", "MOTIVA"));
+    }
+
+    @Test
+    public void findAll_organizacoesFiltradas_quandoParametroCodigoNivel() {
+        var filtros = OrganizacaoFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).build();
+        when(organizacaoRepository.findByPredicate(eq(filtros.toPredicate())))
+            .thenReturn(List.of(
+                umaOrganizacao(8, "CSU"),
+                umaOrganizacao(9, "MOTIVA")));
+
+        assertThat(organizacaoService.getAllSelect(null, filtros))
+            .hasSize(2)
+            .extracting("id", "codigo", "nome")
+            .contains(tuple(8, "CSU", "CSU"),
+                tuple(9, "MOTIVA", "MOTIVA"));
     }
 
     private UsuarioAutenticado umUsuarioBackoffice() {
