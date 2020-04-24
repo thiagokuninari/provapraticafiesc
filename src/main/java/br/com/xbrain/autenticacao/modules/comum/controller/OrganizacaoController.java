@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.service.OrganizacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -20,9 +19,8 @@ public class OrganizacaoController {
     private OrganizacaoService service;
 
     @GetMapping("select")
-    public List<SelectResponse> getAllSelect(@RequestParam(value = "nivelId", required = false) Integer nivelId,
-                                             OrganizacaoFiltros filtros) {
-        return service.getAllSelect(nivelId, filtros).stream()
+    public List<SelectResponse> getAllSelect(OrganizacaoFiltros filtros) {
+        return service.getAllSelect(filtros).stream()
             .map(organizacao -> SelectResponse.convertFrom(organizacao.getId(), organizacao.getNome()))
             .collect(Collectors.toList());
     }

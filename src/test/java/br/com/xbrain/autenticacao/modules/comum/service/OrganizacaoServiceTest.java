@@ -45,7 +45,7 @@ public class OrganizacaoServiceTest {
                 umaOrganizacao(1, "BCC"),
                 umaOrganizacao(2, "CALLINK")));
 
-        assertThat(organizacaoService.getAllSelect(null, null))
+        assertThat(organizacaoService.getAllSelect(null))
             .hasSize(2)
             .extracting("id", "codigo", "nome")
             .contains(tuple(1, "BCC", "BCC"),
@@ -60,7 +60,7 @@ public class OrganizacaoServiceTest {
                 umaOrganizacao(8, "CSU"),
                 umaOrganizacao(9, "MOTIVA")));
 
-        assertThat(organizacaoService.getAllSelect(15, null))
+        assertThat(organizacaoService.getAllSelect(filtros))
             .hasSize(2)
             .extracting("id", "codigo", "nome")
             .contains(tuple(8, "CSU", "CSU"),
@@ -75,7 +75,7 @@ public class OrganizacaoServiceTest {
         when(organizacaoRepository.findByPredicate(eq(filtros.toPredicate())))
                 .thenReturn(List.of(umaOrganizacao(1, "MOTIVA")));
 
-        assertThat(organizacaoService.getAllSelect(null, null))
+        assertThat(organizacaoService.getAllSelect(null))
                 .hasSize(1)
                 .extracting("id", "codigo", "nome")
                 .contains(tuple(1, "MOTIVA", "MOTIVA"));
@@ -89,7 +89,7 @@ public class OrganizacaoServiceTest {
                 umaOrganizacao(8, "CSU"),
                 umaOrganizacao(9, "MOTIVA")));
 
-        assertThat(organizacaoService.getAllSelect(null, filtros))
+        assertThat(organizacaoService.getAllSelect(filtros))
             .hasSize(2)
             .extracting("id", "codigo", "nome")
             .contains(tuple(8, "CSU", "CSU"),

@@ -50,7 +50,7 @@ public class OrganizacaoControllerTest {
 
     @Test
     public void getAllSelect_todasOrganizacoes_quandoSolicitar() throws Exception {
-        Mockito.when(organizacaoService.getAllSelect(null, new OrganizacaoFiltros()))
+        Mockito.when(organizacaoService.getAllSelect(new OrganizacaoFiltros()))
                 .thenReturn(List.of(
                         umaOrganizacao(1, "BCC"),
                         umaOrganizacao(2, "CALLINK")));

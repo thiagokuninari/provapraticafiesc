@@ -18,13 +18,12 @@ public class OrganizacaoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    public List<Organizacao> getAllSelect(Integer nivelId, OrganizacaoFiltros filtros) {
-        return repository.findByPredicate(getFiltros(nivelId, filtros).toPredicate());
+    public List<Organizacao> getAllSelect(OrganizacaoFiltros filtros) {
+        return repository.findByPredicate(getFiltros(filtros).toPredicate());
     }
 
-    private OrganizacaoFiltros getFiltros(Integer nivelId, OrganizacaoFiltros filtros) {
+    private OrganizacaoFiltros getFiltros(OrganizacaoFiltros filtros) {
         filtros = Objects.isNull(filtros) ? new OrganizacaoFiltros() : filtros;
-        filtros.setNivelId(nivelId);
         var usuario = autenticacaoService.getUsuarioAutenticado();
         if (usuario.isBackoffice()) {
             filtros.setOrganizacaoId(usuario.getOrganizacaoId());
