@@ -171,6 +171,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    colaborador-vendas-api:
+      client: colaborador-vendas-api
+      secret: c0l4b0r4d0rv3nd4s
 
   services:
     autenticacao:
