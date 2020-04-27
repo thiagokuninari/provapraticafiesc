@@ -89,4 +89,9 @@ public class CidadeController {
     public List<CidadeResponse> getAllCidadeNetUno() {
         return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
     }
+
+    @GetMapping(params = "ufIds")
+    public List<Cidade> getAllCidadeByUfs(@RequestParam(name = "ufIds") List<Integer> ufIds) {
+        return service.getAllCidadeByUfs(ufIds);
+    }
 }

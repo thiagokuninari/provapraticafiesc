@@ -83,4 +83,8 @@ public class CidadeService {
     public ClusterizacaoDto getClusterizacao(Integer id) {
         return repository.getClusterizacao(id);
     }
+
+    public List<Cidade> getAllCidadeByUfs(List<Integer> ufIds) {
+        return repository.findCidadeByUfIdIn(ufIds, new Sort("nome"));
+    }
 }
