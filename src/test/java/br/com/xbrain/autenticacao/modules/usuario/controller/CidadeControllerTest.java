@@ -182,6 +182,17 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @Test
+    public void getAllCidadeByUfs_deveRetornarTodasAsCidadesDoEstados_quandoExistir() throws Exception {
+        mvc.perform(get("/api/cidades")
+            .param("ufIds", "1,2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")));
+    }
+
     private Cidade umaCidade() {
 
         return Cidade.builder()

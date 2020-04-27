@@ -85,6 +85,6 @@ public class CidadeService {
     }
 
     public List<Cidade> getAllCidadeByUfs(List<Integer> ufIds) {
-        return repository.findCidadeByUfIdIn(ufIds, new Sort("nome"));
+        return repository.findCidadeByUfIdInOrderByNome(ufIds);
     }
 }
