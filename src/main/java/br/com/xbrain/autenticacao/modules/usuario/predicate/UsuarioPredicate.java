@@ -165,6 +165,18 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList())));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
         builder.and(usuario.id.in(usuariosIds));
         return this;
@@ -281,13 +293,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comUsuariosIds(Collection<Integer> usuariosIds) {
-        if (!isEmpty(usuariosIds)) {
-            builder.and(usuario.id.in(usuariosIds));
-        }
-        return this;
-    }
-
     public UsuarioPredicate comCargosIds(List<Integer> cargosIds) {
         if (!isEmpty(cargosIds)) {
             builder.and(usuario.cargo.id.in(cargosIds));
@@ -377,8 +382,8 @@ public class UsuarioPredicate {
     public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                      PublicoAlvoComunicadoFiltros filtros) {
         if (usuario.haveCanalAgenteAutorizado()) {
-            var ids = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
-            comUsuariosIds(ids);
+            var ids = usuarioService.getIdDosUsuariosParceiros(filtros);
+            comUsuariosIds(List.copyOf(ids));
         }
         return this;
     }

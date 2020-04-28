@@ -281,6 +281,10 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
+    public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
+        return agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros);
+    }
+
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
         return repository.getUsuariosCompletoSubordinados(usuarioId);
     }

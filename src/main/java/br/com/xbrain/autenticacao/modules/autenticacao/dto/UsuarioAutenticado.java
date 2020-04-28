@@ -163,7 +163,9 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean haveCanalAgenteAutorizado() {
-        return CustomJwtAccessTokenConverter.getCanais(usuario)
-            .contains(AGENTE_AUTORIZADO.name());
+        return ObjectUtils.isEmpty(usuario.getCanais())
+            ? CustomJwtAccessTokenConverter.getCanais(usuario).contains(AGENTE_AUTORIZADO.name())
+            : usuario.getCanais()
+            .contains(AGENTE_AUTORIZADO);
     }
 }
