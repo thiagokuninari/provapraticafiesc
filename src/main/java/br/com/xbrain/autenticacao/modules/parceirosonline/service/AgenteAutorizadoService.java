@@ -5,6 +5,8 @@ import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -173,9 +175,10 @@ public class AgenteAutorizadoService {
         }
     }
 
-    public List<Integer> getIdsUsuariosPermitidosDoUsuario() {
+    public List<Integer> getIdsUsuariosPermitidosDoUsuario(PublicoAlvoComunicadoFiltros filtros) {
         try {
-            return agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario();
+            var request = new ObjectMapper().convertValue(AgenteAutorizadoComunicadosFiltros.of(filtros), Map.class);
+            return agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario(request);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),

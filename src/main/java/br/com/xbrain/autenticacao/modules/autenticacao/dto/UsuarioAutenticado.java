@@ -1,9 +1,13 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.config.CustomJwtAccessTokenConverter;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -19,7 +23,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORD
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 @EqualsAndHashCode(callSuper = false)
 @Data
 @JsonIgnoreProperties
@@ -48,6 +54,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private CodigoCargo cargoCodigo;
     private Integer organizacaoId;
     private String organizacaoCodigo;
+    private List<String> canais;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -126,13 +133,13 @@ public class UsuarioAutenticado extends OAuth2Request {
         }
     }
 
-    private boolean isAgenteAutorizado() {
+    public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 
     public boolean possuiCargoSuperiorOperacao() {
         return List.of(GERENTE_OPERACAO, COORDENADOR_OPERACAO).contains(cargoCodigo)
-            && usuario.getCanais().contains(ECanal.AGENTE_AUTORIZADO);
+            && usuario.getCanais().contains(AGENTE_AUTORIZADO);
     }
 
     public CodigoNivel getNivelCodigoEnum() {
@@ -153,5 +160,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean haveCanalAgenteAutorizado() {
+        return CustomJwtAccessTokenConverter.getCanais(usuario)
+            .contains(AGENTE_AUTORIZADO.name());
     }
 }

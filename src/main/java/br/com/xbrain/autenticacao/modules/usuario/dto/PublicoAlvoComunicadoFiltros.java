@@ -33,7 +33,6 @@ public class PublicoAlvoComunicadoFiltros {
     private Integer grupoId;
     private Integer regionalId;
     private Integer subClusterId;
-    private boolean incluirProprio = true;
 
     private UsuarioAutenticado usuarioAutenticado;
     private UsuarioService usuarioService;
@@ -49,12 +48,13 @@ public class PublicoAlvoComunicadoFiltros {
             .comCidadesIds(getCidadesIds(), clusterId, grupoId, regionalId, subClusterId)
             .comNiveisIds(getNiveisIds())
             .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
-            .comCluster(clusterId)
             .comSituacoes(List.of(ESituacao.A, ESituacao.I))
+            .comFiltroCidadeParceiros(usuarioAutenticado, usuarioService, this)
+            .comCluster(clusterId)
             .comGrupo(grupoId)
             .comRegional(regionalId)
             .comSubCluster(subClusterId)
-            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService, incluirProprio)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService, this)
             .build();
     }
 

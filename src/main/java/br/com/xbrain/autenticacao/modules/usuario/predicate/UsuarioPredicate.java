@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -280,7 +281,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comUsuariosIds(List<Integer> usuariosIds) {
+    public UsuarioPredicate comUsuariosIds(Collection<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.and(usuario.id.in(usuariosIds));
         }
@@ -353,27 +354,37 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public Predicate build() {
-        return this.builder;
-    }
-
-    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario,
-                                                         UsuarioService usuarioService, boolean incluirProprio) {
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                         PublicoAlvoComunicadoFiltros filtros) {
         if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             Set<Integer> idDosUsuariosSubordinados = newHashSet();
             if (usuario.possuiCargoSuperiorOperacao()) {
-                idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId());
+                idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
             }
             idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
-                incluirProprio));
+                false));
 
             daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
                 usuario.getUsuario().getId());
 
             return daCarteiraHierarquiaOuUsuarioCadastro(List.copyOf(idDosUsuariosSubordinados),
                 usuario.getUsuario().getId());
         }
-        return filtraPermitidos(usuario, usuarioService, incluirProprio);
+        return filtraPermitidos(usuario, usuarioService, false);
     }
+
+    public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                     PublicoAlvoComunicadoFiltros filtros) {
+        if (usuario.haveCanalAgenteAutorizado()) {
+            var ids = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
+            comUsuariosIds(ids);
+        }
+        return this;
+    }
+
+    public Predicate build() {
+        return this.builder;
+    }
+
 }

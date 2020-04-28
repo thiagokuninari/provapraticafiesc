@@ -96,10 +96,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public Optional<Usuario> findComplete(Integer id) {
         return Optional.ofNullable(
                 new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .join(usuario.cargo, cargo).fetchJoin()
-                        .join(cargo.nivel).fetchJoin()
+                    .select(usuario)
+                    .from(usuario)
+                    .join(usuario.cargo, cargo).fetchJoin()
+                    .join(cargo.nivel).fetchJoin()
+                    .leftJoin(usuario.canais).fetchJoin()
                         .join(usuario.departamento).fetchJoin()
                         .leftJoin(usuario.empresas).fetchJoin()
                         .leftJoin(usuario.organizacao).fetchJoin()

@@ -274,9 +274,9 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
-    public Set<Integer> getIdDosUsuariosSubordinados(Integer usuarioId) {
+    public Set<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, PublicoAlvoComunicadoFiltros filtros) {
         var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuarioId));
-        usuariosSubordinados.addAll(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario());
+        usuariosSubordinados.addAll(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros));
 
         return usuariosSubordinados;
     }
@@ -1470,7 +1470,6 @@ public class UsuarioService {
         adicionarFiltroAgenteAutorizado(usuarioFiltros);
         adicionarFiltroEquipeVendas(usuarioFiltros);
         usuarioFiltros.setUsuarioService(this);
-        usuarioFiltros.setIncluirProprio(false);
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
     }

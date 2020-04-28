@@ -76,5 +76,5 @@ public interface AgenteAutorizadoClient {
         @PathVariable("usuarioId") Integer usuarioId);
 
     @GetMapping(API_AGENTE_AUTORIZADO_USUARIO + "/subordinados")
-    List<Integer> getIdsUsuariosPermitidosDoUsuario();
+    List<Integer> getIdsUsuariosPermitidosDoUsuario(@RequestParam Map request);
 }
