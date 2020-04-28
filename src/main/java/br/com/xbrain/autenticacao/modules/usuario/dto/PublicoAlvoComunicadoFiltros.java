@@ -50,6 +50,7 @@ public class PublicoAlvoComunicadoFiltros {
             .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
             .comSituacoes(List.of(ESituacao.A, ESituacao.I))
             .comFiltroCidadeParceiros(usuarioAutenticado, usuarioService, this)
+            .semUsuarioId(usuarioAutenticado.getId())
             .comCluster(clusterId)
             .comGrupo(grupoId)
             .comRegional(regionalId)

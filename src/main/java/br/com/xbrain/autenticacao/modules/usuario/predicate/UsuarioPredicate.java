@@ -316,6 +316,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate semUsuarioId(Integer usuarioId) {
+        if (!isEmpty(usuarioId)) {
+            builder.and(usuario.id.ne(usuarioId));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comNiveisIds(List<Integer> niveisIds) {
         if (!isEmpty(niveisIds)) {
             builder.and(usuario.cargo.nivel.id.in(niveisIds));
