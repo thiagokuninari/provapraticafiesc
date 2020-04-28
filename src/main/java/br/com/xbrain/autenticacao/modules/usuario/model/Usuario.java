@@ -214,6 +214,12 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
 
+    @Column(name = "URL_LOJA_BASE", length = 200)
+    private String urlLojaBase;
+
+    @Column(name = "URL_LOJA_PROSPECT", length = 200)
+    private String urlLojaProspect;
+
     @Transient
     private List<Integer> hierarquiasId;
 
