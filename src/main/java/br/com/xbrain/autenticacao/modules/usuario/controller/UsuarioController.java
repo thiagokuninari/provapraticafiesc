@@ -314,4 +314,11 @@ public class UsuarioController {
     public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
+
+    @GetMapping("{canal}/cargo/{codigoCargo}")
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
+                                                                  @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
+    }
+
 }

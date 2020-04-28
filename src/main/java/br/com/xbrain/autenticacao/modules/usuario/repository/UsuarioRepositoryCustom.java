@@ -102,4 +102,6 @@ public interface UsuarioRepositoryCustom {
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+
+    List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 }

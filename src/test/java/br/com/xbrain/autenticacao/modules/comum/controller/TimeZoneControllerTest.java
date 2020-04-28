@@ -20,50 +20,40 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@AutoConfigureMockMvc
 @Transactional
 @Sql(scripts = {"classpath:/tests_database.sql"})
 public class TimeZoneControllerTest {
 
-    private static String URL = "/api/timezone";
+    private static String URI = "/api/timezone";
 
     @Autowired
     private MockMvc mvc;
 
     @Test
     public void getAll_isUnauthorized_quandoNaoPassarAToken() throws Exception {
-        mvc.perform(get(URL)
+        mvc.perform(get(URI)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getAll_deveRetornarTodos_quandoAutenticado() throws Exception {
-        mvc.perform(get(URL)
+        mvc.perform(get(URI)
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(9)))
-                .andExpect(jsonPath("$[0].label", is("America/Campo_Grande GMT -4")))
-                .andExpect(jsonPath("$[0].value", is("AMERICA_CAMPO_GRANDE")))
-                .andExpect(jsonPath("$[1].label", is("America/Cuiaba GMT -4")))
-                .andExpect(jsonPath("$[1].value", is("AMERICA_CUIABA")))
-                .andExpect(jsonPath("$[2].label", is("America/Maceio GMT -3")))
-                .andExpect(jsonPath("$[2].value", is("AMERICA_MACEIO")))
-                .andExpect(jsonPath("$[3].label", is("America/Manaus GMT -4")))
-                .andExpect(jsonPath("$[3].value", is("AMERICA_MANAUS")))
-                .andExpect(jsonPath("$[4].label", is("America/Noronha GMT -2")))
-                .andExpect(jsonPath("$[4].value", is("AMERICA_NORONHA")))
-                .andExpect(jsonPath("$[5].label", is("America/Porto_Acre GMT -5")))
-                .andExpect(jsonPath("$[5].value", is("AMERICA_PORTO_ACRE")))
-                .andExpect(jsonPath("$[6].label", is("America/Recife GMT -3")))
-                .andExpect(jsonPath("$[6].value", is("AMERICA_RECIFE")))
-                .andExpect(jsonPath("$[7].label", is("America/Rio_Branco GMT -5")))
-                .andExpect(jsonPath("$[7].value", is("AMERICA_RIO_BRANCO")))
-                .andExpect(jsonPath("$[8].label", is("America/Sao_Paulo GMT -3")))
-                .andExpect(jsonPath("$[8].value", is("AMERICA_SAO_PAULO")));
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[0].label", is("Horário do Acre")))
+                .andExpect(jsonPath("$[0].value", is("ACT")))
+                .andExpect(jsonPath("$[1].label", is("Horário do Amazonas")))
+                .andExpect(jsonPath("$[1].value", is("AMT")))
+                .andExpect(jsonPath("$[2].label", is("Horário de Brasília")))
+                .andExpect(jsonPath("$[2].value", is("BRT")))
+                .andExpect(jsonPath("$[3].label", is("Horário de Fernando de Noronha")))
+                .andExpect(jsonPath("$[3].value", is("FNT")));
     }
 }

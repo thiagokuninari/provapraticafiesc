@@ -14,7 +14,10 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements CidadeRepositoryCustom {
@@ -151,6 +154,37 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .innerJoin(grupo.regional, regional)
                 .where(cidade.id.eq(id))
                 .fetchOne();
+    }
+
+    @Override
+    public List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .join(cidade.uf, uf1).fetchJoin()
+            .where(uf1.id.in(estadosIds)
+            .and(cidade.id.notIn(
+                select(cidade.id)
+                .from(site)
+                .join(site.cidades, cidade)
+            )))
+            .orderBy(cidade.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(List<Integer> estadosIds, Integer siteId) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .join(cidade.uf, uf1).fetchJoin()
+            .where(uf1.id.in(estadosIds)
+                .and(cidade.id.notIn(
+                    select(cidade.id)
+                        .from(site)
+                        .join(site.cidades, cidade)
+                    .where(site.id.ne(siteId))
+                )))
+            .orderBy(cidade.nome.asc())
+            .fetch();
     }
 
     @Override

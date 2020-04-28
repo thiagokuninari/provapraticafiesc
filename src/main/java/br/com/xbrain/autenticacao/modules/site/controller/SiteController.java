@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.site.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteDetalheResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
@@ -10,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "api/sites")
 public class SiteController {
@@ -18,14 +22,19 @@ public class SiteController {
     private SiteService service;
 
     @GetMapping
-    public Page<SiteResponse> getSites(PageRequest pageRequest, SiteFiltros filtros) {
-        return service.getAll(pageRequest, filtros)
-                .map(SiteResponse::of);
+    public Page<SiteResponse> getSites(SiteFiltros filtros, PageRequest pageRequest) {
+        return service.getAll(filtros, pageRequest)
+            .map(SiteResponse::of);
     }
 
     @GetMapping("{id}")
-    public SiteResponse getById(@PathVariable("id") Integer id) {
-        return SiteResponse.of(service.findById(id));
+    public SiteResponse getById(@PathVariable Integer id) {
+        return SiteResponse.of(service.findById(id), true);
+    }
+
+    @GetMapping("{id}/detalhe")
+    public SiteDetalheResponse getDetalheSiteById(@PathVariable Integer id) {
+        return SiteDetalheResponse.of(service.findById(id));
     }
 
     @PostMapping
@@ -39,13 +48,24 @@ public class SiteController {
     }
 
     @PutMapping("{id}/inativar")
-    public void inativar(@PathVariable("id") Integer id) {
+    public void inativar(@PathVariable Integer id) {
         service.inativar(id);
     }
 
     @PutMapping("{id}/ativar")
-    public void ativar(@PathVariable("id") Integer id) {
+    public void ativar(@PathVariable Integer id) {
         service.ativar(id);
     }
 
+    @GetMapping("estados-disponiveis")
+    public List<SelectResponse> buscarEstadosDisponiveis(Integer siteIgnoradoId) {
+        return service.buscarEstadosNaoAtribuidosEmSites(siteIgnoradoId);
+    }
+
+    @GetMapping("cidades-disponiveis")
+    public List<SelectResponse> buscarCidadesDisponiveisPorEstadosIds(@RequestParam List<Integer> estadosIds,
+                                                                      Integer siteIgnoradoId) {
+
+        return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosids(estadosIds, siteIgnoradoId);
+    }
 }

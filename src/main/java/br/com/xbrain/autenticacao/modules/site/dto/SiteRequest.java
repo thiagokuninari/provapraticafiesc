@@ -24,6 +24,7 @@ public class SiteRequest {
     @NotEmpty
     private List<Integer> supervisoresIds;
     @NotEmpty
+    private List<Integer> estadosIds;
     private List<Integer> cidadesIds;
-
+    private boolean incluirCidadesDisponiveis;
 }

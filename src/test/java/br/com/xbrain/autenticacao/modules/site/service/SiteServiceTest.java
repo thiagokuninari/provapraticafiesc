@@ -1,97 +1,76 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_2046;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelOperacaoGerente;
-import static org.mockito.ArgumentMatchers.any;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@Import({SiteService.class})
+
+@RunWith(MockitoJUnitRunner.class)
 public class SiteServiceTest {
 
-    @Autowired
-    private SiteService siteService;
-    @MockBean
-    private SiteRepository repository;
-    @MockBean
-    private AutenticacaoService autenticacaoService;
+    @InjectMocks
+    private SiteService service;
+    @Mock
+    private SiteRepository siteRepository;
+    @Mock
+    private UfRepository ufRepository;
+    @Mock
+    private CidadeRepository cidadeRepository;
 
-    @Before
-    public void setup() {
-        var siteAtivo = Site.builder().id(1).situacao(ESituacao.A).build();
-        var siteInativo = Site.builder().id(2).situacao(ESituacao.I).build();
+    @Test
+    public void findById_notFoundException_quandoNaoExistirSiteCadastrado() {
+        when(siteRepository.findById(Mockito.any()))
+            .thenReturn(Optional.empty());
 
-        when(repository.findById(eq(1))).thenReturn(Optional.of(siteAtivo));
-        when(repository.findById(eq(2))).thenReturn(Optional.of(siteInativo));
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findById(1))
+            .withMessageContaining("Site não encontrado.");
+
+        verify(siteRepository, atLeastOnce()).findById(eq(1));
     }
 
     @Test
-    public void validarPermissao_throwException_quandoUsuarioSemPermissaoParaListagem() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelBackoffice());
-        Assertions.assertThatExceptionOfType(PermissaoException.class)
-                .isThrownBy(() -> siteService.getAll(new PageRequest(), new SiteFiltros()));
+    public void findById_deveRetornarUmSite_quandoBuscarPorId() {
+        when(siteRepository.findById(Mockito.any()))
+            .thenReturn(Optional.of(umSite(1, "nome", BRT)));
+
+        Assertions.assertThat(service.findById(1))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(1, "Nome", BRT);
+
+        verify(siteRepository, atLeastOnce()).findById(eq(1));
     }
 
-    @Test
-    public void validarPermissao_throwException_quandoUsuarioSemPermissaoParaSalvar() {
-        var user = umUsuarioAutenticadoNivelBackoffice();
-        user.setPermissoes(List.of(new SimpleGrantedAuthority(AUT_2046.getRole())));
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
-
-        Assertions.assertThatExceptionOfType(PermissaoException.class)
-                .isThrownBy(() -> siteService.save(new SiteRequest()));
+    public List<Site> umListaSites() {
+        return List.of(
+            umSite(1, "Site Brando Big", BRT),
+            umSite(2, "Site Dinossauro do Acre", ACT),
+            umSite(3, "Site Amazonia Queimada", AMT)
+        );
     }
 
-    @Test
-    public void validarCanal_throwException_quandoUsuarioSemCanalAtivo() {
-        var user = umUsuarioAutenticadoNivelBackoffice();
-        user.setCanais(Set.of());
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
-
-        Assertions.assertThatExceptionOfType(PermissaoException.class)
-                .isThrownBy(() -> siteService.save(new SiteRequest()));
-    }
-
-    @Test
-    public void naoDeveAtivar_void_quandoSiteJaEstiverAtivo() {
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(umUsuarioAutenticadoNivelOperacaoGerente());
-        siteService.ativar(1);
-
-        verify(repository, never()).save(any(Site.class));
-    }
-
-    @Test
-    public void naoDeveInativar_void_quandoSiteJaEstiverInativo() {
-        when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(umUsuarioAutenticadoNivelOperacaoGerente());
-        siteService.inativar(2);
-
-        verify(repository, never()).save(any(Site.class));
+    private Site umSite(Integer id, String nome, ETimeZone timeZone) {
+        return Site.builder()
+            .id(id)
+            .nome(nome)
+            .timeZone(timeZone)
+            .build();
     }
 }

@@ -1,31 +1,25 @@
 package br.com.xbrain.autenticacao.modules.comum.enums;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ETimeZone {
 
-    AMERICA_PORTO_ACRE("America/Porto_Acre", -5),
-    AMERICA_RIO_BRANCO("America/Rio_Branco", -5),
-    AMERICA_CAMPO_GRANDE("America/Campo_Grande", -4),
-    AMERICA_MANAUS("America/Manaus", -4),
-    AMERICA_CUIABA("America/Cuiaba", -4),
-    AMERICA_RECIFE("America/Recife", -3),
-    AMERICA_SAO_PAULO("America/Sao_Paulo", -3),
-    AMERICA_MACEIO("America/Maceio", -3),
-    AMERICA_NORONHA("America/Noronha", -2);
+    ACT("Horário do Acre", "America/Rio_Branco"),
+    AMT("Horário do Amazonas", "America/Manaus"),
+    BRT("Horário de Brasília", "America/Sao_Paulo"),
+    FNT("Horário de Fernando de Noronha", "America/Noronha");
 
-    @Getter
-    private String codigo;
-    @Getter
-    private Integer gmt;
+    private String descricao;
+    private String zoneId;
 
-    ETimeZone(String codigo, Integer gmt) {
-        this.codigo = codigo;
-        this.gmt = gmt;
-    }
-
-    @Override
-    public String toString() {
-        return codigo + " GMT " + gmt.toString();
+    @JsonProperty("codigo")
+    public String getcodigo() {
+        return name();
     }
 }

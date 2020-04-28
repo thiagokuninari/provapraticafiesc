@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -15,10 +15,9 @@ import java.util.stream.Collectors;
 public class TimeZoneController {
 
     @GetMapping
-    public Iterable<SelectResponse> getTimeZones() {
+    public List<SelectResponse> getTimeZones() {
         return Arrays.stream(ETimeZone.values())
-                .map(item -> SelectResponse.convertFrom(item.name(), item.toString()))
-                .sorted(Comparator.comparing(SelectResponse::getLabel))
+                .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
                 .collect(Collectors.toList());
     }
 }

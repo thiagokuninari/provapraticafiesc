@@ -154,7 +154,7 @@ public class SiteControllerTest {
         var request = new SiteRequest();
         request.setId(1);
         request.setNome("Cambé");
-        request.setTimeZone(ETimeZone.AMERICA_SAO_PAULO);
+        request.setTimeZone(ETimeZone.BRT);
         request.setCidadesIds(List.of(4498));
         request.setCoordenadoresIds(List.of(102));
         request.setSupervisoresIds(List.of(300));
