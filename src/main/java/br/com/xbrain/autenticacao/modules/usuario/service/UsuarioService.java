@@ -59,6 +59,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1399,7 +1400,12 @@ public class UsuarioService {
         );
     }
 
-    public List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(Integer usuarioSuperiorId) {
-        return repository.findUsuariosIdsBySubclustersDoUsuarioId(usuarioSuperiorId);
+    //todo criar testes
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        UsuarioPredicate predicate = new UsuarioPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 }

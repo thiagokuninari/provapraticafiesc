@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
-import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -555,25 +554,6 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
 
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
-    }
-
-    @Test
-    @SneakyThrows
-    public void findUsuariosIdsBySubclustersDoUsuarioId_deveRetornarOk_seAutenticado() {
-        int umGerenteOperacao = 1009;
-        mvc.perform(get("/api/usuarios/{id}/assistentes-vendedores/mesmos-subclusters/ids", umGerenteOperacao)
-            .accept(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL)))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    @SneakyThrows
-    public void findUsuariosIdsBySubclustersDoUsuarioId_deveRetornarUnauthorized_seNaoAutenticado() {
-        int umGerenteOperacao = 1009;
-        mvc.perform(get("/api/usuarios/{id}/assistentes-vendedores/mesmos-subclusters/ids", umGerenteOperacao)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {

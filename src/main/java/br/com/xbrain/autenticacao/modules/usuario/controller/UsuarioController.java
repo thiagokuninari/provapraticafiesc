@@ -20,10 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -315,8 +312,8 @@ public class UsuarioController {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
 
-    @GetMapping("{id}/assistentes-vendedores/mesmos-subclusters/ids")
-    public List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(@PathVariable Integer id) {
-        return usuarioService.findUsuariosIdsBySubclustersDoUsuarioId(id);
+    @GetMapping("permitidos")
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
     }
 }

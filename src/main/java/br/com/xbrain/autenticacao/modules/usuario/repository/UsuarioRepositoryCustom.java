@@ -100,6 +100,4 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
-
-    List<Integer> findUsuariosIdsBySubclustersDoUsuarioId(Integer usuarioSuperiorId);
 }
