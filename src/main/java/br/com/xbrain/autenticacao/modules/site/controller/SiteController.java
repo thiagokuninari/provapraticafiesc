@@ -2,10 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteDetalheResponse;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.*;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +22,18 @@ public class SiteController {
     public Page<SiteResponse> getSites(SiteFiltros filtros, PageRequest pageRequest) {
         return service.getAll(filtros, pageRequest)
             .map(SiteResponse::of);
+    }
+
+    // todo test
+    @GetMapping("/ativos")
+    public List<SelectResponse> getAllAtivos() {
+        return service.getAllAtivos();
+    }
+
+    // todo test
+    @GetMapping("{id}/supervisores")
+    public List<SiteSupervisorResponse> getAllSupervisoresBySiteId(@PathVariable Integer id) {
+        return service.getAllSupervisoresBySiteId(id);
     }
 
     @GetMapping("{id}")

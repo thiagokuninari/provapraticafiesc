@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -50,6 +51,25 @@ public class SiteService {
     @Transactional(readOnly = true)
     public Page<Site> getAll(SiteFiltros filtros, PageRequest pageRequest) {
         return siteRepository.findAll(filtros.toPredicate(), pageRequest);
+    }
+
+    // todo test
+    @Transactional(readOnly = true)
+    public List<SelectResponse> getAllAtivos() {
+        return siteRepository.findBySituacaoAtiva()
+            .stream()
+            .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
+            .collect(toList());
+    }
+
+    // todo test
+    @Transactional(readOnly = true)
+    public List<SiteSupervisorResponse> getAllSupervisoresBySiteId(Integer id) {
+        return this.findById(id)
+            .getSupervisores()
+            .stream()
+            .map(SiteSupervisorResponse::of)
+            .collect(toList());
     }
 
     public Site save(SiteRequest request) {
