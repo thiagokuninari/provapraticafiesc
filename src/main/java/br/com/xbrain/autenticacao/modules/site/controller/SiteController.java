@@ -25,6 +25,12 @@ public class SiteController {
     }
 
     // todo test
+    @GetMapping("/estado/{estadoId}")
+    public List<SelectResponse> getSitesByEstadoId(@PathVariable Integer estadoId) {
+        return service.getSitesByEstadoId(estadoId);
+    }
+
+    // todo test
     @GetMapping("/ativos")
     public List<SelectResponse> getAllAtivos() {
         return service.getAllAtivos();

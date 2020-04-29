@@ -10,4 +10,6 @@ public interface SiteRepositoryCustom {
     Optional<Site> findById(Integer id);
 
     List<Site> findBySituacaoAtiva();
+
+    List<Site> findByEstadoId(Integer estadoId);
 }

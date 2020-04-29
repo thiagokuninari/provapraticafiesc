@@ -43,4 +43,10 @@ public class SiteRepositoryTest {
         Assertions.assertThat(repository.findBySituacaoAtiva())
             .hasSize(3);
     }
+
+    @Test
+    public void findByEstadoId_listaComDoisSites_quandoBuscarSitesPeloEstadoId() {
+        Assertions.assertThat(repository.findByEstadoId(2))
+            .hasSize(2);
+    }
 }
