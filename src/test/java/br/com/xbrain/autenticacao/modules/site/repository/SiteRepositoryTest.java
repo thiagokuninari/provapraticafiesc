@@ -37,4 +37,10 @@ public class SiteRepositoryTest {
         Assertions.assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(5578), 0))
             .isPresent();
     }
+
+    @Test
+    public void findBySituacaoAtiva_listaComTresSites_quandoBuscarSitesComSituacaoAtiva() {
+        Assertions.assertThat(repository.findBySituacaoAtiva())
+            .hasSize(3);
+    }
 }

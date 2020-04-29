@@ -25,7 +25,6 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
                 .fetchOne());
     }
 
-    // todo test
     @Override
     public List<Site> findBySituacaoAtiva() {
         return new JPAQueryFactory(entityManager)

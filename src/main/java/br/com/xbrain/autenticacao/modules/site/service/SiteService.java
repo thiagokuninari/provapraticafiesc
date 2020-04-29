@@ -53,7 +53,6 @@ public class SiteService {
         return siteRepository.findAll(filtros.toPredicate(), pageRequest);
     }
 
-    // todo test
     @Transactional(readOnly = true)
     public List<SelectResponse> getAllAtivos() {
         return siteRepository.findBySituacaoAtiva()
@@ -62,7 +61,6 @@ public class SiteService {
             .collect(toList());
     }
 
-    // todo test
     @Transactional(readOnly = true)
     public List<SiteSupervisorResponse> getAllSupervisoresBySiteId(Integer id) {
         return this.findById(id)

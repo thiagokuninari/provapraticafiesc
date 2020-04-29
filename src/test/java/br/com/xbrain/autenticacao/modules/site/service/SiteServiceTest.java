@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -16,9 +17,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
@@ -72,5 +74,48 @@ public class SiteServiceTest {
             .nome(nome)
             .timeZone(timeZone)
             .build();
+    }
+
+    @Test
+    public void getAllAtivos_listaComTresSites_quandoBuscarSitesAtivos() {
+        when(siteRepository.findBySituacaoAtiva())
+            .thenReturn(umListaSites());
+
+        assertThat(service.getAllAtivos())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brando Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
+    }
+
+    @Test
+    public void getAllSupervisoresBySiteId_umaListaComDoisSupervisores_quandoBuscarSupervisoresPeloSiteId() {
+        var site = umSite(1, "TESTE SITE", BRT);
+        site.setSupervisores(umaListaSupervisores());
+
+        when(siteRepository.findById(1))
+            .thenReturn(Optional.of(site));
+
+        assertThat(service.getAllSupervisoresBySiteId(1))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "RENATO"),
+                tuple(2, "MARIA")
+            );
+    }
+
+    private Set<Usuario> umaListaSupervisores() {
+        return Set.of(
+            Usuario.builder()
+                .id(1)
+                .nome("RENATO")
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .nome("MARIA")
+                .build()
+        );
     }
 }
