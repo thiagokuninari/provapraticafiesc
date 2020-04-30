@@ -27,8 +27,7 @@ public class UsuarioComunicadosPredicate {
         this.builder = new BooleanBuilder();
     }
 
-    public UsuarioComunicadosPredicate comFiltroCidadeParceiros(List<Integer> usuariosIdsPol,
-                                                                PublicoAlvoComunicadoFiltros filtros,
+    public UsuarioComunicadosPredicate comFiltroCidadeParceiros(PublicoAlvoComunicadoFiltros filtros,
                                                                 BooleanBuilder builder) {
         var predicate = comClusterId(filtros.getClusterId())
             .comCidadesIds(filtros.getCidadesIds())
@@ -36,7 +35,7 @@ public class UsuarioComunicadosPredicate {
             .comRegionalId(filtros.getRegionalId())
             .comSubClusterId(filtros.getSubClusterId()).build();
 
-        builder.and(comUsuariosIds(usuariosIdsPol))
+        builder.and(comUsuariosIds(filtros.getUsuariosFiltradosPorCidadePol()))
             .or(predicate);
 
         return this;

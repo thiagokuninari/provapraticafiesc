@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class PublicoAlvoComunicadoFiltros {
     private Integer grupoId;
     private Integer regionalId;
     private Integer subClusterId;
+    private List<Integer> usuariosFiltradosPorCidadePol;
 
     private UsuarioAutenticado usuarioAutenticado;
     private UsuarioService usuarioService;
@@ -59,5 +61,13 @@ public class PublicoAlvoComunicadoFiltros {
             usuariosIds = newArrayList();
         }
         usuariosIds.addAll(usuariosIdNovos);
+    }
+
+    public boolean haveFiltrosDeLocalizacao() {
+        return !ObjectUtils.isEmpty(cidadesIds)
+            || !ObjectUtils.isEmpty(clusterId)
+            || !ObjectUtils.isEmpty(grupoId)
+            || !ObjectUtils.isEmpty(regionalId)
+            || !ObjectUtils.isEmpty(subClusterId);
     }
 }

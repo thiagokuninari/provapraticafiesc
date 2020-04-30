@@ -388,11 +388,11 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                      PublicoAlvoComunicadoFiltros filtros) {
-        if (usuario.haveCanalAgenteAutorizado()) {
-            var ids = usuarioService.getIdDosUsuariosParceiros(filtros);
-            if (!ids.isEmpty()) {
+        if (usuario.haveCanalAgenteAutorizado() && filtros.haveFiltrosDeLocalizacao()) {
+            filtros.setUsuariosFiltradosPorCidadePol(usuarioService.getIdDosUsuariosParceiros(filtros));
+            if (!filtros.getUsuariosFiltradosPorCidadePol().isEmpty()) {
                 new UsuarioComunicadosPredicate()
-                    .comFiltroCidadeParceiros(ids, filtros, this.builder)
+                    .comFiltroCidadeParceiros(filtros, this.builder)
                     .build();
                 return this;
             }
