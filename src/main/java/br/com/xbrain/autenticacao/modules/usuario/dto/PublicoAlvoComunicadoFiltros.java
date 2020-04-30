@@ -40,7 +40,7 @@ public class PublicoAlvoComunicadoFiltros {
 
     @JsonIgnore
     public Predicate toPredicate() {
-        Predicate build = new UsuarioPredicate()
+        return new UsuarioPredicate()
             .comCanalD2d(isTodoCanalD2d())
             .comCanalAa(isTodoCanalAa())
             .comUsuariosIds(getUsuariosIds())
@@ -52,7 +52,6 @@ public class PublicoAlvoComunicadoFiltros {
             .semUsuarioId(usuarioAutenticado.getId())
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService, this)
             .build();
-        return build;
     }
 
     public void adicionarUsuariosId(List<Integer> usuariosIdNovos) {
