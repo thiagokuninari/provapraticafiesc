@@ -158,4 +158,11 @@ public class SiteService {
             .orElseGet(() -> cidadeRepository
                 .buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds));
     }
+
+    public List<SelectResponse> getSitesByEstadoId(Integer estadoId) {
+        return siteRepository.findByEstadoId(estadoId)
+            .stream()
+            .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
+            .collect(toList());
+    }
 }

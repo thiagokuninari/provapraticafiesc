@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -30,6 +31,15 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
         return new JPAQueryFactory(entityManager)
             .selectFrom(site)
             .where(site.situacao.eq(ESituacao.A))
+            .fetch();
+    }
+
+    @Override
+    public List<Site> findByEstadoId(Integer estadoId) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(site)
+            .where(site.situacao.eq(ESituacao.A)
+                .and(site.estados.contains(new Uf(estadoId))))
             .fetch();
     }
 }

@@ -22,13 +22,13 @@ public class SiteRepositoryTest {
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
-        Assertions.assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(1, 2), 1))
+        Assertions.assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(1, 2), 100))
             .isNotPresent();
     }
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
-        Assertions.assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(5578), 1))
+        Assertions.assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(5578), 100))
             .isNotPresent();
     }
 
@@ -42,5 +42,11 @@ public class SiteRepositoryTest {
     public void findBySituacaoAtiva_listaComTresSites_quandoBuscarSitesComSituacaoAtiva() {
         Assertions.assertThat(repository.findBySituacaoAtiva())
             .hasSize(3);
+    }
+
+    @Test
+    public void findByEstadoId_listaComDoisSites_quandoBuscarSitesPeloEstadoId() {
+        Assertions.assertThat(repository.findByEstadoId(2))
+            .hasSize(2);
     }
 }

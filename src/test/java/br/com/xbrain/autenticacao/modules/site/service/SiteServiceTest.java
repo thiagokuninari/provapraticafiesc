@@ -260,6 +260,20 @@ public class SiteServiceTest {
             );
     }
 
+    @Test
+    public void getSitesByEstadoId_umaListaComTresSites_quandoBuscarSitesPeloEstadoId() {
+        when(siteRepository.findByEstadoId(1))
+            .thenReturn(umListaSites());
+
+        assertThat(service.getSitesByEstadoId(1))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
+    }
+
     private Set<Usuario> umaListaSupervisores() {
         return Set.of(
             Usuario.builder()

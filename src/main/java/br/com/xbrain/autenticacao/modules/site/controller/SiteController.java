@@ -24,6 +24,11 @@ public class SiteController {
             .map(SiteResponse::of);
     }
 
+    @GetMapping("/estado/{estadoId}")
+    public List<SelectResponse> getSitesByEstadoId(@PathVariable Integer estadoId) {
+        return service.getSitesByEstadoId(estadoId);
+    }
+
     @GetMapping("/ativos")
     public List<SelectResponse> getAllAtivos() {
         return service.getAllAtivos();

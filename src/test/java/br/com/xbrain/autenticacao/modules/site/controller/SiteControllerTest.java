@@ -139,6 +139,19 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
+    public void getSitesByEstadoId_deveRetornarOsSitesQueEstaoNoMesmoEstado() {
+        mvc.perform(get(API_URI + "/estado/{estadoId}", 2)
+            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value", is(101)))
+            .andExpect(jsonPath("$[0].label", is("Rio Branco")))
+            .andExpect(jsonPath("$[1].value", is(102)))
+            .andExpect(jsonPath("$[1].label", is("Manaus")));
+    }
+
+    @Test
+    @SneakyThrows
     public void buscarEstadosDisponiveis_estadosDisponiveis_quandoNaoTerVinculosComOutrosSites() {
         mvc.perform(get(API_URI + "/estados-disponiveis")
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
