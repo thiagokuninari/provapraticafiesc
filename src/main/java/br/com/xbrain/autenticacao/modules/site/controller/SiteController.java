@@ -24,13 +24,11 @@ public class SiteController {
             .map(SiteResponse::of);
     }
 
-    // todo test
     @GetMapping("/ativos")
     public List<SelectResponse> getAllAtivos() {
         return service.getAllAtivos();
     }
 
-    // todo test
     @GetMapping("{id}/supervisores")
     public List<SiteSupervisorResponse> getAllSupervisoresBySiteId(@PathVariable Integer id) {
         return service.getAllSupervisoresBySiteId(id);
@@ -75,6 +73,6 @@ public class SiteController {
     public List<SelectResponse> buscarCidadesDisponiveisPorEstadosIds(@RequestParam List<Integer> estadosIds,
                                                                       Integer siteIgnoradoId) {
 
-        return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosids(estadosIds, siteIgnoradoId);
+        return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds, siteIgnoradoId);
     }
 }

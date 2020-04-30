@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.toList;
 public class SiteService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
-    private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastro no sistema.");
+    private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
 
@@ -63,7 +63,7 @@ public class SiteService {
 
     @Transactional(readOnly = true)
     public List<SiteSupervisorResponse> getAllSupervisoresBySiteId(Integer id) {
-        return this.findById(id)
+        return findById(id)
             .getSupervisores()
             .stream()
             .map(SiteSupervisorResponse::of)
@@ -119,7 +119,7 @@ public class SiteService {
             .collect(toList());
     }
 
-    public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosids(List<Integer> estadosIds, Integer siteIgnoradoId) {
+    public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds, Integer siteIgnoradoId) {
         return buscarCidadesDisponiveis(estadosIds, siteIgnoradoId)
             .stream()
             .map(cidade -> SelectResponse.convertFrom(cidade.getId(), cidade.getNomeComUf()))

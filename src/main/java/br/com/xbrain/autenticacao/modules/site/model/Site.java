@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
@@ -17,10 +14,11 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table(name = "SITE")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "SITE")
+@EqualsAndHashCode(of = "id")
 public class Site {
 
     @Id
