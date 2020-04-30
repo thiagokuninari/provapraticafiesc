@@ -637,10 +637,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<Integer> findAllIds(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(usuario.id)
-                .from(usuario)
-                .where(predicate)
-                .fetch();
+            .select(usuario.id)
+            .from(usuario)
+            .leftJoin(usuario.cidades, usuarioCidade)
+            .leftJoin(usuarioCidade.cidade, cidade)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
+            .where(predicate)
+            .fetch();
     }
 
     @Override
@@ -648,7 +654,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
                 .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
                 .from(usuario)
+            .leftJoin(usuario.cidades, usuarioCidade)
+            .leftJoin(usuarioCidade.cidade, cidade)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(predicate)
+            .distinct()
             .fetch();
     }
 

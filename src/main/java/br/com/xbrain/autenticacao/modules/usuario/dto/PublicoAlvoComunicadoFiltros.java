@@ -40,23 +40,19 @@ public class PublicoAlvoComunicadoFiltros {
 
     @JsonIgnore
     public Predicate toPredicate() {
-        return new UsuarioPredicate()
+        Predicate build = new UsuarioPredicate()
             .comCanalD2d(isTodoCanalD2d())
             .comCanalAa(isTodoCanalAa())
             .comUsuariosIds(getUsuariosIds())
             .comCargosIds(getCargosIds())
-            .comCidadesIds(getCidadesIds(), clusterId, grupoId, regionalId, subClusterId)
             .comNiveisIds(getNiveisIds())
             .comUsuariosLogadosHoje(comUsuariosLogadosHoje)
             .comSituacoes(List.of(ESituacao.A, ESituacao.I))
             .comFiltroCidadeParceiros(usuarioAutenticado, usuarioService, this)
             .semUsuarioId(usuarioAutenticado.getId())
-            .comCluster(clusterId)
-            .comGrupo(grupoId)
-            .comRegional(regionalId)
-            .comSubCluster(subClusterId)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService, this)
             .build();
+        return build;
     }
 
     public void adicionarUsuariosId(List<Integer> usuariosIdNovos) {

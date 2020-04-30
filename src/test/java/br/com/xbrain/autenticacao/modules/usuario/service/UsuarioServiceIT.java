@@ -102,7 +102,7 @@ public class UsuarioServiceIT {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
-    @SpyBean
+    @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
@@ -326,7 +326,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(245)
             .observacao("ATIVANDO O SÓCIO PRINCIPAL")
@@ -353,7 +353,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
             + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
@@ -365,7 +365,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
-        when(agenteAutorizadoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        when(agenteAutorizadoService.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -930,6 +930,74 @@ public class UsuarioServiceIT {
                 tuple(111, "HELPDESK"),
                 tuple(104, "operacao_gerente_comercial"),
                 tuple(115, "joao silveira"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(111, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(115, "joao silveira"),
+                tuple(100, "ADMIN"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(370, "HELIO OLIVEIRA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeNaoReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(111, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(115, "joao silveira"),
+                tuple(100, "ADMIN"),
+                tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(370, "HELIO OLIVEIRA"));
     }
 
     @Test

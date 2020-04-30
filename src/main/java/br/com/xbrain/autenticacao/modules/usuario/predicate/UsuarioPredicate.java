@@ -390,9 +390,23 @@ public class UsuarioPredicate {
                                                      PublicoAlvoComunicadoFiltros filtros) {
         if (usuario.haveCanalAgenteAutorizado()) {
             var ids = usuarioService.getIdDosUsuariosParceiros(filtros);
-            comUsuariosIds(List.copyOf(ids));
+            if (!ids.isEmpty()) {
+                new UsuarioComunicadosPredicate()
+                    .comFiltroCidadeParceiros(ids, filtros, this.builder)
+                    .build();
+                return this;
+            }
         }
+        comEstruturaDeCidade(filtros);
         return this;
+    }
+
+    public UsuarioPredicate comEstruturaDeCidade(PublicoAlvoComunicadoFiltros filtros) {
+        return comCluster(filtros.getClusterId())
+            .comCidade(filtros.getCidadesIds())
+            .comGrupo(filtros.getGrupoId())
+            .comRegional(filtros.getRegionalId())
+            .comSubCluster(filtros.getSubClusterId());
     }
 
     public Predicate build() {
