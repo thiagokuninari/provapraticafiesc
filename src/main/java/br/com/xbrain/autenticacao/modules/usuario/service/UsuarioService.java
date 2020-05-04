@@ -1034,9 +1034,9 @@ public class UsuarioService {
     }
 
     public UsuarioResponse getUsuarioSuperior(Integer idUsuario) {
-        UsuarioHierarquia usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
+        var usuarioHierarquia = repository.getUsuarioSuperior(idUsuario)
             .orElse(null);
-        if (usuarioHierarquia == null) {
+        if (Objects.isNull(usuarioHierarquia)) {
             return new UsuarioResponse();
         }
         return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
@@ -1377,7 +1377,7 @@ public class UsuarioService {
         return repository
             .getSubclustersUsuario(usuarioId)
             .stream()
-            .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
+            .map(s -> SelectResponse.of(s.getId(), s.getNomeComMarca()))
             .collect(Collectors.toList());
     }
 
@@ -1447,5 +1447,9 @@ public class UsuarioService {
                 .map(Cargo::getId)
                 .collect(Collectors.toList())
         );
+    }
+
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 }

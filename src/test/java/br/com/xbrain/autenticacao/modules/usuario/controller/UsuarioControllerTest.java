@@ -556,6 +556,19 @@ public class UsuarioControllerTest {
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
     }
 
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value").value(300))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[1].value").value(102))
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

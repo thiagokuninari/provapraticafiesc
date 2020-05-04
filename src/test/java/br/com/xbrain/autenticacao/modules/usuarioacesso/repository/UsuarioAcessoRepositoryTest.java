@@ -36,7 +36,7 @@ public class UsuarioAcessoRepositoryTest {
     }
 
     @Test
-    public void deletarHistoricoUsuarioAcesso_deveDeletarQuatroHistorico_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
+    public void deletarHistoricoUsuarioAcesso_removerHistoricos_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
         assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(19);
         usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
         assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(15);

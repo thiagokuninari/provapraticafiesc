@@ -123,7 +123,7 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{idUsuario}/supervisor")
-    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
+    public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);
     }
 

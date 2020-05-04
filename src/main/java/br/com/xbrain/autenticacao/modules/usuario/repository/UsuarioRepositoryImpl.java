@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -59,6 +60,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     private static final int TRINTA_DOIS_DIAS = 32;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
+    private static final int ID_NIVEL_OPERACAO = 1;
 
     @Autowired
     private EntityManager entityManager;
@@ -67,29 +69,29 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
-                .innerJoin(usuario.cargo, cargo).fetchJoin()
-                .innerJoin(cargo.nivel).fetchJoin()
-                .innerJoin(usuario.departamento).fetchJoin()
-                .innerJoin(usuario.empresas).fetchJoin()
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                        .and(usuario.situacao.ne(ESituacao.R))
-                )
-                .fetchOne());
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .innerJoin(usuario.cargo, cargo).fetchJoin()
+                        .innerJoin(cargo.nivel).fetchJoin()
+                        .innerJoin(usuario.departamento).fetchJoin()
+                        .innerJoin(usuario.empresas).fetchJoin()
+                        .where(
+                                usuario.email.equalsIgnoreCase(email)
+                                        .and(usuario.situacao.ne(ESituacao.R))
+                        )
+                        .fetchOne());
     }
 
     public Optional<Usuario> findUsuarioByEmail(String email) {
         return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
-                .where(
-                    usuario.email.equalsIgnoreCase(email)
-                )
-                .fetchOne());
+                new JPAQueryFactory(entityManager)
+                        .select(usuario)
+                        .from(usuario)
+                        .where(
+                                usuario.email.equalsIgnoreCase(email)
+                        )
+                        .fetchOne());
     }
 
     public Optional<Usuario> findComplete(Integer id) {
@@ -126,17 +128,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
         List<BigDecimal> result = entityManager
-            .createNativeQuery(
-                " SELECT FK_USUARIO"
-                    + " FROM usuario_hierarquia"
-                    + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                    + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
-            .setParameter("_usuarioId", usuarioId)
-            .getResultList();
+                .createNativeQuery(
+                        " SELECT FK_USUARIO"
+                                + " FROM usuario_hierarquia"
+                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .getResultList();
         return result
-            .stream()
-            .map(BigDecimal::intValue)
-            .collect(Collectors.toList());
+                .stream()
+                .map(BigDecimal::intValue)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -380,8 +382,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .join(usuarioHierarquia.usuario).fetchJoin()
                 .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
                 .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                .orderBy(usuarioHierarquia.dataCadastro.desc())
                 .distinct()
-                .fetchOne());
+                .fetchFirst());
     }
 
     @Override
@@ -727,6 +730,21 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(nivel.codigo.eq(OPERACAO))
                 .and(cargo.id.eq(cargoId)))
             .orderBy(usuario.id.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa() {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SelectResponse.class,
+                usuario.id,
+                usuario.nome))
+            .from(usuario)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(cargo.nivel, nivel)
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
+                .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
+            .orderBy(usuario.nome.asc())
             .fetch();
     }
 }
