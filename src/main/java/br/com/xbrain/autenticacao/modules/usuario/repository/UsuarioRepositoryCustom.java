@@ -108,5 +108,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
 
-    List<SelectResponse> findAllAtivosByNivelOperacao();
+    List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 }

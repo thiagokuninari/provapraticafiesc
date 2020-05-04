@@ -763,7 +763,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<SelectResponse> findAllAtivosByNivelOperacao() {
+    public List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa() {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(SelectResponse.class,
                 usuario.id,
@@ -771,7 +771,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .leftJoin(usuario.cargo, cargo)
             .leftJoin(cargo.nivel, nivel)
-            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO)))
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
+                .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.nome.asc())
             .fetch();
     }
