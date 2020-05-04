@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 public class CidadeService {
@@ -84,7 +86,9 @@ public class CidadeService {
         return repository.getClusterizacao(id);
     }
 
-    public List<Cidade> getAllCidadeByUfs(List<Integer> ufIds) {
-        return repository.findCidadeByUfIdInOrderByNome(ufIds);
+    public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
+        return repository.findCidadeByUfIdInOrderByNome(ufIds).stream()
+            .map(CidadeUfResponse::of)
+            .collect(Collectors.toList());
     }
 }
