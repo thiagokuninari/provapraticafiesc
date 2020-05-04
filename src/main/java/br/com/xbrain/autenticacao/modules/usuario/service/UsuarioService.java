@@ -946,6 +946,16 @@ public class UsuarioService {
                 .build());
     }
 
+    public List<Usuario> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId, String canal) {
+        return repository.getUsuariosFilter(
+            new UsuarioPredicate()
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                .comCidade(cidadesId)
+                .comCanal(canal)
+                .build());
+    }
+
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
             .comEmpresas(usuarioFiltrosDto.getEmpresasIds())
