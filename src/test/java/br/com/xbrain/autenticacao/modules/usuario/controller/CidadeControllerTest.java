@@ -190,7 +190,7 @@ public class CidadeControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(13)))
-            .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")));
+            .andExpect(jsonPath("$[0].cidade", is("ARAPONGAS")));
     }
 
     private Cidade umaCidade() {
