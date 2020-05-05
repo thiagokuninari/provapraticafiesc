@@ -31,7 +31,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -342,8 +341,7 @@ public class UsuarioPredicate {
         if (isEmpty(usuario)) {
             return this;
         }
-        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
-        ignorarXbrain(!usuario.isXbrain());
+        ignorarFiltro(usuario);
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
@@ -366,13 +364,17 @@ public class UsuarioPredicate {
         return this;
     }
 
+    private void ignorarFiltro(UsuarioAutenticado usuario) {
+        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
+        ignorarXbrain(!usuario.isXbrain());
+    }
+
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                          PublicoAlvoComunicadoFiltros filtros) {
-        if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            Set<Integer> idDosUsuariosSubordinados = newHashSet();
-            if (usuario.possuiCargoSuperiorOperacao()) {
-                idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
-            }
+        if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA) && usuario.possuiCargoSuperiorOperacao()) {
+            ignorarFiltro(usuario);
+            var idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
+
             idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
                 false));
 

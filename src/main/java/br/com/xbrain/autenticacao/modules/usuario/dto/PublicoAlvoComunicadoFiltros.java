@@ -60,7 +60,9 @@ public class PublicoAlvoComunicadoFiltros {
         if (isNull(usuariosIds)) {
             usuariosIds = newArrayList();
         }
-        usuariosIds.addAll(usuariosIdNovos);
+        if (!ObjectUtils.isEmpty(usuariosIdNovos)) {
+            usuariosIds.addAll(usuariosIdNovos);
+        }
     }
 
     public boolean haveFiltrosDeLocalizacao() {

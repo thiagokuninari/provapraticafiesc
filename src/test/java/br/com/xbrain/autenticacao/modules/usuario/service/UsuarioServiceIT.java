@@ -670,7 +670,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .todoCanalAa(true).build());
-        assertThat(usuarios).isEqualTo(List.of(105, 366, 369));
+        assertThat(usuarios).isEqualTo(List.of(105, 239, 240, 366, 369));
     }
 
     @Test
@@ -758,7 +758,10 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .todoCanalAa(true).build());
-        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(105, "INATIVO"),
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+            tuple(105, "INATIVO"),
+            tuple(239, "VENDEDOR OPERACAO 2"),
+            tuple(240, "VENDEDOR OPERACAO 3"),
             tuple(366, "mso_analistaadm_claromovel_pessoal"),
             tuple(369, "MARIA AUGUSTA"));
     }
@@ -1223,7 +1226,8 @@ public class UsuarioServiceIT {
         assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple(239, "VENDEDOR  OPERACAO 2"),
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
                 tuple(240, "VENDEDOR OPERACAO 3")
             );
     }
