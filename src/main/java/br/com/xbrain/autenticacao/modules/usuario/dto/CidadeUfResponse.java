@@ -24,7 +24,7 @@ public class CidadeUfResponse {
         return CidadeUfResponse.builder()
             .cidadeId(cidade.getId())
             .cidade(cidade.getNome())
-            .uf(cidade.getSiglaUf())
+            .uf(cidade.getNomeUf())
             .ufId(cidade.getIdUf())
             .build();
     }

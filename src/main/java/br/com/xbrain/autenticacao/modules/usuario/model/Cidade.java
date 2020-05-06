@@ -116,9 +116,4 @@ public class Cidade {
     public String getNomeUf() {
         return ObjectUtils.isEmpty(uf) ? null : uf.getNome();
     }
-
-    @JsonIgnore
-    public String getSiglaUf() {
-        return ObjectUtils.isEmpty(uf) ? null : uf.getUf();
-    }
 }
