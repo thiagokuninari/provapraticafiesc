@@ -584,7 +584,8 @@ public class UsuarioControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.urlLojaBase", is("http://loja.com.br/1")))
-            .andExpect(jsonPath("$.urlLojaProspect", is("http://loja.com.br/2")));
+            .andExpect(jsonPath("$.urlLojaProspect", is("http://loja.com.br/2")))
+            .andExpect(jsonPath("$.urlLojaProspectNextel", is("http://loja.com.br/3")));
     }
 
     @Test

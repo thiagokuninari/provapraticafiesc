@@ -15,6 +15,7 @@ public class UrlLojaOnlineResponse {
 
     private String urlLojaBase;
     private String urlLojaProspect;
+    private String urlLojaProspectNextel;
 
     public static UrlLojaOnlineResponse of(Usuario usuario) {
         var urls = new UrlLojaOnlineResponse();

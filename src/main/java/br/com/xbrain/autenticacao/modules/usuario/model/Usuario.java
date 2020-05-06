@@ -220,6 +220,9 @@ public class Usuario {
     @Column(name = "URL_LOJA_PROSPECT", length = 200)
     private String urlLojaProspect;
 
+    @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
+    private String urlLojaProspectNextel;
+
     @Transient
     private List<Integer> hierarquiasId;
 
