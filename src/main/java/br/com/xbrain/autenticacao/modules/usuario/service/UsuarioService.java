@@ -1439,4 +1439,10 @@ public class UsuarioService {
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
+
+    public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
+        return repository.findById(id)
+            .map(UrlLojaOnlineResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }

@@ -328,4 +328,9 @@ public class UsuarioController {
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
         return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
     }
+
+    @GetMapping("{id}/url-loja-online")
+    public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
+        return usuarioService.getUrlLojaOnline(id);
+    }
 }

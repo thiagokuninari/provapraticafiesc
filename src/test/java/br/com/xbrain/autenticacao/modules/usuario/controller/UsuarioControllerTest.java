@@ -569,6 +569,25 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
     }
 
+    @Test
+    public void buscarUrlLojaOnline_deveRetornarUrls_quandoSolicitado() throws Exception {
+        mvc.perform(get("/api/usuarios/100/url-loja-online")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.urlLojaBase", is("http://loja.com.br/1")))
+            .andExpect(jsonPath("$.urlLojaProspect", is("http://loja.com.br/2")))
+            .andExpect(jsonPath("$.urlLojaProspectNextel", is("http://loja.com.br/3")));
+    }
+
+    @Test
+    public void buscarUrlLojaOnline_deveRetornarBadRequest_quandoNaoEncontrado() throws Exception {
+        mvc.perform(get("/api/usuarios/99999/url-loja-online")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()
