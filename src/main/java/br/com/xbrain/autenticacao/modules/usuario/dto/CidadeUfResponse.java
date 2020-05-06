@@ -1,10 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -24,5 +27,10 @@ public class CidadeUfResponse {
             .uf(cidade.getSiglaUf())
             .ufId(cidade.getIdUf())
             .build();
+    }
+
+    @JsonIgnore
+    public String getNomeComUf() {
+        return Objects.nonNull(uf) ? cidade + " - " + uf : cidade;
     }
 }
