@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.OrganizacaoResponse;
 import br.com.xbrain.autenticacao.modules.comum.service.OrganizacaoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +22,7 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,7 +51,7 @@ public class OrganizacaoControllerTest {
 
     @Test
     public void getAllSelect_todasOrganizacoes_quandoSolicitar() throws Exception {
-        Mockito.when(organizacaoService.getAllSelect(null))
+        when(organizacaoService.getAllSelect(null))
                 .thenReturn(List.of(
                         umaOrganizacao(1, "BCC"),
                         umaOrganizacao(2, "CALLINK")));
@@ -64,5 +65,19 @@ public class OrganizacaoControllerTest {
                 .andExpect(jsonPath("$[0].label", is("BCC")))
                 .andExpect(jsonPath("$[1].value", is(2)))
                 .andExpect(jsonPath("$[1].label", is("CALLINK")));
+    }
+
+    @Test
+    public void getById_organizacao_quandoExistir() throws Exception {
+        when(organizacaoService.getById(1))
+            .thenReturn(OrganizacaoResponse.of(umaOrganizacao(2, "CALLINK")));
+
+        mvc.perform(get(ORGANIZACOES_API + "/1")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(2)))
+            .andExpect(jsonPath("$.nome", is("CALLINK")))
+            .andExpect(jsonPath("$.codigo", is("CALLINK")));
     }
 }
