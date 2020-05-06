@@ -54,7 +54,7 @@ public class NivelService {
                 .exibeProprioNivelSeNaoVisualizarGeral(
                     usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
                     usuarioAutenticado.getNivelCodigoEnum(),
-                    usuarioAutenticado.possuiCargoSuperiorOperacao())
+                    usuarioAutenticado.haveCanalAgenteAutorizado())
                 .build());
     }
 }

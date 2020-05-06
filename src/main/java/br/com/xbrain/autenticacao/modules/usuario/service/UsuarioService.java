@@ -274,8 +274,8 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
-    public Set<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, PublicoAlvoComunicadoFiltros filtros) {
-        var usuariosPol = filtros.getUsuariosFiltradosPorCidadePol().isEmpty()
+    public Set<Integer> getIdDosUsuariosSubordinadosDoPol(Integer usuarioId, PublicoAlvoComunicadoFiltros filtros) {
+        var usuariosPol = isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
             ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
             : filtros.getUsuariosFiltradosPorCidadePol();
         var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuarioId));

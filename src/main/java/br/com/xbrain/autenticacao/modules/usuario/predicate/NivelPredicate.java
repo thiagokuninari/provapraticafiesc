@@ -29,9 +29,9 @@ public class NivelPredicate {
     }
 
     public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel,
-                                                                boolean isGerenciaOperacao) {
+                                                                boolean haveCanalAa) {
         if (!visualizaGeral) {
-            if (isGerenciaOperacao) {
+            if (haveCanalAa) {
                 builder.and(nivel.codigo.in(codigoNivel, CodigoNivel.AGENTE_AUTORIZADO));
             } else {
                 builder.and(nivel.codigo.eq(codigoNivel));

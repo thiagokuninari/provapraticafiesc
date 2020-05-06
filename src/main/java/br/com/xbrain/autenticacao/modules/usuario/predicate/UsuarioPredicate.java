@@ -176,6 +176,18 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate ouComUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.or(
+                ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList())));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
         builder.and(usuario.id.in(usuariosIds));
         return this;
@@ -371,21 +383,11 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                          PublicoAlvoComunicadoFiltros filtros) {
-        if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA) && usuario.possuiCargoSuperiorOperacao()) {
-            ignorarFiltro(usuario);
-            var idDosUsuariosSubordinados = usuarioService.getIdDosUsuariosSubordinados(usuario.getId(), filtros);
-
-            idDosUsuariosSubordinados.addAll(usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(),
-                false));
-
-            daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
-                usuario.getUsuario().getId());
-
-            return daCarteiraHierarquiaOuUsuarioCadastro(List.copyOf(idDosUsuariosSubordinados),
-                usuario.getUsuario().getId());
+        filtraPermitidos(usuario, usuarioService, false);
+        if (usuario.haveCanalAgenteAutorizado()) {
+            ouComUsuariosIds(List.copyOf(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario.getId(), filtros)));
         }
-        return filtraPermitidos(usuario, usuarioService, false);
+        return this;
     }
 
     public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,

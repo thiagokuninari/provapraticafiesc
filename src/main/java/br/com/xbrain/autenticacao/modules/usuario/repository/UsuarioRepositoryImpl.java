@@ -16,6 +16,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,6 +56,7 @@ import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
+@Slf4j
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     private static final int TRINTA_DOIS_DIAS = 32;
@@ -126,18 +128,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
-        List<BigDecimal> result = entityManager
+        try {
+            List<BigDecimal> result = entityManager
                 .createNativeQuery(
-                        " SELECT FK_USUARIO"
-                                + " FROM usuario_hierarquia"
-                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+                    " SELECT FK_USUARIO"
+                        + " FROM usuario_hierarquia"
+                        + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                        + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
                 .setParameter("_usuarioId", usuarioId)
                 .getResultList();
-        return result
+            return result
                 .stream()
                 .map(BigDecimal::intValue)
                 .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Erro ao consultar hierarquia", ex);
+            return List.of();
+        }
     }
 
     @Override

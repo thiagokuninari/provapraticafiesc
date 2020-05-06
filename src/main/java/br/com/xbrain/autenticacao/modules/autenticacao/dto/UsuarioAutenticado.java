@@ -137,11 +137,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 
-    public boolean possuiCargoSuperiorOperacao() {
-        return List.of(GERENTE_OPERACAO, COORDENADOR_OPERACAO).contains(cargoCodigo)
-            && usuario.getCanais().contains(AGENTE_AUTORIZADO);
-    }
-
     public CodigoNivel getNivelCodigoEnum() {
         return CodigoNivel.valueOf(nivelCodigo);
     }
