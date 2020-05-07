@@ -3,8 +3,8 @@ package br.com.xbrain.autenticacao.modules.site.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
-import com.querydsl.core.types.Predicate;
 import lombok.Data;
+
 import java.util.List;
 
 @Data

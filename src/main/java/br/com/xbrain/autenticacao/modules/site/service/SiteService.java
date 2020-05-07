@@ -63,8 +63,8 @@ public class SiteService {
     private Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
-        if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO) &&
-            !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
+        if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO)
+            && !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
             filtros.ignorarTodos();
         }
 
