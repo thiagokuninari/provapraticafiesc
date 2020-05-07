@@ -612,6 +612,18 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void buscarColaboradoresAtivosOperacaoComericialPorCargo_deveBuscarPorCargo() {
+        assertThat(service.buscarColaboradoresAtivosOperacaoComericialPorCargo(5))
+            .hasSize(3)
+            .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
+            .containsExactly(
+                tuple(116, "ALBERTO PEREIRA", "ALBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(117, "ROBERTO ALMEIDA", "ROBERTO@NET.COM", "Executivo", EXECUTIVO),
+                tuple(149, "USUARIO INFERIOR", "MARIA@NET3.COM", "Executivo", EXECUTIVO)
+            );
+    }
+
+    @Test
     public void salvarUsuarioGeradorLeads_deveSalvarUsuarioEEnviarSenha_quandoEmailCpfNaoRegistrado() {
         service.salvarUsuarioGeradorLeads(umUsuarioGeradorLeads());
 

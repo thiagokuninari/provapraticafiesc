@@ -110,6 +110,8 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    atualizar-permissao-gerador-lead: atualizar-aa-com-permissao-gerador-lead.queue
+    atualizar-permissao-gerador-lead-failure: atualizar-aa-com-permissao-gerador-lead-failure.queue
     cadastro-usuario-gerador-leads: cadastro-usuario-gerador-leads.queue
     cadastro-usuario-gerador-leads-failure: cadastro-usuario-gerador-leads-failure.queue
     sucesso-cadastro-usuario-gerador-leads: sucesso-cadastro-usuario-gerador-leads.queue
