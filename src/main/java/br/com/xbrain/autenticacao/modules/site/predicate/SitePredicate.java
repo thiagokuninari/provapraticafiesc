@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,8 +70,14 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate ignorarTodos() {
+        builder.and(site.id.isNull());
+
+        return this;
+    }
+
     private Optional<List<Integer>> filtrarLista(List<Integer> lista) {
         return Optional.ofNullable(lista)
-            .filter(Predicate.not(ObjectUtils::isEmpty));
+            .filter(Predicate.not(super::isEmpty));
     }
 }

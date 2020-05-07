@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -10,9 +11,13 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -42,6 +47,8 @@ public class SiteService {
     private UfRepository ufRepository;
     @Autowired
     private CidadeRepository cidadeRepository;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -50,7 +57,18 @@ public class SiteService {
 
     @Transactional(readOnly = true)
     public Page<Site> getAll(SiteFiltros filtros, PageRequest pageRequest) {
-        return siteRepository.findAll(filtros.toPredicate(), pageRequest);
+        return siteRepository.findAll(filtrarPorUsuario(filtros.toPredicate()), pageRequest);
+    }
+
+    private Predicate filtrarPorUsuario(SitePredicate filtros) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO) &&
+            !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
+            filtros.ignorarTodos();
+        }
+
+        return filtros.build();
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +45,8 @@ public class SiteServiceTest {
     private UfRepository ufRepository;
     @Mock
     private CidadeRepository cidadeRepository;
+    @Mock
+    private AutenticacaoService autenticacaoService;
 
     @Test
     public void findById_notFoundException_quandoNaoExistirSiteCadastrado() {
@@ -70,6 +74,9 @@ public class SiteServiceTest {
 
     @Test
     public void getAll_deveRetornarUmaPaginaDeSites_quandoFiltrar() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
         when(siteRepository.findAll(any(Predicate.class), any(Pageable.class)))
             .thenReturn(new PageImpl<>(umListaSites()));
 

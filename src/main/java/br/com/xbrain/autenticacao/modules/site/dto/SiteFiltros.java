@@ -18,7 +18,7 @@ public class SiteFiltros {
     private List<Integer> estadosIds;
     private List<Integer> cidadesIds;
 
-    public Predicate toPredicate() {
+    public SitePredicate toPredicate() {
         return new SitePredicate()
             .comNome(nome)
             .comTimeZone(timeZone)
@@ -26,7 +26,6 @@ public class SiteFiltros {
             .comCoordenadores(coordenadoresIds)
             .comSupervisores(supervisoresIds)
             .comEstados(estadosIds)
-            .comCidades(cidadesIds)
-            .build();
+            .comCidades(cidadesIds);
     }
 }
