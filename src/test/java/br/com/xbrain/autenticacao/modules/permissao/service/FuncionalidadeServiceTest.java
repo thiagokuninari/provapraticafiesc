@@ -63,12 +63,18 @@ public class FuncionalidadeServiceTest {
 
     private Usuario umUsuarioSocio() {
         return Usuario
-                .builder()
-                .id(USUARIO_SOCIO_ID)
-                .email(SOCIO_AA)
-                .cargo(Cargo.builder().id(CARGO_SOCIO_ID).build())
-                .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
-                .build();
+            .builder()
+            .id(USUARIO_SOCIO_ID)
+            .email(SOCIO_AA)
+            .cargo(Cargo.builder()
+                .id(CARGO_SOCIO_ID)
+                .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+                .nivel(Nivel.builder()
+                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                    .build())
+                .build())
+            .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
+            .build();
     }
 
     @Test
