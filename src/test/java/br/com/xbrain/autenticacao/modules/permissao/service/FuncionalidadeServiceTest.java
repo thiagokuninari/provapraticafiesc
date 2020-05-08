@@ -78,7 +78,7 @@ public class FuncionalidadeServiceTest {
     }
 
     @Test
-    public void getFuncionalidadesPermitidasAoUsuario_noveFuncionalidades_quandoUsuarioCargoMsoConsultor() {
+    public void getFuncionalidadesPermitidasAoUsuario_quinzeFuncionalidades_quandoUsuarioCargoMsoConsultor() {
         var usuario = Usuario.builder()
             .id(100)
             .cargo(umCargoMsoConsultor())
@@ -87,7 +87,7 @@ public class FuncionalidadeServiceTest {
             .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-            .hasSize(14);
+            .hasSize(15);
     }
 
     private Cargo umCargoMsoConsultor() {
