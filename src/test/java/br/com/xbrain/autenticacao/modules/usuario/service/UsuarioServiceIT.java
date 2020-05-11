@@ -936,71 +936,20 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void getUsuariosAlvoDoComunicado_deveFiltrarSeReceberCidadesDoPol_seRetornarUsuario() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        usuarioRepository.findAll()
-            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+    public void getUsuariosAlvoDoComunicado_deveFiltrarComUsuariosDoPol_seNaoPossuirHierarquiaNoBanco() {
+        var user = umUsuarioAutenticado();
+        user.setId(115);
+        user.setPermissoes(List.of());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
         when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
             .thenReturn(List.of(111, 104, 115));
 
-        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .subClusterId(189)
-            .grupoId(20)
-            .regionalId(3)
-            .clusterId(45)
-            .cidadesIds(List.of(5578))
-            .build());
-
-        assertThat(usuarios).extracting("id", "nome")
+        assertThat(service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder().build()))
+            .extracting("id", "nome")
             .containsExactlyInAnyOrder(
-                tuple(111, "HELPDESK"),
                 tuple(104, "operacao_gerente_comercial"),
-                tuple(115, "joao silveira"),
-                tuple(100, "ADMIN"),
-                tuple(233, "VENDEDOR OPERACAO 3"),
-                tuple(234, "COORDENADOR OPERACAO 2"),
-                tuple(235, "SUPERVISOR OPERACAO 3"),
-                tuple(236, "VENDEDOR OPERACAO 2"),
-                tuple(237, "VENDEDOR OPERACAO 3"),
-                tuple(238, "COORDENADOR OPERACAO 3"),
-                tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3"),
-                tuple(369, "MARIA AUGUSTA"),
-                tuple(370, "HELIO OLIVEIRA"));
-    }
-
-    @Test
-    public void getUsuariosAlvoDoComunicado_deveFiltrarSeNaoReceberCidadesDoPol_seRetornarUsuario() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        usuarioRepository.findAll()
-            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
-        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
-            .thenReturn(List.of(111, 104, 115));
-
-        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .subClusterId(189)
-            .grupoId(20)
-            .regionalId(3)
-            .clusterId(45)
-            .cidadesIds(List.of(5578))
-            .build());
-
-        assertThat(usuarios).extracting("id", "nome")
-            .containsExactlyInAnyOrder(
-                tuple(111, "HELPDESK"),
-                tuple(104, "operacao_gerente_comercial"),
-                tuple(115, "joao silveira"),
-                tuple(100, "ADMIN"),
-                tuple(233, "VENDEDOR OPERACAO 3"),
-                tuple(234, "COORDENADOR OPERACAO 2"),
-                tuple(235, "SUPERVISOR OPERACAO 3"),
-                tuple(236, "VENDEDOR OPERACAO 2"),
-                tuple(237, "VENDEDOR OPERACAO 3"),
-                tuple(238, "COORDENADOR OPERACAO 3"),
-                tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3"),
-                tuple(369, "MARIA AUGUSTA"),
-                tuple(370, "HELIO OLIVEIRA"));
+                tuple(111, "HELPDESK")
+            );
     }
 
     @Test

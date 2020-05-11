@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -31,6 +32,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -274,14 +276,17 @@ public class UsuarioService {
         return usuariosSubordinados;
     }
 
-    public Set<Integer> getIdDosUsuariosSubordinadosDoPol(Integer usuarioId, PublicoAlvoComunicadoFiltros filtros) {
+    public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario, PublicoAlvoComunicadoFiltros filtros) {
+        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+            return List.of();
+        }
         var usuariosPol = isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
             ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
             : filtros.getUsuariosFiltradosPorCidadePol();
-        var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuarioId));
+        var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuario.getId()));
         usuariosSubordinados.addAll(usuariosPol);
 
-        return usuariosSubordinados;
+        return List.copyOf(usuariosSubordinados);
     }
 
     public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
@@ -1432,11 +1437,13 @@ public class UsuarioService {
     }
 
     private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-        var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasIds());
-        if (usuarios.isEmpty() && !isEmpty(usuarioFiltros.getEquipesVendasIds())) {
-            throw new ValidacaoException("Nenhum usuário desta equipe de vendas foi encontrado");
+        if (!isEmpty(usuarioFiltros.getEquipesVendasIds())) {
+            var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasIds());
+            if (usuarios.isEmpty() && !isEmpty(usuarioFiltros.getEquipesVendasIds())) {
+                throw new ValidacaoException("Nenhum usuário desta equipe de vendas foi encontrado");
+            }
+            usuarioFiltros.adicionarUsuariosId(usuarios);
         }
-        usuarioFiltros.adicionarUsuariosId(usuarios);
     }
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {

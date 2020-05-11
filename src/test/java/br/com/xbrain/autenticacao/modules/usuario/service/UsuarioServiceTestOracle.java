@@ -2,15 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.assertj.core.groups.Tuple;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,15 +30,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -54,7 +57,8 @@ public class UsuarioServiceTestOracle {
     private UsuarioService service;
     @MockBean
     private AutenticacaoService autenticacaoService;
-
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -113,6 +117,74 @@ public class UsuarioServiceTestOracle {
                 tuple(119, "JOANA OLIVEIRA"),
                 tuple(117, "ROBERTO ALMEIDA"),
                 tuple(149, "USUARIO INFERIOR"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeNaoReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                Tuple.tuple(111, "HELPDESK"),
+                Tuple.tuple(104, "operacao_gerente_comercial"),
+                Tuple.tuple(115, "joao silveira"),
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
+                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
+                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
+                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(369, "MARIA AUGUSTA"),
+                Tuple.tuple(370, "HELIO OLIVEIRA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                Tuple.tuple(111, "HELPDESK"),
+                Tuple.tuple(104, "operacao_gerente_comercial"),
+                Tuple.tuple(115, "joao silveira"),
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
+                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
+                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
+                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(369, "MARIA AUGUSTA"),
+                Tuple.tuple(370, "HELIO OLIVEIRA"));
     }
 
     @Test
@@ -250,6 +322,23 @@ public class UsuarioServiceTestOracle {
 
     private UsuarioAutenticado umUsuarioAutenticado() {
         return new UsuarioAutenticado(umUsuarioComHierarquia());
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoCompleto() {
+        return UsuarioAutenticado
+            .builder()
+            .id(1)
+            .nome("USUARIO")
+            .email("USUARIO@TESTE.COM")
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN)
+            .nivelCodigo(XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
+            .build();
     }
 
     private UsuarioFiltros getFiltroUsuario(String nome) {

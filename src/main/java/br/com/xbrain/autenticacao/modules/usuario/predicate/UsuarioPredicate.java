@@ -383,10 +383,11 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                          PublicoAlvoComunicadoFiltros filtros) {
-        filtraPermitidos(usuario, usuarioService, false);
-        if (usuario.haveCanalAgenteAutorizado()) {
-            ouComUsuariosIds(List.copyOf(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario.getId(), filtros)));
-        }
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService, false)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario, filtros))
+            .build());
+
         return this;
     }
 
