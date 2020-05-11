@@ -904,17 +904,6 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarVazio() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-
-        when(equipeVendaD2dClient.getVendedoresPorEquipe(any())).thenReturn(List.of());
-        assertThatThrownBy(() -> service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
-            .equipesVendasIds(List.of(100))
-            .build()))
-            .hasMessage("Nenhum usuário desta equipe de vendas foi encontrado");
-    }
-
-    @Test
     public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarUsuario() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         usuarioRepository.findAll()
