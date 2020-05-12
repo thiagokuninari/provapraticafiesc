@@ -82,12 +82,12 @@ public class SiteController {
     }
 
     @PutMapping("adicionar-discadora")
-    public void adicionarDiscadora(@Validated @RequestBody SiteDiscadoraRequest request) {
+    public void adicionarDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.adicionarDiscadora(request.getDiscadoraId(), request.getSites());
     }
 
     @PostMapping("remover-discadora")
-    public void removerDiscadora(@Validated @RequestBody SiteDiscadoraRequest request) {
+    public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.removerDiscadora(request.getSiteId());
     }
 }
