@@ -71,6 +71,11 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
+    public void getSupervisoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getSupervisoresOperacaoDaHierarquia(227).size());
+    }
+
+    @Test
     public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForOperacaoPelaHierarquia() {
         Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(228).size());
         Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(234).size());
