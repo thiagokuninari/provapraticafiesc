@@ -30,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -946,13 +947,13 @@ public class UsuarioService {
                 .build());
     }
 
-    public List<Usuario> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId, String canal) {
+    public List<Usuario> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId, List<ECanal> canais) {
         return repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
-                .comCanal(canal)
+                .comCanais(canais)
                 .build());
     }
 

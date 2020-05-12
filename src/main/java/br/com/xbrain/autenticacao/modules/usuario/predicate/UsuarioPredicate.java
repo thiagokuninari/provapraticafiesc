@@ -234,9 +234,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCanal(String canal) {
-        if (!isEmpty(canal)) {
-            builder.and(usuario.canais.contains(ECanal.valueOf(canal)));
+    public UsuarioPredicate comCanais(List<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
         }
         return this;
     }
