@@ -478,4 +478,17 @@ public class Usuario {
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
     }
+
+    public static Set<Integer> convertFrom(Set<Usuario> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Usuario> of(List<Integer> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::new)
+                .collect(Collectors.toSet());
+    }
+
 }
