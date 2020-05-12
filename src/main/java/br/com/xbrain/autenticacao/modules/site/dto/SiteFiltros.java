@@ -17,12 +17,16 @@ public class SiteFiltros {
     private List<Integer> supervisoresIds;
     private List<Integer> estadosIds;
     private List<Integer> cidadesIds;
+    private Boolean naoPossuiDiscadora;
+    private Integer discadoraId;
 
     public SitePredicate toPredicate() {
         return new SitePredicate()
             .comNome(nome)
             .comTimeZone(timeZone)
             .comSituacao(situacao)
+            .naoPossuiDiscadora(naoPossuiDiscadora)
+            .comDiscadoraId(discadoraId)
             .comCoordenadores(coordenadoresIds)
             .comSupervisores(supervisoresIds)
             .comEstados(estadosIds)

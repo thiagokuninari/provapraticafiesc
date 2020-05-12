@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -49,6 +50,8 @@ public class SiteService {
     private CidadeRepository cidadeRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private CallService callService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -72,8 +75,8 @@ public class SiteService {
     }
 
     @Transactional(readOnly = true)
-    public List<SelectResponse> getAllAtivos() {
-        return siteRepository.findBySituacaoAtiva()
+    public List<SelectResponse> getAllAtivos(SiteFiltros filtros) {
+        return siteRepository.findBySituacaoAtiva(filtros.toPredicate().build())
             .stream()
             .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
             .collect(toList());
@@ -183,4 +186,18 @@ public class SiteService {
             .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
             .collect(toList());
     }
+
+    public void adicionarDiscadora(Integer discadoraId, List<Integer> sites) {
+        siteRepository.updateDiscadoraBySites(discadoraId, sites);
+        //todo migrar usuarios para nova discadora
+        callService.cleanCacheableSiteAtivoProprio();
+    }
+
+    public void removerDiscadora(Integer siteId) {
+        var site = findById(siteId);
+        callService.desvincularRamaisDaDiscadoraAtivoProprio(site.getId(), site.getDiscadoraId());
+        siteRepository.removeDiscadoraBySite(siteId);
+        callService.cleanCacheableSiteAtivoProprio();
+    }
+
 }

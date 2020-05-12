@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+import static java.util.Objects.nonNull;
 
 public class SitePredicate extends PredicateBase {
 
@@ -72,6 +73,22 @@ public class SitePredicate extends PredicateBase {
 
     public SitePredicate ignorarTodos() {
         builder.and(site.id.isNull());
+
+        return this;
+    }
+
+    public SitePredicate naoPossuiDiscadora(Boolean naoPossuiDiscadora) {
+        if (nonNull(naoPossuiDiscadora)) {
+            builder.and(site.discadoraId.isNull());
+        }
+
+        return this;
+    }
+
+    public SitePredicate comDiscadoraId(Integer discadoraId) {
+        if (nonNull(discadoraId)) {
+            builder.and(site.discadoraId.eq(discadoraId));
+        }
 
         return this;
     }

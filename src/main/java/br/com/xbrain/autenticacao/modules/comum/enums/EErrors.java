@@ -58,7 +58,13 @@ public enum EErrors {
             "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_AA(
             "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#018 - Erro ao tentar recuperar o AA.");
+            "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_DESVINCULAR_RAMAIS(
+            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#019 - Erro ao desvincular ramais."),
+    ERRO_LIMPAR_CACHE_ATIVO(
+            "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#020 - Erro ao limpar cache ativo");
 
     @Getter
     @Setter

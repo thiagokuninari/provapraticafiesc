@@ -30,8 +30,8 @@ public class SiteController {
     }
 
     @GetMapping("/ativos")
-    public List<SelectResponse> getAllAtivos() {
-        return service.getAllAtivos();
+    public List<SelectResponse> getAllAtivos(SiteFiltros filtros) {
+        return service.getAllAtivos(filtros);
     }
 
     @GetMapping("{id}/supervisores")
@@ -79,5 +79,15 @@ public class SiteController {
                                                                       Integer siteIgnoradoId) {
 
         return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds, siteIgnoradoId);
+    }
+
+    @PutMapping("adicionar-discadora")
+    public void adicionarDiscadora(@Validated @RequestBody SiteDiscadoraRequest request) {
+        service.adicionarDiscadora(request.getDiscadoraId(), request.getSites());
+    }
+
+    @PostMapping("remover-discadora")
+    public void removerDiscadora(@Validated @RequestBody SiteDiscadoraRequest request) {
+        service.removerDiscadora(request.getSiteId());
     }
 }

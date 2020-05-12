@@ -26,6 +26,7 @@ public class SiteResponse {
     private Set<Integer> supervisoresIds;
     private Set<Integer> estadosIds;
     private Set<Integer> cidadesIds;
+    private Integer discadoraId;
 
     public static SiteResponse of(Site site, boolean trazerTudo) {
         var siteResponse = new SiteResponse();
