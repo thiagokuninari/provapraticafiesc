@@ -1400,9 +1400,8 @@ public class UsuarioService {
         );
     }
 
-    //todo criar testes
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
-        UsuarioPredicate predicate = new UsuarioPredicate();
+        var predicate = new UsuarioPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(Usuario::getId)

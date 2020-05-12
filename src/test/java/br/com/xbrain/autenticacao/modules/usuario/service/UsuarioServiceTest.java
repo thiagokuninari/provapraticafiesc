@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -7,17 +8,20 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
@@ -28,13 +32,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -66,6 +71,8 @@ public class UsuarioServiceTest {
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Mock
     private UsuarioCidadeRepository usuarioCidadeRepository;
+    @Mock
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -247,6 +254,35 @@ public class UsuarioServiceTest {
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
+    @Test
+    public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
+        var usuarioComPermissaoDeVisualizarAa = umUsuario(1, "AGENTE_AUTORIZADO",
+            CodigoCargo.AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioComPermissaoDeVisualizarAa);
+
+        usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
+
+        verify(usuarioRepository, times(1))
+            .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).build()));
+    }
+
+    @Test
+    public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuarios_quandoUsuarioEquipeVendas() {
+        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+            CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
+
+        when(equipeVendaD2dService.getUsuariosPermitidos(any())).thenReturn(List.of());
+        when(autenticacaoService.getUsuarioId()).thenReturn(3);
+        when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(new ArrayList<>(List.of(2, 4, 5)));
+
+        usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
+
+        verify(usuarioRepository, times(1))
+            .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true)
+                .comIds(List.of(3, 2, 4, 5, 1, 1)).build()));
+    }
+
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
                 .nome("Backoffice")
@@ -266,5 +302,37 @@ public class UsuarioServiceTest {
             .id(1)
             .nome("Seiya")
             .build();
+    }
+
+    private UsuarioAutenticado umUsuario(int usuarioId, String nivelCodigo, CodigoCargo cargo,
+                                         CodigoFuncionalidade... permissoes) {
+        return UsuarioAutenticado.builder()
+            .usuario(getUser(usuarioId, getCargo(cargo)))
+            .nivelCodigo(nivelCodigo)
+            .cargoCodigo(cargo)
+            .id(usuarioId)
+            .permissoes(getPermissoes(permissoes))
+            .build();
+    }
+
+    private Usuario getUser(int usuarioId, Cargo cargo) {
+        return Usuario.builder()
+            .id(usuarioId)
+            .cargo(cargo)
+            .build();
+    }
+
+    private Cargo getCargo(CodigoCargo cargo) {
+        return Cargo.builder()
+            .codigo(cargo)
+            .build();
+    }
+        
+    private List<SimpleGrantedAuthority> getPermissoes(CodigoFuncionalidade... permissoes) {
+        return Objects.nonNull(permissoes)
+            ? Arrays.stream(permissoes)
+            .map(permissao -> new SimpleGrantedAuthority(permissao.getRole()))
+            .collect(Collectors.toList())
+            : null;
     }
 }
