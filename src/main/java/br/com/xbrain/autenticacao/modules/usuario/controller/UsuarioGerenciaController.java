@@ -119,11 +119,6 @@ public class UsuarioGerenciaController {
         return service.getUsuarioSuperior(idUsuario);
     }
 
-    @GetMapping("ids/superiores/usuario-logado")
-    public List<Integer> getAllUsuariosIdsSuperiores() {
-        return service.getAllUsuariosIdsSuperiores();
-    }
-
     @GetMapping("{idUsuario}/supervisores")
     public List<UsuarioResponse> getUsuarioSuperiores(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperiores(idUsuario);

@@ -70,6 +70,11 @@ public class UsuarioController {
         usuarioService.inativarSocioPrincipal(email);
     }
 
+    @GetMapping("ids/superiores/usuario-logado")
+    public List<Integer> getAllUsuariosIdsSuperiores() {
+        return usuarioService.getAllUsuariosIdsSuperiores();
+    }
+
     @GetMapping("/autenticado/{id}")
     public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
         return new UsuarioAutenticado(
