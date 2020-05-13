@@ -233,8 +233,7 @@ public class UsuarioService {
 
     public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
         var predicate = filtrarUsuariosPermitidos(filtros);
-        var usuarios = repository.findAll(predicate.build());
-        return (List<Usuario>) usuarios;
+        return (List<Usuario>) repository.findAll(predicate.build());
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {
