@@ -86,7 +86,7 @@ public class SiteController {
         service.adicionarDiscadora(request.getDiscadoraId(), request.getSites());
     }
 
-    @PostMapping("remover-discadora")
+    @PutMapping("remover-discadora")
     public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.removerDiscadora(request.getSiteId());
     }
