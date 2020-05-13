@@ -57,7 +57,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId);
 
-    List<PermissaoEspecial> getUsuariosByPermissao(String codigoFuncionalidade);
+    List<PermissaoEspecial> getUsuariosByPermissaoEspecial(String codigoFuncionalidade);
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 

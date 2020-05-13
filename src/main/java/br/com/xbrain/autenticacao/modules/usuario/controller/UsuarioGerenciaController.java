@@ -119,6 +119,11 @@ public class UsuarioGerenciaController {
         return service.getUsuarioSuperior(idUsuario);
     }
 
+    @GetMapping("ids/superiores/usuario-logado")
+    public List<Integer> getAllUsuariosIdsSuperiores() {
+        return service.getAllUsuariosIdsSuperiores();
+    }
+
     @GetMapping("{idUsuario}/supervisores")
     public List<UsuarioResponse> getUsuarioSuperiores(@PathVariable("idUsuario") Integer idUsuario) {
         return service.getUsuarioSuperiores(idUsuario);
@@ -127,7 +132,7 @@ public class UsuarioGerenciaController {
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
         service.exportUsuariosToCsv(
-                service.getAllForCsv(filtros),
+            service.getAllForCsv(filtros),
                 response
         );
     }

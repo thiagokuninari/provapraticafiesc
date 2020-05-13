@@ -32,7 +32,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -63,6 +62,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
@@ -277,7 +277,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario, PublicoAlvoComunicadoFiltros filtros) {
-        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             return List.of();
         }
         var usuariosPol = isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
@@ -1060,9 +1060,9 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getUsuarioByPermissao(String funcionalidade) {
-        List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(funcionalidade);
-        return permissoes.stream()
+    public List<UsuarioResponse> getUsuarioByPermissaoEspecial(String funcionalidade) {
+        return repository.getUsuariosByPermissaoEspecial(funcionalidade)
+            .stream()
             .map(PermissaoEspecial::getUsuario)
             .map(UsuarioResponse::of)
             .collect(Collectors.toList());
@@ -1517,5 +1517,9 @@ public class UsuarioService {
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    public List<Integer> getAllUsuariosIdsSuperiores() {
+        return getIdSuperiores(autenticacaoService.getUsuarioAutenticado().getUsuario());
     }
 }

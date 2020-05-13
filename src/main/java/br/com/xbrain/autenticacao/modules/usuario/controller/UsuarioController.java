@@ -206,7 +206,7 @@ public class UsuarioController {
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
         @RequestParam String funcionalidade) {
-        return usuarioService.getUsuarioByPermissao(funcionalidade);
+        return usuarioService.getUsuarioByPermissaoEspecial(funcionalidade);
     }
 
     @RequestMapping(value = "/configuracao", method = RequestMethod.GET)

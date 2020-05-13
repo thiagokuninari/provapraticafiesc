@@ -51,7 +51,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECU
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
