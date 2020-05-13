@@ -89,7 +89,7 @@ public class CidadeService {
     public List<SelectResponse> buscarCidadesPorEstadosIds(List<Integer> estadosIds) {
         return repository.findAllByUfIdInOrderByNome(estadosIds)
             .stream()
-            .map(cidade -> SelectResponse.convertFrom(cidade.getId(), cidade.getNomeComUf()))
+            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
             .collect(Collectors.toList());
     }
 }

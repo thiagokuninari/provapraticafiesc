@@ -1366,7 +1366,7 @@ public class UsuarioService {
         return repository
             .getSubclustersUsuario(usuarioId)
             .stream()
-            .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
+            .map(s -> SelectResponse.of(s.getId(), s.getNomeComMarca()))
             .collect(Collectors.toList());
     }
 
