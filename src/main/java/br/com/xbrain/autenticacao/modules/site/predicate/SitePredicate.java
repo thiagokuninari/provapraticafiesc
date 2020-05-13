@@ -14,6 +14,14 @@ import static java.util.Objects.nonNull;
 
 public class SitePredicate extends PredicateBase {
 
+    public SitePredicate comId(Integer id) {
+        if (nonNull(id)) {
+            builder.and(site.id.eq(id));
+        }
+
+        return this;
+    }
+
     public SitePredicate comNome(String nome) {
         Optional.ofNullable(nome)
             .filter(StringUtils::isNotBlank)

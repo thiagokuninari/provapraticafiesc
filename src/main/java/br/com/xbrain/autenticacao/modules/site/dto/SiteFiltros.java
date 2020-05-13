@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class SiteFiltros {
 
+    private Integer id;
     private String nome;
     private ETimeZone timeZone;
     private ESituacao situacao;
@@ -22,6 +23,7 @@ public class SiteFiltros {
 
     public SitePredicate toPredicate() {
         return new SitePredicate()
+            .comId(id)
             .comNome(nome)
             .comTimeZone(timeZone)
             .comSituacao(situacao)
