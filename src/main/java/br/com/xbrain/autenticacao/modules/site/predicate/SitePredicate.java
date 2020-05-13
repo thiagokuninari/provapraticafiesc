@@ -78,7 +78,7 @@ public class SitePredicate extends PredicateBase {
     }
 
     public SitePredicate naoPossuiDiscadora(Boolean naoPossuiDiscadora) {
-        if (nonNull(naoPossuiDiscadora)) {
+        if (nonNull(naoPossuiDiscadora) && naoPossuiDiscadora) {
             builder.and(site.discadoraId.isNull());
         }
 
