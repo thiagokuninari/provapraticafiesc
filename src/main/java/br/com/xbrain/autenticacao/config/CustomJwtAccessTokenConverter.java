@@ -32,10 +32,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 import static org.springframework.util.StringUtils.isEmpty;
 
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
-        JwtAccessTokenConverterConfigurer {
+    JwtAccessTokenConverterConfigurer {
 
     @Autowired
     private FuncionalidadeService funcionalidadeService;
@@ -56,15 +58,15 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             User userAuth = (User) authentication.getUserAuthentication().getPrincipal();
 
             usuarioRepository
-                    .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
-                    .ifPresent(usuario -> setAdditionalInformation(
-                            defaultOAuth2AccessToken,
-                            usuario,
-                            userAuth,
-                            getAgentesAutorizadosPermitidos(usuario),
-                            getEmpresasDoUsuario(usuario),
-                            getEquipesSupervisionadas(usuario),
-                            getEquipeVendas(usuario)));
+                .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
+                .ifPresent(usuario -> setAdditionalInformation(
+                    defaultOAuth2AccessToken,
+                    usuario,
+                    userAuth,
+                    getAgentesAutorizadosPermitidos(usuario),
+                    getEmpresasDoUsuario(usuario),
+                    getEquipesSupervisionadas(usuario),
+                    getEquipeVendas(usuario)));
         } else {
             defaultOAuth2AccessToken.getAdditionalInformation().put("active", true);
         }
@@ -74,31 +76,31 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-                ? agenteAutorizadoService.getAasPermitidos(usuario.getId())
-                : Collections.emptyList();
+            ? agenteAutorizadoService.getAasPermitidos(usuario.getId())
+            : Collections.emptyList();
     }
 
     private List<Empresa> getEmpresasDoUsuario(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-                ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
-                : usuario.getEmpresas();
+            ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
+            : usuario.getEmpresas();
     }
 
     private List<Integer> getEquipesSupervisionadas(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-                ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
-                .stream()
-                .map(EquipeVendasSupervisionadasResponse::getId)
-                .collect(Collectors.toList())
-                : Collections.emptyList();
+            ? equipeVendasService.getEquipesPorSupervisor(usuario.getId())
+            .stream()
+            .map(EquipeVendasSupervisionadasResponse::getId)
+            .collect(Collectors.toList())
+            : Collections.emptyList();
     }
 
     private List<EquipeVendaDto> getEquipeVendas(Usuario usuario) {
         if (usuario.getNivelCodigo() == AGENTE_AUTORIZADO) {
             EquipeVendaDto equipeVendas = equipeVendasService.getByUsuario(usuario.getId());
             return !ObjectUtils.isEmpty(equipeVendas)
-                    ? Collections.singletonList(equipeVendas)
-                    : Collections.emptyList();
+                ? Collections.singletonList(equipeVendas)
+                : Collections.emptyList();
         } else {
             return equipeVendaD2dService.getEquipeVendas(usuario.getId());
         }
@@ -137,27 +139,27 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
-                    .put("empresas", getListaEmpresaPorCampo(empresas, Empresa::getId));
+                .put("empresas", getListaEmpresaPorCampo(empresas, Empresa::getId));
 
             token.getAdditionalInformation()
-                    .put("empresasNome", getListaEmpresaPorCampo(empresas, Empresa::getNome));
+                .put("empresasNome", getListaEmpresaPorCampo(empresas, Empresa::getNome));
 
             token.getAdditionalInformation()
-                    .put("empresasCodigo", getListaEmpresaPorCampo(empresas, Empresa::getCodigo));
+                .put("empresasCodigo", getListaEmpresaPorCampo(empresas, Empresa::getCodigo));
         }
 
         token.getAdditionalInformation().put("unidadesNegocios", usuario.getUnidadesNegociosId());
         token.getAdditionalInformation().put("agentesAutorizados", agentesAutorizados);
         token.getAdditionalInformation().put("active", true);
         token.getAdditionalInformation().put("authorities",
-                user.getAuthorities()
-                        .stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .toArray());
+            user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toArray());
         token.getAdditionalInformation().put("aplicacoes",
-                getAplicacoes(usuario));
+            getAplicacoes(usuario));
         token.getAdditionalInformation().put("equipesSupervisionadas",
-                equipesSupervisionadas);
+            equipesSupervisionadas);
         token.getAdditionalInformation().put("aaPme", isExclusivoPme(usuario));
     }
 
@@ -167,27 +169,27 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
         return empresas
-                .stream()
-                .map(mapper)
-                .collect(Collectors.toList());
+            .stream()
+            .map(mapper)
+            .collect(Collectors.toList());
     }
 
     // TODO cachear getFuncionalidadesPermitidasAoUsuario
     private List getAplicacoes(Usuario user) {
         List<Funcionalidade> funcionalidade = funcionalidadeService.getFuncionalidadesPermitidasAoUsuario(user);
         return funcionalidade
-                .stream()
-                .filter(f -> f.getPermissaoTela() == null)
-                .map(f -> f.getAplicacao().getCodigo())
-                .distinct()
-                .collect(Collectors.toList());
+            .stream()
+            .filter(f -> f.getPermissaoTela() == null)
+            .map(f -> f.getAplicacao().getCodigo())
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     private Set<String> getCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name(), ECanal.D2D_PROPRIO.name());
+                return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name(), D2D_PROPRIO.name(), ATIVO_PROPRIO.name());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanaisString();
             default:

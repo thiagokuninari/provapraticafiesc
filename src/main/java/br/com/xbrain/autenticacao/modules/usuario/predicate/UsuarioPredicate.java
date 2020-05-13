@@ -246,6 +246,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCanais(List<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
     private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
             JPAExpressions
@@ -259,7 +266,7 @@ public class UsuarioPredicate {
 
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
-        
+
         var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
         if (incluirProrio) {
             usuariosIds.add(usuario.getId());
