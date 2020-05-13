@@ -116,6 +116,8 @@ app-config:
     cadastro-usuario-gerador-leads-failure: cadastro-usuario-gerador-leads-failure.queue
     sucesso-cadastro-usuario-gerador-leads: sucesso-cadastro-usuario-gerador-leads.queue
     sucesso-cadastro-usuario-gerador-leads-failure: sucesso-cadastro-usuario-gerador-leads-failure.queue
+    alterar-situacao-gerador-leads: alterar-situacao-gerador-leads.queue
+    alterar-situacao-gerador-leads-failure: alterar-situacao-gerador-leads-failure.queue
 
   oauth-clients:
     autenticacao-api:

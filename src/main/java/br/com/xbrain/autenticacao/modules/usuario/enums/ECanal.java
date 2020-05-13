@@ -10,6 +10,7 @@ public enum ECanal {
 
     AGENTE_AUTORIZADO("Agente autorizado", Boolean.TRUE),
     D2D_PROPRIO("D2D Próprio", Boolean.TRUE),
+    ATIVO_PROPRIO("Ativo Local Próprio", Boolean.TRUE),
     ATIVO("Ativo", Boolean.FALSE),
     ATP("Atp", Boolean.FALSE);
 

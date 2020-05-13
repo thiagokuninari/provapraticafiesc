@@ -13,10 +13,6 @@ public class RabbitConfig {
     private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
     private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
-    private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
-    private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
-
-
     @Value("${app-config.topic.autenticacao}")
     private String autenticacaoTopic;
 
@@ -97,6 +93,12 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.cadastro-usuario-gerador-leads-failure}")
     private String cadastroUsuarioGeradorLeadsFailureMq;
+
+    @Value("${app-config.queue.alterar-situacao-gerador-leads}")
+    private String alterarSituacaoGeradorLeadsMq;
+
+    @Value("${app-config.queue.alterar-situacao-gerador-leads-failure}")
+    private String alterarSituacaoGeradorLeadsFailureMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -251,6 +253,20 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue alterarSituacaoGeradorLeadsMq() {
+        return QueueBuilder
+            .durable(alterarSituacaoGeradorLeadsMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, alterarSituacaoGeradorLeadsFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue alterarSituacaoGeradorLeadsFailureMq() {
+        return QueueBuilder.durable(alterarSituacaoGeradorLeadsFailureMq).build();
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -384,5 +400,19 @@ public class RabbitConfig {
         return BindingBuilder.bind(cadastroUsuarioGeradorLeadsFailureMq())
             .to(exchange)
             .with(cadastroUsuarioGeradorLeadsFailureMq);
+    }
+
+    @Bean
+    public Binding alterarSituacaoGeradorLeadsMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(alterarSituacaoGeradorLeadsMq())
+            .to(exchange)
+            .with(alterarSituacaoGeradorLeadsMq);
+    }
+
+    @Bean
+    public Binding alterarSituacaoGeradorLeadsMqFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(alterarSituacaoGeradorLeadsFailureMq())
+            .to(exchange)
+            .with(alterarSituacaoGeradorLeadsFailureMq);
     }
 }

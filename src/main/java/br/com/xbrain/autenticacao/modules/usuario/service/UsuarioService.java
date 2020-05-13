@@ -885,6 +885,7 @@ public class UsuarioService {
                 usuario));
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
+
     }
 
     private void validarAtivacao(Usuario usuario) {

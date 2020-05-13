@@ -1,10 +1,14 @@
 package br.com.xbrain.autenticacao.modules.geradorlead.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.geradorlead.dto.AgenteAutorizadoGeradorLeadDto;
+import br.com.xbrain.autenticacao.modules.geradorlead.dto.SituacaoAlteracaoGeradorLeadsDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -22,6 +26,10 @@ import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLead
 
 @Service
 public class GeradorLeadService {
+
+    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Usuario não encontrado.");
+    private static final ValidacaoException EX_USUARIO_NAO_GERADOR_LEADS =
+        new ValidacaoException("Usuário não Gerador de Leads.");
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
@@ -45,6 +53,37 @@ public class GeradorLeadService {
             removerPermissoesEspeciais(usuariosIds);
             gerarUsuarioHistorico(usuariosIds, false);
         }
+    }
+
+    @Transactional
+    public void alterarSituacaoGeradorLeads(SituacaoAlteracaoGeradorLeadsDto dto) {
+        var usuario = findUsuarioById(dto.getUsuarioId());
+        validarSeUsuarioGeradorLeads(usuario);
+        usuario.setSituacao(dto.getSituacaoAlterada());
+        gerarHistorico(usuario, dto);
+        usuarioRepository.save(usuario);
+    }
+
+    private void gerarHistorico(Usuario usuario, SituacaoAlteracaoGeradorLeadsDto dto) {
+        usuarioHistoricoService.save(
+            UsuarioHistorico.builder()
+                .usuario(usuario)
+                .dataCadastro(dto.getDataAlteracao())
+                .situacao(dto.getSituacaoAlterada())
+                .usuarioAlteracao(new Usuario(dto.getUsuarioAlteracaoId()))
+                .observacao(dto.getObservacao())
+                .build());
+    }
+
+    private void validarSeUsuarioGeradorLeads(Usuario usuario) {
+        if (!usuario.isCargo(CodigoCargo.GERADOR_LEADS)) {
+            throw EX_USUARIO_NAO_GERADOR_LEADS;
+        }
+    }
+
+    private Usuario findUsuarioById(Integer usuarioId) {
+        return usuarioRepository.findComplete(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     private void gerarUsuarioHistorico(List<Integer> usuariosIds, boolean geradorLeads) {

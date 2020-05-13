@@ -46,4 +46,9 @@ public class UsuarioHistoricoService {
     public void save(List<UsuarioHistorico> historicos) {
         usuarioHistoricoRepository.save(historicos);
     }
+
+    @Transactional
+    public void save(UsuarioHistorico historico) {
+        usuarioHistoricoRepository.save(historico);
+    }
 }
