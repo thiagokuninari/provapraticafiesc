@@ -155,6 +155,9 @@ public class UsuarioService {
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
 
+    @Autowired
+    private CargoSuperiorRepository cargoSuperiorRepository;
+
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
@@ -1521,7 +1524,21 @@ public class UsuarioService {
     }
 
     public List<Integer> getAllUsuariosIdsSuperiores() {
-        return getIdSuperiores(autenticacaoService.getUsuarioAutenticado().getUsuario());
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var cargosAceitos = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
+        var usuarios = new ArrayList<Integer>();
+        if (usuarioAutenticado.haveCanalAgenteAutorizado()) {
+            var usuariosPol = agenteAutorizadoService.getUsuariosIdsSuperioresPol();
+
+            if (!isEmpty(usuariosPol)) {
+                usuarios.addAll(repository.findAllIds(new UsuarioPredicate()
+                    .comCargo(cargosAceitos)
+                    .comUsuariosIds(usuariosPol)
+                    .build()));
+            }
+        }
+        usuarios.addAll(getIdSuperiores(usuarioAutenticado.getUsuario()));
+        return usuarios;
     }
 
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {

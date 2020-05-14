@@ -187,4 +187,16 @@ public class AgenteAutorizadoService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public List<Integer> getUsuariosIdsSuperioresPol() {
+        try {
+            return agenteAutorizadoClient.getUsuariosIdsSuperioresPol();
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 }

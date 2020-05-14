@@ -45,15 +45,18 @@ public interface AgenteAutorizadoClient {
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}/{buscarInativos}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
-            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
-            @PathVariable("buscarInativos") Boolean buscarInativos);
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
+        @PathVariable("buscarInativos") Boolean buscarInativos);
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/usuarios-com-d2d/{agenteAutorizadoId}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(
-            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
 
     @GetMapping(API_AGENTE_AUTORIZADO_PERMITIDOS + "/{usuarioId}")
     List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/superiores/usuario-autenticado")
+    List<Integer> getUsuariosIdsSuperioresPol();
 
     @PutMapping(API_COLABORADOR_VENDAS + "/limpar-cpf-agente-autorizado")
     void limparCpfAgenteAutorizado(@RequestParam("email") String email);
