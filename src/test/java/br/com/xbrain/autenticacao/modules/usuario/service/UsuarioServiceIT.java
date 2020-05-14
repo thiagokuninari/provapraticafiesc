@@ -1031,6 +1031,23 @@ public class UsuarioServiceIT {
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
     }
 
+    @Test
+    public void remanejarUsuario_deveRemoverFormatacaoCpf_quandoEnviarParaRemanejar() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+        var cpfFormatado = "955.125.930-05";
+        usuarioMqRequest.setCpf(cpfFormatado);
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
+
+        assertThat(usuarioRemanejado)
+            .extracting("id", "situacao", "cpf")
+            .containsExactly(tuple(3, ESituacao.A, "95512593005"), tuple(1000, ESituacao.R, "95512593005"));
+
+        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
     private UsuarioMqRequest umUsuarioTrocaCpf() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);

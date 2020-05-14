@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -264,24 +266,39 @@ public class UsuarioServiceTestOracle {
                     new UsuarioPermissoesResponse(238, Collections.singletonList(
                             "ROLE_VDS_TABULACAO_DISCADORA")),
                     new UsuarioPermissoesResponse(243, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_CLICKTOCALL",
-                            "ROLE_VDS_TABULACAO_DISCADORA",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA")),
+                        "ROLE_VDS_TABULACAO_CLICKTOCALL",
+                        "ROLE_VDS_TABULACAO_DISCADORA",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA")),
                     new UsuarioPermissoesResponse(245, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_MANUAL",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))
-                    ));
+                        "ROLE_VDS_TABULACAO_MANUAL",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA"))
+                ));
+    }
+
+    @Test
+    public void getPermissoesPorUsuarios_permissoesComUsuario_naoDeveLancarErroAoReceberMuitosIds() {
+        UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
+        request.setPermissoes(Arrays.asList(
+            "ROLE_VDS_TABULACAO_DISCADORA",
+            "ROLE_VDS_TABULACAO_CLICKTOCALL",
+            "ROLE_VDS_TABULACAO_PERSONALIZADA",
+            "ROLE_VDS_TABULACAO_MANUAL"));
+        request.setUsuariosId(IntStream.rangeClosed(1, 3000)
+            .boxed().collect(Collectors.toList()));
+
+        List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
+        Assert.assertEquals(46, response.size());
     }
 
     @SuppressWarnings("LineLength")
     @Test
     public void getSubordinadosDoUsuarioPorCargo_deveRetornarUsuariosSubordinados_quandoUsuarioPossuirSubordinadosComCargoExecutivoOuHunter() {
         assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(115))
-                .hasSize(3)
-                .extracting("value", "text")
-                .contains(
-                        tuple(116, "ALBERTO PEREIRA"),
-                        tuple(117, "ROBERTO ALMEIDA"),
+            .hasSize(3)
+            .extracting("value", "text")
+            .contains(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(117, "ROBERTO ALMEIDA"),
                         tuple(119, "JOANA OLIVEIRA"));
     }
 
@@ -314,10 +331,10 @@ public class UsuarioServiceTestOracle {
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
         return UsuarioFiltrosHierarquia.builder()
                 .usuarioId(Collections.singletonList(101))
-                .codigoNivel(OPERACAO)
-                .codigoDepartamento(COMERCIAL)
-                .codigoCargo(GERENTE_OPERACAO)
-                .build();
+            .codigoNivel(OPERACAO)
+            .codigoDepartamento(COMERCIAL)
+            .codigoCargo(GERENTE_OPERACAO)
+            .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
