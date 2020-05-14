@@ -328,4 +328,11 @@ public class UsuarioController {
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
         return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
     }
+
+    @GetMapping("{canal}/cargo/{codigoCargo}")
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
+                                                                  @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
+    }
+
 }

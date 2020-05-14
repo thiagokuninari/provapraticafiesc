@@ -3,10 +3,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -14,9 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
@@ -49,6 +44,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private CodigoCargo cargoCodigo;
     private Integer organizacaoId;
     private String organizacaoCodigo;
+    private Set<ECanal> canais;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -71,6 +67,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.canais = usuario.getCanais();
         getOrganizacao(usuario);
     }
 
@@ -108,6 +105,10 @@ public class UsuarioAutenticado extends OAuth2Request {
             && permissoes
             .stream()
             .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
+    }
+
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(this.canais) && this.canais.stream().anyMatch(c -> Objects.equals(c, canal));
     }
 
     public boolean isXbrain() {

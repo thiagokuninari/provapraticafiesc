@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSubClusterResponse;
@@ -88,5 +89,10 @@ public class CidadeController {
     @GetMapping("net-uno")
     public List<CidadeResponse> getAllCidadeNetUno() {
         return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
+    }
+
+    @GetMapping("por-estados")
+    public List<SelectResponse> buscarCidadesPorEstados(@RequestParam List<Integer> estadosIds) {
+        return service.buscarCidadesPorEstadosIds(estadosIds);
     }
 }
