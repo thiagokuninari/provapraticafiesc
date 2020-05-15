@@ -29,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -199,6 +201,21 @@ public class UsuarioServiceTestOracle {
                             "ROLE_VDS_TABULACAO_MANUAL",
                             "ROLE_VDS_TABULACAO_PERSONALIZADA"))
                     ));
+    }
+
+    @Test
+    public void getPermissoesPorUsuarios_permissoesComUsuario_naoDeveLancarErroAoReceberMuitosIds() {
+        UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
+        request.setPermissoes(Arrays.asList(
+            "ROLE_VDS_TABULACAO_DISCADORA",
+            "ROLE_VDS_TABULACAO_CLICKTOCALL",
+            "ROLE_VDS_TABULACAO_PERSONALIZADA",
+            "ROLE_VDS_TABULACAO_MANUAL"));
+        request.setUsuariosId(IntStream.rangeClosed(1, 3000)
+            .boxed().collect(Collectors.toList()));
+
+        List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
+        Assert.assertEquals(46, response.size());
     }
 
     @SuppressWarnings("LineLength")

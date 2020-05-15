@@ -1,23 +1,26 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
@@ -31,6 +34,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +43,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -247,6 +252,28 @@ public class UsuarioServiceTest {
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
+    @Test
+    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
+        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
+            .thenReturn(umaListaSelectResponse());
+
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(100, "JOSÉ"),
+                tuple(101, "JOÃO")
+            );
+
+        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    private List<SelectResponse> umaListaSelectResponse() {
+        return List.of(
+            SelectResponse.of(100, "JOSÉ"),
+            SelectResponse.of(101, "JOÃO")
+        );
+    }
+
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
                 .nome("Backoffice")
@@ -265,6 +292,106 @@ public class UsuarioServiceTest {
         return Usuario.builder()
             .id(1)
             .nome("Seiya")
+            .build();
+    }
+
+    @Test
+    public void getUsuarioSuperior_usuarioResponseVazio_quandoNaoEncontrarSuperiorDoUsuario() {
+        when(usuarioRepository.getUsuarioSuperior(100)).thenReturn(Optional.empty());
+
+        assertThat(usuarioService.getUsuarioSuperior(100))
+            .isEqualTo(new UsuarioResponse());
+    }
+
+    @Test
+    public void getUsuarioSuperior_usuarioResponse_quandoBuscarSuperiorDoUsuario() {
+        when(usuarioRepository.getUsuarioSuperior(100))
+            .thenReturn(Optional.of(umUsuarioHierarquia()));
+
+        assertThat(usuarioService.getUsuarioSuperior(100))
+            .isEqualTo(UsuarioResponse.builder()
+                .id(100)
+                .nome("RENATO")
+                .telefone("43 3322-0000")
+                .email("RENATO@GMAIL.COM")
+                .situacao(ESituacao.A)
+                .codigoUnidadesNegocio(List.of(
+                    CodigoUnidadeNegocio.CLARO_RESIDENCIAL,
+                    CodigoUnidadeNegocio.RESIDENCIAL_COMBOS))
+                .codigoCargo(CodigoCargo.SUPERVISOR_OPERACAO)
+                .codigoDepartamento(CodigoDepartamento.COMERCIAL)
+                .codigoEmpresas(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
+                .codigoNivel(CodigoNivel.OPERACAO)
+                .cpf("333.333.333-33")
+                .build());
+    }
+
+    private UsuarioHierarquia umUsuarioHierarquia() {
+        return UsuarioHierarquia.builder()
+            .usuarioSuperior(umUsuarioSuperior())
+            .usuario(new Usuario(100))
+            .usuarioCadastro(new Usuario(103))
+            .dataCadastro(LocalDateTime.now())
+            .build();
+    }
+
+    private Usuario umUsuarioSuperior() {
+        return Usuario.builder()
+            .id(100)
+            .cpf("333.333.333-33")
+            .telefone("43 3322-0000")
+            .situacao(ESituacao.A)
+            .cargo(umCargoSupervisorOperacao())
+            .departamento(umDepartamentoComercial())
+            .nome("RENATO")
+            .email("RENATO@GMAIL.COM")
+            .situacao(ESituacao.A)
+            .unidadesNegocios(List.of(
+                umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
+                umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)))
+            .empresas(List.of(umaEmpresa()))
+            .build();
+    }
+
+    private Cargo umCargoSupervisorOperacao() {
+        return Cargo.builder()
+            .id(1)
+            .codigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .nome(CodigoCargo.SUPERVISOR_OPERACAO.name())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private Nivel umNivelOperacao() {
+        return Nivel.builder()
+            .id(1)
+            .codigo(CodigoNivel.OPERACAO)
+            .nome(CodigoNivel.OPERACAO.name())
+            .build();
+    }
+
+    private Departamento umDepartamentoComercial() {
+        return Departamento.builder()
+            .id(1)
+            .codigo(CodigoDepartamento.COMERCIAL)
+            .nome(CodigoDepartamento.COMERCIAL.name())
+            .build();
+    }
+
+    private UnidadeNegocio umaUnidadeNegocio(CodigoUnidadeNegocio codigoUnidadeNegocio) {
+        return UnidadeNegocio.builder()
+            .codigo(codigoUnidadeNegocio)
+            .nome(codigoUnidadeNegocio.name())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private Empresa umaEmpresa() {
+        return Empresa.builder()
+            .id(1)
+            .codigo(CodigoEmpresa.CLARO_RESIDENCIAL)
+            .nome(CodigoEmpresa.CLARO_RESIDENCIAL.name())
             .build();
     }
 }

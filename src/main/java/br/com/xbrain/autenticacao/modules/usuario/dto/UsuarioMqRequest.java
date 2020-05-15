@@ -7,13 +7,19 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UsuarioMqRequest {
 
     private Integer id;
@@ -37,6 +43,6 @@ public class UsuarioMqRequest {
     private Integer usuarioCadastroId;
     private String exception;
     private Set<ECanal> canais;
-    private boolean realocado;
+    private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
 }

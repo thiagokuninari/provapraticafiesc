@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.util.ObjectUtils;
@@ -19,6 +20,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioHistorico {
+
+    private static final Integer ID_MOTIVO_INATIVACAO_EXCESSO_USO = 9;
 
     @Id
     @SequenceGenerator(name = "SEQ_USUARIO_HISTORICO", sequenceName = "SEQ_USUARIO_HISTORICO", allocationSize = 1)
@@ -82,6 +85,15 @@ public class UsuarioHistorico {
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
     }
 
+    public static UsuarioHistorico gerarHistorico(Usuario usuario, EObservacaoHistorico observacao) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao(observacao.getObservacao())
+            .situacao(usuario.getSituacao())
+            .build();
+    }
+
     public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
                                                           String observacao,
                                                           Usuario usuarioAtivado) {
@@ -99,5 +111,17 @@ public class UsuarioHistorico {
                 + (!ObjectUtils.isEmpty(motivoInativacao)
                         ? " / " +  motivoInativacao.getDescricao()
                         : "");
+    }
+
+    public static UsuarioHistorico gerarHistoricoDeBloqueioPorExcessoDeUso(Usuario usuario,
+                                                                           MotivoInativacao motivoInativacao) {
+        return UsuarioHistorico
+            .builder()
+            .situacao(ESituacao.I)
+            .observacao("Inativado pelo timer de usuários por excesso de uso da API.")
+            .motivoInativacao(motivoInativacao)
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .build();
     }
 }
