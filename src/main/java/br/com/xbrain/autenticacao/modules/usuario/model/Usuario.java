@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -222,6 +223,9 @@ public class Usuario {
 
     @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
     private String urlLojaProspectNextel;
+
+    @Column(name = "FK_SITE") //PEGAR COM O JEFFERSON
+    private List<Site> sites;
 
     @Transient
     private List<Integer> hierarquiasId;

@@ -80,4 +80,9 @@ public class SiteController {
 
         return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds, siteIgnoradoId);
     }
+
+    @GetMapping("{id}/sites-usuario")
+    public List<SelectResponse> buscarSitesPorPermissaoDoUsuario(@PathVariable Integer usuarioId) {
+        return service.getSitesPorPermissao(usuarioId);
+    }
 }

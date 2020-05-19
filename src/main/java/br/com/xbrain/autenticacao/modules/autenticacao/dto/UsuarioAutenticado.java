@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -45,6 +46,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
+    private List<Site> sites;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -68,6 +70,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
+        this.sites = usuario.getSites();
         getOrganizacao(usuario);
     }
 
@@ -89,6 +92,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.sites = usuario.getSites();
         getOrganizacao(usuario);
     }
 
