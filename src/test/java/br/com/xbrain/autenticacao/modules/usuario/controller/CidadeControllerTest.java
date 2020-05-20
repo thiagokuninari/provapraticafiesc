@@ -20,8 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -180,6 +179,20 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
                 .andExpect(jsonPath("$[0].netUno", is("V")))
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    public void buscarCidadesPorEstados_deveRetornarAsCidadesDeCadaEstado() throws Exception {
+        mvc.perform(get("/api/cidades/por-estados")
+            .param("estadosIds", "1", "2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$[0].value", is(3237)))
+            .andExpect(jsonPath("$[0].label", is("ARAPONGAS - PR")))
+            .andExpect(jsonPath("$[1].value", is(4870)))
+            .andExpect(jsonPath("$[1].label", is("BERNARDINO DE CAMPOS - SP")));
     }
 
     private Cidade umaCidade() {

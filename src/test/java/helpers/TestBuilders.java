@@ -1,19 +1,23 @@
 package helpers;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import java.util.List;
+import java.util.Set;
 
 public class TestBuilders {
 
     public static UsuarioHierarquiaResponse umUsuarioHierarquia() {
         return UsuarioHierarquiaResponse.builder()
-                .id(100)
-                .nome("XBRAIN")
-                .cargoNome("COORDENADOR_OPERACAO")
-                .build();
+            .id(100)
+            .nome("XBRAIN")
+            .cargoNome("COORDENADOR_OPERACAO")
+            .build();
     }
 
     public static UsuarioConfiguracaoDto umUsuarioConfiguracaoDto() {
@@ -58,5 +62,12 @@ public class TestBuilders {
         dto.setRamal(1000);
         dto.setUsuario(100);
         return List.of(dto);
+    }
+
+    public static UsuarioAutenticado buildUsuarioAutenticadoComTodosCanais() {
+        return UsuarioAutenticado.builder()
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+                .build()).build();
     }
 }

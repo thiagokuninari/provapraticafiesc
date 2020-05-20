@@ -44,6 +44,7 @@ public class CargoService {
     private void filtrarPermitidos(CargoPredicate predicate) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
+        predicate.filtrarCargoPorUsuarioLogado(usuarioAutenticado.getUsuario());
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
         }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
@@ -40,6 +41,9 @@ public class SupervisorControllerTest {
 
     @MockBean
     private SupervisorService supervisorService;
+
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     public void getAssistentesEVendedores_isUnauthorized_quandoNaoPassarAToken() throws Exception {

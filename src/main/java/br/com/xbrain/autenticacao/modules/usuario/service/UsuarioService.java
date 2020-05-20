@@ -30,6 +30,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -59,6 +60,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
@@ -426,7 +428,7 @@ public class UsuarioService {
     }
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
-        return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+        return AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
     private void validar(Usuario usuario) {
@@ -946,6 +948,16 @@ public class UsuarioService {
                 .build());
     }
 
+    public List<Usuario> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId, List<ECanal> canais) {
+        return repository.getUsuariosFilter(
+            new UsuarioPredicate()
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                .comCidade(cidadesId)
+                .comCanais(canais)
+                .build());
+    }
+
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
             .comEmpresas(usuarioFiltrosDto.getEmpresasIds())
@@ -1276,7 +1288,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId,
+            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name()))
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1324,9 +1337,10 @@ public class UsuarioService {
         return IntStream.concat(
             equipeVendaD2dService
                 .getUsuariosPermitidos(List.of(
-                    CodigoCargo.SUPERVISOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO,
-                    CodigoCargo.VENDEDOR_OPERACAO
+                    SUPERVISOR_OPERACAO,
+                    ASSISTENTE_OPERACAO,
+                    VENDEDOR_OPERACAO,
+                    OPERACAO_TELEVENDAS
                 ))
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
@@ -1355,7 +1369,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdsSubordinadosDaHierarquia(Integer usuarioId, String codigoCargo) {
-        return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
+        return repository.getSubordinadosPorCargo(usuarioId, Set.of(codigoCargo))
             .stream()
             .map(row -> objectToInteger(row[POSICAO_ZERO]))
             .collect(Collectors.toList());
@@ -1445,5 +1459,9 @@ public class UsuarioService {
         return repository.findById(id)
             .map(UrlLojaOnlineResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
+        return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
 }
