@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
@@ -17,16 +18,16 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
@@ -41,6 +42,8 @@ public class SiteService {
     private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
+    private static final ValidacaoException EX_USUARIO_NAO_POSSUI_SITE_VICULADO =
+            new ValidacaoException("O Usuário não possui site viculado.");
 
     @Autowired
     private SiteRepository siteRepository;
@@ -50,6 +53,8 @@ public class SiteService {
     private CidadeRepository cidadeRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private FuncionalidadeService funcionalidadeService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -185,13 +190,19 @@ public class SiteService {
             .collect(toList());
     }
 
-    public List<SelectResponse> getSitesPorPermissao(Integer usuarioId) {
-        var usuarioSessao = autenticacaoService.getUsuarioAutenticado();
-        if (usuarioSessao.hasPermissao(CodigoFuncionalidade.CTR_2044)) {
+    public List<SelectResponse> getSitesPorPermissao(Usuario usuario) {
+        var permissoesUsuarioSessao = funcionalidadeService.getPermissoes(usuario);
+        if (permissoesUsuarioSessao.contains(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_2044.getRole()))) {
             return this.getAllAtivos();
         }
-        return usuarioSessao.getSites().stream()
-                .map(site -> SelectResponse.of(site.getId(), site.getNome()))
-                .collect(toList());
+        var sites = new ArrayList<SelectResponse>();
+        Optional.ofNullable(usuario.getSite())
+            .ifPresentOrElse(site -> {
+                sites.add(SelectResponse.of(site.getId(), site.getNome()));
+            }, () -> {
+                    throw EX_USUARIO_NAO_POSSUI_SITE_VICULADO;
+                }
+            );
+        return sites;
     }
 }

@@ -224,8 +224,11 @@ public class Usuario {
     @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
     private String urlLojaProspectNextel;
 
-    @Column(name = "FK_SITE") //PEGAR COM O JEFFERSON
-    private List<Site> sites;
+    @NotNull
+    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SITE"), nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Site site;
 
     @Transient
     private List<Integer> hierarquiasId;
