@@ -74,6 +74,11 @@ public class SiteController {
         return service.buscarEstadosNaoAtribuidosEmSites(siteIgnoradoId);
     }
 
+    @GetMapping("usuario-logado")
+    public List<SelectResponse> buscarSitesVinculadosAoUsuarioLogado() {
+        return service.getAllByUsuarioLogado();
+    }
+
     @GetMapping("cidades-disponiveis")
     public List<SelectResponse> buscarCidadesDisponiveisPorEstadosIds(@RequestParam List<Integer> estadosIds,
                                                                       Integer siteIgnoradoId) {

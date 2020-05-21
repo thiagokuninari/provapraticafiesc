@@ -44,7 +44,7 @@ public class UsuarioGerenciaController {
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
         return UsuarioDto.of(
-            service.findByIdComAa(id),
+            usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 

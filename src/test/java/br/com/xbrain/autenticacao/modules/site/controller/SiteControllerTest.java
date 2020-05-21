@@ -139,6 +139,21 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
+    public void buscarSitesVinculadosAoUsuarioLogado_deveRetornarSitesDoUsuarioLogado() {
+        mvc.perform(get(API_URI + "/usuario-logado")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].value", is(100)))
+            .andExpect(jsonPath("$[0].label", is("São Paulo")))
+            .andExpect(jsonPath("$[1].value", is(101)))
+            .andExpect(jsonPath("$[1].label", is("Rio Branco")))
+            .andExpect(jsonPath("$[2].value", is(102)))
+            .andExpect(jsonPath("$[2].label", is("Manaus")));
+    }
+
+    @Test
+    @SneakyThrows
     public void getSitesByEstadoId_deveRetornarOsSitesQueEstaoNoMesmoEstado() {
         mvc.perform(get(API_URI + "/estado/{estadoId}", 2)
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))

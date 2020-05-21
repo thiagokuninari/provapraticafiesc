@@ -3,17 +3,12 @@ package br.com.xbrain.autenticacao.modules.site.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
@@ -26,10 +21,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static helpers.TestBuilders.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -73,12 +68,30 @@ public class SiteServiceTest {
     }
 
     @Test
+    public void getAllByUsuarioLogado_deveRetornarSelectResponseComSites_quandoExistirParaOUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoNivelBackoffice());
+
+        when(siteRepository.findAll(any(Predicate.class)))
+            .thenReturn(umaListaSites());
+
+        assertThat(service.getAllByUsuarioLogado())
+            .hasSize(3)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
+    }
+
+    @Test
     public void getAll_deveRetornarUmaPaginaDeSites_quandoFiltrar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
         when(siteRepository.findAll(any(Predicate.class), any(Pageable.class)))
-            .thenReturn(new PageImpl<>(umListaSites()));
+            .thenReturn(new PageImpl<>(umaListaSites()));
 
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
             .hasSize(3)
@@ -92,7 +105,7 @@ public class SiteServiceTest {
 
     @Test
     public void save_validacaoException_quandoExistirUmSiteComOMesmoNome() {
-        when(siteRepository.findAll()).thenReturn(umListaSites());
+        when(siteRepository.findAll()).thenReturn(umaListaSites());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umSiteRequest()))
@@ -240,7 +253,7 @@ public class SiteServiceTest {
     @Test
     public void getAllAtivos_listaComTresSites_quandoBuscarSitesAtivos() {
         when(siteRepository.findBySituacaoAtiva())
-            .thenReturn(umListaSites());
+            .thenReturn(umaListaSites());
 
         assertThat(service.getAllAtivos())
             .extracting("value", "label")
@@ -270,7 +283,7 @@ public class SiteServiceTest {
     @Test
     public void getSitesByEstadoId_umaListaComTresSites_quandoBuscarSitesPeloEstadoId() {
         when(siteRepository.findByEstadoId(1))
-            .thenReturn(umListaSites());
+            .thenReturn(umaListaSites());
 
         assertThat(service.getSitesByEstadoId(1))
             .extracting("value", "label")
@@ -279,64 +292,5 @@ public class SiteServiceTest {
                 tuple(2, "Site Dinossauro do Acre"),
                 tuple(3, "Site Amazonia Queimada")
             );
-    }
-
-    private Set<Usuario> umaListaSupervisores() {
-        return Set.of(
-            Usuario.builder()
-                .id(1)
-                .nome("RENATO")
-                .build(),
-            Usuario.builder()
-                .id(2)
-                .nome("MARIA")
-                .build()
-        );
-    }
-
-    private SiteRequest umSiteRequest() {
-        return SiteRequest.builder()
-            .nome("Site brandon big")
-            .timeZone(BRT)
-            .supervisoresIds(List.of(1, 2))
-            .coordenadoresIds(List.of(3))
-            .cidadesIds(List.of(1, 10))
-            .estadosIds(List.of(5))
-            .build();
-    }
-
-    private List<Cidade> umListaCidades() {
-        return List.of(
-            Cidade.builder().id(1).nome("CIDADE 1").uf(umaUf(1, "UF 1", "PR")).build(),
-            Cidade.builder().id(2).nome("CIDADE 2").uf(umaUf(2, "UF 2", "SP")).build()
-        );
-    }
-
-    private Uf umaUf(Integer id, String nome, String uf) {
-        return new Uf(id, nome, uf);
-    }
-
-    private List<Uf> umaListaUfs() {
-        return List.of(
-            umaUf(1, "UF 1", "PR"),
-            umaUf(2, "UF 2", "SP"),
-            umaUf(3, "UF 3", "AC")
-        );
-    }
-
-    private List<Site> umListaSites() {
-        return List.of(
-            umSite(1, "Site Brandon Big", BRT),
-            umSite(2, "Site Dinossauro do Acre", ACT),
-            umSite(3, "Site Amazonia Queimada", AMT)
-        );
-    }
-
-    private Site umSite(Integer id, String nome, ETimeZone timeZone) {
-        return Site.builder()
-            .id(id)
-            .nome(nome)
-            .timeZone(timeZone)
-            .build();
     }
 }

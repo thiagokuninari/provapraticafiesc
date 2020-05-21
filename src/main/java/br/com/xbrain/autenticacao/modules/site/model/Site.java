@@ -95,4 +95,8 @@ public class Site {
         BeanUtils.copyProperties(site, this, "situacao");
     }
 
+    public Site(Integer id) {
+        this.id = id;
+    }
+
 }

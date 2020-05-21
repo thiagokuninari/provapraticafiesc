@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 
 public class SitePredicate extends PredicateBase {
@@ -46,6 +47,14 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate comCoordenadoresOuSupervisor(Integer usuarioId) {
+        if (!isEmpty(usuarioId)) {
+            builder.and(site.coordenadores.any().id.eq(usuarioId))
+                .or(site.supervisores.any().id.eq(usuarioId));
+        }
+        return this;
+    }
+
     public SitePredicate comSupervisores(List<Integer> supervisoresIds) {
         filtrarLista(supervisoresIds)
             .map(site.supervisores.any().id::in)
@@ -73,6 +82,11 @@ public class SitePredicate extends PredicateBase {
     public SitePredicate ignorarTodos() {
         builder.and(site.id.isNull());
 
+        return this;
+    }
+
+    public SitePredicate todosSitesAtivos() {
+        builder.and(site.situacao.eq(A));
         return this;
     }
 

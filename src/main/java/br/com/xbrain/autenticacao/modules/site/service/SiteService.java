@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -56,6 +57,16 @@ public class SiteService {
     }
 
     @Transactional(readOnly = true)
+    public List<SelectResponse> getAllByUsuarioLogado() {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        return siteRepository.findAll(filtrarPorUsuarioXbrainOuMso(usuarioAutenticado))
+            .stream()
+            .map(site -> SelectResponse.of(site.getId(), site.getNome()))
+            .collect(toList());
+    }
+
+    @Transactional(readOnly = true)
     public Page<Site> getAll(SiteFiltros filtros, PageRequest pageRequest) {
         return siteRepository.findAll(filtrarPorUsuario(filtros.toPredicate()), pageRequest);
     }
@@ -69,6 +80,14 @@ public class SiteService {
         }
 
         return filtros.build();
+    }
+
+    private Predicate filtrarPorUsuarioXbrainOuMso(UsuarioAutenticado usuarioAutenticado) {
+        var predicate = new SitePredicate();
+        if (usuarioAutenticado.isXbrainOuMso()) {
+            return predicate.todosSitesAtivos().build();
+        }
+        return predicate.comCoordenadoresOuSupervisor(usuarioAutenticado.getUsuario().getId()).build();
     }
 
     @Transactional(readOnly = true)
