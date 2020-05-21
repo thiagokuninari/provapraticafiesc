@@ -1480,6 +1480,7 @@ public class UsuarioService {
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        usuarioFiltros.tratarFiltrosLocalizacaoParaMelhorDesempenho();
         adicionarFiltroAgenteAutorizado(usuarioFiltros);
         adicionarFiltroEquipeVendas(usuarioFiltros);
         usuarioFiltros.setUsuarioService(this);
@@ -1489,7 +1490,7 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
-        return repository.findAllNomesIds(usuarioFiltros.toPredicate());
+        return repository.findAllNomesIds(usuarioFiltros);
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {

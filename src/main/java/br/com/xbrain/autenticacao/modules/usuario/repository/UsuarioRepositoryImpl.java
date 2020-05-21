@@ -24,12 +24,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -658,17 +660,35 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllNomesIds(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
-                .from(usuario)
-            .leftJoin(usuario.cidades, usuarioCidade)
-            .leftJoin(usuarioCidade.cidade, cidade)
-            .leftJoin(cidade.subCluster, subCluster)
-            .leftJoin(subCluster.cluster, cluster)
-            .leftJoin(cluster.grupo, grupo)
-            .leftJoin(grupo.regional, regional)
-            .where(predicate)
+    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros) {
+        var query = new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario);
+
+        var temCidadesIds = !ObjectUtils.isEmpty(filtros.getCidadesIds());
+        var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
+        var temClusterId = Objects.nonNull(filtros.getClusterId());
+        var temGrupoId = Objects.nonNull(filtros.getGrupoId());
+        var temRegionalId = Objects.nonNull(filtros.getRegionalId());
+
+        if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temRegionalId) {
+            query.leftJoin(usuario.cidades, usuarioCidade)
+                .leftJoin(usuarioCidade.cidade, cidade);
+        }
+        if (temSubClusterId || temClusterId || temGrupoId || temRegionalId) {
+            query.leftJoin(cidade.subCluster, subCluster);
+        }
+        if (temClusterId || temGrupoId || temRegionalId) {
+            query.leftJoin(subCluster.cluster, cluster);
+        }
+        if (temGrupoId || temRegionalId) {
+            query.leftJoin(cluster.grupo, grupo);
+        }
+        if (temRegionalId) {
+            query.leftJoin(grupo.regional, regional);
+        }
+
+        return query.where(filtros.toPredicate())
             .distinct()
             .fetch();
     }

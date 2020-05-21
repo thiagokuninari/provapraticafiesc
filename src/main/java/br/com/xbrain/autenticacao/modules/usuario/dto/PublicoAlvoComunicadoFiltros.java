@@ -65,6 +65,24 @@ public class PublicoAlvoComunicadoFiltros {
         }
     }
 
+    public void tratarFiltrosLocalizacaoParaMelhorDesempenho() {
+        if (!ObjectUtils.isEmpty(cidadesIds)) {
+            clusterId = null;
+            grupoId = null;
+            regionalId = null;
+            subClusterId = null;
+        } else if (!ObjectUtils.isEmpty(subClusterId)) {
+            clusterId = null;
+            grupoId = null;
+            regionalId = null;
+        } else if (!ObjectUtils.isEmpty(clusterId)) {
+            grupoId = null;
+            regionalId = null;
+        } else if (!ObjectUtils.isEmpty(grupoId)) {
+            regionalId = null;
+        }
+    }
+
     public boolean haveFiltrosDeLocalizacao() {
         return !ObjectUtils.isEmpty(cidadesIds)
             || !ObjectUtils.isEmpty(clusterId)
