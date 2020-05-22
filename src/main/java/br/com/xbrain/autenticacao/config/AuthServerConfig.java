@@ -100,6 +100,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String asteriskUraApiClient;
     @Value("${app-config.oauth-clients.asterisk-ura-api.secret}")
     private String asteriskuraApiSecret;
+    @Value("${app-config.oauth-clients.click-to-call-ativo-api.client}")
+    private String clickToCallAtivoApiClient;
+    @Value("${app-config.oauth-clients.click-to-call-ativo-api.secret}")
+    private String clickToCallAtivoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -227,6 +231,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(asteriskuraApiSecret)
             .authorizedGrantTypes("client_credentials")
             .scopes("asterisk-ura-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(clickToCallAtivoApiClient)
+            .secret(clickToCallAtivoApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("click-to-call-ativo-api")
             .authorities(ROLE_APPLICATION);
     }
 
