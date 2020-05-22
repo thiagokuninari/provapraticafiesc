@@ -1524,10 +1524,10 @@ public class UsuarioService {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 
-    public List<Integer> getAllUsuariosIdsSuperiores() {
+    public Set<Integer> getAllUsuariosIdsSuperiores() {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var cargosAceitos = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
-        var usuarios = new ArrayList<Integer>();
+        var usuarios = new HashSet<Integer>();
         if (usuarioAutenticado.haveCanalAgenteAutorizado()) {
             var usuariosPol = agenteAutorizadoService.getUsuariosIdsSuperioresPol();
 
@@ -1537,6 +1537,9 @@ public class UsuarioService {
                     .comUsuariosIds(usuariosPol)
                     .build()));
             }
+        }
+        if (usuarioAutenticado.haveCanalDoorToDoor()) {
+            usuarios.addAll(getUsuariosPermitidosPelaEquipeDeVenda());
         }
         usuarios.addAll(repository.getUsuariosSuperiores(usuarioAutenticado.getUsuario().getId()));
         return usuarios;

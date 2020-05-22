@@ -22,10 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -71,7 +68,7 @@ public class UsuarioController {
     }
 
     @GetMapping("ids/superiores/usuario-logado")
-    public List<Integer> getAllUsuariosIdsSuperiores() {
+    public Set<Integer> getAllUsuariosIdsSuperiores() {
         return usuarioService.getAllUsuariosIdsSuperiores();
     }
 
