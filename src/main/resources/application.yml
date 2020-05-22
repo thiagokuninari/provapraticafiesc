@@ -85,7 +85,6 @@ app-config:
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
-    gerador-leads: gerador-leads.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
