@@ -89,9 +89,7 @@ app-config:
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
-    usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
-    usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
@@ -112,17 +110,9 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
-    atualizar-permissao-gerador-lead: atualizar-aa-com-permissao-gerador-lead.queue
-    atualizar-permissao-gerador-lead-failure: atualizar-aa-com-permissao-gerador-lead-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
-    cadastro-usuario-gerador-leads: cadastro-usuario-gerador-leads.queue
-    cadastro-usuario-gerador-leads-failure: cadastro-usuario-gerador-leads-failure.queue
-    sucesso-cadastro-usuario-gerador-leads: sucesso-cadastro-usuario-gerador-leads.queue
-    sucesso-cadastro-usuario-gerador-leads-failure: sucesso-cadastro-usuario-gerador-leads-failure.queue
-    alterar-situacao-gerador-leads: alterar-situacao-gerador-leads.queue
-    alterar-situacao-gerador-leads-failure: alterar-situacao-gerador-leads-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -185,13 +175,6 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
-    indicacao-api:
-      client: indicacao-api
-      secret: 1nd1c4c40
-    gerador-lead-api:
-      client: gerador-lead-api
-      secret: g3r4d0rl34d4p1
-
 
   services:
     autenticacao:
