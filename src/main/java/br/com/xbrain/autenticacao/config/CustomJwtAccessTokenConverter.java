@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static org.springframework.util.StringUtils.isEmpty;
 
 public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter implements
@@ -77,7 +77,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private List<SelectResponse> getSites(Usuario usuario) {
-        return siteService.getSitesPorPermissao(usuario);
+        return List.of(MSO, OPERACAO, XBRAIN, ATIVO_LOCAL_PROPRIO).contains(usuario.getNivelCodigo())
+            ? siteService.getSitesPorPermissao(usuario)
+            : Collections.emptyList();
     }
 
     private List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {

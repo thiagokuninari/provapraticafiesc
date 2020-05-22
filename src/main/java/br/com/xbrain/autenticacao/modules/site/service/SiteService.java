@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,6 +35,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static java.math.BigInteger.ZERO;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @Service
 @Transactional
 public class SiteService {
@@ -42,8 +44,8 @@ public class SiteService {
     private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
-    private static final ValidacaoException EX_USUARIO_NAO_POSSUI_SITE_VICULADO =
-            new ValidacaoException("O Usuário não possui site viculado.");
+    private static final String USUARIO_NAO_POSSUI_SITE_VICULADO =
+            "O Usuário não possui site viculado.";
 
     @Autowired
     private SiteRepository siteRepository;
@@ -200,7 +202,7 @@ public class SiteService {
             .ifPresentOrElse(site -> {
                 sites.add(SelectResponse.of(site.getId(), site.getNome()));
             }, () -> {
-                    throw EX_USUARIO_NAO_POSSUI_SITE_VICULADO;
+                    log.info(USUARIO_NAO_POSSUI_SITE_VICULADO);
                 }
             );
         return sites;
