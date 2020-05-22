@@ -13,16 +13,16 @@ import java.util.List;
 @AllArgsConstructor
 public class UsuarioCidadeDto {
 
-    private Integer idRegional;
-    private String nomeRegional;
-    private Integer idGrupo;
-    private String nomeGrupo;
-    private Integer idCluster;
-    private String nomeCluster;
-    private Integer idSubCluster;
-    private String nomeSubCluster;
     private Integer idCidade;
     private String nomeCidade;
+    private Integer idSubCluster;
+    private String nomeSubCluster;
+    private Integer idCluster;
+    private String nomeCluster;
+    private Integer idGrupo;
+    private String nomeGrupo;
+    private Integer idRegional;
+    private String nomeRegional;
 
     public static UsuarioCidadeDto parse(Cidade cidade) {
         UsuarioCidadeDto dto = new UsuarioCidadeDto();
