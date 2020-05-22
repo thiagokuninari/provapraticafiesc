@@ -1538,7 +1538,7 @@ public class UsuarioService {
                     .build()));
             }
         }
-        usuarios.addAll(getIdSuperiores(usuarioAutenticado.getUsuario()));
+        usuarios.addAll(repository.getUsuariosSuperiores(usuarioAutenticado.getUsuario().getId()));
         return usuarios;
     }
 

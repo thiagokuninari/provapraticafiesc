@@ -29,10 +29,7 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -334,6 +331,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 new MapSqlParameterSource().addValues(getParameters(filtros))
                         .addValue("usuarioId", filtros.getUsuarioId()),
                 new BeanPropertyRowMapper(UsuarioResponse.class));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Integer> getUsuariosSuperiores(Integer usuarioId) {
+        List<BigDecimal> result = entityManager
+            .createNativeQuery("SELECT U.ID "
+                + "  FROM USUARIO_HIERARQUIA UH "
+                + "  JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
+                + "   AND U.SITUACAO = 'A' "
+                + "  START WITH UH.FK_USUARIO IN (:_usuarioId) "
+                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ")
+            .setParameter("_usuarioId", usuarioId)
+            .getResultList();
+        return result
+            .stream()
+            .map(BigDecimal::intValue)
+            .collect(Collectors.toList());
     }
 
     @Override
