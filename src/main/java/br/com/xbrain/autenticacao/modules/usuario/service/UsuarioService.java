@@ -39,7 +39,6 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -62,6 +61,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
@@ -92,9 +92,9 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
-
+    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
+        VENDEDOR_OPERACAO);
     @Autowired
-    @Setter
     private UsuarioRepository repository;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -1300,7 +1300,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId, VENDEDOR_OPERACAO.name())
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1347,11 +1347,7 @@ public class UsuarioService {
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
             equipeVendaD2dService
-                .getUsuariosPermitidos(List.of(
-                    CodigoCargo.SUPERVISOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO,
-                    CodigoCargo.VENDEDOR_OPERACAO
-                ))
+                .getUsuariosPermitidos(CARGOS_PARA_INTEGRACAO_D2D)
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
             IntStream.of(autenticacaoService.getUsuarioId()))
@@ -1539,7 +1535,8 @@ public class UsuarioService {
                 usuarios.addAll(repository.getUsuariosSuperioresIds(usuariosPol));
             }
         }
-        if (usuarioAutenticado.haveCanalDoorToDoor()) {
+        if (usuarioAutenticado.haveCanalDoorToDoor()
+            && CARGOS_PARA_INTEGRACAO_D2D.contains(usuarioAutenticado.getCargoCodigo())) {
             usuarios.addAll(getUsuariosPermitidosPelaEquipeDeVenda());
         }
         usuarios.addAll(repository.getUsuariosSuperiores(usuarioAutenticado.getUsuario().getId()));
