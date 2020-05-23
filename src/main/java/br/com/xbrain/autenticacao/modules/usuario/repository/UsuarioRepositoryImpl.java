@@ -12,7 +12,9 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import com.google.common.collect.Lists;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -55,6 +57,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate.QTD_MAX_IN_NO_ORACLE;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -432,7 +435,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuarioHierarquia)
             .innerJoin(usuarioHierarquia.usuario, usuario)
             .innerJoin(usuarioHierarquia.usuarioSuperior, usuario)
-            .where(usuarioHierarquia.usuario.id.in(usuariosIds)).fetch();
+            .where(ExpressionUtils.anyOf(
+                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuarioHierarquia.usuario.id::in)
+                    .collect(Collectors.toList()))
+            ).fetch();
     }
 
     @Override

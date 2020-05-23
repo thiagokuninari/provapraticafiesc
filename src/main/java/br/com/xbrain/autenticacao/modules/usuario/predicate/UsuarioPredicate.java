@@ -38,7 +38,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
 
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
+    public static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
 

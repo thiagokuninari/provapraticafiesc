@@ -1532,12 +1532,11 @@ public class UsuarioService {
             var usuariosPol = agenteAutorizadoService.getUsuariosIdsSuperioresPol();
 
             if (!isEmpty(usuariosPol)) {
-                var usuariosFiltrados = repository.findAllIds(new UsuarioPredicate()
+                usuarios.addAll(repository.findAllIds(new UsuarioPredicate()
                     .comCargo(cargosAceitos)
                     .comUsuariosIds(usuariosPol)
-                    .build());
-                usuarios.addAll(usuariosFiltrados);
-                usuarios.addAll(repository.getUsuariosSuperioresIds(usuariosFiltrados));
+                    .build()));
+                usuarios.addAll(repository.getUsuariosSuperioresIds(usuariosPol));
             }
         }
         if (usuarioAutenticado.haveCanalDoorToDoor()) {
