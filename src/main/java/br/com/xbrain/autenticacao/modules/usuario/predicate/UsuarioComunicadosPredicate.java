@@ -35,8 +35,7 @@ public class UsuarioComunicadosPredicate {
             .comRegionalId(filtros.getRegionalId())
             .comSubClusterId(filtros.getSubClusterId()).build();
 
-        builder.and(comUsuariosIds(filtros.getUsuariosFiltradosPorCidadePol()))
-            .or(predicate);
+        builder.and(ExpressionUtils.anyOf(comUsuariosIds(filtros.getUsuariosFiltradosPorCidadePol()), predicate));
 
         return this;
     }

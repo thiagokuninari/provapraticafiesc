@@ -692,6 +692,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(cluster.grupo, grupo)
             .leftJoin(grupo.regional, regional)
             .where(predicate)
+            .distinct()
             .fetch();
     }
 
