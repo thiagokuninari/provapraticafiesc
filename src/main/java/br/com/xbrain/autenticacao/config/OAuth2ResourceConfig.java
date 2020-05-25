@@ -22,13 +22,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         String[] permitAll = {
             "/call/**",
+            "/api/public/**",
             "/parceiros-online/**",
             "/equipe-venda/**",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
-            "/api/public/disparar-timer-inativar-usuarios",
             "/api/usuarios/usuario-funil-prospeccao"
         };
 

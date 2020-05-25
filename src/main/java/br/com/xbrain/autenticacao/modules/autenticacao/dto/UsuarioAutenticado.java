@@ -89,6 +89,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.canais = usuario.getCanais();
         getOrganizacao(usuario);
     }
 

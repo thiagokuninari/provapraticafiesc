@@ -147,9 +147,8 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Cargo cargo;
 
-    @NotNull
     @JoinColumn(name = "FK_SITE", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_USUARIO_SITE"), nullable = false)
+        foreignKey = @ForeignKey(name = "FK_USUARIO_SITE"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Site site;
 
