@@ -659,7 +659,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .cargosIds(List.of(20, 40)).build());
-        assertThat(usuarios).isEqualTo(List.of(114, 366, 368, 246));
+        assertThat(usuarios).containsExactlyInAnyOrder(114, 366, 368, 246);
     }
 
     @Test

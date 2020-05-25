@@ -39,11 +39,11 @@ public class UsuarioCidadeRepositoryTest {
                 "idSubCluster", "nomeSubCluster",
                 "idCidade", "nomeCidade")
             .containsExactlyInAnyOrder(
-                tuple(3237, "ARAPONGAS", 189, "LONDRINA", 45, "NORTE DO PARANÁ", 20, "NORTE DO PARANÁ", 3, "SUL"),
-                tuple(1443, "BELO VALE", 95, "BRI - ITAÚNA - MG", 21, "METROPOLITANA BH", 6, "MINAS GERAIS", 1, "LESTE"),
-                tuple(2466, "BELTERRA", 33, "BRI - SANTARÉM - PA", 9, "PA/AP", 2, "NORTE", 1, "LESTE"),
-                tuple(3022, "BENEDITINOS", 42, "REMOTO - PIAUÍ", 11, "PIAUÍ", 3, "FORTALEZA", 1, "LESTE"),
-                tuple(2617, "BERNARDINO BATISTA", 55, "BRI - SOUSA - PB", 14, "PARAÍBA", 4, "NORDESTE", 1, "LESTE"));
+                tuple(3, "SUL", 20, "NORTE DO PARANÁ", 45, "NORTE DO PARANÁ", 189, "LONDRINA", 3237, "ARAPONGAS"),
+                tuple(1, "LESTE", 6, "MINAS GERAIS", 21, "METROPOLITANA BH", 95, "BRI - ITAÚNA - MG", 1443, "BELO VALE"),
+                tuple(1, "LESTE", 2, "NORTE", 9, "PA/AP", 33, "BRI - SANTARÉM - PA", 2466, "BELTERRA"),
+                tuple(1, "LESTE", 3, "FORTALEZA", 11, "PIAUÍ", 42, "REMOTO - PIAUÍ", 3022, "BENEDITINOS"),
+                tuple(1, "LESTE", 4, "NORDESTE", 14, "PARAÍBA", 55, "BRI - SOUSA - PB", 2617, "BERNARDINO BATISTA"));
     }
 
     @Test
