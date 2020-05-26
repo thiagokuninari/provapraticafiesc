@@ -66,7 +66,7 @@ public class CidadeController {
     }
 
     @RequestMapping("comunicados")
-    public List<UsuarioCidadeDto> getAtivosParaComunicados(@PathVariable Integer subclusterId) {
+    public List<UsuarioCidadeDto> getAtivosParaComunicados(@RequestParam Integer subclusterId) {
         return service.getAtivosParaComunicados(subclusterId);
     }
 

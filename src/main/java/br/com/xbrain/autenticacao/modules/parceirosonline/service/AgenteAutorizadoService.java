@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.*;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
@@ -31,16 +32,18 @@ public class AgenteAutorizadoService {
 
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
 
     public List<Integer> getIdUsuariosPorAa(String cnpj, Boolean buscarInativos) {
         try {
             AgenteAutorizadoResponse aaResponse = getAaByCpnj(cnpj);
             return getUsuariosByAaId(Integer.valueOf(aaResponse.getId()), buscarInativos).stream()
-                    .map(UsuarioAgenteAutorizadoResponse::getId)
-                    .collect(Collectors.toList());
+                .map(UsuarioAgenteAutorizadoResponse::getId)
+                .collect(Collectors.toList());
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                    AgenteAutorizadoService.class.getName(),
+                AgenteAutorizadoService.class.getName(),
                     EErrors.ERRO_OBTER_AA_BY_CNPJ);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
@@ -202,6 +205,9 @@ public class AgenteAutorizadoService {
     }
 
     public List<ClusterDto> getClusters(Integer grupoId) {
+        if (!isUsuarioComCanalAa()) {
+            return List.of();
+        }
         try {
             return agenteAutorizadoClient.getClusters(grupoId);
         } catch (RetryableException ex) {
@@ -214,6 +220,9 @@ public class AgenteAutorizadoService {
     }
 
     public List<GrupoDto> getGrupos(Integer regionalId) {
+        if (!isUsuarioComCanalAa()) {
+            return List.of();
+        }
         try {
             return agenteAutorizadoClient.getGrupos(regionalId);
         } catch (RetryableException ex) {
@@ -226,6 +235,9 @@ public class AgenteAutorizadoService {
     }
 
     public List<RegionalDto> getRegionais() {
+        if (!isUsuarioComCanalAa()) {
+            return List.of();
+        }
         try {
             return agenteAutorizadoClient.getRegionais();
         } catch (RetryableException ex) {
@@ -238,6 +250,9 @@ public class AgenteAutorizadoService {
     }
 
     public List<SubClusterDto> getSubclusters(Integer clusterId) {
+        if (!isUsuarioComCanalAa()) {
+            return List.of();
+        }
         try {
             return agenteAutorizadoClient.getSubclusters(clusterId);
         } catch (RetryableException ex) {
@@ -250,6 +265,9 @@ public class AgenteAutorizadoService {
     }
 
     public List<UsuarioCidadeDto> getCidades(Integer subclusterId) {
+        if (!isUsuarioComCanalAa()) {
+            return List.of();
+        }
         try {
             return agenteAutorizadoClient.getCidades(subclusterId);
         } catch (RetryableException ex) {
@@ -259,5 +277,9 @@ public class AgenteAutorizadoService {
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
+    }
+
+    public boolean isUsuarioComCanalAa() {
+        return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
     }
 }
