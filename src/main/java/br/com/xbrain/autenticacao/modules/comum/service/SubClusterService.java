@@ -7,12 +7,14 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.SubClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.SubClusterRepository;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class SubClusterService {
@@ -23,14 +25,17 @@ public class SubClusterService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
+
     public List<SubClusterDto> getAllByClusterId(Integer clusterId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         SubClusterPredicate predicate = new SubClusterPredicate();
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByClusterId(clusterId, predicate.build())
-                .stream()
-                .map(SubClusterDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(SubClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAllByClusterIdAndUsuarioId(Integer clusterId, Integer usuarioId) {
@@ -66,14 +71,22 @@ public class SubClusterService {
 
     public List<SubClusterDto> getAll() {
         return repository.findAll().stream()
-                .map(SubClusterDto::of)
-                .collect(Collectors.toList());
+            .map(SubClusterDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<SubClusterDto> getAllSubclustersByUsuarioAutenticado() {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var predicate = new SubClusterPredicate()
-                .filtrarPermitidos(usuarioAutenticado);
+            .filtrarPermitidos(usuarioAutenticado);
         return SubClusterDto.of(repository.findAllAtivo(predicate.build()));
+    }
+
+    public List<SubClusterDto> getAtivosParaComunicados(Integer clusterId) {
+        return Stream.concat(
+            getAllByClusterId(clusterId).stream(),
+            agenteAutorizadoService.getSubclusters(clusterId).stream())
+            .distinct()
+            .collect(Collectors.toList());
     }
 }

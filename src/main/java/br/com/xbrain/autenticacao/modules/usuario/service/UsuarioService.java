@@ -1190,7 +1190,7 @@ public class UsuarioService {
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
         Usuario usuario = findComplete(usuarioId);
         return usuario.getCidades().stream()
-            .map(c -> UsuarioCidadeDto.parse(c.getCidade()))
+            .map(c -> UsuarioCidadeDto.of(c.getCidade()))
             .collect(Collectors.toList());
     }
 

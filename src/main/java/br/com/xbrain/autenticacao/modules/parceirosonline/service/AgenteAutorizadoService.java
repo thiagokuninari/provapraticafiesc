@@ -1,12 +1,13 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
+import br.com.xbrain.autenticacao.modules.comum.dto.*;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -195,6 +196,66 @@ public class AgenteAutorizadoService {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<ClusterDto> getClusters(Integer grupoId) {
+        try {
+            return agenteAutorizadoClient.getClusters(grupoId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<GrupoDto> getGrupos(Integer regionalId) {
+        try {
+            return agenteAutorizadoClient.getGrupos(regionalId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<RegionalDto> getRegionais() {
+        try {
+            return agenteAutorizadoClient.getRegionais();
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<SubClusterDto> getSubclusters(Integer clusterId) {
+        try {
+            return agenteAutorizadoClient.getSubclusters(clusterId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<UsuarioCidadeDto> getCidades(Integer subclusterId) {
+        try {
+            return agenteAutorizadoClient.getCidades(subclusterId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_CIDADE_DO_POL);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
