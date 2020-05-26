@@ -1472,7 +1472,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
-        return repository.findAllIds(usuarioFiltros.toPredicate());
+        return repository.findAllIds(usuarioFiltros);
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {

@@ -96,6 +96,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findAllIds(Predicate predicate);
 
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
+
     List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
 
     long deleteUsuarioHierarquia(Integer usuarioId);

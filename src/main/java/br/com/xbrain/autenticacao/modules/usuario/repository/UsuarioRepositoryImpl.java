@@ -18,6 +18,7 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -685,13 +686,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario)
-            .leftJoin(usuario.cidades, usuarioCidade)
-            .leftJoin(usuarioCidade.cidade, cidade)
-            .leftJoin(cidade.subCluster, subCluster)
-            .leftJoin(subCluster.cluster, cluster)
-            .leftJoin(cluster.grupo, grupo)
-            .leftJoin(grupo.regional, regional)
             .where(predicate)
+            .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros) {
+        var query = new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario);
+
+        montarQuery(query, filtros);
+
+        return query.where(filtros.toPredicate())
             .distinct()
             .fetch();
     }
@@ -702,6 +710,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario);
 
+        montarQuery(query, filtros);
+
+        return query.where(filtros.toPredicate())
+            .distinct()
+            .fetch();
+    }
+
+    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros) {
         var temCidadesIds = !ObjectUtils.isEmpty(filtros.getCidadesIds());
         var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
         var temClusterId = Objects.nonNull(filtros.getClusterId());
@@ -724,10 +740,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         if (temRegionalId) {
             query.leftJoin(grupo.regional, regional);
         }
-
-        return query.where(filtros.toPredicate())
-            .distinct()
-            .fetch();
     }
 
     @Override
