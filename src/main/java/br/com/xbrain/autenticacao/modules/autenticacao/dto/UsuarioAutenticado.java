@@ -16,8 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
@@ -149,6 +148,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isGerenteOperacao() {
         return cargoCodigo.equals(GERENTE_OPERACAO);
+    }
+
+    public boolean isSupervisorOperacao() {
+        return cargoCodigo.equals(SUPERVISOR_OPERACAO);
     }
 
     public boolean isBackoffice() {

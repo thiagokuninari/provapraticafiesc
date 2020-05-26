@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -79,19 +80,23 @@ public class CargoService {
             new CargoPredicate()
                 .comNiveis(niveisIds)
                 .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                .ouComCodigos(getCodigosAgenteAutorizado(niveisIds))
+                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
                 .build())
             .stream()
             .map(CargoResponse::of)
             .collect(Collectors.toList());
     }
 
-    private List<CodigoCargo> getCodigosAgenteAutorizado(List<Integer> niveisIds) {
-        return niveisIds.contains(nivelRepository.findByCodigo(CodigoNivel.AGENTE_AUTORIZADO).getId())
-            ? Stream.of(CodigoCargo.values())
-            .filter(this::isAgenteAutorizado)
-            .collect(Collectors.toList())
-            : List.of();
+    private List<CodigoCargo> getCodigosEspeciais(List<Integer> niveisIds, UsuarioAutenticado usuarioAutenticado) {
+        if (niveisIds.contains(nivelRepository.findByCodigo(CodigoNivel.AGENTE_AUTORIZADO).getId())) {
+            return Stream.of(CodigoCargo.values())
+                .filter(this::isAgenteAutorizado)
+                .collect(Collectors.toList());
+        } else if (usuarioAutenticado.isSupervisorOperacao()) {
+            return List.of(CodigoCargo.ASSISTENTE_OPERACAO);
+        } else {
+            return List.of();
+        }
     }
 
     private boolean isAgenteAutorizado(CodigoCargo codigoCargo) {
