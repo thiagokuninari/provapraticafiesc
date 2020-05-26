@@ -16,8 +16,6 @@ public class StaticResourceConfiguration {
     @Autowired
     private LogRequestInterceptor logRequestInterceptor;
     @Autowired
-    private AtivoLocalInterceptor ativoLocalInterceptor;
-    @Autowired
     private Environment env;
 
     @Bean
@@ -32,10 +30,15 @@ public class StaticResourceConfiguration {
             public void addInterceptors(InterceptorRegistry registry) {
                 registry.addInterceptor(logRequestInterceptor);
                 if (env.acceptsProfiles("!test")) {
-                    registry.addInterceptor(ativoLocalInterceptor);
+                    registry.addInterceptor(ativoLocalInterceptor());
                 }
             }
         };
+    }
+
+    @Bean
+    public AtivoLocalInterceptor ativoLocalInterceptor() {
+        return new AtivoLocalInterceptor();
     }
 }
 

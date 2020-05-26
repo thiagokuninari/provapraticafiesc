@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -23,7 +22,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 
-@Component
 public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
 
     private static final UnauthorizedUserException FORA_HORARIO_PERMITIDO_EX =
