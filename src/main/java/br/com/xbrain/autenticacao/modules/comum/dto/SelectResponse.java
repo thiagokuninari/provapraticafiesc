@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SelectResponse {
+public class SelectResponse implements Serializable {
 
     private Object value;
     private String label;
