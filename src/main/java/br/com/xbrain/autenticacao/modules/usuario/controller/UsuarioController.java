@@ -316,4 +316,9 @@ public class UsuarioController {
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
     }
+
+    @GetMapping("permitidos/select")
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado() {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+    }
 }

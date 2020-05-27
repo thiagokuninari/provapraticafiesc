@@ -26,12 +26,15 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import com.google.common.collect.Lists;
+import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -40,6 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -267,7 +271,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuarios_quandoUsuarioEquipeVendas() {
+    public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuariosDaEquipe_quandoUsuarioEquipeVendas() {
         var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
             CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
@@ -281,6 +285,40 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1))
             .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true)
                 .comIds(List.of(3, 2, 4, 5, 1, 1)).build()));
+    }
+
+    @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogado_usuariosSubordinados_quandoUsuarioEquipeVendas() {
+        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+            CodigoCargo.SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
+
+        when(equipeVendaD2dService.getUsuariosPermitidos(any())).thenReturn(List.of());
+        when(autenticacaoService.getUsuarioId()).thenReturn(3);
+        when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(Lists.newArrayList(List.of(2, 4, 5)));
+
+        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+
+        verify(equipeVendaD2dService, times(1))
+            .getUsuariosPermitidos(argThat(arg -> arg.size() == 3));
+        verify(usuarioRepository, times(1))
+            .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));
+    }
+
+    @Test
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogado_usuarios_quandoUsuarioCoordenador() {
+        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+            CodigoCargo.COORDENADOR_OPERACAO, CTR_VISUALIZAR_CARTEIRA_HIERARQUIA);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
+
+        when(autenticacaoService.getUsuarioId()).thenReturn(1);
+        when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(Lists.newArrayList(List.of(2, 4, 5)));
+
+        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+
+        verify(usuarioRepository, times(1))
+            .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true)
+                .comIds(List.of(1, 2, 4, 5)).build()), eq(new Sort(Sort.Direction.ASC, "nome")));
     }
 
     private Usuario umUsuarioBackoffice() {
