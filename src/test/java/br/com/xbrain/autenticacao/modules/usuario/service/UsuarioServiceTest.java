@@ -300,7 +300,7 @@ public class UsuarioServiceTest {
         usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
 
         verify(equipeVendaD2dService, times(1))
-            .getUsuariosPermitidos(argThat(arg -> arg.size() == 3));
+            .getUsuariosPermitidos(argThat(arg -> arg.size() == 4));
         verify(usuarioRepository, times(1))
             .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));
     }
@@ -311,14 +311,12 @@ public class UsuarioServiceTest {
             CodigoCargo.COORDENADOR_OPERACAO, CTR_VISUALIZAR_CARTEIRA_HIERARQUIA);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
 
-        when(autenticacaoService.getUsuarioId()).thenReturn(1);
         when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(Lists.newArrayList(List.of(2, 4, 5)));
 
         usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
 
         verify(usuarioRepository, times(1))
-            .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true)
-                .comIds(List.of(1, 2, 4, 5)).build()), eq(new Sort(Sort.Direction.ASC, "nome")));
+            .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));
     }
 
     private Usuario umUsuarioBackoffice() {
@@ -365,7 +363,7 @@ public class UsuarioServiceTest {
             .codigo(cargo)
             .build();
     }
-        
+
     private List<SimpleGrantedAuthority> getPermissoes(CodigoFuncionalidade... permissoes) {
         return Objects.nonNull(permissoes)
             ? Arrays.stream(permissoes)
