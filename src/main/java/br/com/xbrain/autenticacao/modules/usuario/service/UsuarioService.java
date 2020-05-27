@@ -1437,8 +1437,8 @@ public class UsuarioService {
         );
     }
 
-    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
-        return repository.findAllAtivosByNivelOperacao();
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {

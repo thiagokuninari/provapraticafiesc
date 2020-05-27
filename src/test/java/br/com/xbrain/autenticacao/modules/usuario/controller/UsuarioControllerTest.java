@@ -557,24 +557,16 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() throws Exception {
-        mvc.perform(get("/api/usuarios/ativos/nivel/operacao")
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(6)))
-            .andExpect(jsonPath("$[0].value", is(230)))
-            .andExpect(jsonPath("$[0].label", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-            .andExpect(jsonPath("$[1].value", is(108)))
-            .andExpect(jsonPath("$[1].label", is("Assistente Operação")))
-            .andExpect(jsonPath("$[2].value", is(300)))
-            .andExpect(jsonPath("$[2].label", is("Operacao Supervisor NET")))
-            .andExpect(jsonPath("$[3].value", is(102)))
-            .andExpect(jsonPath("$[3].label", is("Supervisor Operação")))
-            .andExpect(jsonPath("$[4].value", is(109)))
-            .andExpect(jsonPath("$[4].label", is("Vendedor Operação")))
-            .andExpect(jsonPath("$[5].value", is(104)))
-            .andExpect(jsonPath("$[5].label", is("operacao_gerente_comercial")));
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value").value(300))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[1].value").value(102))
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
     }
 
     @Test
