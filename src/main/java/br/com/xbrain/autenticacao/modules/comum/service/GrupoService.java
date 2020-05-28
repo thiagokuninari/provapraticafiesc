@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto.of;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class GrupoService {
@@ -65,7 +66,7 @@ public class GrupoService {
         return Stream.concat(
             getAllByRegionalId(regionalId).stream(),
             agenteAutorizadoService.getGrupos(regionalId).stream())
-            .distinct()
+            .filter(distinctByKey(GrupoDto::getId))
             .collect(Collectors.toList());
     }
 }

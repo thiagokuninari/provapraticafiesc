@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto.of;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class ClusterService {
@@ -65,7 +66,7 @@ public class ClusterService {
         return Stream.concat(
             getAllByGrupoId(grupoId).stream(),
             agenteAutorizadoService.getClusters(grupoId).stream())
-            .distinct()
+            .filter(distinctByKey(ClusterDto::getId))
             .collect(Collectors.toList());
     }
 }

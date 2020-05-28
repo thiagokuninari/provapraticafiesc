@@ -18,6 +18,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
+
 @Service
 public class CidadeService {
 
@@ -94,7 +96,7 @@ public class CidadeService {
         return Stream.concat(
             agenteAutorizadoService.getCidades(subclusterId).stream(),
             getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
-            .distinct()
+            .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());
     }
 }

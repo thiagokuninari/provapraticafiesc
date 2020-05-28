@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto.of;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class RegionalService {
@@ -53,7 +54,7 @@ public class RegionalService {
         return Stream.concat(
             getAll().stream().map(RegionalDto::of),
             agenteAutorizadoService.getRegionais().stream())
-            .distinct()
+            .filter(distinctByKey(RegionalDto::getId))
             .collect(Collectors.toList());
     }
 }
