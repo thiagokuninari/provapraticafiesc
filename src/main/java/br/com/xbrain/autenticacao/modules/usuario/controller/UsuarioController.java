@@ -178,6 +178,16 @@ public class UsuarioController {
         return cpfAaOpt.orElse(null);
     }
 
+    @GetMapping("atual/cpf")
+    public UsuarioResponse buscarAtualByCpf(@RequestParam String cpf) {
+        return usuarioService.buscarAtualByCpf(cpf);
+    }
+
+    @GetMapping("atual/email")
+    public UsuarioResponse buscarAtualByEmail(@RequestParam String email) {
+        return usuarioService.buscarAtualByEmail(email);
+    }
+
     @RequestMapping(value = "/{id}/empresas", method = RequestMethod.GET)
     public List<EmpresaResponse> getEmpresasDoUsuario(@PathVariable("id") int id) {
         return usuarioService.findEmpresasDoUsuario(id);

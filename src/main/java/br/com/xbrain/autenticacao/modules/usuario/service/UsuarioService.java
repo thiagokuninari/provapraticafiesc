@@ -217,6 +217,18 @@ public class UsuarioService {
             .map(UsuarioResponse::of);
     }
 
+    public UsuarioResponse buscarAtualByCpf(String cpf) {
+        return UsuarioResponse.of(repository
+            .findTop1UsuarioByCpfOrderByDataCadastroDesc(getOnlyNumbers(cpf))
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+    }
+
+    public UsuarioResponse buscarAtualByEmail(String email) {
+        return UsuarioResponse.of(repository
+            .findTop1UsuarioByEmailOrderByDataCadastroDesc(email)
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+    }
+
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
         Usuario usuario = findComplete(idUsuario);
         return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(Collectors.toList());

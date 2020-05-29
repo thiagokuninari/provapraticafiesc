@@ -829,4 +829,40 @@ public class UsuarioServiceIT {
                 tuple(240,"VENDEDOR OPERACAO 3")
             );
     }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarUsuarioAtual_quandoInformarCpf() {
+        var usuario = usuarioService.buscarAtualByCpf("38957979875");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByCpf("123456789"))
+            .withMessage("O usuário não foi encontrado.");
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarUsuarioAtual_quandoInformarEmail() {
+        var usuario = usuarioService.buscarAtualByEmail("ADMIN@XBRAIN.COM.BR");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByEmail("EMAILNAOEXISTENTE@EMAIL.COM"))
+            .withMessage("O usuário não foi encontrado.");
+    }
 }
