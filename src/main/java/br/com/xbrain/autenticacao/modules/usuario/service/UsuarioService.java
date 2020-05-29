@@ -1410,9 +1410,13 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado() {
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado(CodigoCargo codigoCargo) {
         var predicate = new UsuarioPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+            .comCodigoCargo(codigoCargo)
+            .comSituacoes(List.of(ESituacao.A));
+
         return StreamSupport.stream(
             repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
             .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))

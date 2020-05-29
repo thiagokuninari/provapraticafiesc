@@ -20,7 +20,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -318,7 +321,7 @@ public class UsuarioController {
     }
 
     @GetMapping("permitidos/select")
-    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado() {
-        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
 }

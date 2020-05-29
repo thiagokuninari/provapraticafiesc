@@ -297,7 +297,7 @@ public class UsuarioServiceTest {
         when(autenticacaoService.getUsuarioId()).thenReturn(3);
         when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(Lists.newArrayList(List.of(2, 4, 5)));
 
-        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(null);
 
         verify(equipeVendaD2dService, times(1))
             .getUsuariosPermitidos(argThat(arg -> arg.size() == 4));
@@ -313,7 +313,7 @@ public class UsuarioServiceTest {
 
         when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(Lists.newArrayList(List.of(2, 4, 5)));
 
-        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado();
+        usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(null);
 
         verify(usuarioRepository, times(1))
             .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));

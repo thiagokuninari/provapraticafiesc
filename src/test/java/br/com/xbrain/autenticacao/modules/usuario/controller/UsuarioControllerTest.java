@@ -560,11 +560,11 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarUsuariosDaHierarquiaDoUsuarioLogado_deveRetornarOsUsuariosDaHierarquia() {
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp_deveRetornarOsUsuariosDaHierarquia() {
         doReturn(List.of(
             SelectResponse.convertFrom(1, "Teste"),
             SelectResponse.convertFrom(2, "Brandon")))
-            .when(usuarioService).buscarUsuariosDaHierarquiaDoUsuarioLogado();
+            .when(usuarioService).buscarUsuariosDaHierarquiaDoUsuarioLogado(null);
 
         mvc.perform(get("/api/usuarios/permitidos/select")
             .accept(MediaType.APPLICATION_JSON)
@@ -575,7 +575,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].value", is(2)))
             .andExpect(jsonPath("$[1].label", is("Brandon")));
 
-        verify(usuarioService, times(1)).buscarUsuariosDaHierarquiaDoUsuarioLogado();
+        verify(usuarioService, times(1)).buscarUsuariosDaHierarquiaDoUsuarioLogado(isNull());
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
