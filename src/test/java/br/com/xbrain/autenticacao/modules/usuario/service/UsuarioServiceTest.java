@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +32,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
 
@@ -253,11 +251,11 @@ public class UsuarioServiceTest {
         var umUsuarioSemLogin = 1001;
 
         when(repository.findById(umUsuarioSemLogin))
-                .thenReturn(Optional.of(umUsuarioSemLoginNetSales(umUsuarioSemLogin)));
+            .thenReturn(Optional.of(umUsuarioSemLoginNetSales(umUsuarioSemLogin)));
 
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioSemLogin))
-                .withMessage("Usuário não encontrado e/ou não possui login NetSales válido.");
+            .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioSemLogin))
+            .withMessage("Usuário não possui login NetSales válido.");
     }
 
     @Test
@@ -265,24 +263,25 @@ public class UsuarioServiceTest {
         var umUsuarioInexistente = 1002;
 
         when(repository.findById(umUsuarioInexistente))
-                .thenReturn(Optional.empty());
+            .thenReturn(Optional.empty());
 
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioInexistente))
-                .withMessage("Usuário não encontrado e/ou não possui login NetSales válido.");
+            .isThrownBy(() -> service.getUsuarioByIdComLoginNetSales(umUsuarioInexistente))
+            .withMessage("Usuário não encontrado.");
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
-                .id(id)
-                .nome("UM USUARIO COM LOGIN")
-                .loginNetSales("UM LOGIN NETSALES")
-                .cargo(Cargo.builder()
-                        .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
-                        .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
-                        .build())
-                .cpf("123.456.887-91")
-                .build();
+            .id(id)
+            .nome("UM USUARIO COM LOGIN")
+            .loginNetSales("UM LOGIN NETSALES")
+            .cargo(Cargo.builder()
+                .codigo(CodigoCargo.VENDEDOR_ATIVO_LOCAL_PROPRIO)
+                .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
+                .build())
+            .cpf("123.456.887-91")
+            .situacao(ESituacao.A)
+            .build();
     }
 
     private Usuario umUsuarioSemLoginNetSales(int id) {

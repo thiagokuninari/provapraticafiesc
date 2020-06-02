@@ -582,7 +582,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "Usuário não encontrado e/ou não possui login NetSales válido.")));
+                        "Usuário não possui login NetSales válido.")));
     }
 
     @Test
@@ -595,7 +595,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "Usuário não encontrado e/ou não possui login NetSales válido.")));
+                        "Usuário não encontrado.")));
     }
 
     @Test

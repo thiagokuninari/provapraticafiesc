@@ -82,7 +82,10 @@ public class UsuarioService {
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
-            "Usuário não encontrado e/ou não possui login NetSales válido."
+            "Usuário não possui login NetSales válido."
+    );
+    private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
+            "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
@@ -1367,9 +1370,12 @@ public class UsuarioService {
     }
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
-        return repository.findById(usuarioId)
-                .map(UsuarioComLoginNetSalesResponse::of)
-                .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
-                .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
+        return Optional.of(Optional.of(repository.findById(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO))
+            .filter(Usuario::isAtivo)
+            .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
+            .map(UsuarioComLoginNetSalesResponse::of)
+            .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
+            .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
     }
 }
