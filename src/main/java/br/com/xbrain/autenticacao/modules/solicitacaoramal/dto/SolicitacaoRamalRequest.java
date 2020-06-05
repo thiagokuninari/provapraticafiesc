@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -36,6 +37,9 @@ public class SolicitacaoRamalRequest {
     @NotNull
     private Integer quantidadeRamais;
 
+    @NotEmpty
+    private String tipoImplantacao;
+
     @NotNull
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate melhorDataImplantacao;
@@ -62,6 +66,7 @@ public class SolicitacaoRamalRequest {
                 .map(Usuario::new).collect(Collectors.toList()));
 
         BeanUtils.copyProperties(request, solicitacaoRamal);
+        solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.valueOf(request.getTipoImplantacao()));
 
         return solicitacaoRamal;
     }
