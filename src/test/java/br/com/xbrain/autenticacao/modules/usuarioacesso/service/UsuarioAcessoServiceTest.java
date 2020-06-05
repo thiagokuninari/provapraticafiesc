@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -148,6 +150,25 @@ public class UsuarioAcessoServiceTest {
                 + "3;;;;28/01/2020 16:00:00");
     }
 
+    @Test
+    public void getAllLoginByFiltros_loginsDeAcordoComFiltro_quandoExistirLogins() {
+        when(usuarioAcessoRepository.getAllLoginByFiltros(any())).thenReturn(getLogadoResponse());
+
+        var filtros = new UsuarioAcessoFiltros();
+        filtros.setDataInicial(LocalDateTime.now());
+        filtros.setDataFinal(LocalDateTime.now());
+        var response = usuarioAcessoService.getAllLoginByFiltros(filtros);
+
+        assertThat(response)
+            .hasSize(3)
+            .extracting("hora", "paLogados")
+            .containsExactly(
+                tuple(8, 20L),
+                tuple(9, 10L),
+                tuple(10, 1L)
+            );
+    }
+
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
         return UsuarioAcesso.builder()
             .id(id)
@@ -169,5 +190,13 @@ public class UsuarioAcessoServiceTest {
             .id(100)
             .nivelCodigo(nivelCodigo)
             .build();
+    }
+
+    private List<PaLogadoResponse> getLogadoResponse() {
+        return List.of(
+            new PaLogadoResponse(8, 20L),
+            new PaLogadoResponse(9, 10L),
+            new PaLogadoResponse(10, 1L)
+        );
     }
 }

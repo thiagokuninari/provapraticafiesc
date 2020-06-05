@@ -1,8 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/usuario-acesso")
@@ -39,5 +41,10 @@ public class UsuarioAcessoController {
     @GetMapping("relatorio")
     public void exportRegistrosToCsv(@Validated UsuarioAcessoFiltros usuarioAcessoFiltros, HttpServletResponse response) {
         this.usuarioAcessoService.exportRegistrosToCsv(response, usuarioAcessoFiltros);
+    }
+
+    @GetMapping("logins-por-filtro")
+    public List<PaLogadoResponse> getAllLoginByFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        return usuarioAcessoService.getAllLoginByFiltros(usuarioAcessoFiltros);
     }
 }

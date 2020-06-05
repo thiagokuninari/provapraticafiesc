@@ -11,7 +11,9 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -200,5 +202,12 @@ public class UsuarioAcessoService {
             .map(UsuarioAcessoResponse::toCsv)
             .collect(Collectors.joining("\n"))
             : "Registros não encontrados.");
+    }
+
+    public List<PaLogadoResponse> getAllLoginByFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        usuarioAcessoFiltros.setTipo(ETipo.LOGIN);
+        return usuarioAcessoRepository.getAllLoginByFiltros(usuarioAcessoFiltros.toPredicate()).stream()
+            .distinct()
+            .collect(Collectors.toList());
     }
 }
