@@ -10,9 +10,10 @@ public enum ECanal {
 
     AGENTE_AUTORIZADO("Agente autorizado", Boolean.TRUE),
     D2D_PROPRIO("D2D Próprio", Boolean.TRUE),
+    ATIVO_PROPRIO("Ativo Local Próprio", Boolean.TRUE),
     ATIVO("Ativo", Boolean.FALSE),
-    ATP("Atp", Boolean.FALSE),
-    ATIVO_PROPRIO("Ativo proprio", Boolean.TRUE);
+    ATP("Atp", Boolean.FALSE);
+
 
     @Getter
     private String descricao;
