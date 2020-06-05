@@ -340,4 +340,9 @@ public class UsuarioController {
         return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
     }
 
+    @GetMapping("site/{siteId}/vendedores")
+    public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(@PathVariable Integer siteId) {
+        return usuarioService.getVendedoresOperacaoAtivoProprio(siteId);
+    }
+
 }

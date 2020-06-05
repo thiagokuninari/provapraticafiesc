@@ -41,7 +41,7 @@ public class SiteRepositoryTest {
     @Test
     public void findBySituacaoAtiva_listaComTresSites_quandoBuscarSitesComSituacaoAtiva() {
         Assertions.assertThat(repository.findBySituacaoAtiva())
-            .hasSize(3);
+            .hasSize(5);
     }
 
     @Test
