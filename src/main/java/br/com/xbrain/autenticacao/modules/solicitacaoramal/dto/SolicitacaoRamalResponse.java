@@ -49,11 +49,10 @@ public class SolicitacaoRamalResponse {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
-
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
         response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
-        .map(ETipoImplantacao::getDescricao)
-        .orElse(""));
+                .map(ETipoImplantacao::getDescricao)
+                .orElse(""));
         BeanUtils.copyProperties(solicitacaoRamal, response);
         response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 
