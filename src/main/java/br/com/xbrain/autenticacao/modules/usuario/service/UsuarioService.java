@@ -29,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -627,6 +628,31 @@ public class UsuarioService {
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
             log.error("erro ao atualizar usuário da fila.", ex);
         }
+    }
+
+    public void inativarPorAgenteAutorizado(Integer id) {
+        try {
+            var usuario = repository.findById(id)
+                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
+            inativarUsuario(usuario);
+        } catch (Exception ex) {
+            log.error("Erro ao inativar o usuário " + id + "\n" + "Erro: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    private void inativarUsuario(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            usuario.setSituacao(ESituacao.I);
+            usuario.setHistoricos(List.of(gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId())));
+            repository.save(usuario);
+            autenticacaoService.logout(usuario.getId());
+        }
+    }
+
+    public UsuarioHistorico gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
+        return UsuarioHistorico.gerarHistorico(usuarioId, motivoInativacaoService
+            .findByCodigoMotivoInativacao(CodigoMotivoInativacao.INATIVO), INATIVACAO_AA.getObservacao(), ESituacao.I);
     }
 
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {

@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,6 +82,9 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-remanejado-aut-failure}")
     private String usuarioRemanejadoAutFailure;
+
+    @Value("${app-config.queue.usuario-inativacao-por-aa}")
+    private String usuarioInativacaoPorAaMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -212,6 +212,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioInativacaoPorAaMq() {
+        return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -324,5 +329,12 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioRemanejadoAutFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioRemanejadoAutFailure()).to(exchange).with(usuarioRemanejadoAutFailure);
+    }
+
+    @Bean
+    public Binding usuarioInativacaoPorAaMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioInativacaoPorAaMq())
+            .to(exchange)
+            .with(usuarioInativacaoPorAaMq);
     }
 }
