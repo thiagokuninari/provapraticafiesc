@@ -70,7 +70,7 @@ public class SolicitacaoRamalController {
         return solicitacaoRamalService.getColaboradoresBySolicitacaoId(solicitacaoId);
     }
 
-    @GetMapping("/tipo-implantacao")
+    @GetMapping("tipo-implantacao")
     public ETipoImplantacao[] getAllTipoImplantacao() {
         return ETipoImplantacao.values();
     }
