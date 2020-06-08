@@ -865,4 +865,38 @@ public class UsuarioServiceIT {
             .isThrownBy(() -> usuarioService.buscarAtualByEmail("EMAILNAOEXISTENTE@EMAIL.COM"))
             .withMessage("O usuário não foi encontrado.");
     }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveInativarUsuarioEGerarHistorico_quandoInformarId() {
+        var usuarioAtivo = usuarioRepository.findById(100).get();
+        assertThat(usuarioAtivo.isAtivo()).isTrue();
+
+        service.inativarPorAgenteAutorizado(usuarioAtivo.getId());
+
+        var usuarioInativo = usuarioRepository.findById(100).get();
+
+        assertThat(usuarioInativo.isAtivo()).isFalse();
+
+        assertThat(usuarioHistoricoRepository.findByUsuarioId(usuarioInativo.getId()))
+            .extracting("motivoInativacao.codigo", "observacao", "situacao")
+            .contains(tuple(CodigoMotivoInativacao.DEMISSAO, "Inativado pelo Agente Autorizado.", ESituacao.I));
+
+        verify(autenticacaoService, times(1)).logout(anyInt());
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveLancarException_quandoUsuarioNaoExistir() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.inativarPorAgenteAutorizado(12316))
+            .withMessage("O usuário não foi encontrado.");
+
+        verify(autenticacaoService, times(0)).logout(anyInt());
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveNaoOcorrerNada_quandoUsuarioNaoEstiverAtivo() {
+        service.inativarPorAgenteAutorizado(244);
+
+        verify(autenticacaoService, times(0)).logout(anyInt());
+    }
 }

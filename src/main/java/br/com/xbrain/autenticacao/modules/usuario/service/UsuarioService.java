@@ -632,9 +632,10 @@ public class UsuarioService {
 
     public void inativarPorAgenteAutorizado(Integer id) {
         try {
-            var usuario = repository.findById(id)
-                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION);
-            inativarUsuario(usuario);
+            inativarUsuario(repository.findById(id)
+                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+        } catch (ValidacaoException ex) {
+            throw ex;
         } catch (Exception ex) {
             log.error("Erro ao inativar o usuário " + id + "\n" + "Erro: " + ex.getMessage());
             ex.printStackTrace();
@@ -644,7 +645,7 @@ public class UsuarioService {
     private void inativarUsuario(Usuario usuario) {
         if (usuario.isAtivo()) {
             usuario.setSituacao(ESituacao.I);
-            usuario.setHistoricos(List.of(gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId())));
+            usuario.adicionarHistorico(gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId()));
             repository.save(usuario);
             autenticacaoService.logout(usuario.getId());
         }
@@ -652,7 +653,7 @@ public class UsuarioService {
 
     public UsuarioHistorico gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
         return UsuarioHistorico.gerarHistorico(usuarioId, motivoInativacaoService
-            .findByCodigoMotivoInativacao(CodigoMotivoInativacao.INATIVO), INATIVACAO_AA.getObservacao(), ESituacao.I);
+            .findByCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I);
     }
 
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
