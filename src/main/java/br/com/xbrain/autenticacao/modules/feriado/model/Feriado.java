@@ -3,8 +3,10 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.xbrainutils.DateUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -62,11 +64,22 @@ public class Feriado {
 
     @JoinColumn(name = "FK_FERIADO_PAI", referencedColumnName = "ID",
         foreignKey = @ForeignKey(name = "FK_FERIADO_FERIADO_PAI"))
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private Feriado feriadoPai;
 
-    public static Feriado of(FeriadoRequest request) {
+    @Column(name = "SITUACAO")
+    @Enumerated(EnumType.STRING)
+    @JsonIgnore
+    private ESituacaoFeriado situacao;
+
+    @JoinColumn(name = "FK_USUARIO_CADASTRO", foreignKey = @ForeignKey(name = "FK_FERIADO_USUARIO_CAD"),
+        referencedColumnName = "ID", updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Usuario usuarioCadastro;
+
+    public static Feriado of(FeriadoRequest request, Integer usuarioCadastroId) {
         var feriado = new Feriado();
         BeanUtils.copyProperties(request, feriado);
         feriado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
@@ -78,6 +91,8 @@ public class Feriado {
             feriado.setCidade(new Cidade(request.getCidadeId()));
         }
         feriado.setDataCadastro(LocalDateTime.now());
+        feriado.setSituacao(ESituacaoFeriado.ATIVO);
+        feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
         return feriado;
     }
 
@@ -104,5 +119,14 @@ public class Feriado {
 
     public boolean isFeriadoEstadual() {
         return tipoFeriado.equals(ETipoFeriado.ESTADUAL);
+    }
+
+    public void excluir() {
+        situacao = ESituacaoFeriado.EXCLUIDO;
+    }
+
+    public void editarFeriadoFilho(Feriado feriadoPai) {
+        nome = feriadoPai.getNome();
+        dataFeriado = feriadoPai.getDataFeriado();
     }
 }

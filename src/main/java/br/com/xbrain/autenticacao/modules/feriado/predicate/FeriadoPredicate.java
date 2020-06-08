@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feriado.predicate;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.QFeriado;
 import com.querydsl.core.BooleanBuilder;
@@ -69,6 +70,11 @@ public class FeriadoPredicate {
         if (!isEmpty(feriadoPaiId)) {
             builder.and(feriado.feriadoPai.id.eq(feriadoPaiId));
         }
+        return this;
+    }
+
+    public FeriadoPredicate excetoExcluidos() {
+        builder.and(feriado.situacao.ne(ESituacaoFeriado.EXCLUIDO));
         return this;
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -8,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
@@ -34,6 +37,8 @@ public class FeriadoService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Feriado não encontrado.");
     private static final ValidacaoException EX_TIPO_FERIADO_NAO_EDITAVEL =
         new ValidacaoException("Não é permitido editar o Tipo do Feriado.");
+    private static final String EDITADO = "EDITADO";
+    private static final String EXCLUIDO = "EXCLUIDO";
 
     @Autowired
     private FeriadoRepository repository;
@@ -41,13 +46,21 @@ public class FeriadoService {
     private DataHoraAtual dataHoraAtual;
     @Autowired
     private CidadeService cidadeService;
+    @Autowired
+    private AutenticacaoService autenticacaoService;
+    @Autowired
+    private FeriadoHistoricoService historicoService;
 
     public boolean consulta(String data) {
-        return repository.findByDataFeriadoAndFeriadoNacional(DateUtils.parseStringToLocalDate(data), Eboolean.V).isPresent();
+        return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(DateUtils.parseStringToLocalDate(data),
+            Eboolean.V,
+            ESituacaoFeriado.ATIVO).isPresent();
     }
 
     public boolean consulta(String data, Integer cidadeId) {
-        return repository.findByDataFeriadoAndCidadeId(DateUtils.parseStringToLocalDate(data), cidadeId).isPresent();
+        return repository.findByDataFeriadoAndCidadeIdAndSituacao(DateUtils.parseStringToLocalDate(data),
+            cidadeId,
+            ESituacaoFeriado.ATIVO).isPresent();
     }
 
     public Feriado save(FeriadoRequest request) {
@@ -84,7 +97,8 @@ public class FeriadoService {
     @Transactional
     public FeriadoResponse salvarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
-        var feriado = repository.save(Feriado.of(request));
+
+        var feriado = repository.save(Feriado.of(request, autenticacaoService.getUsuarioId()));
         salvarFeriadoEstadualParaCidadesDoEstado(feriado);
         return FeriadoResponse.of(feriado);
     }
@@ -95,15 +109,18 @@ public class FeriadoService {
         var feriado = findById(request.getId());
         validarTipoFeriado(feriado, request);
         var feriadoEditado = repository.save(Feriado.ofFeriadoEditado(feriado, request));
-        editarFeriadosFilhos(feriadoEditado);
+        editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(feriado, request));
+        historicoService.salvarHistorico(feriadoEditado, EDITADO, autenticacaoService.getUsuarioAutenticado());
         return FeriadoResponse.of(feriadoEditado);
     }
 
     @Transactional
     public void excluirFeriado(Integer id) {
         var feriado = findById(id);
-        deletarFeriadosFilhos(feriado);
-        repository.delete(feriado);
+        excluirFeriadosFilhos(feriado);
+        feriado.excluir();
+        var feriadoExcluido = repository.save(feriado);
+        historicoService.salvarHistorico(feriadoExcluido, EXCLUIDO, autenticacaoService.getUsuarioAutenticado());
     }
 
     private Feriado findById(Integer id) {
@@ -123,17 +140,46 @@ public class FeriadoService {
         }
     }
 
-    private void editarFeriadosFilhos(Feriado feriadoPai) {
+    private boolean isEstadoAlterado(Feriado feriado, FeriadoRequest request) {
+        return !feriado.getUf().getId().equals(request.getEstadoId());
+    }
+
+    private void editarFeriadosFilhos(Feriado feriadoPai, boolean isEstadoAlterado) {
         if (feriadoPai.isFeriadoEstadual()) {
-            deletarFeriadosFilhos(feriadoPai);
-            salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai);
+            if (isEstadoAlterado) {
+                excluirFeriadosFilhos(feriadoPai);
+                salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai);
+            } else {
+                editarFeriadosFilhosSemAlteracaoDoEstado(feriadoPai);
+            }
         }
     }
 
-    private void deletarFeriadosFilhos(Feriado feriadoPai) {
+    private void editarFeriadosFilhosSemAlteracaoDoEstado(Feriado feriadoPai) {
+        findFeriadosFilhos(feriadoPai.getId())
+            .forEach(feriadoFilho -> {
+                feriadoFilho.editarFeriadoFilho(feriadoPai);
+                repository.save(feriadoFilho);
+                }
+            );
+    }
+
+    private void excluirFeriadosFilhos(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
-            repository.delete(repository.findAll(new FeriadoPredicate().comFeriadoPaiId(feriadoPai.getId()).build()));
+            findFeriadosFilhos(feriadoPai.getId())
+                .forEach(feriadoFilho -> {
+                    feriadoFilho.excluir();
+                    repository.save(feriadoFilho);
+                });
         }
+    }
+
+    private List<Feriado> findFeriadosFilhos(Integer feriadoPaiId) {
+        return repository.findAll(
+            new FeriadoPredicate()
+                .comFeriadoPaiId(feriadoPaiId)
+                .excetoExcluidos()
+                .build());
     }
 
     @CacheEvict(
