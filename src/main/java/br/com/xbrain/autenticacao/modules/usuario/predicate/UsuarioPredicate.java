@@ -162,14 +162,15 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
-        if (!isEmpty(usuariosIds)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuario.id::in)
-                    .collect(Collectors.toList()))
-            );
+        if (isEmpty(usuariosIds)) {
+            usuariosIds.add(0);
         }
+        builder.and(ExpressionUtils.anyOf(
+                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList()))
+        );
         return this;
     }
 

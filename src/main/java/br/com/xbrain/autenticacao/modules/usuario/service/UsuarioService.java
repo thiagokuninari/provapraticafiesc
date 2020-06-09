@@ -240,10 +240,6 @@ public class UsuarioService {
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
         List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
-
-        if (isEmpty(lista)) {
-            lista.add(0);
-        }
         predicate.comIds(lista);
     }
 
