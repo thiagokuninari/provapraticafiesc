@@ -569,6 +569,24 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
     }
 
+    @Test
+    public void buscarUsuariosComSituacoesParaTimer_deveRetornarIdESituacoes_quandoSolicitado() throws Exception {
+        mvc.perform(get("/api/usuarios/situacoes/timer")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(14)))
+            .andExpect(jsonPath("$[0].id").value(100))
+            .andExpect(jsonPath("$[0].nome").isEmpty())
+            .andExpect(jsonPath("$[0].situacao").value("A"))
+            .andExpect(jsonPath("$[1].id").value(101))
+            .andExpect(jsonPath("$[1].nome").isEmpty())
+            .andExpect(jsonPath("$[1].situacao").value("A"))
+            .andExpect(jsonPath("$[4].id").value(105))
+            .andExpect(jsonPath("$[4].nome").isEmpty())
+            .andExpect(jsonPath("$[4].situacao").value("I"));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

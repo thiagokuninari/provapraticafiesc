@@ -744,4 +744,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .orderBy(usuario.nome.asc())
             .fetch();
     }
+
+    @Override
+    public List<UsuarioSituacaoResponse> buscarUsuariosComSituacoesParaTimer() {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                usuario.id,
+                usuario.situacao
+                )
+            )
+            .from(usuario)
+            .fetch();
+    }
 }

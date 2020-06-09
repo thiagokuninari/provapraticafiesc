@@ -653,7 +653,7 @@ public class UsuarioService {
 
     public UsuarioHistorico gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
         return UsuarioHistorico.gerarHistorico(usuarioId, motivoInativacaoService
-            .findByCodigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I);
+            .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I);
     }
 
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {
@@ -776,6 +776,10 @@ public class UsuarioService {
             enviarParaFiladeErrosUsuariosRecuperacao(usuarioMqRequest);
             log.error("Erro ao recuperar usuário da fila.", ex);
         }
+    }
+
+    public List<UsuarioSituacaoResponse> buscarUsuariosComSituacoesParaTimer() {
+        return repository.buscarUsuariosComSituacoesParaTimer();
     }
 
     private void enviarParaFiladeErrosUsuariosRecuperacao(UsuarioMqRequest usuarioMqRequest) {

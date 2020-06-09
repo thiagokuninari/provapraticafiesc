@@ -704,6 +704,22 @@ public class UsuarioServiceIT {
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
     }
 
+    @Test
+    public void buscarUsuariosComSituacoesParaTimer_deveRetornarIdESituacoes_quandoSolicitado() {
+        assertThat(service.buscarUsuariosComSituacoesParaTimer())
+            .extracting("id", "nome", "situacao")
+            .contains(
+                tuple(100, null, ESituacao.A),
+                tuple(101, null, ESituacao.A),
+                tuple(104, null, ESituacao.A),
+                tuple(105, null, ESituacao.I),
+                tuple(110, null, ESituacao.A),
+                tuple(111, null, ESituacao.A),
+                tuple(112, null, ESituacao.I),
+                tuple(113, null, ESituacao.I)
+            );
+    }
+
     private UsuarioMqRequest umUsuarioTrocaCpf() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
