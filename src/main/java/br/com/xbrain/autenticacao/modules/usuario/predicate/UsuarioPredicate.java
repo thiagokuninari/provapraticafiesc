@@ -165,12 +165,14 @@ public class UsuarioPredicate {
         if (isEmpty(usuariosIds)) {
             usuariosIds.add(0);
         }
-        builder.and(ExpressionUtils.anyOf(
+        if (!isEmpty(usuariosIds)) {
+            builder.and(ExpressionUtils.anyOf(
                 Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                        .stream()
-                        .map(usuario.id::in)
-                        .collect(Collectors.toList()))
-        );
+                    .stream()
+                    .map(usuario.id::in)
+                    .collect(Collectors.toList()))
+            );
+        }
         return this;
     }
 
