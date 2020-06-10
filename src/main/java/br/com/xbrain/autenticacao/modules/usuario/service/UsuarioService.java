@@ -29,7 +29,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -220,13 +219,13 @@ public class UsuarioService {
 
     public UsuarioResponse buscarAtualByCpf(String cpf) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByCpfOrderByDataCadastroDesc(getOnlyNumbers(cpf))
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
     public UsuarioResponse buscarAtualByEmail(String email) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByEmailOrderByDataCadastroDesc(email)
+            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, ESituacao.R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
