@@ -169,12 +169,9 @@ public class UsuarioPredicate {
                     .map(usuario.id::in)
                     .collect(Collectors.toList()))
             );
+        } else {
+            ignorarTodos();
         }
-        return this;
-    }
-
-    public UsuarioPredicate semColaboradores() {
-        ignorarTodos();
         return this;
     }
 
