@@ -39,6 +39,8 @@ public class FeriadoService {
         new ValidacaoException("Não é permitido editar o Tipo do Feriado.");
     private static final String EDITADO = "EDITADO";
     private static final String EXCLUIDO = "EXCLUIDO";
+    private static final ValidacaoException EX_FERIADO_JA_CADASTRADO =
+        new ValidacaoException("Já existe feriado com os mesmos dados.");
 
     @Autowired
     private FeriadoRepository repository;
@@ -75,10 +77,10 @@ public class FeriadoService {
 
     public void loadAllFeriados() {
         FeriadoSingleton.getInstance()
-                .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
-                        .stream()
-                        .map(Feriado::getDataFeriado)
-                        .collect(Collectors.toSet()));
+            .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
+                .stream()
+                .map(Feriado::getDataFeriado)
+                .collect(Collectors.toSet()));
     }
 
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
@@ -97,7 +99,7 @@ public class FeriadoService {
     @Transactional
     public FeriadoResponse salvarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
-
+        validarSeFeriadoJaCadastado(request);
         var feriado = repository.save(Feriado.of(request, autenticacaoService.getUsuarioId()));
         salvarFeriadoEstadualParaCidadesDoEstado(feriado);
         return FeriadoResponse.of(feriado);
@@ -106,10 +108,14 @@ public class FeriadoService {
     @Transactional
     public FeriadoResponse editarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
+        validarSeFeriadoJaCadastado(request);
         var feriado = findById(request.getId());
         validarTipoFeriado(feriado, request);
         var feriadoEditado = repository.save(Feriado.ofFeriadoEditado(feriado, request));
-        editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(feriado, request));
+
+        if (feriadoEditado.isFeriadoEstadual()) {
+            editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(feriado, request));
+        }
         historicoService.salvarHistorico(feriadoEditado, EDITADO, autenticacaoService.getUsuarioAutenticado());
         return FeriadoResponse.of(feriadoEditado);
     }
@@ -123,7 +129,7 @@ public class FeriadoService {
         historicoService.salvarHistorico(feriadoExcluido, EXCLUIDO, autenticacaoService.getUsuarioAutenticado());
     }
 
-    private Feriado findById(Integer id) {
+    public Feriado findById(Integer id) {
         return repository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
@@ -145,21 +151,19 @@ public class FeriadoService {
     }
 
     private void editarFeriadosFilhos(Feriado feriadoPai, boolean isEstadoAlterado) {
-        if (feriadoPai.isFeriadoEstadual()) {
-            if (isEstadoAlterado) {
-                excluirFeriadosFilhos(feriadoPai);
-                salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai);
-            } else {
-                editarFeriadosFilhosSemAlteracaoDoEstado(feriadoPai);
-            }
+        if (isEstadoAlterado) {
+            excluirFeriadosFilhos(feriadoPai);
+            salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai);
+        } else {
+            editarFeriadosFilhosSemAlteracaoDoEstado(feriadoPai);
         }
     }
 
     private void editarFeriadosFilhosSemAlteracaoDoEstado(Feriado feriadoPai) {
         findFeriadosFilhos(feriadoPai.getId())
             .forEach(feriadoFilho -> {
-                feriadoFilho.editarFeriadoFilho(feriadoPai);
-                repository.save(feriadoFilho);
+                    feriadoFilho.editarFeriadoFilho(feriadoPai);
+                    repository.save(feriadoFilho);
                 }
             );
     }
@@ -182,10 +186,26 @@ public class FeriadoService {
                 .build());
     }
 
+    private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
+        if (!repository.findAll(
+            new FeriadoPredicate()
+                .comNome(request.getNome())
+                .comTipoFeriado(request.getTipoFeriado())
+                .comEstado(request.getEstadoId())
+                .comCidade(request.getCidadeId(), request.getEstadoId())
+                .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
+                .excetoExcluidos()
+                .excetoFeriadosFilhos()
+                .build()).
+            isEmpty()) {
+            throw EX_FERIADO_JA_CADASTRADO;
+        }
+    }
+
     @CacheEvict(
-            cacheManager = "concurrentCacheManager",
-            cacheNames = FERIADOS_DATA_CACHE_NAME,
-            allEntries = true)
+        cacheManager = "concurrentCacheManager",
+        cacheNames = FERIADOS_DATA_CACHE_NAME,
+        allEntries = true)
     public void flushCacheFeriados() {
         log.info("Flush Cache Feriados");
     }

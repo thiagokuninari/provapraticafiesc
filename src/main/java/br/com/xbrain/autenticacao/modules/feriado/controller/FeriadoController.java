@@ -51,7 +51,7 @@ public class FeriadoController {
         return service.editarFeriado(request);
     }
 
-    @DeleteMapping("excluir/{id}")
+    @PutMapping("excluir/{id}")
     public void excluirFeriado(@PathVariable Integer id) {
         service.excluirFeriado(id);
     }

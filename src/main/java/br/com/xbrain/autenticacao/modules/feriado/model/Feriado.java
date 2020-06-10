@@ -8,9 +8,7 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.xbrainutils.DateUtils;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.beans.BeanUtils;
 
@@ -20,6 +18,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
@@ -29,7 +30,7 @@ public class Feriado {
 
     @Id
     @SequenceGenerator(name = "SEQ_FERIADO", sequenceName = "SEQ_FERIADO", allocationSize = 1)
-    @GeneratedValue(generator = "SEQ_FERIADO", strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(generator = "SEQ_FERIADO", strategy = GenerationType.AUTO)
     private Integer id;
 
     @NotNull
@@ -102,19 +103,22 @@ public class Feriado {
         feriadoFilho.setId(null);
         feriadoFilho.setFeriadoPai(feriadoPai);
         feriadoFilho.setCidade(cidade);
+        feriadoFilho.setSituacao(ESituacaoFeriado.ATIVO);
         return feriadoFilho;
     }
 
     public static Feriado ofFeriadoEditado(Feriado feriado, FeriadoRequest request) {
-        feriado.setNome(request.getNome());
-        feriado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
+        var feriadoEditado = new Feriado();
+        BeanUtils.copyProperties(feriado, feriadoEditado);
+        feriadoEditado.setNome(request.getNome());
+        feriadoEditado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
         if (Objects.nonNull(request.getEstadoId())) {
-            feriado.setUf(new Uf(request.getEstadoId()));
+            feriadoEditado.setUf(new Uf(request.getEstadoId()));
         }
         if (Objects.nonNull(request.getCidadeId())) {
-            feriado.setCidade(new Cidade(request.getCidadeId()));
+            feriadoEditado.setCidade(new Cidade(request.getCidadeId()));
         }
-        return feriado;
+        return feriadoEditado;
     }
 
     public boolean isFeriadoEstadual() {

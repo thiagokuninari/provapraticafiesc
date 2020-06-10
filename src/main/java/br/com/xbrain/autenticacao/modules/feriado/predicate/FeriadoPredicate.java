@@ -44,11 +44,18 @@ public class FeriadoPredicate {
         return this;
     }
 
+    public FeriadoPredicate comCidadeOuEstado(Integer cidadeId, Integer estadoId) {
+        return isEmpty(cidadeId)
+            ? comEstado(estadoId)
+            : comCidade(cidadeId, estadoId);
+    }
+
     public FeriadoPredicate comCidade(Integer cidadeId, Integer estadoId) {
         if (!isEmpty(cidadeId) && !isEmpty(estadoId)) {
             builder.and(feriado.cidade.id.eq(cidadeId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V))
-                .or(feriado.uf.id.eq(estadoId)));
+                .or(feriado.uf.id.eq(estadoId)
+                    .and(feriado.tipoFeriado.eq(ETipoFeriado.ESTADUAL))));
         }
         return this;
     }
@@ -57,6 +64,13 @@ public class FeriadoPredicate {
         if (!isEmpty(estadoId)) {
             builder.and(feriado.uf.id.eq(estadoId)
                 .or(feriado.feriadoNacional.eq(Eboolean.V)));
+        }
+        return this;
+    }
+
+    public FeriadoPredicate comDataFeriado(LocalDate dataFeriado) {
+        if (!isEmpty(dataFeriado)) {
+            builder.and(feriado.dataFeriado.eq(dataFeriado));
         }
         return this;
     }
