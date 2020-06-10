@@ -240,7 +240,11 @@ public class UsuarioService {
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
         List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
-        predicate.comIds(lista);
+        if (isEmpty(lista)) {
+            predicate.semColaboradores();
+        } else {
+            predicate.comIds(lista);
+        }
     }
 
     private UsuarioCidade criarUsuarioCidade(Usuario usuario, Integer idCidade) {
