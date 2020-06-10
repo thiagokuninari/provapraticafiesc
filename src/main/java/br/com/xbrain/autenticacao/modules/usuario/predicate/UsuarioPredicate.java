@@ -169,8 +169,6 @@ public class UsuarioPredicate {
                     .map(usuario.id::in)
                     .collect(Collectors.toList()))
             );
-        } else {
-            this.ignorarTodos();
         }
         return this;
     }
@@ -273,7 +271,7 @@ public class UsuarioPredicate {
 
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
-        
+
         var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
         if (incluirProrio) {
             usuariosIds.add(usuario.getId());
