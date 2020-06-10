@@ -338,9 +338,4 @@ public class UsuarioController {
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
         return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
     }
-
-    @GetMapping("situacoes/timer")
-    public List<UsuarioSituacaoResponse> buscarUsuariosComSituacoesParaTimer() {
-        return usuarioService.buscarUsuariosComSituacoesParaTimer();
-    }
 }

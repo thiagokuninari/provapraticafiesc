@@ -15,9 +15,4 @@ public class UsuarioSituacaoResponse {
     private Integer id;
     private String nome;
     private ESituacao situacao;
-
-    public UsuarioSituacaoResponse(Integer id, ESituacao situacao) {
-        this.id = id;
-        this.situacao = situacao;
-    }
 }

@@ -777,10 +777,6 @@ public class UsuarioService {
         }
     }
 
-    public List<UsuarioSituacaoResponse> buscarUsuariosComSituacoesParaTimer() {
-        return repository.buscarUsuariosComSituacoesParaTimer();
-    }
-
     private void enviarParaFiladeErrosUsuariosRecuperacao(UsuarioMqRequest usuarioMqRequest) {
         usuarioRecuperacaoMqSender.sendWithFailure(usuarioMqRequest);
     }
