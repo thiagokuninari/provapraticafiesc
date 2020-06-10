@@ -624,7 +624,7 @@ public class UsuarioService {
             duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
         } catch (Exception ex) {
             enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
-            throw ex;
+            log.error("Erro ao processar usuário da fila: ", ex);
         }
     }
 
@@ -655,7 +655,7 @@ public class UsuarioService {
         return usuario;
     }
 
-    private void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
+    public void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
         if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)) {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
