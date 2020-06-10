@@ -169,6 +169,8 @@ public class UsuarioPredicate {
                     .map(usuario.id::in)
                     .collect(Collectors.toList()))
             );
+        } else {
+            this.ignorarTodos();
         }
         return this;
     }
