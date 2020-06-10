@@ -28,7 +28,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -279,10 +278,9 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void getAll_deveRetornarVazia_quandoInformarListaSemRegistro() {
-        List<Integer> lista = new ArrayList<>();
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista);
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
 
         var filtros = new UsuarioFiltros();
         filtros.setCnpjAa("15.765.222/0001-72");
