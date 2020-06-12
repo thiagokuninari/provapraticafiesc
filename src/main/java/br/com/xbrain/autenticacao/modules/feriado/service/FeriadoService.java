@@ -196,8 +196,8 @@ public class FeriadoService {
                 .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
                 .excetoExcluidos()
                 .excetoFeriadosFilhos()
-                .build()).
-            isEmpty()) {
+                .build())
+            .isEmpty()) {
             throw EX_FERIADO_JA_CADASTRADO;
         }
     }
