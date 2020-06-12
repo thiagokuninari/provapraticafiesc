@@ -189,7 +189,7 @@ public class UsuarioServiceTestOracle {
                 "ROLE_VDS_TABULACAO_CLICKTOCALL",
                 "ROLE_VDS_TABULACAO_PERSONALIZADA",
                 "ROLE_VDS_TABULACAO_MANUAL"));
-        request.setUsuariosId(Arrays.asList(245, 243, 231, 238));
+        request.setUsuariosId(Arrays.asList(231, 238, 245, 243));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
         Assert.assertEquals(4, response.size());
