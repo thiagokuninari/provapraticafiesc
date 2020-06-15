@@ -1,17 +1,21 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
-import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
-import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
+import br.com.xbrain.autenticacao.modules.feriado.dto.*;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoImportacaoService;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/feriado")
@@ -19,6 +23,10 @@ public class FeriadoController {
 
     @Autowired
     private FeriadoService service;
+    @Autowired
+    private FeriadoImportacaoService feriadoImportacaoService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/consulta")
     public boolean consultaFeriadoNacional(@RequestParam String data) {
@@ -54,6 +62,17 @@ public class FeriadoController {
     @PutMapping("excluir/{id}")
     public void excluirFeriado(@PathVariable Integer id) {
         service.excluirFeriado(id);
+    }
+
+    @PostMapping("importar")
+    public List<FeriadoImportacaoResponse> importarFeriados(
+        @RequestParam MultipartFile file,
+        @RequestParam("feriadoImportacaoJson") String feriadoImportacaoJson) throws IOException {
+
+        var request = objectMapper.readValue(
+            feriadoImportacaoJson, FeriadoImportacaoRequest.class);
+
+        return feriadoImportacaoService.importarFeriadoArquivo(file, request);
     }
 
     //    @PostMapping

@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
@@ -39,6 +40,8 @@ public class FeriadoService {
         new ValidacaoException("Não é permitido editar o Tipo do Feriado.");
     private static final String EDITADO = "EDITADO";
     private static final String EXCLUIDO = "EXCLUIDO";
+    private static final String IMPORTADO = "IMPORTADO";
+    private static final String CADASTRADO = "CADASTRADO MANUAL";
     private static final ValidacaoException EX_FERIADO_JA_CADASTRADO =
         new ValidacaoException("Já existe feriado com os mesmos dados.");
 
@@ -102,7 +105,16 @@ public class FeriadoService {
         validarSeFeriadoJaCadastado(request);
         var feriado = repository.save(Feriado.of(request, autenticacaoService.getUsuarioId()));
         salvarFeriadoEstadualParaCidadesDoEstado(feriado);
+        historicoService.salvarHistorico(feriado, CADASTRADO, autenticacaoService.getUsuarioAutenticado());
         return FeriadoResponse.of(feriado);
+    }
+
+    @Transactional
+    public Feriado salvarFeriadoImportado(FeriadoImportacao feriadoParaSalvar) {
+        var feriadoImportado = repository.save(Feriado.ofFeriadoImportado(feriadoParaSalvar, autenticacaoService.getUsuarioId()));
+        salvarFeriadoEstadualParaCidadesDoEstado(feriadoImportado);
+        historicoService.salvarHistorico(feriadoImportado, IMPORTADO, autenticacaoService.getUsuarioAutenticado());
+        return feriadoImportado;
     }
 
     @Transactional
@@ -187,7 +199,7 @@ public class FeriadoService {
     }
 
     private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
-        if (!repository.findAll(
+        repository.findByPredicate(
             new FeriadoPredicate()
                 .comNome(request.getNome())
                 .comTipoFeriado(request.getTipoFeriado())
@@ -197,9 +209,9 @@ public class FeriadoService {
                 .excetoExcluidos()
                 .excetoFeriadosFilhos()
                 .build())
-            .isEmpty()) {
-            throw EX_FERIADO_JA_CADASTRADO;
-        }
+            .ifPresent(feriado -> {
+                throw EX_FERIADO_JA_CADASTRADO;
+            });
     }
 
     @CacheEvict(

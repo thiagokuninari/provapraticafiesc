@@ -1,16 +1,20 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
+import com.querydsl.core.types.Predicate;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
 
 public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
+
+    Optional<Feriado> findByPredicate(Predicate predicate);
 
     @Cacheable(
             cacheManager = "concurrentCacheManager",

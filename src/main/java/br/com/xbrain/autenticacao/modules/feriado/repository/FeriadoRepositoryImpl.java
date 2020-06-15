@@ -6,11 +6,13 @@ import br.com.xbrain.autenticacao.modules.comum.model.QUf;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.feriado.model.QFeriado.feriado;
 
@@ -47,5 +49,14 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             )
             .fetchCount() > 0;
 
+    }
+
+    @Override
+    public Optional<Feriado> findByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(feriado)
+            .from(feriado)
+            .where(predicate)
+            .fetchOne());
     }
 }

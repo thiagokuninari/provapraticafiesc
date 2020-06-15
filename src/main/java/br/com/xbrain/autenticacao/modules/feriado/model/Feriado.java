@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
@@ -119,6 +120,16 @@ public class Feriado {
             feriadoEditado.setCidade(new Cidade(request.getCidadeId()));
         }
         return feriadoEditado;
+    }
+
+    public static Feriado ofFeriadoImportado(FeriadoImportacao feriadoImportacao, Integer usuarioCadastroId) {
+        var feriado = new Feriado();
+        BeanUtils.copyProperties(feriadoImportacao, feriado);
+        feriado.setFeriadoNacional(Eboolean.valueOf(feriadoImportacao.isFeriadoNacional()));
+        feriado.setDataCadastro(LocalDateTime.now());
+        feriado.setSituacao(ESituacaoFeriado.ATIVO);
+        feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
+        return feriado;
     }
 
     public boolean isFeriadoEstadual() {
