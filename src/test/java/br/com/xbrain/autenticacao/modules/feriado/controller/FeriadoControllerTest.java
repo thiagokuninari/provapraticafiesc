@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.HELP_DESK;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -185,7 +186,7 @@ public class FeriadoControllerTest {
     @SneakyThrows
     public void obterFeriadosByFiltros_deveRetornarForbidden_quandoUsuarioNaoTemPermissao() {
         mvc.perform(get(URL + "/obter-feriados")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 
@@ -231,7 +232,7 @@ public class FeriadoControllerTest {
     @SneakyThrows
     public void obterFeriadoPorId_deveRetornarForbidden_quandoUsuarioNaoTemPermissao() {
         mvc.perform(get(URL + "/10000")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 
@@ -276,7 +277,7 @@ public class FeriadoControllerTest {
     public void salvar_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(post(URL + "/salvar")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
             .content(convertObjectToJsonBytes(umFeriadoRequest())))
             .andExpect(status().isForbidden());
     }
@@ -331,7 +332,7 @@ public class FeriadoControllerTest {
     public void editar_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(put(URL + "/editar")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
             .content(convertObjectToJsonBytes(umFeriadoRequest())))
             .andExpect(status().isForbidden());
     }
@@ -408,7 +409,7 @@ public class FeriadoControllerTest {
     public void excluirFeriado_deveRetornarForbidden_quandoUsuarioNaoTiverPermissao() {
         mvc.perform(put(URL + "/excluir/10000")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .header("Authorization", getAccessToken(mvc, HELP_DESK)))
             .andExpect(status().isForbidden());
     }
 

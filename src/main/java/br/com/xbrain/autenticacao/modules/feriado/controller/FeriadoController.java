@@ -38,33 +38,33 @@ public class FeriadoController {
         return service.consulta(data, cidadeId);
     }
 
-    @GetMapping("obter-feriados")
+    @GetMapping("gerenciar/obter-feriados")
     public Page<FeriadoResponse> obterFeriadosByFiltros(PageRequest pageRequest, FeriadoFiltros filtros) {
         return service.obterFeriadosByFiltros(pageRequest, filtros);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("gerenciar/{id}")
     public FeriadoResponse obterFeriadoPorId(@PathVariable("id") Integer id) {
         return service.getFeriadoById(id);
     }
 
-    @PostMapping("salvar")
+    @PostMapping("gerenciar/salvar")
     @ResponseStatus(HttpStatus.CREATED)
     public FeriadoResponse salvar(@RequestBody @Validated FeriadoRequest request) {
         return service.salvarFeriado(request);
     }
 
-    @PutMapping("editar")
+    @PutMapping("gerenciar/editar")
     public FeriadoResponse editar(@RequestBody @Validated FeriadoRequest request) {
         return service.editarFeriado(request);
     }
 
-    @PutMapping("excluir/{id}")
+    @PutMapping("gerenciar/excluir/{id}")
     public void excluirFeriado(@PathVariable Integer id) {
         service.excluirFeriado(id);
     }
 
-    @PostMapping("importar")
+    @PostMapping("gerenciar/importar")
     public List<FeriadoImportacaoResponse> importarFeriados(
         @RequestParam MultipartFile file,
         @RequestParam("feriadoImportacaoJson") String feriadoImportacaoJson) throws IOException {
