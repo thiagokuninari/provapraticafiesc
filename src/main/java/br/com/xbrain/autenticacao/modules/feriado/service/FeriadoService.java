@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
@@ -122,11 +123,12 @@ public class FeriadoService {
         request.validarDadosObrigatorios();
         validarSeFeriadoJaCadastado(request);
         var feriado = findById(request.getId());
+        var estadoOriginal = feriado.getUf();
         validarTipoFeriado(feriado, request);
         var feriadoEditado = repository.save(Feriado.ofFeriadoEditado(feriado, request));
 
         if (feriadoEditado.isFeriadoEstadual()) {
-            editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(feriado, request));
+            editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(estadoOriginal, request));
         }
         historicoService.salvarHistorico(feriadoEditado, EDITADO, autenticacaoService.getUsuarioAutenticado());
         return FeriadoResponse.of(feriadoEditado);
@@ -158,8 +160,8 @@ public class FeriadoService {
         }
     }
 
-    private boolean isEstadoAlterado(Feriado feriado, FeriadoRequest request) {
-        return !feriado.getUf().getId().equals(request.getEstadoId());
+    private boolean isEstadoAlterado(Uf ufOriginal, FeriadoRequest request) {
+        return !ufOriginal.getId().equals(request.getEstadoId());
     }
 
     private void editarFeriadosFilhos(Feriado feriadoPai, boolean isEstadoAlterado) {

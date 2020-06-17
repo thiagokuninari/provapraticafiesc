@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
-import br.com.xbrain.autenticacao.modules.feriado.util.FeriadoPlanilhaLayoutUtil;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -34,8 +33,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class FeriadoImportacaoService {
 
     @Autowired
-    private CsvFileService csvFileService;
-    @Autowired
     private UfRepository ufRepository;
     @Autowired
     private CidadeService cidadeService;
@@ -43,28 +40,29 @@ public class FeriadoImportacaoService {
     private FeriadoRepository feriadoRepository;
     @Autowired
     private FeriadoService feriadoService;
-    @Autowired
-    private FeriadoHistoricoService historicoService;
 
     private static final ValidacaoException EX_ARQUIVO_VAZIO = new ValidacaoException("O arquivo não pode ser vazio.");
     private static final ValidacaoException EX_CABECALHO_DIFERENTE =
         new ValidacaoException("O cabeçalho do arquivo não pode ser diferente do exemplo.");
 
     public List<FeriadoImportacaoResponse> importarFeriadoArquivo(MultipartFile file, FeriadoImportacaoRequest request) {
-        var linhas = csvFileService.readCsvFile(file, POSSUI_CABECALHO);
+        var linhas = CsvFileService.readCsvFile(file, LER_SEM_CABECALHO);
         validarArquivoVazio(linhas);
-        validarCabecalho(linhas.get(FeriadoPlanilhaLayoutUtil.PRIMEIRA_LINHA));
-        return processarLinhas(linhas, request.getAnoReferencia());
+        validarCabecalho(linhas.get(PRIMEIRA_LINHA));
+        linhas.remove(PRIMEIRA_LINHA);
+        var linhasProcessados = processarLinhas(linhas, request.getAnoReferencia());
+        validarLinhasProcessados(linhasProcessados);
+        return linhasProcessados;
     }
 
     private void validarCabecalho(String cabecalho) {
         var colunas = cabecalho.split(DELIMITADOR);
-        if ((colunas.length < QNT_COLUNAS) || validarColunas(colunas)) {
+        if (colunas.length < QNT_COLUNAS || !isColunasValidas(colunas)) {
             throw EX_CABECALHO_DIFERENTE;
         }
     }
 
-    private boolean validarColunas(String[] colunas) {
+    private boolean isColunasValidas(String[] colunas) {
         return compararColunas(colunas[ORDEM_COL_TIPO_FERIADO], NOME_COL_TIPO_FERIADO)
             && compararColunas(colunas[ORDEM_COL_CIDADE_NOME], NOME_COL_CIDADE_NOME)
             && compararColunas(colunas[ORDEM_COL_UF], NOME_COL_UF)
@@ -75,7 +73,7 @@ public class FeriadoImportacaoService {
     private boolean compararColunas(String colunaUploaded, String colunaLayout) {
         return !isEmpty(colunaLayout)
             && colunaUploaded.trim()
-                .equalsIgnoreCase(colunaLayout);
+            .equalsIgnoreCase(colunaLayout);
     }
 
     private void validarArquivoVazio(List<String> linhas) {
@@ -84,14 +82,21 @@ public class FeriadoImportacaoService {
         }
     }
 
+    private void validarLinhasProcessados(List<FeriadoImportacaoResponse> linhasProcessados) {
+        if (isEmpty(linhasProcessados)) {
+            throw EX_ARQUIVO_VAZIO;
+        }
+    }
+
     private List<FeriadoImportacaoResponse> processarLinhas(List<String> linhas, Integer anoReferencia) {
         return linhas.stream()
             .map(linha -> linha.split(DELIMITADOR))
+            .filter(linha -> !isLinhaVazia(linha))
             .map(linha -> importarFeriado(linha, anoReferencia))
             .collect(Collectors.toList());
     }
 
-    private FeriadoImportacaoResponse importarFeriado(String[] linha, Integer anoReferencia) {
+    public FeriadoImportacaoResponse importarFeriado(String[] linha, Integer anoReferencia) {
         var feriadoParaImportar = gerarFeriadoImportacao(linha);
         validarFeriado(feriadoParaImportar, anoReferencia);
 
@@ -115,7 +120,7 @@ public class FeriadoImportacaoService {
     }
 
     private FeriadoImportacao validarFeriado(FeriadoImportacao feriadoParaImportar, Integer anoReferencia) {
-         feriadoParaImportar.setMotivoNaoImportacao(
+        feriadoParaImportar.setMotivoNaoImportacao(
             Stream.of(
                 validarTipoFeriado(feriadoParaImportar),
                 validarUf(feriadoParaImportar),
@@ -123,15 +128,19 @@ public class FeriadoImportacaoService {
                 validarDataFeriado(feriadoParaImportar, anoReferencia),
                 validarNome(feriadoParaImportar),
                 validarFeriadoExistente(feriadoParaImportar))
-            .filter(validacao -> !validacao.isEmpty())
-            .collect(Collectors.toList()));
-         return feriadoParaImportar;
+                .filter(validacao -> !validacao.isEmpty())
+                .collect(Collectors.toList()));
+        return feriadoParaImportar;
+    }
+
+    private boolean isLinhaVazia(String[] linha) {
+        return linha.length == 0;
     }
 
     private Optional<ETipoFeriado> recuperarTipoFeriado(String tipoFeriadoStr) {
         try {
             return Optional.of(ETipoFeriado.valueOf(tratarString(tipoFeriadoStr)));
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
             log.error("Erro ao recuperar Tipo do Feriado.", ex);
             return Optional.empty();
         }
@@ -186,12 +195,12 @@ public class FeriadoImportacaoService {
 
     private String validarUf(FeriadoImportacao feriado) {
         return feriado.isTipoFeriadoComUfObrigatorio() && isEmpty(feriado.getUf())
-            ? "O campo UF é obrigatório." : "";
+            ? "Falha ao recuperar UF." : "";
     }
 
     private String validarCidade(FeriadoImportacao feriado) {
         return feriado.isTipoFeriadoComCidadeObrigatorio() && isEmpty(feriado.getCidade())
-            ? "O campo Cidade é obrigatório." : "";
+            ? "Falha ao recuperar Cidade." : "";
     }
 
     private String validarDataFeriado(FeriadoImportacao feriado, Integer anoReferencia) {

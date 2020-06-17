@@ -5,12 +5,15 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoFiltros;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -223,6 +228,7 @@ public class FeriadoServiceIT {
 
         assertThat(feriadoRepository.findAll())
             .hasSize(18);
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("CADASTRADO MANUAL"), any());
     }
 
     @Test
@@ -239,6 +245,7 @@ public class FeriadoServiceIT {
 
         assertThat(feriadoRepository.findAll())
             .hasSize(18);
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("CADASTRADO MANUAL"), any());
     }
 
     @Test
@@ -281,6 +288,72 @@ public class FeriadoServiceIT {
                     1, 3407, Eboolean.F, feriadoEstadual.getId()),
                 tuple("FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), ETipoFeriado.ESTADUAL,
                     1, 3408, Eboolean.F, feriadoEstadual.getId()));
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("CADASTRADO MANUAL"), any());
+    }
+
+    @Test
+    public void salvarFeriadoImportado_deveSalvarFeriado_quandoFeriadoNacional() {
+        assertThat(feriadoRepository.findAll())
+            .hasSize(17);
+        when(autenticacaoService.getUsuarioId()).thenReturn(1111);
+
+        assertThat(feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.NACIONAL, null, null)))
+            .extracting("nome", "dataFeriado", "tipoFeriado", "uf.id",
+                "cidade.id", "feriadoNacional")
+            .containsExactlyInAnyOrder("FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), ETipoFeriado.NACIONAL,
+                null, null, Eboolean.V);
+
+        assertThat(feriadoRepository.findAll())
+            .hasSize(18);
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("IMPORTADO"), any());
+    }
+
+    @Test
+    public void salvarFeriadoImportado_deveSalvarFeriado_quandoFeriadoMunicipal() {
+        assertThat(feriadoRepository.findAll())
+            .hasSize(17);
+        when(autenticacaoService.getUsuarioId()).thenReturn(1111);
+
+        assertThat(feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.MUNICIPAL, 8, 1765)))
+            .extracting("nome", "dataFeriado", "tipoFeriado", "uf.id",
+                "cidade.id", "feriadoNacional")
+            .containsExactlyInAnyOrder("FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), ETipoFeriado.MUNICIPAL,
+                8, 1765, Eboolean.F);
+
+        assertThat(feriadoRepository.findAll())
+            .hasSize(18);
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("IMPORTADO"), any());
+    }
+
+    @Test
+    public void salvarFeriadoImportado_deveSalvarFeriadoEFeriadoFilhos_quandoFeriadoEstadual() {
+        assertThat(feriadoRepository.findAll())
+            .hasSize(17);
+        when(autenticacaoService.getUsuarioId()).thenReturn(1111);
+
+        var feriadoEstadual = feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.ESTADUAL, 22, null));
+
+        assertThat(feriadoEstadual)
+            .extracting("nome", "dataFeriado", "tipoFeriado", "uf.id",
+                "cidade.id", "feriadoNacional")
+            .containsExactlyInAnyOrder("FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), ETipoFeriado.ESTADUAL,
+                22, null, Eboolean.F);
+
+        assertThat(feriadoRepository.findAll())
+            .hasSize(20);
+        assertThat(feriadoRepository.findAll(
+            new FeriadoPredicate()
+                .comFeriadoPaiId(feriadoEstadual.getId())
+                .build()))
+            .hasSize(2)
+            .extracting("nome", "dataFeriado", "tipoFeriado", "uf.id",
+                "cidade.id", "feriadoNacional", "feriadoPai.id")
+            .containsExactlyInAnyOrder(
+                tuple("FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), ETipoFeriado.ESTADUAL,
+                    22, 4505, Eboolean.F, feriadoEstadual.getId()),
+                tuple("FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), ETipoFeriado.ESTADUAL,
+                    22, 4498, Eboolean.F, feriadoEstadual.getId()));
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("IMPORTADO"), any());
     }
 
     @Test
@@ -332,7 +405,7 @@ public class FeriadoServiceIT {
             .containsExactlyInAnyOrder(100, "FERIADO NACIONAL", LocalDate.of(2019, 11, 12), ETipoFeriado.NACIONAL,
                 null, null, Eboolean.V);
 
-        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
             .hasSize(17);
     }
@@ -357,7 +430,7 @@ public class FeriadoServiceIT {
             .containsExactlyInAnyOrder(102, "Feriado de Maringá", LocalDate.of(2019, 6, 29), ETipoFeriado.MUNICIPAL,
                 1, 3426, Eboolean.F);
 
-        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
             .hasSize(17);
     }
@@ -374,7 +447,7 @@ public class FeriadoServiceIT {
             .containsExactlyInAnyOrder(104, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), ETipoFeriado.ESTADUAL,
                 22, null, Eboolean.F);
 
-        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
             .hasSize(17);
         assertThat(feriadoRepository.findAll(new FeriadoPredicate().comFeriadoPaiId(104).build()))
@@ -400,7 +473,7 @@ public class FeriadoServiceIT {
             .containsExactlyInAnyOrder(104, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), ETipoFeriado.ESTADUAL,
                 19, null, Eboolean.F);
 
-        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
             .hasSize(18);
         assertThat(feriadoRepository.findAll(new FeriadoPredicate().comFeriadoPaiId(104).build()))
@@ -435,7 +508,7 @@ public class FeriadoServiceIT {
             .extracting("nome", "situacao", "tipoFeriado")
             .containsExactlyInAnyOrder("Feriado Nacional do Luis", ESituacaoFeriado.EXCLUIDO, ETipoFeriado.NACIONAL);
 
-        verify(feriadoHistoricoService, times(2)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(2)).salvarHistorico(any(), eq("EXCLUIDO"), any());
     }
 
     @Test
@@ -455,7 +528,7 @@ public class FeriadoServiceIT {
                 tuple("Feriado de Santa Catarina", LocalDate.of(2019, 9, 23), ETipoFeriado.ESTADUAL,
                     22, 4498, Eboolean.F, 104, ESituacaoFeriado.EXCLUIDO));
 
-        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), anyString(), any());
+        verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EXCLUIDO"), any());
     }
 
     private PageRequest umPageRequest(int pageNumber) {
@@ -493,4 +566,14 @@ public class FeriadoServiceIT {
             .build();
     }
 
+    private FeriadoImportacao umaFeriadoImportacao(ETipoFeriado tipoFeriado, Integer ufId, Integer cidadeId) {
+        return FeriadoImportacao.builder()
+            .tipoFeriado(tipoFeriado)
+            .dataFeriado(LocalDate.of(2019, 3, 22))
+            .nome("FERIADO IMPORTADO")
+            .motivoNaoImportacao(List.of())
+            .uf(!isEmpty(ufId) ? new Uf(ufId) : null)
+            .cidade(!isEmpty(cidadeId) ? new Cidade(cidadeId) : null)
+            .build();
+    }
 }

@@ -75,12 +75,6 @@ public class FeriadoController {
         return feriadoImportacaoService.importarFeriadoArquivo(file, request);
     }
 
-    //    @PostMapping
-    //    @ResponseStatus(HttpStatus.CREATED)
-    //    public FeriadoResponse save(@Validated @RequestBody FeriadoRequest request) {
-    //        return FeriadoResponse.convertFrom(service.save(request));
-    //    }
-
     @GetMapping
     public Iterable<Feriado> findAllByAnoAtual() {
         return service.findAllByAnoAtual();

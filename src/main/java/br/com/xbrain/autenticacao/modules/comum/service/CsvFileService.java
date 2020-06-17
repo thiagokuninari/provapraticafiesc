@@ -15,10 +15,9 @@ import java.util.stream.Collectors;
 @Service
 public class CsvFileService {
 
-    private static final char SEPARATOR = ';';
     private static final String ERRO_LER_ARQUIVO = "Não foi possível ler o arquivo informado.";
 
-    public List<String> readCsvFile(MultipartFile file, boolean possuiCabecalho) {
+    public static List<String> readCsvFile(MultipartFile file, boolean possuiCabecalho) {
         List<String> linhas;
         try (var isr = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
              var reader = new BufferedReader(isr)) {
@@ -29,7 +28,7 @@ public class CsvFileService {
         return linhas;
     }
 
-    private List<String> getCsvLines(BufferedReader reader, boolean possuiCabecalho) {
+    private static List<String> getCsvLines(BufferedReader reader, boolean possuiCabecalho) {
         return reader.lines().skip(possuiCabecalho ? 1 : 0).collect(Collectors.toList());
     }
 }

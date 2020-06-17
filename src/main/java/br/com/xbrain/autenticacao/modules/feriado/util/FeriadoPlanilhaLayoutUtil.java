@@ -15,6 +15,6 @@ public class FeriadoPlanilhaLayoutUtil {
     public static final String NOME_COL_NOME = "NOME DO FERIADO";
     public static final int QNT_COLUNAS = 5;
     public static final String DELIMITADOR = ";";
-    public static final boolean POSSUI_CABECALHO = true;
+    public static final boolean LER_SEM_CABECALHO = false;
     public static final int TAMANHO_MAX_NOME = 255;
 }

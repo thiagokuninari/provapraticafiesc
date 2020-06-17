@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,6 +69,15 @@ public class FeriadoTest {
             .containsExactlyInAnyOrder(222, "FERIADO SANTA CATARINA", LocalDate.of(2019, 8, 12), 1111,
                 22, 4498, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, 123, Eboolean.F,
                 LocalDateTime.of(2018, 11, 11, 11, 11, 11));
+    }
+
+    @Test
+    public void ofFeriadoImportado_deveRetornarFeriadoComDadosCorretos_quandoChamado() {
+        assertThat(Feriado.ofFeriadoImportado(umaFeriadoImportacao(), 1111))
+            .extracting("id", "nome", "dataFeriado", "usuarioCadastro.id", "uf.id", "cidade.id", "tipoFeriado", "situacao",
+                "feriadoPai.id", "feriadoNacional")
+            .containsExactlyInAnyOrder(null, "FERIADO IMPORTADO", LocalDate.of(2019, 3, 22), 1111,
+                22, null, ETipoFeriado.ESTADUAL, ESituacaoFeriado.ATIVO, null, Eboolean.F);
     }
 
     @Test
@@ -144,6 +155,18 @@ public class FeriadoTest {
             .dataFeriado(LocalDate.of(2019, 9, 23))
             .dataCadastro(LocalDateTime.of(2018, 11, 11, 11, 11, 11))
             .tipoFeriado(ETipoFeriado.NACIONAL)
+            .build();
+    }
+
+    private FeriadoImportacao umaFeriadoImportacao() {
+        return FeriadoImportacao.builder()
+            .tipoFeriado(ETipoFeriado.ESTADUAL)
+            .dataFeriado(LocalDate.of(2019, 3, 22))
+            .nome("FERIADO IMPORTADO")
+            .motivoNaoImportacao(List.of())
+            .uf(Uf.builder()
+                .id(22)
+                .build())
             .build();
     }
 }
