@@ -196,7 +196,7 @@ app-config:
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
 
 flyway:
-  enabled: false
+  enabled: true
   out-of-order: true
   baseline-on-migrate: true
 
