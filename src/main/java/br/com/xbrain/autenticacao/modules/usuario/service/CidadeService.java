@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -15,10 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static org.springframework.data.domain.Sort.Direction.*;
 
 @Service
 public class CidadeService {
@@ -87,15 +82,5 @@ public class CidadeService {
 
     public ClusterizacaoDto getClusterizacao(Integer id) {
         return repository.getClusterizacao(id);
-    }
-
-    public List<CidadeResponse> getCidadesByUfsId(List<Integer> ufsId) {
-        var sort = new Sort(ASC, "id");
-        var predicate = new CidadePredicate().comEstadosId(ufsId).build();
-
-        return StreamSupport
-                .stream(repository.findAll(predicate, sort).spliterator(), false)
-                .map(CidadeResponse::parse)
-                .collect(Collectors.toList());
     }
 }

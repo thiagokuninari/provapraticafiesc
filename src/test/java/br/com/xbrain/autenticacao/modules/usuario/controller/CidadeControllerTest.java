@@ -182,21 +182,6 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
-    @Test
-    public void getCidadesByEstadosId_deveRetornarListaCidadeResponse_seHouverCidades() throws Exception {
-        mvc.perform(get("/api/cidades/por-ufs?ufs=27")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1189)))
-                .andExpect(jsonPath("$[0].nome", is("BERNARDO DO MEARIM")))
-                .andExpect(jsonPath("$[0].codigoIbge", is("2101939")))
-                .andExpect(jsonPath("$[0].uf.id", is(27)))
-                .andExpect(jsonPath("$[0].uf.nome", is("MARANHAO")))
-                .andExpect(jsonPath("$[0].uf.uf", is("MA")))
-                .andExpect(jsonPath("$[0].netUno", is("F")));
-    }
-
     private Cidade umaCidade() {
 
         return Cidade.builder()
