@@ -196,7 +196,7 @@ app-config:
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
     agente-autorizado:
 #      url: http://localhost:8300
-      url: http://app-dev.conexaoclarobrasil.com.br/parceiros
+      url: http://api-dev.conexaoclarobrasil.com.br/parceiros
 
 flyway:
   enabled: true
