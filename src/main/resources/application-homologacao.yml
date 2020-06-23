@@ -44,6 +44,8 @@ app-config:
       url: http://172.10.10.82:8089
     contato-crn:
       url: http://172.10.10.64:8084
+    agente-autorizado:
+      url: http://172.10.10.106:8300
 
   email:
     enviar: true
