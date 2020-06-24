@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,14 @@ public class FeriadoImportacaoService {
     private static final ValidacaoException EX_ARQUIVO_VAZIO = new ValidacaoException("O arquivo não pode ser vazio.");
     private static final ValidacaoException EX_CABECALHO_DIFERENTE =
         new ValidacaoException("O cabeçalho do arquivo não pode ser diferente do exemplo.");
+    private static final String MENSAGEM_VAZIA = "";
+    private static final String ERRO_TIPO_FERIADO = "Falha ao recuperar Tipo do Feriado.";
+    private static final String ERRO_UF = "Falha ao recuperar UF.";
+    private static final String ERRO_CIDADE = "Falha ao recuperar Cidade.";
+    private static final String ERRO_NOME = "Feriado está com nome inválido.";
+    private static final String ERRO_FERIADO_EXISTENTE = "Feriado já cadastrado.";
+    private static final String ERRO_DATA_INVALIDA = "Feriado está com data inválida.";
+    private static final String ERRO_DATA_FORA_ANO_REFERENCIA = "A data do feriado não está no ano de referência.";
 
     public List<FeriadoImportacaoResponse> importarFeriadoArquivo(MultipartFile file, FeriadoImportacaoRequest request) {
         var linhas = CsvFileService.readCsvFile(file, LER_SEM_CABECALHO);
@@ -141,7 +150,7 @@ public class FeriadoImportacaoService {
         try {
             return Optional.of(ETipoFeriado.valueOf(tratarString(tipoFeriadoStr)));
         } catch (IllegalArgumentException ex) {
-            log.error("Erro ao recuperar Tipo do Feriado.", ex);
+            log.error(ERRO_TIPO_FERIADO, ex);
             return Optional.empty();
         }
     }
@@ -159,7 +168,7 @@ public class FeriadoImportacaoService {
         try {
             return ufRepository.findByUf(uf);
         } catch (Exception ex) {
-            log.error("Erro ao recuperar UF", ex);
+            log.error(ERRO_UF, ex);
             return Optional.empty();
         }
     }
@@ -168,7 +177,7 @@ public class FeriadoImportacaoService {
         try {
             return Optional.of(cidadeService.findByUfNomeAndCidadeNome(uf, cidadeNome));
         } catch (Exception ex) {
-            log.error("Erro ao recuperar Cidade.", ex);
+            log.error(ERRO_CIDADE, ex);
             return Optional.empty();
         }
     }
@@ -189,31 +198,35 @@ public class FeriadoImportacaoService {
     }
 
     private String validarTipoFeriado(FeriadoImportacao feriado) {
-        return isEmpty(feriado.getTipoFeriado())
-            ? "Falha ao recuperar Tipo do Feriado." : "";
+        return Optional.ofNullable(feriado.getTipoFeriado())
+            .map(tipoFeriado -> MENSAGEM_VAZIA)
+            .orElse(ERRO_TIPO_FERIADO);
+        //isEmpty(feriado.getTipoFeriado())
+        //    ? "Falha ao recuperar Tipo do Feriado." : "";
     }
 
     private String validarUf(FeriadoImportacao feriado) {
         return feriado.isTipoFeriadoComUfObrigatorio() && isEmpty(feriado.getUf())
-            ? "Falha ao recuperar UF." : "";
+            ? ERRO_UF : MENSAGEM_VAZIA;
     }
 
     private String validarCidade(FeriadoImportacao feriado) {
         return feriado.isTipoFeriadoComCidadeObrigatorio() && isEmpty(feriado.getCidade())
-            ? "Falha ao recuperar Cidade." : "";
+            ? ERRO_CIDADE : MENSAGEM_VAZIA;
     }
 
     private String validarDataFeriado(FeriadoImportacao feriado, Integer anoReferencia) {
-        return isEmpty(feriado.getDataFeriado())
-            ? "Feriado está com data inválida."
-            : feriado.getDataFeriado().getYear() != anoReferencia
-            ? "A data do feriado não está no ano de referência." : "";
+        return Optional.ofNullable(feriado.getDataFeriado())
+            .map(dataFeriado -> dataFeriado.getYear() != anoReferencia
+                ? ERRO_DATA_FORA_ANO_REFERENCIA
+                : MENSAGEM_VAZIA)
+            .orElse(ERRO_DATA_INVALIDA);
     }
 
     private String validarNome(FeriadoImportacao feriado) {
         return isEmpty(feriado.getNome())
             || feriado.getNome().length() > TAMANHO_MAX_NOME
-            ? "Feriado está com nome inválido." : "";
+            ? ERRO_NOME : MENSAGEM_VAZIA;
     }
 
     private String validarFeriadoExistente(FeriadoImportacao feriado) {
@@ -228,7 +241,6 @@ public class FeriadoImportacaoService {
                 .excetoExcluidos()
                 .excetoFeriadosFilhos()
                 .build())
-            .isPresent()
-            ? "Feriado já cadastrado." : "";
+            .map(feriadoNoBanco -> ERRO_FERIADO_EXISTENTE).orElse(MENSAGEM_VAZIA);
     }
 }
