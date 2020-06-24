@@ -24,9 +24,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,13 +40,15 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class FeriadoServiceIT {
 
     @Autowired
-    private FeriadoService feriadoService;
-    @Autowired
     private FeriadoRepository feriadoRepository;
+    @Autowired
+    private FeriadoService feriadoService;
     @MockBean
     private FeriadoHistoricoService feriadoHistoricoService;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     public void obterFeriadosByFiltros_deveRetornarTodosFeriadosExcetoExcluidosEFeriadoFilhos_quandoNaoTemFiltro() {
@@ -447,6 +449,7 @@ public class FeriadoServiceIT {
                 "cidadeId", "feriadoNacional")
             .containsExactlyInAnyOrder(104, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), ETipoFeriado.ESTADUAL,
                 22, null, Eboolean.F);
+        refresh();
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
@@ -468,7 +471,10 @@ public class FeriadoServiceIT {
             .hasSize(17);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
-        assertThat(feriadoService.editarFeriado(umFeriadoEstadualRequest(19, 104)))
+        var feriadoEditado = feriadoService.editarFeriado(umFeriadoEstadualRequest(19, 104));
+        refresh();
+
+        assertThat(feriadoEditado)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId",
                 "cidadeId", "feriadoNacional")
             .containsExactlyInAnyOrder(104, "FERIADO ESTADUAL", LocalDate.of(2019, 7, 12), ETipoFeriado.ESTADUAL,
@@ -518,6 +524,7 @@ public class FeriadoServiceIT {
         assertThat(feriadoService.findById(104))
             .extracting("nome", "situacao", "tipoFeriado", "uf.id")
             .containsExactlyInAnyOrder("Feriado de Santa Catarina", ESituacaoFeriado.EXCLUIDO, ETipoFeriado.ESTADUAL, 22);
+        refresh();
 
         assertThat(feriadoRepository.findAll(new FeriadoPredicate().comFeriadoPaiId(104).build()))
             .hasSize(2)
@@ -576,5 +583,10 @@ public class FeriadoServiceIT {
             .uf(!isEmpty(ufId) ? new Uf(ufId) : null)
             .cidade(!isEmpty(cidadeId) ? new Cidade(cidadeId) : null)
             .build();
+    }
+
+    private void refresh() {
+        entityManager.flush();
+        entityManager.clear();
     }
 }

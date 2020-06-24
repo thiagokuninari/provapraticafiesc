@@ -18,12 +18,12 @@ import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
@@ -40,6 +39,7 @@ import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_
 @Service
 public class FeriadoService {
 
+    private static final int MAX_RESULTADO = 1000;
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Feriado não encontrado.");
     private static final ValidacaoException EX_TIPO_FERIADO_NAO_EDITAVEL =
         new ValidacaoException("Não é permitido editar o Tipo do Feriado.");
@@ -144,7 +144,8 @@ public class FeriadoService {
     public void excluirFeriado(Integer id) {
         var feriado = findById(id);
         excluirFeriadosFilhos(feriado);
-        var feriadoExcluido = repository.save(excluir(feriado));
+        feriado.excluir();
+        var feriadoExcluido = repository.save(feriado);
         historicoService.salvarHistorico(feriadoExcluido, EXCLUIDO, autenticacaoService.getUsuarioAutenticado());
     }
 
@@ -160,11 +161,18 @@ public class FeriadoService {
             repository.save(feriadosFilhos);
         }
     }
+
     private void salvarFeriadoEstadualParaCidadesDoEstadoAsync(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
             if (uploadAsync) {
                 CompletableFuture
-                    .runAsync(() -> salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai));
+                    .runAsync(() -> salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai))
+                    .exceptionally(ex -> {
+                        log.error("Erro ao salvar o feriado estadual para as cidades do estado, feriadoPaiId: "
+                            + feriadoPai.getId(),
+                            ex);
+                        return null;
+                    });
             } else {
                 salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai);
             }
@@ -191,28 +199,26 @@ public class FeriadoService {
     }
 
     private void editarFeriadosFilhosSemAlteracaoDoEstado(Feriado feriadoPai) {
-        var feriadosFilhosEditados = findFeriadosFilhos(feriadoPai.getId()).stream()
-            .map(feriadoFilho -> editarFeriadoFilho(feriadoFilho, feriadoPai))
-            .collect(Collectors.toList());
-        repository.save(feriadosFilhosEditados);
+        Lists
+            .partition(
+                findFeriadosFilhos(feriadoPai.getId()).stream()
+                    .map(Feriado::getId)
+                    .collect(Collectors.toList()),
+                MAX_RESULTADO)
+            .forEach(listPart -> repository.updateFeriadoNomeEDataByIds(listPart, feriadoPai.getNome(),
+                feriadoPai.getDataFeriado()));
     }
 
     private void excluirFeriadosFilhos(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
-             repository.save(findFeriadosFilhos(feriadoPai.getId()).stream()
-                    .map(this::excluir)
-                    .collect(Collectors.toList()));
+            Lists
+                .partition(
+                    findFeriadosFilhos(feriadoPai.getId()).stream()
+                        .map(Feriado::getId)
+                        .collect(Collectors.toList()),
+                    MAX_RESULTADO)
+                .forEach(repository::exluirByFeriadoIds);
         }
-    }
-
-    private Feriado excluir(Feriado feriado) {
-        feriado.excluir();
-        return feriado;
-    }
-
-    private Feriado editarFeriadoFilho(Feriado feriadoFilho, Feriado feriadoPai) {
-        feriadoFilho.editarFeriadoFilho(feriadoPai);
-        return feriadoFilho;
     }
 
     private List<Feriado> findFeriadosFilhos(Integer feriadoPaiId) {
