@@ -200,8 +200,6 @@ public class FeriadoImportacaoService {
         return Optional.ofNullable(feriado.getTipoFeriado())
             .map(tipoFeriado -> MENSAGEM_VAZIA)
             .orElse(ERRO_TIPO_FERIADO);
-        //isEmpty(feriado.getTipoFeriado())
-        //    ? "Falha ao recuperar Tipo do Feriado." : "";
     }
 
     private String validarUf(FeriadoImportacao feriado) {
