@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class UsuarioTimer {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
+    @Autowired
+    private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private static final String EVERY_DAY_AT_THREE_AM = "0 0 3 * * *";
 
@@ -31,6 +34,8 @@ public class UsuarioTimer {
     private static final String EVERY_DAY_AT_FOUR_AM = "0 0 4 * * *";
 
     private static final String EVERY_DAY_AT_MIDNIGHT = "0 0 0 * * *";
+
+    private static final String EVERY_30_MINUTE = "0 */30 * * * *";
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
@@ -62,5 +67,10 @@ public class UsuarioTimer {
     @Scheduled(cron = EVERY_DAY_AT_THREE_AM)
     public void reativarUsuariosComAfastamentoComTerminoFinalizado() {
         service.reativarUsuariosInativosComAfastamentoTerminando(LocalDate.now());
+    }
+
+    @Scheduled(cron = EVERY_30_MINUTE)
+    public void deslogarUsuariosInativadosPorExcessoDeUsoDeApi() {
+        deslogarUsuarioPorExcessoDeUsoService.deslogarUsuariosInativados();
     }
 }

@@ -7,17 +7,17 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, Integer>,
+public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
         QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
 
     Optional<Usuario> findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
@@ -33,6 +33,8 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     Optional<Usuario> findUsuarioByEmail(String email);
 
     List<Usuario> findAllByCpf(String cpf);
+
+    Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
@@ -66,10 +68,6 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     @Modifying
     @Query("update Usuario u set u.email = ?1 where u.id = ?2")
     void updateEmail(String email, Integer usuarioId);
-
-    @Modifying
-    @Query("update Usuario u set u.cpf = ?1 where u.id = ?2")
-    void updateCpf(String cpf, Integer usuarioId);
 
     @Modifying
     @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")

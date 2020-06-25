@@ -77,6 +77,15 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
 
+    @Value("${app-config.queue.usuario-remanejar-pol}")
+    private String usuarioRemanejarPol;
+
+    @Value("${app-config.queue.usuario-remanejado-aut}")
+    private String usuarioRemanejadoAut;
+
+    @Value("${app-config.queue.usuario-remanejado-aut-failure}")
+    private String usuarioRemanejadoAutFailure;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -188,6 +197,21 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioRemanejarPol() {
+        return new Queue(usuarioRemanejarPol, false);
+    }
+
+    @Bean
+    Queue usuarioRemanejadoAut() {
+        return new Queue(usuarioRemanejadoAut, false);
+    }
+
+    @Bean
+    Queue usuarioRemanejadoAutFailure() {
+        return new Queue(usuarioRemanejadoAutFailure, false);
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -285,5 +309,20 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioUltimoAcessoPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioUltimoAcessoPol()).to(exchange).with(usuarioUltimoAcessoPolMq);
+    }
+
+    @Bean
+    public Binding usuarioRemanejarPolBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRemanejarPol()).to(exchange).with(usuarioRemanejarPol);
+    }
+
+    @Bean
+    public Binding usuarioRemanejadoAutBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRemanejadoAut()).to(exchange).with(usuarioRemanejadoAut);
+    }
+
+    @Bean
+    public Binding usuarioRemanejadoAutFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioRemanejadoAutFailure()).to(exchange).with(usuarioRemanejadoAutFailure);
     }
 }

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,11 @@ public class UsuarioGerenciaController {
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
         return service.save(UsuarioDto.convertFrom(usuario), foto);
+    }
+
+    @PostMapping("backoffice")
+    public Usuario save(@RequestBody @Validated UsuarioBackofficeDto usuario) {
+        return service.salvarUsuarioBackoffice(UsuarioBackofficeDto.of(usuario));
     }
 
     @PutMapping
@@ -109,7 +115,7 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{idUsuario}/supervisor")
-    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
+    public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);
     }
 

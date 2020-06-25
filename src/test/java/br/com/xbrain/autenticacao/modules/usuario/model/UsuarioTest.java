@@ -65,30 +65,36 @@ public class UsuarioTest {
                 .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
-    private Usuario umUsuarioComCargo(Integer id, CodigoCargo codigoCargo) {
-        return Usuario.builder()
-                .id(id)
-                .cargo(Cargo
-                        .builder()
-                        .codigo(codigoCargo)
-                        .build())
-                .build();
-    }
-
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {
         return UsuarioAutenticado
+            .builder()
+            .id(id)
+            .nivelCodigo(codigoNivel.name())
+            .usuario(umUsuarioComCargo(codigoCargo))
+            .build();
+    }
+
+    private static Usuario umUsuarioComCargo(CodigoCargo codigoCargo) {
+        return Usuario
+            .builder()
+            .cargo(umCargo(codigoCargo))
+            .build();
+    }
+
+    private Usuario umUsuarioComCargo(Integer id, CodigoCargo codigoCargo) {
+        return Usuario.builder()
+            .id(id)
+            .cargo(Cargo
                 .builder()
-                .id(id)
-                .nivelCodigo(codigoNivel.name())
-                .usuario(Usuario
-                        .builder()
-                        .cargo(
-                                Cargo
-                                        .builder()
-                                        .codigo(codigoCargo)
-                                        .build())
-                        .build()
-                )
-                .build();
+                .codigo(codigoCargo)
+                .build())
+            .build();
+    }
+
+    private static Cargo umCargo(CodigoCargo codigoCargo) {
+        return Cargo
+            .builder()
+            .codigo(codigoCargo)
+            .build();
     }
 }

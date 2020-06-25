@@ -38,7 +38,9 @@ public class UsuarioHistoricoDto {
                 .feriasFim(getFeriasFim(historico))
                 .afastamentoInicio(getAfastamentoInicio(historico))
                 .afastamentoFim(getAfastamentoFim(historico))
-                .usuarioAlteracao(historico.getUsuarioAlteracao().getNome())
+                .usuarioAlteracao(!isEmpty(historico.getUsuarioAlteracao())
+                    ? historico.getUsuarioAlteracao().getNome()
+                    : null)
                 .build();
     }
 

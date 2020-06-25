@@ -4,7 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -83,7 +83,7 @@ public class UsuarioGerenciaControllerTest {
     @MockBean
     private FileService fileService;
     @MockBean
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
 
@@ -103,7 +103,6 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-
     public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
         mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -199,7 +198,9 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=A")
+        mvc.perform(get(API_URI)
+                .param("cnpjAa", "09.489.617/0001-97")
+                .param("situacoes", "A")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -213,7 +214,9 @@ public class UsuarioGerenciaControllerTest {
         mockResponseAgenteAutorizado();
         mockResponseUsuariosAgenteAutorizado();
 
-        mvc.perform(get(API_URI + "?cnpjAa=09.489.617/0001-97&situacao=I")
+        mvc.perform(get(API_URI)
+                .param("cnpjAa", "09.489.617/0001-97")
+                .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -231,7 +234,8 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void filtrarUser_deveFiltrarPorInativo_quandoSituacaoForInativo() throws Exception {
-        mvc.perform(get(API_URI + "?situacao=I&realocado=false")
+        mvc.perform(get(API_URI)
+                .param("situacoes", "I")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -240,8 +244,9 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void filtrarUser_deveFiltrarPorRealocado_quandoRealocadoForTrue() throws Exception {
-        mvc.perform(get(API_URI + "?realocado=true")
+    public void filtrarUser_deveFiltrarPorRealocado_quandoSituacaoForRealocado() throws Exception {
+        mvc.perform(get(API_URI)
+                .param("situacoes", "R")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -266,6 +271,32 @@ public class UsuarioGerenciaControllerTest {
                         "O campo empresasId é obrigatório.",
                         "O campo cargoId é obrigatório.",
                         "O campo departamentoId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoUnidadeNegocioVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setUnidadesNegociosId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoEmpresaVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setEmpresasId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test

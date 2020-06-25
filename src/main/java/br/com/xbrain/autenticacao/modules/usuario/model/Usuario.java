@@ -214,6 +214,15 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
 
+    @Column(name = "URL_LOJA_BASE", length = 200)
+    private String urlLojaBase;
+
+    @Column(name = "URL_LOJA_PROSPECT", length = 200)
+    private String urlLojaProspect;
+
+    @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
+    private String urlLojaProspectNextel;
+
     @Transient
     private List<Integer> hierarquiasId;
 
@@ -222,6 +231,9 @@ public class Usuario {
 
     @Transient
     private Integer agenteAutorizadoId;
+
+    @Transient
+    private String senhaDescriptografada;
 
     public Usuario(Integer id) {
         this.id = id;
@@ -434,6 +446,11 @@ public class Usuario {
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
                 && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
+    }
+
+    public boolean isBackoffice() {
+        return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
+                && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
     }
 
     public void adicionarHistorico(UsuarioHistorico historico) {

@@ -1,8 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import com.querydsl.core.BooleanBuilder;
 
 import java.util.List;
@@ -31,15 +29,8 @@ public class CargoPredicate extends PredicateBase {
         return this;
     }
 
-    private CargoPredicate comId(List<Integer> cargosId) {
+    public CargoPredicate comId(List<Integer> cargosId) {
         builder.and(cargo.id.in(cargosId));
-        return this;
-    }
-
-    public CargoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado, List<Integer> cargosId) {
-        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
-            comId(cargosId);
-        }
         return this;
     }
 
