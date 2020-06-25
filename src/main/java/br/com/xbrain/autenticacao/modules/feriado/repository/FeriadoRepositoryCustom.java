@@ -16,6 +16,10 @@ public interface FeriadoRepositoryCustom {
 
     Optional<Feriado> findByPredicate(Predicate predicate);
 
+    void exluirByFeriadoIds(List<Integer> feriadoIds);
+
+    void updateFeriadoNomeEDataByIds(List<Integer> feriadoIds, String nome, LocalDate dataFeriado);
+
     @Cacheable(
             cacheManager = "concurrentCacheManager",
             cacheNames = FERIADOS_DATA_CACHE_NAME,

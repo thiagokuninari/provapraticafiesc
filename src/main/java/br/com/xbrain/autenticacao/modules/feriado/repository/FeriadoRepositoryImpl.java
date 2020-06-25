@@ -59,4 +59,23 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             .where(predicate)
             .fetchOne());
     }
+
+    @Override
+    public void exluirByFeriadoIds(List<Integer> feriadoIds) {
+        new JPAQueryFactory(entityManager)
+            .update(feriado)
+            .set(feriado.situacao, ESituacaoFeriado.EXCLUIDO)
+            .where(feriado.id.in(feriadoIds))
+            .execute();
+    }
+
+    @Override
+    public void updateFeriadoNomeEDataByIds(List<Integer> feriadoIds, String nome, LocalDate dataFeriado) {
+        new JPAQueryFactory(entityManager)
+            .update(feriado)
+            .set(feriado.nome, nome)
+            .set(feriado.dataFeriado, dataFeriado)
+            .where(feriado.id.in(feriadoIds))
+            .execute();
+    }
 }

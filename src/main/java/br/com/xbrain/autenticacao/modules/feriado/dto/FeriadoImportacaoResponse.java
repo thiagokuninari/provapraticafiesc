@@ -64,7 +64,7 @@ public class FeriadoImportacaoResponse {
             response.setEstadoId(feriadoParaImportar.getUf().getId());
             response.setEstadoNome(feriadoParaImportar.getUf().getNome());
         }
-        response.setFeriadoImportadoComSucesso(isEmpty(feriadoParaImportar.getMotivoNaoImportacao()) ? Eboolean.V : Eboolean.F);
+        response.setFeriadoImportadoComSucesso(Eboolean.valueOf(isEmpty(feriadoParaImportar.getMotivoNaoImportacao())));
         return response;
     }
 }
