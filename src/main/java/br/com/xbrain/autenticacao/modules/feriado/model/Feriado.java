@@ -38,7 +38,7 @@ public class Feriado {
     @Column(name = "NOME", nullable = false)
     private String nome;
 
-    @Column(name = "DATA_FERIADO", updatable = false, nullable = false)
+    @Column(name = "DATA_FERIADO", nullable = false)
     private LocalDate dataFeriado;
 
     @Column(name = "DATA_CADASTRO", updatable = false, nullable = false)
