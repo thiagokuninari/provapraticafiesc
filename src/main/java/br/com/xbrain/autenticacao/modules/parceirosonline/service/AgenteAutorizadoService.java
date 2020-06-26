@@ -155,6 +155,16 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public String getEstrutura(Integer usuarioId) {
+        try {
+            return agenteAutorizadoClient.getEstrutura(usuarioId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_ESTRUTURA_AA);
+        }
+    }
+
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
         try {
             return agenteAutorizadoClient.existeAaAtivoBySocioEmail(usuarioEmail);
