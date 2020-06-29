@@ -158,10 +158,9 @@ public class AgenteAutorizadoService {
     public String getEstrutura(Integer usuarioId) {
         try {
             return agenteAutorizadoClient.getEstrutura(usuarioId);
-        } catch (RetryableException | HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_ESTRUTURA_AA);
+        } catch (Exception ex) {
+            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            return null;
         }
     }
 
