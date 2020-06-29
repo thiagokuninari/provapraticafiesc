@@ -473,7 +473,7 @@
         </repository>
         <repository>
             <id>xbrain</id>
-            <url>http://192.168.1.12:8092/nexus/content/groups/grupo_xbrain/</url>
+            <url>http://192.168.50.9:8092/nexus/content/groups/grupo_xbrain/</url>
         </repository>
     </repositories>
 
