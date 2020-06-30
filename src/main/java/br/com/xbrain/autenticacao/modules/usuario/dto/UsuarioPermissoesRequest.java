@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class UsuarioPermissoesRequest {
     @NotEmpty
     private List<String> permissoes;
 
+    @JsonIgnore
     public List<String> getPermissoesWithoutPrefixRole() {
         return permissoes
                 .stream()
