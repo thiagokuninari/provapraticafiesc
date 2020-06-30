@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -303,9 +300,10 @@ public class UsuarioControllerTest {
 
     @Test
     public void getPermissoesPorUsuarios_throwException_QuandoParametrosVazios() throws Exception {
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario")
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(new UsuarioPermissoesRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo permissoes é obrigatório.",
@@ -319,9 +317,11 @@ public class UsuarioControllerTest {
                 2844,
                 Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
             .when(usuarioService).findUsuariosByPermissoes(any());
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario?usuariosId=2844&permissoes=ROLE_VDS_TABULACAO_CLICKTOCALL")
+        var request = new UsuarioPermissoesRequest(List.of(2844), List.of("ROLE_VDS_TABULACAO_CLICKTOCALL"));
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].usuarioId", is(2844)))
