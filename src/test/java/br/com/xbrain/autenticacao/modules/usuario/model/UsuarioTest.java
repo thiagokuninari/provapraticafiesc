@@ -120,7 +120,7 @@ public class UsuarioTest {
                 .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
                 .build(),
             UnidadeNegocio.builder()
-                .id(1)
+                .id(2)
                 .codigo(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
                 .build()
         );

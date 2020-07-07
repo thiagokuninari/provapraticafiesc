@@ -408,7 +408,7 @@ public class Usuario {
         if (!CollectionUtils.isEmpty(unidadesNegocios)) {
             return unidadesNegocios.stream().map(UnidadeNegocio::getCodigo).collect(Collectors.toList());
         }
-        return null;
+        return List.of();
     }
 
     public String getLogin() {

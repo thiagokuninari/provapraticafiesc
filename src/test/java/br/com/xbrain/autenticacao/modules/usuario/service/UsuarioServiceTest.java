@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -43,7 +42,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -252,25 +250,53 @@ public class UsuarioServiceTest {
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
-//    @Test
-//    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
-//        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
-//            .thenReturn(umaListaSelectResponse());
-//
-//        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
-//            .extracting("value", "label")
-//            .containsExactly(
-//                tuple(100, "JOSÉ"),
-//                tuple(101, "JOÃO")
-//            );
-//
-//        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
-//    }
+    @Test
+    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
+        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
+            .thenReturn(umaListaUsuarioComUnidadesNegocio());
 
-    private List<SelectResponse> umaListaSelectResponse() {
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(100, "JOSÉ - ( Claro Residencial, Residencial e Combos )"),
+                tuple(101, "JOÃO - ( Pessoal )")
+            );
+
+        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    private List<Usuario> umaListaUsuarioComUnidadesNegocio() {
         return List.of(
-            SelectResponse.of(100, "JOSÉ"),
-            SelectResponse.of(101, "JOÃO")
+            Usuario.builder()
+                .id(100)
+                .nome("JOSÉ")
+                .unidadesNegocios(umaListaUnidadesNegocio())
+                .build(),
+            Usuario.builder()
+                .id(101)
+                .nome("JOÃO")
+                .unidadesNegocios(List.of(umaUnidadeNegocio()))
+                .build()
+        );
+    }
+
+    private UnidadeNegocio umaUnidadeNegocio() {
+        return UnidadeNegocio.builder()
+            .id(3)
+            .codigo(CodigoUnidadeNegocio.PESSOAL)
+            .build();
+    }
+
+    private List<UnidadeNegocio> umaListaUnidadesNegocio() {
+        return List.of(
+            UnidadeNegocio.builder()
+                .id(1)
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build(),
+            UnidadeNegocio.builder()
+                .id(2)
+                .codigo(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
+                .build()
         );
     }
 
