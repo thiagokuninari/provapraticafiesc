@@ -275,28 +275,15 @@ public class UsuarioServiceTest {
             Usuario.builder()
                 .id(101)
                 .nome("JOÃO")
-                .unidadesNegocios(List.of(umaUnidadeNegocio()))
+                .unidadesNegocios(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.PESSOAL)))
                 .build()
         );
     }
 
-    private UnidadeNegocio umaUnidadeNegocio() {
-        return UnidadeNegocio.builder()
-            .id(3)
-            .codigo(CodigoUnidadeNegocio.PESSOAL)
-            .build();
-    }
-
     private List<UnidadeNegocio> umaListaUnidadesNegocio() {
         return List.of(
-            UnidadeNegocio.builder()
-                .id(1)
-                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
-                .build(),
-            UnidadeNegocio.builder()
-                .id(2)
-                .codigo(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
-                .build()
+            umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
+            umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
         );
     }
 

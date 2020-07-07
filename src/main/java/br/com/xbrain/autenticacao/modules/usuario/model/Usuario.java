@@ -483,7 +483,6 @@ public class Usuario {
         return cargo.getCodigo().equals(codigoCargo);
     }
 
-    @JsonIgnore
     public String getDescricaoUnidadesNegociosConcatenadas() {
         return this.getCodigosUnidadesNegocio()
             .stream()
