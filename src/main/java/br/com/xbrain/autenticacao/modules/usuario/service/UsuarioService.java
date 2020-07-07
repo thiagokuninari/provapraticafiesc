@@ -1447,7 +1447,7 @@ public class UsuarioService {
     }
 
     private String getUsuarioNomeComUnidadeNegocio(Usuario usuario) {
-        return usuario.getNome() + " - " + "( " + usuario.getDescricaoUnidadesNegociosConcatenadas() + " )";
+        return usuario.getNome() + " - ( " + usuario.getDescricaoUnidadesNegociosConcatenadas() + " )";
     }
 
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
