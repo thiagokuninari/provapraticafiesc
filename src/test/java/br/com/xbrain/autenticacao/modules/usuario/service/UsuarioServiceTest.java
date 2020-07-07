@@ -252,20 +252,20 @@ public class UsuarioServiceTest {
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
-    @Test
-    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
-        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
-            .thenReturn(umaListaSelectResponse());
-
-        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
-            .extracting("value", "label")
-            .containsExactly(
-                tuple(100, "JOSÉ"),
-                tuple(101, "JOÃO")
-            );
-
-        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
-    }
+//    @Test
+//    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
+//        when(usuarioRepository.findAllAtivosByNivelOperacaoCanalAa())
+//            .thenReturn(umaListaSelectResponse());
+//
+//        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
+//            .extracting("value", "label")
+//            .containsExactly(
+//                tuple(100, "JOSÉ"),
+//                tuple(101, "JOÃO")
+//            );
+//
+//        verify(usuarioRepository).findAllAtivosByNivelOperacaoCanalAa();
+//    }
 
     private List<SelectResponse> umaListaSelectResponse() {
         return List.of(
