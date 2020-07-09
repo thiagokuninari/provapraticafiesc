@@ -228,7 +228,7 @@ public class SolicitacaoRamalService {
         context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
-        context.setVariable("tipoImplantação", solicitacaoRamal.getTipoImplantacao());
+        context.setVariable("tipoImplantacao", solicitacaoRamal.getTipoImplantacao().getDescricao());
         context.setVariable("melhorDataImplantacao", DateUtils.parseLocalDateToString(
                 solicitacaoRamal.getMelhorDataImplantacao()));
         context.setVariable("melhorHoraImplantacao", solicitacaoRamal.getMelhorHorarioImplantacao());
