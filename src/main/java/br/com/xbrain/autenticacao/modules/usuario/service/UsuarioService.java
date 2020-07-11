@@ -150,6 +150,8 @@ public class UsuarioService {
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -641,15 +643,10 @@ public class UsuarioService {
     private void inativarUsuario(Usuario usuario) {
         if (usuario.isAtivo()) {
             usuario.setSituacao(ESituacao.I);
-            usuario.adicionarHistorico(gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId()));
             repository.save(usuario);
+            usuarioHistoricoService.gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId());
             autenticacaoService.logout(usuario.getId());
         }
-    }
-
-    public UsuarioHistorico gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
-        return UsuarioHistorico.gerarHistorico(usuarioId, motivoInativacaoService
-            .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I);
     }
 
     public void remanejarUsuario(UsuarioMqRequest usuarioMqRequest) {

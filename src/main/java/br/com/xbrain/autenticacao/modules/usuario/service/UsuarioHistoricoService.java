@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.INATIVACAO_AA;
 
 @Service
 public class UsuarioHistoricoService {
@@ -35,6 +37,12 @@ public class UsuarioHistoricoService {
         usuarioHistoricoRepository.save(UsuarioHistorico.gerarHistorico(
                 usuario.getId(), getMotivoInativacao(), INATIVADO_DESCRICAO, ESituacao.I
         ));
+    }
+
+    public void gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
+        usuarioHistoricoRepository.save(UsuarioHistorico
+            .gerarHistorico(usuarioId, motivoInativacaoService
+                .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
     }
 
     private MotivoInativacao getMotivoInativacao() {
