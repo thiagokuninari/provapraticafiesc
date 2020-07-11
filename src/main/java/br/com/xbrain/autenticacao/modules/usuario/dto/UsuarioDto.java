@@ -91,6 +91,10 @@ public class UsuarioDto implements Serializable {
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
 
+    public UsuarioDto(Integer id) {
+        this.id = id;
+    }
+
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);

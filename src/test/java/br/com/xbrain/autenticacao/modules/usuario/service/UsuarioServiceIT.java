@@ -871,7 +871,7 @@ public class UsuarioServiceIT {
         var usuarioAtivo = usuarioRepository.findById(100).get();
         assertThat(usuarioAtivo.isAtivo()).isTrue();
 
-        service.inativarPorAgenteAutorizado(usuarioAtivo.getId());
+        service.inativarPorAgenteAutorizado(new UsuarioDto(usuarioAtivo.getId()));
 
         var usuarioInativo = usuarioRepository.findById(100).get();
 
@@ -885,17 +885,8 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void inativarPorAgenteAutorizado_deveLancarException_quandoUsuarioNaoExistir() {
-        assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.inativarPorAgenteAutorizado(12316))
-            .withMessage("O usuário não foi encontrado.");
-
-        verify(autenticacaoService, times(0)).logout(anyInt());
-    }
-
-    @Test
     public void inativarPorAgenteAutorizado_deveNaoOcorrerNada_quandoUsuarioNaoEstiverAtivo() {
-        service.inativarPorAgenteAutorizado(244);
+        service.inativarPorAgenteAutorizado((new UsuarioDto(12316)));
 
         verify(autenticacaoService, times(0)).logout(anyInt());
     }

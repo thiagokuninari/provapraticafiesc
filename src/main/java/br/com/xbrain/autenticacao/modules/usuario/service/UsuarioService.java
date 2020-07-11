@@ -629,12 +629,12 @@ public class UsuarioService {
         }
     }
 
-    public void inativarPorAgenteAutorizado(Integer id) {
+    public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
         try {
-            inativarUsuario(repository.findById(id)
+            inativarUsuario(repository.findById(usuario.getId())
                 .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
         } catch (Exception ex) {
-            log.error("Erro ao inativar o usuário " + id, ex);
+            log.error("Erro ao inativar o usuário " + usuario.getId(), ex);
         }
     }
 

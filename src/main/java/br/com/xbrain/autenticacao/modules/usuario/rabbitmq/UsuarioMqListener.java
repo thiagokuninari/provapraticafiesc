@@ -79,8 +79,8 @@ public class UsuarioMqListener {
     }
 
     @RabbitListener(queues = "${app-config.queue.usuario-inativacao-por-aa}")
-    public void inativarPorAgenteAutorizado(Integer id) {
-        service.inativarPorAgenteAutorizado(id);
+    public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
+        service.inativarPorAgenteAutorizado(usuario);
     }
 }
 
