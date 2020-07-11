@@ -633,11 +633,8 @@ public class UsuarioService {
         try {
             inativarUsuario(repository.findById(id)
                 .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
-        } catch (ValidacaoException ex) {
-            throw ex;
         } catch (Exception ex) {
-            log.error("Erro ao inativar o usuário " + id + "\n" + "Erro: " + ex.getMessage());
-            ex.printStackTrace();
+            log.error("Erro ao inativar o usuário " + id, ex);
         }
     }
 
