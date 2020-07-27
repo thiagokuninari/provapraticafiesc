@@ -26,8 +26,8 @@ public enum CodigoFuncionalidade {
     MLG_5013("Distribuir Agendamentos Proprietários"),
     VDS_3059("Visualizar Relatório Consulta de Endereço"),
     REL_10012("Relatório Consulta de Endereço"),
-    VDS_3061("Visualizar Relatório Consulta de Credito"),
-    REL_10014("Relatório Consulta de Credito");
+    VDS_3061("Visualizar Relatório Consulta de Crédito"),
+    REL_10014("Relatório Consulta de Crédito");
 
     @Getter
     private String descricao;
