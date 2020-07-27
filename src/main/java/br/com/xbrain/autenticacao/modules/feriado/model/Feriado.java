@@ -9,8 +9,8 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.xbrainutils.DateUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
@@ -132,6 +132,7 @@ public class Feriado {
         return feriado;
     }
 
+    @JsonIgnore
     public boolean isFeriadoEstadual() {
         return tipoFeriado.equals(ETipoFeriado.ESTADUAL);
     }
