@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.filtros.OrganizacaoFiltros;
 import br.com.xbrain.autenticacao.modules.comum.service.OrganizacaoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,8 +21,7 @@ import java.util.List;
 import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacao;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,7 +50,7 @@ public class OrganizacaoControllerTest {
 
     @Test
     public void getAllSelect_todasOrganizacoes_quandoSolicitar() throws Exception {
-        Mockito.when(organizacaoService.getAllSelect(null))
+        Mockito.when(organizacaoService.getAllSelect(new OrganizacaoFiltros()))
                 .thenReturn(List.of(
                         umaOrganizacao(1, "BCC"),
                         umaOrganizacao(2, "CALLINK")));

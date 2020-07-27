@@ -23,10 +23,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -138,6 +135,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("canais", getCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -168,6 +166,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private String getOrganizacao(Usuario usuario) {
         return !ObjectUtils.isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getCodigo() : "";
+    }
+
+    private Integer getOrganizacaoId(Usuario usuario) {
+        return Objects.nonNull(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
