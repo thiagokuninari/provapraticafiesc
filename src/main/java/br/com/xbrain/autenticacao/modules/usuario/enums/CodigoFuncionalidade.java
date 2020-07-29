@@ -25,7 +25,7 @@ public enum CodigoFuncionalidade {
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
     MLG_5013("Distribuir Agendamentos Proprietários"),
     VDS_3059("Visualizar Relatório Consulta de Endereço"),
-    REL_10010("Relatório Consulta de Endereço");
+    REL_10012("Relatório Consulta de Endereço");
 
     @Getter
     private String descricao;
