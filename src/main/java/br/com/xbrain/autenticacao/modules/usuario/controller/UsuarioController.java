@@ -3,7 +3,9 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.dto.UsuarioExcessoUsoResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -40,6 +42,8 @@ public class UsuarioController {
     private UsuarioAgendamentoService usuarioAgendamentoService;
     @Autowired
     private UsuarioFunilProspeccaoService usuarioFunilProspeccaoService;
+    @Autowired
+    private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private Integer getUsuarioId(Principal principal) {
         return Integer.parseInt(principal.getName().split(Pattern.quote("-"))[0]);
@@ -49,6 +53,11 @@ public class UsuarioController {
     public UsuarioAutenticado getUsuario(Principal principal) {
         return new UsuarioAutenticado(
             usuarioService.findByIdCompleto(getUsuarioId(principal)));
+    }
+
+    @GetMapping("ativos/nivel/operacao/canal-aa")
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa();
     }
 
     @PutMapping("ativar-socio")
@@ -249,7 +258,7 @@ public class UsuarioController {
     public Iterable<SelectResponse> getCanais() {
         return ECanal.getCanaisAtivos()
             .stream()
-            .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+            .map(item -> SelectResponse.of(item.name(), item.getDescricao()))
             .sorted(Comparator.comparing(SelectResponse::getLabel))
             .collect(Collectors.toList());
     }
@@ -274,8 +283,9 @@ public class UsuarioController {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 
-    @GetMapping("permissoes-por-usuario")
-    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+    @PostMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
+        @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
@@ -313,6 +323,16 @@ public class UsuarioController {
     @GetMapping("usuario-situacao")
     public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
         return usuarioService.findUsuariosByIds(usuariosIds);
+    }
+
+    @GetMapping("inativado-por-excesso-de-uso/{usuarioId}")
+    public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
+        return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
+    }
+
+    @GetMapping("{id}/url-loja-online")
+    public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
+        return usuarioService.getUrlLojaOnline(id);
     }
 
     @GetMapping("{canal}/cargo/{codigoCargo}")

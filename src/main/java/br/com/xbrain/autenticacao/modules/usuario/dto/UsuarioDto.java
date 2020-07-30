@@ -90,6 +90,10 @@ public class UsuarioDto implements Serializable {
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private String urlLojaBase;
+    private String urlLojaProspect;
+    private String urlLojaProspectNextel;
+    private String cupomLoja;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();

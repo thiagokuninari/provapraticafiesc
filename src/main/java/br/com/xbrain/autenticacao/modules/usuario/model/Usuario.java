@@ -210,9 +210,21 @@ public class Usuario {
     private Set<ECanal> canais;
 
     @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
+
+    @Column(name = "URL_LOJA_BASE", length = 200)
+    private String urlLojaBase;
+
+    @Column(name = "URL_LOJA_PROSPECT", length = 200)
+    private String urlLojaProspect;
+
+    @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
+    private String urlLojaProspectNextel;
+
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
 
     @Transient
     private List<Integer> hierarquiasId;

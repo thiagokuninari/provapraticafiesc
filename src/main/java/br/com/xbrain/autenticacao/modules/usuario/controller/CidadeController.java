@@ -102,4 +102,9 @@ public class CidadeController {
     public CidadeSiteResponse getCidadeByCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
         return service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm);
     }
+
+    @GetMapping(params = "ufIds")
+    public List<CidadeUfResponse> getAllCidadeByUfs(@RequestParam(name = "ufIds") List<Integer> ufIds) {
+        return service.getAllCidadeByUfs(ufIds);
+    }
 }

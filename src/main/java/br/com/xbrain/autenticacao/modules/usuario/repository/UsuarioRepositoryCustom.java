@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -102,6 +103,8 @@ public interface UsuarioRepositoryCustom {
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+
+    List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 }

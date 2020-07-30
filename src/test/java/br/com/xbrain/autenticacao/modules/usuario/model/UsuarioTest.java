@@ -56,39 +56,46 @@ public class UsuarioTest {
     @Test
     public void permiteEditar_deveRetornarFalse_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertFalse(umUsuarioComCargo(1, CodigoCargo.SUPERVISOR_OPERACAO)
-                .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-                .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
-    }
-
-    private Usuario umUsuarioComCargo(Integer id, CodigoCargo codigoCargo) {
-        return Usuario.builder()
-                .id(id)
-                .cargo(Cargo
-                        .builder()
-                        .codigo(codigoCargo)
-                        .build())
-                .build();
+            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {
         return UsuarioAutenticado
-                .builder()
-                .id(id)
-                .nivelCodigo(codigoNivel.name())
-                .usuario(Usuario
-                        .builder()
-                        .cargo(
-                                Cargo
-                                        .builder()
-                                        .codigo(codigoCargo)
-                                        .build())
-                        .build()
-                )
-                .build();
+            .builder()
+            .id(id)
+            .nivelCodigo(codigoNivel.name())
+            .usuario(umUsuarioComCargo(codigoCargo))
+            .build();
     }
+
+    private Usuario umUsuarioComCargo(Integer id, CodigoCargo codigoCargo) {
+        return Usuario.builder()
+            .id(id)
+            .cargo(Cargo
+                .builder()
+                .codigo(codigoCargo)
+                .build())
+            .build();
+    }
+
+    private static Usuario umUsuarioComCargo(CodigoCargo codigoCargo) {
+        return Usuario
+            .builder()
+            .cargo(umCargo(codigoCargo))
+            .build();
+    }
+
+    private static Cargo umCargo(CodigoCargo codigoCargo) {
+        return Cargo
+            .builder()
+            .codigo(codigoCargo)
+            .build();
+    }
+
 }

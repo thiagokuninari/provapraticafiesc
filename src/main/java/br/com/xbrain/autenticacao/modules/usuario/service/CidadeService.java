@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -91,7 +92,7 @@ public class CidadeService {
     public List<SelectResponse> buscarCidadesPorEstadosIds(List<Integer> estadosIds) {
         return repository.findAllByUfIdInOrderByNome(estadosIds)
             .stream()
-            .map(cidade -> SelectResponse.convertFrom(cidade.getId(), cidade.getNomeComUf()))
+            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
             .collect(Collectors.toList());
     }
 
@@ -103,5 +104,11 @@ public class CidadeService {
     public CidadeSiteResponse findCidadeComSiteByUfECidade(String uf, String cidadeNome) {
         return repository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
+        return repository.findCidadeByUfIdInOrderByNome(ufIds).stream()
+            .map(CidadeUfResponse::of)
+            .collect(Collectors.toList());
     }
 }

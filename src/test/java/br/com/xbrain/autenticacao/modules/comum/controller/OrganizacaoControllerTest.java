@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.filtros.OrganizacaoFiltros;
 import br.com.xbrain.autenticacao.modules.comum.service.OrganizacaoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +51,7 @@ public class OrganizacaoControllerTest {
 
     @Test
     public void getAllSelect_todasOrganizacoes_quandoSolicitar() throws Exception {
-        Mockito.when(organizacaoService.getAllSelect(null))
+        Mockito.when(organizacaoService.getAllSelect(new OrganizacaoFiltros()))
                 .thenReturn(List.of(
                         umaOrganizacao(1, "BCC"),
                         umaOrganizacao(2, "CALLINK")));

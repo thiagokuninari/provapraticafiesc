@@ -6,7 +6,7 @@ server:
 
 spring:
   redis:
-    host: 192.168.1.40
+    host: 192.168.50.1
     port: 6379
     pool:
       max-active: 120
@@ -37,7 +37,7 @@ spring:
             database/feriados.sql
 
   datasource:
-    url: jdbc:oracle:thin:@//192.168.1.16:1521/dev
+    url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
     username: AUTENTICACAO
     password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
@@ -45,7 +45,7 @@ spring:
       maximumPoolSize: 2
 
   rabbitmq:
-    host: 192.168.1.40
+    host: 192.168.50.1
     port: 5671
     username: xbrain
     password: xbrain
@@ -63,7 +63,7 @@ spring:
 app-config:
   nome: Colaboradores
   url: http://localhost:3100
-  url-servico-email: http://192.168.1.40:6541/emails/
+  url-servico-email: http://192.168.50.1:6541/emails/
   url-estatico: https://estatico.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
@@ -109,6 +109,9 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    usuario-remanejar-pol: usuario-remanejar-pol.queue
+    usuario-remanejado-aut: usuario-remanejado-aut.queue
+    usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -191,6 +194,9 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    claro-indico:
+      #url: http://localhost:8055
+      url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
 
 flyway:
   enabled: true
@@ -218,6 +224,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    claro-indico:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.claro-indico.url}
 
   host:
     connect-timeout-millis: 1800000

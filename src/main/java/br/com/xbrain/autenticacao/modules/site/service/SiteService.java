@@ -75,7 +75,7 @@ public class SiteService {
     public List<SelectResponse> getAllAtivos() {
         return siteRepository.findBySituacaoAtiva()
             .stream()
-            .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
+            .map(site -> SelectResponse.of(site.getId(), site.getNome()))
             .collect(toList());
     }
 
@@ -133,14 +133,14 @@ public class SiteService {
             .map(ufRepository::buscarEstadosNaoAtribuidosEmSitesExcetoPor)
             .orElseGet(ufRepository::buscarEstadosNaoAtribuidosEmSites)
             .stream()
-            .map(estado -> SelectResponse.convertFrom(estado.getId(), estado.getNome()))
+            .map(estado -> SelectResponse.of(estado.getId(), estado.getNome()))
             .collect(toList());
     }
 
     public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds, Integer siteIgnoradoId) {
         return buscarCidadesDisponiveis(estadosIds, siteIgnoradoId)
             .stream()
-            .map(cidade -> SelectResponse.convertFrom(cidade.getId(), cidade.getNomeComUf()))
+            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
             .collect(toList());
     }
 
@@ -180,7 +180,7 @@ public class SiteService {
     public List<SelectResponse> getSitesByEstadoId(Integer estadoId) {
         return siteRepository.findByEstadoId(estadoId)
             .stream()
-            .map(site -> SelectResponse.convertFrom(site.getId(), site.getNome()))
+            .map(site -> SelectResponse.of(site.getId(), site.getNome()))
             .collect(toList());
     }
 }
