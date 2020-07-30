@@ -95,4 +95,9 @@ public class CidadeController {
     public List<SelectResponse> buscarCidadesPorEstados(@RequestParam List<Integer> estadosIds) {
         return service.buscarCidadesPorEstadosIds(estadosIds);
     }
+
+    @GetMapping("cidade-dbm/{codigoCidadeDbm}")
+    public CidadeResponse getCidadeByCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
+        return CidadeResponse.of(service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm));
+    }
 }

@@ -92,4 +92,8 @@ public class CidadeService {
             .map(cidade -> SelectResponse.convertFrom(cidade.getId(), cidade.getNomeComUf()))
             .collect(Collectors.toList());
     }
+
+    public Cidade getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        return repository.findByCodigoCidadeDbm(codigoCidadeDbm).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }
