@@ -1,10 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -16,12 +19,15 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Import({CidadeService.class})
 @Transactional
 @Sql(scripts = {"classpath:/tests_cidade.sql"})
 public class CidadeServiceTest {
 
     @Autowired
     private CidadeService service;
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {

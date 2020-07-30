@@ -2,11 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -29,55 +27,55 @@ public class CidadeService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private CidadeRepository repository;
+    private CidadeRepository cidadeRepository;
 
     private Supplier<BooleanBuilder> predicateCidadesPermitidas = () ->
             new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         return UsuarioCidadeDto.parse(
-                repository.findAllByRegionalId(
-                        regionalId,
-                        predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllByRegionalId(
+                regionalId,
+                predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
         return UsuarioCidadeDto.parse(
-                repository.findAllBySubClusterId(
-                        subClusterId,
-                        predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllBySubClusterId(
+                subClusterId,
+                predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClustersId(List<Integer> subClustersId) {
         return UsuarioCidadeDto.parse(
-                repository.findAllBySubClustersId(
-                        subClustersId,
-                        predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllBySubClustersId(
+                subClustersId,
+                predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
         return UsuarioCidadeDto.parse(
-                repository.findAllByGrupoId(
-                        grupoId,
-                        predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllByGrupoId(
+                grupoId,
+                predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
         return UsuarioCidadeDto.parse(
-                repository.findAllByClusterId(clusterId,
-                        predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllByClusterId(clusterId,
+                predicateCidadesPermitidas.get()));
     }
 
     public List<Cidade> getAllCidadeByUf(Integer idUf) {
-        return repository.findCidadeByUfId(idUf, new Sort("nome"));
+        return cidadeRepository.findCidadeByUfId(idUf, new Sort("nome"));
     }
 
     public List<Cidade> getAllBySubCluster(Integer idSubCluster) {
-        return repository.findBySubCluster(idSubCluster);
+        return cidadeRepository.findBySubCluster(idSubCluster);
     }
 
     public Cidade findByUfNomeAndCidadeNome(String uf, String cidade) {
-        return repository.findByPredicate(
+        return cidadeRepository.findByPredicate(
             new CidadePredicate()
                 .comNome(cidade)
                 .comUf(uf)
@@ -86,29 +84,40 @@ public class CidadeService {
     }
 
     public ClusterizacaoDto getClusterizacao(Integer id) {
-        return repository.getClusterizacao(id);
+        return cidadeRepository.getClusterizacao(id);
     }
 
     public List<SelectResponse> buscarCidadesPorEstadosIds(List<Integer> estadosIds) {
-        return repository.findAllByUfIdInOrderByNome(estadosIds)
+        return cidadeRepository.findAllByUfIdInOrderByNome(estadosIds)
             .stream()
             .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
             .collect(Collectors.toList());
     }
 
     public CidadeSiteResponse getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return repository.findCidadeComSite(cidade.codigoCidadeDbm.eq(codigoCidadeDbm))
+        return cidadeRepository.findCidadeComSite(cidade.codigoCidadeDbm.eq(codigoCidadeDbm))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public CidadeSiteResponse findCidadeComSiteByUfECidade(String uf, String cidadeNome) {
-        return repository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
+        return cidadeRepository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
-        return repository.findCidadeByUfIdInOrderByNome(ufIds).stream()
+        return cidadeRepository.findCidadeByUfIdInOrderByNome(ufIds).stream()
             .map(CidadeUfResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public Cidade findById(Integer id) {
+        return cidadeRepository.findOne(id);
+    }
+
+    public List<CidadeResponse> getAllCidadeNetUno() {
+        return cidadeRepository.findAllByNetUno(Eboolean.V)
+            .stream()
+            .map(CidadeResponse::of)
             .collect(Collectors.toList());
     }
 }

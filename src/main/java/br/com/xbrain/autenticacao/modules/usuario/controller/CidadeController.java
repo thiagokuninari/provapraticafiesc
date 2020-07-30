@@ -1,24 +1,19 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cidades")
 public class CidadeController {
 
-    @Autowired
-    private CidadeRepository repository;
     @Autowired
     private CidadeService service;
 
@@ -34,12 +29,12 @@ public class CidadeController {
     }
 
     @GetMapping("uf-cidade/{uf}/{cidade}")
-    public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf, @PathVariable("cidade") String cidade) {
+    public CidadeResponse getByUfAndNome(@PathVariable String uf, @PathVariable String cidade) {
         return CidadeResponse.of(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
     @GetMapping("{uf}/{cidade}/site")
-    public CidadeSiteResponse getByUfAndNomse(@PathVariable("uf") String uf, @PathVariable("cidade") String cidade) {
+    public CidadeSiteResponse getCidadeSiteByUfAndNome(@PathVariable String uf, @PathVariable String cidade) {
         return service.findCidadeComSiteByUfECidade(uf, cidade);
     }
 
@@ -75,12 +70,12 @@ public class CidadeController {
 
     @GetMapping("cidade/{cidadeId}")
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
-        return UsuarioCidadeDto.parse(repository.findOne(id));
+        return UsuarioCidadeDto.parse(service.findById(id));
     }
 
     @GetMapping("{cidadeId}")
     public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
-        return CidadeResponse.of(repository.findOne(id));
+        return CidadeResponse.of(service.findById(id));
     }
 
     @GetMapping("{id}/clusterizacao")
@@ -90,7 +85,7 @@ public class CidadeController {
 
     @GetMapping("net-uno")
     public List<CidadeResponse> getAllCidadeNetUno() {
-        return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::of).collect(Collectors.toList());
+        return service.getAllCidadeNetUno();
     }
 
     @GetMapping("por-estados")
