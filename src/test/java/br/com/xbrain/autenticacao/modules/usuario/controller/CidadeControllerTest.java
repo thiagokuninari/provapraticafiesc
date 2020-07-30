@@ -20,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -208,10 +209,10 @@ public class CidadeControllerTest {
     private Cidade umaCidade() {
 
         return Cidade.builder()
-                .id(5578)
-                .nome("LONDRINA")
-                .subCluster(SubCluster.builder().id(189).build())
-                .uf(Uf.builder().id(1).nome("PARANA").build())
-                .build();
+            .id(5578)
+            .nome("LONDRINA")
+            .subCluster(SubCluster.builder().id(189).build())
+            .uf(Uf.builder().id(1).nome("PARANA").build())
+            .build();
     }
 }

@@ -1,23 +1,17 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.BeanUtils;
+import lombok.NoArgsConstructor;
 
 @Data
-public class CidadeResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CidadeSiteResponse {
 
     private Integer id;
+    private Integer siteId;
     private String nome;
-    private String codigoIbge;
-    private UfResponse uf;
-    private Eboolean netUno;
+    private String uf;
 
-    public static CidadeResponse of(Cidade request) {
-        var response = new CidadeResponse();
-        BeanUtils.copyProperties(request, response);
-        response.setUf(UfResponse.parse(request.getUf()));
-        return response;
-    }
 }

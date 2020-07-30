@@ -29,6 +29,4 @@ public interface CidadeRepository extends PagingAndSortingRepository<Cidade, Int
     Optional<Cidade> findCidadeByCodigoIbge(String codigoIbge);
 
     List<Cidade> findAllByUfIdInOrderByNome(List<Integer> estadosIds);
-
-    Optional<Cidade> findByCodigoCidadeDbm(Integer codigoCidadeDbm);
 }

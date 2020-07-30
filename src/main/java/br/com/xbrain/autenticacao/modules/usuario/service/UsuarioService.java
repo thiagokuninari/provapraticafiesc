@@ -192,7 +192,7 @@ public class UsuarioService {
         return repository.findComCidade(usuarioId)
             .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
-            .map(CidadeResponse::parse)
+            .map(CidadeResponse::of)
             .collect(Collectors.toList());
     }
 

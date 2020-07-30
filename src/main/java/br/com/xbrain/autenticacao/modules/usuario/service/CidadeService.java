@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 
 @Service
 public class CidadeService {
@@ -73,13 +76,12 @@ public class CidadeService {
     }
 
     public Cidade findByUfNomeAndCidadeNome(String uf, String cidade) {
-        return repository
-                .findByPredicate(
-                        new CidadePredicate()
-                                .comNome(cidade)
-                                .comUf(uf)
-                                .build())
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return repository.findByPredicate(
+            new CidadePredicate()
+                .comNome(cidade)
+                .comUf(uf)
+                .build())
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public ClusterizacaoDto getClusterizacao(Integer id) {
@@ -93,7 +95,13 @@ public class CidadeService {
             .collect(Collectors.toList());
     }
 
-    public Cidade getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return repository.findByCodigoCidadeDbm(codigoCidadeDbm).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    public CidadeSiteResponse getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        return repository.findCidadeComSite(cidade.codigoCidadeDbm.eq(codigoCidadeDbm))
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public CidadeSiteResponse findCidadeComSiteByUfECidade(String uf, String cidadeNome) {
+        return repository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }
