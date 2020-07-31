@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -25,6 +27,7 @@ public class SolicitacaoRamalResponse {
 
     private Integer id;
     private Integer quantidadeRamais;
+    private String tipoImplantacao;
     private ESituacaoSolicitacao situacao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime dataCadastro;
@@ -46,9 +49,10 @@ public class SolicitacaoRamalResponse {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
-
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
-
+        response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
+                .map(ETipoImplantacao::getDescricao)
+                .orElse(""));
         BeanUtils.copyProperties(solicitacaoRamal, response);
         response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 

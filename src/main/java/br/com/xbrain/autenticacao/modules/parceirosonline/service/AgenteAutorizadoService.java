@@ -155,6 +155,15 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public String getEstrutura(Integer usuarioId) {
+        try {
+            return agenteAutorizadoClient.getEstrutura(usuarioId);
+        } catch (Exception ex) {
+            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            return null;
+        }
+    }
+
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
         try {
             return agenteAutorizadoClient.existeAaAtivoBySocioEmail(usuarioEmail);
