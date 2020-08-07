@@ -12,6 +12,8 @@ public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
 
+    List<LocalDate> findAllDataFeriadoByCidadeId(Integer cidadeId);
+
     @Cacheable(
             cacheManager = "concurrentCacheManager",
             cacheNames = FERIADOS_DATA_CACHE_NAME,

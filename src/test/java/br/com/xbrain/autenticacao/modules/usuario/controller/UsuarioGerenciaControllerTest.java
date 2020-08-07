@@ -521,7 +521,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void validarSeUsuarioNovoCadastro_deveRetornarTrue_quandoEmailECpfNaoExistem() throws Exception {
 
-        mvc.perform(get(API_URI + "/validar-usuario-existente")
+        mvc.perform(get(API_URI + "/existir/usuario")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .param("email", "JOHN@GMAIL.COM")
             .param("cpf", "48503182076"))
@@ -532,7 +532,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
 
-        mvc.perform(get(API_URI + "/validar-usuario-existente")
+        mvc.perform(get(API_URI + "/existir/usuario")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .param("cpf", "48503182076")
             .param("email", "HELPDESK@XBRAIN.COM.BR"))
@@ -544,7 +544,7 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoCpfCadastrado() throws Exception {
 
-        mvc.perform(get(API_URI + "/validar-usuario-existente")
+        mvc.perform(get(API_URI + "/existir/usuario")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .param("cpf", "99898798782")
             .param("email", "JOHN@GMAIL.COM"))
