@@ -44,6 +44,8 @@ app-config:
       url: http://172.10.10.82:8089
     contato-crn:
       url: http://172.10.10.64:8084
+    claro-indico:
+      url: http://172.10.10.55:8055
 
   email:
     enviar: true

@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -303,9 +300,10 @@ public class UsuarioControllerTest {
 
     @Test
     public void getPermissoesPorUsuarios_throwException_QuandoParametrosVazios() throws Exception {
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario")
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(new UsuarioPermissoesRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo permissoes é obrigatório.",
@@ -319,9 +317,11 @@ public class UsuarioControllerTest {
                 2844,
                 Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
             .when(usuarioService).findUsuariosByPermissoes(any());
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario?usuariosId=2844&permissoes=ROLE_VDS_TABULACAO_CLICKTOCALL")
+        var request = new UsuarioPermissoesRequest(List.of(2844), List.of("ROLE_VDS_TABULACAO_CLICKTOCALL"));
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].usuarioId", is(2844)))
@@ -557,24 +557,16 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() throws Exception {
-        mvc.perform(get("/api/usuarios/ativos/nivel/operacao")
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(6)))
-            .andExpect(jsonPath("$[0].value", is(230)))
-            .andExpect(jsonPath("$[0].label", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
-            .andExpect(jsonPath("$[1].value", is(108)))
-            .andExpect(jsonPath("$[1].label", is("Assistente Operação")))
-            .andExpect(jsonPath("$[2].value", is(300)))
-            .andExpect(jsonPath("$[2].label", is("Operacao Supervisor NET")))
-            .andExpect(jsonPath("$[3].value", is(102)))
-            .andExpect(jsonPath("$[3].label", is("Supervisor Operação")))
-            .andExpect(jsonPath("$[4].value", is(109)))
-            .andExpect(jsonPath("$[4].label", is("Vendedor Operação")))
-            .andExpect(jsonPath("$[5].value", is(104)))
-            .andExpect(jsonPath("$[5].label", is("operacao_gerente_comercial")));
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value").value(300))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[1].value").value(102))
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
     }
 
     @Test

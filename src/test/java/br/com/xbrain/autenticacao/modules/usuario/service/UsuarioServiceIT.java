@@ -320,8 +320,9 @@ public class UsuarioServiceIT {
         usuarioDto.setId(368);
         usuarioDto.setCpf("41842888803");
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
-                .withMessage("CPF já cadastrado.");
+            .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+            .withMessage("CPF já cadastrado.");
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -486,14 +487,14 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(100);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(5)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578),
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(5)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578),
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
 
         assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
         assertThat(usuarioComNovasCidades.getHistoricos())
@@ -501,6 +502,12 @@ public class UsuarioServiceIT {
             .containsAnyOf(
                 tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
+    }
+
+    @Test
+    public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
+        service.updateFromQueue(umUsuario());
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -670,16 +677,13 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+    public void validarUsuarioComCpfDiferenteRemanejado_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);
         usuarioMqRequest.setCpf("87458480092");
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
-
-        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     @Test
@@ -719,6 +723,23 @@ public class UsuarioServiceIT {
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
+        service.alterarDadosAcessoEmail(umUsuarioDadosAcessoRequest());
+        verify(sender, times(1)).sendSuccess(any());
+    }
+
+    private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
+        return UsuarioDadosAcessoRequest
+            .builder()
+            .usuarioId(104)
+            .alterarSenha(Eboolean.F)
+            .emailAtual("operacao_gerente_comercial@net.com.br")
+            .emailNovo("NOVO@EMAIL.COM")
+            .ignorarSenhaAtual(true)
+            .build();
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {
@@ -838,36 +859,12 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoSolicitado() {
-        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacao())
-            .hasSize(27)
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalDoUsuarioForAgenteAutorizado() {
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
-            .containsAnyOf(
-                tuple(116,"ALBERTO PEREIRA"),
-                tuple(228,"COORDENADOR OPERACAO 1"),
-                tuple(234,"COORDENADOR OPERACAO 2"),
-                tuple(238,"COORDENADOR OPERACAO 3"),
-                tuple(227,"GERENTE OPERACAO"),
-                tuple(119,"JOANA OLIVEIRA"),
-                tuple(369,"MARIA AUGUSTA"),
-                tuple(117,"ROBERTO ALMEIDA"),
-                tuple(229,"SUPERVISOR OPERACAO 1"),
-                tuple(231,"SUPERVISOR OPERACAO 2"),
-                tuple(235,"SUPERVISOR OPERACAO 3"),
-                tuple(150,"USUARIO DE COORDENADOR"),
-                tuple(151,"USUARIO DE GERENTE"),
-                tuple(149,"USUARIO INFERIOR"),
-                tuple(500,"USUARIO TESTE"),
-                tuple(230,"VENDEDOR OPERACAO 1"),
+            .containsExactlyInAnyOrder(
                 tuple(239,"VENDEDOR OPERACAO 2"),
-                tuple(241,"VENDEDOR OPERACAO 2"),
-                tuple(232,"VENDEDOR OPERACAO 2"),
-                tuple(236,"VENDEDOR OPERACAO 2"),
-                tuple(240,"VENDEDOR OPERACAO 3"),
-                tuple(233,"VENDEDOR OPERACAO 3"),
-                tuple(242,"VENDEDOR OPERACAO 3"),
-                tuple(237,"VENDEDOR OPERACAO 3"),
-                tuple(104,"operacao_gerente_comercial")
+                tuple(240,"VENDEDOR OPERACAO 3")
             );
     }
 }

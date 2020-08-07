@@ -55,9 +55,9 @@ public class UsuarioController {
             usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
-    @GetMapping("ativos/nivel/operacao")
-    public List<SelectResponse> buscarUsuariosAtivosNivelOperacao() {
-        return usuarioService.buscarUsuariosAtivosNivelOperacao();
+    @GetMapping("ativos/nivel/operacao/canal-aa")
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa();
     }
 
     @PutMapping("ativar-socio")
@@ -283,8 +283,9 @@ public class UsuarioController {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 
-    @GetMapping("permissoes-por-usuario")
-    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+    @PostMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
+            @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 

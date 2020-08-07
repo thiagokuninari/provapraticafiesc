@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
@@ -40,6 +42,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -61,6 +65,8 @@ public class UsuarioServiceTestOracle {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
     public void setUp() {
@@ -254,6 +260,20 @@ public class UsuarioServiceTestOracle {
                                 OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
                                 OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+    }
+
+    @Test
+    public void getAll_deveRetornarTodos_quandoInformarListaComMaisDe1000Ids() {
+        var lista1000Ids = IntStream.rangeClosed(0, 2000)
+            .boxed().collect(Collectors.toList());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
+
+        var filtros = new UsuarioFiltros();
+        filtros.setCnpjAa("15.765.222/0001-72");
+
+        assertThat(service.getAll(new PageRequest(), filtros)).isNotNull();
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
