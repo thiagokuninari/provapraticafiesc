@@ -64,7 +64,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERADOR_LEADS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -154,7 +153,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Autowired
-    private UsuarioGeradorLeadsCadastroSucessoMqSender usuarioGeradorLeadsCadastroSucessoMqSender;
+    private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -370,7 +369,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void salvarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+    public void salvarUsuarioFeeder(UsuarioFeederMqDto usuarioDto) {
         try {
             validarCpfCadastrado(usuarioDto.getCpf(), usuarioDto.getUsuarioId());
             validarEmailCadastrado(usuarioDto.getEmail(), usuarioDto.getUsuarioId());
@@ -380,11 +379,11 @@ public class UsuarioService {
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
 
             if (usuarioDto.isNovoCadastro()) {
-                usuario = criarUsuarioNovoGeradorLeads(usuarioDto);
-                configurarSenhaUsuarioGeradorLeads(usuario, senhaDescriptografada);
+                usuario = criarUsuarioFeederNovo(usuarioDto);
+                configurarSenhaUsuarioFeeder(usuario, senhaDescriptografada);
                 enviarEmail = true;
             } else {
-                usuario = criarUsuarioGeradorLeads(usuarioDto);
+                usuario = criarUsuarioFeeder(usuarioDto);
             }
 
             usuario = repository.save(usuario);
@@ -393,7 +392,7 @@ public class UsuarioService {
 
             if (enviarEmail) {
                 notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
-                usuarioGeradorLeadsCadastroSucessoMqSender.sendCadastroSuccessoMensagem(
+                usuarioFeederCadastroSucessoMqSender.sendCadastroSuccessoMensagem(
                     UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
             }
 
@@ -406,16 +405,16 @@ public class UsuarioService {
         }
     }
 
-    private Usuario criarUsuarioGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
+    private Usuario criarUsuarioFeeder(UsuarioFeederMqDto usuarioDto) {
         var usuario = findCompleteById(usuarioDto.getUsuarioId());
         BeanUtils.copyProperties(usuarioDto, usuario);
         return usuario;
     }
 
-    private Usuario criarUsuarioNovoGeradorLeads(UsuarioGeradorLeadsMqDto usuarioDto) {
-        var usuario = UsuarioGeradorLeadsMqDto.criarUsuarioNovo(usuarioDto);
-        usuario.setCargo(getCargo(GERADOR_LEADS));
-        usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.GERADOR_LEADS));
+    private Usuario criarUsuarioFeederNovo(UsuarioFeederMqDto usuarioDto) {
+        var usuario = UsuarioFeederMqDto.criarUsuarioNovo(usuarioDto);
+        usuario.setCargo(getCargo(usuarioDto.getTipoGerador()));
+        usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.FEEDER));
         usuario.setUnidadesNegocios(unidadeNegocioRepository
             .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
         usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
@@ -430,7 +429,7 @@ public class UsuarioService {
         }
     }
 
-    private void configurarSenhaUsuarioGeradorLeads(Usuario usuario, String senhaDescriptografada) {
+    private void configurarSenhaUsuarioFeeder(Usuario usuario, String senhaDescriptografada) {
         usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
         usuario.setAlterarSenha(Eboolean.V);
     }

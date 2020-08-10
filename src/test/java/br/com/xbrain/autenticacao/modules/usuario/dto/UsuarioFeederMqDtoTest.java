@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UsuarioGeradorLeadsMqDtoTest {
+public class UsuarioFeederMqDtoTest {
 
     @Test
     public void criarUsuarioNovo_deveRetornarUsuarioComDadosCorretos() {
-        assertThat(UsuarioGeradorLeadsMqDto.criarUsuarioNovo(umUsuarioGeradorLeadsMqDto()))
+        assertThat(UsuarioFeederMqDto.criarUsuarioNovo(umUsuarioFeederMqDto()))
             .extracting("id", "nome", "email", "cpf", "cargo",
                 "usuarioCadastro.id", "dataCadastro", "departamento")
             .containsExactlyInAnyOrder(null, "JOHN DOE", "JOHN@GMAIL.COM", "47492951671", null, 9999,
@@ -20,17 +20,17 @@ public class UsuarioGeradorLeadsMqDtoTest {
 
     @Test
     public void criarUsuarioNovo_deveRetornarUsuarioComUsuarioCadastroIdNull_quandoDtoNaoTemUsuarioCadastroId() {
-        var umUsuarioGeradorLeadsSemUsuarioCadastro = umUsuarioGeradorLeadsMqDto();
-        umUsuarioGeradorLeadsSemUsuarioCadastro.setUsuarioCadastroId(null);
-        assertThat(UsuarioGeradorLeadsMqDto.criarUsuarioNovo(umUsuarioGeradorLeadsSemUsuarioCadastro))
+        var umUsuarioFeederSemUsuarioCadastro = umUsuarioFeederMqDto();
+        umUsuarioFeederSemUsuarioCadastro.setUsuarioCadastroId(null);
+        assertThat(UsuarioFeederMqDto.criarUsuarioNovo(umUsuarioFeederSemUsuarioCadastro))
             .extracting("id", "nome", "email", "cpf", "cargo",
                 "usuarioCadastro.id", "dataCadastro", "departamento")
             .containsExactlyInAnyOrder(null, "JOHN DOE", "JOHN@GMAIL.COM", "47492951671", null, null,
                 LocalDateTime.of(2020,1, 29, 11, 11, 11), null);
     }
 
-    private UsuarioGeradorLeadsMqDto umUsuarioGeradorLeadsMqDto() {
-        return UsuarioGeradorLeadsMqDto.builder()
+    private UsuarioFeederMqDto umUsuarioFeederMqDto() {
+        return UsuarioFeederMqDto.builder()
             .geradorLeadsId(100)
             .nome("JOHN DOE")
             .email("JOHN@GMAIL.COM")

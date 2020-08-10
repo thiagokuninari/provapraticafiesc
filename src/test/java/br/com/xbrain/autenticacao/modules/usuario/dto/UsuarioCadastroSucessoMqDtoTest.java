@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 
@@ -12,13 +13,13 @@ public class UsuarioCadastroSucessoMqDtoTest {
 
     @Test
     public void of_deveRetornarDtoComDadosCorretos_quandoUsuarioOk() {
-        assertThat(UsuarioCadastroSucessoMqDto.of(umUsuarioGeradorLeads(), umUsuarioGeradorLeadsMqDto()))
+        assertThat(UsuarioCadastroSucessoMqDto.of(umUsuario(), umUsuarioFeederMqDto()))
             .extracting("geradorLeadsId", "usuarioId", "usuarioCadastroId")
             .containsExactlyInAnyOrder(100, 2222, 9999);
     }
 
-    private UsuarioGeradorLeadsMqDto umUsuarioGeradorLeadsMqDto() {
-        return UsuarioGeradorLeadsMqDto.builder()
+    private UsuarioFeederMqDto umUsuarioFeederMqDto() {
+        return UsuarioFeederMqDto.builder()
             .geradorLeadsId(100)
             .nome("JOHN DOE")
             .email("JOHN@GMAIL.COM")
@@ -26,11 +27,12 @@ public class UsuarioCadastroSucessoMqDtoTest {
             .telefone("43998281179")
             .usuarioCadastroId(9999)
             .situacao(ESituacao.A)
+            .tipoGerador(CodigoCargo.GERADOR_LEADS)
             .dataCadastro(LocalDateTime.of(2020,1, 29, 11, 11, 11))
             .build();
     }
 
-    private Usuario umUsuarioGeradorLeads() {
+    private Usuario umUsuario() {
         return Usuario.builder()
             .id(2222)
             .nome("JOHN DOE")

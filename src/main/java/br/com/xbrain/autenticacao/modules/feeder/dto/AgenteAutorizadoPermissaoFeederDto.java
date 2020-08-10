@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.geradorlead.dto;
+package br.com.xbrain.autenticacao.modules.feeder.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.AllArgsConstructor;
@@ -13,15 +13,15 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AgenteAutorizadoGeradorLeadDto {
+public class AgenteAutorizadoPermissaoFeederDto {
 
     private Integer id;
     private Integer usuarioProprietarioId;
     private Integer usuarioCadastroId;
-    private Eboolean geradorLead;
+    private Eboolean permissaoFeeder;
     private List<Integer> colaboradoresVendasIds;
 
-    public boolean isGeradorLead() {
-        return Objects.equals(geradorLead, Eboolean.V);
+    public boolean hasPermissaoFeeder() {
+        return Objects.equals(permissaoFeeder, Eboolean.V);
     }
 }

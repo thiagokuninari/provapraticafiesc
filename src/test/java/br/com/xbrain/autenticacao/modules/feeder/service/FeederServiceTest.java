@@ -1,11 +1,11 @@
-package br.com.xbrain.autenticacao.modules.geradorlead.service;
+package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.geradorlead.dto.AgenteAutorizadoGeradorLeadDto;
-import br.com.xbrain.autenticacao.modules.geradorlead.dto.SituacaoAlteracaoGeradorLeadsDto;
+import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
+import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -27,16 +27,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.geradorlead.service.GeradorLeadUtil.*;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GeradorLeadServiceTest {
+public class FeederServiceTest {
 
     @InjectMocks
-    private GeradorLeadService service;
+    private FeederService service;
 
     @Mock
     private PermissaoEspecialRepository permissaoEspecialRepository;
@@ -50,11 +50,11 @@ public class GeradorLeadServiceTest {
     private ArgumentCaptor<UsuarioHistorico> usuarioHistoricoCaptor;
 
     @Test
-    public void atualizarPermissaoGeradorLead_deveSalvarPermissoesEspeciais_quandoUsuariosNaoPossuiremAsPermissoes() {
-        var aaGeradorLead = umAgenteAutorizadoGeradorLeadDto();
-        aaGeradorLead.setGeradorLead(Eboolean.V);
+    public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciais_quandoUsuariosNaoPossuiremAsPermissoes() {
+        var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
+        aaComPermissaoFeeder.setPermissaoFeeder(Eboolean.V);
 
-        service.atualizarPermissaoGeradorLead(aaGeradorLead);
+        service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
         verify(permissaoEspecialRepository, times(1)).save(anyList());
@@ -62,14 +62,14 @@ public class GeradorLeadServiceTest {
     }
 
     @Test
-    public void atualizarPermissaoGeradorLead_naoDeveDuplicarPermissoes_quandoUsuariosJaPossuiremAsPermissoes() {
-        var aaGeradorLead = umAgenteAutorizadoGeradorLeadDto();
-        aaGeradorLead.setGeradorLead(Eboolean.V);
+    public void atualizarPermissaoFeeder_naoDeveDuplicarPermissoes_quandoUsuariosJaPossuiremAsPermissoes() {
+        var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
+        aaComPermissaoFeeder.setPermissaoFeeder(Eboolean.V);
 
         when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
             .thenReturn(Optional.of(new PermissaoEspecial()));
 
-        service.atualizarPermissaoGeradorLead(aaGeradorLead);
+        service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
         verify(permissaoEspecialRepository, times(0)).save(anyList());
@@ -77,16 +77,16 @@ public class GeradorLeadServiceTest {
     }
 
     @Test
-    public void atualizarPermissaoGeradorLead_deveRemoverPermissaoGeradorLead_quandoAaNaoForGeradorDeLead() {
-        var aaNaoGeradorLead = umAgenteAutorizadoGeradorLeadDto();
-        aaNaoGeradorLead.setGeradorLead(Eboolean.F);
+    public void atualizarPermissaoFeeder_deveRemoverPermissaoFeeder_quandoAaTiverPermissaoParaFeeder() {
+        var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
+        aaSemPermissaoFeeder.setPermissaoFeeder(Eboolean.F);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
-        service.atualizarPermissaoGeradorLead(aaNaoGeradorLead);
+        service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(1))
             .deletarPermissaoEspecialBy(
-                FUNCIONALIDADES_GERADOR_LEADS_PARA_AA,
+                FUNCIONALIDADES_FEEDER_PARA_AA,
                 List.of(100, 102, 10));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
@@ -94,27 +94,27 @@ public class GeradorLeadServiceTest {
     }
 
     @Test
-    public void alterarSituacaoGeradorLeads_deveLancarException_quandoUsuarioNaoEncontrado() {
+    public void alterarSituacaoUsuarioFeeder_deveLancarException_quandoUsuarioNaoEncontrado() {
         when(usuarioRepository.findComplete(1111)).thenReturn(Optional.empty());
 
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.alterarSituacaoGeradorLeads(umSituacaoAlteracaoMqDto()));
+            .isThrownBy(() -> service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto()));
     }
 
     @Test
-    public void alterarSituacaoGeradorLeads_deveLancarException_quandoUsuarioNaoGeradorLeads() {
+    public void alterarSituacaoUsuarioFeeder_deveLancarException_quandoUsuarioNaoFeeder() {
         when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.SUPERVISOR_OPERACAO, ESituacao.A));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.alterarSituacaoGeradorLeads(umSituacaoAlteracaoMqDto()))
-            .withMessage("Usuário não Gerador de Leads.");
+            .isThrownBy(() -> service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto()))
+            .withMessage("Usuário não Feeder.");
     }
 
     @Test
-    public void alterarSituacaoGeradorLeads_deveInativarUsuarioEGerarHistorico_quandoMensagemParaInativar() {
-        when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.GERADOR_LEADS, ESituacao.A));
+    public void alterarSituacaoUsuarioFeeder_deveInativarUsuarioEGerarHistorico_quandoMensagemParaInativar() {
+        when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.IMPORTADOR_CARGAS, ESituacao.A));
 
-        service.alterarSituacaoGeradorLeads(umSituacaoAlteracaoMqDto());
+        service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto());
 
         verify(usuarioRepository, times(1)).save(usuarioCaptor.capture());
         assertThat(usuarioCaptor.getValue())
@@ -128,12 +128,12 @@ public class GeradorLeadServiceTest {
     }
 
     @Test
-    public void alterarSituacaoGeradorLeads_deveAtivarUsuarioEGerarHistorico_quandoMensagemParaAtivar() {
+    public void alterarSituacaoUsuarioFeeder_deveAtivarUsuarioEGerarHistorico_quandoMensagemParaAtivar() {
         var ativacaoMqDto = umSituacaoAlteracaoMqDto();
         ativacaoMqDto.setSituacaoAlterada(ESituacao.A);
         when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.GERADOR_LEADS, ESituacao.I));
 
-        service.alterarSituacaoGeradorLeads(ativacaoMqDto);
+        service.alterarSituacaoUsuarioFeeder(ativacaoMqDto);
 
         verify(usuarioRepository, times(1)).save(usuarioCaptor.capture());
         assertThat(usuarioCaptor.getValue())
@@ -147,8 +147,8 @@ public class GeradorLeadServiceTest {
 
     }
 
-    private AgenteAutorizadoGeradorLeadDto umAgenteAutorizadoGeradorLeadDto() {
-        return AgenteAutorizadoGeradorLeadDto.builder()
+    private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
+        return AgenteAutorizadoPermissaoFeederDto.builder()
             .colaboradoresVendasIds(Lists.newArrayList(100, 102))
             .usuarioProprietarioId(10)
             .usuarioCadastroId(999)
@@ -156,8 +156,8 @@ public class GeradorLeadServiceTest {
             .build();
     }
 
-    private SituacaoAlteracaoGeradorLeadsDto umSituacaoAlteracaoMqDto() {
-        return SituacaoAlteracaoGeradorLeadsDto.builder()
+    private SituacaoAlteracaoUsuarioFeederDto umSituacaoAlteracaoMqDto() {
+        return SituacaoAlteracaoUsuarioFeederDto.builder()
             .usuarioId(1111)
             .usuarioAlteracaoId(10)
             .situacaoAlterada(ESituacao.I)

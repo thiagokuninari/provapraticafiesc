@@ -85,7 +85,7 @@ app-config:
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
-    gerador-leads: gerador-leads.topic
+    feeder: feeder.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -110,14 +110,14 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
-    atualizar-permissao-gerador-lead: atualizar-aa-com-permissao-gerador-lead.queue
-    atualizar-permissao-gerador-lead-failure: atualizar-aa-com-permissao-gerador-lead-failure.queue
-    cadastro-usuario-gerador-leads: cadastro-usuario-gerador-leads.queue
-    cadastro-usuario-gerador-leads-failure: cadastro-usuario-gerador-leads-failure.queue
-    sucesso-cadastro-usuario-gerador-leads: sucesso-cadastro-usuario-gerador-leads.queue
-    sucesso-cadastro-usuario-gerador-leads-failure: sucesso-cadastro-usuario-gerador-leads-failure.queue
-    alterar-situacao-gerador-leads: alterar-situacao-gerador-leads.queue
-    alterar-situacao-gerador-leads-failure: alterar-situacao-gerador-leads-failure.queue
+    atualizar-permissao-feeder: atualizar-aa-com-permissao-feeder.queue
+    atualizar-permissao-feeder-failure: atualizar-aa-com-permissao-feeder-failure.queue
+    cadastro-usuario-feeder: cadastro-usuario-feeder.queue
+    cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
+    sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
+    sucesso-cadastro-usuario-feeder-failure: sucesso-cadastro-usuario-feeder-failure.queue
+    alterar-situacao-usuario-feeder: alterar-situacao-usuario-feeder.queue
+    alterar-situacao-usuario-feeder-failure: alterar-situacao-usuario-feeder-failure.queue
 
   oauth-clients:
     autenticacao-api:

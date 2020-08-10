@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.geradorlead.dto;
+package br.com.xbrain.autenticacao.modules.feeder.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SituacaoAlteracaoGeradorLeadsDto {
+public class SituacaoAlteracaoUsuarioFeederDto {
 
     private Integer usuarioId;
     private ESituacao situacaoAlterada;

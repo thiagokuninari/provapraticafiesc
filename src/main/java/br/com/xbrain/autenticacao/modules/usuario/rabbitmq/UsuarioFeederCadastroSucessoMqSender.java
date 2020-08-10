@@ -9,17 +9,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class UsuarioGeradorLeadsCadastroSucessoMqSender {
+public class UsuarioFeederCadastroSucessoMqSender {
 
-    @Value("${app-config.queue.sucesso-cadastro-usuario-gerador-leads}")
-    private String usuarioGeradorLeadsCadastroSuccesso;
+    @Value("${app-config.queue.sucesso-cadastro-usuario-feeder}")
+    private String usuarioFeederCadastroSuccesso;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
     public void sendCadastroSuccessoMensagem(UsuarioCadastroSucessoMqDto usuarioCadastroSucessoMqDto) {
         try {
-            rabbitTemplate.convertAndSend(usuarioGeradorLeadsCadastroSuccesso, usuarioCadastroSucessoMqDto);
+            rabbitTemplate.convertAndSend(usuarioFeederCadastroSuccesso, usuarioCadastroSucessoMqDto);
         } catch (Exception ex) {
             log.error("Erro ao enviar o cadastro successo mensagem do usuario " + usuarioCadastroSucessoMqDto.getUsuarioId(),
                 ex);

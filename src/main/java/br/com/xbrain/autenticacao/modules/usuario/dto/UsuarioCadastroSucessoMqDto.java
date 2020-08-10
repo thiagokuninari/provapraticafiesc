@@ -15,7 +15,7 @@ public class UsuarioCadastroSucessoMqDto {
     private Integer usuarioId;
     private Integer usuarioCadastroId;
 
-    public static UsuarioCadastroSucessoMqDto of(Usuario usuario, UsuarioGeradorLeadsMqDto usuarioDto) {
+    public static UsuarioCadastroSucessoMqDto of(Usuario usuario, UsuarioFeederMqDto usuarioDto) {
         return UsuarioCadastroSucessoMqDto.builder()
             .geradorLeadsId(usuarioDto.getGeradorLeadsId())
             .usuarioId(usuario.getId())
