@@ -150,7 +150,7 @@ public class AutenticacaoService {
 
     private boolean isUsuarioGeradorLeads(String login) {
         return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
-            .map(usuario -> usuario.getNivelCodigo().equals(CodigoNivel.FEEDER))
+            .map(usuario -> usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS))
             .orElse(Boolean.FALSE);
     }
 }
