@@ -171,6 +171,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    click-to-call-api:
+      client: click-to-call-api
+      secret: cl1ckt0c4ll4p1
 
   services:
     autenticacao:
