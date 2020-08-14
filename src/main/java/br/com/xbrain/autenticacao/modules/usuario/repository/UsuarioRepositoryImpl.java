@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -69,29 +70,29 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .innerJoin(usuario.cargo, cargo).fetchJoin()
-                        .innerJoin(cargo.nivel).fetchJoin()
-                        .innerJoin(usuario.departamento).fetchJoin()
-                        .innerJoin(usuario.empresas).fetchJoin()
-                        .where(
-                                usuario.email.equalsIgnoreCase(email)
-                                        .and(usuario.situacao.ne(ESituacao.R))
-                        )
-                        .fetchOne());
+            new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo).fetchJoin()
+                .innerJoin(cargo.nivel).fetchJoin()
+                .innerJoin(usuario.departamento).fetchJoin()
+                .innerJoin(usuario.empresas).fetchJoin()
+                .where(
+                    usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R))
+                )
+                .fetchOne());
     }
 
     public Optional<Usuario> findUsuarioByEmail(String email) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .where(
-                                usuario.email.equalsIgnoreCase(email)
-                        )
-                        .fetchOne());
+            new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .where(
+                    usuario.email.equalsIgnoreCase(email)
+                )
+                .fetchOne());
     }
 
     public Optional<Usuario> findComplete(Integer id) {
@@ -128,17 +129,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
         List<BigDecimal> result = entityManager
-                .createNativeQuery(
-                        " SELECT FK_USUARIO"
-                                + " FROM usuario_hierarquia"
-                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
-                .setParameter("_usuarioId", usuarioId)
-                .getResultList();
+            .createNativeQuery(
+                " SELECT FK_USUARIO"
+                    + " FROM usuario_hierarquia"
+                    + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                    + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+            .setParameter("_usuarioId", usuarioId)
+            .getResultList();
         return result
-                .stream()
-                .map(BigDecimal::intValue)
-                .collect(Collectors.toList());
+            .stream()
+            .map(BigDecimal::intValue)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -607,7 +608,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .leftJoin(usuario.cargo)
             .leftJoin(usuario.departamento)
-            .where(usuario.id.in(usuariosIds))
+            .where(new UsuarioPredicate().ouComUsuariosIds(usuariosIds).build())
             .fetch();
     }
 
@@ -686,6 +687,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(subCluster.id.in(subclusterIdList)
                 .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
             .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.fields(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .where(usuario.canais.any().eq(canal)
+                .and(usuario.cargo.codigo.eq(cargo)))
             .fetch();
     }
 

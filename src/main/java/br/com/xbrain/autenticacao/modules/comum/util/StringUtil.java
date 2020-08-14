@@ -65,4 +65,13 @@ public class StringUtil {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
     }
+
+    public static String extrairNumerosELetras(String str) {
+        return removerAcentos(str).replaceAll("[\\W|_]", "");
+    }
+
+    public static boolean existeSemelhancaEntreNomes(String nomeOrigem, String nomeDestino) {
+        return extrairNumerosELetras(nomeOrigem)
+            .equalsIgnoreCase(extrairNumerosELetras(nomeDestino));
+    }
 }

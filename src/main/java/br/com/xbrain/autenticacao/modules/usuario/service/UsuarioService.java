@@ -632,6 +632,7 @@ public class UsuarioService {
 
     @Transactional
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+        usuario.removerCaracteresDoCpf();
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
@@ -1452,5 +1453,15 @@ public class UsuarioService {
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
+        return repository.findById(id)
+            .map(UrlLojaOnlineResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
+        return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
 }

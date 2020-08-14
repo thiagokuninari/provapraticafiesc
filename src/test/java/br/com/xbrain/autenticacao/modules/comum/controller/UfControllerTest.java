@@ -48,4 +48,17 @@ public class UfControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("ACRE")))
                 .andExpect(jsonPath("$[1].nome", is("ALAGOAS")));
     }
+
+    @Test
+    public void getAllUfs_listaUfs_quandoBuscarTodosAsUfs() throws Exception {
+        mvc.perform(get("/api/ufs/todas")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(27)))
+            .andExpect(jsonPath("$[0].value").value(15))
+            .andExpect(jsonPath("$[0].label").value("ACRE"))
+            .andExpect(jsonPath("$[1].value").value(11))
+            .andExpect(jsonPath("$[1].label").value("ALAGOAS"));
+    }
 }

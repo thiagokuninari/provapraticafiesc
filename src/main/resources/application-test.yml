@@ -17,6 +17,10 @@ spring:
   redis:
     host: 192.168.1.40
     port: 6381
+  session:
+    redis:
+      flush-mode: immediate
+      cleanup-cron: 0 * * * * *
 
 flyway:
   enabled: false
