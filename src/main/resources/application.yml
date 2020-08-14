@@ -197,6 +197,9 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    claro-indico:
+      #url: http://localhost:8055
+      url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
 
 flyway:
   enabled: true
@@ -224,6 +227,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    claro-indico:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.claro-indico.url}
 
   host:
     connect-timeout-millis: 1800000

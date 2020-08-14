@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -43,7 +43,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -276,16 +275,16 @@ public class UsuarioServiceTest {
 
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
-                .nome("Backoffice")
-                .cargo(new Cargo(110))
-                .departamento(new Departamento(69))
-                .organizacao(new Organizacao(5))
-                .cpf("097.238.645-92")
-                .email("usuario@teste.com")
-                .telefone("43995565661")
+            .nome("Backoffice")
+            .cargo(new Cargo(110))
+            .departamento(new Departamento(69))
+            .organizacao(new Organizacao(5))
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .telefone("43995565661")
                 .hierarquiasId(List.of())
-                .usuariosHierarquia(new HashSet<>())
-                .build();
+            .usuariosHierarquia(new HashSet<>())
+            .build();
     }
 
     private Usuario umUsuario() {

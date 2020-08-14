@@ -118,6 +118,10 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO && agenteAutorizadoService.isExclusivoPme(usuario.getId());
     }
 
+    private String getEstrutura(Usuario usuario) {
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstrutura(usuario.getId()) : null;
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
@@ -145,6 +149,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("canais", getCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
         token.getAdditionalInformation().put("siteId", Optional.ofNullable(usuario.getSite()).map(Site::getId).orElse(null));
 
         if (!isEmpty(empresas)) {
@@ -171,11 +176,16 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipesSupervisionadas",
             equipesSupervisionadas);
         token.getAdditionalInformation().put("aaPme", isExclusivoPme(usuario));
+        token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
         token.getAdditionalInformation().put("sites", sites);
     }
 
     private String getOrganizacao(Usuario usuario) {
         return !ObjectUtils.isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getCodigo() : "";
+    }
+
+    private Integer getOrganizacaoId(Usuario usuario) {
+        return Objects.nonNull(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {

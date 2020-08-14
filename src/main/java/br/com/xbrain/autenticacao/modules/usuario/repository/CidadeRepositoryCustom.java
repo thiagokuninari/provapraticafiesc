@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
@@ -28,5 +29,7 @@ public interface CidadeRepositoryCustom {
     List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds);
 
     List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(List<Integer> estadosIds, Integer siteId);
+
+    Optional<CidadeSiteResponse> findCidadeComSite(Predicate predicate);
 
 }

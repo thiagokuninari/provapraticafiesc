@@ -25,6 +25,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/public/**",
             "/parceiros-online/**",
             "/equipe-venda/**",
+            "/api/ufs",
+            "/api/cidades",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",

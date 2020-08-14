@@ -31,7 +31,7 @@ public class UsuarioHistorico {
     @NotNull
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_HISTORICO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_HISTORICO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
@@ -98,19 +98,12 @@ public class UsuarioHistorico {
                                                           String observacao,
                                                           Usuario usuarioAtivado) {
         return UsuarioHistorico.builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(usuarioAtivado)
-                .usuarioAlteracao(usuarioAlteracao)
-                .observacao(observacao)
-                .situacao(ESituacao.A)
-                .build();
-    }
-
-    public String getSituacaoComMotivo() {
-        return situacao.getDescricao().toUpperCase()
-                + (!ObjectUtils.isEmpty(motivoInativacao)
-                        ? " / " +  motivoInativacao.getDescricao()
-                        : "");
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuarioAtivado)
+            .usuarioAlteracao(usuarioAlteracao)
+            .observacao(observacao)
+            .situacao(ESituacao.A)
+            .build();
     }
 
     public static UsuarioHistorico gerarHistoricoDeBloqueioPorExcessoDeUso(Usuario usuario,
@@ -123,5 +116,12 @@ public class UsuarioHistorico {
             .dataCadastro(LocalDateTime.now())
             .usuario(usuario)
             .build();
+    }
+
+    public String getSituacaoComMotivo() {
+        return situacao.getDescricao().toUpperCase()
+            + (!ObjectUtils.isEmpty(motivoInativacao)
+            ? " / " + motivoInativacao.getDescricao()
+            : "");
     }
 }

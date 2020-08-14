@@ -219,12 +219,12 @@ public class UsuarioServiceIT {
     @Test
     public void inativar_deveGerarUsuarioFerias_quandoOMotivoDaInativacaoForFerias() {
         service.inativar(UsuarioInativacaoDto
-                .builder()
-                .idUsuario(100)
-                .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
-                .dataInicio(LocalDate.of(2019, 1, 1))
-                .dataFim(LocalDate.of(2019, 2, 1))
-                .build());
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
+            .dataInicio(LocalDate.of(2019, 1, 1))
+            .dataFim(LocalDate.of(2019, 2, 1))
+            .build());
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
@@ -303,7 +303,7 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCpf("43185104099");
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
-                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+            .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         assertThat(usuario).isNotNull();
         assertThat(usuario.getCpf()).isEqualTo("43185104099");
         assertThat(usuario.getHistoricos()).isNotNull();
@@ -320,8 +320,9 @@ public class UsuarioServiceIT {
         usuarioDto.setId(368);
         usuarioDto.setCpf("41842888803");
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
-                .withMessage("CPF já cadastrado.");
+            .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+            .withMessage("CPF já cadastrado.");
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -486,14 +487,14 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(100);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(5)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578),
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(5)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578),
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
 
         assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
         assertThat(usuarioComNovasCidades.getHistoricos())
@@ -504,24 +505,30 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
+        service.updateFromQueue(umUsuario());
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
+    }
+
+    @Test
     public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
         var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet(
-                Arrays.asList(
-                        UsuarioCidade.criar(usuario, 3237, 100),
-                        UsuarioCidade.criar(usuario, 1443, 100),
-                        UsuarioCidade.criar(usuario, 2466, 100),
+            Arrays.asList(
+                UsuarioCidade.criar(usuario, 3237, 100),
+                UsuarioCidade.criar(usuario, 1443, 100),
+                UsuarioCidade.criar(usuario, 2466, 100),
                         UsuarioCidade.criar(usuario, 3022, 100))));
         service.save(usuario);
         var usuarioComCidadesAtualizadas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesAtualizadas.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
 
         assertThat(usuarioComCidadesAtualizadas.getHistoricos()).isNotNull();
         assertThat(usuarioComCidadesAtualizadas.getHistoricos())
@@ -553,10 +560,10 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioAtualizado = service.findByIdCompleto(100);
         assertThat(usuarioAtualizado.getCidades())
-                .hasSize(1)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578));
+            .hasSize(1)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578));
 
         assertThat(usuarioAtualizado.getHistoricos()).isNotNull();
         assertThat(usuarioAtualizado.getHistoricos())
@@ -577,13 +584,13 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(101);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(101, 3237),
-                        tuple(101, 1443),
-                        tuple(101, 2466),
-                        tuple(101, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(101, 3237),
+                tuple(101, 1443),
+                tuple(101, 2466),
+                tuple(101, 3022));
 
         assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
         assertThat(usuarioComNovasCidades.getHistoricos())
@@ -670,16 +677,13 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+    public void validarUsuarioComCpfDiferenteRemanejado_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);
         usuarioMqRequest.setCpf("87458480092");
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
-
-        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     @Test
@@ -719,6 +723,23 @@ public class UsuarioServiceIT {
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
+        service.alterarDadosAcessoEmail(umUsuarioDadosAcessoRequest());
+        verify(sender, times(1)).sendSuccess(any());
+    }
+
+    private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
+        return UsuarioDadosAcessoRequest
+            .builder()
+            .usuarioId(104)
+            .alterarSenha(Eboolean.F)
+            .emailAtual("operacao_gerente_comercial@net.com.br")
+            .emailNovo("NOVO@EMAIL.COM")
+            .ignorarSenhaAtual(true)
+            .build();
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {
@@ -842,8 +863,8 @@ public class UsuarioServiceIT {
         assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple(239,"VENDEDOR OPERACAO 2"),
-                tuple(240,"VENDEDOR OPERACAO 3")
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3")
             );
     }
 }

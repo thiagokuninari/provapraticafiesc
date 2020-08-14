@@ -57,6 +57,9 @@ public class Cidade {
     @Enumerated(EnumType.STRING)
     private Eboolean netUno;
 
+    @Column(name = "CODIGO_CIDADE_DBM")
+    private Integer codigoCidadeDbm;
+
     public Cidade() {
     }
 

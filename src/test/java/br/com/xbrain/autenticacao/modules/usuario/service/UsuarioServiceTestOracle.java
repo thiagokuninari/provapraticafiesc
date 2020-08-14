@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
@@ -40,6 +42,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -61,6 +65,8 @@ public class UsuarioServiceTestOracle {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
     public void setUp() {
@@ -194,13 +200,13 @@ public class UsuarioServiceTestOracle {
                     new UsuarioPermissoesResponse(238, Collections.singletonList(
                             "ROLE_VDS_TABULACAO_DISCADORA")),
                     new UsuarioPermissoesResponse(243, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_CLICKTOCALL",
-                            "ROLE_VDS_TABULACAO_DISCADORA",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA")),
+                        "ROLE_VDS_TABULACAO_CLICKTOCALL",
+                        "ROLE_VDS_TABULACAO_DISCADORA",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA")),
                     new UsuarioPermissoesResponse(245, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_MANUAL",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))
-                    ));
+                        "ROLE_VDS_TABULACAO_MANUAL",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA"))
+                ));
     }
 
     @Test
@@ -222,11 +228,11 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getSubordinadosDoUsuarioPorCargo_deveRetornarUsuariosSubordinados_quandoUsuarioPossuirSubordinadosComCargoExecutivoOuHunter() {
         assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(115))
-                .hasSize(3)
-                .extracting("value", "text")
-                .contains(
-                        tuple(116, "ALBERTO PEREIRA"),
-                        tuple(117, "ROBERTO ALMEIDA"),
+            .hasSize(3)
+            .extracting("value", "text")
+            .contains(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(117, "ROBERTO ALMEIDA"),
                         tuple(119, "JOANA OLIVEIRA"));
     }
 
@@ -246,23 +252,37 @@ public class UsuarioServiceTestOracle {
                         tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
                                 OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
-                                "Sócio Principal"),
-                        tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+                            CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                            "Sócio Principal"),
+                    tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+    }
+
+    @Test
+    public void getAll_deveRetornarTodos_quandoInformarListaComMaisDe1000Ids() {
+        var lista1000Ids = IntStream.rangeClosed(0, 2000)
+            .boxed().collect(Collectors.toList());
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
+
+        var filtros = new UsuarioFiltros();
+        filtros.setCnpjAa("15.765.222/0001-72");
+
+        assertThat(service.getAll(new PageRequest(), filtros)).isNotNull();
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
         return UsuarioFiltrosHierarquia.builder()
-                .usuarioId(Collections.singletonList(101))
-                .codigoNivel(OPERACAO)
-                .codigoDepartamento(COMERCIAL)
-                .codigoCargo(GERENTE_OPERACAO)
-                .build();
+            .usuarioId(Collections.singletonList(101))
+            .codigoNivel(OPERACAO)
+            .codigoDepartamento(COMERCIAL)
+            .codigoCargo(GERENTE_OPERACAO)
+            .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

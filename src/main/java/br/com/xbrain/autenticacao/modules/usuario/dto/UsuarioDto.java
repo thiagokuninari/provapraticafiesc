@@ -94,6 +94,7 @@ public class UsuarioDto implements Serializable {
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
+    private String cupomLoja;
     private Integer siteId;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {

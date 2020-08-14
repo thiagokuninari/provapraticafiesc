@@ -14,6 +14,7 @@ public enum ECanal {
     ATIVO("Ativo", Boolean.FALSE),
     ATP("Atp", Boolean.FALSE);
 
+
     @Getter
     private String descricao;
     @Getter

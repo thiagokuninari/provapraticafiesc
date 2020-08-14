@@ -2,7 +2,10 @@ package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.*;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,14 +38,17 @@ public interface AgenteAutorizadoClient {
     @GetMapping(API_AGENTE_AUTORIZADO + "/{usuarioId}/exclusivo-pme")
     boolean isExclusivoPme(@PathVariable("usuarioId") Integer usuarioId);
 
+    @GetMapping(API_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura")
+    String getEstrutura(@PathVariable("usuarioId") Integer usuarioId);
+
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
-            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/{agenteAutorizadoId}/{buscarInativos}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
-            @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
-            @PathVariable("buscarInativos") Boolean buscarInativos);
+        @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
+        @PathVariable("buscarInativos") Boolean buscarInativos);
 
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/usuarios-com-d2d/{agenteAutorizadoId}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(
