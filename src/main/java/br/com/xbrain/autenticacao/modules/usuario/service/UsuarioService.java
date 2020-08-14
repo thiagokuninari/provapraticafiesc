@@ -1464,4 +1464,8 @@ public class UsuarioService {
     public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
         return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
+
+    public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(Integer siteId) {
+        return repository.findAllBySiteOperacaoVendedores(siteId);
+    }
 }

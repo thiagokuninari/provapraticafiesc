@@ -324,12 +324,6 @@ public class UsuarioController {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
 
-    @GetMapping("{canal}/cargo/{codigoCargo}")
-    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
-                                                                  @PathVariable CodigoCargo codigoCargo) {
-        return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
-    }
-
     @GetMapping("inativado-por-excesso-de-uso/{usuarioId}")
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
         return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
@@ -339,4 +333,16 @@ public class UsuarioController {
     public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
         return usuarioService.getUrlLojaOnline(id);
     }
+
+    @GetMapping("{canal}/cargo/{codigoCargo}")
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
+                                                                  @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
+    }
+
+    @GetMapping("site/{siteId}/vendedores")
+    public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(@PathVariable Integer siteId) {
+        return usuarioService.getVendedoresOperacaoAtivoProprio(siteId);
+    }
+
 }
