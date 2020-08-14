@@ -164,8 +164,8 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
-                .thenReturn(true);
+        when(agenteAutorizadoService.getEstrutura(USUARIO_SOCIO_ID))
+                .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
@@ -174,21 +174,7 @@ public class AutenticacaoControllerTest {
                         .param("token", token.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.aaPme", is(true)));
-    }
-
-    public void getAccessToken_deveNaoRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
-                .thenReturn(false);
-
-        OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
-
-        mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.aaPme", is(false)));
+                .andExpect(jsonPath("$.estruturaAa", is("AA_PME")));
     }
 
     @Test
