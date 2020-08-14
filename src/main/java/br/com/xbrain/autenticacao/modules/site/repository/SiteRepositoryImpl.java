@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
@@ -27,10 +28,10 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
     }
 
     @Override
-    public List<Site> findBySituacaoAtiva() {
+    public List<Site> findBySituacaoAtiva(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .selectFrom(site)
-            .where(site.situacao.eq(ESituacao.A))
+            .where(site.situacao.eq(ESituacao.A).and(predicate))
             .fetch();
     }
 

@@ -11,8 +11,17 @@ import java.util.function.Predicate;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+import static java.util.Objects.nonNull;
 
 public class SitePredicate extends PredicateBase {
+
+    public SitePredicate comId(Integer id) {
+        if (nonNull(id)) {
+            builder.and(site.id.eq(id));
+        }
+
+        return this;
+    }
 
     public SitePredicate comNome(String nome) {
         Optional.ofNullable(nome)
@@ -87,6 +96,22 @@ public class SitePredicate extends PredicateBase {
 
     public SitePredicate todosSitesAtivos() {
         builder.and(site.situacao.eq(A));
+        return this;
+    }
+
+    public SitePredicate naoPossuiDiscadora(Boolean naoPossuiDiscadora) {
+        if (nonNull(naoPossuiDiscadora) && naoPossuiDiscadora) {
+            builder.and(site.discadoraId.isNull());
+        }
+
+        return this;
+    }
+
+    public SitePredicate comDiscadoraId(Integer discadoraId) {
+        if (nonNull(discadoraId)) {
+            builder.and(site.discadoraId.eq(discadoraId));
+        }
+
         return this;
     }
 

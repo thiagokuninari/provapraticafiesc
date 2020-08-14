@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -23,4 +24,10 @@ public interface CallClient {
     @GetMapping(URL_RAMAL + "/agente-autorizado/{id}")
     List<RamalResponse> obterRamaisParaAgenteAutorizado(@PathVariable("id") Integer id);
 
+    @PostMapping("api/ramal/desvincular-ramais/ativo-proprio/{siteId}/discadora/{discadoraId}")
+    void desvincularRamaisDaDiscadoraAtivoProprio(@PathVariable("siteId") Integer siteId,
+                                                  @PathVariable("discadoraId") Integer discadoraId);
+
+    @GetMapping(value = "api/public/cache-clean/ativo-proprio")
+    String cleanCacheableSiteAtivoProprio();
 }

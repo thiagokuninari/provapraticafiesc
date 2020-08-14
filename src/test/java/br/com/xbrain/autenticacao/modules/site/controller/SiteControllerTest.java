@@ -71,11 +71,36 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.content[2].timeZone.descricao", is("Horário do Amazonas")))
             .andExpect(jsonPath("$.content[2].timeZone.zoneId", is("America/Manaus")))
             .andExpect(jsonPath("$.content[2].timeZone.codigo", is("AMT")))
+            .andExpect(jsonPath("$.content[2].discadoraId", is(8)))
             .andExpect(jsonPath("$.content[3].nome", is("Site Inativo")))
             .andExpect(jsonPath("$.content[3].timeZone.descricao",
                 is("Horário de Fernando de Noronha")))
             .andExpect(jsonPath("$.content[3].timeZone.zoneId", is("America/Noronha")))
             .andExpect(jsonPath("$.content[3].timeZone.codigo", is("FNT")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getSites_deveRetornarApenasComDiscadora_quandoSitePossuirDiscadora() {
+        mvc.perform(get(API_URI + "?discadoraId=8")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nome", is("Manaus")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getSites_deveRetornarApenasSemDiscadora_quandoSitesNaoTiveremDiscadora() {
+        mvc.perform(get(API_URI + "?naoPossuiDiscadora=true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
+                .andExpect(jsonPath("$.content[1].nome", is("Rio Branco")))
+                .andExpect(jsonPath("$.content[2].nome", is("Site Inativo")));
     }
 
     @Test

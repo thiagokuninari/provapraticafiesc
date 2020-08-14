@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -8,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import com.querydsl.core.types.Predicate;
@@ -42,6 +44,8 @@ public class SiteServiceTest {
     private CidadeRepository cidadeRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
+    @Mock
+    private CallService callService;
 
     @Test
     public void findById_notFoundException_quandoNaoExistirSiteCadastrado() {
@@ -252,10 +256,10 @@ public class SiteServiceTest {
 
     @Test
     public void getAllAtivos_listaComTresSites_quandoBuscarSitesAtivos() {
-        when(siteRepository.findBySituacaoAtiva())
+        when(siteRepository.findBySituacaoAtiva(new SitePredicate().build()))
             .thenReturn(umaListaSites());
 
-        assertThat(service.getAllAtivos())
+        assertThat(service.getAllAtivos(new SiteFiltros()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(1, "Site Brandon Big"),
@@ -293,4 +297,24 @@ public class SiteServiceTest {
                 tuple(3, "Site Amazonia Queimada")
             );
     }
+
+    @Test
+    public void removerDiscadora_void_quandoSitePossuirDiscadora() {
+        when(siteRepository.findById(eq(1))).thenReturn(Optional.of(umSite(1, "brandon city", BRT)));
+
+        service.removerDiscadora(1);
+
+        verify(siteRepository, atLeastOnce()).removeDiscadoraBySite(eq(1));
+        verify(callService, atLeastOnce()).cleanCacheableSiteAtivoProprio();
+        verify(callService, atLeastOnce()).desvincularRamaisDaDiscadoraAtivoProprio(eq(1), eq(2));
+    }
+
+    @Test
+    public void adicionarDiscadora_void_quandoSiteNaoPossuirDiscadora() {
+        service.adicionarDiscadora(1, List.of(1, 2, 3));
+
+        verify(siteRepository, atLeastOnce()).updateDiscadoraBySites(eq(1), eq(List.of(1, 2, 3)));
+        verify(callService, atLeastOnce()).cleanCacheableSiteAtivoProprio();
+    }
+
 }

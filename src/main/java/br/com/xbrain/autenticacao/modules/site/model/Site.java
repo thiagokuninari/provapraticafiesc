@@ -69,6 +69,9 @@ public class Site {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
+    @Column(name = "DISCADORA_ID")
+    private Integer discadoraId;
+
     public void inativar() {
         situacao = ESituacao.I;
     }
