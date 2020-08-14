@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CodigoFuncionalidade {
 
+    APPLICATION("APPLICATION"),
     AUT_VISUALIZAR_USUARIO("Visualizar Usuários"),
     AUT_VISUALIZAR_GERAL("AUT_VISUALIZAR_GERAL"),
     AUT_VISUALIZAR_USUARIOS_AA("Visualizar usuários dos Agentes Autorizados"),
