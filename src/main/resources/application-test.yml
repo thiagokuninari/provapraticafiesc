@@ -15,7 +15,7 @@ spring:
     driverClassName: org.hsqldb.jdbcDriver
 
   redis:
-    host: 192.168.1.40
+    host: 192.168.50.1
     port: 6381
   session:
     redis:
