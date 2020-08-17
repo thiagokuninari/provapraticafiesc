@@ -278,6 +278,11 @@ public class UsuarioController {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 
+    @GetMapping("{id}/supervisores-hierarquia")
+    public List<UsuarioHierarquiaResponse> getSupervisoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getSupervisoresOperacaoDaHierarquia(id);
+    }
+
     @GetMapping("permissoes-por-canal")
     public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();

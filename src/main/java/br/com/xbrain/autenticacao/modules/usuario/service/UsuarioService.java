@@ -233,6 +233,11 @@ public class UsuarioService {
         return pages;
     }
 
+    public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        return (List<Usuario>) repository.findAll(predicate.build());
+    }
+
     private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
@@ -1297,6 +1302,13 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<UsuarioHierarquiaResponse> getSupervisoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.SUPERVISOR_OPERACAO.name())
+                .stream()
+                .map(this::criarUsuarioHierarquiaVendedoresResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
         return getVendedoresOperacaoDaHierarquia(usuarioId).stream()
             .map(UsuarioHierarquiaResponse::getId)
@@ -1362,8 +1374,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
-        return funcionalidadeService
-            .getFuncionalidadesPermitidasAoUsuarioComCanal(
+        return funcionalidadeService.getFuncionalidadesPermitidasAoUsuarioComCanal(
                 findCompleteById(autenticacaoService.getUsuarioId()))
             .stream()
             .map(UsuarioPermissaoCanal::of)
