@@ -11,7 +11,7 @@ public class AgenteAutorizadoPermissaoFeederDtoTest {
     @Test
     public void hasPermissaoFeeder_deveRetornarFalse_quandoAgenteAutorizadoNaoTiverPermissao() {
         var agenteAutorizadoFeederDto = AgenteAutorizadoPermissaoFeederDto.builder()
-            .permissaoFeeder(Eboolean.F)
+            .feeder(Eboolean.F)
             .build();
 
         assertFalse(agenteAutorizadoFeederDto.hasPermissaoFeeder());
@@ -20,7 +20,7 @@ public class AgenteAutorizadoPermissaoFeederDtoTest {
     @Test
     public void hasPermissaoFeeder_deveRetornarTrue_quandoAgenteAutorizadoTiverPermissao() {
         var agenteAutorizadoFeederDto = AgenteAutorizadoPermissaoFeederDto.builder()
-            .permissaoFeeder(Eboolean.V)
+            .feeder(Eboolean.V)
             .build();
 
         assertTrue(agenteAutorizadoFeederDto.hasPermissaoFeeder());

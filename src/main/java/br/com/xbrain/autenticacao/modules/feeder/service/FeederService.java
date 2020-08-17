@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
@@ -8,6 +9,8 @@ import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFee
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
@@ -20,6 +23,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
@@ -48,7 +52,9 @@ public class FeederService {
             var usuariosIds = agenteAutorizadoPermissaoFeederDto.getColaboradoresVendasIds().stream()
                 .filter(usuarioId -> usuarioRepository.exists(usuarioId))
                 .collect(Collectors.toList());
-            usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
+            if (!agenteAutorizadoPermissaoFeederDto.isSocioDeOutroAaComPermissaoFeeder()) {
+                usuariosIds.add(agenteAutorizadoPermissaoFeederDto.getUsuarioProprietarioId());
+            }
 
             removerPermissoesEspeciais(usuariosIds);
             gerarUsuarioHistorico(usuariosIds, false);
@@ -62,6 +68,13 @@ public class FeederService {
         usuario.setSituacao(dto.getSituacaoAlterada());
         gerarHistorico(usuario, dto);
         usuarioRepository.save(usuario);
+    }
+
+    public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
+        if (Objects.equals(usuarioMqRequest.getAgenteAutorizadoFeeder(), Eboolean.V)) {
+            var permissoesFeeder = getPermissoesEspeciaisDosVendedores(List.of(usuario.getId()), usuario.getUsuarioCadastroId());
+            salvarPermissoesEspeciais(permissoesFeeder);
+        }
     }
 
     private void gerarHistorico(Usuario usuario, SituacaoAlteracaoUsuarioFeederDto dto) {

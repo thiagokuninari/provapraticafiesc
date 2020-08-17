@@ -110,8 +110,8 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
-    atualizar-permissao-feeder: atualizar-aa-com-permissao-feeder.queue
-    atualizar-permissao-feeder-failure: atualizar-aa-com-permissao-feeder-failure.queue
+    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
+    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
     cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
     sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue

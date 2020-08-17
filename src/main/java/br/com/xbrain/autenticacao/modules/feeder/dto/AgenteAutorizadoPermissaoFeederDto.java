@@ -15,13 +15,14 @@ import java.util.Objects;
 @NoArgsConstructor
 public class AgenteAutorizadoPermissaoFeederDto {
 
-    private Integer id;
+    private Integer agenteAutorizadoId;
     private Integer usuarioProprietarioId;
     private Integer usuarioCadastroId;
-    private Eboolean permissaoFeeder;
+    private Eboolean feeder;
     private List<Integer> colaboradoresVendasIds;
+    boolean socioDeOutroAaComPermissaoFeeder;
 
     public boolean hasPermissaoFeeder() {
-        return Objects.equals(permissaoFeeder, Eboolean.V);
+        return Objects.equals(feeder, Eboolean.V);
     }
 }

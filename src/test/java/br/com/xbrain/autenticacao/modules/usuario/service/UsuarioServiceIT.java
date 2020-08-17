@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaClient;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -104,6 +105,8 @@ public class UsuarioServiceIT {
     private UsuarioFeriasService usuarioFeriasService;
     @MockBean
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
+    @MockBean
+    private FeederService feederService;
 
     @Before
     public void setUp() {
@@ -118,6 +121,7 @@ public class UsuarioServiceIT {
         service.saveFromQueue(usuarioMqRequest);
         verify(sender, times(0)).sendSuccess(any());
         verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(feederService, never()).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -127,6 +131,7 @@ public class UsuarioServiceIT {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test

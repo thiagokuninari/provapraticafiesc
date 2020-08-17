@@ -8,6 +8,8 @@ import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFe
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -28,8 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,11 +49,14 @@ public class FeederServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
     private ArgumentCaptor<UsuarioHistorico> usuarioHistoricoCaptor;
+    @Captor
+    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
     public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciais_quandoUsuariosNaoPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setPermissaoFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
@@ -64,7 +68,8 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_naoDeveDuplicarPermissoes_quandoUsuariosJaPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setPermissaoFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
 
         when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
             .thenReturn(Optional.of(new PermissaoEspecial()));
@@ -79,7 +84,8 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_deveRemoverPermissaoFeeder_quandoAaTiverPermissaoParaFeeder() {
         var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaSemPermissaoFeeder.setPermissaoFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
         service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
@@ -88,6 +94,24 @@ public class FeederServiceTest {
             .deletarPermissaoEspecialBy(
                 FUNCIONALIDADES_FEEDER_PARA_AA,
                 List.of(100, 102, 10));
+
+        verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
+        verify(usuarioHistoricoService, times(1)).save(anyList());
+    }
+
+    @Test
+    public void atualizarPermissaoFeeder_naoDeveRemoverPermissaoDoSocio_quandoSocioTiverOutroAaComPermissaoFeeder() {
+        var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
+        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
+        when(usuarioRepository.exists(anyInt())).thenReturn(true);
+
+        service.atualizarPermissaoFeeder(aaSemPermissaoFeeder);
+
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(
+                FUNCIONALIDADES_FEEDER_PARA_AA,
+                List.of(100, 102));
 
         verify(permissaoEspecialRepository, times(0)).save(any(PermissaoEspecial.class));
         verify(usuarioHistoricoService, times(1)).save(anyList());
@@ -144,7 +168,31 @@ public class FeederServiceTest {
         assertThat(usuarioHistoricoCaptor.getValue())
             .extracting("usuario.id", "usuarioAlteracao.id", "situacao", "dataCadastro", "observacao")
             .containsExactlyInAnyOrder(1111, 10, ESituacao.A, LocalDateTime.of(2020, 5, 11, 11, 11, 11), "TESTE");
+    }
 
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissaoTratarLead_quandoAgenteAutorizadoForFeeder() {
+        when(usuarioRepository.findById(1111)).thenReturn(umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A));
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
+            .thenReturn(Optional.empty());
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), umUsuarioMqRequest());
+
+        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(tuple(1111, 3046));
+    }
+
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveNaoSalvarPermissaoTratarLead_quandoAaNaoForFeeder() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setAgenteAutorizadoFeeder(Eboolean.F);
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(permissaoEspecialRepository, never()).save(anyList());
     }
 
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
@@ -152,7 +200,7 @@ public class FeederServiceTest {
             .colaboradoresVendasIds(Lists.newArrayList(100, 102))
             .usuarioProprietarioId(10)
             .usuarioCadastroId(999)
-            .id(30)
+            .agenteAutorizadoId(30)
             .build();
     }
 
@@ -176,5 +224,20 @@ public class FeederServiceTest {
                         .codigo(codigoCargo)
                         .build())
                 .build());
+    }
+
+    private UsuarioDto umUsuarioDto() {
+        return UsuarioDto.builder()
+            .id(1111)
+            .agenteAutorizadoId(111)
+            .usuarioCadastroId(2222)
+            .build();
+    }
+
+    private UsuarioMqRequest umUsuarioMqRequest() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoFeeder(Eboolean.V)
+            .agenteAutorizadoId(111)
+            .build();
     }
 }
