@@ -1303,7 +1303,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getSupervisoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.SUPERVISOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name()))
                 .stream()
                 .map(this::criarUsuarioHierarquiaVendedoresResponse)
                 .collect(Collectors.toList());
