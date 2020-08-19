@@ -24,7 +24,7 @@ public interface CallClient {
     @GetMapping(URL_RAMAL + "/agente-autorizado/{id}")
     List<RamalResponse> obterRamaisParaAgenteAutorizado(@PathVariable("id") Integer id);
 
-    @PostMapping("api/ramal/desvincular-ramais/ativo-proprio/{siteId}/discadora/{discadoraId}")
+    @PostMapping(URL_RAMAL + "/desvincular-ramais/ATIVO_PROPRIO/{siteId}/discadora/{discadoraId}")
     void desvincularRamaisDaDiscadoraAtivoProprio(@PathVariable("siteId") Integer siteId,
                                                   @PathVariable("discadoraId") Integer discadoraId);
 
