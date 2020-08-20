@@ -44,17 +44,20 @@ public class LoginLogoutResponse {
         var responseRef = new AtomicReference<>(new LoginLogoutResponse());
         var ultimoFlagLogout = new AtomicReference<String>();
 
-        acessos.stream().sorted(Comparator.comparing(UsuarioAcesso::getDataCadastro)).forEach(acesso -> {
-            if (Objects.equals(acesso.getFlagLogout(), "F")) {
-                addNovoLoginLogout(responses, responseRef, acesso).setLogin(acesso.getDataCadastro().toLocalTime());
-            } else if (Objects.equals(acesso.getFlagLogout(), "V")) {
-                if (!Objects.equals(ultimoFlagLogout.get(), "F")) {
-                    addNovoLoginLogout(responses, responseRef, acesso);
+        acessos.stream()
+            .sorted(Comparator.comparing(UsuarioAcesso::getDataCadastro))
+            .filter(acesso -> Objects.nonNull(acesso.getFlagLogout()))
+            .forEach(acesso -> {
+                if (Objects.equals(acesso.getFlagLogout(), "F")) {
+                    addNovoLoginLogout(responses, responseRef, acesso).setLogin(acesso.getDataCadastro().toLocalTime());
+                } else if (Objects.equals(acesso.getFlagLogout(), "V")) {
+                    if (!Objects.equals(ultimoFlagLogout.get(), "F")) {
+                        addNovoLoginLogout(responses, responseRef, acesso);
+                    }
+                    responseRef.get().setLogout(acesso.getDataCadastro().toLocalTime());
                 }
-                responseRef.get().setLogout(acesso.getDataCadastro().toLocalTime());
-            }
-            ultimoFlagLogout.set(acesso.getFlagLogout());
-        });
+                ultimoFlagLogout.set(acesso.getFlagLogout());
+            });
 
         return responses.build().collect(Collectors.toList());
     }
