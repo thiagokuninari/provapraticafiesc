@@ -12,7 +12,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 public class SelectResponse implements Serializable {
-
     private Object value;
     private String label;
 
