@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import org.assertj.core.api.Assertions;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +34,33 @@ public class LoginLogoutResponseTest {
                 umaResponseTuple("Maria Letícia", "11:30:06", "13:00:00"),
                 umaResponseTuple("Maria Letícia", "17:45:57", "21:10:30")
             );
+    }
+
+    @Test
+    public void of_responsesComDadosCorretos_quandoHoverTodosOsLoginsELogoutsEDesordenados() {
+        var acessos = List.of(
+            umUsuarioAcesso("Maria Letícia", "2020-06-24T13:00:00", Eboolean.V),
+            umUsuarioAcesso("Maria Letícia", "2020-06-24T21:10:30", Eboolean.V),
+            umUsuarioAcesso("Maria Letícia", "2020-06-24T17:45:57", Eboolean.F),
+            umUsuarioAcesso("Maria Letícia", "2020-06-24T11:30:06", Eboolean.F)
+        );
+
+        assertThat(LoginLogoutResponse.of(acessos))
+            .extracting("colaborador", "login", "logout")
+            .containsExactlyInAnyOrder(
+                umaResponseTuple("Maria Letícia", "11:30:06", "13:00:00"),
+                umaResponseTuple("Maria Letícia", "17:45:57", "21:10:30")
+            );
+
+        IntStream.rangeClosed(1, 200).forEach(seed -> {
+            var acessosEmbaralhados = ListUtil.toShuffledList(acessos, new Random(seed));
+            assertThat(LoginLogoutResponse.of(acessosEmbaralhados))
+                .extracting("colaborador", "login", "logout")
+                .containsExactlyInAnyOrder(
+                    umaResponseTuple("Maria Letícia", "11:30:06", "13:00:00"),
+                    umaResponseTuple("Maria Letícia", "17:45:57", "21:10:30")
+                );
+        });
     }
 
     private UsuarioAcesso umUsuarioAcesso(String usuarioNome, String dataCadastro, Eboolean flagLogout) {

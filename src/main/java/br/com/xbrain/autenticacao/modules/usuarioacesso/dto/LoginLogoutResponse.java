@@ -10,6 +10,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +44,7 @@ public class LoginLogoutResponse {
         var responseRef = new AtomicReference<>(new LoginLogoutResponse());
         var ultimoFlagLogout = new AtomicReference<String>();
 
-        acessos.forEach(acesso -> {
+        acessos.stream().sorted(Comparator.comparing(UsuarioAcesso::getDataCadastro)).forEach(acesso -> {
             if (Objects.equals(acesso.getFlagLogout(), "F")) {
                 addNovoLoginLogout(responses, responseRef, acesso).setLogin(acesso.getDataCadastro().toLocalTime());
             } else if (Objects.equals(acesso.getFlagLogout(), "V")) {
