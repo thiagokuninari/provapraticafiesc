@@ -39,6 +39,15 @@ public class LoginLogoutResponse {
     }
 
     public static List<LoginLogoutResponse> of(Collection<UsuarioAcesso> acessos) {
+        return acessos.stream().collect(Collectors.groupingBy(UsuarioAcesso::getUsuario))
+            .values()
+            .stream()
+            .map(LoginLogoutResponse::ofUsuario)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+    }
+
+    private static List<LoginLogoutResponse> ofUsuario(Collection<UsuarioAcesso> acessos) {
         var responses = Stream.<LoginLogoutResponse>builder();
 
         var responseRef = new AtomicReference<>(new LoginLogoutResponse());
