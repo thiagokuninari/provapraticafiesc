@@ -889,6 +889,7 @@ public class UsuarioService {
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
+        autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
     }
 
