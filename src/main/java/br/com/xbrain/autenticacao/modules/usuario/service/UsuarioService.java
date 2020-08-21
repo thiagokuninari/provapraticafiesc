@@ -87,6 +87,12 @@ public class UsuarioService {
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final List<CodigoCargo> cargosOperadoresBackoffice
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
+    private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
+            "Usuário não possui login NetSales válido."
+    );
+    private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
+            "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
+    );
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -1431,6 +1437,16 @@ public class UsuarioService {
         return repository.findUsuariosByCodigoCargo(codigoCargo).stream()
             .map(UsuarioResponse::of)
             .collect(Collectors.toList());
+    }
+
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
+        return Optional.of(Optional.of(repository.findById(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO))
+            .filter(Usuario::isAtivo)
+            .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
+            .map(UsuarioComLoginNetSalesResponse::of)
+            .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
+            .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
     }
 
     public List<Integer> buscarIdsUsuariosDeCargosInferiores(Integer nivelId) {

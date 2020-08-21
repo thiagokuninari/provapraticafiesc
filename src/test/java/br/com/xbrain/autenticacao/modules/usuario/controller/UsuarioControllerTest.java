@@ -578,6 +578,57 @@ public class UsuarioControllerTest {
         verify(usuarioService, times(1)).buscarUsuariosDaHierarquiaDoUsuarioLogado(isNull());
     }
 
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarOk_seUsuarioPossuirLoginNetSales() {
+        final var umUsuarioId = 227;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(227)))
+            .andExpect(jsonPath("$.nome", is("VENDEDOR AA")))
+            .andExpect(jsonPath("$.loginNetSales", is("um login netsales")))
+            .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarBadRequest_seUsuarioNaoPossuirLoginNetSales() {
+        final var umUsuarioId = 226;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "Usuário não possui login NetSales válido.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarBadRequest_seUsuarioNaoEncontrado() {
+        final var umUsuarioId = 999;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "Usuário não encontrado.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioByIdComLoginNetSales_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        final var umUsuarioId = 1000;
+
+        mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

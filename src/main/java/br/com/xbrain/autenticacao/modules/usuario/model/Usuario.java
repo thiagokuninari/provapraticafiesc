@@ -462,7 +462,7 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isAtivo() {
-        return situacao.equals(ESituacao.A);
+        return ESituacao.A.equals(situacao);
     }
 
     @JsonIgnore

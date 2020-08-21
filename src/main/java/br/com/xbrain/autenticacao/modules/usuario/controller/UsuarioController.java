@@ -315,6 +315,11 @@ public class UsuarioController {
         return usuarioService.findUsuariosByIds(usuariosIds);
     }
 
+    @GetMapping("{id}/com-login-netsales")
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(@PathVariable Integer id) {
+        return usuarioService.getUsuarioByIdComLoginNetSales(id);
+    }
+
     @GetMapping(params = "organizacaoId")
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(@RequestParam Integer organizacaoId) {
         return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId);
