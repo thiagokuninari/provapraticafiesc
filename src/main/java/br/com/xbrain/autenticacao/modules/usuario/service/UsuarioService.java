@@ -40,6 +40,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -65,6 +67,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistor
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -1442,6 +1445,27 @@ public class UsuarioService {
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
             .stream()
+            .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
+    }
+
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        var predicate = new UsuarioPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado(CodigoCargo codigoCargo) {
+        var predicate = new UsuarioPredicate();
+
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+            .comCodigoCargo(codigoCargo)
+            .comSituacoes(List.of(ESituacao.A));
+
+        return StreamSupport.stream(
+            repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
             .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }

@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -19,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -285,6 +287,14 @@ public class UsuarioPredicate {
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
+        return this;
+    }
+
+    public UsuarioPredicate comCodigoCargo(CodigoCargo codigoCargo) {
+        Optional.ofNullable(codigoCargo)
+            .map(usuario.cargo.codigo::eq)
+            .map(builder::and);
+
         return this;
     }
 
