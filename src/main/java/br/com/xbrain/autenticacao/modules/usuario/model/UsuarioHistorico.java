@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UsuarioHistorico {
 
+    private static final Integer ID_MOTIVO_INATIVACAO_EXCESSO_USO = 9;
+
     @Id
     @SequenceGenerator(name = "SEQ_USUARIO_HISTORICO", sequenceName = "SEQ_USUARIO_HISTORICO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_USUARIO_HISTORICO", strategy = GenerationType.SEQUENCE)
@@ -109,5 +111,17 @@ public class UsuarioHistorico {
                 + (!ObjectUtils.isEmpty(motivoInativacao)
                         ? " / " +  motivoInativacao.getDescricao()
                         : "");
+    }
+
+    public static UsuarioHistorico gerarHistoricoDeBloqueioPorExcessoDeUso(Usuario usuario,
+                                                                           MotivoInativacao motivoInativacao) {
+        return UsuarioHistorico
+            .builder()
+            .situacao(ESituacao.I)
+            .observacao("Inativado pelo timer de usuários por excesso de uso da API.")
+            .motivoInativacao(motivoInativacao)
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .build();
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.filtros.OrganizacaoFiltros;
@@ -13,10 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacao;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -94,6 +95,23 @@ public class OrganizacaoServiceTest {
             .extracting("id", "codigo", "nome")
             .contains(tuple(8, "CSU", "CSU"),
                 tuple(9, "MOTIVA", "MOTIVA"));
+    }
+
+    @Test
+    public void getById_organizacao_quandoExistir() {
+        when(organizacaoRepository.findById(any())).thenReturn(Optional.of(umaOrganizacao(1, "BCC")));
+
+        var response = organizacaoService.getById(1);
+        assertThat(response.getId()).isEqualTo(1);
+        assertThat(response.getNome()).isEqualTo("BCC");
+        assertThat(response.getCodigo()).isEqualTo("BCC");
+    }
+
+    @Test
+    public void getById_validacaoException_quandoNaoExistir() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> organizacaoService.getById(1))
+            .withMessage("Organização não encontrada.");
     }
 
     private UsuarioAutenticado umUsuarioBackoffice() {

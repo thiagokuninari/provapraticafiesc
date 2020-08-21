@@ -131,4 +131,14 @@ public class UsuarioRepositoryTest {
                     .usuarioSuperior(new Usuario(113))
                     .build()));
     }
+
+    @Test
+    public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2")
+            );
+    }
 }

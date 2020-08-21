@@ -819,4 +819,14 @@ public class UsuarioServiceIT {
             .nivelCodigo(OPERACAO.name())
             .build();
     }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalDoUsuarioForAgenteAutorizado() {
+        assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(239,"VENDEDOR OPERACAO 2"),
+                tuple(240,"VENDEDOR OPERACAO 3")
+            );
+    }
 }

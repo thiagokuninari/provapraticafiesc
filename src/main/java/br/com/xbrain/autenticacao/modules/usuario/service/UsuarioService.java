@@ -1376,7 +1376,7 @@ public class UsuarioService {
         return repository
             .getSubclustersUsuario(usuarioId)
             .stream()
-            .map(s -> SelectResponse.convertFrom(s.getId(), s.getNomeComMarca()))
+            .map(s -> SelectResponse.of(s.getId(), s.getNomeComMarca()))
             .collect(Collectors.toList());
     }
 
@@ -1458,10 +1458,14 @@ public class UsuarioService {
         );
     }
 
+    public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
+        return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
             .stream()
-            .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
+            .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }
 
@@ -1482,7 +1486,7 @@ public class UsuarioService {
 
         return StreamSupport.stream(
             repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
-            .map(usuario -> SelectResponse.convertFrom(usuario.getId(), usuario.getNome()))
+            .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }
 }

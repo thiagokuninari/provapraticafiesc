@@ -562,8 +562,8 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp_deveRetornarOsUsuariosDaHierarquia() {
         doReturn(List.of(
-            SelectResponse.convertFrom(1, "Teste"),
-            SelectResponse.convertFrom(2, "Brandon")))
+            SelectResponse.of(1, "Teste"),
+            SelectResponse.of(2, "Brandon")))
             .when(usuarioService).buscarUsuariosDaHierarquiaDoUsuarioLogado(null);
 
         mvc.perform(get("/api/usuarios/permitidos/select")
@@ -627,6 +627,19 @@ public class UsuarioControllerTest {
         mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value").value(300))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[1].value").value(102))
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
