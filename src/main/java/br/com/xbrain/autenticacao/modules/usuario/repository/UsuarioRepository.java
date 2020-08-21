@@ -35,6 +35,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findAllByCpf(String cpf);
 
+    Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);
+
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
     List<Usuario> findByIdIn(List<Integer> ids);
@@ -67,10 +69,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Modifying
     @Query("update Usuario u set u.email = ?1 where u.id = ?2")
     void updateEmail(String email, Integer usuarioId);
-
-    @Modifying
-    @Query("update Usuario u set u.cpf = ?1 where u.id = ?2")
-    void updateCpf(String cpf, Integer usuarioId);
 
     @Modifying
     @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")

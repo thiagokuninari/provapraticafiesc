@@ -2,26 +2,29 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ActiveProfiles("test")
-@SpringBootTest
 @RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_usuario_repository.sql"})
+@DataJpaTest
+@Sql({"classpath:/tests_usuario_repository.sql"})
 public class UsuarioRepositoryTest {
 
     @Autowired
@@ -45,13 +48,14 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
-            .hasSize(4)
             .extracting("id", "email")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple(103, "CARLOS@HOTMAIL.COM"),
                 tuple(104, "MARIA@HOTMAIL.COM"),
-                tuple(111, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(112, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
@@ -74,22 +78,24 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosAtivos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.A))
-            .hasSize(4)
             .extracting("id", "email")
             .containsExactly(
                 tuple(107, "EXECUTIVO1@TESTE.COM"),
                 tuple(108, "EXECUTIVO2@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(112, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
     }
 
     @Test
     public void findAllExecutivosBySituacao_deveRetornarExecutivosInativos() {
         assertThat(repository.findAllExecutivosBySituacao(ESituacao.I))
-            .hasSize(2)
             .extracting("id", "email")
-            .containsExactlyInAnyOrder(tuple(110, "RENATO@TESTE.COM"),
-                tuple(113, "EXECUTIVOHUNTER3@TESTE.COM"));
+            .containsExactlyInAnyOrder(
+                tuple(112, "EXECUTIVOHUNTER3@TESTE.COM"),
+                tuple(113, "RENATO@TESTE.COM"),
+                tuple(119, "EXECUTIVOHUNTER3@TESTE.COM"));
     }
 
     @Test
@@ -99,8 +105,8 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"),
-                tuple(110, "EXECUTIVO 3 INATIVO"),
-                tuple(111, "HUNTER 1"));
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2"));
     }
 
     @Test
@@ -113,4 +119,16 @@ public class UsuarioRepositoryTest {
                 tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
     }
 
+    @Test
+    public void getUsuarioSuperior_usuarioHierarquia_quandoBuscarUsuarioSuperiorDoUsuarioIdInformado() {
+        assertThat(repository.getUsuarioSuperior(115))
+            .isEqualTo(Optional.of(
+                UsuarioHierarquia.builder()
+                    .dataCadastro(LocalDateTime.of(2020, 4, 3, 12, 0))
+                    .usuario(new Usuario(115))
+                    .usuarioCadastro(new Usuario(113))
+                    .usuarioHierarquiaPk(new UsuarioHierarquiaPk(115, 113))
+                    .usuarioSuperior(new Usuario(113))
+                    .build()));
+    }
 }

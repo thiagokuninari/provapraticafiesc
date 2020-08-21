@@ -72,5 +72,10 @@ public class UsuarioMqListener {
     public void logoutUsuarios(UsuarioLogoutDto usuarioLogoutDto) {
         autenticacaoService.logout(usuarioLogoutDto.getUsuariosIds());
     }
+
+    @RabbitListener(queues = "${app-config.queue.usuario-remanejar-pol}")
+    public void usuarioRemanejar(UsuarioMqRequest usuarioMqRequest) {
+        service.remanejarUsuario(usuarioMqRequest);
+    }
 }
 
