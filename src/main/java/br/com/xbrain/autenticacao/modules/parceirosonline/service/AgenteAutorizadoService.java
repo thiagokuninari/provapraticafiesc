@@ -146,12 +146,12 @@ public class AgenteAutorizadoService {
         }
     }
 
-    public boolean isExclusivoPme(int usuarioId) {
+    public String getEstrutura(Integer usuarioId) {
         try {
-            return agenteAutorizadoClient.isExclusivoPme(usuarioId);
+            return agenteAutorizadoClient.getEstrutura(usuarioId);
         } catch (Exception ex) {
-            logger.warn("Erro ao consultar exclusividade PME", ex);
-            return false;
+            logger.warn("Erro ao consultar a estrutura do AA", ex);
+            return null;
         }
     }
 

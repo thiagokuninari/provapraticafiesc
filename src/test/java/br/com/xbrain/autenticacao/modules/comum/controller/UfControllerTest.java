@@ -35,7 +35,7 @@ public class UfControllerTest {
     public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/ufs")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     @Test

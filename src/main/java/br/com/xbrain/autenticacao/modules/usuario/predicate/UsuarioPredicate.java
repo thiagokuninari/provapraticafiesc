@@ -164,7 +164,26 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
-        builder.and(usuario.id.in(usuariosIds));
+        if (!isEmpty(usuariosIds)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::in)
+                    .collect(Collectors.toList()))
+            );
+        }
+        return this;
+    }
+
+    public UsuarioPredicate ouComUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.or(
+                ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList())));
+        }
         return this;
     }
 
@@ -236,14 +255,15 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
+    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
             JPAExpressions
                 .select(usuario.id)
                 .from(usuario)
                 .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
                 .where(usuarioHierarquia.usuario.id.in(ids)
-                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId))
+                    .or(usuario.id.eq(usuarioAutenticadoId)))));
         return this;
     }
 
@@ -278,8 +298,8 @@ public class UsuarioPredicate {
                 .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+            daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
                 usuario.getUsuario().getId());
 
         } else if (usuario.isBackoffice()) {

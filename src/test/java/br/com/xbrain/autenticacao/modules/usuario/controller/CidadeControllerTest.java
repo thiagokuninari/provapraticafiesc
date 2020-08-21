@@ -45,7 +45,7 @@ public class CidadeControllerTest {
     public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/cidades")
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     @Test

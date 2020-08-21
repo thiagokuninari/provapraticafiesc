@@ -320,8 +320,9 @@ public class UsuarioServiceIT {
         usuarioDto.setId(368);
         usuarioDto.setCpf("41842888803");
         assertThatExceptionOfType(ValidacaoException.class)
-                .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
-                .withMessage("CPF já cadastrado.");
+            .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
+            .withMessage("CPF já cadastrado.");
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -486,14 +487,14 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(100);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(5)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578),
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(5)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578),
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
 
         assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
         assertThat(usuarioComNovasCidades.getHistoricos())
@@ -501,6 +502,12 @@ public class UsuarioServiceIT {
             .containsAnyOf(
                 tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
+    }
+
+    @Test
+    public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
+        service.updateFromQueue(umUsuario());
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -670,16 +677,13 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+    public void validarUsuarioComCpfDiferenteRemanejado_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);
         usuarioMqRequest.setCpf("87458480092");
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
-
-        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     @Test
@@ -702,6 +706,40 @@ public class UsuarioServiceIT {
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void remanejarUsuario_deveRemoverFormatacaoCpf_quandoEnviarParaRemanejar() {
+        var usuarioMqRequest = umUsuarioRemanejamento();
+        var cpfFormatado = "955.125.930-05";
+        usuarioMqRequest.setCpf(cpfFormatado);
+        service.remanejarUsuario(usuarioMqRequest);
+
+        var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
+
+        assertThat(usuarioRemanejado)
+            .extracting("id", "situacao", "cpf")
+            .containsExactly(tuple(3, ESituacao.A, "95512593005"), tuple(1000, ESituacao.R, "95512593005"));
+
+        verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
+        verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+    }
+
+    @Test
+    public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
+        service.alterarDadosAcessoEmail(umUsuarioDadosAcessoRequest());
+        verify(sender, times(1)).sendSuccess(any());
+    }
+
+    private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
+        return UsuarioDadosAcessoRequest
+            .builder()
+            .usuarioId(104)
+            .alterarSenha(Eboolean.F)
+            .emailAtual("operacao_gerente_comercial@net.com.br")
+            .emailNovo("NOVO@EMAIL.COM")
+            .ignorarSenhaAtual(true)
+            .build();
     }
 
     private UsuarioMqRequest umUsuarioTrocaCpf() {

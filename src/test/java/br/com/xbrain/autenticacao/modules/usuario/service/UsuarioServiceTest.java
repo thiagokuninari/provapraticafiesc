@@ -326,7 +326,7 @@ public class UsuarioServiceTest {
         service.buscarUsuariosDaHierarquiaDoUsuarioLogado(null);
 
         verify(equipeVendaD2dService, times(1))
-            .getUsuariosPermitidos(argThat(arg -> arg.size() == 4));
+            .getUsuariosPermitidos(argThat(arg -> arg.size() == 3));
         verify(repository, times(1))
             .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));
     }

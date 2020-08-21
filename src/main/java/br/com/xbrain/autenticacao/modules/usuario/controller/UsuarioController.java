@@ -283,8 +283,9 @@ public class UsuarioController {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 
-    @GetMapping("permissoes-por-usuario")
-    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+    @PostMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
+            @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
@@ -327,6 +328,11 @@ public class UsuarioController {
     @GetMapping("inativado-por-excesso-de-uso/{usuarioId}")
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(@PathVariable Integer usuarioId) {
         return deslogarUsuarioPorExcessoDeUsoService.validarUsuarioBloqueadoPorExcessoDeUso(usuarioId);
+    }
+
+    @GetMapping("{id}/url-loja-online")
+    public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
+        return usuarioService.getUrlLojaOnline(id);
     }
 
     @GetMapping("{id}/com-login-netsales")

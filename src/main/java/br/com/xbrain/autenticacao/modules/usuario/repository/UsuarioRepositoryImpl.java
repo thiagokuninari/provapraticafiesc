@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -604,7 +605,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .from(usuario)
                 .leftJoin(usuario.cargo)
                 .leftJoin(usuario.departamento)
-                .where(usuario.id.in(usuariosIds))
+                .where(new UsuarioPredicate().ouComUsuariosIds(usuariosIds).build())
                 .fetch();
     }
 
