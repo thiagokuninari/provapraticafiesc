@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -92,4 +93,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Modifying
     @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
+
+    List<Usuario> findByOrganizacaoIdAndCargo_CodigoIn(Integer organizacaoId, List<CodigoCargo> cargos);
 }

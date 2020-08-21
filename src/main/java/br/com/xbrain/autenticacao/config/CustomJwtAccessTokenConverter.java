@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
-import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
@@ -46,7 +46,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Autowired
     private EquipeVendasService equipeVendasService;
     @Autowired
-    private EquipeVendaService equipeVendaService;
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -100,7 +100,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                     ? Collections.singletonList(equipeVendas)
                     : Collections.emptyList();
         } else {
-            return equipeVendaService.getEquipeVendas(usuario.getId());
+            return equipeVendaD2dService.getEquipeVendas(usuario.getId());
         }
     }
 
