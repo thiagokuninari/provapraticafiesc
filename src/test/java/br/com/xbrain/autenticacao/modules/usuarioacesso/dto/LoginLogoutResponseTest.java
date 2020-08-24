@@ -22,6 +22,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LoginLogoutResponseTest {
 
     @Test
+    public void getTempoTotalLogado_tempoCorretoTotalLogado_quandoTiverHorarioDeLoginEDeLogout() {
+        var response = umaLoginLogoutResponse("17:25:30", "20:20:42");
+        assertThat(response.getTempoTotalLogado()).isEqualTo("02:55:12");
+    }
+
+    @Test
+    public void getTempoTotalLogado_null_quandoHorarioDeLoginVierDepoisDoDeLogout() {
+        var response = umaLoginLogoutResponse("20:20:42", "17:25:30");
+        assertThat(response.getTempoTotalLogado()).isNull();
+    }
+
+    @Test
+    public void getTempoTotalLogado_null_quandoNaoHouverHorarioDeLogout() {
+        var response = umaLoginLogoutResponse("17:25:30", null);
+        assertThat(response.getTempoTotalLogado()).isNull();
+    }
+
+    @Test
+    public void getTempoTotalLogado_null_quandoNaoHouverHorarioDeLogin() {
+        var response = umaLoginLogoutResponse(null, "20:20:42");
+        assertThat(response.getTempoTotalLogado()).isNull();
+    }
+
+    @Test
+    public void getTempoTotalLogado_null_quandoNaoHouverHorarioDeLoginNemDeLogout() {
+        var response = umaLoginLogoutResponse(null, null);
+        assertThat(response.getTempoTotalLogado()).isNull();
+    }
+
+    @Test
     public void of_responsesComDadosCorretos_quandoHouverTodosOsLoginsELogouts() {
         var acessos = List.of(
             umUsuarioAcesso("Maria Letícia", "2020-06-24T11:30:06", Eboolean.F),
@@ -137,6 +167,13 @@ public class LoginLogoutResponseTest {
                     umaResponseTuple("João Pedro", null, "23:00:00")
                 );
         });
+    }
+
+    private LoginLogoutResponse umaLoginLogoutResponse(String loginTime, String logoutTime) {
+        return LoginLogoutResponse.builder()
+            .login(getLocalTime(loginTime))
+            .logout(getLocalTime(logoutTime))
+            .build();
     }
 
     private static final Map<String, Integer> USUARIO_NOME_ID = ImmutableMap.<String, Integer>builder()
