@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +10,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,6 +34,13 @@ public class LoginLogoutResponse {
             return null;
         }
         return DurationFormatUtils.formatDuration(tempoTotalLogado.toMillis(), "HH:mm:ss");
+    }
+
+    @JsonIgnore
+    public String getColaboradorUpperCase() {
+        return Optional.ofNullable(colaborador)
+            .map(String::toUpperCase)
+            .orElse(null);
     }
 
     public static List<LoginLogoutResponse> of(Collection<UsuarioAcesso> acessos) {
