@@ -1,15 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ERelatorioLoginLogoutSort;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutListagemFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class RelatorioLoginLogoutService {
@@ -19,11 +20,12 @@ public class RelatorioLoginLogoutService {
     @Autowired
     private DataHoraAtual dataHoraAtualService;
 
-    public List<LoginLogoutResponse> getLoginsLogoutsDeHoje(RelatorioLoginLogoutListagemFiltro filtro) {
+    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(RelatorioLoginLogoutListagemFiltro filtro, PageRequest pageRequest) {
         var predicate = new UsuarioAcessoPredicate(filtro.toPredicate())
             .porDataCadastro(dataHoraAtualService.getData())
             .build();
         var acessos = usuarioAcessoRepository.findAll(predicate);
-        return LoginLogoutResponse.of(ImmutableList.copyOf(acessos));
+        var loginLogoutResponses = LoginLogoutResponse.of(ImmutableList.copyOf(acessos));
+        return ERelatorioLoginLogoutSort.getPage(loginLogoutResponses, pageRequest);
     }
 }
