@@ -1,0 +1,140 @@
+package br.com.xbrain.autenticacao.modules.usuarioacesso.dto;
+
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
+import br.com.xbrain.xbrainutils.DateUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginLogoutCsv {
+
+    private static final String CSV_COL_DELIMITER = ";";
+
+    private String colaborador;
+    private String data;
+    private List<LocalTime> logins;
+    private List<LocalTime> logouts;
+
+    public int getQuantidadeDeLogouts() {
+        return Objects.requireNonNullElse(logouts, List.of()).size();
+    }
+
+    public String getTempoTotalLogado() {
+        var minLogin = logins.stream().min(Comparator.naturalOrder());
+        var maxLogout = logouts.stream().max(Comparator.naturalOrder());
+        if (minLogin.isPresent() && maxLogout.isPresent()) {
+            var duracao = Duration.between(minLogin.get(), maxLogout.get());
+            return !duracao.isNegative() ? DurationFormatUtils.formatDuration(duracao.toMillis(), "HH:mm:ss") : "";
+        }
+        return "";
+    }
+
+    public static String getCsvHeader(Collection<LoginLogoutCsv> csvs) {
+        var cols = Stream.<String>builder();
+        Stream.of("COLABORADOR", "DATA", "QUANTIDADE DE LOGOUT").forEach(cols::add);
+        IntStream.rangeClosed(1, getLoginLogoutsCount(csvs))
+            .forEach(i -> {
+                cols.add("HORÁRIO LOGIN " + i);
+                cols.add("HORÁRIO LOGOUT " + i);
+            });
+        cols.add("TEMPO TOTAL LOGADO");
+        return cols.build().collect(Collectors.joining(CSV_COL_DELIMITER));
+    }
+
+    public static String getCsvRows(Collection<LoginLogoutCsv> csvs) {
+        return csvs.stream().map(csv -> {
+            var cols = Stream.builder();
+            Stream.of(csv.colaborador, csv.data, csv.getQuantidadeDeLogouts()).forEach(cols::add);
+            IntStream.rangeClosed(1, getLoginLogoutsCount(csvs))
+                .forEach(i -> {
+                    cols.add(getLoginLogoutCol(csv.logins, i));
+                    cols.add(getLoginLogoutCol(csv.logouts, i));
+                });
+            cols.add(csv.getTempoTotalLogado());
+            return cols.build()
+                .map(Object::toString)
+                .map(String::toUpperCase)
+                .collect(Collectors.joining(CSV_COL_DELIMITER));
+        }).collect(Collectors.joining("\n"));
+    }
+
+    public static String getCsv(Collection<LoginLogoutCsv> csvs) {
+        return getCsvHeader(csvs) + "\n" + getCsvRows(csvs);
+    }
+
+    public static List<LoginLogoutCsv> of(List<UsuarioAcesso> responses) {
+        var csvs = Stream.<LoginLogoutCsv>builder();
+
+        responses
+            .stream()
+            .collect(Collectors.groupingBy(UsuarioAcesso::getUsuario))
+            .forEach((usuario, acessosUsuario) -> acessosUsuario
+                .stream()
+                .collect(Collectors.groupingBy(acesso -> acesso.getDataCadastro().toLocalDate()))
+                .forEach((data, acessosData) -> csvs.add(of(usuario, data, acessosData))));
+
+        return csvs.build().collect(Collectors.toList());
+    }
+
+    private static LoginLogoutCsv of(Usuario usuario, LocalDate data, List<UsuarioAcesso> acessos) {
+        var acessosLogout = acessos.stream().collect(Collectors.groupingBy(UsuarioAcesso::getFlagLogout));
+        return builder()
+            .colaborador(usuario.getNome())
+            .data(DateUtils.parseLocalDateToString(data))
+            .logins(getTimes(acessosLogout.getOrDefault("F", List.of())))
+            .logouts(getTimes(acessosLogout.getOrDefault("V", List.of())))
+            .build();
+    }
+
+    private static List<LocalTime> getTimes(List<UsuarioAcesso> acessos) {
+        return acessos.stream()
+            .map(UsuarioAcesso::getDataCadastro)
+            .map(LocalTime::from)
+            .sorted()
+            .collect(Collectors.toList());
+    }
+
+    private int getLoginLogoutsCount() {
+        return Stream.of(logins, logouts)
+            .map(l -> Objects.requireNonNullElse(l, List.of()))
+            .mapToInt(List::size)
+            .max()
+            .orElse(0);
+    }
+
+    private static int getLoginLogoutsCount(Collection<LoginLogoutCsv> csvs) {
+        return csvs.stream()
+            .mapToInt(LoginLogoutCsv::getLoginLogoutsCount)
+            .max()
+            .orElse(0);
+    }
+
+    private static String getLoginLogoutCol(List<LocalTime> loginLogout, int index) {
+        return loginLogout.stream()
+            .skip(index)
+            .limit(1)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .map(DateTimeFormatter.ISO_TIME::format)
+            .orElse("");
+    }
+}

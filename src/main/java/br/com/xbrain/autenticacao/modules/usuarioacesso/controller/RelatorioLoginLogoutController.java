@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/relatorio-login-logout")
 public class RelatorioLoginLogoutController {
@@ -20,5 +22,10 @@ public class RelatorioLoginLogoutController {
     @GetMapping("hoje")
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(RelatorioLoginLogoutListagemFiltro filtro, PageRequest pageRequest) {
         return service.getLoginsLogoutsDeHoje(filtro, pageRequest);
+    }
+
+    @GetMapping("csv")
+    public void getCsv(HttpServletResponse response) {
+        service.getCsv(response);
     }
 }
