@@ -44,7 +44,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
 
         assertThat(funcionalidades.get(0).getCanais())
                 .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
+                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
     }
 
     @Test
@@ -61,6 +61,6 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
 
         assertThat(funcionalidades.get(0).getCanais())
                 .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
+                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
     }
 }

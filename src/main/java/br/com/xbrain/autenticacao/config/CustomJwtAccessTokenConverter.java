@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
@@ -9,6 +10,8 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -23,15 +26,12 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -49,6 +49,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     private EquipeVendasService equipeVendasService;
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Autowired
+    private SiteService siteService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -56,7 +58,6 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         defaultOAuth2AccessToken.setAdditionalInformation(new LinkedHashMap<>(accessToken.getAdditionalInformation()));
         if (authentication.getUserAuthentication() != null) {
             User userAuth = (User) authentication.getUserAuthentication().getPrincipal();
-
             usuarioRepository
                 .findComplete(Integer.valueOf(userAuth.getUsername().split(Pattern.quote("-"))[0]))
                 .ifPresent(usuario -> setAdditionalInformation(
@@ -66,12 +67,19 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                     getAgentesAutorizadosPermitidos(usuario),
                     getEmpresasDoUsuario(usuario),
                     getEquipesSupervisionadas(usuario),
-                    getEquipeVendas(usuario)));
+                    getEquipeVendas(usuario),
+                    getSites(usuario)));
         } else {
             defaultOAuth2AccessToken.getAdditionalInformation().put("active", true);
         }
 
         return defaultOAuth2AccessToken;
+    }
+
+    private List<SelectResponse> getSites(Usuario usuario) {
+        return List.of(MSO, OPERACAO, XBRAIN, ATIVO_LOCAL_PROPRIO).contains(usuario.getNivelCodigo())
+            ? siteService.getSitesPorPermissao(usuario)
+            : Collections.emptyList();
     }
 
     private List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
@@ -110,13 +118,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO && agenteAutorizadoService.isExclusivoPme(usuario.getId());
     }
 
+    private String getEstrutura(Usuario usuario) {
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstrutura(usuario.getId()) : null;
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
                                           List<Integer> agentesAutorizados,
                                           List<Empresa> empresas,
                                           List<Integer> equipesSupervisionadas,
-                                          List<EquipeVendaDto> equipeVendas) {
+                                          List<EquipeVendaDto> equipeVendas,
+                                          List<SelectResponse> sites) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());
         token.getAdditionalInformation().put("email", usuario.getEmail());
@@ -136,6 +149,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("canais", getCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
+        token.getAdditionalInformation().put("siteId", Optional.ofNullable(usuario.getSite()).map(Site::getId).orElse(null));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -161,10 +176,16 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipesSupervisionadas",
             equipesSupervisionadas);
         token.getAdditionalInformation().put("aaPme", isExclusivoPme(usuario));
+        token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
+        token.getAdditionalInformation().put("sites", sites);
     }
 
     private String getOrganizacao(Usuario usuario) {
         return !ObjectUtils.isEmpty(usuario.getOrganizacao()) ? usuario.getOrganizacao().getCodigo() : "";
+    }
+
+    private Integer getOrganizacaoId(Usuario usuario) {
+        return Objects.nonNull(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {

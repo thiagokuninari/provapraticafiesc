@@ -1,22 +1,30 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
-import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.UfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
-@RequestMapping(value = "api/ufs")
+@RequestMapping("api/ufs")
 public class UfController {
 
     @Autowired
-    private UfRepository repository;
+    private UfService ufService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public Iterable<Uf> getAll() {
-        return repository.findAll(new Sort("nome"));
+        return ufService.findAll(new Sort("nome"));
+    }
+
+    @GetMapping("/todas")
+    public List<SelectResponse> getAllUfs() {
+        return ufService.findAll();
     }
 }

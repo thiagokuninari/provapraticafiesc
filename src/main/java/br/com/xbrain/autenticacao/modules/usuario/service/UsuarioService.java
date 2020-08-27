@@ -194,7 +194,7 @@ public class UsuarioService {
         return repository.findComCidade(usuarioId)
             .orElseThrow(() -> EX_NAO_ENCONTRADO)
             .stream()
-            .map(CidadeResponse::parse)
+            .map(CidadeResponse::of)
             .collect(Collectors.toList());
     }
 
@@ -231,6 +231,11 @@ public class UsuarioService {
             popularUsuarios(pages.getContent());
         }
         return pages;
+    }
+
+    public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        return (List<Usuario>) repository.findAll(predicate.build());
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {
@@ -609,6 +614,7 @@ public class UsuarioService {
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto));
+                enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
             }
@@ -626,12 +632,13 @@ public class UsuarioService {
             duplicarUsuarioERemanejarAntigo(UsuarioDto.convertFrom(usuarioDto), usuarioMqRequest);
         } catch (Exception ex) {
             enviarParaFilaDeErroUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioMqRequest));
-            throw ex;
+            log.error("Erro ao processar usuário da fila: ", ex);
         }
     }
 
     @Transactional
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
+        usuario.removerCaracteresDoCpf();
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
@@ -656,7 +663,7 @@ public class UsuarioService {
         return usuario;
     }
 
-    private void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
+    public void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
         if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)) {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
@@ -1081,6 +1088,7 @@ public class UsuarioService {
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoEmail(usuario, usuarioDadosAcessoRequest);
         updateSenha(usuario, Eboolean.V);
+        enviarParaFilaDeUsuariosSalvos(UsuarioDto.of(usuario));
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
@@ -1294,6 +1302,13 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<UsuarioHierarquiaResponse> getSupervisoresOperacaoDaHierarquia(Integer usuarioId) {
+        return repository.getSubordinadosPorCargo(usuarioId, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name()))
+                .stream()
+                .map(this::criarUsuarioHierarquiaVendedoresResponse)
+                .collect(Collectors.toList());
+    }
+
     public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
         return getVendedoresOperacaoDaHierarquia(usuarioId).stream()
             .map(UsuarioHierarquiaResponse::getId)
@@ -1359,8 +1374,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioPermissaoCanal> getPermissoesUsuarioAutenticadoPorCanal() {
-        return funcionalidadeService
-            .getFuncionalidadesPermitidasAoUsuarioComCanal(
+        return funcionalidadeService.getFuncionalidadesPermitidasAoUsuarioComCanal(
                 findCompleteById(autenticacaoService.getUsuarioId()))
             .stream()
             .map(UsuarioPermissaoCanal::of)
@@ -1452,5 +1466,19 @@ public class UsuarioService {
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {
+        return repository.findById(id)
+            .map(UrlLojaOnlineResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
+        return repository.buscarUsuariosPorCanalECargo(canal, cargo);
+    }
+
+    public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(Integer siteId) {
+        return repository.findAllBySiteOperacaoVendedores(siteId);
     }
 }

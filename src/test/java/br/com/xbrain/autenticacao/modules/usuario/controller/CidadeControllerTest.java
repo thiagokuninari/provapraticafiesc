@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import helpers.Usuarios;
@@ -40,13 +41,6 @@ public class CidadeControllerTest {
     private CidadeService cidadeService;
     @Autowired
     private MockMvc mvc;
-
-    @Test
-    public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/cidades")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
 
     @Test
     public void deveRetornarTodosPorUf() throws Exception {
@@ -182,13 +176,56 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
-    private Cidade umaCidade() {
+    @Test
+    public void buscarCidadesPorEstados_deveRetornarAsCidadesDeCadaEstado() throws Exception {
+        mvc.perform(get("/api/cidades/por-estados")
+            .param("estadosIds", "1", "2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$[0].value", is(3237)))
+            .andExpect(jsonPath("$[0].label", is("ARAPONGAS - PR")))
+            .andExpect(jsonPath("$[1].value", is(4870)))
+            .andExpect(jsonPath("$[1].label", is("BERNARDINO DE CAMPOS - SP")));
+    }
 
+    @Test
+    public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() throws Exception {
+        doReturn(umaCidadeComSite()).when(cidadeService).getCidadeByCodigoCidadeDbm(any());
+        mvc.perform(get("/api/cidades/cidade-dbm/1")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(5578)));
+    }
+
+    @Test
+    public void getAllCidadeByUfs_deveRetornarTodasAsCidadesDoEstados_quandoExistir() throws Exception {
+        mvc.perform(get("/api/cidades")
+            .param("ufIds", "1,2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$[0].cidade", is("ARAPONGAS")));
+    }
+
+    private Cidade umaCidade() {
         return Cidade.builder()
-                .id(5578)
-                .nome("LONDRINA")
-                .subCluster(SubCluster.builder().id(189).build())
-                .uf(Uf.builder().id(1).nome("PARANA").build())
-                .build();
+            .id(5578)
+            .nome("LONDRINA")
+            .subCluster(SubCluster.builder().id(189).build())
+            .uf(Uf.builder().id(1).nome("PARANA").build())
+            .build();
+    }
+
+    private CidadeSiteResponse umaCidadeComSite() {
+        return CidadeSiteResponse.builder()
+            .id(5578)
+            .nome("LONDRINA")
+            .siteId(189)
+            .uf("pr")
+            .build();
     }
 }
