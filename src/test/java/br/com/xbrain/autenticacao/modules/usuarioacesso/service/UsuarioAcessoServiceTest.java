@@ -25,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -181,6 +182,8 @@ public class UsuarioAcessoServiceTest {
         return UsuarioAcessoFiltros.builder()
             .dataInicio(LocalDate.now().minusDays(1))
             .dataFim(LocalDate.now())
+            .dataInicial(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN))
+            .dataFinal(LocalDateTime.of(LocalDate.now(), LocalTime.MAX))
             .tipo(ETipo.LOGIN)
             .build();
     }
