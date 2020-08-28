@@ -48,17 +48,26 @@ public enum EErrors {
             "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#014 - Erro ao tentar recuperar o colaborador de vendas por ID do usuário."),
     ERRO_DISTRIBUIR_TABULACOES(
-            "#015 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#015 - Erro ao tentar distribuir os agendamentos do usuário."),
+        "#015 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#015 - Erro ao tentar distribuir os agendamentos do usuário."),
     ERRO_RECUPERAR_TABULACOES(
-            "#016 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#016 - Erro ao tentar recuperar os agendamentos do usuário."),
+        "#016 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#016 - Erro ao tentar recuperar os agendamentos do usuário."),
     ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS(
-            "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
+        "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_AA(
             "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#018 - Erro ao tentar recuperar o AA.");
+            "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_DESVINCULAR_RAMAIS(
+            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#019 - Erro ao desvincular ramais."),
+    ERRO_LIMPAR_CACHE_ATIVO(
+            "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#020 - Erro ao limpar cache ativo"),
+    ERRO_OBTER_ESTRUTURA_AA(
+        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#019 - Erro ao tentar recuperar a Estrutura do AA.");
 
     @Getter
     @Setter

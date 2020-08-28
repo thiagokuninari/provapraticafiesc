@@ -15,9 +15,6 @@ public class SelectResponse implements Serializable {
     private String label;
 
     public static SelectResponse of(Object value, String label) {
-        SelectResponse selectResponse = new SelectResponse();
-        selectResponse.setValue(value);
-        selectResponse.setLabel(label);
-        return selectResponse;
+        return new SelectResponse(value, label);
     }
 }

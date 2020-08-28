@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -38,12 +39,12 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -83,6 +84,21 @@ public class UsuarioServiceTest {
             .nome(nome)
             .situacao(situacao)
             .build();
+    }
+
+    @Test
+    public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
     @Test
@@ -197,6 +213,24 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
     }
 
+    @Test
+    public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
+    }
+
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             Usuario.builder()
@@ -276,16 +310,16 @@ public class UsuarioServiceTest {
 
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
-                .nome("Backoffice")
-                .cargo(new Cargo(110))
-                .departamento(new Departamento(69))
-                .organizacao(new Organizacao(5))
-                .cpf("097.238.645-92")
-                .email("usuario@teste.com")
-                .telefone("43995565661")
+            .nome("Backoffice")
+            .cargo(new Cargo(110))
+            .departamento(new Departamento(69))
+            .organizacao(new Organizacao(5))
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .telefone("43995565661")
                 .hierarquiasId(List.of())
-                .usuariosHierarquia(new HashSet<>())
-                .build();
+            .usuariosHierarquia(new HashSet<>())
+            .build();
     }
 
     private Usuario umUsuario() {

@@ -22,13 +22,15 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         String[] permitAll = {
             "/call/**",
+            "/api/public/**",
             "/parceiros-online/**",
             "/equipe-venda/**",
+            "/api/ufs",
+            "/api/cidades",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
-            "/api/public/disparar-timer-inativar-usuarios",
             "/api/usuarios/usuario-funil-prospeccao"
         };
 
@@ -53,9 +55,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name())
             .antMatchers("/api/solicitacao-ramal/gerencia/**")
             .hasRole(CodigoFuncionalidade.CTR_2034.name())
-                .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
-                .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
-                .anyRequest().authenticated();
+            .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
+            .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
+            .antMatchers(HttpMethod.GET, "/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name(),
+                CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
+                CodigoFuncionalidade.APPLICATION.name())
+            .anyRequest().authenticated();
     }
 
     @Override

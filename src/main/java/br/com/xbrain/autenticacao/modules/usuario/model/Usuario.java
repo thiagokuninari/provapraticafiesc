@@ -5,9 +5,11 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -146,6 +148,11 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Cargo cargo;
 
+    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID",
+        foreignKey = @ForeignKey(name = "FK_USUARIO_SITE"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Site site;
+
     @NotNull
     @JoinColumn(name = "FK_DEPARTAMENTO", referencedColumnName = "ID", nullable = false,
         foreignKey = @ForeignKey(name = "FK_USUARIO_DEPART"))
@@ -213,6 +220,18 @@ public class Usuario {
         foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
+
+    @Column(name = "URL_LOJA_BASE", length = 200)
+    private String urlLojaBase;
+
+    @Column(name = "URL_LOJA_PROSPECT", length = 200)
+    private String urlLojaProspect;
+
+    @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
+    private String urlLojaProspectNextel;
+
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
 
     @Transient
     private List<Integer> hierarquiasId;
@@ -480,4 +499,23 @@ public class Usuario {
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
     }
+
+    public void verificarPermissaoCargoSobreCanais() {
+        if (Objects.nonNull(canais) && canais.stream().noneMatch(cargo::hasPermissaoSobreOCanal)) {
+            throw new ValidacaoException("Usuário sem permissão para o cargo com os canais.");
+        }
+    }
+
+    public static Set<Integer> convertFrom(Set<Usuario> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Usuario> of(List<Integer> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::new)
+                .collect(Collectors.toSet());
+    }
+
 }
