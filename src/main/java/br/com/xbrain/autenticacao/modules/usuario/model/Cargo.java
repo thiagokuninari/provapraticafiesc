@@ -9,6 +9,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -78,6 +79,6 @@ public class Cargo {
     }
 
     public boolean hasPermissaoSobreOCanal(ECanal canal) {
-        return ObjectUtils.isEmpty(canais) || canais.contains(canal);
+        return ObjectUtils.isEmpty(canais) || Objects.isNull(canal) || canais.contains(canal);
     }
 }

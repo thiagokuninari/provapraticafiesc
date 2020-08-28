@@ -35,6 +35,16 @@ public class CargoTest {
         assertThat(cargo.hasPermissaoSobreOCanal(ECanal.D2D_PROPRIO)).isTrue();
     }
 
+    @Test
+    public void hasPermissaoSobreOCanal_true_quandoCanalForNull() {
+        var cargo = umCargoComCanais(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO);
+        assertThat(cargo.hasPermissaoSobreOCanal(null)).isTrue();
+
+        cargo = new Cargo();
+        assertThat(cargo.getCanais()).isNull();
+        assertThat(cargo.hasPermissaoSobreOCanal(null)).isTrue();
+    }
+
     private Cargo umCargoComCanais(ECanal... canais) {
         return Cargo.builder()
             .canais(Set.of(canais))
