@@ -52,7 +52,7 @@ public class Cargo {
         name = "CARGO_CANAL",
         joinColumns = @JoinColumn(
             name = "FK_CARGO",
-            foreignKey = @ForeignKey(name = "FK_CARGO_"),
+            foreignKey = @ForeignKey(name = "FK_CARGO_CANAL"),
             referencedColumnName = "ID"
         )
     )
