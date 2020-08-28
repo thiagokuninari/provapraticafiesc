@@ -5,8 +5,11 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -19,11 +22,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,6 +42,47 @@ public class CargoServiceTest {
     private CargoSuperiorRepository cargoSuperiorRepository;
     @Mock
     private CargoRepository cargoRepository;
+
+    @Test
+    public void getPermitidosPorNivelECanaisPermitidos_cargosPermitidosParaAquelesCanais() {
+        var usuarioAutenticado = UsuarioAutenticado.builder()
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL.getRole())))
+            .build();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+
+        var predicate = new CargoPredicate()
+            .comNivel(31)
+            .build();
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(List.of(
+            umCargo(1000, ECanal.AGENTE_AUTORIZADO),
+            umCargo(1001, ECanal.D2D_PROPRIO),
+            umCargo(1002),
+            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
+            umCargo(1004, ECanal.ATP, ECanal.D2D_PROPRIO)
+        ));
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO)))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1001, 1002, 1003, 1004);
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of()))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO)))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1000, 1002, 1003, 1004);
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO)))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1000, 1002, 1003);
+    }
 
     @Test
     public void getPermitidosPorNivel_deveRetornarTodosOsNiveis_quandoTiverPermissaoVisualizarGeral() {
@@ -116,6 +162,13 @@ public class CargoServiceTest {
 
         assertThat(service.situacao(umCargoRequest(1, "Vendedor", ESituacao.I)))
                 .extracting("situacao").contains(ESituacao.I);
+    }
+
+    private Cargo umCargo(Integer id, ECanal... canais) {
+        return Cargo.builder()
+            .id(id)
+            .canais(Set.of(canais))
+            .build();
     }
 
     private Cargo umCargo(Integer id, String nome, ESituacao situacao) {

@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,10 +23,9 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping
-    public List<CargoResponse> getAll(Integer nivelId, ECanal canal) {
-        return service.getPermitidosPorNivel(nivelId)
+    public List<CargoResponse> getAll(Integer nivelId, Set<ECanal> canais) {
+        return service.getPermitidosPorNivelECanaisPermitidos(nivelId, canais)
                 .stream()
-                .filter(cargo -> cargo.hasPermissaoSobreOCanal(canal))
                 .map(CargoResponse::of)
                 .collect(Collectors.toList());
     }

@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
@@ -30,7 +29,6 @@ import java.util.Set;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -90,41 +88,6 @@ public class CargoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", not(empty())))
                 .andExpect(jsonPath("$.content[0].nome", is("Administrador")));
-    }
-
-    @Test
-    public void getAll_cargosDaqueleCanalQuandoFiltrarPorCanal() throws Exception {
-        when(cargoService.getPermitidosPorNivel(any())).thenReturn(List.of(
-            umCargo(1000, ECanal.AGENTE_AUTORIZADO),
-            umCargo(1001, ECanal.D2D_PROPRIO),
-            umCargo(1002),
-            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)
-        ));
-
-        var type = objectMapper.getTypeFactory().constructCollectionType(List.class, CargoResponse.class);
-
-        var bodyResStr = mvc.perform(get(API_CARGO)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .param("nivelId", "1")
-            .param("canal", ECanal.D2D_PROPRIO.name())
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-        List<CargoResponse> response = objectMapper.readValue(bodyResStr, type);
-        assertThat(response)
-            .extracting(CargoResponse::getId)
-            .containsExactlyInAnyOrder(1001, 1002, 1003);
-
-        bodyResStr = mvc.perform(get(API_CARGO)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .param("nivelId", "1")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-        response = objectMapper.readValue(bodyResStr, type);
-        assertThat(response)
-            .extracting(CargoResponse::getId)
-            .containsExactlyInAnyOrder(1000, 1001, 1002, 1003);
     }
 
     @Test
