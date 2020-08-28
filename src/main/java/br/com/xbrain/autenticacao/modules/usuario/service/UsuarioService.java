@@ -439,6 +439,7 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
+        usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
     }

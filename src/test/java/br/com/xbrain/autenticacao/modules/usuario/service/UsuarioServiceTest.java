@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -38,6 +39,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,6 +84,21 @@ public class UsuarioServiceTest {
             .nome(nome)
             .situacao(situacao)
             .build();
+    }
+
+    @Test
+    public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
     @Test
@@ -194,6 +211,24 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository, atLeastOnce()).findAllAtivo();
         verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
         verify(usuarioRepository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
