@@ -91,4 +91,9 @@ public class CidadeController {
     public List<CidadeUfResponse> getAllCidadeByUfs(@RequestParam(name = "ufIds") List<Integer> ufIds) {
         return service.getAllCidadeByUfs(ufIds);
     }
+
+    @GetMapping("uf-cidade-ids/{uf}/{cidade}")
+    public CidadeUfResponse buscarCidadeUfIds(@PathVariable String uf, @PathVariable String cidade) {
+        return CidadeUfResponse.of(service.findByUfNomeAndCidadeNome(uf, cidade));
+    }
 }

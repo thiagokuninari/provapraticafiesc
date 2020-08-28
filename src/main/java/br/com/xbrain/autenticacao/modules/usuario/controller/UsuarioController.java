@@ -334,4 +334,24 @@ public class UsuarioController {
     public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
         return usuarioService.getUrlLojaOnline(id);
     }
+
+    @GetMapping("{id}/com-login-netsales")
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(@PathVariable Integer id) {
+        return usuarioService.getUsuarioByIdComLoginNetSales(id);
+    }
+
+    @GetMapping(params = "organizacaoId")
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(@RequestParam Integer organizacaoId) {
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId);
+    }
+
+    @GetMapping("permitidos")
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
+    }
+
+    @GetMapping("permitidos/select")
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
+    }
 }

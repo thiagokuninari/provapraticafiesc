@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
@@ -57,6 +58,7 @@ public class UsuarioDto implements Serializable {
     @Size(max = 30)
     private String orgaoExpedidor;
     @Size(max = 120)
+    @NotBlank
     private String loginNetSales;
     private LocalDateTime nascimento;
     @NotEmpty

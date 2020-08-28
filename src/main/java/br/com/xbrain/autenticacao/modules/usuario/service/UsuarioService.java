@@ -40,6 +40,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,13 +58,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -81,6 +85,14 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    private static final List<CodigoCargo> cargosOperadoresBackoffice
+        = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
+    private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
+            "Usuário não possui login NetSales válido."
+    );
+    private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
+            "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
+    );
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -426,7 +438,7 @@ public class UsuarioService {
     }
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
-        return CodigoCargo.AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+        return AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
     }
 
     private void validar(Usuario usuario) {
@@ -1279,7 +1291,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, CodigoCargo.VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId, VENDEDOR_OPERACAO.name())
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1327,9 +1339,9 @@ public class UsuarioService {
         return IntStream.concat(
             equipeVendaD2dService
                 .getUsuariosPermitidos(List.of(
-                    CodigoCargo.SUPERVISOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO,
-                    CodigoCargo.VENDEDOR_OPERACAO
+                    SUPERVISOR_OPERACAO,
+                    ASSISTENTE_OPERACAO,
+                    VENDEDOR_OPERACAO
                 ))
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
@@ -1431,6 +1443,16 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
+        return Optional.of(Optional.of(repository.findById(usuarioId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO))
+            .filter(Usuario::isAtivo)
+            .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
+            .map(UsuarioComLoginNetSalesResponse::of)
+            .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
+            .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
+    }
+
     public List<Integer> buscarIdsUsuariosDeCargosInferiores(Integer nivelId) {
         return repository.buscarIdsUsuariosPorCargosIds(
             cargoService.getPermitidosPorNivel(nivelId)
@@ -1442,6 +1464,34 @@ public class UsuarioService {
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {
+        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
+            .stream()
+            .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
+    }
+
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        var predicate = new UsuarioPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado(CodigoCargo codigoCargo) {
+        var predicate = new UsuarioPredicate();
+
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+            .comCodigoCargo(codigoCargo)
+            .comSituacoes(List.of(ESituacao.A));
+
+        return StreamSupport.stream(
+            repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
+            .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
+            .collect(Collectors.toList());
     }
 
     public UrlLojaOnlineResponse getUrlLojaOnline(Integer id) {

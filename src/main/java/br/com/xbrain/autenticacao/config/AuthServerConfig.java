@@ -128,6 +128,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String indicacaoApiClient;
     @Value("${app-config.oauth-clients.indicacao-api.secret}")
     private String indicacaoApiSecret;
+    @Value("${app-config.oauth-clients.backoffice-api.client}")
+    private String backofficeApiClient;
+    @Value("${app-config.oauth-clients.backoffice-api.secret}")
+    private String backofficeApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -261,6 +265,11 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(indicacaoApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(INDICACAO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(backofficeApiClient)
+            .secret(backofficeApiSecret)
+            .authorizedGrantTypes("client_credentials")
             .authorities(ROLE_APPLICATION);
     }
 

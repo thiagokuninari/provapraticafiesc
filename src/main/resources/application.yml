@@ -117,6 +117,9 @@ app-config:
     autenticacao-api:
       client: autenticacao-api
       secret: 4ut3nt1c4c404p1
+    backoffice-api:
+      client: backoffice-api
+      secret: b4ck0ff1c34p1
     front-apps:
       client: xbrain-app-client
       secret: xbrain
