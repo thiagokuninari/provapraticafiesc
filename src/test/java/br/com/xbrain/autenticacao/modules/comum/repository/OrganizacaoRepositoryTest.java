@@ -52,4 +52,12 @@ public class OrganizacaoRepositoryTest {
                 .extracting("codigo", "nome")
                 .contains(tuple("CALLINK", "Callink"));
     }
+
+    @Test
+    public void findById_organizacao_quandoExistir() {
+        var response = organizacaoRepository.findById(3).get();
+        assertThat(response.getId()).isEqualTo(3);
+        assertThat(response.getNome()).isEqualTo("Próprio");
+        assertThat(response.getCodigo()).isEqualTo("PROPRIO");
+    }
 }
