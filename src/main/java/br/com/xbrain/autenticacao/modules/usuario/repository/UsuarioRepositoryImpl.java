@@ -668,7 +668,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
         var subclusterIdList = getSubclustersUsuario(usuarioId)
             .stream()
             .map(SubCluster::getId)
@@ -685,7 +685,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuarioCidade.cidade, cidade)
             .innerJoin(cidade.subCluster, subCluster)
             .where(subCluster.id.in(subclusterIdList)
-                .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
+                .and(cargo.id.eq(CARGO_SUPERVISOR_ID))
+                .and(usuario.canais.contains(canal)))
             .distinct()
             .fetch();
     }
