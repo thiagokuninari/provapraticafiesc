@@ -10,6 +10,6 @@ public class FeederUtil {
         "AGENTE AUTORIZADO COM PERMISSÃO DE FEEDER.";
     public static final String OBSERVACAO_NAO_FEEDER =
         "AGENTE AUTORIZADO SEM PERMISSÃO DE FEEDER.";
-    public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_AA = List.of(15000, 15001, 15002, 15005, 3046);
+    public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_AA = List.of(15000, 15005, 3046);
 
 }
