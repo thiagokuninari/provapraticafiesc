@@ -25,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -61,14 +63,19 @@ public class CargoControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsCargos_conformeNivelFiltrado() throws Exception {
-        when(cargoService.getPermitidosPorNivel(eq(1)))
+    public void getAll_deveRetornarOsCargos_conformeNivelECanaisPermitidosFiltrados() throws Exception {
+        when(cargoService.getPermitidosPorNivelECanaisPermitidos(eq(7), eq(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))))
                 .thenReturn(List.of(Cargo.builder()
                         .codigo(CodigoCargo.OPERACAO_TECNICO)
                         .nome("OPERADOR TECNICO")
                         .build()));
 
-        mvc.perform(get(API_CARGO + "?nivelId=1")
+        var canaisParam = Stream.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO)
+            .map(ECanal::name)
+            .collect(Collectors.joining(","));
+        mvc.perform(get(API_CARGO)
+                .param("nivelId", "7")
+                .param("canais", canaisParam)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

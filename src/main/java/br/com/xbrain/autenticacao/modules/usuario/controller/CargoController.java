@@ -23,7 +23,7 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping
-    public List<CargoResponse> getAll(Integer nivelId, Set<ECanal> canais) {
+    public List<CargoResponse> getAll(Integer nivelId, @RequestParam(required = false) Set<ECanal> canais) {
         return service.getPermitidosPorNivelECanaisPermitidos(nivelId, canais)
                 .stream()
                 .map(CargoResponse::of)

@@ -501,7 +501,7 @@ public class Usuario {
     }
 
     public void verificarPermissaoCargoSobreCanais() {
-        if (Objects.nonNull(canais) && canais.stream().noneMatch(cargo::hasPermissaoSobreOCanal)) {
+        if (!ObjectUtils.isEmpty(canais) && canais.stream().noneMatch(cargo::hasPermissaoSobreOCanal)) {
             throw new ValidacaoException("Usuário sem permissão para o cargo com os canais.");
         }
     }
