@@ -103,7 +103,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
-    List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+    List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal);
 
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
