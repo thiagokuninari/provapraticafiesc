@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import com.querydsl.core.BooleanBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -44,40 +45,59 @@ public class CargoServiceTest {
     private CargoRepository cargoRepository;
 
     @Test
-    public void getPermitidosPorNivelECanaisPermitidos_cargosPermitidosParaAquelesCanais() {
-        var usuarioAutenticado = UsuarioAutenticado.builder()
-            .cargoId(10)
-            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
-            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL.getRole())))
-            .build();
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+    public void getPermitidosPorNivelECanaisPermitidos_todosOsCargos_quandoBuscarPorListaDeCanaisVazia() {
+        mockUmUsuarioGerenteVisualizarGeral();
 
         var predicate = new CargoPredicate()
             .comNivel(31)
             .build();
-        when(cargoRepository.findAll(eq(predicate))).thenReturn(List.of(
-            umCargo(1000, ECanal.AGENTE_AUTORIZADO),
-            umCargo(1001, ECanal.D2D_PROPRIO),
-            umCargo(1002),
-            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
-            umCargo(1004, ECanal.ATP, ECanal.D2D_PROPRIO)
-        ));
-
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO)))
-            .extracting(Cargo::getId)
-            .containsExactlyInAnyOrder(1001, 1002, 1003, 1004);
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of()))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
+    }
+
+    @Test
+    public void getPermitidosPorNivelECanaisPermitidos_todosOsCargos_quandoBuscarPorListaDeCanaisNull() {
+        mockUmUsuarioGerenteVisualizarGeral();
+
+        var predicate = new CargoPredicate()
+            .comNivel(31)
+            .build();
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
+    }
+
+    @Test
+    public void getPermitidosPorNivelECanaisPermitidos_cargosPermitidosParaAquelesCanais_quandoBuscarPorMaisDeUmCanal() {
+        mockUmUsuarioGerenteVisualizarGeral();
+
+        var predicate = new CargoPredicate()
+            .comNivel(31)
+            .build();
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO)))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003, 1004);
+    }
+
+    @Test
+    public void getPermitidosPorNivelECanaisPermitidos_cargosPermitidosParaAqueleCanal_quandoBuscarPorApenasUmCanal() {
+        mockUmUsuarioGerenteVisualizarGeral();
+
+        var predicate = new CargoPredicate()
+            .comNivel(31)
+            .build();
+        when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO)))
+            .extracting(Cargo::getId)
+            .containsExactlyInAnyOrder(1001, 1002, 1003, 1004);
 
         assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO)))
             .extracting(Cargo::getId)
@@ -164,6 +184,15 @@ public class CargoServiceTest {
                 .extracting("situacao").contains(ESituacao.I);
     }
 
+    private void mockUmUsuarioGerenteVisualizarGeral() {
+        var usuarioAutenticado = UsuarioAutenticado.builder()
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL.getRole())))
+            .build();
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticado);
+    }
+
     private Cargo umCargo(Integer id, ECanal... canais) {
         return Cargo.builder()
             .id(id)
@@ -208,5 +237,16 @@ public class CargoServiceTest {
                 umCargo(8, "Vendedor", ESituacao.A),
                 umCargo(94, "Assistente Hunter", ESituacao.A),
                 umCargo(95, "Executivo Hunter", ESituacao.A));
+    }
+
+    @NotNull
+    private List<Cargo> umaListadeCargosComCanais() {
+        return List.of(
+            umCargo(1000, ECanal.AGENTE_AUTORIZADO),
+            umCargo(1001, ECanal.D2D_PROPRIO),
+            umCargo(1002),
+            umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
+            umCargo(1004, ECanal.ATP, ECanal.D2D_PROPRIO)
+        );
     }
 }
