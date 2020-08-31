@@ -81,7 +81,7 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO)))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO)))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003, 1004);
     }
@@ -246,7 +246,7 @@ public class CargoServiceTest {
             umCargo(1001, ECanal.D2D_PROPRIO),
             umCargo(1002),
             umCargo(1003, ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO),
-            umCargo(1004, ECanal.ATP, ECanal.D2D_PROPRIO)
+            umCargo(1004, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO)
         );
     }
 }
