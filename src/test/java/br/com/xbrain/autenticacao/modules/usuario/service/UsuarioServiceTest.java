@@ -91,7 +91,7 @@ public class UsuarioServiceTest {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
                 .id(22)
-                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .build();
@@ -221,7 +221,7 @@ public class UsuarioServiceTest {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
                 .id(22)
-                .canais(Set.of(ECanal.ATP, ECanal.AGENTE_AUTORIZADO))
+                .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .build();
