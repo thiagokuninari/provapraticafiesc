@@ -93,14 +93,17 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     public void getSites_deveRetornarApenasSemDiscadora_quandoSitesNaoTiveremDiscadora() {
-        mvc.perform(get(API_URI + "?naoPossuiDiscadora=true")
+        mvc.perform(get(API_URI)
+                .param("naoPossuiDiscadora", "true")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content", hasSize(5)))
                 .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
                 .andExpect(jsonPath("$.content[1].nome", is("Rio Branco")))
-                .andExpect(jsonPath("$.content[2].nome", is("Site Inativo")));
+                .andExpect(jsonPath("$.content[2].nome", is("Site Inativo")))
+                .andExpect(jsonPath("$.content[3].nome", is("Rio Branco")))
+                .andExpect(jsonPath("$.content[4].nome", is("Manaus")));
     }
 
     @Test

@@ -300,7 +300,9 @@ public class SiteServiceTest {
 
     @Test
     public void removerDiscadora_void_quandoSitePossuirDiscadora() {
-        when(siteRepository.findById(eq(1))).thenReturn(Optional.of(umSite(1, "brandon city", BRT)));
+        var site = umSite(1, "brandon city", BRT);
+        site.setDiscadoraId(2);
+        when(siteRepository.findById(eq(1))).thenReturn(Optional.of(site));
 
         service.removerDiscadora(1);
 
