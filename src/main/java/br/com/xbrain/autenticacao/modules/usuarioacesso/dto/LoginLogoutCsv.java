@@ -72,7 +72,7 @@ public class LoginLogoutCsv {
         return csvs.stream().map(csv -> {
             var cols = Stream.builder();
             Stream.of(csv.colaborador, csv.data, csv.getQuantidadeDeLogouts()).forEach(cols::add);
-            IntStream.rangeClosed(1, getLoginLogoutsCount(csvs))
+            IntStream.range(0, getLoginLogoutsCount(csvs))
                 .forEach(i -> {
                     cols.add(getLoginLogoutCol(csv.logins, i));
                     cols.add(getLoginLogoutCol(csv.logouts, i));
