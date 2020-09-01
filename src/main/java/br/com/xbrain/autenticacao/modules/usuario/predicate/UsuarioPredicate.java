@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -36,8 +37,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
-
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
 
