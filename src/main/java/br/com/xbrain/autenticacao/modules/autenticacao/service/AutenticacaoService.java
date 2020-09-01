@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -20,11 +21,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static com.google.common.collect.Lists.partition;
+import static org.springframework.util.ObjectUtils.isEmpty;
+
+@Slf4j
 @Service
 public class AutenticacaoService {
 
     private static final String USUARIO_AUTENTICADO_KEY = "usuarioAutenticado";
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
+
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
     @Autowired
@@ -107,9 +114,22 @@ public class AutenticacaoService {
         logout(usuarioRepository.findOne(usuarioId).getLogin());
     }
 
-    public void logout(List<Integer> usuariosId) {
-        usuarioRepository.findByIdIn(usuariosId)
-            .forEach(usuario -> logout(usuario.getLogin()));
+    public void logout(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                .forEach(this::deslogarUsuariosPorIds);
+        }
+    }
+
+    private void deslogarUsuariosPorIds(List<Integer> usuariosIds) {
+        usuarioRepository.findByIdIn(usuariosIds)
+            .forEach(usuario -> {
+                try {
+                    logout(usuario.getLogin());
+                } catch (Exception ex) {
+                    log.error("Houve um erro ao deslogar o usuário: " + usuario.getId(), ex);
+                }
+            });
     }
 
     public void logoutAllUsers() {
