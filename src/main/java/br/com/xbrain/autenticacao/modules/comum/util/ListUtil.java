@@ -27,10 +27,10 @@ public class ListUtil {
     }
 
     public static <T> Optional<T> getElement(List<T> list, int position) {
-        return list.stream()
-            .skip(position)
-            .limit(1)
-            .filter(Objects::nonNull)
-            .findFirst();
+        try {
+            return Optional.ofNullable(list.get(position));
+        } catch (IndexOutOfBoundsException ex) {
+            return Optional.empty();
+        }
     }
 }
