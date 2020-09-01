@@ -21,7 +21,7 @@ public interface CallClient {
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
     TelefoniaResponse obterNomeTelefoniaPorId(@PathVariable("id") Integer id);
 
-    @GetMapping(URL_RAMAL + "/agente-autorizado/{id}")
+    @GetMapping(URL_RAMAL + "/vinculado/AGENTE_AUTORIZADO/{id}")
     List<RamalResponse> obterRamaisParaAgenteAutorizado(@PathVariable("id") Integer id);
 
     @PostMapping(URL_RAMAL + "/desvincular-ramais/ATIVO_PROPRIO/{siteId}/discadora/{discadoraId}")

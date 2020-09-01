@@ -202,6 +202,9 @@ app-config:
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    gestao:
+      #url: http://localhost:8091
+      url: http://gestao-api-dev.conexaoclarobrasil.com.br
 
 flyway:
   enabled: true
@@ -232,6 +235,9 @@ zuul:
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
+    gestao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gestao.url}
 
   host:
     connect-timeout-millis: 1800000
