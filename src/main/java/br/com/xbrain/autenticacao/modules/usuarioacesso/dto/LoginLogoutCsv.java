@@ -38,11 +38,11 @@ public class LoginLogoutCsv {
     private List<LocalTime> logouts;
 
     public int getQuantidadeDeLogouts() {
-        return Objects.requireNonNullElse(logouts, List.of()).size();
+        return logouts.size();
     }
 
     public String getTempoTotalLogado() {
-        var tempoTotalLogado = IntStream.range(0, Math.max(logins.size(), logouts.size()))
+        var tempoTotalLogado = IntStream.range(0, getLoginLogoutsCount())
             .mapToLong(i -> {
                 var login = ListUtil.getElement(logins, i);
                 var logout = ListUtil.getElement(logouts, i);
@@ -143,11 +143,7 @@ public class LoginLogoutCsv {
     }
 
     private int getLoginLogoutsCount() {
-        return Stream.of(logins, logouts)
-            .map(l -> Objects.requireNonNullElse(l, List.of()))
-            .mapToInt(List::size)
-            .max()
-            .orElse(0);
+        return Math.max(logins.size(), logouts.size());
     }
 
     private static int getLoginLogoutsCount(Collection<LoginLogoutCsv> csvs) {
@@ -158,11 +154,7 @@ public class LoginLogoutCsv {
     }
 
     private static String getLoginLogoutCol(List<LocalTime> loginLogout, int index) {
-        return loginLogout.stream()
-            .skip(index)
-            .limit(1)
-            .filter(Objects::nonNull)
-            .findFirst()
+        return ListUtil.getElement(loginLogout, index)
             .map(DateTimeFormatter.ISO_TIME::format)
             .orElse("");
     }
