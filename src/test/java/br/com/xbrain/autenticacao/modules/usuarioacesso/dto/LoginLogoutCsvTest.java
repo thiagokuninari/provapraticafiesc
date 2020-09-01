@@ -21,6 +21,30 @@ import static org.assertj.core.api.Assertions.tuple;
 public class LoginLogoutCsvTest {
 
     @Test
+    public void getTempoTotalLogado_duracaoDoTempoTotalLogado() {
+        var logins = Stream.of(
+            LocalTime.of(11, 0),
+            null,
+            LocalTime.of(17, 0),
+            LocalTime.of(18, 30),
+            null
+        );
+        var logouts = Stream.of(
+            LocalTime.of(14, 47, 36),
+            LocalTime.of(16, 0),
+            null,
+            LocalTime.of(19, 10, 12),
+            null
+        );
+        var csv = LoginLogoutCsv.builder()
+            .logins(logins.collect(Collectors.toList()))
+            .logouts(logouts.collect(Collectors.toList()))
+            .build();
+
+        assertThat(csv.getTempoTotalLogado()).isEqualTo("04:27:48");
+    }
+
+    @Test
     public void getCsv_textoCsvDosDtosCsv() {
         var csvs = List.of(
             LoginLogoutCsv.builder()
