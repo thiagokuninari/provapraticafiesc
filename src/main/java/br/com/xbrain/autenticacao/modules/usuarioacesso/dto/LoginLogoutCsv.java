@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.xbrainutils.DateUtils;
+import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +19,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -39,13 +42,18 @@ public class LoginLogoutCsv {
     }
 
     public String getTempoTotalLogado() {
-        var minLogin = logins.stream().min(Comparator.naturalOrder());
-        var maxLogout = logouts.stream().max(Comparator.naturalOrder());
-        if (minLogin.isPresent() && maxLogout.isPresent()) {
-            var duracao = Duration.between(minLogin.get(), maxLogout.get());
-            return !duracao.isNegative() ? DurationFormatUtils.formatDuration(duracao.toMillis(), "HH:mm:ss") : "";
-        }
-        return "";
+        var tempoTotalLogado = IntStream.range(0, Math.max(logins.size(), logouts.size()))
+            .mapToLong(i -> {
+                var login = ListUtil.getElement(logins, i);
+                var logout = ListUtil.getElement(logouts, i);
+                if (login.isPresent() && logout.isPresent()) {
+                    var duracao = Duration.between(login.get(), logout.get());
+                    return !duracao.isNegative() ? duracao.toMillis() : 0L;
+                }
+                return 0L;
+            })
+            .sum();
+        return DurationFormatUtils.formatDuration(tempoTotalLogado, "HH:mm:ss");
     }
 
     public static String getCsvHeader(Collection<LoginLogoutCsv> csvs) {
@@ -96,21 +104,42 @@ public class LoginLogoutCsv {
     }
 
     private static LoginLogoutCsv of(Usuario usuario, LocalDate data, List<UsuarioAcesso> acessos) {
-        var acessosLogout = acessos.stream().collect(Collectors.groupingBy(UsuarioAcesso::getFlagLogout));
+        var loginLogoutTimesRef = new AtomicReference<>(new LoginLogoutTimes());
+        var ultimoFlagLogout = new AtomicReference<String>();
+        var loginLogoutsTimes = ImmutableList.<LoginLogoutTimes>builder();
+
+        acessos.stream()
+            .sorted(Comparator.comparing(UsuarioAcesso::getDataCadastro))
+            .filter(acesso -> Objects.nonNull(acesso.getFlagLogout()))
+            .forEach(acesso -> {
+                if (Objects.equals(acesso.getFlagLogout(), "F")) {
+                    var loginLogoutTimes = addNovoLoginLogoutTimes(loginLogoutsTimes, loginLogoutTimesRef);
+                    loginLogoutTimes.login = acesso.getDataCadastro().toLocalTime();
+                } else if (Objects.equals(acesso.getFlagLogout(), "V")) {
+                    if (!Objects.equals(ultimoFlagLogout.get(), "F")) {
+                        addNovoLoginLogoutTimes(loginLogoutsTimes, loginLogoutTimesRef);
+                    }
+                    loginLogoutTimesRef.get().logout = acesso.getDataCadastro().toLocalTime();
+                }
+                ultimoFlagLogout.set(acesso.getFlagLogout());
+            });
+
+        var loginLogoutsTimesList = loginLogoutsTimes.build();
         return builder()
             .colaborador(usuario.getNome())
             .data(DateUtils.parseLocalDateToString(data))
-            .logins(getTimes(acessosLogout.getOrDefault("F", List.of())))
-            .logouts(getTimes(acessosLogout.getOrDefault("V", List.of())))
+            .logins(loginLogoutsTimesList.stream().map(loginLogoutTimes -> loginLogoutTimes.login).collect(Collectors.toList()))
+            .logouts(loginLogoutsTimesList.stream().map(loginLogoutTimes -> loginLogoutTimes.logout).collect(Collectors.toList()))
             .build();
     }
 
-    private static List<LocalTime> getTimes(List<UsuarioAcesso> acessos) {
-        return acessos.stream()
-            .map(UsuarioAcesso::getDataCadastro)
-            .map(LocalTime::from)
-            .sorted()
-            .collect(Collectors.toList());
+    private static LoginLogoutTimes addNovoLoginLogoutTimes(
+        ImmutableList.Builder<LoginLogoutTimes> loginLogoutsTimes,
+        AtomicReference<LoginLogoutTimes> loginLogoutTimesRef) {
+        var novoLoginLogoutTimes = new LoginLogoutTimes();
+        loginLogoutTimesRef.set(novoLoginLogoutTimes);
+        loginLogoutsTimes.add(novoLoginLogoutTimes);
+        return novoLoginLogoutTimes;
     }
 
     private int getLoginLogoutsCount() {
@@ -136,5 +165,10 @@ public class LoginLogoutCsv {
             .findFirst()
             .map(DateTimeFormatter.ISO_TIME::format)
             .orElse("");
+    }
+
+    private static class LoginLogoutTimes {
+        private LocalTime login;
+        private LocalTime logout;
     }
 }

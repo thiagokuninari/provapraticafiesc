@@ -38,7 +38,7 @@ public class RelatorioLoginLogoutService {
 
     public void getCsv(HttpServletResponse response) {
         var predicate = new UsuarioAcessoPredicate()
-            .porDataCadastro(dataHoraAtualService.getData())
+            .porDataCadastroMinima(dataHoraAtualService.getData().minusWeeks(1))
             .build();
         var acessos = usuarioAcessoRepository.findAll(predicate);
         var csvs = LoginLogoutCsv.of(ImmutableList.copyOf(acessos));

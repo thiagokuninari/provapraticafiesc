@@ -74,6 +74,13 @@ public class UsuarioAcessoPredicate {
         return this;
     }
 
+    public UsuarioAcessoPredicate porDataCadastroMinima(LocalDate dataCadastro) {
+        if (!ObjectUtils.isEmpty(dataCadastro)) {
+            this.builder.and(usuarioAcesso.dataCadastro.goe(dataCadastro.atStartOfDay()));
+        }
+        return this;
+    }
+
     public UsuarioAcessoPredicate porPeriodo(
         LocalDate dataInicio, LocalDate dataFim, ETipo tipo) {
         if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim) && tipo.equals(ETipo.LOGOUT)) {

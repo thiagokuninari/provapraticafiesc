@@ -2,10 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.util;
 
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ListUtil {
@@ -27,5 +24,13 @@ public class ListUtil {
         Collections.shuffle(list, random);
         //noinspection SimplifyStreamApiCallChains
         return list.stream().collect(Collectors.toList());
+    }
+
+    public static <T> Optional<T> getElement(List<T> list, int position) {
+        return list.stream()
+            .skip(position)
+            .limit(1)
+            .filter(Objects::nonNull)
+            .findFirst();
     }
 }
