@@ -54,11 +54,12 @@ public class FuncionalidadeServiceTest {
         assertThat(funcionalidades)
                 .extracting("nome")
                 .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+                    "Visualizar Tabulação Manual",
+                    "Relatório - Resumo de Mailing",
+                    "Relatório - Ticket Médio Analítico",
+                    "Relatório - Ticket Médio por Vendedor",
+                    "Relatório - Gerenciamento Operacional",
+                    "Cadastrar venda para o vendedor D2D");
     }
 
     private Usuario umUsuarioSocio() {
@@ -87,7 +88,7 @@ public class FuncionalidadeServiceTest {
             .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-            .hasSize(15);
+            .hasSize(19);
     }
 
     private Cargo umCargoMsoConsultor() {
