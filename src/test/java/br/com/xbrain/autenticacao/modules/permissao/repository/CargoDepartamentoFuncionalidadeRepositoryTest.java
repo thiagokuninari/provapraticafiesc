@@ -37,14 +37,15 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
         assertThat(funcionalidades)
                 .extracting("nome")
                 .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional");
+                    "Visualizar Tabulação Manual",
+                    "Relatório - Resumo de Mailing",
+                    "Relatório - Ticket Médio Analítico",
+                    "Relatório - Ticket Médio por Vendedor",
+                    "Relatório - Gerenciamento Operacional");
 
         assertThat(funcionalidades.get(0).getCanais())
                 .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
+                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO);
     }
 
     @Test
