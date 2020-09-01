@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ERelatorioLoginLogoutSort;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutListagemFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -36,10 +37,8 @@ public class RelatorioLoginLogoutService {
         return ERelatorioLoginLogoutSort.getPage(loginLogoutResponses, pageRequest);
     }
 
-    public void getCsv(HttpServletResponse response) {
-        var predicate = new UsuarioAcessoPredicate()
-            .porDataCadastroMinima(dataHoraAtualService.getData().minusWeeks(1))
-            .build();
+    public void getCsv(RelatorioLoginLogoutCsvFiltro filtro, HttpServletResponse response) {
+        var predicate = filtro.toPredicate();
         var acessos = usuarioAcessoRepository.findAll(predicate);
         var csvs = LoginLogoutCsv.of(ImmutableList.copyOf(acessos));
         if (!CsvUtils.setCsvNoHttpResponse(

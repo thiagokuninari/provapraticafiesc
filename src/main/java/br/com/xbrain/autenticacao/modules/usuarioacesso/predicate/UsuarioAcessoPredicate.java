@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class UsuarioAcessoPredicate {
 
@@ -77,6 +78,15 @@ public class UsuarioAcessoPredicate {
     public UsuarioAcessoPredicate porDataCadastroMinima(LocalDate dataCadastro) {
         if (!ObjectUtils.isEmpty(dataCadastro)) {
             this.builder.and(usuarioAcesso.dataCadastro.goe(dataCadastro.atStartOfDay()));
+        }
+        return this;
+    }
+
+    public UsuarioAcessoPredicate porPeriodoDataCadastro(LocalDate dataInicio, LocalDate dataFim) {
+        if (!ObjectUtils.isEmpty(dataInicio) || !ObjectUtils.isEmpty(dataFim)) {
+            var localDateInicio = Optional.ofNullable(dataInicio).map(LocalDate::atStartOfDay).orElse(null);
+            var localDateFim = Optional.ofNullable(dataFim).map(LocalTime.MAX::atDate).orElse(null);
+            this.builder.and(usuarioAcesso.dataCadastro.between(localDateInicio, localDateFim));
         }
         return this;
     }
