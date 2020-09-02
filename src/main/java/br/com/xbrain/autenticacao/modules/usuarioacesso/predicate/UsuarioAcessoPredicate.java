@@ -75,13 +75,6 @@ public class UsuarioAcessoPredicate {
         return this;
     }
 
-    public UsuarioAcessoPredicate porDataCadastroMinima(LocalDate dataCadastro) {
-        if (!ObjectUtils.isEmpty(dataCadastro)) {
-            this.builder.and(usuarioAcesso.dataCadastro.goe(dataCadastro.atStartOfDay()));
-        }
-        return this;
-    }
-
     public UsuarioAcessoPredicate porPeriodoDataCadastro(LocalDate dataInicio, LocalDate dataFim) {
         if (!ObjectUtils.isEmpty(dataInicio) || !ObjectUtils.isEmpty(dataFim)) {
             var localDateInicio = Optional.ofNullable(dataInicio).map(LocalDate::atStartOfDay).orElse(null);
