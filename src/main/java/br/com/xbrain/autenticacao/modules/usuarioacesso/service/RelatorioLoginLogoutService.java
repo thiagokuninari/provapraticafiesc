@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ERelatorioLoginLogoutSort;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutListagemFiltro;
@@ -12,11 +13,13 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoP
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.ImmutableList;
+import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
@@ -47,5 +50,9 @@ public class RelatorioLoginLogoutService {
             response)) {
             throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
         }
+    }
+
+    public List<UsuarioAcessoColaboradorResponse> getColaboradores() {
+        return usuarioAcessoRepository.findAllColaboradores(new BooleanBuilder());
     }
 }
