@@ -1,15 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ERelatorioLoginLogoutSort;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutListagemFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.ImmutableList;
@@ -27,17 +25,17 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN
 public class RelatorioLoginLogoutService {
 
     @Autowired
-    private UsuarioAcessoRepository usuarioAcessoRepository;
+    private AutenticacaoService autenticacaoService;
     @Autowired
-    private DataHoraAtual dataHoraAtualService;
+    private UsuarioService usuarioService;
+    @Autowired
+    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Autowired
+    private UsuarioAcessoRepository usuarioAcessoRepository;
 
-    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(RelatorioLoginLogoutListagemFiltro filtro, PageRequest pageRequest) {
-        var predicate = new UsuarioAcessoPredicate(filtro.toPredicate())
-            .porDataCadastro(dataHoraAtualService.getData())
-            .build();
-        var acessos = usuarioAcessoRepository.findAll(predicate);
-        var loginLogoutResponses = LoginLogoutResponse.of(ImmutableList.copyOf(acessos));
-        return ERelatorioLoginLogoutSort.getPage(loginLogoutResponses, pageRequest);
+    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest) {
+        var usuariosIds = usuarioService.getIdDosUsuariosSubordinados(getUsuarioAutenticadoId(), true);
+        return notificacaoUsuarioAcessoService.getLoginsLogoutsDeHoje(usuariosIds, pageRequest).toSpringPage(pageRequest);
     }
 
     public void getCsv(RelatorioLoginLogoutCsvFiltro filtro, HttpServletResponse response) {
@@ -54,5 +52,9 @@ public class RelatorioLoginLogoutService {
 
     public List<UsuarioAcessoColaboradorResponse> getColaboradores() {
         return usuarioAcessoRepository.findAllColaboradores(new BooleanBuilder());
+    }
+
+    private Integer getUsuarioAutenticadoId() {
+        return autenticacaoService.getUsuarioId();
     }
 }

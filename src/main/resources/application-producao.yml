@@ -54,6 +54,8 @@ app-config:
       url: http://172.10.10.95:8084
     claro-indico:
       url: http://172.10.10.55:8055
+    notificacao:
+      url: http://172.10.10.91:8081
 
   email:
     enviar: true

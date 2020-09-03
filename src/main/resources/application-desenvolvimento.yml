@@ -17,6 +17,8 @@ app-config:
       url: http://172.10.10.65:8084
     claro-indico:
       url: http://172.10.10.54:8055
+    notificacao:
+      url: http://172.10.10.95:8081
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

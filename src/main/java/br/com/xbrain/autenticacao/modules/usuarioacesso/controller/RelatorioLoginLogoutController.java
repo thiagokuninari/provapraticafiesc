@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutListagemFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.RelatorioLoginLogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,10 +23,8 @@ public class RelatorioLoginLogoutController {
     private RelatorioLoginLogoutService service;
 
     @GetMapping("hoje")
-    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(
-        @Validated RelatorioLoginLogoutListagemFiltro filtro,
-        PageRequest pageRequest) {
-        return service.getLoginsLogoutsDeHoje(filtro, pageRequest);
+    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest) {
+        return service.getLoginsLogoutsDeHoje(pageRequest);
     }
 
     @GetMapping("csv")

@@ -202,6 +202,9 @@ app-config:
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    notificacao:
+      #url: http://localhost:8081
+      url: http://192.168.50.1:6595
 
 flyway:
   enabled: true

@@ -35,17 +35,6 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    public void getLoginsLogoutsDeHoje_deveValidarOsCampos_quandoFiltrosInvalidos() {
-        mvc.perform(get(ENDPOINT + "/hoje")
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "O campo colaboradoresIds é obrigatório.")));
-    }
-
-    @Test
-    @SneakyThrows
     public void getCsv_deveValidarOsCampos_quandoFiltrosInvalidos() {
         mvc.perform(get(ENDPOINT + "/csv")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
