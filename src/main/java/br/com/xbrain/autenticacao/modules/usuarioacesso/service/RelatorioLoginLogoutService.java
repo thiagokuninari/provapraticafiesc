@@ -4,14 +4,13 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ public class RelatorioLoginLogoutService {
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     @Autowired
-    private UsuarioAcessoRepository usuarioAcessoRepository;
+    private UsuarioRepository usuarioRepository;
 
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest) {
         return notificacaoUsuarioAcessoService
@@ -49,8 +48,9 @@ public class RelatorioLoginLogoutService {
         }
     }
 
-    public List<UsuarioAcessoColaboradorResponse> getColaboradores() {
-        return usuarioAcessoRepository.findAllColaboradores(new BooleanBuilder());
+    public List<UsuarioNomeResponse> getColaboradores() {
+        var idsUsuarios = notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso());
+        return usuarioRepository.findUsuariosIdENomePorUsuariosIds(idsUsuarios);
     }
 
     private List<Integer> getUsuariosIdsComNivelDeAcesso() {

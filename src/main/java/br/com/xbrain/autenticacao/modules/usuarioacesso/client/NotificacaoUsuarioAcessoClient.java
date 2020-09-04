@@ -22,4 +22,7 @@ public interface NotificacaoUsuarioAcessoClient {
 
     @GetMapping("api/relatorio-login-logout/csv")
     List<LoginLogoutCsv> getCsv(@RequestParam Map<String, String> filtro);
+
+    @GetMapping("api/relatorio-login-logout/usuarios/ids")
+    List<Integer> getUsuariosIdsByIds(@RequestParam(value = "usuariosIds", required = false) List<Integer> usuariosIds);
 }

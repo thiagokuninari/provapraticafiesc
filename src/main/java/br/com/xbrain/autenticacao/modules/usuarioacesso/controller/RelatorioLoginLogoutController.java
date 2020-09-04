@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.RelatorioLoginLogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class RelatorioLoginLogoutController {
     }
 
     @GetMapping("colaboradores")
-    public List<UsuarioAcessoColaboradorResponse> getColaboradores() {
+    public List<UsuarioNomeResponse> getColaboradores() {
         return service.getColaboradores();
     }
 }

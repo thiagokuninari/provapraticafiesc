@@ -65,4 +65,18 @@ public class NotificacaoUsuarioAcessoService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public List<Integer> getUsuariosIdsByIds(@Nullable List<Integer> usuariosIds) {
+        try {
+            return client.getUsuariosIdsByIds(usuariosIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 }

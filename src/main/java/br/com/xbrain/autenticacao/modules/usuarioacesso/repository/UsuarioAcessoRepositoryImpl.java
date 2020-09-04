@@ -3,9 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColaboradorResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.time.LocalDateTime;
@@ -30,20 +28,6 @@ public class UsuarioAcessoRepositoryImpl
             .innerJoin(usuarioAcesso.usuario, usuario)
             .where(usuario.situacao.eq(ESituacao.A))
             .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
-            .fetch();
-    }
-
-    @Override
-    public List<UsuarioAcessoColaboradorResponse> findAllColaboradores(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-            .selectDistinct(constructor(
-                UsuarioAcessoColaboradorResponse.class,
-                usuarioAcesso.usuario.id,
-                usuarioAcesso.usuario.nome))
-            .from(usuarioAcesso)
-            .innerJoin(usuarioAcesso.usuario, usuario)
-            .where(predicate)
-            .orderBy(usuarioAcesso.usuario.nome.upper().asc())
             .fetch();
     }
 

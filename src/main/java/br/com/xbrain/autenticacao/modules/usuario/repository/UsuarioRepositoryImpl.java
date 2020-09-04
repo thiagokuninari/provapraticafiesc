@@ -12,7 +12,9 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import com.google.common.collect.Lists;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -39,6 +41,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
@@ -743,6 +746,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
                 .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findUsuariosIdENomePorUsuariosIds(List<Integer> usuariosIds) {
+        var projection = Projections.bean(UsuarioNomeResponse.class,
+            usuario.id,
+            usuario.nome);
+        var predicate = ExpressionUtils.anyOf(
+            Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                .stream()
+                .map(usuario.id::in)
+                .collect(Collectors.toList()));
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(projection)
+            .from(usuario)
+            .where(predicate)
+            .orderBy(usuario.nome.upper().asc())
             .fetch();
     }
 }
