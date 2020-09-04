@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.filtros;
 
-import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
-import com.querydsl.core.BooleanBuilder;
+import br.com.xbrain.xbrainutils.DateUtils;
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -28,10 +31,14 @@ public class RelatorioLoginLogoutCsvFiltro {
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFim;
 
-    public BooleanBuilder toPredicate() {
-        return new UsuarioAcessoPredicate()
-            .porUsuarioIds(colaboradoresIds)
-            .porPeriodoDataCadastro(dataInicio, dataFim)
-            .build();
+    public Map<String, String> toFeignRequestMap(Collection<Integer> usuariosIdsPermitidos) {
+        var map = Maps.<String, String>newHashMap();
+        map.put("usuariosIds", colaboradoresIds.stream()
+            .filter(usuariosIdsPermitidos::contains)
+            .map(String::valueOf)
+            .collect(Collectors.joining(",")));
+        map.put("dataInicio", DateUtils.parseLocalDateToString(dataInicio));
+        map.put("dataFim", DateUtils.parseLocalDateToString(dataFim));
+        return map;
     }
 }

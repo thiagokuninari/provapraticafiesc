@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoColabor
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,14 +33,13 @@ public class RelatorioLoginLogoutService {
     private UsuarioAcessoRepository usuarioAcessoRepository;
 
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest) {
-        var usuariosIds = usuarioService.getIdDosUsuariosSubordinados(getUsuarioAutenticadoId(), true);
-        return notificacaoUsuarioAcessoService.getLoginsLogoutsDeHoje(usuariosIds, pageRequest).toSpringPage(pageRequest);
+        return notificacaoUsuarioAcessoService
+            .getLoginsLogoutsDeHoje(getUsuariosIdsComNivelDeAcesso(), pageRequest)
+            .toSpringPage(pageRequest);
     }
 
     public void getCsv(RelatorioLoginLogoutCsvFiltro filtro, HttpServletResponse response) {
-        var predicate = filtro.toPredicate();
-        var acessos = usuarioAcessoRepository.findAll(predicate);
-        var csvs = LoginLogoutCsv.of(ImmutableList.copyOf(acessos));
+        var csvs = notificacaoUsuarioAcessoService.getCsv(filtro, getUsuariosIdsComNivelDeAcesso());
         if (!CsvUtils.setCsvNoHttpResponse(
             LoginLogoutCsv.getCsv(csvs),
             CsvUtils.createFileName(LOGIN_LOGOUT_CSV.name()),
@@ -52,6 +50,10 @@ public class RelatorioLoginLogoutService {
 
     public List<UsuarioAcessoColaboradorResponse> getColaboradores() {
         return usuarioAcessoRepository.findAllColaboradores(new BooleanBuilder());
+    }
+
+    private List<Integer> getUsuariosIdsComNivelDeAcesso() {
+        return usuarioService.getIdDosUsuariosSubordinados(getUsuarioAutenticadoId(), true);
     }
 
     private Integer getUsuarioAutenticadoId() {

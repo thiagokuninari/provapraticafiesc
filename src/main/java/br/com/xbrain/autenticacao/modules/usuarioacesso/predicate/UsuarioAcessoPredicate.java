@@ -2,21 +2,14 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso;
-import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public class UsuarioAcessoPredicate {
-
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
     private QUsuarioAcesso usuarioAcesso = QUsuarioAcesso.usuarioAcesso;
@@ -31,17 +24,6 @@ public class UsuarioAcessoPredicate {
 
     public UsuarioAcessoPredicate(BooleanBuilder builder) {
         this.builder = builder;
-    }
-
-    public UsuarioAcessoPredicate porUsuarioIds(Collection<Integer> usuarioIds) {
-        if (!ObjectUtils.isEmpty(usuarioIds)) {
-            var expression = Expressions.anyOf(Lists.partition(List.copyOf(usuarioIds), QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(usuarioAcesso.usuario.id::in)
-                .toArray(BooleanExpression[]::new));
-            this.builder.and(expression);
-        }
-        return this;
     }
 
     public UsuarioAcessoPredicate porNome(String nome) {
@@ -61,15 +43,6 @@ public class UsuarioAcessoPredicate {
     public UsuarioAcessoPredicate porEmail(String email) {
         if (!ObjectUtils.isEmpty(email)) {
             this.builder.and(usuarioAcesso.usuario.email.contains(email));
-        }
-        return this;
-    }
-
-    public UsuarioAcessoPredicate porPeriodoDataCadastro(LocalDate dataInicio, LocalDate dataFim) {
-        if (!ObjectUtils.isEmpty(dataInicio) || !ObjectUtils.isEmpty(dataFim)) {
-            var localDateInicio = Optional.ofNullable(dataInicio).map(LocalDate::atStartOfDay).orElse(null);
-            var localDateFim = Optional.ofNullable(dataFim).map(LocalTime.MAX::atDate).orElse(null);
-            this.builder.and(usuarioAcesso.dataCadastro.between(localDateInicio, localDateFim));
         }
         return this;
     }

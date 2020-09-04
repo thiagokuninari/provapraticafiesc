@@ -64,7 +64,10 @@ public enum EErrors {
         "#019 - Erro ao tentar recuperar a Estrutura do AA."),
     ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE(
         "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#020 - Erro ao tentar recuperar o relatório de logins e logouts de hoje.");
+        "#020 - Erro ao tentar recuperar o relatório de logins e logouts de hoje."),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV(
+        "#021 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#021 - Erro ao tentar recuperar o relatório de logins e logouts CSV.");
 
     @Getter
     @Setter
