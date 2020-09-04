@@ -35,8 +35,22 @@ public class RelatorioLoginLogoutControllerTest {
 
     @Test
     @SneakyThrows
-    public void getCsv_deveValidarOsCampos_quandoFiltrosInvalidos() {
+    public void getCsv_deveValidarOsCamposObrigatorios_quandoFiltrosNaoPassados() {
         mvc.perform(get(ENDPOINT + "/csv")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo colaboradoresIds é obrigatório.",
+                "O campo dataInicio é obrigatório.",
+                "O campo dataFim é obrigatório.")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getCsv_deveValidarOCampoUsuarioIdsObrigatorio_quandoPassarFiltroUsuariosIdsVazio() {
+        mvc.perform(get(ENDPOINT + "/csv")
+            .param("colaboradoresIds", "")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$", hasSize(3)))
