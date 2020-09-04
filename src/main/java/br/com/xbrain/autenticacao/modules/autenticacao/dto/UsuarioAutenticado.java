@@ -118,6 +118,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return MSO == usuario.getNivelCodigo();
     }
 
+    public boolean isMsoOrXbrain() {
+        return isMso() || isXbrain();
+    }
+
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
                                                    List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()

@@ -14,9 +14,11 @@ import feign.RetryableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,10 +30,17 @@ public class NotificacaoUsuarioAcessoService {
     private ObjectMapper objectMapper;
 
     @SuppressWarnings("unchecked")
-    public MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(Collection<Integer> usuariosIds, PageRequest pageRequest) {
+    public MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(
+        @Nullable Collection<Integer> usuariosIds,
+        PageRequest pageRequest) {
         try {
             var pageRequestParams = objectMapper.convertValue(pageRequest, Map.class);
-            pageRequestParams.put("usuariosIds", usuariosIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+            if (Objects.nonNull(usuariosIds)) {
+                var usuariosIdsParam = usuariosIds.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+                pageRequestParams.put("usuariosIds", usuariosIdsParam);
+            }
 
             return client.getLoginsLogoutsDeHoje(pageRequestParams);
         } catch (RetryableException ex) {
@@ -43,7 +52,9 @@ public class NotificacaoUsuarioAcessoService {
         }
     }
 
-    public List<LoginLogoutCsv> getCsv(RelatorioLoginLogoutCsvFiltro filtro, Collection<Integer> usuariosIdsPermitidos) {
+    public List<LoginLogoutCsv> getCsv(
+        RelatorioLoginLogoutCsvFiltro filtro,
+        @Nullable Collection<Integer> usuariosIdsPermitidos) {
         try {
             return client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
         } catch (RetryableException ex) {

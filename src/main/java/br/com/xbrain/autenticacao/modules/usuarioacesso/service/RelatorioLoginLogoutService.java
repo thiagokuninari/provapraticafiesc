@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -53,10 +54,13 @@ public class RelatorioLoginLogoutService {
     }
 
     private List<Integer> getUsuariosIdsComNivelDeAcesso() {
-        return usuarioService.getIdDosUsuariosSubordinados(getUsuarioAutenticadoId(), true);
+        var usuarioAutenticado = getUsuarioAutenticado();
+        return usuarioAutenticado.isMsoOrXbrain()
+            ? null
+            : usuarioService.getIdDosUsuariosSubordinados(usuarioAutenticado.getId(), true);
     }
 
-    private Integer getUsuarioAutenticadoId() {
-        return autenticacaoService.getUsuarioId();
+    private UsuarioAutenticado getUsuarioAutenticado() {
+        return autenticacaoService.getUsuarioAutenticado();
     }
 }
