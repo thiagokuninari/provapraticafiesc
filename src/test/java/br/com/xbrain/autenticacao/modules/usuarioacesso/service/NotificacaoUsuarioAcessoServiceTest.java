@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.config.JacksonConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +49,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
     }
 
     @Test
-    public void getLoginsLogoutsDeHoje_devePassarParametrosComUsuariosIds_quandoPassarVariosUsuariosIds() {
+    public void getLoginsLogoutsDeHoje_devePassarParametrosComPageRequestEUsuariosIds_quandoPassarVariosUsuariosIds() {
         service.getLoginsLogoutsDeHoje(List.of(12, 1, 98), umPageRequest());
 
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
@@ -86,6 +88,52 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
 
         assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "2002");
+    }
+
+    @Test
+    public void getCsv_devePassarParametrosComFiltrosEUsuariosIdsDoFiltroMasTambemPermitidos_quandoApenasAlgunsIdsPermitidos() {
+        var filtro = RelatorioLoginLogoutCsvFiltro.builder()
+            .colaboradoresIds(Set.of(2002, 1998, 3000, 333, 1))
+            .dataInicio(LocalDate.of(2015, 6, 25))
+            .dataFim(LocalDate.of(2016, 1, 4))
+            .build();
+        service.getCsv(filtro, Set.of(500, 2002, 1, 10, 64, 1998));
+
+        verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
+
+        assertThat(requestParamsArgCaptor.getValue()).contains(
+            entry("dataInicio", "25/06/2015"),
+            entry("dataFim", "04/01/2016"),
+            entry(USUARIOS_IDS_REQUEST_PARAM, "1,1998,2002")
+        );
+    }
+
+    @Test
+    public void getCsv_devePassarFiltroUsuariosIdsComTodosOsUsuariosIds_quandoIdsPermitidosForNull() {
+        var filtro = RelatorioLoginLogoutCsvFiltro.builder()
+            .colaboradoresIds(Set.of(2002, 1998, 3000, 333, 1))
+            .dataInicio(LocalDate.of(2015, 6, 25))
+            .dataFim(LocalDate.of(2016, 1, 4))
+            .build();
+        service.getCsv(filtro, null);
+
+        verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
+
+        assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "1,333,1998,2002,3000");
+    }
+
+    @Test
+    public void getCsv_devePassarParametroUsuariosIdsComApenasUmId_quandoFiltroUsuariosIdsTiverApenasUmId() {
+        var filtro = RelatorioLoginLogoutCsvFiltro.builder()
+            .colaboradoresIds(Set.of(3000))
+            .dataInicio(LocalDate.of(2015, 6, 25))
+            .dataFim(LocalDate.of(2016, 1, 4))
+            .build();
+        service.getCsv(filtro, null);
+
+        verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
+
+        assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "3000");
     }
 
     @NotNull

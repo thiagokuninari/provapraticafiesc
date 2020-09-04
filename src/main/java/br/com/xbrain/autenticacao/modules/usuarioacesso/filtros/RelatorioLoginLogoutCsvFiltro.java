@@ -37,6 +37,7 @@ public class RelatorioLoginLogoutCsvFiltro {
         var map = Maps.<String, String>newHashMap();
         map.put("usuariosIds", colaboradoresIds.stream()
             .filter(colaboradorId -> Objects.isNull(usuariosIdsPermitidos) || usuariosIdsPermitidos.contains(colaboradorId))
+            .sorted()
             .map(String::valueOf)
             .collect(Collectors.joining(",")));
         map.put("dataInicio", DateUtils.parseLocalDateToString(dataInicio));
