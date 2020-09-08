@@ -19,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +48,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
     @Test
     public void getLoginsLogoutsDeHoje_devePassarParametrosComPageRequestEUsuariosIds_quandoPassarVariosUsuariosIds() {
-        service.getLoginsLogoutsDeHoje(List.of(12, 1, 98), umPageRequest());
+        service.getLoginsLogoutsDeHoje(Optional.of(List.of(12, 1, 98)), umPageRequest());
 
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
 
@@ -62,7 +63,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
     @Test
     public void getLoginsLogoutsDeHoje_deveNaoPassarParametroUsuarioIds_quandoUsuarioIdsForNull() {
-        service.getLoginsLogoutsDeHoje(null, umPageRequest());
+        service.getLoginsLogoutsDeHoje(Optional.empty(), umPageRequest());
 
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
 
@@ -71,7 +72,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
     @Test
     public void getLoginsLogoutsDeHoje_devePassarParametroUsuarioIdsComStringVazia_quandoUsuarioIdsForVazio() {
-        service.getLoginsLogoutsDeHoje(Set.of(), umPageRequest());
+        service.getLoginsLogoutsDeHoje(Optional.of(Set.of()), umPageRequest());
 
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
 
@@ -80,7 +81,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
     @Test
     public void getLoginsLogoutsDeHoje_devePassarParametroUsuarioIdsUmIdVazia_quandoUsuarioIdsTiverApenasUmId() {
-        service.getLoginsLogoutsDeHoje(Set.of(2002), umPageRequest());
+        service.getLoginsLogoutsDeHoje(Optional.of(Set.of(2002)), umPageRequest());
 
         verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
 
@@ -94,7 +95,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
             .dataInicio(LocalDate.of(2015, 6, 25))
             .dataFim(LocalDate.of(2016, 1, 4))
             .build();
-        service.getCsv(filtro, Set.of(500, 2002, 1, 10, 64, 1998));
+        service.getCsv(filtro, Optional.of(Set.of(500, 2002, 1, 10, 64, 1998)));
 
         verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
 
@@ -112,7 +113,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
             .dataInicio(LocalDate.of(2015, 6, 25))
             .dataFim(LocalDate.of(2016, 1, 4))
             .build();
-        service.getCsv(filtro, null);
+        service.getCsv(filtro, Optional.empty());
 
         verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
 
@@ -126,7 +127,7 @@ public class NotificacaoUsuarioAcessoServiceTest {
             .dataInicio(LocalDate.of(2015, 6, 25))
             .dataFim(LocalDate.of(2016, 1, 4))
             .build();
-        service.getCsv(filtro, null);
+        service.getCsv(filtro, Optional.empty());
 
         verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
 

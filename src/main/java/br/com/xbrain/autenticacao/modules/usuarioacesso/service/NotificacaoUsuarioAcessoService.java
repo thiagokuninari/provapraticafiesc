@@ -14,11 +14,7 @@ import feign.RetryableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,17 +26,17 @@ public class NotificacaoUsuarioAcessoService {
     private ObjectMapper objectMapper;
 
     public MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(
-        @Nullable Collection<Integer> usuariosIds,
+        Optional<? extends Collection<Integer>> usuariosIds,
         PageRequest pageRequest) {
         try {
             var type = objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
             Map<String, Object> pageRequestParams = objectMapper.convertValue(pageRequest, type);
-            if (Objects.nonNull(usuariosIds)) {
-                var usuariosIdsParam = usuariosIds.stream()
+            usuariosIds.ifPresent(ids -> {
+                var usuariosIdsParam = ids.stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
                 pageRequestParams.put("usuariosIds", usuariosIdsParam);
-            }
+            });
 
             return client.getLoginsLogoutsDeHoje(pageRequestParams);
         } catch (RetryableException ex) {
@@ -54,7 +50,7 @@ public class NotificacaoUsuarioAcessoService {
 
     public List<LoginLogoutCsv> getCsv(
         RelatorioLoginLogoutCsvFiltro filtro,
-        @Nullable Collection<Integer> usuariosIdsPermitidos) {
+        Optional<? extends Collection<Integer>> usuariosIdsPermitidos) {
         try {
             return client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
         } catch (RetryableException ex) {
@@ -66,9 +62,9 @@ public class NotificacaoUsuarioAcessoService {
         }
     }
 
-    public List<Integer> getUsuariosIdsByIds(@Nullable List<Integer> usuariosIds) {
+    public List<Integer> getUsuariosIdsByIds(Optional<List<Integer>> usuariosIds) {
         try {
-            return client.getUsuariosIdsByIds(usuariosIds).stream()
+            return client.getUsuariosIdsByIds(usuariosIds.orElse(null)).stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         } catch (RetryableException ex) {

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
@@ -53,11 +54,11 @@ public class RelatorioLoginLogoutService {
         return usuarioRepository.findUsuariosIdENomePorUsuariosIds(idsUsuarios);
     }
 
-    private List<Integer> getUsuariosIdsComNivelDeAcesso() {
+    private Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
         var usuarioAutenticado = getUsuarioAutenticado();
         return usuarioAutenticado.isMsoOrXbrain()
-            ? null
-            : usuarioService.getIdDosUsuariosSubordinados(usuarioAutenticado.getId(), true);
+            ? Optional.empty()
+            : Optional.of(usuarioService.getIdDosUsuariosSubordinados(usuarioAutenticado.getId(), true));
     }
 
     private UsuarioAutenticado getUsuarioAutenticado() {
