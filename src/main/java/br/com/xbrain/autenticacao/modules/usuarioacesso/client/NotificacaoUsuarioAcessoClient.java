@@ -16,9 +16,8 @@ import java.util.Map;
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface NotificacaoUsuarioAcessoClient {
 
-    @SuppressWarnings("rawtypes")
     @GetMapping("api/relatorio-login-logout/hoje")
-    MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(@RequestParam Map filtro);
+    MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(@RequestParam Map<String, Object> filtro);
 
     @GetMapping("api/relatorio-login-logout/csv")
     List<LoginLogoutCsv> getCsv(@RequestParam Map<String, String> filtro);

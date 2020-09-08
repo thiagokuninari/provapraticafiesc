@@ -29,12 +29,12 @@ public class NotificacaoUsuarioAcessoService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @SuppressWarnings("unchecked")
     public MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(
         @Nullable Collection<Integer> usuariosIds,
         PageRequest pageRequest) {
         try {
-            var pageRequestParams = objectMapper.convertValue(pageRequest, Map.class);
+            var type = objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+            Map<String, Object> pageRequestParams = objectMapper.convertValue(pageRequest, type);
             if (Objects.nonNull(usuariosIds)) {
                 var usuariosIdsParam = usuariosIds.stream()
                     .map(String::valueOf)
