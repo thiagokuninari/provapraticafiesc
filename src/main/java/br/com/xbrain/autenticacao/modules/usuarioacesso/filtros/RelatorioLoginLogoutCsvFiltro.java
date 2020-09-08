@@ -33,8 +33,8 @@ public class RelatorioLoginLogoutCsvFiltro {
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFim;
 
-    public Map<String, String> toFeignRequestMap(@Nullable Collection<Integer> usuariosIdsPermitidos) {
-        var map = Maps.<String, String>newHashMap();
+    public Map<String, Object> toFeignRequestMap(@Nullable Collection<Integer> usuariosIdsPermitidos) {
+        var map = Maps.<String, Object>newHashMap();
         map.put("usuariosIds", colaboradoresIds.stream()
             .filter(colaboradorId -> Objects.isNull(usuariosIdsPermitidos) || usuariosIdsPermitidos.contains(colaboradorId))
             .sorted()

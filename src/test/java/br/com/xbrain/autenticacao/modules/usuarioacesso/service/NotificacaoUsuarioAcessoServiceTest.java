@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.config.JacksonConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 public class NotificacaoUsuarioAcessoServiceTest {
@@ -38,13 +36,12 @@ public class NotificacaoUsuarioAcessoServiceTest {
     private NotificacaoUsuarioAcessoService service;
     @Mock
     private NotificacaoUsuarioAcessoClient client;
-    private ObjectMapper objectMapper = new JacksonConfig().viewsObjectMapper();
     @Captor
-    private ArgumentCaptor<Map> requestParamsArgCaptor;
+    private ArgumentCaptor<Map<String, Object>> requestParamsArgCaptor;
 
     @Before
     public void setup() {
-        objectMapper = new JacksonConfig().viewsObjectMapper();
+        var objectMapper = new JacksonConfig().viewsObjectMapper();
         ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
     }
 
