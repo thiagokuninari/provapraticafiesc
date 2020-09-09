@@ -1,0 +1,1 @@
+UPDATE FUNCIONALIDADE SET NOME = 'Resgatar Gravações DDCom' WHERE ID = 7004;
