@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.controller;
 
 import lombok.SneakyThrows;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class RelatorioLoginLogoutControllerTest {
     @Autowired
     private MockMvc mvc;
 
+    @Ignore
     @Test
     @SneakyThrows
     public void getCsv_deveValidarOsCamposObrigatorios_quandoFiltrosNaoPassados() {
@@ -46,6 +48,7 @@ public class RelatorioLoginLogoutControllerTest {
                 "O campo dataFim é obrigatório.")));
     }
 
+    @Ignore
     @Test
     @SneakyThrows
     public void getCsv_deveValidarOCampoUsuarioIdsObrigatorio_quandoPassarFiltroUsuariosIdsVazio() {
