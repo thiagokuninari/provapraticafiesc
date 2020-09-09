@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -47,42 +46,43 @@ public class CargoServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         assertThat(service.getPermitidosAosComunicados(List.of(1, 3)))
-            .extracting("nome", "codigo", "situacao")
+            .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple("Aceite", "AGENTE_AUTORIZADO_ACEITE", A),
-                tuple("Analista", null, A),
-                tuple("Analista de Suporte", "AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN", A),
-                tuple("Aprendiz", null, A),
-                tuple("Assistente", "ASSISTENTE_OPERACAO", A),
-                tuple("Assistente", null, A),
-                tuple("Assistente Hunter", "ASSISTENTE_HUNTER", A),
-                tuple("Back Office D2D", "AGENTE_AUTORIZADO_BACKOFFICE_D2D", A),
-                tuple("Back Office Televendas", "AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS", A),
-                tuple("BackOffice*", "AGENTE_AUTORIZADO_BACKOFFICE_TEMP", A),
-                tuple("Consultor", null, A),
-                tuple("Coordenador", "COORDENADOR_OPERACAO", A),
-                tuple("Coordenador", null, A),
-                tuple("Diretor", null, A),
-                tuple("Empresário", null, A),
-                tuple("Executivo", "EXECUTIVO", A),
-                tuple("Executivo Hunter", "EXECUTIVO_HUNTER", A),
-                tuple("Gerente", "AGENTE_AUTORIZADO_GERENTE", A),
-                tuple("Gerente", "GERENTE_OPERACAO", A),
-                tuple("Gerente*", "AGENTE_AUTORIZADO_GERENTE_TEMP", A),
-                tuple("Supervisor", "SUPERVISOR_OPERACAO", A),
-                tuple("Supervisor", "AGENTE_AUTORIZADO_SUPERVISOR", A),
-                tuple("Supervisor*", "AGENTE_AUTORIZADO_SUPERVISOR_TEMP", A),
-                tuple("Sócio Principal", "AGENTE_AUTORIZADO_SOCIO", A),
-                tuple("Sócio Secundário", "AGENTE_AUTORIZADO_SOCIO_SECUNDARIO", A),
-                tuple("Técnico", null, A),
-                tuple("Vendedor", "VENDEDOR_OPERACAO", A),
-                tuple("Vendedor Back Office D2D", "AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D", A),
-                tuple("Vendedor Back Office Televendas ", "AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS", A),
-                tuple("Vendedor BackOffice*", "AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TEMP", A),
-                tuple("Vendedor D2D", "AGENTE_AUTORIZADO_VENDEDOR_D2D", A),
-                tuple("Vendedor Híbrido", "AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO", A),
-                tuple("Vendedor Televendas", "AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS", A),
-                tuple("Vendedor*", "AGENTE_AUTORIZADO_VENDEDOR_TEMP", A));
+                tuple(40, "Aceite - Agente Autorizado"),
+                tuple(1, "Analista - Operação"),
+                tuple(51, "Analista de Suporte - X-BRAIN"),
+                tuple(43, "Aprendiz - Agente Autorizado"),
+                tuple(44, "Assistente - Agente Autorizado"),
+                tuple(2, "Assistente - Operação"),
+                tuple(94, "Assistente Hunter - Operação"),
+                tuple(78, "Back Office D2D - Agente Autorizado"),
+                tuple(56, "Back Office Televendas - Agente Autorizado"),
+                tuple(84, "BackOffice* - Agente Autorizado"),
+                tuple(3, "Consultor - Operação"),
+                tuple(45, "Coordenador - Agente Autorizado"),
+                tuple(4, "Coordenador - Operação"),
+                tuple(6, "Diretor - Operação"),
+                tuple(46, "Empresário - Agente Autorizado"),
+                tuple(5, "Executivo - Operação"),
+                tuple(95, "Executivo Hunter - Operação"),
+                tuple(47, "Gerente - Agente Autorizado"),
+                tuple(7, "Gerente - Operação"),
+                tuple(82, "Gerente* - Agente Autorizado"),
+                tuple(48, "Supervisor - Agente Autorizado"),
+                tuple(10, "Supervisor - Operação"),
+                tuple(81, "Supervisor* - Agente Autorizado"),
+                tuple(41, "Sócio Principal - Agente Autorizado"),
+                tuple(42, "Sócio Secundário - Agente Autorizado"),
+                tuple(9, "Técnico - Operação"),
+                tuple(8, "Vendedor - Operação"),
+                tuple(79, "Vendedor Back Office D2D - Agente Autorizado"),
+                tuple(80, "Vendedor Back Office Televendas  - Agente Autorizado"),
+                tuple(85, "Vendedor BackOffice* - Agente Autorizado"),
+                tuple(57, "Vendedor D2D - Agente Autorizado"),
+                tuple(49, "Vendedor Híbrido - Agente Autorizado"),
+                tuple(58, "Vendedor Televendas - Agente Autorizado"),
+                tuple(83, "Vendedor* - Agente Autorizado")
+            );
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

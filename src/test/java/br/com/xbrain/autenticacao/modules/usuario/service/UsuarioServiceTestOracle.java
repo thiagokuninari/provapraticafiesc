@@ -69,8 +69,6 @@ public class UsuarioServiceTestOracle {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
-    @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
 
     @Before
     public void setUp() {

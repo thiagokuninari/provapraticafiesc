@@ -3,10 +3,10 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -72,18 +72,18 @@ public class CargoService {
                 .build());
     }
 
-    public List<CargoResponse> getPermitidosAosComunicados(List<Integer> niveisIds) {
+    public List<SelectResponse> getPermitidosAosComunicados(List<Integer> niveisIds) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
-        return repository.findAll(
+        return repository.buscarTodosComNiveis(
             new CargoPredicate()
                 .comNiveis(niveisIds)
                 .filtrarPermitidos(usuarioAutenticado, cargosIds)
                 .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
                 .build())
             .stream()
-            .map(CargoResponse::of)
+            .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ", cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 

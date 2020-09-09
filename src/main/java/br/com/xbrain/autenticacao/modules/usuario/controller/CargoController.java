@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoComNivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
@@ -64,8 +65,7 @@ public class CargoController {
     }
 
     @GetMapping("comunicados")
-    public List<CargoResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
+    public List<SelectResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
         return service.getPermitidosAosComunicados(niveisId);
-
     }
 }
