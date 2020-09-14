@@ -72,7 +72,8 @@ public class FeederService {
 
     public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
         if (Objects.equals(usuarioMqRequest.getAgenteAutorizadoFeeder(), Eboolean.V)) {
-            var permissoesFeeder = getPermissoesEspeciaisDosVendedores(List.of(usuario.getId()), usuarioMqRequest.getUsuarioCadastroId());
+            var permissoesFeeder = getPermissoesEspeciaisDosVendedores(List.of(usuario.getId()),
+                usuarioMqRequest.getUsuarioCadastroId());
             salvarPermissoesEspeciais(permissoesFeeder);
         }
     }
