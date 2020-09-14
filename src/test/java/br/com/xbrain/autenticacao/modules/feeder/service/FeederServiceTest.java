@@ -238,6 +238,7 @@ public class FeederServiceTest {
         return UsuarioMqRequest.builder()
             .agenteAutorizadoFeeder(Eboolean.V)
             .agenteAutorizadoId(111)
+            .usuarioCadastroId(2222)
             .build();
     }
 }
