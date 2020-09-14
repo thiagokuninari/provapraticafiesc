@@ -135,7 +135,7 @@ public class TestBuilders {
         );
     }
 
-    public static List<Site> umaSiteVinculadoAUsuarioComCargo(Integer id, String nome, Usuario usuarioVinculado) {
+    public static List<Site> umaListaDeSitesVinculadoAUsuarioComCargo(Integer id, String nome, Usuario usuarioVinculado) {
         return List.of(
                 umSiteVinculado(id, nome, usuarioVinculado)
         );

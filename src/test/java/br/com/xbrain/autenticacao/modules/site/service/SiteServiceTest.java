@@ -13,7 +13,6 @@ import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -64,13 +63,13 @@ public class SiteServiceTest {
     private void setupSite(Integer idUsuario, Integer idSite, CodigoCargo codigoCargo, String nomeSite, Integer vinculoIndireto) {
         var sitePredicate = umSitePredicateComSupervidorOuCoordenador(idUsuario);
         var pageRequest = umPageRequest();
-        Integer idVinculo = vinculoIndireto != null ? vinculoIndireto : idUsuario;
+        var idVinculo = vinculoIndireto != null ? vinculoIndireto : idUsuario;
 
         when(autenticacaoService.getUsuarioAutenticado())
                 .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo));
         when(siteRepository.findAll(sitePredicate, pageRequest))
-                .thenReturn(new PageImpl<>(umaSiteVinculadoAUsuarioComCargo(idSite, nomeSite,
-                        usuarioVinculado(idUsuario, codigoCargo))));
+                .thenReturn(new PageImpl<>(umaListaDeSitesVinculadoAUsuarioComCargo(idSite, nomeSite,
+                        umUsuario(idUsuario, codigoCargo))));
 
     }
 
@@ -347,10 +346,9 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void getSiteVinculadoAoSupervidor_deveRetornarSitesVinculadosAoProprioSupervidor() {
+    public void getSiteVinculadoAoSupervidor_deveRetornarSitesVinculadosAoProprioSupervidor_quandoSiteVinculadoAoSupervisor() {
         setupSite(100, 10, SUPERVISOR_OPERACAO, "Site", null);
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(10, "Site", BRT)
@@ -358,10 +356,9 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void getSiteVinculoSupervidor_deveRetornarSitesVinculadosAoProprioCoordenador_quandoExistirSiteVinculado() {
+    public void getSiteVinculoCoordenador_deveRetornarSitesVinculadosAoProprioCoordenador_quandoExistirSiteVinculado() {
         setupSite(101, 11, COORDENADOR_OPERACAO, "SITE_VINCULADO_AO_COORDENADOR", null);
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(11, "SITE_VINCULADO_AO_COORDENADOR", BRT)
@@ -375,7 +372,6 @@ public class SiteServiceTest {
             .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, COORDENADOR_OPERACAO)));
 
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(11, "SITE_VINCULADO_AO_COORDENADOR_DIRETOR", BRT)
@@ -389,7 +385,6 @@ public class SiteServiceTest {
             .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, SUPERVISOR_OPERACAO)));
 
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(11, "SITE_VINCULADO_AO_SUPERVISOR_DIRETOR", BRT)
@@ -403,7 +398,6 @@ public class SiteServiceTest {
             .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, SUPERVISOR_OPERACAO)));
 
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(11, "SITE_VINCULADO_AO_GERENTE_DIRETOR", BRT)
@@ -425,7 +419,6 @@ public class SiteServiceTest {
                 usuarioSubordinadoDtoDtoResponse(110, SUPERVISOR_OPERACAO),
                 usuarioSubordinadoDtoDtoResponse(111, SUPERVISOR_OPERACAO)));
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(2)
             .extracting("id", "nome", "timeZone")
             .containsExactly(
                 tuple(8, "SITE_COORDENADOR", BRT),
@@ -449,10 +442,6 @@ public class SiteServiceTest {
                 .id(id)
                 .codigoCargo(codigoCargo)
                 .build();
-    }
-
-    private Usuario usuarioVinculado(Integer id, CodigoCargo codigoCargo) {
-        return umUsuario(id, codigoCargo);
     }
 
     private PageRequest umPageRequest() {

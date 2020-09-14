@@ -44,18 +44,16 @@ public class SiteServiceIT {
     public void getAbixoHierarquia_deveRetornarUmSite_quandoDiretorPossuirCoordenadorOuSupervisorComSiteVinculado() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(100, CodigoCargo.DIRETOR_OPERACAO));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
-            .extracting("id", "nome", "timeZone", "situacao")
+            .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
             );
     }
 
     @Test
-    public void getAbixoHierarquia_deveRetornarUmSite_quandoGerentePossuirCoordenadorOuSupervisorComSiteVinculado() {
+    public void getHierarquia_deveRetornarUmSite_quandoGerentePossuirCoordenadorOuSupervisorComSiteVinculado() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(101, CodigoCargo.GERENTE_OPERACAO));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
@@ -77,7 +75,6 @@ public class SiteServiceIT {
     public void getSiteProprio_deveRetornarUmSite_quandoCoordenadorTiverSiteVinculadoAEle() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.COORDENADOR_OPERACAO));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
@@ -88,7 +85,6 @@ public class SiteServiceIT {
     public void getSiteDoSuperior_deveRetornarUmSite_quandoAssistenteTiverVinculoComCoordenadorComSite() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(1)
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
@@ -99,7 +95,6 @@ public class SiteServiceIT {
     public void getTodosSites_devePegarTodosOsSitesMesmoSemVinculo_quandoUsuarioForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(98, CodigoCargo.MSO_CONSULTOR));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(2)
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),
@@ -111,7 +106,6 @@ public class SiteServiceIT {
     public void getTodosSites_devePegarTodosOsSitesMesmoSemVinculo_quandoUsuarioForAdmin() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(99, CodigoCargo.ADMINISTRADOR));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
-            .hasSize(2)
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),

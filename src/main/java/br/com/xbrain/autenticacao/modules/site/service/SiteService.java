@@ -107,7 +107,7 @@ public class SiteService {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var usuarioAutenticadoCodigoCargo = usuarioAutenticado.getCargoCodigo();
         if (VISUALIZAR_TODOS_SITES.contains(usuarioAutenticadoCodigoCargo)) {
-            filtros.build();
+            return;
         } else if (VISUALIZAR_SITES_SUBORDINADOS.contains(usuarioAutenticadoCodigoCargo)) {
             filtros.comCoordenadoresOuSupervisores(getSubordinadosAbaixoDiretor());
         } else if (VISUALIZAR_SITES_DE_SUPERIORES.contains(usuarioAutenticadoCodigoCargo)) {
