@@ -16,12 +16,16 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +52,11 @@ public class SiteService {
         new ValidacaoException("Existem cidades vinculadas à outro site.");
     private static final String USUARIO_NAO_POSSUI_SITE_VICULADO =
             "O Usuário não possui site viculado.";
+    private static final List<CodigoCargo> VISUALIZAR_TODOS_SITES =
+            List.of(CodigoCargo.MSO_CONSULTOR, CodigoCargo.ADMINISTRADOR);
+    private static final List<CodigoCargo> VISUALIZAR_SITES_SUBORDINADOS =
+            List.of(CodigoCargo.DIRETOR_OPERACAO, CodigoCargo.GERENTE_OPERACAO);
+    private static final List<CodigoCargo> VISUALIZAR_SITES_DE_SUPERIORES = List.of(CodigoCargo.ASSISTENTE_OPERACAO);
 
     @Autowired
     private SiteRepository siteRepository;
@@ -61,6 +70,8 @@ public class SiteService {
     private CallService callService;
     @Autowired
     private FuncionalidadeService funcionalidadeService;
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -82,15 +93,44 @@ public class SiteService {
         return siteRepository.findAll(filtrarPorUsuario(filtros.toPredicate()), pageRequest);
     }
 
-    private Predicate filtrarPorUsuario(SitePredicate filtros) {
+    public Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
         if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO)
             && !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
             filtros.ignorarTodos();
         }
-
+        setFiltrosHierarquia(filtros);
         return filtros.build();
+    }
+
+    public void setFiltrosHierarquia(SitePredicate filtros) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var usuarioAutenticadoCodigoCargo = usuarioAutenticado.getCargoCodigo();
+        if (VISUALIZAR_TODOS_SITES.contains(usuarioAutenticadoCodigoCargo)) {
+            filtros.build();
+        } else if (VISUALIZAR_SITES_SUBORDINADOS.contains(usuarioAutenticadoCodigoCargo)) {
+            filtros.comCoordenadoresOuSupervisores(getSubordinadosAbaixoDiretor());
+        } else if (VISUALIZAR_SITES_DE_SUPERIORES.contains(usuarioAutenticadoCodigoCargo)) {
+            filtros.comCoordenadoresOuSupervisores(getSuperioresDoUsuario());
+        } else {
+            filtros.comCoordenadoresOuSupervisor(usuarioAutenticado.getId());
+        }
+    }
+
+    public List<Integer> getSuperioresDoUsuario() {
+        var usuarioId = autenticacaoService.getUsuarioAutenticado().getId();
+        return usuarioService.getSuperioresDoUsuario(usuarioId)
+                .stream()
+                .map(UsuarioHierarquiaResponse::getId)
+                .collect(toList());
+    }
+
+    public List<Integer> getSubordinadosAbaixoDiretor() {
+        var usuarioId = autenticacaoService.getUsuarioAutenticado().getId();
+        return usuarioService.getSubordinadosDoUsuario(usuarioId)
+                .stream()
+                .map(UsuarioSubordinadoDto::getId)
+                .collect(toList());
     }
 
     private Predicate filtrarPorUsuarioXbrainOuMso(UsuarioAutenticado usuarioAutenticado) {
@@ -242,5 +282,4 @@ public class SiteService {
         siteRepository.removeDiscadoraBySite(siteId);
         callService.cleanCacheableSiteAtivoProprio();
     }
-
 }

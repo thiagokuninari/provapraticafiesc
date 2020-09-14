@@ -64,6 +64,14 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate comCoordenadoresOuSupervisores(List<Integer> coordenadoresOuSupervidoresIds) {
+        if (!isEmpty(coordenadoresOuSupervidoresIds)) {
+            builder.and(site.coordenadores.any().id.in(coordenadoresOuSupervidoresIds))
+                .or(site.supervisores.any().id.in(coordenadoresOuSupervidoresIds));
+        }
+        return this;
+    }
+
     public SitePredicate comSupervisores(List<Integer> supervisoresIds) {
         filtrarLista(supervisoresIds)
             .map(site.supervisores.any().id::in)
