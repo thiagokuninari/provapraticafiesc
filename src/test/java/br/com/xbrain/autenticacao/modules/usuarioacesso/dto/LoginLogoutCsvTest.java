@@ -12,6 +12,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LoginLogoutCsvTest {
 
     @Test
+    public void getQuantidadeDeLogouts_quantidadeCertaDeLogouts_quandoRegistradosTodosOsLogouts() {
+        var logouts = List.of(
+            LocalTime.of(11, 0),
+            LocalTime.of(18, 30),
+            LocalTime.of(19, 10, 12)
+        );
+        var csv = LoginLogoutCsv.builder()
+            .logouts(logouts)
+            .build();
+
+        assertThat(csv.getQuantidadeDeLogouts()).isEqualTo(3);
+    }
+
+    @Test
+    public void getQuantidadeDeLogouts_quantidadeDeLogoutsRegistrados_quandoUltimoLogoutNaoRegistrado() {
+        var logouts = Stream.of(
+            LocalTime.of(18, 30),
+            null
+        ).collect(Collectors.toList());
+        var csv = LoginLogoutCsv.builder()
+            .logouts(logouts)
+            .build();
+
+        assertThat(csv.getQuantidadeDeLogouts()).isEqualTo(1);
+    }
+
+    @Test
     public void getTempoTotalLogado_duracaoDoTempoTotalLogado() {
         var logins = Stream.of(
             LocalTime.of(11, 0),
@@ -61,7 +88,7 @@ public class LoginLogoutCsvTest {
         var expected = "COLABORADOR;DATA;QUANTIDADE DE LOGOUT;"
             + "HORÁRIO LOGIN 1;HORÁRIO LOGOUT 1;HORÁRIO LOGIN 2;HORÁRIO LOGOUT 2;HORÁRIO LOGIN 3;HORÁRIO LOGOUT 3;"
             + "TEMPO TOTAL LOGADO\n"
-            + "SELENA GOMEZ;20/11/2019;2;11:20:00;;12:05:21;17:00:59;;;04:55:38\n"
+            + "SELENA GOMEZ;20/11/2019;1;11:20:00;;12:05:21;17:00:59;;;04:55:38\n"
             + "MARAÍSA SILVA;06/12/2018;3;13:00:00;14:30:00;;18:45:00;;21:00:00;01:30:00\n"
             + "THIAGO MOREIRA;29/02/2020;1;13:00:00;14:50:00;17:40:51;;;;01:50:00";
         assertThat(LoginLogoutCsv.getCsv(csvs)).isEqualTo(expected);

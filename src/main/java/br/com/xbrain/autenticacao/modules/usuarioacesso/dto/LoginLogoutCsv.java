@@ -12,6 +12,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -30,7 +31,7 @@ public class LoginLogoutCsv {
     private List<LocalTime> logouts;
 
     public int getQuantidadeDeLogouts() {
-        return logouts.size();
+        return (int) logouts.stream().filter(Objects::nonNull).count();
     }
 
     public String getTempoTotalLogado() {
