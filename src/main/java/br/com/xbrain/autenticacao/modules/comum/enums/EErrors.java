@@ -70,7 +70,10 @@ public enum EErrors {
         "#021 - Erro ao tentar recuperar o relatório de logins e logouts CSV."),
     ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS(
         "#021 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#021 - Erro ao tentar recuperar os ids dos usuários dos acessos.");
+        "#021 - Erro ao tentar recuperar os ids dos usuários dos acessos."),
+    ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
+        "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#022 - Erro ao tentar recuperar os ids dos usuários subordinados.");
 
     @Getter
     @Setter

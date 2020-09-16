@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @FeignClient(name = "agenteAutorizadoClient",
         url = "${app-config.services.parceiros-online.url}",
@@ -25,6 +26,9 @@ public interface AgenteAutorizadoClient {
     String API_COLABORADOR_VENDAS = "api/colaboradores-vendas";
     String API_AGENTE_AUTORIZADO_PERMITIDOS = "api/agentes-autorizados-permitidos";
     String API_USUARIO_AGENTE_AUTORIZADO = "api/usuarios-agente-autorizado";
+
+    @GetMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/subordinados")
+    Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);
 
     @GetMapping(API_AGENTE_AUTORIZADO + "/agente-autorizado-por-cnpj")
     AgenteAutorizadoResponse getAaByCpnj(@RequestParam Map request);

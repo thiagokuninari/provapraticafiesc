@@ -110,6 +110,10 @@ public class UsuarioAutenticado extends OAuth2Request {
             .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
+    public boolean isOperacao() {
+        return getNivelCodigoEnum() == CodigoNivel.OPERACAO;
+    }
+
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
     }
@@ -131,7 +135,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         }
     }
 
-    private boolean isAgenteAutorizado() {
+    public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 
@@ -143,12 +147,28 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(usuario) && usuario.isUsuarioEquipeVendas();
     }
 
+    public boolean isAssistenteOperacao() {
+        return cargoCodigo == CodigoCargo.ASSISTENTE_OPERACAO && isOperacao();
+    }
+
     public boolean isCoordenadorOperacao() {
         return cargoCodigo.equals(CodigoCargo.COORDENADOR_OPERACAO);
     }
 
     public boolean isGerenteOperacao() {
         return cargoCodigo.equals(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    public boolean isExecutivo() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO;
+    }
+
+    public boolean isExecutivoHunter() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO_HUNTER;
+    }
+
+    public boolean isExecutivoOuExecutivoHunter() {
+        return isExecutivo() || isExecutivoHunter();
     }
 
     public boolean isBackoffice() {
