@@ -119,7 +119,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isMso() {
-        return MSO == usuario.getNivelCodigo();
+        return MSO == getNivelCodigoEnum();
     }
 
     public boolean isMsoOrXbrain() {

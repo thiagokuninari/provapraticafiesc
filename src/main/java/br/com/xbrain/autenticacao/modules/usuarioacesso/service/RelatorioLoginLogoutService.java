@@ -58,7 +58,7 @@ public class RelatorioLoginLogoutService {
         return usuarioRepository.findUsuariosIdENomePorUsuariosIds(idsUsuarios);
     }
 
-    private Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
+    public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
         var usuarioAutenticado = getUsuarioAutenticado();
 
         if (usuarioAutenticado.isMsoOrXbrain()) {
