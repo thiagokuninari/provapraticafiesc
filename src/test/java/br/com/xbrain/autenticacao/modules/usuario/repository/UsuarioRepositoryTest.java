@@ -52,7 +52,6 @@ public class UsuarioRepositoryTest {
             .containsExactlyInAnyOrder(
                 tuple(103, "CARLOS@HOTMAIL.COM"),
                 tuple(104, "MARIA@HOTMAIL.COM"),
-                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
                 tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
@@ -82,7 +81,6 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO1@TESTE.COM"),
                 tuple(108, "EXECUTIVO2@TESTE.COM"),
-                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
                 tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
@@ -105,7 +103,7 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"),
-                tuple(110, "HUNTER 1"),
+                tuple(110, "EXECUTIVO 3 INATIVO"),
                 tuple(111, "HUNTER 2"));
     }
 

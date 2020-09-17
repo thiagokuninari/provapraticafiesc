@@ -131,4 +131,9 @@ public class UsuarioGerenciaController {
                 response
         );
     }
+
+    @GetMapping("existir/usuario")
+    public Boolean validarSeUsuarioNovoCadastro(UsuarioExistenteValidacaoRequest usuarioParaValidar) {
+        return service.validarSeUsuarioCpfEmailNaoCadastrados(usuarioParaValidar);
+    }
 }

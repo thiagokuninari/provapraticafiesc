@@ -162,7 +162,7 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
-    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
+    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;

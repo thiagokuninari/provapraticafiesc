@@ -36,6 +36,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
 import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
 import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
 import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
+import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
 
 @Configuration
 @EnableAuthorizationServer
@@ -132,6 +133,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String backofficeApiClient;
     @Value("${app-config.oauth-clients.backoffice-api.secret}")
     private String backofficeApiSecret;
+    @Value("${app-config.oauth-clients.gerador-lead-api.client}")
+    private String geradorLeadApiClient;
+    @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
+    private String geradorLeadApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -270,6 +275,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .withClient(backofficeApiClient)
             .secret(backofficeApiSecret)
             .authorizedGrantTypes("client_credentials")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(geradorLeadApiClient)
+            .secret(geradorLeadApiSecret)
+            .scopes(GERADOR_LEAD.getScope())
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .authorities(ROLE_APPLICATION);
     }
 

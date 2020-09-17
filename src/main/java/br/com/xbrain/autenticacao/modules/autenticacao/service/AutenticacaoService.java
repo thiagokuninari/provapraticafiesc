@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
@@ -145,13 +146,30 @@ public class AutenticacaoService {
         return (Integer) token.getAdditionalInformation().get("usuarioId");
     }
 
+    public void forcarLogoutGeradorLeads(Usuario usuario) {
+        if (usuario.isCargo(CodigoCargo.GERADOR_LEADS)) {
+            tokenStore
+                .findTokensByClientIdAndUserName(
+                    AuthServerConfig.APP_CLIENT,
+                    usuario.getLogin())
+                .forEach(token -> tokenStore.removeAccessToken(token));
+        }
+    }
+
     public boolean isEmulacao() {
         return request.getAttribute("emulacao") != null;
     }
 
     public boolean somenteUmLoginPorUsuario(String login) {
-        return emailsPermitidosComMultiplosLogins
+        return !isUsuarioGeradorLeads(login)
+            && emailsPermitidosComMultiplosLogins
                 .stream()
                 .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
+    }
+
+    private boolean isUsuarioGeradorLeads(String login) {
+        return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
+            .map(usuario -> usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS))
+            .orElse(Boolean.FALSE);
     }
 }
