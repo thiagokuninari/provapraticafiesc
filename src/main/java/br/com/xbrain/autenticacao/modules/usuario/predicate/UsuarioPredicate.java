@@ -57,7 +57,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacoes(List<ESituacao> situacoes) {
+    public UsuarioPredicate comSituacoes(Collection<ESituacao> situacoes) {
         if (!isEmpty(situacoes)) {
             builder.and(usuario.situacao.in(situacoes));
         }
@@ -163,6 +163,13 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
+            comIdsObrigatorio(usuariosIds);
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comIdsObrigatorio(List<Integer> usuariosIds) {
+        if (nonNull(usuariosIds)) {
             builder.and(ExpressionUtils.anyOf(
                 Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
                     .stream()

@@ -106,5 +106,7 @@ public interface UsuarioRepositoryCustom {
 
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
-    List<UsuarioNomeResponse> findUsuariosIdENomePorUsuariosIds(List<Integer> usuariosIds);
+    List<UsuarioNomeResponse> findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(List<Integer> usuariosIds);
+
+    List<Integer> findAllIds(Predicate predicate);
 }

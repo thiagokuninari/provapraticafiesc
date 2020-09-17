@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
@@ -31,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -750,20 +752,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findUsuariosIdENomePorUsuariosIds(List<Integer> usuariosIds) {
-        var projection = Projections.bean(UsuarioNomeResponse.class,
-            usuario.id,
-            usuario.nome);
+    public List<UsuarioNomeResponse> findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(List<Integer> usuariosIds) {
         var predicate = ExpressionUtils.anyOf(
             Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
                 .stream()
                 .map(usuario.id::in)
                 .collect(Collectors.toList()));
         return new JPAQueryFactory(entityManager)
-            .selectDistinct(projection)
+            .selectDistinct(usuario.id, usuario.nome, usuario.situacao)
             .from(usuario)
             .where(predicate)
             .orderBy(usuario.nome.upper().asc())
+            .fetch().stream().map(this::getUsuarioComRelocado).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Integer> findAllIds(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario.id)
+            .from(usuario)
+            .where(predicate)
             .fetch();
+    }
+
+    private UsuarioNomeResponse getUsuarioComRelocado(Tuple tuple) {
+        var nome = tuple.get(usuario.nome);
+        var situacao = tuple.get(usuario.situacao);
+
+        return UsuarioNomeResponse.builder()
+            .id(tuple.get(usuario.id))
+            .nome(Objects.isNull(nome) || situacao == A || Objects.isNull(situacao)
+                ? nome
+                : String.format("%s (%s)", nome, situacao.getDescricao().toUpperCase()))
+            .build();
     }
 }

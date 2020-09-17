@@ -3,9 +3,11 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
@@ -53,9 +56,21 @@ public class RelatorioLoginLogoutService {
         }
     }
 
-    public List<UsuarioNomeResponse> getColaboradores() {
+    public List<UsuarioNomeResponse> getColaboradores(boolean buscarInativos) {
         var idsUsuarios = notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso());
-        return usuarioRepository.findUsuariosIdENomePorUsuariosIds(idsUsuarios);
+        idsUsuarios = getUsuariosIdsPorBuscarInativos(idsUsuarios, buscarInativos);
+        return usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(idsUsuarios);
+    }
+
+    public List<Integer> getUsuariosIdsPorBuscarInativos(List<Integer> usuariosIds, boolean buscarInativos) {
+        var situacoes = buscarInativos
+            ? Set.of(ESituacao.A, ESituacao.I, ESituacao.R)
+            : Set.of(ESituacao.A);
+        var predicate = new UsuarioPredicate()
+            .comIdsObrigatorio(usuariosIds)
+            .comSituacoes(situacoes)
+            .build();
+        return usuarioRepository.findAllIds(predicate);
     }
 
     public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
