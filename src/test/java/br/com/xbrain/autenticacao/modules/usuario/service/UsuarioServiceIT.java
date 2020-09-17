@@ -710,10 +710,11 @@ public class UsuarioServiceIT {
 
         assertThat(usuariosAposRemanejar)
             .extracting("id", "situacao")
-            .containsExactly(tuple(2, ESituacao.A), tuple(1000, ESituacao.R));
+            .containsAnyOf(tuple(1000, ESituacao.R));
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -726,11 +727,12 @@ public class UsuarioServiceIT {
         var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
 
         assertThat(usuarioRemanejado)
-            .extracting("id", "situacao", "cpf")
-            .containsExactly(tuple(3, ESituacao.A, "95512593005"), tuple(1000, ESituacao.R, "95512593005"));
+            .extracting("situacao", "cpf")
+            .containsExactly(tuple(ESituacao.A, "95512593005"), tuple(ESituacao.R, "95512593005"));
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
