@@ -53,16 +53,32 @@ public class FeederServiceTest {
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
-    public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciais_quandoUsuariosNaoPossuiremAsPermissoes() {
+    public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciaisConformeOCargo_quandoUsuariosNaoPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
         aaComPermissaoFeeder.setFeeder(Eboolean.V);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
 
+        when(usuarioRepository.findComplete(102)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 102));
+        when(usuarioRepository.findComplete(100)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
+
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
         verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
-        verify(permissaoEspecialRepository, times(1)).save(anyList());
         verify(usuarioHistoricoService, times(1)).save(anyList());
+        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(7)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(tuple(100, 3046),
+                tuple(102, 3046),
+                tuple(102, 15000),
+                tuple(102, 15005),
+                tuple(10, 3046),
+                tuple(10, 15000),
+                tuple(10, 15005));
     }
 
     @Test
@@ -127,7 +143,8 @@ public class FeederServiceTest {
 
     @Test
     public void alterarSituacaoUsuarioFeeder_deveLancarException_quandoUsuarioNaoFeeder() {
-        when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.SUPERVISOR_OPERACAO, ESituacao.A));
+        when(usuarioRepository.findComplete(1111)).thenReturn(
+            umUsuario(CodigoCargo.SUPERVISOR_OPERACAO, ESituacao.A,1111));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto()))
@@ -136,7 +153,8 @@ public class FeederServiceTest {
 
     @Test
     public void alterarSituacaoUsuarioFeeder_deveInativarUsuarioEGerarHistorico_quandoMensagemParaInativar() {
-        when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.IMPORTADOR_CARGAS, ESituacao.A));
+        when(usuarioRepository.findComplete(1111)).thenReturn(
+            umUsuario(CodigoCargo.IMPORTADOR_CARGAS, ESituacao.A, 1111));
 
         service.alterarSituacaoUsuarioFeeder(umSituacaoAlteracaoMqDto());
 
@@ -155,7 +173,8 @@ public class FeederServiceTest {
     public void alterarSituacaoUsuarioFeeder_deveAtivarUsuarioEGerarHistorico_quandoMensagemParaAtivar() {
         var ativacaoMqDto = umSituacaoAlteracaoMqDto();
         ativacaoMqDto.setSituacaoAlterada(ESituacao.A);
-        when(usuarioRepository.findComplete(1111)).thenReturn(umUsuario(CodigoCargo.GERADOR_LEADS, ESituacao.I));
+        when(usuarioRepository.findComplete(1111)).thenReturn(
+            umUsuario(CodigoCargo.GERADOR_LEADS, ESituacao.I, 1111));
 
         service.alterarSituacaoUsuarioFeeder(ativacaoMqDto);
 
@@ -172,7 +191,8 @@ public class FeederServiceTest {
 
     @Test
     public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissaoTratarLead_quandoAgenteAutorizadoForFeeder() {
-        when(usuarioRepository.findById(1111)).thenReturn(umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A));
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 1111));
         when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
             .thenReturn(Optional.empty());
 
@@ -195,6 +215,27 @@ public class FeederServiceTest {
         verify(permissaoEspecialRepository, never()).save(anyList());
     }
 
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissoesBackoffice_quandoUsuarioForBackoffice() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+
+        when(usuarioRepository.findById(1111)).thenReturn(
+            umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
+            .thenReturn(Optional.empty());
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(3)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(tuple(1111, 3046),
+                tuple(1111, 15000),
+                tuple(1111, 15005));
+    }
+
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
         return AgenteAutorizadoPermissaoFeederDto.builder()
             .colaboradoresVendasIds(Lists.newArrayList(100, 102))
@@ -214,10 +255,10 @@ public class FeederServiceTest {
             .build();
     }
 
-    private Optional<Usuario> umUsuario(CodigoCargo codigoCargo, ESituacao situacao) {
+    private Optional<Usuario> umUsuario(CodigoCargo codigoCargo, ESituacao situacao, Integer id) {
         return Optional.of(
             Usuario.builder()
-                .id(1111)
+                .id(id)
                 .situacao(situacao)
                 .cargo(
                     Cargo.builder()
@@ -239,6 +280,7 @@ public class FeederServiceTest {
             .agenteAutorizadoFeeder(Eboolean.V)
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
             .build();
     }
 }

@@ -1,6 +1,10 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+
 import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 
 public class FeederUtil {
 
@@ -11,5 +15,6 @@ public class FeederUtil {
     public static final String OBSERVACAO_NAO_FEEDER =
         "AGENTE AUTORIZADO SEM PERMISSÃO DE FEEDER.";
     public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_AA = List.of(15000, 15005, 3046);
-
+    public static List<CodigoCargo> CARGOS_BACKOFFICE = List.of(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_BACKOFFICE_D2D, AGENTE_AUTORIZADO_BACKOFFICE_TEMP, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO);
 }

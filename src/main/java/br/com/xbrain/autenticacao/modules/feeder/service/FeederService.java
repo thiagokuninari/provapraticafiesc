@@ -72,8 +72,10 @@ public class FeederService {
 
     public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
         if (Objects.equals(usuarioMqRequest.getAgenteAutorizadoFeeder(), Eboolean.V)) {
-            var permissoesFeeder = getPermissoesEspeciaisDosVendedores(List.of(usuario.getId()),
-                usuarioMqRequest.getUsuarioCadastroId());
+            var permissoesFeeder = usuarioRepository.findById(usuario.getId())
+                .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
+                    usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
+                .orElse(List.of());
             salvarPermissoesEspeciais(permissoesFeeder);
         }
     }
@@ -105,8 +107,8 @@ public class FeederService {
         if (!ObjectUtils.isEmpty(usuariosIds)) {
             usuarioHistoricoService.save(
                 UsuarioHistorico.gerarHistorico(usuariosIds, hasPermissaoFeeder
-                    ? OBSERVACAO_FEEDER
-                    : OBSERVACAO_NAO_FEEDER,
+                        ? OBSERVACAO_FEEDER
+                        : OBSERVACAO_NAO_FEEDER,
                     ESituacao.A));
         }
     }
@@ -129,33 +131,45 @@ public class FeederService {
     }
 
     private List<PermissaoEspecial> getNovasPermissoesEspeciais(AgenteAutorizadoPermissaoFeederDto aaPermissaoFeederDto) {
-        var permissoesEspeciais = getPermissoesEspeciaisDosVendedores(aaPermissaoFeederDto.getColaboradoresVendasIds(),
-                                                                    aaPermissaoFeederDto.getUsuarioCadastroId());
+        var permissoesEspeciais = getPermissoesEspeciaisDosColaboradores(aaPermissaoFeederDto.getColaboradoresVendasIds(),
+            aaPermissaoFeederDto.getUsuarioCadastroId());
         permissoesEspeciais.addAll(getPermissaoEspecialSocioPrincipal(
             aaPermissaoFeederDto.getUsuarioProprietarioId(),
             aaPermissaoFeederDto.getUsuarioCadastroId()));
         return permissoesEspeciais;
     }
 
-    private List<PermissaoEspecial> getPermissoesEspeciaisDosVendedores(List<Integer> vendedoresIds,
-                                                                        Integer usuarioCadastroId) {
+    private List<PermissaoEspecial> getPermissoesEspeciaisDosColaboradores(List<Integer> vendedoresIds,
+                                                                           Integer usuarioCadastroId) {
         return vendedoresIds.stream()
-            .filter(vendedorId -> usuarioRepository.findById(vendedorId)
-                .map(usuario -> !usuario.getSituacao().equals(ESituacao.R))
-                .orElse(false))
-            .filter(vendedorId ->
-                permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
-                    vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID).isEmpty())
-            .map(vendedorId -> criarPermissaoEspecial(vendedorId, FUNCIONALIDADE_TRATAR_LEAD_ID, usuarioCadastroId))
+            .map(colaboradorId -> usuarioRepository.findComplete(colaboradorId).orElse(null))
+            .filter(Objects::nonNull)
+            .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
+            .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador,
+                usuarioCadastroId, colaborador.getCargoCodigo()).stream())
+            .collect(Collectors.toList());
+    }
+
+    private List<PermissaoEspecial> getPermissoesEspeciaisDoColobarodaorConformeCargo(Usuario colaborador,
+                                                                                      Integer usuarioCadastroId,
+                                                                                      CodigoCargo cargoCodigo) {
+        if (isBackOffice(cargoCodigo)) {
+            return getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId, FUNCIONALIDADES_FEEDER_PARA_AA);
+        }
+        return getPermissoesEspeciaisDoUsuario(colaborador.getId(), usuarioCadastroId, List.of(FUNCIONALIDADE_TRATAR_LEAD_ID));
+    }
+
+    private List<PermissaoEspecial> getPermissoesEspeciaisDoUsuario(Integer usuarioId, Integer usuarioCadastroId,
+                                                                    List<Integer> funcionalidadesIds) {
+        return funcionalidadesIds.stream()
+            .filter(funcionalidadeId -> permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
+                usuarioId, funcionalidadeId).isEmpty())
+            .map(funcionalidadeId -> criarPermissaoEspecial(usuarioId, funcionalidadeId, usuarioCadastroId))
             .collect(Collectors.toList());
     }
 
     private List<PermissaoEspecial> getPermissaoEspecialSocioPrincipal(Integer socioPrincipalId, Integer usuarioCadastroId) {
-        return FUNCIONALIDADES_FEEDER_PARA_AA.stream()
-            .filter(funcionalidadeId -> permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(
-                socioPrincipalId, FUNCIONALIDADE_GERENCIAR_LEAD_ID).isEmpty())
-            .map(funcionalidadeId -> criarPermissaoEspecial(socioPrincipalId, funcionalidadeId, usuarioCadastroId))
-            .collect(Collectors.toList());
+        return getPermissoesEspeciaisDoUsuario(socioPrincipalId, usuarioCadastroId, FUNCIONALIDADES_FEEDER_PARA_AA);
     }
 
     private PermissaoEspecial criarPermissaoEspecial(Integer usuarioId, Integer funcionalidadeId, Integer usuarioCadastroId) {
@@ -165,5 +179,9 @@ public class FeederService {
             .usuario(new Usuario(usuarioId))
             .dataCadastro(LocalDateTime.now())
             .build();
+    }
+
+    private boolean isBackOffice(CodigoCargo codigoCargo) {
+        return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
     }
 }
