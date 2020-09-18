@@ -59,7 +59,7 @@ public class RelatorioLoginLogoutService {
 
     public List<UsuarioNomeResponse> getColaboradores() {
         var predicate = new UsuarioPredicate()
-            .comIdsObrigatorio(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso()))
+            .comIds(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso()))
             .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
             .build();
         var order = QUsuario.usuario.nome.upper().asc();
