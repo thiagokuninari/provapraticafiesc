@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -170,12 +171,16 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comIdsObrigatorio(List<Integer> usuariosIds) {
         if (nonNull(usuariosIds)) {
-            builder.and(ExpressionUtils.anyOf(
-                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                    .stream()
-                    .map(usuario.id::in)
-                    .collect(Collectors.toList()))
-            );
+            if (!isEmpty(usuariosIds)) {
+                builder.and(ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList()))
+                );
+            } else {
+                builder.and(Expressions.TRUE.eq(false));
+            }
         }
         return this;
     }
