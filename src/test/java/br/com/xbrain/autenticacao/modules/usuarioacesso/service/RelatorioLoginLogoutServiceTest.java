@@ -2,10 +2,15 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import org.assertj.core.util.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -14,11 +19,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +41,186 @@ public class RelatorioLoginLogoutServiceTest {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private UsuarioService usuarioService;
+    @Mock
+    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioXBrainBuscarInativos() {
+        mockAutenticacao(umUsuarioXBrain());
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.empty())))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(true);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioMsoNaoBuscarInativos() {
+        mockAutenticacao(umUsuarioMso());
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.empty())))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(false);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioAgenteAutorizadoBuscarInativos() {
+        mockAutenticacao(umUsuarioAgenteAutorizado());
+        when(agenteAutorizadoService.getIdsUsuariosSubordinados(eq(true)))
+            .thenReturn(Sets.newLinkedHashSet(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(true);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioExecutivoHunterNaoBuscarInativos() {
+        mockAutenticacao(umUsuarioExecutivoHunterOperacao());
+        when(agenteAutorizadoService.getIdsUsuariosSubordinados(eq(true)))
+            .thenReturn(Sets.newLinkedHashSet(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(false);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioCoordenadorOperacaoBuscarInativos() {
+        mockAutenticacao(umUsuarioCoordenadorOperacao());
+        when(usuarioService.getIdDosUsuariosSubordinados(eq(89), eq(true)))
+            .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(true);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
+
+    @Test
+    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioGerenteOperacaoNaoBuscarInativos() {
+        mockAutenticacao(umUsuarioGerenteOperacao());
+        when(usuarioService.getIdDosUsuariosSubordinados(eq(89), eq(true)))
+            .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
+            .thenReturn(List.of(98, 100, 333, 2002, 1));
+        when(usuarioRepository.findAllIds(eq(new UsuarioPredicate()
+            .comIdsObrigatorio(List.of(98, 100, 333, 2002, 1))
+            .comSituacoes(Set.of(ESituacao.A))
+            .build())))
+            .thenReturn(List.of(100, 2002, 1));
+        when(usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(eq(List.of(100, 2002, 1))))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.of(100, "Hwasa Maria"),
+                UsuarioNomeResponse.of(2002, "Ary da Disney"),
+                UsuarioNomeResponse.of(1, "Adilson Elias")
+            ));
+
+        var colaboradores = service.getColaboradores(false);
+
+        assertThat(colaboradores)
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(100, "Hwasa Maria"),
+                tuple(2002, "Ary da Disney"),
+                tuple(1, "Adilson Elias")
+            );
+    }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioXBrain() {

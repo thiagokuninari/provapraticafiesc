@@ -12,4 +12,11 @@ import lombok.NoArgsConstructor;
 public class UsuarioNomeResponse {
     private Integer id;
     private String nome;
+
+    public static UsuarioNomeResponse of(Integer id, String nome) {
+        return builder()
+            .id(id)
+            .nome(nome)
+            .build();
+    }
 }
