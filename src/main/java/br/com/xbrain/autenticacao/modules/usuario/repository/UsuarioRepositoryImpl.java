@@ -12,10 +12,8 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import com.google.common.collect.Lists;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -32,7 +30,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -43,7 +40,6 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
@@ -752,38 +748,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(List<Integer> usuariosIds) {
-        var predicate = ExpressionUtils.anyOf(
-            Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
-                .stream()
-                .map(usuario.id::in)
-                .collect(Collectors.toList()));
+    public List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?> ...orderSpecifiers) {
+        var projection = Projections.bean(UsuarioNomeResponse.class,
+            usuario.id,
+            usuario.nome,
+            usuario.situacao);
         return new JPAQueryFactory(entityManager)
-            .selectDistinct(usuario.id, usuario.nome, usuario.situacao)
+            .selectDistinct(projection)
             .from(usuario)
             .where(predicate)
-            .orderBy(usuario.nome.upper().asc())
-            .fetch().stream().map(this::getUsuarioComRelocado).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Integer> findAllIds(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-            .selectDistinct(usuario.id)
-            .from(usuario)
-            .where(predicate)
+            .orderBy(orderSpecifiers)
             .fetch();
-    }
-
-    private UsuarioNomeResponse getUsuarioComRelocado(Tuple tuple) {
-        var nome = tuple.get(usuario.nome);
-        var situacao = tuple.get(usuario.situacao);
-
-        return UsuarioNomeResponse.builder()
-            .id(tuple.get(usuario.id))
-            .nome(Objects.isNull(nome) || situacao == A || Objects.isNull(situacao)
-                ? nome
-                : String.format("%s (%s)", nome, situacao.getDescricao().toUpperCase()))
-            .build();
     }
 }

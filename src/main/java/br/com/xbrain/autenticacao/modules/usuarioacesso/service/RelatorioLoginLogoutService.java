@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -56,21 +57,13 @@ public class RelatorioLoginLogoutService {
         }
     }
 
-    public List<UsuarioNomeResponse> getColaboradores(boolean buscarInativos) {
-        var idsUsuarios = notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso());
-        idsUsuarios = getUsuariosIdsPorBuscarInativos(idsUsuarios, buscarInativos);
-        return usuarioRepository.findUsuariosIdENomeComSituacaoNaoAtivoPorUsuariosIds(idsUsuarios);
-    }
-
-    public List<Integer> getUsuariosIdsPorBuscarInativos(List<Integer> usuariosIds, boolean buscarInativos) {
-        var situacoes = buscarInativos
-            ? Set.of(ESituacao.A, ESituacao.I, ESituacao.R)
-            : Set.of(ESituacao.A);
+    public List<UsuarioNomeResponse> getColaboradores() {
         var predicate = new UsuarioPredicate()
-            .comIdsObrigatorio(usuariosIds)
-            .comSituacoes(situacoes)
+            .comIdsObrigatorio(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(getUsuariosIdsComNivelDeAcesso()))
+            .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
             .build();
-        return usuarioRepository.findAllIds(predicate);
+        var order = QUsuario.usuario.nome.upper().asc();
+        return usuarioRepository.findAllUsuariosNomeComSituacao(predicate, order);
     }
 
     public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
