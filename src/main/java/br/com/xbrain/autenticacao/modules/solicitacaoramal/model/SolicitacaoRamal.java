@@ -144,7 +144,7 @@ public class SolicitacaoRamal {
     }
 
     public void atualizarNomeECnpjDoAgenteAutorizado(AgenteAutorizadoResponse agenteAutorizado) {
-        this.agenteAutorizadoNome = agenteAutorizado.getNomeFantasia();
+        this.agenteAutorizadoNome = agenteAutorizado.getRazaoSocial();
         this.agenteAutorizadoCnpj = agenteAutorizado.getCnpj();
     }
 
