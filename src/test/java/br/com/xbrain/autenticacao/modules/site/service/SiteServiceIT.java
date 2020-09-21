@@ -159,7 +159,7 @@ public class SiteServiceIT {
     }
 
     @Test
-    public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSupervidor_quandoVendedorTiverSupervidorComSiteAtivo() {
+    public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSupervisor_quandoVendedorTiverSupervisorComSiteAtivo() {
         assertThat(siteService.getSitesPorPermissao(umUsuario(102, SUPERVISOR_OPERACAO, CodigoDepartamento.COMERCIAL)))
             .extracting("value", "label")
             .containsExactly(
@@ -168,7 +168,7 @@ public class SiteServiceIT {
     }
 
     @Test
-    public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSuperiorDoVendedor_quandoSupervidorPossuirSite() {
+    public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSuperiorDoVendedor_quandoSupervisorPossuirSite() {
         assertThat(siteService.getSitesPorPermissao(umUsuario(109, OPERACAO_TELEVENDAS, CodigoDepartamento.COMERCIAL)))
             .extracting("value", "label")
             .containsExactly(
