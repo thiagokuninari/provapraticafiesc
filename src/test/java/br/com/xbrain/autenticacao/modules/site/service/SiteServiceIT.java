@@ -7,9 +7,11 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +27,7 @@ import java.util.Collections;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +51,8 @@ public class SiteServiceIT {
 
     @Test
     public void getAbaixoHierarquia_deveRetornarUmSite_quandoDiretorPossuirCoordenadorOuSupervisorComSiteVinculado() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(100, CodigoCargo.DIRETOR_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(100, CodigoCargo.DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -59,7 +63,8 @@ public class SiteServiceIT {
 
     @Test
     public void getHierarquia_deveRetornarUmSite_quandoGerentePossuirCoordenadorOuSupervisorComSiteVinculado() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(101, CodigoCargo.GERENTE_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(101, CodigoCargo.GERENTE_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -70,7 +75,8 @@ public class SiteServiceIT {
 
     @Test
     public void getSiteProprio_deveRetornarUmSite_quandoSupervisorTiverSiteVinculadoAEle() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(102, CodigoCargo.SUPERVISOR_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(102, CodigoCargo.SUPERVISOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -81,7 +87,8 @@ public class SiteServiceIT {
 
     @Test
     public void getSiteProprio_deveRetornarUmSite_quandoCoordenadorTiverSiteVinculadoAEle() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.COORDENADOR_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(103, CodigoCargo.COORDENADOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -91,7 +98,8 @@ public class SiteServiceIT {
 
     @Test
     public void getSiteDoSuperior_deveRetornarUmSite_quandoAssistenteTiverVinculoComCoordenadorComSite() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -101,7 +109,8 @@ public class SiteServiceIT {
 
     @Test
     public void getTodosSites_devePegarTodosOsSitesMesmoSemVinculo_quandoUsuarioForMso() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(98, CodigoCargo.MSO_CONSULTOR));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(98, CodigoCargo.MSO_CONSULTOR, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
@@ -113,81 +122,94 @@ public class SiteServiceIT {
 
     @Test
     public void getTodosSites_devePegarTodosOsSitesMesmoSemVinculo_quandoUsuarioForAdmin() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(99, CodigoCargo.ADMINISTRADOR));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(99, CodigoCargo.ADMINISTRADOR, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
                 tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),
                 tuple(111, "Manaus", ETimeZone.AMT, ESituacao.A),
                 tuple(112, "Site Inativo", ETimeZone.FNT, ESituacao.I)
-
             );
     }
 
     @Test
     public void retornaVazio_deveRetornarVazio_quandoDiretorNaoTiverSitesCadastradosAbaixoDeSuaHierarquia() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(104, CodigoCargo.DIRETOR_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(104, CodigoCargo.DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
                .hasSize(0);
     }
 
     @Test
     public void retornaVazio_deveRetornarVazio_quandoUsuarioNaoTiverSitesVinculado() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(106, CodigoCargo.SUPERVISOR_OPERACAO));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(106, CodigoCargo.SUPERVISOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
                 .hasSize(0);
     }
 
     @Test
     public void getSitesAtivos_deveRetornarSelectResponseComSitesVinculados_quandoSituacaoSiteForAtivo() {
-        assertThat(siteService.getSitesPorPermissao(umUsuario(100, DIRETOR_OPERACAO)))
-            .extracting("label", "value")
+        assertThat(siteService.getSitesPorPermissao(umUsuario(100, DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL)))
+            .extracting("value", "label")
             .containsExactly(
-                tuple("110", "Rio Branco")
+                tuple(110, "Rio Branco")
             );
     }
 
     @Test
     public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSupervidor_quandoVendedorTiverSupervidorComSiteAtivo() {
-        assertThat(siteService.getSitesPorPermissao(umUsuario(102, SUPERVISOR_OPERACAO)))
-            .extracting("label", "value")
+        assertThat(siteService.getSitesPorPermissao(umUsuario(102, SUPERVISOR_OPERACAO, CodigoDepartamento.COMERCIAL)))
+            .extracting("value", "label")
             .containsExactly(
-                tuple("110", "Rio Branco")
+                tuple(110, "Rio Branco")
             );
     }
 
     @Test
     public void getSitesVendedor_deveRetornarSitesAtivosVinculadosAoSuperiorDoVendedor_quandoSupervidorPossuirSite() {
-        assertThat(siteService.getSitesPorPermissao(umUsuario(109, OPERACAO_TELEVENDAS)))
-            .extracting("label", "value")
+        assertThat(siteService.getSitesPorPermissao(umUsuario(109, OPERACAO_TELEVENDAS, CodigoDepartamento.COMERCIAL)))
+            .extracting("value", "label")
             .containsExactly(
-                tuple("110", "Rio Branco")
+                tuple(110, "Rio Branco")
             );
     }
 
     @Test
+    public void ignorarMso_deveRetornarListaVazia_quandoMsoNaoPossuirDepartamentoComercial() {
+        assertThat(siteService.getSitesPorPermissao(umUsuario(110, MSO_CONSULTOR, CodigoDepartamento.OUVIDORIA)))
+            .hasSize(0);
+    }
+
+    @Test
     public void ignorarInativos_deveIgnorarSitesInativos_quandoUsuarioTiverPermissaoParaVerTodos() {
-        assertThat(siteService.getSitesPorPermissao(umUsuario(99, ADMINISTRADOR)))
+        assertThat(siteService.getSitesPorPermissao(umUsuario(99, ADMINISTRADOR, CodigoDepartamento.COMERCIAL)))
             .hasSize(2)
             .extracting("label")
             .doesNotContain("Site Inativo");
     }
 
-    private Usuario umUsuario(Integer id, CodigoCargo codigoCargo) {
+    private Usuario umUsuario(Integer id, CodigoCargo codigoCargo, CodigoDepartamento departamento) {
         return Usuario.builder()
             .id(id)
             .cargo(Cargo.builder()
                 .codigo(codigoCargo)
                 .build())
+            .departamento(Departamento.builder()
+                .codigo(departamento)
+                .build())
             .build();
     }
 
-    private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoCargo codigoCargo) {
+    private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoCargo codigoCargo,
+                                                    CodigoDepartamento codigoDepartamento) {
         return UsuarioAutenticado.builder()
                 .id(id)
                 .cargoCodigo(codigoCargo)
                 .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
                 .nivelCodigo(CodigoNivel.OPERACAO.name())
+                .departamentoCodigo(codigoDepartamento)
                 .build();
     }
 }

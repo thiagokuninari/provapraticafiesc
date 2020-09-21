@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -31,10 +32,10 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -66,7 +67,7 @@ public class SiteServiceTest {
         var idVinculo = vinculoIndireto != null ? vinculoIndireto : idUsuario;
 
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo));
+                .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo, CodigoDepartamento.COMERCIAL));
         when(siteRepository.findAll(sitePredicate, pageRequest))
                 .thenReturn(new PageImpl<>(umaListaDeSitesVinculadoAUsuarioComCargo(idSite, nomeSite,
                         umUsuario(idUsuario, codigoCargo))));
@@ -118,8 +119,7 @@ public class SiteServiceTest {
     @Test
     public void getAll_deveRetornarTodosOsSiltes_quandoNivelMso() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoNivelMso());
-
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(101, MSO_CONSULTOR, CodigoDepartamento.COMERCIAL));
         when(siteRepository.findAll(any(Predicate.class), any(Pageable.class)))
             .thenReturn(new PageImpl<>(umaListaSites()));
 
@@ -410,7 +410,7 @@ public class SiteServiceTest {
             umSiteVinculado(8, "SITE_COORDENADOR", umUsuario(110, COORDENADOR_OPERACAO)),
             umSiteVinculado(9, "SITE_SUPERVISOR", umUsuario(111, SUPERVISOR_OPERACAO)));
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO));
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         when(siteRepository.findAll(umSitePredicateComSupervidoresOuCoordenadores(List.of(110, 111)),
             umPageRequest()))
             .thenReturn(new PageImpl<>(listSiteComUsuarioVinculado));
@@ -429,7 +429,7 @@ public class SiteServiceTest {
     @Test
     public void retornaVazio_deveRetornarVazio_quandoExistirSitesCadastradosEDiretorPossuirSubordinadosSemSites() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO));
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
         when(usuarioService.getSubordinadosDoUsuario(100))
             .thenReturn(List.of(
                 usuarioSubordinadoDtoDtoResponse(110, SUPERVISOR_OPERACAO),

@@ -18,7 +18,7 @@ import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -31,11 +31,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
-import static java.math.BigInteger.ZERO;
+import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.*;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -47,13 +48,6 @@ public class SiteService {
     private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
-    private static final List<CodigoCargo> VISUALIZAR_TODOS_SITES =
-            List.of(CodigoCargo.MSO_CONSULTOR, CodigoCargo.ADMINISTRADOR);
-    private static final List<CodigoCargo> VISUALIZAR_SITES_SUBORDINADOS =
-            List.of(CodigoCargo.DIRETOR_OPERACAO, CodigoCargo.GERENTE_OPERACAO);
-    private static final List<CodigoCargo> VISUALIZAR_SITES_DE_SUPERIORES =
-            List.of(CodigoCargo.ASSISTENTE_OPERACAO, CodigoCargo.OPERACAO_TELEVENDAS);
-
     @Autowired
     private SiteRepository siteRepository;
     @Autowired
@@ -89,24 +83,33 @@ public class SiteService {
 
     public Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO)
-            && !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
-            filtros.ignorarTodos();
+        if (!usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
+            return filtros.ignorarTodos().build();
         }
-        setFiltrosHierarquia(usuarioAutenticado.getId(), usuarioAutenticado.getCargoCodigo(), filtros);
+        setFiltrosHierarquia(usuarioAutenticado.getId(), usuarioAutenticado.getCargoCodigo(),
+            usuarioAutenticado.getDepartamentoCodigo(), filtros);
         return filtros.build();
     }
 
-    public void setFiltrosHierarquia(Integer usuarioId, CodigoCargo codigoCargo, SitePredicate filtros) {
+    public void setFiltrosHierarquia(Integer usuarioId, CodigoCargo codigoCargo, CodigoDepartamento codigoDepartamento,
+                                     SitePredicate filtros) {
 
-        if (VISUALIZAR_TODOS_SITES.contains(codigoCargo)) {
-            return;
-        } else if (VISUALIZAR_SITES_SUBORDINADOS.contains(codigoCargo)) {
-            filtros.comCoordenadoresOuSupervisores(getSubordinadosAbaixoDiretor(usuarioId));
-        } else if (VISUALIZAR_SITES_DE_SUPERIORES.contains(codigoCargo)) {
-            filtros.comCoordenadoresOuSupervisores(getSuperioresDoUsuario(usuarioId));
-        } else {
-            filtros.comCoordenadoresOuSupervisor(usuarioId);
+        var hierarquia = getHierarquia(codigoCargo, codigoDepartamento);
+
+        switch (hierarquia) {
+            case TODOS_VISUALIZAR_EDITAR:
+                break;
+            case VISUALIZAR_EDITAR_SUBORDINADOS:
+                filtros.comCoordenadoresOuSupervisores(getSubordinadosAbaixoDiretor(usuarioId));
+                break;
+            case VISUALIZAR_DE_SUPERIORES:
+                filtros.comCoordenadoresOuSupervisores(getSuperioresDoUsuario(usuarioId));
+                break;
+            case VISUALIZAR_PROPRIO:
+                filtros.comCoordenadoresOuSupervisor(usuarioId);
+                break;
+            default:
+                filtros.ignorarTodos();
         }
     }
 
@@ -224,7 +227,7 @@ public class SiteService {
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
         siteRepository.findFirstByCidadesIdInAndIdNot(siteRequest.getCidadesIds(),
-            Optional.ofNullable(siteRequest.getId()).orElse(ZERO.intValue()))
+            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
             .ifPresent(site -> {
                 throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
             });
@@ -248,11 +251,10 @@ public class SiteService {
     public List<SelectResponse> getSitesPorPermissao(Usuario usuario) {
 
         var sitePredicate = new SitePredicate();
-        setFiltrosHierarquia(usuario.getId(), usuario.getCargoCodigo(), sitePredicate);
-
+        setFiltrosHierarquia(usuario.getId(), usuario.getCargoCodigo(), usuario.getDepartamentoCodigo(), sitePredicate);
         return siteRepository.findBySituacaoAtiva(sitePredicate.build())
             .stream()
-            .map(site -> SelectResponse.builder().label(site.getId().toString()).value(site.getNome()).build())
+            .map(site -> SelectResponse.of(site.getId(), site.getNome()))
             .collect(toList());
     }
 
