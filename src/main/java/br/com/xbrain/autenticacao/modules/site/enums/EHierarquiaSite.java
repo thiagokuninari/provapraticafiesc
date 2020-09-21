@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.enums;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 
 @NoArgsConstructor
+@AllArgsConstructor
 public enum EHierarquiaSite {
 
     TODOS_VISUALIZAR_EDITAR(List.of(MSO_CONSULTOR, ADMINISTRADOR), List.of(COMERCIAL, CodigoDepartamento.ADMINISTRADOR)),
@@ -25,17 +27,11 @@ public enum EHierarquiaSite {
     @Getter
     private List<CodigoDepartamento> codigoDepartamento;
 
-    EHierarquiaSite(List<CodigoCargo> cargos, List<CodigoDepartamento> codigoDepartamento) {
-        this.cargos = cargos;
-        this.codigoDepartamento = codigoDepartamento;
-    }
-
     public static EHierarquiaSite getHierarquia(CodigoCargo codigoCargo, CodigoDepartamento codigoDepartamento) {
         return Stream.of(EHierarquiaSite.values())
             .filter(exclude -> !exclude.equals(NAO_AUTORIZADO))
             .filter(eHierarquia -> eHierarquia.getCargos().contains(codigoCargo)
                 && eHierarquia.codigoDepartamento.contains(codigoDepartamento))
-            .map(eHierarquiaSite -> valueOf(eHierarquiaSite.name()))
             .findFirst()
             .orElse(NAO_AUTORIZADO);
     }
