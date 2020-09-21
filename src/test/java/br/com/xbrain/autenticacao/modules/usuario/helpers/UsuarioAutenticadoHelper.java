@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
@@ -41,12 +42,14 @@ public class UsuarioAutenticadoHelper {
                 .build();
     }
 
-    public static UsuarioAutenticado umUsuarioAutenticadoAtivoProprioComCargo(Integer id, CodigoCargo codigoCargo) {
+    public static UsuarioAutenticado umUsuarioAutenticadoAtivoProprioComCargo(Integer id, CodigoCargo codigoCargo,
+                                                                              CodigoDepartamento codigoDepartamento) {
         return UsuarioAutenticado.builder()
                 .id(id)
                 .nivelCodigo(CodigoNivel.OPERACAO.name())
                 .cargoCodigo(codigoCargo)
                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .departamentoCodigo(codigoDepartamento)
                 .build();
     }
 
