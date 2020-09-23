@@ -58,7 +58,11 @@ public enum EErrors {
             "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_AA(
             "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#018 - Erro ao tentar recuperar o AA.");
+            "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_CONSULTAR_STATUS_RAMAL_USUARIO(
+            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#019 - Erro ao tentar consultar status do ramal pelo usuário autenticado."
+    );
 
     @Getter
     @Setter

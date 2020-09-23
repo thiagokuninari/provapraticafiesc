@@ -15,6 +15,7 @@ import java.util.List;
 public interface CallClient {
 
     String API_CONFIGURACAO_TELEFONIA = "api/configuracao-telefonia";
+    String API_DISCAGEM_TELEFONIA = "api/discagem-telefonia";
     String URL_RAMAL = "api/ramal";
 
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
@@ -22,5 +23,8 @@ public interface CallClient {
 
     @GetMapping(URL_RAMAL + "/agente-autorizado/{id}")
     List<RamalResponse> obterRamaisParaAgenteAutorizado(@PathVariable("id") Integer id);
+
+    @GetMapping(API_DISCAGEM_TELEFONIA + "/status")
+    boolean consultarStatusUsoRamalByUsuarioAutenticado();
 
 }
