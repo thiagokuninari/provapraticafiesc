@@ -231,6 +231,11 @@ public class UsuarioService {
         return pages;
     }
 
+    public List<Integer> getUsuariosPermitidosIds() {
+        var predicate = filtrarUsuariosPermitidos(new UsuarioFiltros()).build();
+        return repository.findAllIdsDistinct(predicate);
+    }
+
     private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));

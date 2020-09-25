@@ -108,4 +108,6 @@ public interface UsuarioRepositoryCustom {
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
     List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+
+    List<Integer> findAllIdsDistinct(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
 }

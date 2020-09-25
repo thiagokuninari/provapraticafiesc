@@ -760,4 +760,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .orderBy(orderSpecifiers)
             .fetch();
     }
+
+    @Override
+    public List<Integer> findAllIdsDistinct(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario.id)
+            .from(usuario)
+            .where(predicate)
+            .orderBy(orderSpecifiers)
+            .fetch();
+    }
 }
