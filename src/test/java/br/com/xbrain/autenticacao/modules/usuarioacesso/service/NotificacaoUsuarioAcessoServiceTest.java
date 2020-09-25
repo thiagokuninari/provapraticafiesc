@@ -12,8 +12,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -24,11 +24,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class NotificacaoUsuarioAcessoServiceTest {
 
     public static final String USUARIOS_IDS_REQUEST_PARAM = "usuariosIds";
@@ -132,6 +132,30 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
 
         assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "3000");
+    }
+
+    @Test
+    public void getUsuariosIdsByIds_deveRetornarOsIdsBuscandoPelosIds_quandoHouverIdsPassadosNoParametro() {
+        when(client.getUsuariosIdsByIds(eq(List.of(14, 44, 1)))).thenReturn(List.of(44, 1));
+
+        assertThat(service.getUsuariosIdsByIds(Optional.of(List.of(14, 44, 1))))
+            .containsExactlyInAnyOrder(44, 1);
+    }
+
+    @Test
+    public void getUsuariosIdsByIds_deveRetornarOsIdsEBuscarPassandoPorParametroIdsNull_quandoUsuarioIdsForOptionalEmpty() {
+        when(client.getUsuariosIdsByIds(isNull())).thenReturn(List.of(44, 1));
+
+        assertThat(service.getUsuariosIdsByIds(Optional.empty()))
+            .containsExactlyInAnyOrder(44, 1);
+    }
+
+    @Test
+    public void getUsuariosIdsByIds_deveRetornarIdsVazioENaoChamarOClient_quandoUsuarioIdsForListaVazia() {
+        assertThat(service.getUsuariosIdsByIds(Optional.of(List.of())))
+            .isEmpty();
+
+        verify(client, never()).getUsuariosIdsByIds(any());
     }
 
     @NotNull
