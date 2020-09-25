@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
@@ -15,9 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 
@@ -28,24 +28,6 @@ public class AgenteAutorizadoService {
 
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    public Set<Integer> getIdsUsuariosSubordinados(boolean incluirProprio) {
-        try {
-            var idsUsuarios = agenteAutorizadoClient.getIdUsuariosDoUsuario(Map.of());
-            return Stream.concat(
-                idsUsuarios.stream(),
-                Optional.ofNullable(incluirProprio ? autenticacaoService.getUsuarioId() : null).stream()
-            ).collect(Collectors.toSet());
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
 
     public List<Integer> getIdUsuariosPorAa(String cnpj, Boolean buscarInativos) {
         try {

@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -13,7 +12,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import org.assertj.core.util.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -25,8 +23,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -41,8 +37,6 @@ public class RelatorioLoginLogoutServiceTest {
     private RelatorioLoginLogoutService service;
     @Mock
     private AutenticacaoService autenticacaoService;
-    @Mock
-    private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private UsuarioService usuarioService;
     @Mock
@@ -77,14 +71,16 @@ public class RelatorioLoginLogoutServiceTest {
                 tuple(2002, "Ary da Disney", ESituacao.A),
                 tuple(1, "Adilson Elias", ESituacao.I)
             );
+
+        verify(usuarioService, never()).getUsuariosPermitidosIds();
     }
 
     @Test
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioAgenteAutorizadoBuscarInativos() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
 
-        when(agenteAutorizadoService.getIdsUsuariosSubordinados(eq(true)))
-            .thenReturn(Sets.newLinkedHashSet(98, 100, 333, 2002, 15, 1, 9, 16));
+        when(usuarioService.getUsuariosPermitidosIds())
+            .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
             .thenReturn(List.of(100, 2002, 1));
@@ -115,7 +111,7 @@ public class RelatorioLoginLogoutServiceTest {
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioCoordenadorOperacaoBuscarInativos() {
         mockAutenticacao(umUsuarioCoordenadorOperacao());
 
-        when(usuarioService.getIdDosUsuariosSubordinados(eq(89), eq(true)))
+        when(usuarioService.getUsuariosPermitidosIds())
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
@@ -164,18 +160,22 @@ public class RelatorioLoginLogoutServiceTest {
     public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioXBrain() {
         mockAutenticacao(umUsuarioXBrain());
         assertThat(service.getUsuariosIdsComNivelDeAcesso()).isNotPresent();
+
+        verify(usuarioService, never()).getUsuariosPermitidosIds();
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioMso() {
         mockAutenticacao(umUsuarioMso());
         assertThat(service.getUsuariosIdsComNivelDeAcesso()).isNotPresent();
+
+        verify(usuarioService, never()).getUsuariosPermitidosIds();
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAgenteAutorizado() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
-        mockBuscarIdsNoParceiros();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -185,7 +185,7 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAssistenteOperacao() {
         mockAutenticacao(umUsuarioAssistenteOperacao());
-        mockBuscarIdsNoParceiros();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -195,7 +195,7 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioExecutivoOperacao() {
         mockAutenticacao(umUsuarioExecutivoOperacao());
-        mockBuscarIdsNoParceiros();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -205,7 +205,7 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioExecutivoHunterOperacao() {
         mockAutenticacao(umUsuarioExecutivoHunterOperacao());
-        mockBuscarIdsNoParceiros();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -215,7 +215,7 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoAutenticacao_quandoUsuarioCoordenadorOperacao() {
         mockAutenticacao(umUsuarioCoordenadorOperacao());
-        mockBuscarIdsNoAutenticacao();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -225,7 +225,7 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoAutenticacao_quandoUsuarioGerenteOperacao() {
         mockAutenticacao(umUsuarioGerenteOperacao());
-        mockBuscarIdsNoAutenticacao();
+        mockBuscarUsuariosPermitidosIds();
         assertThat(service.getUsuariosIdsComNivelDeAcesso())
             .isPresent()
             .get().asList()
@@ -237,13 +237,8 @@ public class RelatorioLoginLogoutServiceTest {
             .thenReturn(usuarioAutenticado);
     }
 
-    private void mockBuscarIdsNoParceiros() {
-        when(agenteAutorizadoService.getIdsUsuariosSubordinados(eq(true)))
-            .thenReturn(umUsuariosIdsSet());
-    }
-
-    private void mockBuscarIdsNoAutenticacao() {
-        when(usuarioService.getIdDosUsuariosSubordinados(eq(umUsuarioAutenticado().getId()), eq(true)))
+    private void mockBuscarUsuariosPermitidosIds() {
+        when(usuarioService.getUsuariosPermitidosIds())
             .thenReturn(umUsuariosIdsList());
     }
 
@@ -307,15 +302,7 @@ public class RelatorioLoginLogoutServiceTest {
         return usuario;
     }
 
-    private Stream<Integer> umUsuariosIdsStream() {
-        return Stream.of(12, 7, 90);
-    }
-
-    private Set<Integer> umUsuariosIdsSet() {
-        return umUsuariosIdsStream().collect(Collectors.toSet());
-    }
-
     private List<Integer> umUsuariosIdsList() {
-        return umUsuariosIdsStream().collect(Collectors.toList());
+        return List.of(12, 7, 90);
     }
 }
