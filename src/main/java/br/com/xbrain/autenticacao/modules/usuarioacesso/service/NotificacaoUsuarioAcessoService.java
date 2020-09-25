@@ -29,6 +29,9 @@ public class NotificacaoUsuarioAcessoService {
         Optional<? extends Collection<Integer>> usuariosIds,
         PageRequest pageRequest) {
         try {
+            if (usuariosIds.isPresent() && usuariosIds.get().isEmpty()) {
+                return MongoosePage.empty();
+            }
             var type = objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
             Map<String, Object> pageRequestParams = objectMapper.convertValue(pageRequest, type);
             usuariosIds.ifPresent(ids -> {
@@ -52,6 +55,9 @@ public class NotificacaoUsuarioAcessoService {
         RelatorioLoginLogoutCsvFiltro filtro,
         Optional<? extends Collection<Integer>> usuariosIdsPermitidos) {
         try {
+            if (usuariosIdsPermitidos.isPresent() && usuariosIdsPermitidos.get().isEmpty()) {
+                return List.of();
+            }
             return client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,

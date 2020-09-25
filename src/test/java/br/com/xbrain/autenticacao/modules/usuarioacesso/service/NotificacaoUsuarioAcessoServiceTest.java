@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.config.JacksonConfig;
+import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
@@ -71,12 +72,12 @@ public class NotificacaoUsuarioAcessoServiceTest {
     }
 
     @Test
-    public void getLoginsLogoutsDeHoje_devePassarParametroUsuarioIdsComStringVazia_quandoUsuarioIdsForVazio() {
-        service.getLoginsLogoutsDeHoje(Optional.of(Set.of()), umPageRequest());
+    public void getLoginsLogoutsDeHoje_deveNaoChamarOClientERetornarListaVazia_quandoUsuarioIdsForVazio() {
+        assertThat(service.getLoginsLogoutsDeHoje(Optional.of(Set.of()), umPageRequest()))
+            .extracting(MongoosePage::getDocs, MongoosePage::getTotalDocs)
+            .containsExactly(List.of(), 0L);
 
-        verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
-
-        assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "");
+        verify(client, never()).getLoginsLogoutsDeHoje(any());
     }
 
     @Test
@@ -132,6 +133,19 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).getCsv(requestParamsArgCaptor.capture());
 
         assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "3000");
+    }
+
+    @Test
+    public void getCsv_deveNaoChamarOClientERetornarListaVazia_quandoNenhumUsuarioForPermitido() {
+        var filtro = RelatorioLoginLogoutCsvFiltro.builder()
+            .colaboradoresIds(Set.of(3000))
+            .dataInicio(LocalDate.of(2015, 6, 25))
+            .dataFim(LocalDate.of(2016, 1, 4))
+            .build();
+
+        assertThat(service.getCsv(filtro, Optional.of(List.of()))).isEmpty();
+
+        verify(client, never()).getCsv(any());
     }
 
     @Test

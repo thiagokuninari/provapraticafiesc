@@ -21,4 +21,11 @@ public class MongoosePage<T> {
     public Page<T> toSpringPage(PageRequest pageRequest) {
         return new PageImpl<>(docs, pageRequest, totalDocs);
     }
+
+    public static <T> MongoosePage<T> empty() {
+        return MongoosePage.<T>builder()
+            .docs(List.of())
+            .totalDocs(0L)
+            .build();
+    }
 }
