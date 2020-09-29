@@ -38,6 +38,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
                 .extracting("nome")
                 .containsExactly(
                     "Visualizar Tabulação Manual",
+                    "Visualizar Agendamento",
                     "Relatório - Resumo de Mailing",
                     "Relatório - Ticket Médio Analítico",
                     "Relatório - Ticket Médio por Vendedor",
