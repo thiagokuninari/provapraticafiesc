@@ -189,6 +189,9 @@ app-config:
     indicacao-api:
       client: indicacao-api
       secret: 1nd1c4c40
+    agente-autorizado-api:
+      client: agente-autorizado-api
+      secret: 4g3nt34ut0r1z4d0
 
   services:
     autenticacao:
@@ -215,6 +218,9 @@ app-config:
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    agente-autorizado:
+#      url: http://localhost:8300
+      url: http://api-dev.conexaoclarobrasil.com.br/parceiros
 
 flyway:
   enabled: true

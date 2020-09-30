@@ -137,6 +137,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String geradorLeadApiClient;
     @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
     private String geradorLeadApiSecret;
+    @Value("${app-config.oauth-clients.agente-autorizado-api.client}")
+    private String agenteAutorizadoApiClient;
+    @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
+    private String agenteAutorizadoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -281,6 +285,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(geradorLeadApiSecret)
             .scopes(GERADOR_LEAD.getScope())
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(agenteAutorizadoApiClient)
+            .secret(agenteAutorizadoApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("agente-autorizado-api")
             .authorities(ROLE_APPLICATION);
     }
 

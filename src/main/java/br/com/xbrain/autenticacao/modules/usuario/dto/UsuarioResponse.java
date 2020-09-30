@@ -27,6 +27,7 @@ public class UsuarioResponse {
     private String nome;
     private String cpf;
     private String email;
+    private String rg;
     private String telefone;
     private String telefone02;
     private String telefone03;
@@ -39,6 +40,7 @@ public class UsuarioResponse {
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
     private List<String> permissoes;
+    private LocalDateTime nascimento;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;

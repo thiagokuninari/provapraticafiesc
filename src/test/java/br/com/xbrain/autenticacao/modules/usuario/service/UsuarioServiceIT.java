@@ -994,8 +994,8 @@ public class UsuarioServiceIT {
         assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple(239,"VENDEDOR OPERACAO 2"),
-                tuple(240,"VENDEDOR OPERACAO 3")
+                tuple(239,"VENDEDOR OPERACAO 2 - ( Pessoal )"),
+                tuple(240,"VENDEDOR OPERACAO 3 - ( Pessoal )")
             );
     }
 }
