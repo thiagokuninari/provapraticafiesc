@@ -1568,7 +1568,14 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
-        return repository.findAllAtivosByNivelOperacaoCanalAa();
+        return repository.findAllAtivosByNivelOperacaoCanalAa()
+            .stream()
+            .map(u -> SelectResponse.of(u.getId(), getUsuarioNomeComUnidadeNegocio(u)))
+            .collect(Collectors.toList());
+    }
+
+    private String getUsuarioNomeComUnidadeNegocio(Usuario usuario) {
+        return usuario.getNome() + " - ( " + usuario.getDescricaoUnidadesNegociosConcatenadas() + " )";
     }
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {

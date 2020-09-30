@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static java.util.stream.Collectors.joining;
 
 @Data
 @ToString(of = "id")
@@ -407,7 +408,7 @@ public class Usuario {
         if (!CollectionUtils.isEmpty(unidadesNegocios)) {
             return unidadesNegocios.stream().map(UnidadeNegocio::getCodigo).collect(Collectors.toList());
         }
-        return null;
+        return List.of();
     }
 
     public String getLogin() {
@@ -480,5 +481,12 @@ public class Usuario {
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
+    }
+
+    public String getDescricaoUnidadesNegociosConcatenadas() {
+        return this.getCodigosUnidadesNegocio()
+            .stream()
+            .map(CodigoUnidadeNegocio::getDescricao)
+            .collect(joining(", "));
     }
 }
