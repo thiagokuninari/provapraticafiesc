@@ -8,7 +8,7 @@ public enum CodigoDepartamento {
     ADMINISTRADOR,
     VAREJO,
     ATENDIMENTO_JEC,
-    GERADOR_LEADS,
+    FEEDER,
     OUVIDORIA,
     INTEGRACAO;
 }

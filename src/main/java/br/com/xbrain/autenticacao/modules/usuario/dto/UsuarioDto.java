@@ -10,6 +10,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
@@ -33,6 +35,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UsuarioDto implements Serializable {
 
     private Integer id;

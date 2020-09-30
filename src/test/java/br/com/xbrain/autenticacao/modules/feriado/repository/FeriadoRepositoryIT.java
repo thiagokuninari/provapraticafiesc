@@ -59,4 +59,20 @@ public class FeriadoRepositoryIT {
 
         assertThat(isFeriado).isTrue();
     }
+
+    @Test
+    public void findAllDataFeriadoByCidadeId_deveRetornarListaDeDatasFeriadosNacionais_quandoCidadeNaoTiverFeriadoRegional() {
+        assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(1111))
+            .hasSize(10)
+            .contains(LocalDate.of(2019, 7, 30))
+            .doesNotContain(LocalDate.of(2019, 7, 28), LocalDate.of(2019, 7, 29));
+    }
+
+    @Test
+    public void findAllDataFeriadoByCidadeId_deveRetornarDatasFeriadosNacionaisELocais_quandoCidadeTiverFeriadoRegional() {
+        assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(5578))
+            .hasSize(11)
+            .contains(LocalDate.of(2019, 7, 30), LocalDate.of(2019, 7, 28))
+            .doesNotContain(LocalDate.of(2019, 7, 29));
+    }
 }

@@ -25,4 +25,13 @@ public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoE
                         permissaoEspecial.funcionalidade.nome.asc())
                 .fetch();
     }
+
+    @Override
+    public void deletarPermissaoEspecialBy(List<Integer> funcionalidadeIds, List<Integer> usuarioIds) {
+        new JPAQueryFactory(entityManager)
+            .delete(permissaoEspecial)
+            .where(permissaoEspecial.funcionalidade.id.in(funcionalidadeIds)
+                .and(permissaoEspecial.usuario.id.in(usuarioIds)))
+            .execute();
+    }
 }

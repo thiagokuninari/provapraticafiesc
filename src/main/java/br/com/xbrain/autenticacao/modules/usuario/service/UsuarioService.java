@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -17,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -29,7 +32,9 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -38,6 +43,7 @@ import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -161,6 +167,10 @@ public class UsuarioService {
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Autowired
+    private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
+    @Autowired
+    private FeederService feederService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -384,6 +394,72 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
+    public void salvarUsuarioFeeder(UsuarioFeederMqDto usuarioDto) {
+        try {
+            validarCpfCadastrado(usuarioDto.getCpf(), usuarioDto.getUsuarioId());
+            validarEmailCadastrado(usuarioDto.getEmail(), usuarioDto.getUsuarioId());
+
+            var usuario = new Usuario();
+            boolean enviarEmail = false;
+            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+
+            if (usuarioDto.isNovoCadastro()) {
+                usuario = criarUsuarioFeederNovo(usuarioDto);
+                configurarSenhaUsuarioFeeder(usuario, senhaDescriptografada);
+                enviarEmail = true;
+            } else {
+                usuario = criarUsuarioFeeder(usuarioDto);
+            }
+
+            usuario = repository.save(usuario);
+            salvarUsuarioCadastroCasoAutocadastro(usuario);
+            entityManager.flush();
+
+            if (enviarEmail) {
+                notificacaoService.enviarEmailDadosDeAcesso(usuario, senhaDescriptografada);
+                usuarioFeederCadastroSucessoMqSender.sendCadastroSuccessoMensagem(
+                    UsuarioCadastroSucessoMqDto.of(usuario, usuarioDto));
+            }
+
+        } catch (PersistenceException ex) {
+            log.error("Erro de persistência ao salvar o Usuario. ", ex);
+            throw new ValidacaoException("Erro ao cadastrar usuário.");
+        } catch (Exception ex) {
+            log.error("Erro ao salvar Usuário.", ex);
+            throw ex;
+        }
+    }
+
+    private Usuario criarUsuarioFeeder(UsuarioFeederMqDto usuarioDto) {
+        var usuario = findCompleteById(usuarioDto.getUsuarioId());
+        BeanUtils.copyProperties(usuarioDto, usuario);
+        return usuario;
+    }
+
+    private Usuario criarUsuarioFeederNovo(UsuarioFeederMqDto usuarioDto) {
+        var usuario = UsuarioFeederMqDto.criarUsuarioNovo(usuarioDto);
+        usuario.setCargo(getCargo(usuarioDto.getTipoGerador()));
+        usuario.setDepartamento(departamentoRepository.findByCodigo(CodigoDepartamento.FEEDER));
+        usuario.setUnidadesNegocios(unidadeNegocioRepository
+            .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
+        usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
+        usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO));
+        return usuario;
+    }
+
+    private void salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
+        if (isEmpty(usuario.getUsuarioCadastro())) {
+            usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
+            repository.save(usuario);
+        }
+    }
+
+    private void configurarSenhaUsuarioFeeder(Usuario usuario, String senhaDescriptografada) {
+        usuario.setSenha(passwordEncoder.encode(senhaDescriptografada));
+        usuario.setAlterarSenha(Eboolean.V);
+    }
+
     public void salvarUsuarioRealocado(Usuario usuario) {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuarioARealocar.setSituacao(ESituacao.R);
@@ -438,6 +514,32 @@ public class UsuarioService {
 
     private boolean isSocioPrincipal(CodigoCargo cargoCodigo) {
         return AGENTE_AUTORIZADO_SOCIO.equals(cargoCodigo);
+    }
+
+    public boolean validarSeUsuarioCpfEmailNaoCadastrados(UsuarioExistenteValidacaoRequest usuario) {
+        validarCpfCadastrado(usuario.getCpf(), usuario.getId());
+        validarEmailCadastrado(usuario.getEmail(), usuario.getId());
+        return true;
+    }
+
+    private void validarCpfCadastrado(String cpf, Integer usuarioId) {
+        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
+            .ifPresent(usuario -> {
+                if (isEmpty(usuarioId)
+                    || !usuarioId.equals(usuario.getId())) {
+                    throw new ValidacaoException("CPF já cadastrado.");
+                }
+            });
+    }
+
+    private void validarEmailCadastrado(String email, Integer usuarioId) {
+        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
+            .ifPresent(usuario -> {
+                if (isEmpty(usuarioId)
+                    || !usuarioId.equals(usuario.getId())) {
+                    throw new ValidacaoException("Email já cadastrado.");
+                }
+            });
     }
 
     private void validar(Usuario usuario) {
@@ -604,6 +706,7 @@ public class UsuarioService {
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
             enviarParaFilaDeUsuariosSalvos(usuarioDto);
+            feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
@@ -648,6 +751,7 @@ public class UsuarioService {
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
         enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
+        feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
@@ -858,6 +962,7 @@ public class UsuarioService {
                 usuario));
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
+
     }
 
     private void validarAtivacao(Usuario usuario) {
@@ -1118,6 +1223,7 @@ public class UsuarioService {
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
+        autenticacaoService.forcarLogoutGeradorLeads(usuario);
         return usuario.getId();
     }
 
