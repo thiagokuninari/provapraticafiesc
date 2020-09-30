@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.service.HorarioAcessoAtivoLocalService;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -39,8 +38,6 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
     private CallService callService;
     @Autowired
     private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
@@ -50,7 +47,7 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
             .map(Site::getTimeZone)
             .map(ETimeZone::getZoneId)
             .map(ZoneId::of)
-            .filter(z -> !isDentroHorarioPermitido(z) && !isRamalEmUso())
+            .filter(z -> !horarioAcessoAtivoLocalService.isDentroHorarioPermitido(z) && !isRamalEmUso())
             .ifPresent(error -> {
                 throw FORA_HORARIO_PERMITIDO_EX;
             });
@@ -69,18 +66,6 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
             .map(Integer.class::cast)
             .map(siteService::findById)
             .orElse(null);
-    }
-
-    private boolean isDentroHorarioPermitido(ZoneId timeZone) {
-        var now = dataHoraAtual.getDataHora(timeZone);
-        switch (now.getDayOfWeek()) {
-            case SUNDAY:
-                return false;
-            case SATURDAY:
-                return horarioAcessoAtivoLocalService.isDentroHorarioPermitidoNoSabado(now.toLocalTime());
-            default:
-                return horarioAcessoAtivoLocalService.isDentroHorarioPermitidoNaSemana(now.toLocalTime());
-        }
     }
 
     private boolean isRamalEmUso() {

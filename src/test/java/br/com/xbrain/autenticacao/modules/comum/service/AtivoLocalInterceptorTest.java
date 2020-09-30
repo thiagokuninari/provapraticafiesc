@@ -58,7 +58,7 @@ public class AtivoLocalInterceptorTest {
         when(siteService.findById(eq(1))).thenReturn(umSite());
         when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(false);
         interceptor = new AtivoLocalInterceptor(siteService, autenticacaoService, callService,
-                horarioAcessoAtivoLocalService, dataHoraAtual);
+                horarioAcessoAtivoLocalService);
     }
 
     @Test

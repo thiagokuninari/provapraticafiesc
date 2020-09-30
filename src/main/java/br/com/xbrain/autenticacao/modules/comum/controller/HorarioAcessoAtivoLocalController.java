@@ -1,25 +1,20 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.service.HorarioAcessoAtivoLocalService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
 
 @RestController
-@Profile("!producao")
-@RequestMapping("api/public")
+@RequestMapping("api/horarios-acesso")
+@RequiredArgsConstructor
 public class HorarioAcessoAtivoLocalController {
 
-    @Autowired
-    private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
+    private final HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
 
-    @PutMapping("horario-acesso-ativo")
+    @PutMapping
     public void alterarHorarioAcesso(@RequestParam @DateTimeFormat(pattern = "HH:mm:ss") LocalTime horarioInicioSabado,
                                      @RequestParam @DateTimeFormat(pattern = "HH:mm:ss") LocalTime horarioTerminoSabado,
                                      @RequestParam @DateTimeFormat(pattern = "HH:mm:ss") LocalTime horarioInicioSemanal,
@@ -27,5 +22,10 @@ public class HorarioAcessoAtivoLocalController {
 
         horarioAcessoAtivoLocalService.alterarHorariosAcesso(horarioInicioSabado, horarioTerminoSabado,
             horarioInicioSemanal, horarioTerminoSemanal);
+    }
+
+    @GetMapping("status")
+    public boolean isDentroHorarioPermitido() {
+        return horarioAcessoAtivoLocalService.isDentroHorarioPermitido();
     }
 }
