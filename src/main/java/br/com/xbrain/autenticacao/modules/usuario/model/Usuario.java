@@ -400,6 +400,13 @@ public class Usuario {
         return this.departamento != null ? this.departamento.getCodigo() : null;
     }
 
+    public Integer getSiteId() {
+        if (Objects.nonNull(site)) {
+            return site.getId();
+        }
+        return null;
+    }
+
     public Integer getNivelId() {
         if (this.cargo != null && this.cargo.getNivel() != null) {
             return this.cargo.getNivel().getId();

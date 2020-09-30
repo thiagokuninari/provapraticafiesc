@@ -67,7 +67,11 @@ public enum EErrors {
             "#020 - Erro ao limpar cache ativo"),
     ERRO_OBTER_ESTRUTURA_AA(
         "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#019 - Erro ao tentar recuperar a Estrutura do AA.");
+        "#019 - Erro ao tentar recuperar a Estrutura do AA."),
+    ERRO_CONSULTAR_STATUS_RAMAL_USUARIO(
+            "#21 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."
+    );
 
     @Getter
     @Setter

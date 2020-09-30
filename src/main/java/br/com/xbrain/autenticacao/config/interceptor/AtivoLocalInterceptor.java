@@ -1,12 +1,15 @@
 package br.com.xbrain.autenticacao.config.interceptor;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.service.HorarioAcessoAtivoLocalService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
@@ -15,13 +18,13 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
 
     private static final UnauthorizedUserException FORA_HORARIO_PERMITIDO_EX =
@@ -31,6 +34,8 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
     private SiteService siteService;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private CallService callService;
     @Autowired
     private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
 
@@ -42,7 +47,7 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
             .map(Site::getTimeZone)
             .map(ETimeZone::getZoneId)
             .map(ZoneId::of)
-            .filter(Predicate.not(this::isDentroHorarioPermitido))
+            .filter(z -> !horarioAcessoAtivoLocalService.isDentroHorarioPermitido(z) && !isRamalEmUso())
             .ifPresent(error -> {
                 throw FORA_HORARIO_PERMITIDO_EX;
             });
@@ -63,15 +68,7 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
             .orElse(null);
     }
 
-    private boolean isDentroHorarioPermitido(ZoneId timeZone) {
-        var now = LocalDateTime.now(timeZone);
-        switch (now.getDayOfWeek()) {
-            case SUNDAY:
-                return false;
-            case SATURDAY:
-                return horarioAcessoAtivoLocalService.isDentroHorarioPermitidoNoSabado(now.toLocalTime());
-            default:
-                return horarioAcessoAtivoLocalService.isDentroHorarioPermitidoNaSemana(now.toLocalTime());
-        }
+    private boolean isRamalEmUso() {
+        return callService.consultarStatusUsoRamalByUsuarioAutenticado();
     }
 }
