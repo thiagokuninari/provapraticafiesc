@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
@@ -112,7 +113,9 @@ public class AutenticacaoService {
     }
 
     public void logout(Integer usuarioId) {
-        logout(usuarioRepository.findOne(usuarioId).getLogin());
+        logout(usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new ValidacaoException("O usuário " + usuarioId + " não foi encontrado."))
+            .getLogin());
     }
 
     public void logout(List<Integer> usuariosIds) {

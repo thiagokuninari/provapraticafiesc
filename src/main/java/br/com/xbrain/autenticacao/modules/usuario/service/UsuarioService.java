@@ -171,6 +171,8 @@ public class UsuarioService {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @Autowired
     private FeederService feederService;
+    @Autowired
+    private UsuarioHistoricoService usuarioHistoricoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -236,6 +238,18 @@ public class UsuarioService {
         return repository
             .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
             .map(UsuarioResponse::of);
+    }
+
+    public UsuarioResponse buscarAtualByCpf(String cpf) {
+        return UsuarioResponse.of(repository
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+    }
+
+    public UsuarioResponse buscarAtualByEmail(String email) {
+        return UsuarioResponse.of(repository
+            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, ESituacao.R)
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
@@ -729,6 +743,24 @@ public class UsuarioService {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
             log.error("erro ao atualizar usuário da fila.", ex);
+        }
+    }
+
+    public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
+        try {
+            inativarUsuario(repository.findById(usuario.getId())
+                .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+        } catch (Exception ex) {
+            log.error("Erro ao inativar o usuário " + usuario.getId(), ex);
+        }
+    }
+
+    private void inativarUsuario(Usuario usuario) {
+        if (usuario.isAtivo()) {
+            usuario.setSituacao(ESituacao.I);
+            repository.save(usuario);
+            usuarioHistoricoService.gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId());
+            autenticacaoService.logout(usuario.getId());
         }
     }
 

@@ -77,5 +77,10 @@ public class UsuarioMqListener {
     public void usuarioRemanejar(UsuarioMqRequest usuarioMqRequest) {
         service.remanejarUsuario(usuarioMqRequest);
     }
+
+    @RabbitListener(queues = "${app-config.queue.usuario-inativacao-por-aa}")
+    public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
+        service.inativarPorAgenteAutorizado(usuario);
+    }
 }
 

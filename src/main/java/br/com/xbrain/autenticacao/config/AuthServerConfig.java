@@ -141,6 +141,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String agenteAutorizadoApiClient;
     @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
     private String agenteAutorizadoApiSecret;
+    @Value("${app-config.oauth-clients.colaborador-vendas-api.client}")
+    private String colaboradorVendasApiClient;
+    @Value("${app-config.oauth-clients.colaborador-vendas-api.secret}")
+    private String colaboradorVendasApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -291,6 +295,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(agenteAutorizadoApiSecret)
             .authorizedGrantTypes("client_credentials")
             .scopes("agente-autorizado-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(colaboradorVendasApiClient)
+            .secret(colaboradorVendasApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("colaborador-vendas-api")
             .authorities(ROLE_APPLICATION);
     }
 

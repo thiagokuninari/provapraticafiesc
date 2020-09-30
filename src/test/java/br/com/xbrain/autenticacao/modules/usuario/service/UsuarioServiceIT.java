@@ -998,4 +998,65 @@ public class UsuarioServiceIT {
                 tuple(240,"VENDEDOR OPERACAO 3 - ( Pessoal )")
             );
     }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarUsuarioAtual_quandoInformarCpf() {
+        var usuario = usuarioService.buscarAtualByCpf("38957979875");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByCpf("123456789"))
+            .withMessage("O usuário não foi encontrado.");
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarUsuarioAtual_quandoInformarEmail() {
+        var usuario = usuarioService.buscarAtualByEmail("ADMIN@XBRAIN.COM.BR");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByEmail("EMAILNAOEXISTENTE@EMAIL.COM"))
+            .withMessage("O usuário não foi encontrado.");
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveInativarUsuarioEGerarHistorico_quandoInformarId() {
+        var usuarioAtivo = usuarioRepository.findById(100).get();
+        assertThat(usuarioAtivo.isAtivo()).isTrue();
+
+        service.inativarPorAgenteAutorizado(new UsuarioDto(usuarioAtivo.getId()));
+
+        var usuarioInativo = usuarioRepository.findById(100).get();
+
+        assertThat(usuarioInativo.isAtivo()).isFalse();
+
+        assertThat(usuarioHistoricoRepository.findByUsuarioId(usuarioInativo.getId()))
+            .extracting("motivoInativacao.codigo", "observacao", "situacao")
+            .contains(tuple(CodigoMotivoInativacao.DEMISSAO, "Inativado pelo Agente Autorizado.", ESituacao.I));
+
+        verify(autenticacaoService, times(1)).logout(anyInt());
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveNaoOcorrerNada_quandoUsuarioNaoEstiverAtivo() {
+        service.inativarPorAgenteAutorizado((new UsuarioDto(12316)));
+
+        verify(autenticacaoService, times(0)).logout(anyInt());
+    }
 }

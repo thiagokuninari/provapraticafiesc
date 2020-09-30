@@ -101,6 +101,10 @@ public class UsuarioDto implements Serializable {
     private String urlLojaProspectNextel;
     private String cupomLoja;
 
+    public UsuarioDto(Integer id) {
+        this.id = id;
+    }
+
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);

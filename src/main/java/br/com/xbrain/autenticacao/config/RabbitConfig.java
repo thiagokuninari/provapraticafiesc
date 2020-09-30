@@ -109,6 +109,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.alterar-situacao-usuario-feeder-failure}")
     private String alterarSituacaoUsuarioFeederFailureMq;
 
+    @Value("${app-config.queue.usuario-inativacao-por-aa}")
+    private String usuarioInativacaoPorAaMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -291,6 +294,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioInativacaoPorAaMq() {
+        return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
     }
@@ -453,5 +461,12 @@ public class RabbitConfig {
         return BindingBuilder.bind(alterarSituacaoUsuarioFeederFailureMq())
             .to(exchange)
             .with(alterarSituacaoUsuarioFeederFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioInativacaoPorAaMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioInativacaoPorAaMq())
+            .to(exchange)
+            .with(usuarioInativacaoPorAaMq);
     }
 }
