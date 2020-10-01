@@ -17,13 +17,37 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.util.Collections;
 
+import static br.com.xbrain.autenticacao.config.EScopes.APP;
+import static br.com.xbrain.autenticacao.config.EScopes.AUTENTICACAO;
+import static br.com.xbrain.autenticacao.config.EScopes.PARCEIROS_ONLINE;
+import static br.com.xbrain.autenticacao.config.EScopes.VENDAS;
+import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_VENDAS;
+import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_BRSCAN;
+import static br.com.xbrain.autenticacao.config.EScopes.MAILING;
+import static br.com.xbrain.autenticacao.config.EScopes.MAILING_DISCADORA;
+import static br.com.xbrain.autenticacao.config.EScopes.MAILING_IMPORTACAO;
+import static br.com.xbrain.autenticacao.config.EScopes.EQUIPE_VENDA;
+import static br.com.xbrain.autenticacao.config.EScopes.CALL;
+import static br.com.xbrain.autenticacao.config.EScopes.DASHBOARD;
+import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA_ECCP;
+import static br.com.xbrain.autenticacao.config.EScopes.CONTATO_CRN;
+import static br.com.xbrain.autenticacao.config.EScopes.CHAMADO;
+import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
+import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
+import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
+import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
+
 @Configuration
 @EnableAuthorizationServer
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private static final int UM_MES_EM_SEGUNDOS = 2592000;
     private static final String ROLE_APPLICATION = "ROLE_APPLICATION";
-    public static String APP_CLIENT = "xbrain-app-client";
+    private static final String PASSWORD = "password";
+    private static final String CLIENT_CREDENTIALS = "client_credentials";
+    public static final String APP_CLIENT = "xbrain-app-client";
+
     @Value("${keys.private}")
     private String privateKey;
     @Value("${keys.public}")
@@ -100,6 +124,14 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String asteriskUraApiClient;
     @Value("${app-config.oauth-clients.asterisk-ura-api.secret}")
     private String asteriskuraApiSecret;
+    @Value("${app-config.oauth-clients.indicacao-api.client}")
+    private String indicacaoApiClient;
+    @Value("${app-config.oauth-clients.indicacao-api.secret}")
+    private String indicacaoApiSecret;
+    @Value("${app-config.oauth-clients.backoffice-api.client}")
+    private String backofficeApiClient;
+    @Value("${app-config.oauth-clients.backoffice-api.secret}")
+    private String backofficeApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -122,111 +154,122 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
         clients.inMemory()
             .withClient(frontAppsClient)
             .secret(frontAppsSecret)
-            .authorizedGrantTypes("password")
-            .scopes("app")
+            .authorizedGrantTypes(PASSWORD)
+            .scopes(APP.getScope())
             .accessTokenValiditySeconds(UM_MES_EM_SEGUNDOS)
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(autenticacaoApiClient)
             .secret(autenticacaoApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("autenticacao-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(AUTENTICACAO.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(parceirosApiClient)
             .secret(parceirosApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("parceiros-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(PARCEIROS_ONLINE.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(vendasApiClient)
             .secret(vendasApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("vendas-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(VENDAS.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(integracaoVendasApiClient)
             .secret(integracaoVendasApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("integracao-vendas-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(INTEGRACAO_VENDAS.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(integracaoBrScanApiClient)
             .secret(integracaoBrScanApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("integracao-brscan-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(INTEGRACAO_BRSCAN.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(mailingApiClient)
             .secret(mailingApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("mailing-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(MAILING.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(mailingDiscadoraApiClient)
             .secret(mailingDiscadoraApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("mailing-discadora-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(MAILING_DISCADORA.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(mailingImportacaoApiClient)
             .secret(mailingImportacaoApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("mailing-importacao-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(MAILING_IMPORTACAO.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(equipeVendaApiClient)
             .secret(equipeVendaApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("equipevenda-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(EQUIPE_VENDA.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(callApiClient)
             .secret(callApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("call-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CALL.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(dashboardApiClient)
             .secret(dashboardApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("dashboard-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(DASHBOARD.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(discadoraEccpApiClient)
             .secret(discadoraEccpApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("discadora-eccp-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(DISCADORA_ECCP.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(contatoCrnApiClient)
             .secret(contatoCrnApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("contato-crn-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CONTATO_CRN.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(chamadoApiClient)
             .secret(chamadoApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("chamado-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CHAMADO.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(funilProspeccaoApiClient)
             .secret(funilProspeccaoApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("funil-prospeccao-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(FUNIL_PROSPECCAO.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(discadoraApiClient)
             .secret(discadoraApiSecret)
-            .authorizedGrantTypes("client_credentials")
-            .scopes("discadora-api")
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(DISCADORA.getScope())
             .authorities(ROLE_APPLICATION)
             .and()
             .withClient(asteriskUraApiClient)
             .secret(asteriskuraApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(ASTERISK_URA.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(indicacaoApiClient)
+            .secret(indicacaoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(INDICACAO.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(backofficeApiClient)
+            .secret(backofficeApiSecret)
             .authorizedGrantTypes("client_credentials")
-            .scopes("asterisk-ura-api")
             .authorities(ROLE_APPLICATION);
     }
 

@@ -223,6 +223,9 @@ public class Usuario {
     @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
     private String urlLojaProspectNextel;
 
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
+
     @Transient
     private List<Integer> hierarquiasId;
 
@@ -471,7 +474,7 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isAtivo() {
-        return situacao.equals(ESituacao.A);
+        return ESituacao.A.equals(situacao);
     }
 
     @JsonIgnore

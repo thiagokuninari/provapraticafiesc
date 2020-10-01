@@ -23,7 +23,11 @@ public enum CodigoFuncionalidade {
     CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
-    MLG_5013("Distribuir Agendamentos Proprietários");
+    MLG_5013("Distribuir Agendamentos Proprietários"),
+    VDS_3059("Visualizar Relatório Consulta de Endereço"),
+    REL_10012("Relatório Consulta de Endereço"),
+    VDS_3061("Visualizar Relatório Consulta de Crédito"),
+    REL_10014("Relatório Consulta de Crédito");
 
     @Getter
     private String descricao;

@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -19,10 +20,12 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -34,8 +37,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
-
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
 
@@ -253,14 +254,15 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
+    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
             JPAExpressions
                 .select(usuario.id)
                 .from(usuario)
                 .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
                 .where(usuarioHierarquia.usuario.id.in(ids)
-                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId))
+                    .or(usuario.id.eq(usuarioAutenticadoId)))));
         return this;
     }
 
@@ -295,8 +297,8 @@ public class UsuarioPredicate {
                 .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+            daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
                 usuario.getUsuario().getId());
 
         } else if (usuario.isBackoffice()) {
@@ -304,6 +306,14 @@ public class UsuarioPredicate {
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
         }
+        return this;
+    }
+
+    public UsuarioPredicate comCodigoCargo(CodigoCargo codigoCargo) {
+        Optional.ofNullable(codigoCargo)
+            .map(usuario.cargo.codigo::eq)
+            .map(builder::and);
+
         return this;
     }
 

@@ -29,11 +29,12 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+
 @RestController
 @RequestMapping(value = "api/usuarios")
 public class UsuarioController {
 
-    private static final Integer QTD_MAX_IN_NO_ORACLE = 1000;
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -158,7 +159,7 @@ public class UsuarioController {
     @GetMapping("inativos")
     public List<UsuarioResponse> getUsuariosInativosByIds(@RequestParam List<Integer> usuariosInativosIds) {
 
-        return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE )
+        return Lists.partition(usuariosInativosIds, QTD_MAX_IN_NO_ORACLE)
                 .stream()
                 .map(ids -> usuarioService.getUsuariosInativosByIds(ids))
                 .flatMap(Collection::stream)
@@ -283,8 +284,9 @@ public class UsuarioController {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 
-    @GetMapping("permissoes-por-usuario")
-    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+    @PostMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
+            @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
@@ -332,5 +334,25 @@ public class UsuarioController {
     @GetMapping("{id}/url-loja-online")
     public UrlLojaOnlineResponse getUrlLojaOnline(@PathVariable Integer id) {
         return usuarioService.getUrlLojaOnline(id);
+    }
+
+    @GetMapping("{id}/com-login-netsales")
+    public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(@PathVariable Integer id) {
+        return usuarioService.getUsuarioByIdComLoginNetSales(id);
+    }
+
+    @GetMapping(params = "organizacaoId")
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(@RequestParam Integer organizacaoId) {
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId);
+    }
+
+    @GetMapping("permitidos")
+    public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
+        return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
+    }
+
+    @GetMapping("permitidos/select")
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
 }

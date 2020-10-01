@@ -117,6 +117,9 @@ app-config:
     autenticacao-api:
       client: autenticacao-api
       secret: 4ut3nt1c4c404p1
+    backoffice-api:
+      client: backoffice-api
+      secret: b4ck0ff1c34p1
     front-apps:
       client: xbrain-app-client
       secret: xbrain
@@ -171,6 +174,9 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    indicacao-api:
+      client: indicacao-api
+      secret: 1nd1c4c40
 
   services:
     autenticacao:
@@ -194,6 +200,9 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    claro-indico:
+      #url: http://localhost:8055
+      url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
 
 flyway:
   enabled: true
@@ -221,6 +230,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    claro-indico:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.claro-indico.url}
 
   host:
     connect-timeout-millis: 1800000

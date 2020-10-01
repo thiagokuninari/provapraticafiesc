@@ -257,20 +257,21 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(MockMvcRequestBuilders
-                .fileUpload(API_URI)
-                .file(umUsuario(new UsuarioDto()))
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .header("Authorization", getAccessToken(mvc, ADMIN)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(7)))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "O campo nome é obrigatório.",
-                        "O campo cpf é obrigatório.",
-                        "O campo email é obrigatório.",
-                        "O campo unidadesNegociosId é obrigatório.",
-                        "O campo empresasId é obrigatório.",
-                        "O campo cargoId é obrigatório.",
-                        "O campo departamentoId é obrigatório.")));
+            .fileUpload(API_URI)
+            .file(umUsuario(new UsuarioDto()))
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo cpf é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo unidadesNegociosId é obrigatório.",
+                "O campo empresasId é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo loginNetSales may not be empty")));
     }
 
     @Test
@@ -579,6 +580,7 @@ public class UsuarioGerenciaControllerTest {
         Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
         usuario.forceLoad();
         usuario.setNome("JOAOZINHO");
+        usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         return UsuarioDto.of(usuario);
     }
 
@@ -594,6 +596,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setTelefone("43 995565661");
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
+        usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
         return usuario;
     }
