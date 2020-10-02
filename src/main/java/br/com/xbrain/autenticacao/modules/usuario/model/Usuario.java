@@ -519,6 +519,7 @@ public class Usuario {
         return Objects.nonNull(canais) && canais.stream().anyMatch(c -> Objects.equals(c, canal));
     }
 
+    @JsonIgnore
     public boolean isOperadorTelevendasAtivoLocal() {
         return isCargo(OPERACAO_TELEVENDAS)
                 && hasCanal(ECanal.ATIVO_PROPRIO);
