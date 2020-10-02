@@ -516,6 +516,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
+                .leftJoin(usuario.site).fetchJoin()
                 .where(
                     usuario.email.equalsIgnoreCase(email)
                         .and(usuario.situacao.ne(ESituacao.R))

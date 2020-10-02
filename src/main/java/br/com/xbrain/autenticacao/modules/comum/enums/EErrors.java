@@ -70,8 +70,10 @@ public enum EErrors {
         "#019 - Erro ao tentar recuperar a Estrutura do AA."),
     ERRO_CONSULTAR_STATUS_RAMAL_USUARIO(
             "#21 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."
-    );
+            "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."),
+    ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO(
+            "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#022 - Erro ao tentar consultar status da tabulação do usuário.");
 
     @Getter
     @Setter

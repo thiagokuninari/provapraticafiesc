@@ -205,6 +205,9 @@ app-config:
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br
+    notificacao-api:
+      #url: http://localhost:8081
+      url: http://192.168.50.1:6595
 
 flyway:
   enabled: true

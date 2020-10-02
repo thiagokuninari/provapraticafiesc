@@ -525,4 +525,13 @@ public class Usuario {
                 .collect(Collectors.toSet());
     }
 
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(canais) && canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
+    @JsonIgnore
+    public boolean isOperadorTelevendasAtivoLocal() {
+        return isCargo(OPERACAO_TELEVENDAS)
+                && hasCanal(ECanal.ATIVO_PROPRIO);
+    }
 }
