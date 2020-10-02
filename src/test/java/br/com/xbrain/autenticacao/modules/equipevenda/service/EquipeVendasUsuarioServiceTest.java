@@ -42,7 +42,7 @@ public class EquipeVendasUsuarioServiceTest {
                 .build(),
             EquipeVendaUsuarioResponse.builder()
                 .usuarioId(1)
-                .usuarioNome("RENATO")
+                .usuarioNome("JOAO")
                 .equipeVendaId(10)
                 .build()
         );
