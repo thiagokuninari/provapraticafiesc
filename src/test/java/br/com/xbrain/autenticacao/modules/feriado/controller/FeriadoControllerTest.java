@@ -162,10 +162,43 @@ public class FeriadoControllerTest {
     @Test
     public void cacheClearFeriados_naoDeveChamarMetodo_seNaoEstiverAutenticado() throws Exception {
         mvc.perform(delete(URL + "/cache/clear")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andReturn();
 
         verify(service, never()).flushCacheFeriados();
+    }
+
+    @Test
+    public void buscarTotalDeFeriadosPorMesAno_deveRetornarTotalFeriadosAgrupadoPorAnoMes_quandoSolicitado()
+        throws Exception {
+        mvc.perform(get(URL + "/mes-ano/total-feriados")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].ano", is(2018)))
+            .andExpect(jsonPath("$[0].mes", is(1)))
+            .andExpect(jsonPath("$[0].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[1].ano", is(2018)))
+            .andExpect(jsonPath("$[1].mes", is(3)))
+            .andExpect(jsonPath("$[1].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[2].ano", is(2018)))
+            .andExpect(jsonPath("$[2].mes", is(4)))
+            .andExpect(jsonPath("$[2].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[3].ano", is(2018)))
+            .andExpect(jsonPath("$[3].mes", is(5)))
+            .andExpect(jsonPath("$[3].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[4].ano", is(2018)))
+            .andExpect(jsonPath("$[4].mes", is(9)))
+            .andExpect(jsonPath("$[4].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[5].ano", is(2018)))
+            .andExpect(jsonPath("$[5].mes", is(10)))
+            .andExpect(jsonPath("$[5].qtdFeriadosNacionais", is(1)))
+            .andExpect(jsonPath("$[6].ano", is(2018)))
+            .andExpect(jsonPath("$[6].mes", is(11)))
+            .andExpect(jsonPath("$[6].qtdFeriadosNacionais", is(2)))
+            .andExpect(jsonPath("$[7].ano", is(2018)))
+            .andExpect(jsonPath("$[7].mes", is(12)))
+            .andExpect(jsonPath("$[7].qtdFeriadosNacionais", is(1)));
     }
 }

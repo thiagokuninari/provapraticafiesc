@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.config.CacheConfig.FERIADOS_DATA_CACHE_NAME;
@@ -63,5 +65,9 @@ public class FeriadoService {
             allEntries = true)
     public void flushCacheFeriados() {
         log.info("Flush Cache Feriados");
+    }
+
+    public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
+        return repository.buscarTotalDeFeriadosPorMesAno();
     }
 }

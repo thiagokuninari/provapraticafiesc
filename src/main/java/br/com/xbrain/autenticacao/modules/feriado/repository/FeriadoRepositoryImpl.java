@@ -3,8 +3,10 @@ package br.com.xbrain.autenticacao.modules.feriado.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.time.LocalDate;
@@ -53,6 +55,21 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             .where(feriado.feriadoNacional.eq(Eboolean.V)
                 .or(QCidade.cidade.id.eq(cidadeId)))
             .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(FeriadoMesAnoResponse.class,
+                feriado.dataFeriado.year(),
+                feriado.dataFeriado.month(),
+                feriado.id.count())
+            )
+            .from(feriado)
+            .where(feriado.feriadoNacional.eq(Eboolean.V))
+            .groupBy(feriado.dataFeriado.year(), feriado.dataFeriado.month())
+            .orderBy(feriado.dataFeriado.year().asc(), feriado.dataFeriado.month().asc())
             .fetch();
     }
 }

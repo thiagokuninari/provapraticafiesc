@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -74,5 +75,22 @@ public class FeriadoRepositoryIT {
             .hasSize(11)
             .contains(LocalDate.of(2019, 7, 30), LocalDate.of(2019, 7, 28))
             .doesNotContain(LocalDate.of(2019, 7, 29));
+    }
+
+    @Test
+    public void buscarTotalDeFeriadosPorMesAno_deveRetornarTotalFeriadosAgrupadoPorAnoMes_quandoSolicitado() {
+        assertThat(feriadoRepository.buscarTotalDeFeriadosPorMesAno())
+            .extracting("ano", "mes", "qtdFeriadosNacionais")
+            .containsExactly(
+                tuple(2018, 1, 1L),
+                tuple(2018, 3, 1L),
+                tuple(2018, 4, 1L),
+                tuple(2018, 5, 1L),
+                tuple(2018, 9, 1L),
+                tuple(2018, 10, 1L),
+                tuple(2018, 11, 2L),
+                tuple(2018, 12, 1L),
+                tuple(2019, 7, 1L)
+            );
     }
 }
