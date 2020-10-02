@@ -37,6 +37,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
 import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
 import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
 import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
+import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 
 @Configuration
 @EnableAuthorizationServer
@@ -145,6 +146,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String colaboradorVendasApiClient;
     @Value("${app-config.oauth-clients.colaborador-vendas-api.secret}")
     private String colaboradorVendasApiSecret;
+    @Value("${app-config.oauth-clients.click-to-call-api.client}")
+    private String clickToCallApiClient;
+    @Value("${app-config.oauth-clients.click-to-call-api.secret}")
+    private String clickToCallApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -301,6 +306,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(colaboradorVendasApiSecret)
             .authorizedGrantTypes("client_credentials")
             .scopes("colaborador-vendas-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(clickToCallApiClient)
+            .secret(clickToCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CLICK_TO_CALL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

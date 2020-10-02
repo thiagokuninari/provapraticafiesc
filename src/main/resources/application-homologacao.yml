@@ -48,6 +48,8 @@ app-config:
       url: http://172.10.10.55:8055
     agente-autorizado:
       url: http://172.10.10.106:8300
+    gestao:
+      url: http://172.10.10.71:8091
 
   email:
     enviar: true
