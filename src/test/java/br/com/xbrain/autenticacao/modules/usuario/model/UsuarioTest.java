@@ -1,10 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import org.junit.Test;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -96,5 +101,34 @@ public class UsuarioTest {
             .builder()
             .codigo(codigoCargo)
             .build();
+    }
+
+    @Test
+    public void getDescricaoUnidadesNegociosConcatenadas_stringComUnidadesConcatenadas_quandoUsuarioPossuirUnidadesDeNegocio() {
+        var usuario = Usuario.builder()
+            .unidadesNegocios(umaListaUnidadesNegocio())
+            .build();
+
+        assertThat(usuario.getDescricaoUnidadesNegociosConcatenadas())
+            .isEqualTo("Claro Residencial, Residencial e Combos");
+    }
+
+    private List<UnidadeNegocio> umaListaUnidadesNegocio() {
+        return List.of(
+            UnidadeNegocio.builder()
+                .id(1)
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build(),
+            UnidadeNegocio.builder()
+                .id(2)
+                .codigo(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
+                .build()
+        );
+    }
+
+    @Test
+    public void getDescricaoUnidadesNegociosConcatenadas_stringEmpty_quandoUsuarioNaoPossuirUnidadesDeNegocio() {
+        assertThat(new Usuario().getDescricaoUnidadesNegociosConcatenadas())
+            .isEmpty();
     }
 }

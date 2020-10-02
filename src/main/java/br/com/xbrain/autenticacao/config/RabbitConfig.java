@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+    private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+    private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
     @Value("${app-config.topic.autenticacao}")
     private String autenticacaoTopic;
@@ -86,6 +85,33 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-remanejado-aut-failure}")
     private String usuarioRemanejadoAutFailure;
 
+    @Value("${app-config.queue.atualizar-permissao-feeder}")
+    private String atualizarPermissaoFeederMq;
+
+    @Value("${app-config.queue.atualizar-permissao-feeder-failure}")
+    private String atualizarPermissaoFeederFailureMq;
+
+    @Value("${app-config.queue.sucesso-cadastro-usuario-feeder}")
+    private String sucessoCadastroUsuarioFeederMq;
+
+    @Value("${app-config.queue.sucesso-cadastro-usuario-feeder-failure}")
+    private String sucessoCadastroUsuarioFeederFailureMq;
+
+    @Value("${app-config.queue.cadastro-usuario-feeder}")
+    private String cadastroUsuarioFeederMq;
+
+    @Value("${app-config.queue.cadastro-usuario-feeder-failure}")
+    private String cadastroUsuarioFeederFailureMq;
+
+    @Value("${app-config.queue.alterar-situacao-usuario-feeder}")
+    private String alterarSituacaoUsuarioFeederMq;
+
+    @Value("${app-config.queue.alterar-situacao-usuario-feeder-failure}")
+    private String alterarSituacaoUsuarioFeederFailureMq;
+
+    @Value("${app-config.queue.usuario-inativacao-por-aa}")
+    private String usuarioInativacaoPorAaMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -99,6 +125,20 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroMq() {
         return new Queue(usuarioCadastroMq, false);
+    }
+
+    @Bean
+    Queue atualizarPermissaoFeederMq() {
+        return QueueBuilder
+            .durable(atualizarPermissaoFeederMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoFeederFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue atualizarPermissaoFeederFailureMq() {
+        return QueueBuilder.durable(atualizarPermissaoFeederFailureMq).build();
     }
 
     @Bean
@@ -212,8 +252,66 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue sucessoCadastroUsuarioFeederMq() {
+        return QueueBuilder
+            .durable(sucessoCadastroUsuarioFeederMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, sucessoCadastroUsuarioFeederFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue sucessoCadastroUsuarioFeederFailureMq() {
+        return QueueBuilder.durable(sucessoCadastroUsuarioFeederFailureMq).build();
+    }
+
+    @Bean
+    Queue cadastroUsuarioFeederMq() {
+        return QueueBuilder
+            .durable(cadastroUsuarioFeederMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, cadastroUsuarioFeederFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue cadastroUsuarioFeederFailureMq() {
+        return QueueBuilder.durable(cadastroUsuarioFeederFailureMq).build();
+    }
+
+    @Bean
+    Queue alterarSituacaoUsuarioFeederMq() {
+        return QueueBuilder
+            .durable(alterarSituacaoUsuarioFeederMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, alterarSituacaoUsuarioFeederFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue alterarSituacaoUsuarioFeederFailureMq() {
+        return QueueBuilder.durable(alterarSituacaoUsuarioFeederFailureMq).build();
+    }
+
+    @Bean
+    Queue usuarioInativacaoPorAaMq() {
+        return QueueBuilder.nonDurable(usuarioInativacaoPorAaMq).build();
+    }
+
+    @Bean
     public Binding usuarioCadastroBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroMq()).to(exchange).with(usuarioCadastroMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoFeederBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoFeederMq()).to(exchange).with(atualizarPermissaoFeederMq);
+    }
+
+    @Bean
+    public Binding atualizarPermissaoFeederFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(atualizarPermissaoFeederFailureMq())
+            .to(exchange).with(atualizarPermissaoFeederFailureMq);
     }
 
     @Bean
@@ -324,5 +422,51 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioRemanejadoAutFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioRemanejadoAutFailure()).to(exchange).with(usuarioRemanejadoAutFailure);
+    }
+
+    @Bean
+    public Binding sucessoCadastroUsuarioFeederMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(sucessoCadastroUsuarioFeederMq())
+            .to(exchange).with(sucessoCadastroUsuarioFeederMq);
+    }
+
+    @Bean
+    public Binding sucessoCadastroUsuarioFeederMqFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(sucessoCadastroUsuarioFeederFailureMq())
+            .to(exchange)
+            .with(sucessoCadastroUsuarioFeederFailureMq);
+    }
+
+    @Bean
+    public Binding cadastroUsuarioFeederMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(cadastroUsuarioFeederMq()).to(exchange).with(cadastroUsuarioFeederMq);
+    }
+
+    @Bean
+    public Binding cadastroUsuarioFeederMqFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(cadastroUsuarioFeederFailureMq())
+            .to(exchange)
+            .with(cadastroUsuarioFeederFailureMq);
+    }
+
+    @Bean
+    public Binding alterarSituacaoUsuarioFeederMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(alterarSituacaoUsuarioFeederMq())
+            .to(exchange)
+            .with(alterarSituacaoUsuarioFeederMq);
+    }
+
+    @Bean
+    public Binding alterarSituacaoUsuarioFeederMqFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(alterarSituacaoUsuarioFeederFailureMq())
+            .to(exchange)
+            .with(alterarSituacaoUsuarioFeederFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioInativacaoPorAaMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioInativacaoPorAaMq())
+            .to(exchange)
+            .with(usuarioInativacaoPorAaMq);
     }
 }

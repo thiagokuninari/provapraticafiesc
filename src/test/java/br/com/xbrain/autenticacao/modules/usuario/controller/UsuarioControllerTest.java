@@ -281,7 +281,7 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$", hasSize(5)))
             .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
@@ -637,9 +637,9 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].value").value(300))
-            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET - ( Pessoal )"))
             .andExpect(jsonPath("$[1].value").value(102))
-            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação - ( Pessoal )"));
     }
 
     @Test

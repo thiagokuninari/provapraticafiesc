@@ -46,11 +46,15 @@ app-config:
       url: http://172.10.10.64:8084
     claro-indico:
       url: http://172.10.10.55:8055
+    agente-autorizado:
+      url: http://172.10.10.106:8300
+    gestao:
+      url: http://172.10.10.71:8091
 
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: angelica@xbrain.com.br,valdecir@xbrain.com.br,higor@xbrain.com.br
+    emails: angelica@xbrain.com.br,higor@xbrain.com.br,jose@xbrain.com.br
     emails-solicitacao-ramal: angelica@xbrain.com.br, higor@xbrain.com.br, valdecir@xbrain.com.br, jose@xbrain.com.br
 
 logging:

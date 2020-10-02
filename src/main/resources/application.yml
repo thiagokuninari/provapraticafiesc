@@ -76,7 +76,7 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: renato@xbrain.com.br
+    emails: viola@xbrain.com.br
     emails-solicitacao-ramal: renato@xbrain.com.br
 
   multiplo-login:
@@ -85,6 +85,7 @@ app-config:
   topic:
     autenticacao: autenticacao.topic
     mailing: mailing.topic
+    feeder: feeder.topic
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
@@ -112,6 +113,15 @@ app-config:
     usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
+    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
+    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
+    cadastro-usuario-feeder: cadastro-usuario-feeder.queue
+    cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
+    sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
+    sucesso-cadastro-usuario-feeder-failure: sucesso-cadastro-usuario-feeder-failure.queue
+    alterar-situacao-usuario-feeder: alterar-situacao-usuario-feeder.queue
+    alterar-situacao-usuario-feeder-failure: alterar-situacao-usuario-feeder-failure.queue
+    usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
 
   oauth-clients:
     autenticacao-api:
@@ -174,9 +184,21 @@ app-config:
     asterisk-ura-api:
       client: asterisk-ura-api
       secret: 4st3r1skur44p1
+    gerador-lead-api:
+      client: gerador-lead-api
+      secret: g3r4d0rl34d4p1
     indicacao-api:
       client: indicacao-api
       secret: 1nd1c4c40
+    agente-autorizado-api:
+      client: agente-autorizado-api
+      secret: 4g3nt34ut0r1z4d0
+    colaborador-vendas-api:
+      client: colaborador-vendas-api
+      secret: c0l4b0r4d0rv3nd4s
+    click-to-call-api:
+      client: click-to-call-api
+      secret: cl1ckt0c4ll4p1
 
   services:
     autenticacao:
@@ -203,6 +225,12 @@ app-config:
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    agente-autorizado:
+#      url: http://localhost:8300
+      url: http://api-dev.conexaoclarobrasil.com.br/parceiros
+    gestao:
+      #url: http://localhost:8091
+      url: http://gestao-api-dev.conexaoclarobrasil.com.br
 
 flyway:
   enabled: true
@@ -233,6 +261,9 @@ zuul:
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
+    gestao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gestao.url}
 
   host:
     connect-timeout-millis: 1800000

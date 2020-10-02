@@ -1,69 +1,34 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Sql(scripts = {"classpath:/tests_database.sql", "classpath:/tests_usuario_historico.sql"})
-@Transactional
+@RunWith(MockitoJUnitRunner.class)
 public class UsuarioHistoricoServiceTest {
 
-    private static LocalDateTime DATA_CADASTRO_DEFAULT = LocalDateTime.of(2019, 4, 1, 9, 30, 0);
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    private UsuarioHistoricoService usuarioHistoricoService;
-    @Autowired
-    private UsuarioHistoricoRepository usuarioHistoricoRepository;
-    @Autowired
-    private MotivoInativacaoService motivoInativacaoService;
-    @Autowired
-    private EntityManager entityManager;
+    @InjectMocks
+    private UsuarioHistoricoService service;
+
+    @Mock
+    private UsuarioHistoricoRepository repository;
 
     @Test
-    public void gerarHistoricoInativacao_deveGerarHistorico_quandoUsuarioForInativadoPeloSistema() {
-        assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
-        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799));
-        refresh();
+    public void save_deveSalvarListaDeUsuarioHistorico() {
+        assertThatCode(() -> service.save(List.of(new UsuarioHistorico(), new UsuarioHistorico())))
+            .doesNotThrowAnyException();
 
-        List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
-        assertEquals(1, usuarioHistoricos.size());
-
-        assertThat(usuarioHistoricos.get(0))
-                .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
-                        "INATIVADO POR FALTA DE ACESSO", 799);
+        verify(repository, times(1)).save(anyList());
     }
-
-    private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {
-        return motivoInativacaoService.findByCodigoMotivoInativacao(codigo);
-    }
-
-    private void refresh() {
-        this.entityManager.flush();
-        this.entityManager.clear();
-    }
-
 }

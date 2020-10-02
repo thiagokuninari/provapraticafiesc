@@ -36,6 +36,8 @@ import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
 import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
 import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
 import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
+import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
+import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 
 @Configuration
 @EnableAuthorizationServer
@@ -132,6 +134,22 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String backofficeApiClient;
     @Value("${app-config.oauth-clients.backoffice-api.secret}")
     private String backofficeApiSecret;
+    @Value("${app-config.oauth-clients.gerador-lead-api.client}")
+    private String geradorLeadApiClient;
+    @Value("${app-config.oauth-clients.gerador-lead-api.secret}")
+    private String geradorLeadApiSecret;
+    @Value("${app-config.oauth-clients.agente-autorizado-api.client}")
+    private String agenteAutorizadoApiClient;
+    @Value("${app-config.oauth-clients.agente-autorizado-api.secret}")
+    private String agenteAutorizadoApiSecret;
+    @Value("${app-config.oauth-clients.colaborador-vendas-api.client}")
+    private String colaboradorVendasApiClient;
+    @Value("${app-config.oauth-clients.colaborador-vendas-api.secret}")
+    private String colaboradorVendasApiSecret;
+    @Value("${app-config.oauth-clients.click-to-call-api.client}")
+    private String clickToCallApiClient;
+    @Value("${app-config.oauth-clients.click-to-call-api.secret}")
+    private String clickToCallApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -270,6 +288,30 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .withClient(backofficeApiClient)
             .secret(backofficeApiSecret)
             .authorizedGrantTypes("client_credentials")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(geradorLeadApiClient)
+            .secret(geradorLeadApiSecret)
+            .scopes(GERADOR_LEAD.getScope())
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(agenteAutorizadoApiClient)
+            .secret(agenteAutorizadoApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("agente-autorizado-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(colaboradorVendasApiClient)
+            .secret(colaboradorVendasApiSecret)
+            .authorizedGrantTypes("client_credentials")
+            .scopes("colaborador-vendas-api")
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(clickToCallApiClient)
+            .secret(clickToCallApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CLICK_TO_CALL.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
