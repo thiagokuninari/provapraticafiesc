@@ -105,7 +105,6 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(
                 SubCluster.of(1, "TESTE1"),
                 SubCluster.of(2, "TESTE2")));
-
         assertThat(service.getSubclusterUsuario(1))
             .extracting("value", "label")
             .containsExactly(
@@ -168,11 +167,7 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
-
-
         service.salvarUsuarioBackoffice(umUsuarioBackoffice());
-
-
         verify(empresaRepository, atLeastOnce()).findAllAtivo();
         verify(unidadeNegocioRepository, atLeastOnce()).findAllAtivo();
         verify(notificacaoService, atLeastOnce())
@@ -183,15 +178,15 @@ public class UsuarioServiceTest {
     public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
         var usaurio = umUsuarioBackoffice();
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
         Assertions.assertThat(usaurio)
-                .extracting("cpf")
-                .containsExactly("097.238.645-92");
+            .extracting("cpf")
+            .containsExactly("097.238.645-92");
         service.salvarUsuarioBackoffice(usaurio);
         verify(repository, times(1)).save(usuarioCaptor.capture());
         Assertions.assertThat(usuarioCaptor.getValue())
-                .extracting("cpf")
-                .containsExactly("09723864592");
+            .extracting("cpf")
+            .containsExactly("09723864592");
     }
 
     @Test
