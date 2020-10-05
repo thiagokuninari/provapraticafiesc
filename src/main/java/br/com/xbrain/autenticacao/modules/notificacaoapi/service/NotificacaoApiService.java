@@ -20,7 +20,8 @@ public class NotificacaoApiService {
             return notificacaoClient.consultarStatusTabulacaoByUsuario(usuarioId);
         } catch (HystrixBadRequestException | RetryableException ex) {
             log.warn("Erro ao tentar consultar status de tabulação pelo usuário");
-            throw new IntegracaoException(ex, NotificacaoApiService.class.getName(), EErrors.ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO);
+            throw new IntegracaoException(ex, NotificacaoApiService.class.getName(),
+                    EErrors.ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO);
         }
     }
 }

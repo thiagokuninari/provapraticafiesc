@@ -1,20 +1,21 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +27,19 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static helpers.TestBuilders.*;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 
@@ -47,6 +56,23 @@ public class SiteServiceTest {
     private CidadeRepository cidadeRepository;
     @Mock
     private AutenticacaoService autenticacaoService;
+    @Mock
+    private CallService callService;
+    @Mock
+    private UsuarioService usuarioService;
+
+    private void setupSite(Integer idUsuario, Integer idSite, CodigoCargo codigoCargo, String nomeSite, Integer vinculoIndireto) {
+        var sitePredicate = umSitePredicateComSupervidorOuCoordenador(idUsuario);
+        var pageRequest = umPageRequest();
+        var idVinculo = vinculoIndireto != null ? vinculoIndireto : idUsuario;
+
+        when(autenticacaoService.getUsuarioAutenticado())
+                .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(idVinculo, codigoCargo, CodigoDepartamento.COMERCIAL));
+        when(siteRepository.findAll(sitePredicate, pageRequest))
+                .thenReturn(new PageImpl<>(umaListaDeSitesVinculadoAUsuarioComCargo(idSite, nomeSite,
+                        umUsuario(idUsuario, codigoCargo))));
+
+    }
 
     @Test
     public void findById_notFoundException_quandoNaoExistirSiteCadastrado() {
@@ -73,12 +99,29 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void getAll_deveRetornarUmaPaginaDeSites_quandoFiltrar() {
+    public void getAllByUsuarioLogado_deveRetornarSelectResponseComSites_quandoExistirParaOUsuario() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoNivelBackoffice());
 
+        when(siteRepository.findAll(any(Predicate.class)))
+            .thenReturn(umaListaSites());
+
+        assertThat(service.getAllByUsuarioLogado())
+            .hasSize(3)
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "Site Brandon Big"),
+                tuple(2, "Site Dinossauro do Acre"),
+                tuple(3, "Site Amazonia Queimada")
+            );
+    }
+
+    @Test
+    public void getAll_deveRetornarTodosOsSiltes_quandoNivelMso() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(101, MSO_CONSULTOR, CodigoDepartamento.COMERCIAL));
         when(siteRepository.findAll(any(Predicate.class), any(Pageable.class)))
-            .thenReturn(new PageImpl<>(umListaSites()));
+            .thenReturn(new PageImpl<>(umaListaSites()));
 
         assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
             .hasSize(3)
@@ -92,7 +135,7 @@ public class SiteServiceTest {
 
     @Test
     public void save_validacaoException_quandoExistirUmSiteComOMesmoNome() {
-        when(siteRepository.findAll()).thenReturn(umListaSites());
+        when(siteRepository.findAll()).thenReturn(umaListaSites());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umSiteRequest()))
@@ -239,10 +282,10 @@ public class SiteServiceTest {
 
     @Test
     public void getAllAtivos_listaComTresSites_quandoBuscarSitesAtivos() {
-        when(siteRepository.findBySituacaoAtiva())
-            .thenReturn(umListaSites());
+        when(siteRepository.findBySituacaoAtiva(new SitePredicate().build()))
+            .thenReturn(umaListaSites());
 
-        assertThat(service.getAllAtivos())
+        assertThat(service.getAllAtivos(new SiteFiltros()))
             .extracting("value", "label")
             .containsExactly(
                 tuple(1, "Site Brandon Big"),
@@ -270,7 +313,7 @@ public class SiteServiceTest {
     @Test
     public void getSitesByEstadoId_umaListaComTresSites_quandoBuscarSitesPeloEstadoId() {
         when(siteRepository.findByEstadoId(1))
-            .thenReturn(umListaSites());
+            .thenReturn(umaListaSites());
 
         assertThat(service.getSitesByEstadoId(1))
             .extracting("value", "label")
@@ -281,62 +324,139 @@ public class SiteServiceTest {
             );
     }
 
-    private Set<Usuario> umaListaSupervisores() {
-        return Set.of(
-            Usuario.builder()
-                .id(1)
-                .nome("RENATO")
-                .build(),
-            Usuario.builder()
-                .id(2)
-                .nome("MARIA")
-                .build()
-        );
+    @Test
+    public void removerDiscadora_void_quandoSitePossuirDiscadora() {
+        var site = umSite(1, "brandon city", BRT);
+        site.setDiscadoraId(2);
+        when(siteRepository.findById(eq(1))).thenReturn(Optional.of(site));
+
+        service.removerDiscadora(1);
+
+        verify(siteRepository, atLeastOnce()).removeDiscadoraBySite(eq(1));
+        verify(callService, atLeastOnce()).cleanCacheableSiteAtivoProprio();
+        verify(callService, atLeastOnce()).desvincularRamaisDaDiscadoraAtivoProprio(eq(1), eq(2));
     }
 
-    private SiteRequest umSiteRequest() {
-        return SiteRequest.builder()
-            .nome("Site brandon big")
-            .timeZone(BRT)
-            .supervisoresIds(List.of(1, 2))
-            .coordenadoresIds(List.of(3))
-            .cidadesIds(List.of(1, 10))
-            .estadosIds(List.of(5))
+    @Test
+    public void adicionarDiscadora_void_quandoSiteNaoPossuirDiscadora() {
+        service.adicionarDiscadora(1, List.of(1, 2, 3));
+
+        verify(siteRepository, atLeastOnce()).updateDiscadoraBySites(eq(1), eq(List.of(1, 2, 3)));
+        verify(callService, atLeastOnce()).cleanCacheableSiteAtivoProprio();
+    }
+
+    @Test
+    public void getSiteVinculadoAoSupervidor_deveRetornarSitesVinculadosAoProprioSupervidor_quandoSiteVinculadoAoSupervisor() {
+        setupSite(100, 10, SUPERVISOR_OPERACAO, "Site", null);
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(10, "Site", BRT)
+            );
+    }
+
+    @Test
+    public void getSiteVinculoCoordenador_deveRetornarSitesVinculadosAoProprioCoordenador_quandoExistirSiteVinculado() {
+        setupSite(101, 11, COORDENADOR_OPERACAO, "SITE_VINCULADO_AO_COORDENADOR", null);
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(11, "SITE_VINCULADO_AO_COORDENADOR", BRT)
+            );
+    }
+
+    @Test
+    public void getSiteAbaixoDoDiretor_deveRetornarSitesVinculadosAoCoordenadorAbaixoDoDiretor_quandoExistirSitesVinculados() {
+        setupSite(101, 11, DIRETOR_OPERACAO, "SITE_VINCULADO_AO_COORDENADOR_DIRETOR", 102);
+        when(usuarioService.getSubordinadosDoUsuario(102))
+            .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, COORDENADOR_OPERACAO)));
+
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(11, "SITE_VINCULADO_AO_COORDENADOR_DIRETOR", BRT)
+            );
+    }
+
+    @Test
+    public void getSiteAbaixoDoDiretor_deveRetornarSiteVinculadoAoSupervisorAbaixoDoDiretor_quandoExistirSitesVinculados() {
+        setupSite(101, 11, DIRETOR_OPERACAO, "SITE_VINCULADO_AO_SUPERVISOR_DIRETOR", 102);
+        when(usuarioService.getSubordinadosDoUsuario(102))
+            .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, SUPERVISOR_OPERACAO)));
+
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(11, "SITE_VINCULADO_AO_SUPERVISOR_DIRETOR", BRT)
+            );
+    }
+
+    @Test
+    public void getSiteAbaixoDoGerente_deveRetornarSiteVinculadoAoSupervisorAbaixoDoDiretor_quandoExistirSitesVinculados() {
+        setupSite(101, 11, GERENTE_OPERACAO, "SITE_VINCULADO_AO_GERENTE_DIRETOR", 102);
+        when(usuarioService.getSubordinadosDoUsuario(102))
+            .thenReturn(singletonList(usuarioSubordinadoDtoDtoResponse(101, SUPERVISOR_OPERACAO)));
+
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(11, "SITE_VINCULADO_AO_GERENTE_DIRETOR", BRT)
+            );
+    }
+
+    @Test
+    public void getListSites_deveRetornarListSites_quandoDiretorOuGerentePossuirDiferentesColaboradoresComDiretentesSites() {
+        var listSiteComUsuarioVinculado = List.of(
+            umSiteVinculado(8, "SITE_COORDENADOR", umUsuario(110, COORDENADOR_OPERACAO)),
+            umSiteVinculado(9, "SITE_SUPERVISOR", umUsuario(111, SUPERVISOR_OPERACAO)));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
+        when(siteRepository.findAll(umSitePredicateComSupervidoresOuCoordenadores(List.of(110, 111)),
+            umPageRequest()))
+            .thenReturn(new PageImpl<>(listSiteComUsuarioVinculado));
+        when(usuarioService.getSubordinadosDoUsuario(100))
+            .thenReturn(List.of(
+                usuarioSubordinadoDtoDtoResponse(110, SUPERVISOR_OPERACAO),
+                usuarioSubordinadoDtoDtoResponse(111, SUPERVISOR_OPERACAO)));
+        assertThat(service.getAll(new SiteFiltros(), new PageRequest()))
+            .extracting("id", "nome", "timeZone")
+            .containsExactly(
+                tuple(8, "SITE_COORDENADOR", BRT),
+                tuple(9, "SITE_SUPERVISOR", BRT)
+            );
+    }
+
+    @Test
+    public void retornaVazio_deveRetornarVazio_quandoExistirSitesCadastradosEDiretorPossuirSubordinadosSemSites() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticadoAtivoProprioComCargo(100, DIRETOR_OPERACAO, CodigoDepartamento.COMERCIAL));
+        when(usuarioService.getSubordinadosDoUsuario(100))
+            .thenReturn(List.of(
+                usuarioSubordinadoDtoDtoResponse(110, SUPERVISOR_OPERACAO),
+                usuarioSubordinadoDtoDtoResponse(111, SUPERVISOR_OPERACAO)));
+        assertNull(service.getAll(new SiteFiltros(), new PageRequest()));
+    }
+
+    public UsuarioSubordinadoDto usuarioSubordinadoDtoDtoResponse(Integer id, CodigoCargo codigoCargo) {
+        return UsuarioSubordinadoDto.builder()
+                .id(id)
+                .codigoCargo(codigoCargo)
+                .build();
+    }
+
+    private PageRequest umPageRequest() {
+        return new PageRequest();
+    }
+
+    private Predicate umSitePredicateComSupervidorOuCoordenador(Integer id) {
+        return new SitePredicate()
+            .comCoordenadoresOuSupervisor(id)
             .build();
     }
 
-    private List<Cidade> umListaCidades() {
-        return List.of(
-            Cidade.builder().id(1).nome("CIDADE 1").uf(umaUf(1, "UF 1", "PR")).build(),
-            Cidade.builder().id(2).nome("CIDADE 2").uf(umaUf(2, "UF 2", "SP")).build()
-        );
-    }
-
-    private Uf umaUf(Integer id, String nome, String uf) {
-        return new Uf(id, nome, uf);
-    }
-
-    private List<Uf> umaListaUfs() {
-        return List.of(
-            umaUf(1, "UF 1", "PR"),
-            umaUf(2, "UF 2", "SP"),
-            umaUf(3, "UF 3", "AC")
-        );
-    }
-
-    private List<Site> umListaSites() {
-        return List.of(
-            umSite(1, "Site Brandon Big", BRT),
-            umSite(2, "Site Dinossauro do Acre", ACT),
-            umSite(3, "Site Amazonia Queimada", AMT)
-        );
-    }
-
-    private Site umSite(Integer id, String nome, ETimeZone timeZone) {
-        return Site.builder()
-            .id(id)
-            .nome(nome)
-            .timeZone(timeZone)
+    private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {
+        return new SitePredicate()
+            .comCoordenadoresOuSupervisores(id)
             .build();
     }
 }

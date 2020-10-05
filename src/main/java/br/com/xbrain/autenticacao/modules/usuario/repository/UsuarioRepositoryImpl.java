@@ -70,29 +70,29 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .innerJoin(usuario.cargo, cargo).fetchJoin()
-                        .innerJoin(cargo.nivel).fetchJoin()
-                        .innerJoin(usuario.departamento).fetchJoin()
-                        .innerJoin(usuario.empresas).fetchJoin()
-                        .where(
-                                usuario.email.equalsIgnoreCase(email)
-                                        .and(usuario.situacao.ne(ESituacao.R))
-                        )
-                        .fetchOne());
+            new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .innerJoin(usuario.cargo, cargo).fetchJoin()
+                .innerJoin(cargo.nivel).fetchJoin()
+                .innerJoin(usuario.departamento).fetchJoin()
+                .innerJoin(usuario.empresas).fetchJoin()
+                .where(
+                    usuario.email.equalsIgnoreCase(email)
+                        .and(usuario.situacao.ne(ESituacao.R))
+                )
+                .fetchOne());
     }
 
     public Optional<Usuario> findUsuarioByEmail(String email) {
         return Optional.ofNullable(
-                new JPAQueryFactory(entityManager)
-                        .select(usuario)
-                        .from(usuario)
-                        .where(
-                                usuario.email.equalsIgnoreCase(email)
-                        )
-                        .fetchOne());
+            new JPAQueryFactory(entityManager)
+                .select(usuario)
+                .from(usuario)
+                .where(
+                    usuario.email.equalsIgnoreCase(email)
+                )
+                .fetchOne());
     }
 
     public Optional<Usuario> findComplete(Integer id) {
@@ -129,17 +129,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @SuppressWarnings("unchecked")
     public List<Integer> getUsuariosSubordinados(Integer usuarioId) {
         List<BigDecimal> result = entityManager
-                .createNativeQuery(
-                        " SELECT FK_USUARIO"
-                                + " FROM usuario_hierarquia"
-                                + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
-                .setParameter("_usuarioId", usuarioId)
-                .getResultList();
+            .createNativeQuery(
+                " SELECT FK_USUARIO"
+                    + " FROM usuario_hierarquia"
+                    + " START WITH FK_USUARIO_SUPERIOR = :_usuarioId "
+                    + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR")
+            .setParameter("_usuarioId", usuarioId)
+            .getResultList();
         return result
-                .stream()
-                .map(BigDecimal::intValue)
-                .collect(Collectors.toList());
+            .stream()
+            .map(BigDecimal::intValue)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -600,17 +600,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(permissaoEspecial.dataBaixa.isNull()));
 
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(
-                        UsuarioPermissoesResponse.class,
-                        usuario.id,
-                        permissoes,
-                        permissoesEspeciais)
-                )
-                .from(usuario)
-                .leftJoin(usuario.cargo)
-                .leftJoin(usuario.departamento)
-                .where(new UsuarioPredicate().ouComUsuariosIds(usuariosIds).build())
-                .fetch();
+            .select(Projections.constructor(
+                UsuarioPermissoesResponse.class,
+                usuario.id,
+                permissoes,
+                permissoesEspeciais)
+            )
+            .from(usuario)
+            .leftJoin(usuario.cargo)
+            .leftJoin(usuario.departamento)
+            .where(new UsuarioPredicate().ouComUsuariosIds(usuariosIds).build())
+            .fetch();
     }
 
     @Override
@@ -669,7 +669,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
         var subclusterIdList = getSubclustersUsuario(usuarioId)
             .stream()
             .map(SubCluster::getId)
@@ -686,7 +686,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuarioCidade.cidade, cidade)
             .innerJoin(cidade.subCluster, subCluster)
             .where(subCluster.id.in(subclusterIdList)
-                .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
+                .and(cargo.id.eq(CARGO_SUPERVISOR_ID))
+                .and(usuario.canais.contains(canal)))
             .distinct()
             .fetch();
     }
@@ -699,6 +700,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuario.canais.any().eq(canal)
                 .and(usuario.cargo.codigo.eq(cargo)))
             .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findAllBySiteOperacaoVendedores(Integer siteId) {
+        return new JPAQueryFactory(entityManager)
+                .select(Projections.fields(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+                .from(usuario)
+                .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                        .and(usuario.site.id.eq(siteId))
+                        .and(usuario.cargo.codigo.in(List.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO)))
+                        .and(usuario.cargo.nivel.codigo.eq(OPERACAO)))
+                .fetch();
     }
 
     @Override

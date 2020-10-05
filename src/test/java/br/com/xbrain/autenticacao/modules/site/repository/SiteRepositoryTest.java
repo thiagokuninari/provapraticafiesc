@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
+import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,13 +41,39 @@ public class SiteRepositoryTest {
 
     @Test
     public void findBySituacaoAtiva_listaComTresSites_quandoBuscarSitesComSituacaoAtiva() {
-        Assertions.assertThat(repository.findBySituacaoAtiva())
-            .hasSize(3);
+        Assertions.assertThat(repository.findBySituacaoAtiva(new SitePredicate().build()))
+            .hasSize(5);
     }
 
     @Test
     public void findByEstadoId_listaComDoisSites_quandoBuscarSitesPeloEstadoId() {
         Assertions.assertThat(repository.findByEstadoId(2))
             .hasSize(2);
+    }
+
+    @Test
+    public void removeDiscadoraNoSite_void_quandoSitePossuirDiscadora() {
+        Assertions.assertThat(repository.findById(102).orElseThrow())
+                .hasFieldOrPropertyWithValue("discadoraId", 8);
+
+        repository.removeDiscadoraBySite(102);
+
+        repository.flush();
+
+        Assertions.assertThat(repository.findOne(102))
+                .hasFieldOrPropertyWithValue("discadoraId", null);
+    }
+
+    @Test
+    public void adicionaDiscadoraNoSite_void_quandoSitePossuirDiscadora() {
+        Assertions.assertThat(repository.findById(100).orElseThrow())
+                .hasFieldOrPropertyWithValue("discadoraId", null);
+
+        repository.updateDiscadoraBySites(12, List.of(100));
+
+        repository.flush();
+
+        Assertions.assertThat(repository.findOne(100))
+                .hasFieldOrPropertyWithValue("discadoraId", 12);
     }
 }

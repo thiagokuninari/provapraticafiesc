@@ -16,10 +16,12 @@ public class UrlLojaOnlineResponse {
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
+    private String cupomLojaOnline;
 
     public static UrlLojaOnlineResponse of(Usuario usuario) {
         var urls = new UrlLojaOnlineResponse();
         BeanUtils.copyProperties(usuario, urls);
+        urls.setCupomLojaOnline(usuario.getCupomLoja());
         return urls;
     }
 }

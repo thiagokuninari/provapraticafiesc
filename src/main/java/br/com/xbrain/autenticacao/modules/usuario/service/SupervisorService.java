@@ -88,7 +88,7 @@ public class SupervisorService {
             canais);
     }
 
-    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {
-        return usuarioRepository.getSupervisoresSubclusterDoUsuario(usuarioId);
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
+        return usuarioRepository.getSupervisoresDoSubclusterDoUsuarioPeloCanal(usuarioId, canal);
     }
 }

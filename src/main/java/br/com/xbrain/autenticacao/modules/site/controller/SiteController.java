@@ -30,8 +30,8 @@ public class SiteController {
     }
 
     @GetMapping("/ativos")
-    public List<SelectResponse> getAllAtivos() {
-        return service.getAllAtivos();
+    public List<SelectResponse> getAllAtivos(SiteFiltros filtros) {
+        return service.getAllAtivos(filtros);
     }
 
     @GetMapping("{id}/supervisores")
@@ -74,10 +74,25 @@ public class SiteController {
         return service.buscarEstadosNaoAtribuidosEmSites(siteIgnoradoId);
     }
 
+    @GetMapping("usuario-logado")
+    public List<SelectResponse> buscarSitesVinculadosAoUsuarioLogado() {
+        return service.getAllByUsuarioLogado();
+    }
+
     @GetMapping("cidades-disponiveis")
     public List<SelectResponse> buscarCidadesDisponiveisPorEstadosIds(@RequestParam List<Integer> estadosIds,
                                                                       Integer siteIgnoradoId) {
 
         return service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds, siteIgnoradoId);
+    }
+
+    @PutMapping("adicionar-discadora")
+    public void adicionarDiscadora(@RequestBody SiteDiscadoraRequest request) {
+        service.adicionarDiscadora(request.getDiscadoraId(), request.getSites());
+    }
+
+    @PutMapping("remover-discadora")
+    public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
+        service.removerDiscadora(request.getSiteId());
     }
 }

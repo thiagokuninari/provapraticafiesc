@@ -278,13 +278,19 @@ public class UsuarioController {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 
+    @GetMapping("{id}/supervisores-hierarquia")
+    public List<UsuarioHierarquiaResponse> getSupervisoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getSupervisoresOperacaoDaHierarquia(id);
+    }
+
     @GetMapping("permissoes-por-canal")
     public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
     }
 
-    @GetMapping("permissoes-por-usuario")
-    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(@Validated UsuarioPermissoesRequest usuarioPermissoesRequest) {
+    @PostMapping("permissoes-por-usuario")
+    public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
+        @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
@@ -338,6 +344,11 @@ public class UsuarioController {
     public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
                                                                   @PathVariable CodigoCargo codigoCargo) {
         return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
+    }
+
+    @GetMapping("site/{siteId}/vendedores")
+    public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(@PathVariable Integer siteId) {
+        return usuarioService.getVendedoresOperacaoAtivoProprio(siteId);
     }
 
 }

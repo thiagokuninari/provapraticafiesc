@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
 import org.junit.Test;
@@ -17,6 +19,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static helpers.TestsHelper.getAccessToken;
 import static java.util.Collections.singletonList;
@@ -89,5 +93,30 @@ public class SupervisorControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
+    }
+
+    @Test
+    public void getSupervisoresDoSubclusterDoUsuarioPeloCanal_200_quandoBuscarSupervisoresPeloIdECanal() throws Exception {
+        when(supervisorService.getSupervisoresDoSubclusterDoUsuarioPeloCanal(1, ECanal.ATIVO_PROPRIO))
+            .thenReturn(List.of(
+                UsuarioNomeResponse.builder()
+                    .id(1)
+                    .nome("RENATO")
+                    .build(),
+                UsuarioNomeResponse.builder()
+                    .id(2)
+                    .nome("JOAO")
+                    .build()
+            ));
+
+        mvc.perform(get("/api/supervisor/subcluster/usuario/1/canal/ATIVO_PROPRIO")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("RENATO")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("JOAO")));
     }
 }

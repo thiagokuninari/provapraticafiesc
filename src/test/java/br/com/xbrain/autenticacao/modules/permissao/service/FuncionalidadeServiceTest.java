@@ -1,8 +1,11 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,20 +54,83 @@ public class FuncionalidadeServiceTest {
         assertThat(funcionalidades)
                 .extracting("nome")
                 .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+                    "Visualizar Tabulação Manual",
+                    "Relatório - Resumo de Mailing",
+                    "Relatório - Ticket Médio Analítico",
+                    "Relatório - Ticket Médio por Vendedor",
+                    "Relatório - Gerenciamento Operacional",
+                    "Cadastrar venda para o vendedor D2D");
     }
 
     private Usuario umUsuarioSocio() {
         return Usuario
-                .builder()
-                .id(USUARIO_SOCIO_ID)
-                .email(SOCIO_AA)
-                .cargo(Cargo.builder().id(CARGO_SOCIO_ID).build())
-                .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
-                .build();
+            .builder()
+            .id(USUARIO_SOCIO_ID)
+            .email(SOCIO_AA)
+            .cargo(Cargo.builder()
+                .id(CARGO_SOCIO_ID)
+                .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+                .nivel(Nivel.builder()
+                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                    .build())
+                .build())
+            .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
+            .build();
+    }
+
+    @Test
+    public void getFuncionalidadesPermitidasAoUsuario_dezenoveFuncionalidades_quandoUsuarioCargoMsoConsultor() {
+        var usuario = Usuario.builder()
+            .id(100)
+            .cargo(umCargoMsoConsultor())
+            .departamento(new Departamento(21))
+            .nome("RENATO")
+            .build();
+
+        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
+            .hasSize(19);
+    }
+
+    private Cargo umCargoMsoConsultor() {
+        return Cargo.builder()
+            .id(22)
+            .codigo(CodigoCargo.MSO_CONSULTOR)
+            .nivel(umNivelMso())
+            .build();
+    }
+
+    private Nivel umNivelMso() {
+        return Nivel.builder()
+            .id(2)
+            .codigo(CodigoNivel.MSO)
+            .build();
+    }
+
+    @Test
+    public void getFuncionalidadesPermitidasAoUsuario_noveFuncionalidades_quandoUsuarioCargoVendedorOperacao() {
+        var usuario = Usuario.builder()
+            .id(100)
+            .cargo(umCargoVendedorOperacao())
+            .departamento(new Departamento(3))
+            .nome("RENATO")
+            .build();
+
+        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
+            .hasSize(9);
+    }
+
+    private Cargo umCargoVendedorOperacao() {
+        return Cargo.builder()
+            .id(8)
+            .codigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .build();
+    }
+
+    private Nivel umNivelOperacao() {
+        return Nivel.builder()
+            .id(1)
+            .codigo(CodigoNivel.OPERACAO)
+            .build();
     }
 }

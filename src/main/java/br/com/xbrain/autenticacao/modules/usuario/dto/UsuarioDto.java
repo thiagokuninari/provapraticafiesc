@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -93,6 +94,8 @@ public class UsuarioDto implements Serializable {
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
+    private String cupomLoja;
+    private Integer siteId;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
@@ -101,6 +104,9 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
+        if (!isEmpty(usuarioDto.getSiteId())) {
+            usuario.setSite(new Site(usuarioDto.getSiteId()));
+        }
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
             usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
         }
@@ -123,10 +129,13 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setNivelId(usuario.getNivelId());
         usuarioDto.setNivelCodigo(usuario.getNivelCodigo());
         usuarioDto.setHierarquiasId(usuario.getUsuariosHierarquia().stream()
-                .map(UsuarioHierarquia::getUsuarioSuperiorId)
-                .collect(Collectors.toList()));
+            .map(UsuarioHierarquia::getUsuarioSuperiorId)
+            .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        if (!isEmpty(usuario.getSite())) {
+            usuarioDto.setSiteId(usuario.getSite().getId());
+        }
         return usuarioDto;
     }
 
@@ -148,6 +157,6 @@ public class UsuarioDto implements Serializable {
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
         return !isEmpty(usuario.getUnidadesNegociosId())
-                ? usuario.getUnidadesNegociosId().get(0) : 0;
+            ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
 }

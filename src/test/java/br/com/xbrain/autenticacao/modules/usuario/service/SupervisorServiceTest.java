@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepositoryImpl;
 import helpers.TestBuilders;
 import org.junit.Test;
@@ -224,8 +225,19 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassado() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(1))
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassadoPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(1, ECanal.D2D_PROPRIO))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "SUPERVISOR LONDRINA"),
+                tuple(2, "SUPERVISOR ARAPONGAS"),
+                tuple(5, "SUPERVISOR CURITIBA")
+            );
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubClusterPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(5, ECanal.D2D_PROPRIO))
             .extracting("id", "nome")
             .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
                 tuple(2, "SUPERVISOR ARAPONGAS"),
@@ -233,17 +245,8 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubCluster() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(5))
-            .extracting("id", "nome")
-            .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
-                tuple(2, "SUPERVISOR ARAPONGAS"),
-                tuple(5, "SUPERVISOR CURITIBA"));
-    }
-
-    @Test
-    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassado() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(8))
+    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassadoPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(8, ECanal.D2D_PROPRIO))
             .extracting("id", "nome")
             .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
                 tuple(2, "SUPERVISOR ARAPONGAS"),

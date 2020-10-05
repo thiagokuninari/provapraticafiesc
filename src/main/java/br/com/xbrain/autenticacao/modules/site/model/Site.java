@@ -69,6 +69,9 @@ public class Site {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
+    @Column(name = "DISCADORA_ID")
+    private Integer discadoraId;
+
     public void inativar() {
         situacao = ESituacao.I;
     }
@@ -93,6 +96,10 @@ public class Site {
     public void update(SiteRequest request) {
         var site = of(request);
         BeanUtils.copyProperties(site, this, "situacao");
+    }
+
+    public Site(Integer id) {
+        this.id = id;
     }
 
 }

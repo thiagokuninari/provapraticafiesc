@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -228,6 +229,9 @@ public class Usuario {
 
     @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
     private String urlLojaProspectNextel;
+
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
 
     @Transient
     private List<Integer> hierarquiasId;
@@ -501,6 +505,12 @@ public class Usuario {
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
+    }
+
+    public void verificarPermissaoCargoSobreCanais() {
+        if (!ObjectUtils.isEmpty(canais) && canais.stream().noneMatch(cargo::hasPermissaoSobreOCanal)) {
+            throw new ValidacaoException("Usuário sem permissão para o cargo com os canais.");
+        }
     }
 
     public static Set<Integer> convertFrom(Set<Usuario> usuarios) {

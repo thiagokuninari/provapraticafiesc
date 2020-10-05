@@ -58,7 +58,7 @@ public class SiteControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(4)))
+            .andExpect(jsonPath("$.content", hasSize(6)))
             .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
             .andExpect(jsonPath("$.content[0].timeZone.descricao", is("Horário de Brasília")))
             .andExpect(jsonPath("$.content[0].timeZone.zoneId", is("America/Sao_Paulo")))
@@ -71,11 +71,39 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.content[2].timeZone.descricao", is("Horário do Amazonas")))
             .andExpect(jsonPath("$.content[2].timeZone.zoneId", is("America/Manaus")))
             .andExpect(jsonPath("$.content[2].timeZone.codigo", is("AMT")))
+            .andExpect(jsonPath("$.content[2].discadoraId", is(8)))
             .andExpect(jsonPath("$.content[3].nome", is("Site Inativo")))
             .andExpect(jsonPath("$.content[3].timeZone.descricao",
                 is("Horário de Fernando de Noronha")))
             .andExpect(jsonPath("$.content[3].timeZone.zoneId", is("America/Noronha")))
             .andExpect(jsonPath("$.content[3].timeZone.codigo", is("FNT")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getSites_deveRetornarApenasComDiscadora_quandoSitePossuirDiscadora() {
+        mvc.perform(get(API_URI + "?discadoraId=8")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].nome", is("Manaus")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getSites_deveRetornarApenasSemDiscadora_quandoSitesNaoTiveremDiscadora() {
+        mvc.perform(get(API_URI)
+                .param("naoPossuiDiscadora", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(5)))
+                .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
+                .andExpect(jsonPath("$.content[1].nome", is("Rio Branco")))
+                .andExpect(jsonPath("$.content[2].nome", is("Site Inativo")))
+                .andExpect(jsonPath("$.content[3].nome", is("Rio Branco")))
+                .andExpect(jsonPath("$.content[4].nome", is("Manaus")));
     }
 
     @Test
@@ -117,7 +145,7 @@ public class SiteControllerTest {
         mvc.perform(get(API_URI + "/ativos")
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$", hasSize(5)))
             .andExpect(jsonPath("$[0].value", is(100)))
             .andExpect(jsonPath("$[0].label", is("São Paulo")))
             .andExpect(jsonPath("$[1].value", is(101)))
@@ -135,6 +163,21 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(102)))
             .andExpect(jsonPath("$[0].nome", is("Supervisor Operação")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitesVinculadosAoUsuarioLogado_deveRetornarSitesDoUsuarioLogado() {
+        mvc.perform(get(API_URI + "/usuario-logado")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(5)))
+            .andExpect(jsonPath("$[0].value", is(100)))
+            .andExpect(jsonPath("$[0].label", is("São Paulo")))
+            .andExpect(jsonPath("$[1].value", is(101)))
+            .andExpect(jsonPath("$[1].label", is("Rio Branco")))
+            .andExpect(jsonPath("$[2].value", is(102)))
+            .andExpect(jsonPath("$[2].label", is("Manaus")));
     }
 
     @Test
