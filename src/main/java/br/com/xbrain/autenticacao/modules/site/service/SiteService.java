@@ -83,7 +83,7 @@ public class SiteService {
 
     public Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (!usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
+        if (!usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO) && !usuarioAutenticado.isXbrainOuMso()) {
             return filtros.ignorarTodos().build();
         }
         setFiltrosHierarquia(usuarioAutenticado.getId(), usuarioAutenticado.getCargoCodigo(),
