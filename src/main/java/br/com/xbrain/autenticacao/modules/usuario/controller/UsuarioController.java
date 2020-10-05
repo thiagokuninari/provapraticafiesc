@@ -299,6 +299,11 @@ public class UsuarioController {
         return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
     }
 
+    @GetMapping("distribuicao/agendamentos/equipe-venda/{equipeVendaId}")
+    public List<UsuarioDistribuicaoResponse> getUsuariosParaDistribuicaoByEquipeVendaId(@PathVariable Integer equipeVendaId) {
+        return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);
+    }
+
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
             @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
