@@ -109,5 +109,4 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 
-    List<UsuarioNomeResponse> findAllBySiteOperacaoVendedores(Integer siteId);
 }

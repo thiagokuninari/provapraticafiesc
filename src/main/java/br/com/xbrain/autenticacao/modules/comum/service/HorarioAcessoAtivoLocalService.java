@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
@@ -47,7 +48,7 @@ public class HorarioAcessoAtivoLocalService {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
             Optional.ofNullable(usuarioAutenticado)
                     .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
-                    .map(u -> u.getUsuario().getSite())
+                    .map(u -> getFirstSiteByUsuario(u.getUsuario()))
                     .map(Site::getTimeZone)
                     .map(ETimeZone::getZoneId)
                     .map(ZoneId::of)
@@ -67,9 +68,12 @@ public class HorarioAcessoAtivoLocalService {
 
     @Transactional
     public boolean isDentroHorarioPermitido(Usuario usuario) {
-        if (usuario.isOperadorTelevendasAtivoLocal() && nonNull(usuario.getSite())) {
-            var timeZone = usuario.getSite().getTimeZone();
-            return isDentroHorarioPermitido(ZoneId.of(timeZone.getZoneId()));
+        if (usuario.isOperadorTelevendasAtivoLocal()) {
+            var site = getFirstSiteByUsuario(usuario);
+            if (nonNull(site)) {
+                var timeZone = site.getTimeZone();
+                return isDentroHorarioPermitido(ZoneId.of(timeZone.getZoneId()));
+            }
         }
         return true;
     }
@@ -118,5 +122,14 @@ public class HorarioAcessoAtivoLocalService {
 
     private boolean isTest() {
         return environment.acceptsProfiles("test");
+    }
+
+    private Site getFirstSiteByUsuario(Usuario usuario) {
+        var sites = siteService.getSitesPorPermissao(usuario);
+        return sites.stream()
+                .map(SelectResponse::getValue)
+                .findFirst()
+                .map(value -> siteService.findById((Integer) value))
+                .orElse(null);
     }
 }

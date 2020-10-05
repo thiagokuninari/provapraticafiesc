@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.interceptor.AtivoLocalInterceptor;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
@@ -28,6 +29,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
@@ -61,6 +63,8 @@ public class AtivoLocalInterceptorTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(getUsuarioAutenticado());
         when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(false);
         when(notificacaoApiService.consultarStatusTabulacaoByUsuario(anyInt())).thenReturn(false);
+        when(siteService.findById(anyInt())).thenReturn(umSite());
+        when(siteService.getSitesPorPermissao(any())).thenReturn(List.of(SelectResponse.of(1, "Curitiba")));
         interceptor = new AtivoLocalInterceptor(horarioAcessoAtivoLocalService);
     }
 
@@ -151,7 +155,6 @@ public class AtivoLocalInterceptorTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
-                                .site(null)
                                 .cargo(Cargo.builder()
                                         .codigo(MSO_CONSULTOR)
                                         .build())
@@ -166,7 +169,6 @@ public class AtivoLocalInterceptorTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                                .site(umSite())
                                 .cargo(Cargo.builder()
                                         .codigo(OPERACAO_TELEVENDAS)
                                         .build())

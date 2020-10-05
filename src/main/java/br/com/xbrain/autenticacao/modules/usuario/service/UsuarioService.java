@@ -27,6 +27,8 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -152,6 +154,8 @@ public class UsuarioService {
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Autowired
+    private SiteService siteService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1480,6 +1484,17 @@ public class UsuarioService {
     }
 
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(Integer siteId) {
-        return repository.findAllBySiteOperacaoVendedores(siteId);
+        var supervisoresIds = siteService.getAllSupervisoresBySiteId(siteId)
+                .stream()
+                .map(SiteSupervisorResponse::getId)
+                .collect(Collectors.toList());
+        var predicate = new UsuarioPredicate()
+                .comCargoCodigo(OPERACAO_TELEVENDAS)
+                .daHierarquia(supervisoresIds)
+                .build();
+        return repository.getUsuariosFilter(predicate)
+                .stream()
+                .map(UsuarioNomeResponse::of)
+                .collect(Collectors.toList());
     }
 }
