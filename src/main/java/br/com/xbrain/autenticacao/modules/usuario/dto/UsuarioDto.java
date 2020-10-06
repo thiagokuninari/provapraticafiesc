@@ -86,6 +86,7 @@ public class UsuarioDto implements Serializable {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
     private Integer usuarioCadastroId;
+    private String usuarioCadastroNome;
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
