@@ -10,6 +10,8 @@ import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -20,6 +22,7 @@ import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Objects.nonNull;
 
@@ -44,7 +47,7 @@ public class HorarioAcessoAtivoLocalService {
     private final Environment environment;
 
     public void validarHorarioAcessoVendedor() {
-        if (isTest() || AutenticacaoService.hasAuthentication()) {
+        if (isTest() || AutenticacaoService.hasAuthentication() && isOperadorTelevendasAtivoLocalByTokenStore()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
             Optional.ofNullable(usuarioAutenticado)
                     .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
@@ -115,6 +118,15 @@ public class HorarioAcessoAtivoLocalService {
     private boolean isDentroTabulacao() {
         var usuarioId = autenticacaoService.getUsuarioId();
         return notificacaoApiService.consultarStatusTabulacaoByUsuario(usuarioId);
+    }
+
+    public boolean isOperadorTelevendasAtivoLocalByTokenStore() {
+        return autenticacaoService.getAccessToken()
+            .filter(token -> {
+                var info = token.getAdditionalInformation();
+                return info.containsValue(CodigoCargo.OPERACAO_TELEVENDAS)
+                    && info.containsValue(Set.of(ECanal.ATIVO_PROPRIO.name()));
+            }).isPresent();
     }
 
     private boolean isRamalEmUso() {
