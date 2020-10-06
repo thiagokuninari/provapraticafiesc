@@ -95,6 +95,18 @@ public class AtivoLocalInterceptorTest {
     }
 
     @Test
+    public void naoDeveValidarAcesso_notThrowsException_quandoRotaForParaLiberarRamal() {
+        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+
+        assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("PUT", "api/usuarios/remover-ramal-configuracao"),
+            new MockHttpServletResponse(), null, new ModelAndView()))
+            .doesNotThrowAnyException();
+
+        verify(notificacaoApiService, never()).consultarStatusTabulacaoByUsuario(any());
+        verify(autenticacaoService, never()).logout(anyInt());
+    }
+
+    @Test
     public void naoDeveValidarAcesso_notThrowsException_quandoUsuarioDiferenteVendedorAtivo() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(getUsuarioAutenticadoMso());
         when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
