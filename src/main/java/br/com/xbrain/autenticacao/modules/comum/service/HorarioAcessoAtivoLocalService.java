@@ -54,6 +54,7 @@ public class HorarioAcessoAtivoLocalService {
                     .map(ZoneId::of)
                     .filter(z -> !isDentroHorarioPermitido(z) && !isDentroTabulacao() && !isRamalEmUso())
                     .ifPresent(error -> {
+                        callService.liberarRamalUsuarioAutenticado();
                         autenticacaoService.logout(autenticacaoService.getUsuarioId());
                         throw FORA_HORARIO_PERMITIDO_EX;
                     });

@@ -73,7 +73,10 @@ public enum EErrors {
             "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."),
     ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO(
             "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#022 - Erro ao tentar consultar status da tabulação do usuário.");
+            "#022 - Erro ao tentar consultar status da tabulação do usuário."),
+    ERRO_LIBERAR_RAMAL_USUARIO(
+        "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#023 - Erro ao tentar liberar ramal do usuário autenticado.");
 
     @Getter
     @Setter

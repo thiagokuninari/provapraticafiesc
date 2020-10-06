@@ -35,4 +35,7 @@ public interface CallClient {
     @GetMapping(API_DISCAGEM_TELEFONIA + "/status")
     boolean consultarStatusUsoRamalByUsuarioAutenticado();
 
+    @GetMapping(URL_RAMAL + "/liberar-ramal")
+    void liberarRamalUsuarioAutenticado();
+
 }
