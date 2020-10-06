@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
@@ -25,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.BACKOFFICE_COORDENADOR;
@@ -54,6 +56,7 @@ public class HorarioAcessoAtivoLocalServiceTest {
     public void setup() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAtivoProprio());
         when(siteService.findById(any())).thenReturn(umSite());
+        when(siteService.getSitesPorPermissao(any())).thenReturn(List.of(SelectResponse.of(1, "Curitiba")));
     }
 
     @Test
@@ -164,9 +167,6 @@ public class HorarioAcessoAtivoLocalServiceTest {
             .cargo(Cargo.builder()
                 .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
                 .build())
-            .site(Site.builder()
-                    .timeZone(ETimeZone.BRT)
-                    .build())
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
             .build();
     }
@@ -176,7 +176,6 @@ public class HorarioAcessoAtivoLocalServiceTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                                .site(umSite())
                                 .cargo(Cargo.builder()
                                         .codigo(OPERACAO_TELEVENDAS)
                                         .build())
@@ -193,7 +192,6 @@ public class HorarioAcessoAtivoLocalServiceTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                                .site(umSite())
                                 .cargo(Cargo.builder()
                                         .codigo(BACKOFFICE_COORDENADOR)
                                         .build())

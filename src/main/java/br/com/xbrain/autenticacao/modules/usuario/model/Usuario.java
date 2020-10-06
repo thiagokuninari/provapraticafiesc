@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -147,11 +146,6 @@ public class Usuario {
         foreignKey = @ForeignKey(name = "FK_USUARIO_CARGO"), nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Cargo cargo;
-
-    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_USUARIO_SITE"))
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Site site;
 
     @NotNull
     @JoinColumn(name = "FK_DEPARTAMENTO", referencedColumnName = "ID", nullable = false,
@@ -398,13 +392,6 @@ public class Usuario {
 
     public CodigoDepartamento getDepartamentoCodigo() {
         return this.departamento != null ? this.departamento.getCodigo() : null;
-    }
-
-    public Integer getSiteId() {
-        if (Objects.nonNull(site)) {
-            return site.getId();
-        }
-        return null;
     }
 
     public Integer getNivelId() {

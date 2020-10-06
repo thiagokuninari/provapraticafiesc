@@ -70,7 +70,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
         getOrganizacao(usuario);
-        this.siteId = usuario.getSiteId();
     }
 
     public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
@@ -93,7 +92,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
         getOrganizacao(usuario);
-        this.siteId = usuario.getSiteId();
     }
 
     private void getOrganizacao(Usuario usuario) {
