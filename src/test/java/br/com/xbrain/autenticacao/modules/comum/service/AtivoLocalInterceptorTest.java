@@ -79,6 +79,7 @@ public class AtivoLocalInterceptorTest {
 
         verify(callService, atLeastOnce()).consultarStatusUsoRamalByUsuarioAutenticado();
         verify(autenticacaoService, atLeastOnce()).logout(anyInt());
+        verify(callService, atLeastOnce()).liberarRamalUsuarioAutenticado();
     }
 
     @Test
