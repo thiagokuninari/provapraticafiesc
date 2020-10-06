@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -42,9 +43,15 @@ public class UsuarioMqRequest {
     private List<CodigoUnidadeNegocio> unidadesNegocio;
     private List<CodigoEmpresa> empresa;
     private Integer usuarioCadastroId;
+    private String usuarioCadastroNome;
     private String exception;
     private Set<ECanal> canais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
     private Eboolean agenteAutorizadoFeeder;
+    private boolean isCadastroSocioPrincipal;
+
+    public boolean isNovoCadastroSocioPrincipal() {
+        return Objects.isNull(id) && isCadastroSocioPrincipal;
+    }
 }

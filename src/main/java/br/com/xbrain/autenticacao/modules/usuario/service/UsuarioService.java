@@ -719,7 +719,12 @@ public class UsuarioService {
             UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
-            enviarParaFilaDeUsuariosSalvos(usuarioDto);
+
+            if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
+                enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
+            } else {
+                enviarParaFilaDeUsuariosSalvos(usuarioDto);
+            }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
@@ -894,6 +899,10 @@ public class UsuarioService {
 
     private void enviarParaFilaDeUsuariosSalvos(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccess(usuarioDto);
+    }
+
+    private void enviarParaFilaDeSocioPrincipalSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessSocioPrincipal(usuarioDto);
     }
 
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
