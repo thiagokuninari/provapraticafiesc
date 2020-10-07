@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
@@ -18,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.Usuarios;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,6 +88,8 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -548,6 +552,17 @@ public class UsuarioGerenciaControllerTest {
                         + ";;A\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
                         + ";;A", csv);
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarPorAaIdEFiltros_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(get(API_URI + "/por-agente-autorizado/100")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).buscarPorAaIdEFiltros(100, new UsuarioFiltros());
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

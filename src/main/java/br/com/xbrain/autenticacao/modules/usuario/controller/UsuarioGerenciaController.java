@@ -131,4 +131,9 @@ public class UsuarioGerenciaController {
                 response
         );
     }
+
+    @GetMapping("por-agente-autorizado/{aaId}")
+    public List<UsuarioConsultaDto> buscarPorAaIdEFiltros(@PathVariable("aaId") Integer aaId, UsuarioFiltros filtros) {
+        return service.buscarPorAaIdEFiltros(aaId, filtros);
+    }
 }

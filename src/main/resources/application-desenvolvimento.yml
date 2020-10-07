@@ -17,6 +17,8 @@ app-config:
       url: http://172.10.10.65:8084
     claro-indico:
       url: http://172.10.10.54:8055
+    agente-autorizado:
+      url: http://172.10.10.105:8300
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

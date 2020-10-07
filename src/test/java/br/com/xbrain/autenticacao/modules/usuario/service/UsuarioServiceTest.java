@@ -1,10 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -15,10 +17,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioComLoginNetSalesResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -43,7 +42,6 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
@@ -51,7 +49,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -81,6 +78,8 @@ public class UsuarioServiceTest {
     private UsuarioCidadeRepository usuarioCidadeRepository;
     @Mock
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Mock
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -595,6 +594,31 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
     }
 
+    @Test
+    public void buscarPorAaIdEFiltros_deveRetornarListaVazia_quandoNaoHouverUsuariosDoAgenteAutorizado() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(100), eq(true)))
+            .thenReturn(List.of());
+
+        assertThat(service.buscarPorAaIdEFiltros(100, new UsuarioFiltros()))
+            .isEmpty();
+
+        verify(repository, never()).findAll(umUsuarioPredicate().build());
+    }
+
+    @Test
+    public void buscarPorAaIdEFiltros_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDoAgenteAutorizado() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(100), eq(true)))
+            .thenReturn(List.of(umUsuarioDtoVendas(1)));
+        when(repository.findAll(eq(umUsuarioPredicate().build()))).thenReturn(List.of(umUsuarioCompleto()));
+
+        assertThat(service.buscarPorAaIdEFiltros(100, new UsuarioFiltros()))
+            .hasSize(1)
+            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
+                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
+            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
+                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+    }
+
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
             .id(id)
@@ -613,5 +637,51 @@ public class UsuarioServiceTest {
         var usuario = umUsuarioComLoginNetSales(id);
         usuario.setLoginNetSales(null);
         return usuario;
+    }
+
+    private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
+        return UsuarioDtoVendas
+            .builder()
+            .id(id)
+            .build();
+    }
+
+    private UsuarioPredicate umUsuarioPredicate() {
+        var predicate = new UsuarioPredicate();
+
+        predicate.comIds(List.of(1));
+
+        return predicate;
+    }
+
+    private Usuario umUsuarioCompleto() {
+        return Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .cargo(Cargo
+                .builder()
+                .nivel(Nivel
+                    .builder()
+                    .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                    .nome("AGENTE AUTORIZADO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
     }
 }

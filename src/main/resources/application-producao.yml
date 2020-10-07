@@ -54,6 +54,8 @@ app-config:
       url: http://172.10.10.95:8084
     claro-indico:
       url: http://172.10.10.55:8055
+    agente-autorizado:
+      url: http://172.10.10.113:8300
 
   email:
     enviar: true

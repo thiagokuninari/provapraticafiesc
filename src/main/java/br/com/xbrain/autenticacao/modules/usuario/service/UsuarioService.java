@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -36,6 +38,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
+import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +164,8 @@ public class UsuarioService {
     private UsuarioFeriasService usuarioFeriasService;
     @Autowired
     private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Autowired
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -240,6 +245,31 @@ public class UsuarioService {
             popularUsuarios(pages.getContent());
         }
         return pages;
+    }
+
+    public List<UsuarioConsultaDto> buscarPorAaIdEFiltros(Integer aaId, UsuarioFiltros filtros) {
+        return Optional.ofNullable(aaId)
+            .map(aaId1 -> buscarUsuariosIdsPorAaId(aaId1, true))
+            .filter(usuariosIdsAa -> !isEmpty(usuariosIdsAa))
+            .map(usuariosIdsAa -> filtros.toPredicate().comIds(usuariosIdsAa).build())
+            .map(this::buscarTodosPorPredicate)
+            .map(usuarios -> usuarios
+                .stream()
+                .map(UsuarioConsultaDto::convertFrom)
+                .collect(Collectors.toList()))
+            .orElse(List.of());
+    }
+
+    private List<Integer> buscarUsuariosIdsPorAaId(Integer aaId, Boolean buscarInativos) {
+        return agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(aaId, buscarInativos)
+            .stream()
+            .map(UsuarioDtoVendas::getId)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {
+        return (List<Usuario>) repository.findAll(predicate);
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {

@@ -203,6 +203,9 @@ app-config:
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    agente-autorizado:
+      #url: http://localhost:8300
+      url: https://api-dev.conexaoclarobrasil.com.br/parceiros/agente-autorizado
 
 flyway:
   enabled: true
