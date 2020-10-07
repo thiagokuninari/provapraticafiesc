@@ -23,6 +23,13 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate ignorarSite(Integer id) {
+        if (nonNull(id)) {
+            builder.and(site.id.ne(id));
+        }
+        return this;
+    }
+
     public SitePredicate comNome(String nome) {
         Optional.ofNullable(nome)
             .filter(StringUtils::isNotBlank)

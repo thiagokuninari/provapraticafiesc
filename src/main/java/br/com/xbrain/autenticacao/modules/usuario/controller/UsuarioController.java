@@ -351,6 +351,16 @@ public class UsuarioController {
         return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
     }
 
+    @GetMapping("site/supervisores-disponiveis/{siteId}")
+    public List<UsuarioNomeResponse> getSupervidoresDisponiveis(@PathVariable Integer siteId) {
+        return usuarioService.getSupervidoresSemSite(siteId);
+    }
+
+    @GetMapping("site/coordenadores-disponiveis/{siteId}")
+    public List<UsuarioNomeResponse> getCoordenadoreDisponiveis(@PathVariable Integer siteId) {
+        return usuarioService.getCoordenadoresSemSite(siteId);
+    }
+
     @GetMapping("site/{siteId}/vendedores")
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(@PathVariable Integer siteId) {
         return usuarioService.getVendedoresOperacaoAtivoProprio(siteId);

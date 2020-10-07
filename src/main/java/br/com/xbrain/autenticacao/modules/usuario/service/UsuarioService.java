@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -37,6 +38,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
+import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1479,7 +1481,19 @@ public class UsuarioService {
         return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
 
+    public List<UsuarioNomeResponse> getSupervidoresSemSite(Integer siteId) {
+        return repository.findSupervidoresDisponiveisParaSite(siteIdToPredicate(siteId));
+    }
+
+    public List<UsuarioNomeResponse> getCoordenadoresSemSite(Integer siteId) {
+        return repository.findCoordenadoresDisponiveisParaSite(siteIdToPredicate(siteId));
+    }
+
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(Integer siteId) {
         return repository.findAllBySiteOperacaoVendedores(siteId);
+    }
+
+    private Predicate siteIdToPredicate(Integer siteId) {
+        return new SitePredicate().ignorarSite(siteId).build();
     }
 }

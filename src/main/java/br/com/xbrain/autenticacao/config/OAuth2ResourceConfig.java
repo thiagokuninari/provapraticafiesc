@@ -62,6 +62,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
                 CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuario/site").hasAnyRole(CodigoFuncionalidade.AUT_2047.name())
             .anyRequest().authenticated();
     }
 

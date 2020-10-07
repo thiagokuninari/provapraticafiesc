@@ -53,6 +53,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -700,6 +702,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuario.canais.any().eq(canal)
                 .and(usuario.cargo.codigo.eq(cargo)))
             .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findSupervidoresDisponiveisParaSite(Predicate sitePredicate) {
+        var usuarioSelect = new QUsuario("usuario");
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(usuario.cargo.codigo.eq(SUPERVISOR_OPERACAO))
+                .and(usuario.id.notIn(select(usuarioSelect.id)
+                    .from(site)
+                    .where(sitePredicate)
+                    .innerJoin(site.supervisores, usuarioSelect)
+                ))
+            ).fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisParaSite(Predicate sitePredicate) {
+        var usuarioSelect = new QUsuario("usuario");
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
+                .and(usuario.id.notIn(select(usuarioSelect.id)
+                    .from(site)
+                    .where(sitePredicate)
+                    .innerJoin(site.coordenadores, usuarioSelect)
+                ))
+            ).fetch();
     }
 
     @Override
