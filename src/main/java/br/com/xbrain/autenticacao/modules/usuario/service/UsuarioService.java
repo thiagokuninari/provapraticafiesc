@@ -249,7 +249,7 @@ public class UsuarioService {
 
     public List<UsuarioConsultaDto> buscarPorAaIdEFiltros(Integer aaId, UsuarioFiltros filtros) {
         return Optional.ofNullable(aaId)
-            .map(aaId1 -> buscarUsuariosIdsPorAaId(aaId1, true))
+            .map(agenteAutorizadoId -> buscarUsuariosIdsPorAaId(agenteAutorizadoId, true))
             .filter(usuariosIdsAa -> !isEmpty(usuariosIdsAa))
             .map(usuariosIdsAa -> filtros.toPredicate().comIds(usuariosIdsAa).build())
             .map(this::buscarTodosPorPredicate)

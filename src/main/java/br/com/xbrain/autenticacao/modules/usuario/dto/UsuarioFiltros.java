@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,10 +26,12 @@ public class UsuarioFiltros {
     private Integer subClusterId;
     private Integer nivelId;
     private Integer departamentoId;
-    private List<Integer> cargoId;
+    private Integer cargoId;
     private ECanal canal;
     private List<ESituacao> situacoes;
     private Integer organizacaoId;
+    private List<CodigoNivel> codigosNiveis;
+    private List<CodigoCargo> codigosCargos;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -45,8 +49,11 @@ public class UsuarioFiltros {
             .comOrganizacaoId(organizacaoId)
             .comNivel(!ObjectUtils.isEmpty(nivelId)
                 ? Collections.singletonList(nivelId) : null)
-            .comCargo(cargoId)
+            .comCargo(!ObjectUtils.isEmpty(cargoId)
+                ? Collections.singletonList(cargoId) : null)
             .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
-                ? Collections.singletonList(departamentoId) : null);
+                ? Collections.singletonList(departamentoId) : null)
+            .comCodigosCargos(codigosCargos)
+            .comCodigosNiveis(codigosNiveis);
     }
 }
