@@ -63,8 +63,8 @@ public enum EErrors {
         "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#019 - Erro ao tentar recuperar a Estrutura do AA."),
     ERRO_BUSCAR_USUARIOS_DO_AA(
-        "#020 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#020 - Ocorreu um erro ao buscar usuários do agente autorizado");
+        "#028 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#028 - Ocorreu um erro ao buscar usuários do agente autorizado");
 
     @Getter
     @Setter
