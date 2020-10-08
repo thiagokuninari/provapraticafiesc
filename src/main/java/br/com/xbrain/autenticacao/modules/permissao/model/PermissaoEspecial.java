@@ -56,6 +56,11 @@ public class PermissaoEspecial {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioBaixa;
 
+    @PrePersist
+    public void prePersist() {
+        this.dataCadastro = LocalDateTime.now();
+    }
+
     public void baixar(Integer usuarioId) {
         this.setUsuarioBaixa(new Usuario(usuarioId));
         this.setDataBaixa(LocalDateTime.now());

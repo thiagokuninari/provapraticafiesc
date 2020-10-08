@@ -22,7 +22,9 @@ public enum EScopes {
     FUNIL_PROSPECCAO("funil-prospeccao-api"),
     DISCADORA("discadora-api"),
     ASTERISK_URA("asterisk-ura-api"),
-    INDICACAO("indicacao-api");
+    CLICK_TO_CALL("click-to-call-api"),
+    INDICACAO("indicacao-api"),
+    GERADOR_LEAD("gerador-lead-api");
 
     @Getter
     private String scope;

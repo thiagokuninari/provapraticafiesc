@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -12,9 +13,13 @@ public interface FeriadoRepositoryCustom {
 
     List<Feriado> findAllByAnoAtual(LocalDate now);
 
+    List<LocalDate> findAllDataFeriadoByCidadeId(Integer cidadeId);
+
     @Cacheable(
             cacheManager = "concurrentCacheManager",
             cacheNames = FERIADOS_DATA_CACHE_NAME,
             unless = "#cidade == null || #uf == null")
     boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
+
+    List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno();
 }

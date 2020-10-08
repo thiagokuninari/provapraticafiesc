@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -732,12 +731,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa() {
+    public List<Usuario> findAllAtivosByNivelOperacaoCanalAa() {
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(SelectResponse.class,
-                usuario.id,
-                usuario.nome))
-            .from(usuario)
+            .selectFrom(usuario)
             .leftJoin(usuario.cargo, cargo)
             .leftJoin(cargo.nivel, nivel)
             .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))

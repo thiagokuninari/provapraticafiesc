@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -51,7 +50,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -265,22 +263,37 @@ public class UsuarioServiceTest {
     @Test
     public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
         when(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .thenReturn(umaListaSelectResponse());
+            .thenReturn(umaListaUsuarioComUnidadesNegocio());
 
         assertThat(service.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactly(
-                tuple(100, "JOSÉ"),
-                tuple(101, "JOÃO")
+                tuple(100, "JOSÉ - ( Claro Residencial, Residencial e Combos )"),
+                tuple(101, "JOÃO - ( Pessoal )")
             );
 
         verify(repository).findAllAtivosByNivelOperacaoCanalAa();
     }
 
-    private List<SelectResponse> umaListaSelectResponse() {
+    private List<Usuario> umaListaUsuarioComUnidadesNegocio() {
         return List.of(
-            SelectResponse.of(100, "JOSÉ"),
-            SelectResponse.of(101, "JOÃO")
+            Usuario.builder()
+                .id(100)
+                .nome("JOSÉ")
+                .unidadesNegocios(umaListaUnidadesNegocio())
+                .build(),
+            Usuario.builder()
+                .id(101)
+                .nome("JOÃO")
+                .unidadesNegocios(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.PESSOAL)))
+                .build()
+        );
+    }
+
+    private List<UnidadeNegocio> umaListaUnidadesNegocio() {
+        return List.of(
+            umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
+            umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
         );
     }
 

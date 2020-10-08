@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -41,8 +43,15 @@ public class UsuarioMqRequest {
     private List<CodigoUnidadeNegocio> unidadesNegocio;
     private List<CodigoEmpresa> empresa;
     private Integer usuarioCadastroId;
+    private String usuarioCadastroNome;
     private String exception;
     private Set<ECanal> canais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
+    private Eboolean agenteAutorizadoFeeder;
+    private boolean isCadastroSocioPrincipal;
+
+    public boolean isNovoCadastroSocioPrincipal() {
+        return Objects.isNull(id) && isCadastroSocioPrincipal;
+    }
 }

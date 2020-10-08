@@ -31,7 +31,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
             "/api/public/disparar-timer-inativar-usuarios",
-            "/api/usuarios/usuario-funil-prospeccao"
+            "/api/usuarios/usuario-funil-prospeccao",
+            "/api/usuarios/gerencia/existir/usuario"
         };
 
         http
@@ -42,6 +43,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(permitAll).permitAll()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .antMatchers("/api/usuarios/situacoes/timer")
+            .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
@@ -55,9 +58,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name())
             .antMatchers("/api/solicitacao-ramal/gerencia/**")
             .hasRole(CodigoFuncionalidade.CTR_2034.name())
-                .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
-                .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
-                .anyRequest().authenticated();
+            .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
+            .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
+            .anyRequest().authenticated();
     }
 
     @Override
