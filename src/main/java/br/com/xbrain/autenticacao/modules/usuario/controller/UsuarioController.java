@@ -365,5 +365,4 @@ public class UsuarioController {
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprio(@PathVariable Integer siteId) {
         return usuarioService.getVendedoresOperacaoAtivoProprio(siteId);
     }
-
 }

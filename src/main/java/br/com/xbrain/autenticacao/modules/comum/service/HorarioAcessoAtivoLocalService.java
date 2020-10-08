@@ -3,12 +3,15 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -19,6 +22,7 @@ import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Objects.nonNull;
 
@@ -43,16 +47,17 @@ public class HorarioAcessoAtivoLocalService {
     private final Environment environment;
 
     public void validarHorarioAcessoVendedor() {
-        if (isTest() || AutenticacaoService.hasAuthentication()) {
+        if (isTest() || AutenticacaoService.hasAuthentication() && isOperadorTelevendasAtivoLocalByTokenStore()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
             Optional.ofNullable(usuarioAutenticado)
                     .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
-                    .map(u -> u.getUsuario().getSite())
+                    .map(u -> getFirstSiteByUsuario(u.getUsuario()))
                     .map(Site::getTimeZone)
                     .map(ETimeZone::getZoneId)
                     .map(ZoneId::of)
                     .filter(z -> !isDentroHorarioPermitido(z) && !isDentroTabulacao() && !isRamalEmUso())
                     .ifPresent(error -> {
+                        callService.liberarRamalUsuarioAutenticado();
                         autenticacaoService.logout(autenticacaoService.getUsuarioId());
                         throw FORA_HORARIO_PERMITIDO_EX;
                     });
@@ -67,9 +72,12 @@ public class HorarioAcessoAtivoLocalService {
 
     @Transactional
     public boolean isDentroHorarioPermitido(Usuario usuario) {
-        if (usuario.isOperadorTelevendasAtivoLocal() && nonNull(usuario.getSite())) {
-            var timeZone = usuario.getSite().getTimeZone();
-            return isDentroHorarioPermitido(ZoneId.of(timeZone.getZoneId()));
+        if (usuario.isOperadorTelevendasAtivoLocal()) {
+            var site = getFirstSiteByUsuario(usuario);
+            if (nonNull(site)) {
+                var timeZone = site.getTimeZone();
+                return isDentroHorarioPermitido(ZoneId.of(timeZone.getZoneId()));
+            }
         }
         return true;
     }
@@ -112,11 +120,29 @@ public class HorarioAcessoAtivoLocalService {
         return notificacaoApiService.consultarStatusTabulacaoByUsuario(usuarioId);
     }
 
+    public boolean isOperadorTelevendasAtivoLocalByTokenStore() {
+        return autenticacaoService.getAccessToken()
+            .filter(token -> {
+                var info = token.getAdditionalInformation();
+                return info.containsValue(CodigoCargo.OPERACAO_TELEVENDAS)
+                    && info.containsValue(Set.of(ECanal.ATIVO_PROPRIO.name()));
+            }).isPresent();
+    }
+
     private boolean isRamalEmUso() {
         return callService.consultarStatusUsoRamalByUsuarioAutenticado();
     }
 
     private boolean isTest() {
         return environment.acceptsProfiles("test");
+    }
+
+    private Site getFirstSiteByUsuario(Usuario usuario) {
+        var sites = siteService.getSitesPorPermissao(usuario);
+        return sites.stream()
+                .map(SelectResponse::getValue)
+                .findFirst()
+                .map(value -> siteService.findById((Integer) value))
+                .orElse(null);
     }
 }

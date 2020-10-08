@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -63,7 +64,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Transactional
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
-    "classpath:/tests_usuario_remanejamento.sql"})
+    "classpath:/tests_usuario_remanejamento.sql", "classpath:/tests_editar_sites.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -104,6 +105,8 @@ public class UsuarioServiceIT {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
+    @Autowired
+    private SiteRepository siteRepository;
 
     @Before
     public void setUp() {
@@ -866,5 +869,29 @@ public class UsuarioServiceIT {
                 tuple(239, "VENDEDOR OPERACAO 2"),
                 tuple(240, "VENDEDOR OPERACAO 3")
             );
+    }
+
+    @Test
+    public void listaSupervisor_deveRetornarListVazia_quandoNaoExistirSupervidoresDisponiveis()  {
+        assertThat(usuarioService.getSupervidoresSemSite(null)).hasSize(0);
+    }
+
+    @Test
+    public void listaCoordenador_deveRetornarListVazia_quandoNaoExistirCoordenadoresDisponiveis()  {
+        assertThat(usuarioService.getCoordenadoresSemSite(null)).hasSize(0);
+    }
+
+    @Test
+    public void retornaSupervidores_deveRetornarSupervidoresDisponiveisEVinculadosAoSite_quandoSolicitarComSiteIdParaEditar() {
+        assertThat(usuarioService.getSupervidoresSemSite(2))
+            .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
+            .contains(tuple(11123, "Supervisor operacao ativo local"));
+    }
+
+    @Test
+    public void retornaCoordenadores_deveRetornarCoordenadoresDisponiveisEVinculadosAoSite_quandoSolicitarComSiteIdParaEditar() {
+        assertThat(usuarioService.getCoordenadoresSemSite(1))
+            .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
+            .contains(tuple(11122, "Coordenador operacao ativo local"));
     }
 }

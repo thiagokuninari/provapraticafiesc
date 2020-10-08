@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.interceptor.AtivoLocalInterceptor;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
@@ -20,6 +21,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -28,6 +31,9 @@ import org.springframework.web.servlet.ModelAndView;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
@@ -59,8 +65,11 @@ public class AtivoLocalInterceptorTest {
     @Before
     public void setup() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(getUsuarioAutenticado());
+        when(autenticacaoService.getAccessToken()).thenReturn(getTokenFromVendedor());
         when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(false);
         when(notificacaoApiService.consultarStatusTabulacaoByUsuario(anyInt())).thenReturn(false);
+        when(siteService.findById(anyInt())).thenReturn(umSite());
+        when(siteService.getSitesPorPermissao(any())).thenReturn(List.of(SelectResponse.of(1, "Curitiba")));
         interceptor = new AtivoLocalInterceptor(horarioAcessoAtivoLocalService);
     }
 
@@ -75,6 +84,7 @@ public class AtivoLocalInterceptorTest {
 
         verify(callService, atLeastOnce()).consultarStatusUsoRamalByUsuarioAutenticado();
         verify(autenticacaoService, atLeastOnce()).logout(anyInt());
+        verify(callService, atLeastOnce()).liberarRamalUsuarioAutenticado();
     }
 
     @Test
@@ -90,8 +100,21 @@ public class AtivoLocalInterceptorTest {
     }
 
     @Test
+    public void naoDeveValidarAcesso_notThrowsException_quandoRotaForParaLiberarRamal() {
+        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+
+        assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("PUT", "api/usuarios/remover-ramal-configuracao"),
+            new MockHttpServletResponse(), null, new ModelAndView()))
+            .doesNotThrowAnyException();
+
+        verify(notificacaoApiService, never()).consultarStatusTabulacaoByUsuario(any());
+        verify(autenticacaoService, never()).logout(anyInt());
+    }
+
+    @Test
     public void naoDeveValidarAcesso_notThrowsException_quandoUsuarioDiferenteVendedorAtivo() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(getUsuarioAutenticadoMso());
+        when(autenticacaoService.getAccessToken()).thenReturn(getTokenFromMso());
         when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
@@ -151,7 +174,6 @@ public class AtivoLocalInterceptorTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
-                                .site(null)
                                 .cargo(Cargo.builder()
                                         .codigo(MSO_CONSULTOR)
                                         .build())
@@ -166,7 +188,6 @@ public class AtivoLocalInterceptorTest {
                 .usuario(
                         Usuario.builder()
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                                .site(umSite())
                                 .cargo(Cargo.builder()
                                         .codigo(OPERACAO_TELEVENDAS)
                                         .build())
@@ -174,6 +195,24 @@ public class AtivoLocalInterceptorTest {
                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
                 .cargoCodigo(OPERACAO_TELEVENDAS)
                 .build();
+    }
+
+    private Optional<OAuth2AccessToken> getTokenFromVendedor() {
+        var token = new DefaultOAuth2AccessToken("12345");
+        token.setAdditionalInformation(
+            Map.of("cargo", OPERACAO_TELEVENDAS,
+                "canais", Set.of(ECanal.ATIVO_PROPRIO.name()))
+        );
+        return Optional.of(token);
+    }
+
+    private Optional<OAuth2AccessToken> getTokenFromMso() {
+        var token = new DefaultOAuth2AccessToken("123455");
+        token.setAdditionalInformation(
+            Map.of("cargo", MSO_CONSULTOR,
+                "canais", Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+        );
+        return Optional.of(token);
     }
 
 }

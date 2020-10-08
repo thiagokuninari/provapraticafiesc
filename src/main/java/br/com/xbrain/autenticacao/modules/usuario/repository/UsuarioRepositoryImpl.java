@@ -518,7 +518,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .innerJoin(cargo.nivel).fetchJoin()
                 .innerJoin(usuario.departamento).fetchJoin()
                 .innerJoin(usuario.empresas).fetchJoin()
-                .leftJoin(usuario.site).fetchJoin()
                 .where(
                     usuario.email.equalsIgnoreCase(email)
                         .and(usuario.situacao.ne(ESituacao.R))
@@ -734,18 +733,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     .innerJoin(site.coordenadores, usuarioSelect)
                 ))
             ).fetch();
-    }
-
-    @Override
-    public List<UsuarioNomeResponse> findAllBySiteOperacaoVendedores(Integer siteId) {
-        return new JPAQueryFactory(entityManager)
-                .select(Projections.fields(UsuarioNomeResponse.class, usuario.id, usuario.nome))
-                .from(usuario)
-                .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                        .and(usuario.site.id.eq(siteId))
-                        .and(usuario.cargo.codigo.in(List.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO)))
-                        .and(usuario.cargo.nivel.codigo.eq(OPERACAO)))
-                .fetch();
     }
 
     @Override
