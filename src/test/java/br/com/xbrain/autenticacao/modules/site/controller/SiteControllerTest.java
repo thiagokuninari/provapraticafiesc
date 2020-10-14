@@ -167,6 +167,17 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
+    public void getAllSupervisoresByHierarquia_deveRetornarSupervisores_quandoRespeitarSiteAndUsuarioSuperiorId() {
+        mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 405)
+            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(406)))
+            .andExpect(jsonPath("$[0].nome", is("CARLOS")));
+    }
+
+    @Test
+    @SneakyThrows
     public void buscarSitesVinculadosAoUsuarioLogado_deveRetornarSitesDoUsuarioLogado() {
         mvc.perform(get(API_URI + "/usuario-logado")
             .header("Authorization", getAccessToken(mvc, ADMIN)))

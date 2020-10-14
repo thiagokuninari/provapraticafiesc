@@ -152,6 +152,10 @@ public class SiteService {
             .collect(toList());
     }
 
+    public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
+        return siteRepository.findSupervisoresBySiteIdAndUsuarioSuperiorId(siteId, usuarioSuperiorId);
+    }
+
     public Site save(SiteRequest request) {
         validarDadosCadastro(request);
         return siteRepository.save(Site.of(request));

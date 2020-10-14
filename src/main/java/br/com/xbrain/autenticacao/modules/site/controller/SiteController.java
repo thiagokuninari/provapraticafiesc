@@ -39,6 +39,12 @@ public class SiteController {
         return service.getAllSupervisoresBySiteId(id);
     }
 
+    @GetMapping("{id}/supervisores/hierarquia/{usuarioSuperiorId}")
+    public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(@PathVariable Integer id,
+                                                                       @PathVariable Integer usuarioSuperiorId) {
+        return service.getAllSupervisoresByHierarquia(id, usuarioSuperiorId);
+    }
+
     @GetMapping("{id}")
     public SiteResponse getById(@PathVariable Integer id) {
         return SiteResponse.of(service.findById(id), true);
