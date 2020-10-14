@@ -123,7 +123,7 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.id", is(100)))
             .andExpect(jsonPath("$.nome", is("São Paulo")))
             .andExpect(jsonPath("$.cidadesIds", is(List.of(5578))))
-            .andExpect(jsonPath("$.supervisoresIds", is(List.of(102))))
+            .andExpect(jsonPath("$.supervisoresIds", is(List.of(102, 406))))
             .andExpect(jsonPath("$.coordenadoresIds", is(List.of(300))))
             .andExpect(jsonPath("$.timeZone.descricao", is("Horário de Brasília")))
             .andExpect(jsonPath("$.timeZone.zoneId", is("America/Sao_Paulo")))
@@ -163,6 +163,17 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(102)))
             .andExpect(jsonPath("$[0].nome", is("Supervisor Operação")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllSupervisoresByHierarquia_deveRetornarSupervisores_quandoRespeitarSiteAndUsuarioSuperiorId() {
+        mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 405)
+            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(406)))
+            .andExpect(jsonPath("$[0].nome", is("CARLOS")));
     }
 
     @Test
@@ -322,8 +333,8 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.situacao", is(ESituacao.A.name())))
             .andExpect(jsonPath("$.coordenadoresNomes", hasSize(1)))
             .andExpect(jsonPath("$.coordenadoresNomes[0]", is("Operacao Supervisor NET")))
-            .andExpect(jsonPath("$.supervisoresNomes", hasSize(1)))
-            .andExpect(jsonPath("$.supervisoresNomes[0]", is("Supervisor Operação")))
+            .andExpect(jsonPath("$.supervisoresNomes", hasSize(2)))
+            .andExpect(jsonPath("$.supervisoresNomes[0]", is("CARLOS")))
             .andExpect(jsonPath("$.estados", hasSize(1)))
             .andExpect(jsonPath("$.estados[0].id", is(1)))
             .andExpect(jsonPath("$.estados[0].nome", is("PARANA")))

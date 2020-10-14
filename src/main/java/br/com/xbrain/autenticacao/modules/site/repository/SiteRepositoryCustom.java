@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
+import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import com.querydsl.core.types.Predicate;
 
@@ -13,4 +14,6 @@ public interface SiteRepositoryCustom {
     List<Site> findBySituacaoAtiva(Predicate predicate);
 
     List<Site> findByEstadoId(Integer estadoId);
+
+    List<SiteSupervisorResponse> findSupervisoresBySiteIdAndUsuarioSuperiorId(Integer siteId, Integer usuarioSuperiorId);
 }
