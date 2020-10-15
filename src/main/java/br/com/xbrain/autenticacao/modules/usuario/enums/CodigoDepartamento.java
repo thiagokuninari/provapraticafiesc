@@ -10,5 +10,6 @@ public enum CodigoDepartamento {
     ATENDIMENTO_JEC,
     GERADOR_LEADS,
     OUVIDORIA,
+    FEEDER,
     INTEGRACAO;
 }
