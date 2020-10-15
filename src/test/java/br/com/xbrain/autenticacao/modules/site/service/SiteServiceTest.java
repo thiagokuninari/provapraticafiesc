@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -28,13 +29,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static helpers.TestBuilders.*;
@@ -462,24 +460,48 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void getAllSupervisoresByHierarquia_deveListarSupervisores_quandoRespeitarSiteIdAndUsuarioSuperiorId() {
-        when(siteRepository.findSupervisoresBySiteIdAndUsuarioSuperiorId(10, 200))
-            .thenReturn(List.of(
-                SiteSupervisorResponse.builder()
-                    .id(1)
-                    .nome("RENATO")
-                    .build()
-            ));
+    public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
+        when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
+            .thenReturn(List.of(110, 112));
 
-        var actual = service.getAllSupervisoresByHierarquia(10, 200);
+        when(siteRepository.findById(100))
+            .thenReturn(Optional.of(umSiteComSupervisores()));
+
+        var actual = service.getAllSupervisoresByHierarquia(100, 200);
 
         var expected = List.of(
             SiteSupervisorResponse.builder()
-                .id(1)
-                .nome("RENATO")
+                .id(110)
+                .nome("JOAO")
+                .build(),
+            SiteSupervisorResponse.builder()
+                .id(112)
+                .nome("CARLOS")
                 .build()
         );
 
-        assertThat(actual).isEqualTo(expected);
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    private Site umSiteComSupervisores() {
+        return Site.builder()
+            .id(100)
+            .nome("SITE SP")
+            .situacao(ESituacao.A)
+            .supervisores(
+                Set.of(
+                    Usuario.builder()
+                        .id(100)
+                        .nome("RENATO")
+                        .build(),
+                    Usuario.builder()
+                        .id(110)
+                        .nome("JOAO")
+                        .build(),
+                    Usuario.builder()
+                        .id(112)
+                        .nome("CARLOS")
+                        .build()))
+            .build();
     }
 }

@@ -32,11 +32,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
-import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.*;
+import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -153,7 +155,15 @@ public class SiteService {
     }
 
     public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
-        return siteRepository.findSupervisoresBySiteIdAndUsuarioSuperiorId(siteId, usuarioSuperiorId);
+        var supervisoresSubordinadosIds =
+            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, CodigoCargo.SUPERVISOR_OPERACAO.name());
+
+        return findById(siteId)
+            .getSupervisores()
+            .stream()
+            .filter(u -> supervisoresSubordinadosIds.contains(u.getId()))
+            .map(SiteSupervisorResponse::of)
+            .collect(toList());
     }
 
     public Site save(SiteRequest request) {

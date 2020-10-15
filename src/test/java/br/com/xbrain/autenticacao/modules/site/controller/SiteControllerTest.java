@@ -4,12 +4,15 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -24,6 +27,7 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,6 +46,8 @@ public class SiteControllerTest {
     private MockMvc mvc;
     @Autowired
     private SiteRepository repository;
+    @MockBean
+    private UsuarioService usuarioService;
 
     @Test
     @SneakyThrows
@@ -123,7 +129,7 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.id", is(100)))
             .andExpect(jsonPath("$.nome", is("São Paulo")))
             .andExpect(jsonPath("$.cidadesIds", is(List.of(5578))))
-            .andExpect(jsonPath("$.supervisoresIds", is(List.of(102, 406))))
+            .andExpect(jsonPath("$.supervisoresIds", is(List.of(102))))
             .andExpect(jsonPath("$.coordenadoresIds", is(List.of(300))))
             .andExpect(jsonPath("$.timeZone.descricao", is("Horário de Brasília")))
             .andExpect(jsonPath("$.timeZone.zoneId", is("America/Sao_Paulo")))
@@ -168,12 +174,15 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     public void getAllSupervisoresByHierarquia_deveRetornarSupervisores_quandoRespeitarSiteAndUsuarioSuperiorId() {
-        mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 405)
+        when(usuarioService.getIdsSubordinadosDaHierarquia(300, CodigoCargo.SUPERVISOR_OPERACAO.name()))
+            .thenReturn(List.of(400, 102));
+
+        mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 300)
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[0].id", is(406)))
-            .andExpect(jsonPath("$[0].nome", is("CARLOS")));
+            .andExpect(jsonPath("$[0].id", is(102)))
+            .andExpect(jsonPath("$[0].nome", is("Supervisor Operação")));
     }
 
     @Test
@@ -333,8 +342,8 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.situacao", is(ESituacao.A.name())))
             .andExpect(jsonPath("$.coordenadoresNomes", hasSize(1)))
             .andExpect(jsonPath("$.coordenadoresNomes[0]", is("Operacao Supervisor NET")))
-            .andExpect(jsonPath("$.supervisoresNomes", hasSize(2)))
-            .andExpect(jsonPath("$.supervisoresNomes[0]", is("CARLOS")))
+            .andExpect(jsonPath("$.supervisoresNomes", hasSize(1)))
+            .andExpect(jsonPath("$.supervisoresNomes[0]", is("Supervisor Operação")))
             .andExpect(jsonPath("$.estados", hasSize(1)))
             .andExpect(jsonPath("$.estados[0].id", is(1)))
             .andExpect(jsonPath("$.estados[0].nome", is("PARANA")))
