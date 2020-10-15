@@ -480,7 +480,7 @@ public class SiteServiceTest {
                 .build()
         );
 
-        assertThat(actual).isEqualTo(expected);
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
     private Site umSiteComSupervisores() {
