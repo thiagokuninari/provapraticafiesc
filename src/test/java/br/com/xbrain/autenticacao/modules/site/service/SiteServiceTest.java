@@ -8,12 +8,14 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -27,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -453,6 +456,52 @@ public class SiteServiceTest {
     private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {
         return new SitePredicate()
             .comCoordenadoresOuSupervisores(id)
+            .build();
+    }
+
+    @Test
+    public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
+        when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
+            .thenReturn(List.of(110, 112));
+
+        when(siteRepository.findById(100))
+            .thenReturn(Optional.of(umSiteComSupervisores()));
+
+        var actual = service.getAllSupervisoresByHierarquia(100, 200);
+
+        var expected = List.of(
+            SiteSupervisorResponse.builder()
+                .id(110)
+                .nome("JOAO")
+                .build(),
+            SiteSupervisorResponse.builder()
+                .id(112)
+                .nome("CARLOS")
+                .build()
+        );
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    private Site umSiteComSupervisores() {
+        return Site.builder()
+            .id(100)
+            .nome("SITE SP")
+            .situacao(ESituacao.A)
+            .supervisores(
+                Set.of(
+                    Usuario.builder()
+                        .id(100)
+                        .nome("RENATO")
+                        .build(),
+                    Usuario.builder()
+                        .id(110)
+                        .nome("JOAO")
+                        .build(),
+                    Usuario.builder()
+                        .id(112)
+                        .nome("CARLOS")
+                        .build()))
             .build();
     }
 }
