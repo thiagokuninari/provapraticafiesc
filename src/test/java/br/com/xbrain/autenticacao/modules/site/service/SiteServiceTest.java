@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
@@ -30,11 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static helpers.TestBuilders.*;
@@ -459,27 +454,5 @@ public class SiteServiceTest {
         return new SitePredicate()
             .comCoordenadoresOuSupervisores(id)
             .build();
-    }
-
-    @Test
-    public void getAllSupervisoresByHierarquia_deveListarSupervisores_quandoRespeitarSiteIdAndUsuarioSuperiorId() {
-        when(siteRepository.findSupervisoresBySiteIdAndUsuarioSuperiorId(10, 200))
-            .thenReturn(List.of(
-                SiteSupervisorResponse.builder()
-                    .id(1)
-                    .nome("RENATO")
-                    .build()
-            ));
-
-        var actual = service.getAllSupervisoresByHierarquia(10, 200);
-
-        var expected = List.of(
-            SiteSupervisorResponse.builder()
-                .id(1)
-                .nome("RENATO")
-                .build()
-        );
-
-        assertThat(actual).isEqualTo(expected);
     }
 }
