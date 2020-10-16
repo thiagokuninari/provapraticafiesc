@@ -390,4 +390,13 @@ public class SiteControllerTest {
             .cidadesIds(List.of(4498))
             .build();
     }
+
+    @Test
+    public void getSiteBySupervisorId_siteSp_quandoBuscarSitePeloSupervisorId() throws Exception {
+        mvc.perform(get(API_URI + "/supervisor/{supervisorId}", 102)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", equalTo(100)))
+            .andExpect(jsonPath("$.nome", equalTo("São Paulo")));
+    }
 }

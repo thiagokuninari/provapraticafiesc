@@ -14,4 +14,6 @@ public interface SiteRepositoryCustom {
 
     List<Site> findByEstadoId(Integer estadoId);
 
+    Site findBySupervisorId(Integer supervisorId);
+
 }

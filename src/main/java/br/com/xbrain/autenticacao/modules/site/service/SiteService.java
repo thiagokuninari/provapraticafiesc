@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
@@ -283,5 +284,9 @@ public class SiteService {
         callService.desvincularRamaisDaDiscadoraAtivoProprio(site.getId(), site.getDiscadoraId());
         siteRepository.removeDiscadoraBySite(siteId);
         callService.cleanCacheableSiteAtivoProprio();
+    }
+
+    public SiteResponse getSiteBySupervisorId(Integer supervisorId) {
+        return SiteResponse.of(siteRepository.findBySupervisorId(supervisorId));
     }
 }
