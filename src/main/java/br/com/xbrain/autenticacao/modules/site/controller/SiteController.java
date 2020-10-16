@@ -101,4 +101,9 @@ public class SiteController {
     public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.removerDiscadora(request.getSiteId());
     }
+
+    @GetMapping("/supervisor/{supervisorId}")
+    public SiteResponse getSiteBySupervisorId(@PathVariable Integer supervisorId) {
+        return service.getSiteBySupervisorId(supervisorId);
+    }
 }

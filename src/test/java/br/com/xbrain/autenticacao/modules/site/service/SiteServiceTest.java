@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
@@ -503,5 +504,16 @@ public class SiteServiceTest {
                         .nome("CARLOS")
                         .build()))
             .build();
+    }
+
+    @Test
+    public void getSiteBySupervisorId_siteSp_quandoBuscarSitePeloSupervisorId() {
+        when(siteRepository.findBySupervisorId(100))
+            .thenReturn(umSite(100, "SITE SP", BRT));
+
+        assertThat(service.getSiteBySupervisorId(100))
+            .isInstanceOf(SiteResponse.class)
+            .extracting("id", "nome")
+            .containsExactly(100, "SITE SP");
     }
 }

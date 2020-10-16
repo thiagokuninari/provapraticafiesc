@@ -77,4 +77,11 @@ public class SiteRepositoryTest {
         assertThat(repository.findOne(100))
                 .hasFieldOrPropertyWithValue("discadoraId", 12);
     }
+
+    @Test
+    public void findBySupervisorId_siteSp_quandoEncontrarSiteVinculadoAoSupervisorPeloId() {
+        assertThat(repository.findBySupervisorId(102))
+            .extracting("id", "nome")
+            .contains(100, "São Paulo");
+    }
 }

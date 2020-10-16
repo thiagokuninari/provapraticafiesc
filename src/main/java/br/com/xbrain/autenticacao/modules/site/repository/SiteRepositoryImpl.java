@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRepositoryCustom {
 
@@ -42,5 +44,15 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             .where(site.situacao.eq(ESituacao.A)
                 .and(site.estados.contains(new Uf(estadoId))))
             .fetch();
+    }
+
+    @Override
+    public Site findBySupervisorId(Integer supervisorId) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(site)
+            .innerJoin(site.supervisores, usuario)
+            .where(usuario.cargo.codigo.eq(CodigoCargo.SUPERVISOR_OPERACAO)
+                .and(usuario.id.eq(supervisorId)))
+            .fetchFirst();
     }
 }
