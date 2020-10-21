@@ -76,4 +76,11 @@ public class SubClusterService {
                 .filtrarPermitidos(usuarioAutenticado);
         return SubClusterDto.of(repository.findAllAtivo(predicate.build()));
     }
+
+    public SubClusterDto findByIdCompleto(Integer subClusterId) {
+        var subCluster = repository.findByIdCompleto(subClusterId)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
+        return SubClusterDto.of(subCluster);
+    }
 }

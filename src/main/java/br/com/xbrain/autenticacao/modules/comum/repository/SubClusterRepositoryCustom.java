@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import com.querydsl.core.types.Predicate;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubClusterRepositoryCustom {
 
@@ -12,4 +13,6 @@ public interface SubClusterRepositoryCustom {
     List<SubCluster> findAllByClustersId(List<Integer> clusterId, Predicate predicate);
 
     List<SubCluster> findAllAtivo(Predicate predicate);
+
+    Optional<SubCluster> findByIdCompleto(Integer subClusterId);
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -17,12 +18,14 @@ public class SubClusterDto {
 
     private Integer id;
     private String nome;
+    private ClusterDto cluster;
 
     public static SubClusterDto of(SubCluster subCluster) {
         return SubClusterDto.builder()
-                .id(subCluster.getId())
-                .nome(subCluster.getNomeComMarca())
-                .build();
+            .id(subCluster.getId())
+            .nome(subCluster.getNomeComMarca())
+            .cluster(getCluster(subCluster))
+            .build();
     }
 
     public static List<SubClusterDto> of(List<SubCluster> subclusters) {
@@ -30,5 +33,11 @@ public class SubClusterDto {
                 .stream()
                 .map(SubClusterDto::of)
                 .collect(Collectors.toList());
+    }
+
+    private static ClusterDto getCluster(SubCluster subCluster) {
+        return Objects.nonNull(subCluster.getCluster())
+            ? ClusterDto.of(subCluster.getCluster())
+            : null;
     }
 }

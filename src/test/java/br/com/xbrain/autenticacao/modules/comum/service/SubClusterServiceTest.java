@@ -1,5 +1,10 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +59,30 @@ public class SubClusterServiceTest {
     public void getAllByGrupoIdAndUsuarioId_naoDeveRetornarSubCluster_quandoUsuarioNaoPossuirOCluster() {
         assertThat(subClusterServiceterService.getAllByClusterIdAndUsuarioId(CLUSTER_NORTE_DO_PARANA_ID, 2))
                 .isEmpty();
+    }
+
+    @Test
+    public void findByIdCompleto_deveRetornarUmSubclusterDto_quandoBuscarPeloSubclusterId() {
+        assertThat(subClusterServiceterService.findByIdCompleto(100)).isEqualTo(umSubclusterDto());
+    }
+
+    private SubClusterDto umSubclusterDto() {
+        return SubClusterDto.builder()
+            .cluster(ClusterDto.builder()
+                .id(22)
+                .nome("NORTE MG")
+                .grupo(GrupoDto.builder()
+                    .regional(RegionalDto.builder()
+                        .id(1)
+                        .nome("LESTE")
+                        .situacao(ESituacao.A)
+                        .build())
+                    .nome("MINAS GERAIS")
+                    .id(6)
+                    .build())
+                .build())
+            .nome("REMOTO - NORTE MG")
+            .id(100)
+            .build();
     }
 }

@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,7 +81,15 @@ public class GrupoServiceTest {
         GrupoDto grupoDto = new GrupoDto();
         grupoDto.setId(1);
         grupoDto.setNome("CENTRO-OESTE");
+        grupoDto.setRegional(umaRegionalDto());
         return grupoDto;
     }
 
+    RegionalDto umaRegionalDto() {
+        return RegionalDto.builder()
+            .id(1)
+            .nome("LESTE")
+            .situacao(ESituacao.A)
+            .build();
+    }
 }
