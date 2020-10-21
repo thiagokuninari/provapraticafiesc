@@ -1577,6 +1577,15 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {
+        return partition(idsUsuarios, QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(ids -> repository.findByIdIn(idsUsuarios))
+            .flatMap(Collection::stream)
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public UsuarioResponse findById(Integer id) {
         return repository.findById(id)
             .map(UsuarioResponse::of)

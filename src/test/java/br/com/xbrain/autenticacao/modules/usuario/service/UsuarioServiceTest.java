@@ -275,6 +275,19 @@ public class UsuarioServiceTest {
         verify(repository).findAllAtivosByNivelOperacaoCanalAa();
     }
 
+    @Test
+    public void getVendedoresByIds_deveRetornarUsuarios() {
+        when(repository.findByIdIn(List.of(1,2,3)))
+            .thenReturn(umaUsuariosList());
+        assertThat(service.getVendedoresByIds(List.of(1,2,3)))
+            .extracting("id", "nome", "loginNetSales", "email")
+            .containsExactly(
+                tuple(1, "Caio", "H", "caio@teste.com"),
+                tuple(2, "Mario", "QQ", "mario@teste.com"),
+                tuple(3, "Maria", "LOG", "maria@teste.com")
+            );
+    }
+
     private List<Usuario> umaListaUsuarioComUnidadesNegocio() {
         return List.of(
             Usuario.builder()
@@ -299,7 +312,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
-        var usuarioComPermissaoDeVisualizarAa = umUsuario(1, "AGENTE_AUTORIZADO",
+        var usuarioComPermissaoDeVisualizarAa = umUsuarioAutenticado(1, "AGENTE_AUTORIZADO",
             CodigoCargo.AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioComPermissaoDeVisualizarAa);
 
@@ -311,7 +324,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuariosDaEquipe_quandoUsuarioEquipeVendas() {
-        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+        var usuarioEquipeVendas = umUsuarioAutenticado(1, "OPERACAO",
             CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
 
@@ -328,7 +341,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarUsuariosDaHierarquiaDoUsuarioLogado_usuariosSubordinados_quandoUsuarioEquipeVendas() {
-        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+        var usuarioEquipeVendas = umUsuarioAutenticado(1, "OPERACAO",
             CodigoCargo.SUPERVISOR_OPERACAO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
 
@@ -346,7 +359,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarUsuariosDaHierarquiaDoUsuarioLogado_usuarios_quandoUsuarioCoordenador() {
-        var usuarioEquipeVendas = umUsuario(1, "OPERACAO",
+        var usuarioEquipeVendas = umUsuarioAutenticado(1, "OPERACAO",
             CodigoCargo.COORDENADOR_OPERACAO, CTR_VISUALIZAR_CARTEIRA_HIERARQUIA);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
 
@@ -379,7 +392,30 @@ public class UsuarioServiceTest {
             .build();
     }
 
-    private UsuarioAutenticado umUsuario(int usuarioId, String nivelCodigo, CodigoCargo cargo,
+    private List<Usuario> umaUsuariosList() {
+        return List.of(
+            Usuario.builder()
+                .id(1)
+                .nome("Caio")
+                .loginNetSales("H")
+                .email("caio@teste.com")
+                .build(),
+            Usuario.builder()
+                .id(2)
+                .nome("Mario")
+                .loginNetSales("QQ")
+                .email("mario@teste.com")
+                .build(),
+            Usuario.builder()
+                .id(3)
+                .nome("Maria")
+                .loginNetSales("LOG")
+                .email("maria@teste.com")
+                .build()
+        );
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado(int usuarioId, String nivelCodigo, CodigoCargo cargo,
                                          CodigoFuncionalidade... permissoes) {
         return UsuarioAutenticado.builder()
             .usuario(getUser(usuarioId, getCargo(cargo)))

@@ -77,6 +77,11 @@ public class UsuarioController {
             usuarioService.findCompleteById(id));
     }
 
+    @GetMapping("vendedores")
+    public List<UsuarioResponse> getUsuarioVendedorById(@RequestParam List<Integer> ids) {
+        return usuarioService.getVendedoresByIds(ids);
+    }
+
     @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
     public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
         return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
