@@ -31,6 +31,7 @@ public class UsuarioResponse {
     private String telefone;
     private String telefone02;
     private String telefone03;
+    private String loginNetSales;
     private ESituacao situacao;
     private LocalDateTime dataCadastro;
     private CodigoNivel codigoNivel;
@@ -64,6 +65,7 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+        usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
         return usuarioResponse;
     }
 

@@ -131,11 +131,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioCadastroSocioPrincipalSuccessMq() {
-        return new Queue(usuarioCadastroSocioPrincipalSuccessMq, false);
-    }
-
-    @Bean
     Queue atualizarPermissaoFeederMq() {
         return QueueBuilder
             .durable(atualizarPermissaoFeederMq)
@@ -147,6 +142,11 @@ public class RabbitConfig {
     @Bean
     Queue atualizarPermissaoFeederFailureMq() {
         return QueueBuilder.durable(atualizarPermissaoFeederFailureMq).build();
+    }
+
+    @Bean
+    Queue usuarioCadastroSocioPrincipalSuccessMq() {
+        return new Queue(usuarioCadastroSocioPrincipalSuccessMq, false);
     }
 
     @Bean
@@ -312,6 +312,12 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding usuarioCadastroSocioPrincipalSuccessBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroSocioPrincipalSuccessMq()).to(exchange)
+            .with(usuarioCadastroSocioPrincipalSuccessMq);
+    }
+
+    @Bean
     public Binding atualizarPermissaoFeederBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoFeederMq()).to(exchange).with(atualizarPermissaoFeederMq);
     }
@@ -320,12 +326,6 @@ public class RabbitConfig {
     public Binding atualizarPermissaoFeederFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoFeederFailureMq())
             .to(exchange).with(atualizarPermissaoFeederFailureMq);
-    }
-
-    @Bean
-    public Binding usuarioCadastroSocioPrincipalSuccessBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioCadastroSocioPrincipalSuccessMq()).to(exchange)
-            .with(usuarioCadastroSocioPrincipalSuccessMq);
     }
 
     @Bean

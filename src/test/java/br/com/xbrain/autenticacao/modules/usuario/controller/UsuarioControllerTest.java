@@ -127,6 +127,20 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    public void getUsuarioVendedorById_deveRetornarUsuariosPorIds() throws Exception {
+        mvc.perform(get("/api/usuarios/vendedores")
+            .param("ids","100,101")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].email", is("ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].email", is("HELPDESK@XBRAIN.COM.BR")));
+    }
+
+    @Test
     public void deveRetornarUsuarioPorIdEVerificarPermissoes() throws Exception {
         mvc.perform(get("/api/usuarios/100")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
