@@ -52,9 +52,4 @@ public class SubClusterController {
     public List<SubClusterDto> getAllSubclustersByUsuarioAutenticado() {
         return service.getAllSubclustersByUsuarioAutenticado();
     }
-
-    @GetMapping("/{subclusterId}/completo")
-    public SubClusterDto findByIdCompleto(@PathVariable Integer subclusterId) {
-        return service.findByIdCompleto(subclusterId);
-    }
 }

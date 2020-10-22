@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Grupo;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class GrupoDto {
     private Integer id;
     private String nome;
     private RegionalDto regional;
+    private ESituacao situacao;
 
     public GrupoDto(Integer id, String nome) {
         this.id = id;

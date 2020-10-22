@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import helpers.Usuarios;
-import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -114,22 +114,5 @@ public class SubClusterControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(245)))
                 .andExpect(jsonPath("$[0].nome", is("ABCDM")));
-    }
-
-    @Test
-    @SneakyThrows
-    public void findByIdCompleto_deveRetornarSubclusterDto_quandoBuscarPeloSubclusterId() {
-        mvc.perform(get(API_SUBCLUSTER + "/100/completo")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", equalTo(100)))
-            .andExpect(jsonPath("$.nome", equalTo("REMOTO - NORTE MG")))
-            .andExpect(jsonPath("$.cluster.id", equalTo(22)))
-            .andExpect(jsonPath("$.cluster.nome", equalTo("NORTE MG")))
-            .andExpect(jsonPath("$.cluster.grupo.id", equalTo(6)))
-            .andExpect(jsonPath("$.cluster.grupo.nome", equalTo("MINAS GERAIS")))
-            .andExpect(jsonPath("$.cluster.grupo.regional.id", equalTo(1)))
-            .andExpect(jsonPath("$.cluster.grupo.regional.nome", equalTo("LESTE")));
     }
 }

@@ -61,11 +61,6 @@ public class SubClusterServiceTest {
                 .isEmpty();
     }
 
-    @Test
-    public void findByIdCompleto_deveRetornarUmSubclusterDto_quandoBuscarPeloSubclusterId() {
-        assertThat(subClusterServiceterService.findByIdCompleto(100)).isEqualTo(umSubclusterDto());
-    }
-
     private SubClusterDto umSubclusterDto() {
         return SubClusterDto.builder()
             .cluster(ClusterDto.builder()

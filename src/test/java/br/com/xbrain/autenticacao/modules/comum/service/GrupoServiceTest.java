@@ -82,6 +82,7 @@ public class GrupoServiceTest {
         grupoDto.setId(1);
         grupoDto.setNome("CENTRO-OESTE");
         grupoDto.setRegional(umaRegionalDto());
+        grupoDto.setSituacao(ESituacao.A);
         return grupoDto;
     }
 

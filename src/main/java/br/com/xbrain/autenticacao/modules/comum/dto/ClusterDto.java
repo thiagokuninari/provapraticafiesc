@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Cluster;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ public class ClusterDto {
     private Integer id;
     private String nome;
     private GrupoDto grupo;
+    private ESituacao situacao;
 
     public ClusterDto(Integer id, String nome) {
         this.id = id;

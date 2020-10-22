@@ -78,6 +78,7 @@ public class ClusterServiceTest {
         clusterDto.setId(1);
         clusterDto.setNome("PORTO VELHO");
         clusterDto.setGrupo(umGrupoDto());
+        clusterDto.setSituacao(ESituacao.A);
         return clusterDto;
     }
 
@@ -86,6 +87,7 @@ public class ClusterServiceTest {
             .id(1)
             .nome("CENTRO-OESTE")
             .regional(umaRegionalDto())
+            .situacao(ESituacao.A)
             .build();
     }
 

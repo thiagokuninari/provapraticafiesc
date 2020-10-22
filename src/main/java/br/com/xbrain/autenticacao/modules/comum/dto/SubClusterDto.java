@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,12 +20,14 @@ public class SubClusterDto {
     private Integer id;
     private String nome;
     private ClusterDto cluster;
+    private ESituacao situacao;
 
     public static SubClusterDto of(SubCluster subCluster) {
         return SubClusterDto.builder()
             .id(subCluster.getId())
             .nome(subCluster.getNomeComMarca())
             .cluster(getCluster(subCluster))
+            .situacao(subCluster.getSituacao())
             .build();
     }
 
