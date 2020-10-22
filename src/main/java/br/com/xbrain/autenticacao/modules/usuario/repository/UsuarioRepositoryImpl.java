@@ -786,8 +786,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo) {
-        return jdbcTemplate.query("SELECT C.CODIGO, U.ID, "
-                + "U.NOME "
+        return jdbcTemplate.query("SELECT U.ID, U.NOME "
                 + "FROM USUARIO_HIERARQUIA UH "
                 + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                 + "JOIN CARGO C ON C.ID = U.FK_CARGO "
