@@ -704,35 +704,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findSupervidoresDisponiveisParaSite(Predicate sitePredicate) {
-        var usuarioSelect = new QUsuario("usuario");
-        return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
-            .from(usuario, usuario)
-            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.cargo.codigo.eq(SUPERVISOR_OPERACAO))
-                .and(usuario.id.notIn(select(usuarioSelect.id)
-                    .from(site)
-                    .where(sitePredicate)
-                    .innerJoin(site.supervisores, usuarioSelect)
-                ))
-            ).fetch();
-    }
+    public List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate,
+                                                                                    CodigoCargo codigoCargo) {
+        var usuarioSupervisor = new QUsuario("usuario");
+        var usuarioCoordenador = new QUsuario("usuario");
 
-    @Override
-    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisParaSite(Predicate sitePredicate) {
-        var usuarioSelect = new QUsuario("usuario");
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
-                .and(usuario.id.notIn(select(usuarioSelect.id)
+                .and(usuario.id.notIn(select(usuarioCoordenador.id)
                     .from(site)
-                    .where(sitePredicate)
-                    .innerJoin(site.coordenadores, usuarioSelect)
-                ))
-            ).fetch();
+                    .join(site.coordenadores, usuarioCoordenador)
+                    .where(sitePredicate)))
+                .and(usuario.id.notIn(select(usuarioSupervisor.id)
+                    .from(site)
+                    .join(site.supervisores, usuarioSupervisor)
+                    .where(sitePredicate)))
+                .and(usuario.cargo.codigo.eq(codigoCargo)))
+            .fetch();
     }
 
     @Override
@@ -792,5 +782,39 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.nome.asc())
             .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo) {
+        return jdbcTemplate.query("SELECT C.CODIGO, U.ID, "
+                + "U.NOME "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "JOIN USUARIO_CANAL UC ON UC.FK_USUARIO = U.ID "
+                + "WHERE UC.CANAL = :canal "
+                + "AND C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR = :usuarioId "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId)
+                .addValue("canal", ECanal.ATIVO_PROPRIO.name())
+                .addValue("cargo", cargo.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR = (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("siteId", siteId)
+                .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
     }
 }

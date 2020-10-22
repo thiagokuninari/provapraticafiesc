@@ -64,11 +64,6 @@ public class SiteController {
         service.inativar(id);
     }
 
-    @PutMapping("{id}/ativar")
-    public void ativar(@PathVariable Integer id) {
-        service.ativar(id);
-    }
-
     @GetMapping("estados-disponiveis")
     public List<SelectResponse> buscarEstadosDisponiveis(Integer siteIgnoradoId) {
         return service.buscarEstadosNaoAtribuidosEmSites(siteIgnoradoId);

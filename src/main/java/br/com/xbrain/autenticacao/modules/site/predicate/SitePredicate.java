@@ -19,12 +19,11 @@ public class SitePredicate extends PredicateBase {
         if (nonNull(id)) {
             builder.and(site.id.eq(id));
         }
-
         return this;
     }
 
     public SitePredicate ignorarSite(Integer id) {
-        if (nonNull(id)) {
+        if (!isEmpty(id)) {
             builder.and(site.id.ne(id));
         }
         return this;

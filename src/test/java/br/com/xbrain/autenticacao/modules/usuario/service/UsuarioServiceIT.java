@@ -870,28 +870,4 @@ public class UsuarioServiceIT {
                 tuple(240, "VENDEDOR OPERACAO 3")
             );
     }
-
-    @Test
-    public void listaSupervisor_deveRetornarListVazia_quandoNaoExistirSupervidoresDisponiveis()  {
-        assertThat(usuarioService.getSupervidoresSemSite(null)).hasSize(0);
-    }
-
-    @Test
-    public void listaCoordenador_deveRetornarListVazia_quandoNaoExistirCoordenadoresDisponiveis()  {
-        assertThat(usuarioService.getCoordenadoresSemSite(null)).hasSize(0);
-    }
-
-    @Test
-    public void retornaSupervidores_deveRetornarSupervidoresDisponiveisEVinculadosAoSite_quandoSolicitarComSiteIdParaEditar() {
-        assertThat(usuarioService.getSupervidoresSemSite(2))
-            .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
-            .contains(tuple(11123, "Supervisor operacao ativo local"));
-    }
-
-    @Test
-    public void retornaCoordenadores_deveRetornarCoordenadoresDisponiveisEVinculadosAoSite_quandoSolicitarComSiteIdParaEditar() {
-        assertThat(usuarioService.getCoordenadoresSemSite(1))
-            .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
-            .contains(tuple(11122, "Coordenador operacao ativo local"));
-    }
 }
