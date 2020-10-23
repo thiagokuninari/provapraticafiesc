@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.dto;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,12 @@ public class SiteSupervisorResponse {
     public static SiteSupervisorResponse of(Usuario usuarioSupervisor) {
         var supervisorResponse = new SiteSupervisorResponse();
         BeanUtils.copyProperties(usuarioSupervisor, supervisorResponse);
+        return supervisorResponse;
+    }
+
+    public static SiteSupervisorResponse of(UsuarioSubordinadoDto usuario) {
+        var supervisorResponse = new SiteSupervisorResponse();
+        BeanUtils.copyProperties(usuario, supervisorResponse);
         return supervisorResponse;
     }
 }

@@ -19,7 +19,13 @@ public class SitePredicate extends PredicateBase {
         if (nonNull(id)) {
             builder.and(site.id.eq(id));
         }
+        return this;
+    }
 
+    public SitePredicate ignorarSite(Integer id) {
+        if (!isEmpty(id)) {
+            builder.and(site.id.ne(id));
+        }
         return this;
     }
 
@@ -60,6 +66,14 @@ public class SitePredicate extends PredicateBase {
         if (!isEmpty(usuarioId)) {
             builder.and(site.coordenadores.any().id.eq(usuarioId))
                 .or(site.supervisores.any().id.eq(usuarioId));
+        }
+        return this;
+    }
+
+    public SitePredicate comCoordenadoresOuSupervisores(List<Integer> coordenadoresOuSupervidoresIds) {
+        if (!isEmpty(coordenadoresOuSupervidoresIds)) {
+            builder.and(site.coordenadores.any().id.in(coordenadoresOuSupervidoresIds))
+                .or(site.supervisores.any().id.in(coordenadoresOuSupervidoresIds));
         }
         return this;
     }

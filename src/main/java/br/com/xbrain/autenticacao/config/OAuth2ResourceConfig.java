@@ -31,7 +31,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
-            "/api/usuarios/usuario-funil-prospeccao"
+            "/api/usuarios/usuario-funil-prospeccao",
+            "/api/sites/{id}"
         };
 
         http
@@ -61,6 +62,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
                 CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
             .anyRequest().authenticated();
     }
 

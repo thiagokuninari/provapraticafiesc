@@ -11,13 +11,13 @@ public class CargoTest {
 
     @Test
     public void hasPermissaoSobreOCanal_true_quandoHouverOCanalTestado() {
-        var cargo = umCargoComCanais(ECanal.AGENTE_AUTORIZADO, ECanal.ATP);
+        var cargo = umCargoComCanais(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
         assertThat(cargo.hasPermissaoSobreOCanal(ECanal.AGENTE_AUTORIZADO)).isTrue();
     }
 
     @Test
     public void hasPermissaoSobreOCanal_false_quandoNaoHouverOCanalTestado() {
-        var cargo = umCargoComCanais(ECanal.D2D_PROPRIO, ECanal.ATP);
+        var cargo = umCargoComCanais(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO);
         assertThat(cargo.hasPermissaoSobreOCanal(ECanal.AGENTE_AUTORIZADO)).isFalse();
     }
 

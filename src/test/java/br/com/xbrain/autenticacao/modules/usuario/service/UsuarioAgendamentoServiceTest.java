@@ -2,10 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
@@ -21,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Map;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +50,8 @@ public class UsuarioAgendamentoServiceTest {
     private CargoService cargoService;
     @MockBean
     private EquipeVendasService equipeVendasService;
+    @MockBean
+    private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Autowired
     private UsuarioAgendamentoService usuarioAgendamentoService;
 
@@ -260,5 +266,43 @@ public class UsuarioAgendamentoServiceTest {
                 .build());
         usuarioAutenticado.setNome("MARCOS AUGUSTO DA SILVA SANTOS");
         return usuarioAutenticado;
+    }
+
+    @Test
+    public void getUsuariosParaDistribuicaoByEquipeVendaId_listaUsuarioDistribuicaoResponse_quandoSolicitado() {
+        Map<String, Object> filtros = Map.of("equipeVendaId", 100, "ativo", true);
+
+        when(equipeVendasUsuarioService.getAll(filtros))
+            .thenReturn(umaListaUsuariosDaEquipeVenda());
+
+        var actual = usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(100);
+
+        var expected = List.of(
+            UsuarioDistribuicaoResponse.builder()
+                .id(1)
+                .nome("RENATO")
+                .build(),
+            UsuarioDistribuicaoResponse.builder()
+                .id(2)
+                .nome("JOAO")
+                .build()
+        );
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {
+        return List.of(
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(1)
+                .usuarioNome("RENATO")
+                .equipeVendaId(10)
+                .build(),
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(2)
+                .usuarioNome("JOAO")
+                .equipeVendaId(10)
+                .build()
+        );
     }
 }

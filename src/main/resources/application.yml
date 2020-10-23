@@ -195,13 +195,19 @@ app-config:
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
-      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      url: http://api-dev.conexaoclarobrasil.com.br/equipe-venda
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    gestao:
+      #url: http://localhost:8091
+      url: http://gestao-api-dev.conexaoclarobrasil.com.br
+    notificacao-api:
+      #url: http://localhost:8081
+      url: http://192.168.50.1:6595
 
 flyway:
   enabled: true
@@ -232,6 +238,9 @@ zuul:
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
+    gestao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gestao.url}
 
   host:
     connect-timeout-millis: 1800000

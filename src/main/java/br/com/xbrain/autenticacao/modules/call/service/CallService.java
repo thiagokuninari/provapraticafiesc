@@ -62,4 +62,22 @@ public class CallService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public boolean consultarStatusUsoRamalByUsuarioAutenticado() {
+        try {
+            return callClient.consultarStatusUsoRamalByUsuarioAutenticado();
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            log.warn("Erro ao tentar consultar status do ramal pelo usuário autenticado");
+            throw new IntegracaoException(ex, CallService.class.getName(), EErrors.ERRO_CONSULTAR_STATUS_RAMAL_USUARIO);
+        }
+    }
+
+    public void liberarRamalUsuarioAutenticado() {
+        try {
+            callClient.liberarRamalUsuarioAutenticado();
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            log.warn("Erro ao tentar liberar o ramal do usuário autenticado");
+            throw new IntegracaoException(ex, CallService.class.getName(), EErrors.ERRO_LIBERAR_RAMAL_USUARIO);
+        }
+    }
 }

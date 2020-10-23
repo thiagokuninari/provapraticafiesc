@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -63,7 +64,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Transactional
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
-    "classpath:/tests_usuario_remanejamento.sql"})
+    "classpath:/tests_usuario_remanejamento.sql", "classpath:/tests_editar_sites.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -104,6 +105,8 @@ public class UsuarioServiceIT {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
+    @Autowired
+    private SiteRepository siteRepository;
 
     @Before
     public void setUp() {

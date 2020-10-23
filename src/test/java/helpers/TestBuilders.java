@@ -1,6 +1,7 @@
 package helpers;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
@@ -8,14 +9,19 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static java.util.Collections.singleton;
 
 public class TestBuilders {
 
@@ -129,11 +135,47 @@ public class TestBuilders {
         );
     }
 
+    public static List<Site> umaListaDeSitesVinculadoAUsuarioComCargo(Integer id, String nome, Usuario usuarioVinculado) {
+        return List.of(
+                umSiteVinculado(id, nome, usuarioVinculado)
+        );
+    }
+
     public static Site umSite(Integer id, String nome, ETimeZone timeZone) {
         return Site.builder()
             .id(id)
             .nome(nome)
             .timeZone(timeZone)
             .build();
+    }
+
+    public static Site umSiteVinculado(Integer id, String nome, Usuario usuarioVinculado) {
+        return Site.builder()
+                .id(id)
+                .nome(nome)
+                .supervisores(singleton(usuarioVinculado))
+                .timeZone(BRT)
+                .build();
+    }
+
+    public static Usuario umUsuario(Integer id, CodigoCargo codigoCargo) {
+        return Usuario.builder()
+                .id(id)
+                .cargo(umCargoOperacao(codigoCargo))
+                .nome("UM USUARIO " + codigoCargo.name())
+                .build();
+
+    }
+
+    public static Cargo umCargoOperacao(CodigoCargo codigoCargo) {
+        return Cargo.builder()
+                .id(1)
+                .codigo(codigoCargo)
+                .nivel(Nivel.builder()
+                        .codigo(CodigoNivel.OPERACAO)
+                        .build())
+                .nome(codigoCargo.name())
+                .situacao(ESituacao.A)
+                .build();
     }
 }

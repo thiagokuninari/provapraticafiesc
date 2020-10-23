@@ -74,6 +74,10 @@ public class Site {
 
     public void inativar() {
         situacao = ESituacao.I;
+        supervisores.clear();
+        coordenadores.clear();
+        cidades.clear();
+        estados.clear();
     }
 
     @PrePersist

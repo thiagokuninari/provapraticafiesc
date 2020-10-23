@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -117,6 +118,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate ignorarXbrain(Boolean ignorar) {
         if (ignorar) {
             builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.XBRAIN));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCargoCodigo(CodigoCargo cargo) {
+        if (nonNull(cargo)) {
+            builder.and(usuario.cargo.codigo.eq(cargo));
         }
         return this;
     }
@@ -257,6 +265,11 @@ public class UsuarioPredicate {
         if (!isEmpty(canais)) {
             builder.and(usuario.canais.any().in(canais));
         }
+        return this;
+    }
+
+    public UsuarioPredicate daHierarquia(List<Integer> ids) {
+        builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
         return this;
     }
 

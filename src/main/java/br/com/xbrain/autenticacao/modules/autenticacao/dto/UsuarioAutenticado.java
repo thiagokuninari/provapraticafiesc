@@ -45,6 +45,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
+    private Integer siteId;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -155,5 +156,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean isOperadorTelevendasAtivoLocal() {
+        return cargoCodigo.equals(CodigoCargo.OPERACAO_TELEVENDAS)
+                && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 }

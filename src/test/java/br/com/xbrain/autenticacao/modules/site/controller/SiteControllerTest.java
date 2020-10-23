@@ -4,12 +4,15 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -24,6 +27,7 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,6 +46,8 @@ public class SiteControllerTest {
     private MockMvc mvc;
     @Autowired
     private SiteRepository repository;
+    @MockBean
+    private UsuarioService usuarioService;
 
     @Test
     @SneakyThrows
@@ -158,6 +164,20 @@ public class SiteControllerTest {
     @SneakyThrows
     public void getAllSupervisoresBySiteId_deveRetornarOsSupervisoresDeAcordoComOSite() {
         mvc.perform(get(API_URI + "/{id}/supervisores", 101)
+            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(102)))
+            .andExpect(jsonPath("$[0].nome", is("Supervisor Operação")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllSupervisoresByHierarquia_deveRetornarSupervisores_quandoRespeitarSiteAndUsuarioSuperiorId() {
+        when(usuarioService.getIdsSubordinadosDaHierarquia(300, CodigoCargo.SUPERVISOR_OPERACAO.name()))
+            .thenReturn(List.of(400, 102));
+
+        mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 300)
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
@@ -338,18 +358,6 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void ativarSite_siteAtivo_quandoSiteInativo() {
-        mvc.perform(put(API_URI + "/103/ativar")
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk());
-
-        assertThat(repository.findById(103).orElseThrow())
-            .extracting("situacao")
-            .contains(ESituacao.A);
-    }
-
-    @Test
-    @SneakyThrows
     public void inativarSite_siteInativo_quandoSiteAtivo() {
         mvc.perform(put(API_URI + "/100/inativar")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
@@ -369,5 +377,14 @@ public class SiteControllerTest {
             .supervisoresIds(List.of(300))
             .cidadesIds(List.of(4498))
             .build();
+    }
+
+    @Test
+    public void getSiteBySupervisorId_siteSp_quandoBuscarSitePeloSupervisorId() throws Exception {
+        mvc.perform(get(API_URI + "/supervisor/{supervisorId}", 102)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", equalTo(100)))
+            .andExpect(jsonPath("$.nome", equalTo("São Paulo")));
     }
 }

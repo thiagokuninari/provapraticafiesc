@@ -39,6 +39,12 @@ public class SiteController {
         return service.getAllSupervisoresBySiteId(id);
     }
 
+    @GetMapping("{id}/supervisores/hierarquia/{usuarioSuperiorId}")
+    public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(@PathVariable Integer id,
+                                                                       @PathVariable Integer usuarioSuperiorId) {
+        return service.getAllSupervisoresByHierarquia(id, usuarioSuperiorId);
+    }
+
     @GetMapping("{id}")
     public SiteResponse getById(@PathVariable Integer id) {
         return SiteResponse.of(service.findById(id), true);
@@ -62,11 +68,6 @@ public class SiteController {
     @PutMapping("{id}/inativar")
     public void inativar(@PathVariable Integer id) {
         service.inativar(id);
-    }
-
-    @PutMapping("{id}/ativar")
-    public void ativar(@PathVariable Integer id) {
-        service.ativar(id);
     }
 
     @GetMapping("estados-disponiveis")
@@ -94,5 +95,10 @@ public class SiteController {
     @PutMapping("remover-discadora")
     public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.removerDiscadora(request.getSiteId());
+    }
+
+    @GetMapping("/supervisor/{supervisorId}")
+    public SiteResponse getSiteBySupervisorId(@PathVariable Integer supervisorId) {
+        return service.getSiteBySupervisorId(supervisorId);
     }
 }

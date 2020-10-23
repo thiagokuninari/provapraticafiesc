@@ -9,32 +9,36 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
-import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
-import static java.math.BigInteger.ZERO;
+import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -46,9 +50,6 @@ public class SiteService {
     private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
-    private static final String USUARIO_NAO_POSSUI_SITE_VICULADO =
-            "O Usuário não possui site viculado.";
-
     @Autowired
     private SiteRepository siteRepository;
     @Autowired
@@ -60,7 +61,7 @@ public class SiteService {
     @Autowired
     private CallService callService;
     @Autowired
-    private FuncionalidadeService funcionalidadeService;
+    private UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -82,15 +83,50 @@ public class SiteService {
         return siteRepository.findAll(filtrarPorUsuario(filtros.toPredicate()), pageRequest);
     }
 
-    private Predicate filtrarPorUsuario(SitePredicate filtros) {
+    public Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
-        if (usuarioAutenticado.getNivelCodigoEnum().equals(CodigoNivel.OPERACAO)
-            && !usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO)) {
-            filtros.ignorarTodos();
+        if (!usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO) && !usuarioAutenticado.isXbrainOuMso()) {
+            return filtros.ignorarTodos().build();
         }
-
+        setFiltrosHierarquia(usuarioAutenticado.getId(), usuarioAutenticado.getCargoCodigo(),
+            usuarioAutenticado.getDepartamentoCodigo(), filtros);
         return filtros.build();
+    }
+
+    public void setFiltrosHierarquia(Integer usuarioId, CodigoCargo codigoCargo, CodigoDepartamento codigoDepartamento,
+                                     SitePredicate filtros) {
+
+        var hierarquia = getHierarquia(codigoCargo, codigoDepartamento);
+
+        switch (hierarquia) {
+            case TODOS_VISUALIZAR_EDITAR:
+                break;
+            case VISUALIZAR_EDITAR_SUBORDINADOS:
+                filtros.comCoordenadoresOuSupervisores(getSubordinadosAbaixoDiretor(usuarioId));
+                break;
+            case VISUALIZAR_DE_SUPERIORES:
+                filtros.comCoordenadoresOuSupervisores(getSuperioresDoUsuario(usuarioId));
+                break;
+            case VISUALIZAR_PROPRIO:
+                filtros.comCoordenadoresOuSupervisor(usuarioId);
+                break;
+            default:
+                filtros.ignorarTodos();
+        }
+    }
+
+    public List<Integer> getSuperioresDoUsuario(Integer usuarioId) {
+        return usuarioService.getSuperioresDoUsuario(usuarioId)
+                .stream()
+                .map(UsuarioHierarquiaResponse::getId)
+                .collect(toList());
+    }
+
+    public List<Integer> getSubordinadosAbaixoDiretor(Integer usuarioId) {
+        return usuarioService.getSubordinadosDoUsuario(usuarioId)
+                .stream()
+                .map(UsuarioSubordinadoDto::getId)
+                .collect(toList());
     }
 
     private Predicate filtrarPorUsuarioXbrainOuMso(UsuarioAutenticado usuarioAutenticado) {
@@ -114,6 +150,18 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
+            .map(SiteSupervisorResponse::of)
+            .collect(toList());
+    }
+
+    public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
+        var supervisoresSubordinadosIds =
+            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, CodigoCargo.SUPERVISOR_OPERACAO.name());
+
+        return findById(siteId)
+            .getSupervisores()
+            .stream()
+            .filter(u -> supervisoresSubordinadosIds.contains(u.getId()))
             .map(SiteSupervisorResponse::of)
             .collect(toList());
     }
@@ -148,13 +196,6 @@ public class SiteService {
         var site = findById(id);
         if (Objects.equals(site.getSituacao(), A)) {
             site.inativar();
-        }
-    }
-
-    public void ativar(Integer id) {
-        var site = findById(id);
-        if (Objects.equals(site.getSituacao(), I)) {
-            site.ativar();
         }
     }
 
@@ -193,7 +234,7 @@ public class SiteService {
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
         siteRepository.findFirstByCidadesIdInAndIdNot(siteRequest.getCidadesIds(),
-            Optional.ofNullable(siteRequest.getId()).orElse(ZERO.intValue()))
+            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
             .ifPresent(site -> {
                 throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
             });
@@ -215,19 +256,13 @@ public class SiteService {
     }
 
     public List<SelectResponse> getSitesPorPermissao(Usuario usuario) {
-        var permissoesUsuarioSessao = funcionalidadeService.getPermissoes(usuario);
-        if (permissoesUsuarioSessao.contains(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_2044.getRole()))) {
-            return this.getAllAtivos(new SiteFiltros());
-        }
-        var sites = new ArrayList<SelectResponse>();
-        Optional.ofNullable(usuario.getSite())
-            .ifPresentOrElse(site -> {
-                sites.add(SelectResponse.of(site.getId(), site.getNome()));
-            }, () -> {
-                    log.info(USUARIO_NAO_POSSUI_SITE_VICULADO);
-                }
-            );
-        return sites;
+
+        var sitePredicate = new SitePredicate();
+        setFiltrosHierarquia(usuario.getId(), usuario.getCargoCodigo(), usuario.getDepartamentoCodigo(), sitePredicate);
+        return siteRepository.findBySituacaoAtiva(sitePredicate.build())
+            .stream()
+            .map(site -> SelectResponse.of(site.getId(), site.getNome()))
+            .collect(toList());
     }
 
     public void adicionarDiscadora(Integer discadoraId, List<Integer> sites) {
@@ -243,4 +278,7 @@ public class SiteService {
         callService.cleanCacheableSiteAtivoProprio();
     }
 
+    public SiteResponse getSiteBySupervisorId(Integer supervisorId) {
+        return SiteResponse.of(siteRepository.findBySupervisorId(supervisorId));
+    }
 }
