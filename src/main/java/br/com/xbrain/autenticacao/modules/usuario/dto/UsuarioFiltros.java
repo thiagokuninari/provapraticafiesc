@@ -32,6 +32,7 @@ public class UsuarioFiltros {
     private Integer organizacaoId;
     private List<CodigoNivel> codigosNiveis;
     private List<CodigoCargo> codigosCargos;
+    private List<Integer> aasIds;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {

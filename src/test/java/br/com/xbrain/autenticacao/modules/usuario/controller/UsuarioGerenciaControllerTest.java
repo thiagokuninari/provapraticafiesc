@@ -556,13 +556,17 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarPorAaIdEFiltros_deveRetornarOk_quandoSolicitado() {
-        mvc.perform(get(API_URI + "/por-agente-autorizado/100")
+    public void buscarPorAasIdsEFiltros_deveRetornarOk_quandoSolicitado() {
+        var filtros = new UsuarioFiltros();
+        filtros.setAasIds(List.of(1));
+
+        mvc.perform(get(API_URI + "/por-agentes-autorizados")
+            .param("aasIds", "1")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService, times(1)).buscarPorAaIdEFiltros(100, new UsuarioFiltros());
+        verify(usuarioService, times(1)).buscarPorAasIdsEFiltros(filtros);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

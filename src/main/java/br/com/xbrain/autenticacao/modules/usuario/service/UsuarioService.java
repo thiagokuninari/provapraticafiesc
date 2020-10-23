@@ -102,6 +102,8 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
+    private static ValidacaoException AAS_IDS_OBRIGATORIO
+        = new ValidacaoException("O campo aasIds é obrigatório.");
 
     @Autowired
     @Setter
@@ -247,17 +249,24 @@ public class UsuarioService {
         return pages;
     }
 
-    public List<UsuarioConsultaDto> buscarPorAaIdEFiltros(Integer aaId, UsuarioFiltros filtros) {
-        return Optional.ofNullable(aaId)
-            .map(agenteAutorizadoId -> buscarUsuariosIdsPorAaId(agenteAutorizadoId, true))
-            .filter(usuariosIdsAa -> !isEmpty(usuariosIdsAa))
-            .map(usuariosIdsAa -> filtros.toPredicate().comIds(usuariosIdsAa).build())
+    public List<UsuarioConsultaDto> buscarPorAasIdsEFiltros(UsuarioFiltros filtros) {
+        validarAasIds(filtros.getAasIds());
+
+        return filtros.getAasIds()
+            .stream()
+            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, true))
+            .filter(usuariosIds -> !isEmpty(usuariosIds))
+            .map(usuariosIds -> filtros.toPredicate().comIds(usuariosIds).build())
             .map(this::buscarTodosPorPredicate)
-            .map(usuarios -> usuarios
-                .stream()
-                .map(UsuarioConsultaDto::convertFrom)
-                .collect(Collectors.toList()))
-            .orElse(List.of());
+            .flatMap(List::stream)
+            .map(UsuarioConsultaDto::convertFrom)
+            .collect(Collectors.toList());
+    }
+
+    private void validarAasIds(List<Integer> aasIds) {
+        if (isEmpty(aasIds)) {
+            throw AAS_IDS_OBRIGATORIO;
+        }
     }
 
     private List<Integer> buscarUsuariosIdsPorAaId(Integer aaId, Boolean buscarInativos) {

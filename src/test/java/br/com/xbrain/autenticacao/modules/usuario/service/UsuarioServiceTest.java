@@ -595,23 +595,32 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarPorAaIdEFiltros_deveRetornarListaVazia_quandoNaoHouverUsuariosDoAgenteAutorizado() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(100), eq(true)))
+    public void buscarPorAasIdsEFiltros_deveDispararException_quandoAasIdsVazio() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.buscarPorAasIdsEFiltros(new UsuarioFiltros()))
+            .withMessage("O campo aasIds é obrigatório.");
+
+        verify(repository, never()).findAll(umUsuarioPredicate().build());
+    }
+
+    @Test
+    public void buscarPorAasIdsEFiltros_deveRetornarListaVazia_quandoNaoHouverUsuariosDosAgentesAutorizados() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(true)))
             .thenReturn(List.of());
 
-        assertThat(service.buscarPorAaIdEFiltros(100, new UsuarioFiltros()))
+        assertThat(service.buscarPorAasIdsEFiltros(umUsuarioFiltros()))
             .isEmpty();
 
         verify(repository, never()).findAll(umUsuarioPredicate().build());
     }
 
     @Test
-    public void buscarPorAaIdEFiltros_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDoAgenteAutorizado() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(100), eq(true)))
+    public void buscarPorAasIdsEFiltros_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDosAgentesAutorizados() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(true)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(repository.findAll(eq(umUsuarioPredicate().build()))).thenReturn(List.of(umUsuarioCompleto()));
 
-        assertThat(service.buscarPorAaIdEFiltros(100, new UsuarioFiltros()))
+        assertThat(service.buscarPorAasIdsEFiltros(umUsuarioFiltros()))
             .hasSize(1)
             .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
                 "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
@@ -683,5 +692,13 @@ public class UsuarioServiceTest {
                 .nome("EMPRESA UM")
                 .build()))
             .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltros() {
+        var filtros = new UsuarioFiltros();
+
+        filtros.setAasIds(List.of(1));
+
+        return filtros;
     }
 }
