@@ -53,6 +53,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -702,6 +704,28 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate,
+                                                                                    CodigoCargo codigoCargo) {
+        var usuarioSupervisor = new QUsuario("usuario");
+        var usuarioCoordenador = new QUsuario("usuario");
+
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(usuario.id.notIn(select(usuarioCoordenador.id)
+                    .from(site)
+                    .join(site.coordenadores, usuarioCoordenador)
+                    .where(sitePredicate)))
+                .and(usuario.id.notIn(select(usuarioSupervisor.id)
+                    .from(site)
+                    .join(site.supervisores, usuarioSupervisor)
+                    .where(sitePredicate)))
+                .and(usuario.cargo.codigo.eq(codigoCargo)))
+            .fetch();
+    }
+
+    @Override
     public List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds) {
         return new JPAQueryFactory(entityManager)
             .select(usuario.id)
@@ -758,5 +782,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.nome.asc())
             .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "JOIN USUARIO_CANAL UC ON UC.FK_USUARIO = U.ID "
+                + "WHERE UC.CANAL = :canal "
+                + "AND C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR = :usuarioId "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId)
+                .addValue("canal", ECanal.ATIVO_PROPRIO.name())
+                .addValue("cargo", cargo.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR = (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("siteId", siteId)
+                .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
     }
 }

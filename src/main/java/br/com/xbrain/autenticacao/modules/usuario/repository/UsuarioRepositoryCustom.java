@@ -109,4 +109,9 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 
+    List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate, CodigoCargo codigoCargo);
+
+    List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId);
 }

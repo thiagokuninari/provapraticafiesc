@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
+import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +79,13 @@ public class SiteRepositoryTest {
 
         assertThat(repository.findOne(100))
                 .hasFieldOrPropertyWithValue("discadoraId", 12);
+    }
+
+    @Test
+    public void ignoraSite_deveIgnorarSitePorId() {
+        var sitesComSiteIgnorado = repository.findAll(new SitePredicate().ignorarSite(100).build());
+        Assertions.assertThat(sitesComSiteIgnorado).extracting(Site::getId, Site::getNome)
+            .doesNotContain(Tuple.tuple(100, "São Paulo"));
     }
 
     @Test

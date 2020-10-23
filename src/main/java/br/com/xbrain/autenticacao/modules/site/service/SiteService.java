@@ -38,7 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
 import static java.util.stream.Collectors.toList;
 
@@ -197,13 +196,6 @@ public class SiteService {
         var site = findById(id);
         if (Objects.equals(site.getSituacao(), A)) {
             site.inativar();
-        }
-    }
-
-    public void ativar(Integer id) {
-        var site = findById(id);
-        if (Objects.equals(site.getSituacao(), I)) {
-            site.ativar();
         }
     }
 

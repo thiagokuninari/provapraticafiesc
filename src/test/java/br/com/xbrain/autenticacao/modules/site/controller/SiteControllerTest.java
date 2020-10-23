@@ -358,18 +358,6 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void ativarSite_siteAtivo_quandoSiteInativo() {
-        mvc.perform(put(API_URI + "/103/ativar")
-            .header("Authorization", getAccessToken(mvc, ADMIN)))
-            .andExpect(status().isOk());
-
-        assertThat(repository.findById(103).orElseThrow())
-            .extracting("situacao")
-            .contains(ESituacao.A);
-    }
-
-    @Test
-    @SneakyThrows
     public void inativarSite_siteInativo_quandoSiteAtivo() {
         mvc.perform(put(API_URI + "/100/inativar")
             .header("Authorization", getAccessToken(mvc, ADMIN)))

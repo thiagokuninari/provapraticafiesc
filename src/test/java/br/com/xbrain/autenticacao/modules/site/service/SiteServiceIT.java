@@ -56,8 +56,7 @@ public class SiteServiceIT {
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
-                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),
-                tuple(112, "Site Inativo", ETimeZone.FNT, ESituacao.I)
+                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
             );
     }
 
@@ -68,8 +67,7 @@ public class SiteServiceIT {
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
-                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),
-                tuple(112, "Site Inativo", ETimeZone.FNT, ESituacao.I)
+                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
             );
     }
 
@@ -80,8 +78,7 @@ public class SiteServiceIT {
         assertThat(siteService.getAll(new SiteFiltros(), new PageRequest()))
             .extracting(extract)
             .containsExactly(
-                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A),
-                tuple(112, "Site Inativo", ETimeZone.FNT, ESituacao.I)
+                tuple(110, "Rio Branco", ETimeZone.ACT, ESituacao.A)
             );
     }
 
@@ -188,6 +185,15 @@ public class SiteServiceIT {
             .hasSize(2)
             .extracting("label")
             .doesNotContain("Site Inativo");
+    }
+
+    @Test
+    public void inativarSite_deveRemoverSupervisoresCoordenadoresSitesEcidadesVinculados_quandoInativarSite() {
+        siteService.inativar(110);
+        var siteInativado = siteService.findById(110);
+        assertThat(siteInativado.getCoordenadores().isEmpty());
+        assertThat(siteInativado.getSupervisores().isEmpty());
+        assertThat(siteInativado.getSituacao().equals(ESituacao.I));
     }
 
     private Usuario umUsuario(Integer id, CodigoCargo codigoCargo, CodigoDepartamento departamento) {
