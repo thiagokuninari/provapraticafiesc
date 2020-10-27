@@ -17,27 +17,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.util.Collections;
 
-import static br.com.xbrain.autenticacao.config.EScopes.APP;
-import static br.com.xbrain.autenticacao.config.EScopes.AUTENTICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.PARCEIROS_ONLINE;
-import static br.com.xbrain.autenticacao.config.EScopes.VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_VENDAS;
-import static br.com.xbrain.autenticacao.config.EScopes.INTEGRACAO_BRSCAN;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.MAILING_IMPORTACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.EQUIPE_VENDA;
-import static br.com.xbrain.autenticacao.config.EScopes.CALL;
-import static br.com.xbrain.autenticacao.config.EScopes.DASHBOARD;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA_ECCP;
-import static br.com.xbrain.autenticacao.config.EScopes.CONTATO_CRN;
-import static br.com.xbrain.autenticacao.config.EScopes.CHAMADO;
-import static br.com.xbrain.autenticacao.config.EScopes.FUNIL_PROSPECCAO;
-import static br.com.xbrain.autenticacao.config.EScopes.DISCADORA;
-import static br.com.xbrain.autenticacao.config.EScopes.ASTERISK_URA;
-import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
-import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
-import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
+import static br.com.xbrain.autenticacao.config.EScopes.*;
 
 @Configuration
 @EnableAuthorizationServer
@@ -150,6 +130,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String clickToCallApiClient;
     @Value("${app-config.oauth-clients.click-to-call-api.secret}")
     private String clickToCallApiSecret;
+    @Value("${app-config.oauth-clients.solicitacao-pap-api.client}")
+    private String solicitacaoPapApiClient;
+    @Value("${app-config.oauth-clients.solicitacao-pap-api.secret}")
+    private String solicitacaoPapApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -312,6 +296,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(clickToCallApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CLICK_TO_CALL.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(solicitacaoPapApiClient)
+            .secret(solicitacaoPapApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SOLICITACAO_PAP.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
