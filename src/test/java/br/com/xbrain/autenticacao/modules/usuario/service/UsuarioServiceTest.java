@@ -31,6 +31,8 @@ import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -79,6 +81,8 @@ public class UsuarioServiceTest {
     private UsuarioCidadeRepository usuarioCidadeRepository;
     @Mock
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Captor
+    private ArgumentCaptor<Usuario> usuarioCaptor;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -169,6 +173,24 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository, atLeastOnce()).findAllAtivo();
         verify(notificacaoService, atLeastOnce())
             .enviarEmailDadosDeAcesso(argThat(arg -> arg.getNome().equals("Backoffice")), anyString());
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_deveRemoverCaracteresEspeciais() {
+        var usaurio = umUsuarioBackoffice();
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+
+        Assertions.assertThat(usaurio)
+            .extracting("cpf")
+            .containsExactly("097.238.645-92");
+
+        service.salvarUsuarioBackoffice(usaurio);
+
+        verify(repository, times(1)).save(usuarioCaptor.capture());
+        Assertions.assertThat(usuarioCaptor.getValue())
+            .extracting("cpf")
+            .containsExactly("09723864592");
     }
 
     @Test
@@ -388,6 +410,7 @@ public class UsuarioServiceTest {
     private Usuario umUsuario() {
         return Usuario.builder()
             .id(1)
+            .cpf("097.238.645-92")
             .nome("Seiya")
             .build();
     }
@@ -429,6 +452,7 @@ public class UsuarioServiceTest {
     private Usuario getUser(int usuarioId, Cargo cargo) {
         return Usuario.builder()
             .id(usuarioId)
+            .cpf("097.238.645-92")
             .cargo(cargo)
             .build();
     }
@@ -474,7 +498,7 @@ public class UsuarioServiceTest {
                 .codigoDepartamento(CodigoDepartamento.COMERCIAL)
                 .codigoEmpresas(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
                 .codigoNivel(CodigoNivel.OPERACAO)
-                .cpf("333.333.333-33")
+                .cpf("097.238.645-92")
                 .build());
     }
 
@@ -490,8 +514,8 @@ public class UsuarioServiceTest {
     private Usuario umUsuarioSuperior() {
         return Usuario.builder()
             .id(100)
-            .cpf("333.333.333-33")
             .telefone("43 3322-0000")
+            .cpf("097.238.645-92")
             .situacao(ESituacao.A)
             .cargo(umCargoSupervisorOperacao())
             .departamento(umDepartamentoComercial())

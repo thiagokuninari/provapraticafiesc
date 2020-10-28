@@ -292,6 +292,7 @@ public class UsuarioService {
                 new Configuracao(
                     usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
         }
+        usuario.removerCaracteresDoCpf();
         return UsuarioDto.of(repository.save(usuario));
     }
 
@@ -878,6 +879,7 @@ public class UsuarioService {
             usuario.setCargo(cargoRepository.findByCodigo(usuarioMqRequest.getCargo()));
             usuario.setDepartamento(departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento()));
             usuario.setAlterarSenha(Eboolean.V);
+            usuario.removerCaracteresDoCpf();
 
             String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
@@ -1432,6 +1434,7 @@ public class UsuarioService {
             Usuario usuario = repository.findByEmail(colaborador)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
             usuario.setSituacao(INATIVO);
+            usuario.removerCaracteresDoCpf();
             repository.save(usuario);
         });
     }

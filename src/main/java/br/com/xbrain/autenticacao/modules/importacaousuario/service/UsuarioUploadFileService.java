@@ -182,6 +182,7 @@ public class UsuarioUploadFileService {
 
     private void tratarUsuarioSalvo(Usuario usuario) {
         resetarSenhaUsuario(usuario);
+        usuario.removerCaracteresDoCpf();
         usuarioRepository.save(usuario);
     }
 
