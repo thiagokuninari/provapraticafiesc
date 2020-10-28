@@ -104,4 +104,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
 
     List<Usuario> findAllAtivosByNivelOperacaoCanalAa();
+
+    List<Integer> obterIdsPorIdOuUsuarioCadastroId(Integer id);
 }

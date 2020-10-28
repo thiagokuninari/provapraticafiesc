@@ -29,7 +29,6 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_I
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -254,21 +253,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(List<Integer> ids, int usuarioAutenticadoId) {
-        builder.and(usuario.id.in(
-            JPAExpressions
-                .select(usuario.id)
-                .from(usuario)
-                .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
-                .where(usuarioHierarquia.usuario.id.in(ids)
-                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId))
-                    .or(usuario.id.eq(usuarioAutenticadoId)))));
-        return this;
-    }
-
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
-        
+
         var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
         if (incluirProrio) {
             usuariosIds.add(usuario.getId());
@@ -297,9 +284,11 @@ public class UsuarioPredicate {
                 .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
-                usuario.getUsuario().getId());
+            comIds(Stream.of(
+                usuarioService.obterIdsPorIdOuUsuarioCadastroId(usuario.getUsuario().getId()),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList()));
 
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);

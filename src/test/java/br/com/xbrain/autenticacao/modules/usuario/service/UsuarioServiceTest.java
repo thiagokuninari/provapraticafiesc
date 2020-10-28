@@ -644,6 +644,23 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
     }
 
+    @Test
+    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        when(repository.obterIdsPorIdOuUsuarioCadastroId(eq(100))).thenReturn(List.of());
+
+        assertThat(service.obterIdsPorIdOuUsuarioCadastroId(1000))
+            .isEmpty();
+    }
+
+    @Test
+    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        when(repository.obterIdsPorIdOuUsuarioCadastroId(eq(100))).thenReturn(List.of(100, 200, 300));
+
+        assertThat(service.obterIdsPorIdOuUsuarioCadastroId(100))
+            .hasSize(3)
+            .containsExactly(100, 200, 300);
+    }
+
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
             .id(id)
