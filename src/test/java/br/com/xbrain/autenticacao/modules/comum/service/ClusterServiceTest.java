@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,6 +77,25 @@ public class ClusterServiceTest {
         ClusterDto clusterDto = new ClusterDto();
         clusterDto.setId(1);
         clusterDto.setNome("PORTO VELHO");
+        clusterDto.setGrupo(umGrupoDto());
+        clusterDto.setSituacao(ESituacao.A);
         return clusterDto;
+    }
+
+    GrupoDto umGrupoDto() {
+        return GrupoDto.builder()
+            .id(1)
+            .nome("CENTRO-OESTE")
+            .regional(umaRegionalDto())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    RegionalDto umaRegionalDto() {
+        return RegionalDto.builder()
+            .id(1)
+            .nome("LESTE")
+            .situacao(ESituacao.A)
+            .build();
     }
 }
