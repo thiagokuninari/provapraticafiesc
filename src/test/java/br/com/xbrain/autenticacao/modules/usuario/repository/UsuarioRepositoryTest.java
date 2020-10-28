@@ -139,15 +139,15 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
-        assertThat(repository.obterIdsPorIdOuUsuarioCadastroId(1000))
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(1000))
             .isEmpty();
     }
 
     @Test
-    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
-        assertThat(repository.obterIdsPorIdOuUsuarioCadastroId(100))
-            .hasSize(4)
-            .containsExactly(100, 200, 300, 400);
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(100))
+            .hasSize(3)
+            .containsExactly(200, 300, 400);
     }
 }

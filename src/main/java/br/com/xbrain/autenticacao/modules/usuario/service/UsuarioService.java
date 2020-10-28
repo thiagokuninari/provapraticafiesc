@@ -1662,7 +1662,7 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<Integer> obterIdsPorIdOuUsuarioCadastroId(Integer id) {
-        return repository.obterIdsPorIdOuUsuarioCadastroId(id);
+    public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
+        return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
     }
 }

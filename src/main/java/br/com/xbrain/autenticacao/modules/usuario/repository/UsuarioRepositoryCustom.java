@@ -105,5 +105,5 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> findAllAtivosByNivelOperacaoCanalAa();
 
-    List<Integer> obterIdsPorIdOuUsuarioCadastroId(Integer id);
+    List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
 }

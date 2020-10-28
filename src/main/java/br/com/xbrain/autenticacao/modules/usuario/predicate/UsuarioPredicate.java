@@ -285,8 +285,8 @@ public class UsuarioPredicate {
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             comIds(Stream.of(
-                usuarioService.obterIdsPorIdOuUsuarioCadastroId(usuario.getUsuario().getId()),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false))
+                usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()));
 

@@ -743,12 +743,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> obterIdsPorIdOuUsuarioCadastroId(Integer id) {
+    public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario)
-            .where(usuario.id.eq(id)
-                .or(usuario.usuarioCadastro.id.eq(id)))
+            .where(usuario.usuarioCadastro.id.eq(usuarioCadastroId))
             .fetch();
     }
 }

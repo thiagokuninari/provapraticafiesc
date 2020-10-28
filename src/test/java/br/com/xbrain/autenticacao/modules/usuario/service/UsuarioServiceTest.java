@@ -645,18 +645,18 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
-        when(repository.obterIdsPorIdOuUsuarioCadastroId(eq(100))).thenReturn(List.of());
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        when(repository.obterIdsPorUsuarioCadastroId(eq(1000))).thenReturn(List.of());
 
-        assertThat(service.obterIdsPorIdOuUsuarioCadastroId(1000))
+        assertThat(service.obterIdsPorUsuarioCadastroId(1000))
             .isEmpty();
     }
 
     @Test
-    public void obterIdsPorIdOuUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
-        when(repository.obterIdsPorIdOuUsuarioCadastroId(eq(100))).thenReturn(List.of(100, 200, 300));
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        when(repository.obterIdsPorUsuarioCadastroId(eq(400))).thenReturn(List.of(100, 200, 300));
 
-        assertThat(service.obterIdsPorIdOuUsuarioCadastroId(100))
+        assertThat(service.obterIdsPorUsuarioCadastroId(400))
             .hasSize(3)
             .containsExactly(100, 200, 300);
     }
