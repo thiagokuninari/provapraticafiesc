@@ -3,7 +3,10 @@ package br.com.xbrain.autenticacao.modules.comum.model;
 import br.com.xbrain.autenticacao.modules.comum.enums.EAreaAtuacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -11,6 +14,9 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "GRUPO")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Grupo implements AreaAtuacao {
 
     @Id
@@ -32,18 +38,8 @@ public class Grupo implements AreaAtuacao {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
 
-    public Grupo() {
-    }
-
     public Grupo(Integer id) {
         this.id = id;
-    }
-
-    public Grupo(Integer id, String nome, Regional regional, ESituacao situacao) {
-        this.id = id;
-        this.nome = nome;
-        this.regional = regional;
-        this.situacao = situacao;
     }
 
     @JsonIgnore
