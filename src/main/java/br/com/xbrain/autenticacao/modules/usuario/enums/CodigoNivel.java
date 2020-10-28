@@ -19,5 +19,7 @@ public enum CodigoNivel {
     OUVIDORIA,
     BACKOFFICE,
     INTEGRACAO,
-    FEEDER;
+    GERADOR_LEADS,
+    FEEDER,
+    BACKOFFICE;
 }
