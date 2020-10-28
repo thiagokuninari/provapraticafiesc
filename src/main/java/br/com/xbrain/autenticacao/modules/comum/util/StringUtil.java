@@ -19,7 +19,14 @@ public class StringUtil {
 
     public static String getDataAtualEmail() {
         return LocalDate.now().format(DateTimeFormatter
-                .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt", "BR")));
+            .ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("pt", "BR")));
+    }
+
+    public static String getOnlyNumbers(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replaceAll("[^0-9]", "");
     }
 
     public static String removerAcentos(String str) {
