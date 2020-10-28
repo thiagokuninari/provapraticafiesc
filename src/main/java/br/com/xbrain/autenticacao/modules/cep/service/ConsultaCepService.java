@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.cep.service;
 
 import br.com.xbrain.autenticacao.modules.cep.client.ConsultaCepClient;
+import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
@@ -22,7 +24,7 @@ public class ConsultaCepService {
             return CidadeUfResponse.of(
                 cidadeService.findByUfNomeAndCidadeNome(cepResponse.getUf(), cepResponse.getCidade()));
         } catch (Exception exception) {
-            return null;
+            throw new IntegracaoException(exception, ConsultaCepService.class.getName(), EErrors.ERRO_OBTER_CEP);
         }
     }
 }

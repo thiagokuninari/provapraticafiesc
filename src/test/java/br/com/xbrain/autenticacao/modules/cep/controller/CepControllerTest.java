@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.cep.controller;
 import br.com.xbrain.autenticacao.modules.cep.client.ConsultaCepClient;
 import br.com.xbrain.autenticacao.modules.cep.dto.ConsultaCepResponse;
 import br.com.xbrain.autenticacao.modules.cep.service.ConsultaCepService;
+import helpers.Usuarios;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -49,17 +49,9 @@ public class CepControllerTest {
     }
 
     @Test
-    public void buscarCidadeEstado_deveVazioComStatus200_quandoExistir() throws Exception {
-        mvc.perform(get("/api/cep/0000-000")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
     public void buscarCidadeEstado_deveRetornarCidadeEstadoComStatus200_quandoExistir() throws Exception {
         mvc.perform(get("/api/cep/86080-260")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.cidadeId", is(5578)))
