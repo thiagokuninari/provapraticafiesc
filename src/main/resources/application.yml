@@ -235,6 +235,11 @@ app-config:
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br
+    solicitacao-pap:
+      #url: http://localhost:8108
+      url: https://api-dev.conexaoclarobrasil.com.br/solicitacao-cliente-pap
+    consulta-cep:
+      url: http://192.168.2.28:8186
 
 flyway:
   enabled: true
@@ -265,6 +270,9 @@ zuul:
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
+    solicitacao-pap:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.solicitacao-pap.url}
     gestao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.gestao.url}
