@@ -290,7 +290,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(usuario)
             .from(usuario)
-            .leftJoin(usuario.canais).fetchJoin()
             .where(predicate)
             .orderBy(usuario.cargo.nome.asc(),
                 usuario.nome.asc())

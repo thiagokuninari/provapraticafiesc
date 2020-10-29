@@ -955,14 +955,17 @@ public class UsuarioService {
                 .build());
     }
 
-    public List<Usuario> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId, List<ECanal> canais) {
-        return repository.getUsuariosFilter(
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
+                                                                           List<ECanal> canais) {
+        var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .comCanais(canais)
+                .isAtivo(Eboolean.V)
                 .build());
+        return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
