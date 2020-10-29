@@ -526,7 +526,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                                      List<CodigoCargo> cargos,
-                                                                     Set<ECanal> canais) {
+                                                                     ECanal canal) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
                 usuario.id,
@@ -535,7 +535,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuarioCidade)
             .join(usuarioCidade.usuario, usuario)
             .where(usuario.cargo.codigo.in(cargos)
-                .and(usuario.canais.any().in(canais))
+                .and(usuario.canais.contains(canal))
                 .and(usuario.cidades.any().cidade.id.in(
                     select(usuarioCidade.cidade.id)
                         .from(usuarioCidade)

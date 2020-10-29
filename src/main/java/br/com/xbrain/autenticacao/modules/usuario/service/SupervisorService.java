@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
@@ -35,20 +37,28 @@ public class SupervisorService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    private static final Set<ECanal> CANAIS_PADRAO = Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO);
+    private static final Set<ECanal> CANAIS_PADRAO = Set.of(D2D_PROPRIO, ATIVO_PROPRIO);
 
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
+    public List<UsuarioResponse> getAssistentesEVendedoresDoSupervisor(Integer supervisorId, Integer equipeId) {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
-        var canais = CANAIS_PADRAO;
-        if (!isEmpty(usuarioAutenticado) && !usuarioAutenticado.getCanais().isEmpty()) {
-            canais = usuarioAutenticado.getCanais();
-        }
+
         return Stream.concat(
-            getAssistentesDoSupervisor(supervisorId, canais).stream(),
+            getAssistentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
+    }
+
+    private ECanal getCanalBySupervisorId(Integer supervisorId) {
+        var supervisor = usuarioRepository.findById(supervisorId)
+            .orElseThrow(() -> new ValidacaoException("Supervisor não encontrado."));
+
+        if (supervisor.hasCanal(ATIVO_PROPRIO)) {
+            return ATIVO_PROPRIO;
+        } else if (supervisor.hasCanal(D2D_PROPRIO)) {
+            return D2D_PROPRIO;
+        }
+        throw new ValidacaoException("O supervisor deve ser do canal Ativo Próprio ou D2D Próprio.");
     }
 
     private List<UsuarioResponse> filtrarUsuariosParaAderirAEquipe(Integer equipeId,
@@ -56,11 +66,11 @@ public class SupervisorService {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
-    private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId, Set<ECanal> canais) {
+    private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId, ECanal canal) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
             supervisorId,
             List.of(ASSISTENTE_OPERACAO),
-            canais);
+            canal);
     }
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
