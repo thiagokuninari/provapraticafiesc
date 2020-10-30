@@ -31,7 +31,7 @@ public class AgenteAutorizadoNovoServiceTest {
 
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.buscarUsuariosDoAgenteAutorizado(1, false))
-            .withMessage("#028 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+            .withMessage("#030 - Desculpe, ocorreu um erro interno. Contate a administrador.");
     }
 
     @Test
