@@ -398,7 +398,7 @@ public class Usuario {
     }
 
     public String getNivelNome() {
-        if (this.cargo != null && this.cargo.getNivel() != null) {
+        if (!ObjectUtils.isEmpty(this.cargo) && !ObjectUtils.isEmpty(this.cargo.getNivel())) {
             return this.cargo.getNivel().getNome();
         }
         return null;
