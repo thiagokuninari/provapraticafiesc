@@ -397,6 +397,13 @@ public class Usuario {
         return null;
     }
 
+    public String getNivelNome() {
+        if (this.cargo != null && this.cargo.getNivel() != null) {
+            return this.cargo.getNivel().getNome();
+        }
+        return null;
+    }
+
     public List<CodigoEmpresa> getCodigosEmpresas() {
         if (!CollectionUtils.isEmpty(empresas)) {
             return empresas.stream().map(Empresa::getCodigo).collect(Collectors.toList());
