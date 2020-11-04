@@ -1664,4 +1664,8 @@ public class UsuarioService {
             .map(UrlLojaOnlineResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
+
+    public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
+        return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
+    }
 }

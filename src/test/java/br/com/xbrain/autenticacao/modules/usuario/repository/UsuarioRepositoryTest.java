@@ -137,4 +137,17 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
             .hasSize(2);
     }
+
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(1000))
+            .isEmpty();
+    }
+
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(100))
+            .hasSize(3)
+            .containsExactly(200, 300, 400);
+    }
 }

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -14,10 +15,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioComLoginNetSalesResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -36,6 +34,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,9 +45,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -497,7 +501,7 @@ public class UsuarioServiceTest {
                 .codigoCargo(CodigoCargo.SUPERVISOR_OPERACAO)
                 .codigoDepartamento(CodigoDepartamento.COMERCIAL)
                 .codigoEmpresas(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
-                .codigoNivel(CodigoNivel.OPERACAO)
+                .codigoNivel(OPERACAO)
                 .cpf("097.238.645-92")
                 .build());
     }
@@ -542,8 +546,8 @@ public class UsuarioServiceTest {
     private Nivel umNivelOperacao() {
         return Nivel.builder()
             .id(1)
-            .codigo(CodigoNivel.OPERACAO)
-            .nome(CodigoNivel.OPERACAO.name())
+            .codigo(OPERACAO)
+            .nome(OPERACAO.name())
             .build();
     }
 
@@ -599,7 +603,7 @@ public class UsuarioServiceTest {
         var umUsuarioComLogin = 1000;
         var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
         user.setCanais(Set.of(ECanal.AGENTE_AUTORIZADO));
-        user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.OPERACAO).build());
+        user.getCargo().setNivel(Nivel.builder().codigo(OPERACAO).build());
         when(repository.findById(umUsuarioComLogin))
             .thenReturn(Optional.of(user));
 
@@ -668,6 +672,42 @@ public class UsuarioServiceTest {
             .withMessage("Usuário não encontrado.");
     }
 
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        when(repository.obterIdsPorUsuarioCadastroId(eq(1000))).thenReturn(List.of());
+
+        assertThat(service.obterIdsPorUsuarioCadastroId(1000))
+            .isEmpty();
+    }
+
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        when(repository.obterIdsPorUsuarioCadastroId(eq(400))).thenReturn(List.of(100, 200, 300));
+
+        assertThat(service.obterIdsPorUsuarioCadastroId(400))
+            .hasSize(3)
+            .containsExactly(100, 200, 300);
+    }
+
+    @Test
+    public void getAll_deveRetornarUsuarioPage_quandoPossuirMaisQueMilUsuariosSubordinados() {
+        var idsUsuariosSubordinados = IntStream.rangeClosed(0, 2000).boxed().collect(Collectors.toList());
+        var idsUsuariosSubordinadosComIdDoUsuario = Stream.of(idsUsuariosSubordinados, List.of(3000))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+        var predicate = new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true).comIds(idsUsuariosSubordinadosComIdDoUsuario);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado(3000, OPERACAO.toString(), DIRETOR_OPERACAO, CTR_VISUALIZAR_CARTEIRA_HIERARQUIA));
+        when(repository.obterIdsPorUsuarioCadastroId(eq(3000))).thenReturn(List.of());
+        when(repository.getUsuariosSubordinados(eq(3000))).thenReturn(idsUsuariosSubordinados);
+        when(repository.findAll(eq(predicate.build()), eq(new PageRequest())))
+            .thenReturn(umaPageUsuario(new PageRequest(), List.of(umUsuario())));
+
+        assertThat(service.getAll(new PageRequest(), new UsuarioFiltros()))
+            .isNotEmpty();
+    }
+
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
             .id(id)
@@ -686,5 +726,12 @@ public class UsuarioServiceTest {
         var usuario = umUsuarioComLoginNetSales(id);
         usuario.setLoginNetSales(null);
         return usuario;
+    }
+
+    private Page<Usuario> umaPageUsuario(PageRequest pageRequest, List<Usuario> usuariosList) {
+        return new PageImpl<>(
+            usuariosList,
+            pageRequest,
+            usuariosList.size());
     }
 }
