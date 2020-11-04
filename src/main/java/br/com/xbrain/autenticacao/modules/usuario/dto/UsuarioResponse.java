@@ -35,6 +35,7 @@ public class UsuarioResponse {
     private ESituacao situacao;
     private LocalDateTime dataCadastro;
     private CodigoNivel codigoNivel;
+    private String nomeNivel;
     private CodigoDepartamento codigoDepartamento;
     private String nomeCargo;
     private CodigoCargo codigoCargo;
@@ -61,6 +62,7 @@ public class UsuarioResponse {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+        usuarioResponse.setNomeNivel(usuario.getNivelNome());
         usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
@@ -73,6 +75,7 @@ public class UsuarioResponse {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+        usuarioResponse.setNomeNivel(usuario.getNivelNome());
         usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());

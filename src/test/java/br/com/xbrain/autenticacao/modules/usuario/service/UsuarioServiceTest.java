@@ -502,6 +502,7 @@ public class UsuarioServiceTest {
                 .codigoDepartamento(CodigoDepartamento.COMERCIAL)
                 .codigoEmpresas(List.of(CodigoEmpresa.CLARO_RESIDENCIAL))
                 .codigoNivel(OPERACAO)
+                .nomeNivel("OPERACAO")
                 .cpf("097.238.645-92")
                 .build());
     }
