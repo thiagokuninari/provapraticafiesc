@@ -741,4 +741,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .orderBy(usuario.nome.asc())
             .fetch();
     }
+
+    @Override
+    public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.usuarioCadastro.id.eq(usuarioCadastroId))
+            .fetch();
+    }
 }
