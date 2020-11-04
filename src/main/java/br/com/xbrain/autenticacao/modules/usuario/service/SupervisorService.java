@@ -3,12 +3,11 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
-import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,25 +18,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.*;
-import static org.springframework.util.ObjectUtils.isEmpty;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 
 @Service
+@RequiredArgsConstructor
 public class SupervisorService {
 
     private static final int COLUNA_USUARIO_ID = 0;
     private static final int COLUNA_USUARIO_NOME = 1;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private EquipeVendaD2dService equipeVendaD2dService;
-
-    @Autowired
-    private AutenticacaoService autenticacaoService;
-
-    private static final Set<ECanal> CANAIS_PADRAO = Set.of(D2D_PROPRIO, ATIVO_PROPRIO);
+    private final UsuarioRepository usuarioRepository;
+    private final EquipeVendaD2dService equipeVendaD2dService;
 
     public List<UsuarioResponse> getAssistentesEVendedoresDoSupervisor(Integer supervisorId, Integer equipeId) {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
@@ -84,18 +76,12 @@ public class SupervisorService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                               List<Integer> areasAtuacaoId) {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
-        var canais = CANAIS_PADRAO;
-        if (!isEmpty(usuarioAutenticado) && !usuarioAutenticado.getCanais().isEmpty()) {
-            canais = usuarioAutenticado.getCanais();
-        }
+    public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
             areaAtuacao,
             areasAtuacaoId,
             SUPERVISOR_OPERACAO,
-            canais);
+            Set.of(D2D_PROPRIO));
     }
 
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
