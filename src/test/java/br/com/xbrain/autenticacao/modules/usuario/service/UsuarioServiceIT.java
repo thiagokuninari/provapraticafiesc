@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -45,10 +44,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.*;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_TV;
-import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.CLARO_RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -878,7 +876,7 @@ public class UsuarioServiceIT {
             .cargo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .nivel(AGENTE_AUTORIZADO)
-            .unidadesNegocio(List.of(CLARO_RESIDENCIAL))
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(List.of(CLARO_TV))
             .build();
     }
@@ -954,11 +952,11 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setNome("TESTE NOVO USUARIO PARCEIROS ONLINE");
         usuarioMqRequest.setEmail("novousuarioparceirosonline@xbrain.com.br");
         usuarioMqRequest.setCpf("76696512616");
-        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
+        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(RESIDENCIAL_COMBOS));
         usuarioMqRequest.setNivel(CodigoNivel.AGENTE_AUTORIZADO);
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
+        usuarioMqRequest.setEmpresa(Collections.singletonList(CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         return usuarioMqRequest;
     }
@@ -1080,7 +1078,7 @@ public class UsuarioServiceIT {
             .email("renato@hotmail.com")
             .isCadastroSocioPrincipal(true)
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
-            .empresa(Lists.newArrayList(CodigoEmpresa.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();
     }
 }
