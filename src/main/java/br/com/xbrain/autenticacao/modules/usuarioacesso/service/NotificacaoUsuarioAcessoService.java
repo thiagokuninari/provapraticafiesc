@@ -68,7 +68,7 @@ public class NotificacaoUsuarioAcessoService {
         }
     }
 
-    public List<Integer> getUsuariosIdsByIds(Optional<List<Integer>> usuariosIds) {
+    public List<Integer> getUsuariosIdsByIds(Optional<? extends Collection<Integer>> usuariosIds) {
         try {
             if (usuariosIds.isPresent() && usuariosIds.get().isEmpty()) {
                 return List.of();

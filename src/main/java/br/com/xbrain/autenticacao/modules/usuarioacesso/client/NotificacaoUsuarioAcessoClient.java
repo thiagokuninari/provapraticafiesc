@@ -8,6 +8,7 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,5 +24,5 @@ public interface NotificacaoUsuarioAcessoClient {
     List<LoginLogoutCsv> getCsv(@RequestParam Map<String, Object> filtro);
 
     @GetMapping("api/relatorio-login-logout/usuarios/ids")
-    List<Integer> getUsuariosIdsByIds(@RequestParam(value = "usuariosIds", required = false) List<Integer> usuariosIds);
+    List<Integer> getUsuariosIdsByIds(@RequestParam(value = "usuariosIds", required = false) Collection<Integer> usuariosIds);
 }
