@@ -808,7 +808,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                 + "JOIN CARGO C ON C.ID = U.FK_CARGO "
                 + "WHERE C.CODIGO = :cargo "
-                + "START WITH UH.FK_USUARIO_SUPERIOR = (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
+                + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
                 + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource()
                 .addValue("siteId", siteId)
