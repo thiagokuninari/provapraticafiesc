@@ -233,7 +233,7 @@ public class UsuarioService {
         return pages;
     }
 
-    public List<Integer> getUsuariosPermitidosIds() {
+    public List<Integer> getUsuariosPermitidosIdsComParceiros() {
         var predicate = new UsuarioPredicate()
             .filtraPermitidosComParceiros(autenticacaoService.getUsuarioAutenticado(), this).build();
         return repository.findAllIdsDistinct(predicate);

@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -20,12 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
@@ -36,8 +32,6 @@ public class RelatorioLoginLogoutService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private UsuarioService usuarioService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     @Autowired
@@ -68,23 +62,10 @@ public class RelatorioLoginLogoutService {
         return usuarioRepository.findAllUsuariosNomeComSituacao(predicate, order);
     }
 
-    public Optional<Set<Integer>> getUsuariosIdsComNivelDeAcesso() {
-        var usuarioAutenticado = getUsuarioAutenticado();
-
-        if (usuarioAutenticado.isMsoOrXbrain()) {
-            return Optional.empty();
-        } else {
-            var usuariosIds = Stream.of(
-                usuarioService.getUsuariosPermitidosIds(),
-                getUsuariosIdsComNivelDeAcessoDoParceiros()
-            ).flatMap(Collection::stream).collect(Collectors.toSet());
-            return Optional.of(usuariosIds);
-        }
-    }
-
-    private List<Integer> getUsuariosIdsComNivelDeAcessoDoParceiros() {
-        var usuariosIds = agenteAutorizadoService.getIdsUsuariosSubordinados(true);
-        return List.copyOf(usuariosIds);
+    public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso() {
+        return getUsuarioAutenticado().isMsoOrXbrain()
+            ? Optional.empty()
+            : Optional.of(usuarioService.getUsuariosPermitidosIdsComParceiros());
     }
 
     private UsuarioAutenticado getUsuarioAutenticado() {
