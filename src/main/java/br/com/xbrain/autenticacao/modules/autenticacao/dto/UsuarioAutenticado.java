@@ -1,12 +1,10 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.config.CustomJwtAccessTokenConverter;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -20,6 +18,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
@@ -173,5 +172,16 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean haveCanalAgenteAutorizado() {
+        return haveCanal(AGENTE_AUTORIZADO);
+    }
+
+    private boolean haveCanal(ECanal canal) {
+        return ObjectUtils.isEmpty(usuario.getCanais())
+            ? CustomJwtAccessTokenConverter.getCanais(usuario).contains(canal.name())
+            : usuario.getCanais()
+            .contains(canal);
     }
 }

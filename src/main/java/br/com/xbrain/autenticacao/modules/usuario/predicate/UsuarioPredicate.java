@@ -323,6 +323,14 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
+            .build());
+        return this;
+    }
+
     public BooleanBuilder build() {
         return this.builder;
     }
