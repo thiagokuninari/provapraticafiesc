@@ -3,10 +3,13 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static helpers.MatchersHelper.anyOrNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,6 +45,8 @@ public class RelatorioLoginLogoutServiceTest {
     private UsuarioService usuarioService;
     @Mock
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
+    @Mock
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private UsuarioRepository usuarioRepository;
 
@@ -62,7 +68,7 @@ public class RelatorioLoginLogoutServiceTest {
                 UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
             ));
 
-        var colaboradores = service.getColaboradores();
+        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
 
         assertThat(colaboradores)
             .extracting("id", "nome", "situacao")
@@ -77,9 +83,17 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioAgenteAutorizadoBuscarInativos() {
-        mockAutenticacao(umUsuarioAgenteAutorizado());
+        var usuarioAutenticado = umUsuarioAgenteAutorizado();
+        mockAutenticacao(usuarioAutenticado);
+        mockBuscarUsuariosPermitidosIds(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
-        when(usuarioService.getUsuariosPermitidosIdsComParceiros())
+        var predicateBuscaIds = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .ignorarTodos()
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
@@ -96,7 +110,9 @@ public class RelatorioLoginLogoutServiceTest {
                 UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
             ));
 
-        var colaboradores = service.getColaboradores();
+        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
+
+        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicateBuscaIds));
 
         assertThat(colaboradores)
             .extracting("id", "nome", "situacao")
@@ -109,9 +125,17 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioCoordenadorOperacaoBuscarInativos() {
-        mockAutenticacao(umUsuarioCoordenadorOperacao());
+        var usuarioAutenticado = umUsuarioCoordenadorOperacao();
+        mockAutenticacao(usuarioAutenticado);
+        mockBuscarUsuariosPermitidosIds(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
-        when(usuarioService.getUsuariosPermitidosIdsComParceiros())
+        var predicateBuscaIds = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .ignorarTodos()
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
@@ -128,7 +152,9 @@ public class RelatorioLoginLogoutServiceTest {
                 UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
             ));
 
-        var colaboradores = service.getColaboradores();
+        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
+
+        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicateBuscaIds));
 
         assertThat(colaboradores)
             .extracting("id", "nome", "situacao")
@@ -146,7 +172,7 @@ public class RelatorioLoginLogoutServiceTest {
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.empty())))
             .thenReturn(List.of());
 
-        service.getColaboradores();
+        service.getColaboradores(ECanal.D2D_PROPRIO, null);
 
         var predicateArgCaptor = ArgumentCaptor.forClass(Predicate.class);
         verify(usuarioRepository, times(1)).findAllUsuariosNomeComSituacao(predicateArgCaptor.capture(), any());
@@ -159,47 +185,81 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioXBrain() {
         mockAutenticacao(umUsuarioXBrain());
-        assertThat(service.getUsuariosIdsComNivelDeAcesso()).isNotPresent();
+        assertThat(service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null)).isNotPresent();
 
-        verify(usuarioService, never()).getUsuariosPermitidosIdsComParceiros();
+        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
+        verify(usuarioService, never()).getIdDosUsuariosSubordinadosDoPol(anyOrNull());
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioMso() {
         mockAutenticacao(umUsuarioMso());
-        assertThat(service.getUsuariosIdsComNivelDeAcesso()).isNotPresent();
+        assertThat(service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 885)).isNotPresent();
 
-        verify(usuarioService, never()).getUsuariosPermitidosIdsComParceiros();
+        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
+        verify(usuarioService, never()).getIdDosUsuariosSubordinadosDoPol(anyOrNull());
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAgenteAutorizado() {
-        mockAutenticacao(umUsuarioAgenteAutorizado());
+        var usuarioAutenticado = umUsuarioAgenteAutorizado();
+
+        mockAutenticacao(usuarioAutenticado);
         mockBuscarUsuariosPermitidosIds();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
     }
 
     @Test
-    public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAssistenteOperacao() {
-        mockAutenticacao(umUsuarioAssistenteOperacao());
-        mockBuscarUsuariosPermitidosIds();
+    public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAssistenteOperacaoEAaNull() {
+        var usuarioAutenticado = umUsuarioAssistenteOperacao();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        mockAutenticacao(usuarioAutenticado);
+
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.AGENTE_AUTORIZADO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .ignorarTodos()
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null);
+
+        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioExecutivoOperacao() {
-        mockAutenticacao(umUsuarioExecutivoOperacao());
+        var usuarioAutenticado = umUsuarioExecutivoOperacao();
+        mockAutenticacao(usuarioAutenticado);
         mockBuscarUsuariosPermitidosIds();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -207,10 +267,18 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioExecutivoHunterOperacao() {
-        mockAutenticacao(umUsuarioExecutivoHunterOperacao());
+        var usuarioAutenticado = umUsuarioExecutivoHunterOperacao();
+        mockAutenticacao(usuarioAutenticado);
         mockBuscarUsuariosPermitidosIds();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -218,10 +286,18 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoAutenticacao_quandoUsuarioCoordenadorOperacao() {
-        mockAutenticacao(umUsuarioCoordenadorOperacao());
+        var usuarioAutenticado = umUsuarioCoordenadorOperacao();
+        mockAutenticacao(usuarioAutenticado);
         mockBuscarUsuariosPermitidosIds();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -229,10 +305,18 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoAutenticacao_quandoUsuarioGerenteOperacao() {
-        mockAutenticacao(umUsuarioGerenteOperacao());
+        var usuarioAutenticado = umUsuarioGerenteOperacao();
+        mockAutenticacao(usuarioAutenticado);
         mockBuscarUsuariosPermitidosIds();
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso();
+        var predicate = new UsuarioPredicate()
+            .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+            .comCanal(ECanal.D2D_PROPRIO)
+            .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .build();
+        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -243,15 +327,22 @@ public class RelatorioLoginLogoutServiceTest {
             .thenReturn(usuarioAutenticado);
     }
 
+    private void mockBuscarUsuariosPermitidosIds(List<Integer> ids) {
+        when(agenteAutorizadoService.getUsuariosIdsByAaId(eq(67), eq(true)))
+            .thenReturn(ids);
+    }
+
     private void mockBuscarUsuariosPermitidosIds() {
-        when(usuarioService.getUsuariosPermitidosIdsComParceiros())
-            .thenReturn(umUsuariosIdsList());
+        mockBuscarUsuariosPermitidosIds(umUsuariosIdsList());
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
             .id(89)
             .nome("Hwasa Maria")
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
             .build();
     }
 

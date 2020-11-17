@@ -268,6 +268,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCanais(Collection<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
     private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
             JPAExpressions
@@ -293,7 +300,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate ignorarTodos() {
+    public UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
         return this;
     }

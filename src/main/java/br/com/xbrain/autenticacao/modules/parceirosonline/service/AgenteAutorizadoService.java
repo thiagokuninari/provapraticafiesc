@@ -101,6 +101,13 @@ public class AgenteAutorizadoService {
         }
     }
 
+    public List<Integer> getUsuariosIdsByAaId(Integer aaId, Boolean buscarInativos) {
+        return getUsuariosByAaId(aaId, buscarInativos).stream()
+            .map(UsuarioAgenteAutorizadoResponse::getId)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
     public List<UsuarioAgenteAutorizadoResponse> getUsuariosAaAtivoComVendedoresD2D(Integer aaId) {
         try {
             return agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(aaId);
