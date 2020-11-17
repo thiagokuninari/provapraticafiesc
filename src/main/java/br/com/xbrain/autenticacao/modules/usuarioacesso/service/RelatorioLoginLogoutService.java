@@ -88,6 +88,7 @@ public class RelatorioLoginLogoutService {
             .comCanal(canal)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(usuariosIdsAa)
+            .filtrarPermitidosRelatorioLoginLogout(canal)
             .build();
 
         return Optional.of(usuarioRepository.findAllIdsDistinct(predicate));

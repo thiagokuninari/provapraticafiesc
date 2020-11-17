@@ -92,6 +92,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .ignorarTodos()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
@@ -134,6 +135,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .ignorarTodos()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
@@ -212,6 +214,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
@@ -232,6 +235,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.AGENTE_AUTORIZADO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .ignorarTodos()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.AGENTE_AUTORIZADO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
@@ -257,6 +261,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
@@ -276,6 +281,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
@@ -295,6 +301,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
@@ -314,6 +321,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .comIds(List.of(12, 7, 90, 1, 3, 100))
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);

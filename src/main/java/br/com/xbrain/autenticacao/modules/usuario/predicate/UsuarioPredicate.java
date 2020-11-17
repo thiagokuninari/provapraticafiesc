@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -335,6 +336,29 @@ public class UsuarioPredicate {
             .filtraPermitidos(usuario, usuarioService)
             .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
             .build());
+        return this;
+    }
+
+    public UsuarioPredicate filtrarPermitidosRelatorioLoginLogout(ECanal canal) {
+        switch (canal) {
+            case AGENTE_AUTORIZADO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS
+                ));
+                break;
+            case D2D_PROPRIO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.VENDEDOR_OPERACAO,
+                    CodigoCargo.ASSISTENTE_OPERACAO
+                ));
+                break;
+            default:
+        }
         return this;
     }
 
