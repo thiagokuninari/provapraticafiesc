@@ -24,6 +24,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,6 +58,8 @@ public class SiteService {
     private UfRepository ufRepository;
     @Autowired
     private CidadeRepository cidadeRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -81,6 +85,10 @@ public class SiteService {
     @Transactional(readOnly = true)
     public Page<Site> getAll(SiteFiltros filtros, PageRequest pageRequest) {
         return siteRepository.findAll(filtrarPorUsuario(filtros.toPredicate()), pageRequest);
+    }
+
+    public Collection<Integer> getUsuariosIdsBySiteId(Integer siteId) {
+        return usuarioRepository.findUsuariosIdsPorSiteId(siteId);
     }
 
     public Predicate filtrarPorUsuario(SitePredicate filtros) {

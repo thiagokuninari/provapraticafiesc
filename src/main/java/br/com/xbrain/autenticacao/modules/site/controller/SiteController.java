@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -53,6 +54,11 @@ public class SiteController {
     @GetMapping("{id}/detalhe")
     public SiteDetalheResponse getDetalheSiteById(@PathVariable Integer id) {
         return SiteDetalheResponse.of(service.findById(id));
+    }
+
+    @GetMapping("{id}/usuarios/ids")
+    public Collection<Integer> getUsuariosIdsBySiteId(@PathVariable Integer id) {
+        return service.getUsuariosIdsBySiteId(id);
     }
 
     @PostMapping
