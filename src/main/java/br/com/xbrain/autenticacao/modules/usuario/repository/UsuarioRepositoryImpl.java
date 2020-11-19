@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -43,6 +44,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -53,8 +55,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
-
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -814,5 +814,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .addValue("siteId", siteId)
                 .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
             new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
+    }
+
+    @Override
+    public List<Integer> findUsuariosIdsPorSiteId(Integer siteId) {
+        var sql = "SELECT DISTINCT U.ID "
+            + "FROM USUARIO_HIERARQUIA UH "
+            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+            + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
+            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR";
+        var params = new MapSqlParameterSource()
+            .addValue("siteId", siteId);
+        var rowMapper = SingleColumnRowMapper.newInstance(Integer.class);
+        return jdbcTemplate.query(sql, params, rowMapper);
     }
 }
