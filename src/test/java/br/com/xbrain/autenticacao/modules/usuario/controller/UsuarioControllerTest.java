@@ -650,10 +650,10 @@ public class UsuarioControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[0].value").value(300))
-            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET - ( Pessoal )"))
-            .andExpect(jsonPath("$[1].value").value(102))
-            .andExpect(jsonPath("$[1].label").value("Supervisor Operação - ( Pessoal )"));
+            .andExpect(jsonPath("$[0].value").value(102))
+            .andExpect(jsonPath("$[0].label").value("Supervisor Operação"))
+            .andExpect(jsonPath("$[1].value").value(300))
+            .andExpect(jsonPath("$[1].label").value("Operacao Supervisor NET"));
     }
 
     @Test
