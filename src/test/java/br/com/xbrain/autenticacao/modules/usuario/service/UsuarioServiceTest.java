@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -44,7 +45,6 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -287,18 +287,19 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarUsuariosAtivosNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAa() {
+    public void buscarUsuariosAtivosNivelOperacaoCanalAa_listaComDoisUsuarios_quandoSituacaoAtivoECanalAa() {
         when(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .thenReturn(umaListaUsuarioComUnidadesNegocio());
+            .thenReturn(List.of(
+                SelectResponse.of(100, "JOSÉ"),
+                SelectResponse.of(101, "JOÃO")
+            ));
 
         assertThat(service.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactly(
-                tuple(100, "JOSÉ - ( Claro Residencial, Residencial e Combos )"),
-                tuple(101, "JOÃO - ( Pessoal )")
+                tuple(100, "JOSÉ"),
+                tuple(101, "JOÃO")
             );
-
-        verify(repository).findAllAtivosByNivelOperacaoCanalAa();
     }
 
     @Test
@@ -312,21 +313,6 @@ public class UsuarioServiceTest {
                 tuple(2, "Mario", "QQ", "mario@teste.com"),
                 tuple(3, "Maria", "LOG", "maria@teste.com")
             );
-    }
-
-    private List<Usuario> umaListaUsuarioComUnidadesNegocio() {
-        return List.of(
-            Usuario.builder()
-                .id(100)
-                .nome("JOSÉ")
-                .unidadesNegocios(umaListaUnidadesNegocio())
-                .build(),
-            Usuario.builder()
-                .id(101)
-                .nome("JOÃO")
-                .unidadesNegocios(List.of(umaUnidadeNegocio(CodigoUnidadeNegocio.PESSOAL)))
-                .build()
-        );
     }
 
     private List<UnidadeNegocio> umaListaUnidadesNegocio() {

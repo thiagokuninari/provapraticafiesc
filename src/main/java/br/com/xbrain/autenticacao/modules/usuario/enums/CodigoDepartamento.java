@@ -10,6 +10,5 @@ public enum CodigoDepartamento {
     ATENDIMENTO_JEC,
     FEEDER,
     OUVIDORIA,
-    FEEDER,
     INTEGRACAO;
 }
