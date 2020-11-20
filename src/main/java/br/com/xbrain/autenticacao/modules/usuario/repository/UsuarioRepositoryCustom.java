@@ -114,4 +114,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo);
 
     List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId);
+
+    List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
 }
