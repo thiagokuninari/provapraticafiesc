@@ -739,7 +739,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuario.cargo, cargo)
             .innerJoin(cargo.nivel, nivel)
             .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
-                .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
+                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
             .fetch();
     }
 
