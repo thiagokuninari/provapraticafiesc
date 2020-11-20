@@ -107,4 +107,9 @@ public class SiteController {
     public SiteResponse getSiteBySupervisorId(@PathVariable Integer supervisorId) {
         return service.getSiteBySupervisorId(supervisorId);
     }
+
+    @GetMapping("permitidos")
+    public List<SelectResponse> findSitesPermitidosAoUsuarioAutenticado() {
+        return service.findSitesPermitidosAoUsuarioAutenticado();
+    }
 }

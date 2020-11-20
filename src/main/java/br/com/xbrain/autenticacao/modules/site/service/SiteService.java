@@ -289,4 +289,9 @@ public class SiteService {
     public SiteResponse getSiteBySupervisorId(Integer supervisorId) {
         return SiteResponse.of(siteRepository.findBySupervisorId(supervisorId));
     }
+
+    public List<SelectResponse> findSitesPermitidosAoUsuarioAutenticado() {
+        var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        return getSitesPorPermissao(usuario);
+    }
 }
