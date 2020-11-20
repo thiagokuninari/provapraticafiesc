@@ -387,4 +387,23 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$.id", equalTo(100)))
             .andExpect(jsonPath("$.nome", equalTo("São Paulo")));
     }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitesPermitidos_sites_quandoUsuarioAutenticado() {
+        mvc.perform(get(API_URI + "/permitidos")
+            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(5)))
+            .andExpect(jsonPath("$[0].value", is(100)))
+            .andExpect(jsonPath("$[0].label", is("São Paulo")))
+            .andExpect(jsonPath("$[1].value", is(101)))
+            .andExpect(jsonPath("$[1].label", is("Rio Branco")))
+            .andExpect(jsonPath("$[2].value", is(102)))
+            .andExpect(jsonPath("$[2].label", is("Manaus")))
+            .andExpect(jsonPath("$[3].value", is(110)))
+            .andExpect(jsonPath("$[3].label", is("Rio Branco")))
+            .andExpect(jsonPath("$[4].value", is(111)))
+            .andExpect(jsonPath("$[4].label", is("Manaus")));
+    }
 }
