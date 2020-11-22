@@ -23,8 +23,9 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping
-    public List<CargoResponse> getAll(Integer nivelId, @RequestParam(required = false) Set<ECanal> canais) {
-        return service.getPermitidosPorNivelECanaisPermitidos(nivelId, canais)
+    public List<CargoResponse> getAll(Integer nivelId, @RequestParam(required = false) Set<ECanal> canais,
+                                      @RequestParam(required = false, defaultValue = "true") boolean permiteEditarCompleto) {
+        return service.getPermitidosPorNivelECanaisPermitidos(nivelId, canais, permiteEditarCompleto)
                 .stream()
                 .map(CargoResponse::of)
                 .collect(Collectors.toList());

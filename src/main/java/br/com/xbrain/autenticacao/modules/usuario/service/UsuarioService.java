@@ -32,6 +32,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
@@ -963,7 +964,6 @@ public class UsuarioService {
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .comCanais(canais)
-                .isAtivo(Eboolean.V)
                 .build());
         return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }
@@ -1461,7 +1461,7 @@ public class UsuarioService {
 
     public List<Integer> buscarIdsUsuariosDeCargosInferiores(Integer nivelId) {
         return repository.buscarIdsUsuariosPorCargosIds(
-            cargoService.getPermitidosPorNivel(nivelId)
+            cargoService.getPermitidosPorNivel(new CargoPredicate().comNivel(nivelId))
                 .stream()
                 .map(Cargo::getId)
                 .collect(Collectors.toList())

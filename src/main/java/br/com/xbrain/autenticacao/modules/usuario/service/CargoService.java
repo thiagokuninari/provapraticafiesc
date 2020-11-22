@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,22 +39,31 @@ public class CargoService {
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
 
-    public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais) {
-        return getPermitidosPorNivel(nivelId).stream()
+    public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
+                                                              boolean permiteEditarCompleto) {
+        return filtrarPorNivelOuCargoProprio(nivelId, permiteEditarCompleto).stream()
             .filter(cargo -> ObjectUtils.isEmpty(canais) || canais.stream().anyMatch(cargo::hasPermissaoSobreOCanal))
             .collect(Collectors.toList());
     }
 
-    public List<Cargo> getPermitidosPorNivel(Integer nivelId) {
+    public  List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate().comNivel(nivelId);
-        filtrarPermitidos(predicate);
+        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate);
+    }
 
-        return repository.findAll(predicate.build());
+    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate) {
+        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
+        cargoPredicate.comId(Collections.singletonList(cargoProprioId));
+        return repository.findAll(cargoPredicate.build());
+    }
+
+    public List<Cargo> getPermitidosPorNivel(CargoPredicate cargoPredicate) {
+        filtrarPermitidos(cargoPredicate);
+        return repository.findAll(cargoPredicate.build());
     }
 
     private void filtrarPermitidos(CargoPredicate predicate) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
         }
