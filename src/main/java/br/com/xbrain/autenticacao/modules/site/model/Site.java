@@ -99,7 +99,7 @@ public class Site {
 
     public void update(SiteRequest request) {
         var site = of(request);
-        BeanUtils.copyProperties(site, this, "situacao");
+        BeanUtils.copyProperties(site, this, "situacao", "discadoraId");
     }
 
     public Site(Integer id) {
