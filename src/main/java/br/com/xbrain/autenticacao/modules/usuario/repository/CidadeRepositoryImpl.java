@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
@@ -181,18 +182,33 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                     select(cidade.id)
                         .from(site)
                         .join(site.cidades, cidade)
-                    .where(site.id.ne(siteId))
+                        .where(site.id.ne(siteId))
                 )))
             .orderBy(cidade.nome.asc())
             .fetch();
     }
 
     @Override
+    public Optional<CidadeSiteResponse> findCidadeComSite(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(CidadeSiteResponse.class,
+                cidade.id,
+                site.id,
+                cidade.nome,
+                cidade.uf.uf
+            ))
+            .from(site)
+            .where(predicate)
+            .innerJoin(site.cidades, cidade)
+            .fetchOne());
+    }
+
+    @Override
     public Optional<Cidade> findByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
-                .select(cidade)
-                .from(cidade)
-                .where(predicate)
-                .fetchOne());
+            .select(cidade)
+            .from(cidade)
+            .where(predicate)
+            .fetchOne());
     }
 }

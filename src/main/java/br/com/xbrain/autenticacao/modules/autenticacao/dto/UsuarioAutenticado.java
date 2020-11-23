@@ -45,6 +45,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
+    private Integer siteId;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -89,6 +90,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.canais = usuario.getCanais();
         getOrganizacao(usuario);
     }
 
@@ -113,6 +115,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
+    }
+
+    public boolean isXbrainOuMso() {
+        return isXbrain() || isMso();
     }
 
     public boolean isMso() {
@@ -150,5 +156,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean isOperadorTelevendasAtivoLocal() {
+        return cargoCodigo.equals(CodigoCargo.OPERACAO_TELEVENDAS)
+                && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 }

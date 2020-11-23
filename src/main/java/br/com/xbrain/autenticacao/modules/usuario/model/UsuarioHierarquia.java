@@ -1,9 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
@@ -15,6 +13,9 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(of = "usuarioHierarquiaPk")
 @ToString(of = "usuarioHierarquiaPk")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UsuarioHierarquia {
 
     @EmbeddedId
@@ -41,9 +42,6 @@ public class UsuarioHierarquia {
     @NotNull
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
-
-    public UsuarioHierarquia() {
-    }
 
     private UsuarioHierarquia(Usuario usuario, Integer idHierarquia, Integer idUsuarioAutenticado) {
         this.usuarioHierarquiaPk = new UsuarioHierarquiaPk(usuario.getId(), idHierarquia);

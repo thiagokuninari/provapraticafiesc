@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CodigoFuncionalidade {
 
+    APPLICATION("APPLICATION"),
     AUT_VISUALIZAR_USUARIO("Visualizar Usuários"),
     AUT_VISUALIZAR_GERAL("AUT_VISUALIZAR_GERAL"),
     AUT_VISUALIZAR_USUARIOS_AA("Visualizar usuários dos Agentes Autorizados"),
@@ -25,7 +26,8 @@ public enum CodigoFuncionalidade {
     CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
-    MLG_5013("Distribuir Agendamentos Proprietários");
+    MLG_5013("Distribuir Agendamentos Proprietários"),
+    CTR_2044("Visualizar todos os Sites");
 
     @Getter
     private String descricao;

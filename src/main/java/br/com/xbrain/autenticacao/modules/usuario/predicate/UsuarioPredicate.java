@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -121,6 +122,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCargoCodigo(CodigoCargo cargo) {
+        if (nonNull(cargo)) {
+            builder.and(usuario.cargo.codigo.eq(cargo));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
@@ -162,7 +170,26 @@ public class UsuarioPredicate {
     }
 
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
-        builder.and(usuario.id.in(usuariosIds));
+        if (!isEmpty(usuariosIds)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::in)
+                    .collect(Collectors.toList()))
+            );
+        }
+        return this;
+    }
+
+    public UsuarioPredicate ouComUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.or(
+                ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList())));
+        }
         return this;
     }
 
@@ -234,20 +261,33 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
+    public UsuarioPredicate comCanais(List<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate daHierarquia(List<Integer> ids) {
+        builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
+        return this;
+    }
+
+    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(List<Integer> ids, int usuarioAutenticadoId) {
         builder.and(usuario.id.in(
             JPAExpressions
                 .select(usuario.id)
                 .from(usuario)
                 .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
                 .where(usuarioHierarquia.usuario.id.in(ids)
-                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId))
+                    .or(usuario.id.eq(usuarioAutenticadoId)))));
         return this;
     }
 
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
-        
+
         var usuariosIds = usuarioService.buscarIdsUsuariosDeCargosInferiores(usuario.getNivelId());
         if (incluirProrio) {
             usuariosIds.add(usuario.getId());
@@ -276,8 +316,8 @@ public class UsuarioPredicate {
                 .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+            daCarteiraHierarquiaOuUsuarioCadastroOuProprioUsuario(
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), false),
                 usuario.getUsuario().getId());
 
         } else if (usuario.isBackoffice()) {

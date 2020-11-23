@@ -29,16 +29,18 @@ public class UsuarioHistoricoDto {
 
     public static UsuarioHistoricoDto of(UsuarioHistorico historico) {
         return UsuarioHistoricoDto
-                .builder()
-                .id(historico.getId())
-                .situacao(historico.getSituacaoComMotivo())
-                .observacao(historico.getObservacao())
-                .cadastro(historico.getDataCadastro())
-                .feriasInicio(getFeriasInicio(historico))
-                .feriasFim(getFeriasFim(historico))
-                .afastamentoInicio(getAfastamentoInicio(historico))
-                .afastamentoFim(getAfastamentoFim(historico))
-                .usuarioAlteracao(historico.getUsuarioAlteracao().getNome())
+            .builder()
+            .id(historico.getId())
+            .situacao(historico.getSituacaoComMotivo())
+            .observacao(historico.getObservacao())
+            .cadastro(historico.getDataCadastro())
+            .feriasInicio(getFeriasInicio(historico))
+            .feriasFim(getFeriasFim(historico))
+            .afastamentoInicio(getAfastamentoInicio(historico))
+            .afastamentoFim(getAfastamentoFim(historico))
+            .usuarioAlteracao(!isEmpty(historico.getUsuarioAlteracao())
+                ? historico.getUsuarioAlteracao().getNome()
+                : null)
                 .build();
     }
 

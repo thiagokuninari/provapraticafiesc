@@ -23,7 +23,7 @@ public class UfService {
     public List<SelectResponse> findAll() {
         return ufRepository.findByOrderByNomeAsc()
             .stream()
-            .map(uf -> SelectResponse.convertFrom(uf.getId(), uf.getNome()))
+            .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
             .collect(Collectors.toList());
     }
 }

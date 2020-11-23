@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -39,6 +40,12 @@ public class SiteController {
         return service.getAllSupervisoresBySiteId(id);
     }
 
+    @GetMapping("{id}/supervisores/hierarquia/{usuarioSuperiorId}")
+    public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(@PathVariable Integer id,
+                                                                       @PathVariable Integer usuarioSuperiorId) {
+        return service.getAllSupervisoresByHierarquia(id, usuarioSuperiorId);
+    }
+
     @GetMapping("{id}")
     public SiteResponse getById(@PathVariable Integer id) {
         return SiteResponse.of(service.findById(id), true);
@@ -47,6 +54,11 @@ public class SiteController {
     @GetMapping("{id}/detalhe")
     public SiteDetalheResponse getDetalheSiteById(@PathVariable Integer id) {
         return SiteDetalheResponse.of(service.findById(id));
+    }
+
+    @GetMapping("{id}/usuarios/ids")
+    public Collection<Integer> getUsuariosIdsBySiteId(@PathVariable Integer id) {
+        return service.getUsuariosIdsBySiteId(id);
     }
 
     @PostMapping
@@ -64,14 +76,14 @@ public class SiteController {
         service.inativar(id);
     }
 
-    @PutMapping("{id}/ativar")
-    public void ativar(@PathVariable Integer id) {
-        service.ativar(id);
-    }
-
     @GetMapping("estados-disponiveis")
     public List<SelectResponse> buscarEstadosDisponiveis(Integer siteIgnoradoId) {
         return service.buscarEstadosNaoAtribuidosEmSites(siteIgnoradoId);
+    }
+
+    @GetMapping("usuario-logado")
+    public List<SelectResponse> buscarSitesVinculadosAoUsuarioLogado() {
+        return service.getAllByUsuarioLogado();
     }
 
     @GetMapping("cidades-disponiveis")
@@ -89,5 +101,15 @@ public class SiteController {
     @PutMapping("remover-discadora")
     public void removerDiscadora(@RequestBody SiteDiscadoraRequest request) {
         service.removerDiscadora(request.getSiteId());
+    }
+
+    @GetMapping("/supervisor/{supervisorId}")
+    public SiteResponse getSiteBySupervisorId(@PathVariable Integer supervisorId) {
+        return service.getSiteBySupervisorId(supervisorId);
+    }
+
+    @GetMapping("permitidos")
+    public List<SelectResponse> findSitesPermitidosAoUsuarioAutenticado() {
+        return service.findSitesPermitidosAoUsuarioAutenticado();
     }
 }

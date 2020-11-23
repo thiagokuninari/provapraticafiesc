@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepositoryImpl;
+import helpers.TestBuilders;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +63,13 @@ public class SupervisorServiceTest {
     @MockBean
     private EquipeVendaD2dClient equipeVendasClient;
 
+    @MockBean
+    private AutenticacaoService autenticacaoService;
+
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
             service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
             .extracting("nome", "codigoCargo")
@@ -77,7 +84,8 @@ public class SupervisorServiceTest {
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoSubCluster_seExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
             service.getSupervisoresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_LONDRINA_ID)))
             .extracting("nome", "codigoCargo")
@@ -93,7 +101,8 @@ public class SupervisorServiceTest {
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoCluster_seExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
             service.getSupervisoresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_NORTE_PARANA_ID)))
             .extracting("nome", "codigoCargo")
@@ -109,7 +118,8 @@ public class SupervisorServiceTest {
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoGrupo_seExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
             service.getSupervisoresPorAreaAtuacao(GRUPO, singletonList(GRUPO_NORTE_PARANA_ID)))
             .extracting("nome", "codigoCargo")
@@ -125,7 +135,8 @@ public class SupervisorServiceTest {
 
     @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
             service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_SUL_ID)))
             .extracting("nome", "codigoCargo")
@@ -140,10 +151,11 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
-
+    public void getAssistentesEVendedoresDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
@@ -162,7 +174,7 @@ public class SupervisorServiceTest {
                 tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
@@ -171,9 +183,10 @@ public class SupervisorServiceTest {
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
-
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
@@ -188,9 +201,11 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
+    public void getAssistentesEVendedoresDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
@@ -198,9 +213,11 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
+    public void getAssistentesEVendedoresDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
@@ -208,8 +225,19 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassado() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(1))
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_doSupervisorPassadoPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(1, ECanal.D2D_PROPRIO))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "SUPERVISOR LONDRINA"),
+                tuple(2, "SUPERVISOR ARAPONGAS"),
+                tuple(5, "SUPERVISOR CURITIBA")
+            );
+    }
+
+    @Test
+    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubClusterPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(5, ECanal.D2D_PROPRIO))
             .extracting("id", "nome")
             .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
                 tuple(2, "SUPERVISOR ARAPONGAS"),
@@ -217,17 +245,8 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getSupervisoresDoSubcluster_deveRetornarSupevisoresDoSubCluster_quandoTiverMaisDeUmaSubCluster() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(5))
-            .extracting("id", "nome")
-            .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
-                tuple(2, "SUPERVISOR ARAPONGAS"),
-                tuple(5, "SUPERVISOR CURITIBA"));
-    }
-
-    @Test
-    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassado() {
-        assertThat(service.getSupervisoresDoSubclusterDoUsuario(8))
+    public void getSupervisoresDoSubcluster_deveNaoRetornarAssistentes_doAssistentePassadoPeloCanal() {
+        assertThat(service.getSupervisoresDoSubclusterDoUsuarioPeloCanal(8, ECanal.D2D_PROPRIO))
             .extracting("id", "nome")
             .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
                 tuple(2, "SUPERVISOR ARAPONGAS"),

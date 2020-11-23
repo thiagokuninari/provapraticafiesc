@@ -1,0 +1,50 @@
+package br.com.xbrain.autenticacao.modules.equipevenda.service;
+
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class EquipeVendasUsuarioServiceTest {
+
+    @InjectMocks
+    private EquipeVendasUsuarioService equipeVendasUsuarioService;
+
+    @Mock
+    private EquipeVendasUsuarioClient equipeVendasUsuarioClient;
+
+    @Test
+    public void getAll_deveRetornarListaComUsuariosDaEquipeAtiva_quandoBuscarPelaEquipeVendaId() {
+        var usuarios = umaListaUsuariosDaEquipeVenda();
+
+        Map<String, Object> filtros = Map.of("ativo", true, "equipeVendaId", 10);
+
+        when(equipeVendasUsuarioClient.getAll(filtros)).thenReturn(usuarios);
+
+        assertThat(equipeVendasUsuarioService.getAll(filtros)).isEqualTo(usuarios);
+    }
+
+    private List<EquipeVendaUsuarioResponse> umaListaUsuariosDaEquipeVenda() {
+        return List.of(
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(1)
+                .usuarioNome("RENATO")
+                .equipeVendaId(10)
+                .build(),
+            EquipeVendaUsuarioResponse.builder()
+                .usuarioId(1)
+                .usuarioNome("JOAO")
+                .equipeVendaId(10)
+                .build()
+        );
+    }
+}

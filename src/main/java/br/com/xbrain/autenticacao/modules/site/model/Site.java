@@ -74,6 +74,10 @@ public class Site {
 
     public void inativar() {
         situacao = ESituacao.I;
+        supervisores.clear();
+        coordenadores.clear();
+        cidades.clear();
+        estados.clear();
     }
 
     @PrePersist
@@ -96,6 +100,10 @@ public class Site {
     public void update(SiteRequest request) {
         var site = of(request);
         BeanUtils.copyProperties(site, this, "situacao");
+    }
+
+    public Site(Integer id) {
+        this.id = id;
     }
 
 }

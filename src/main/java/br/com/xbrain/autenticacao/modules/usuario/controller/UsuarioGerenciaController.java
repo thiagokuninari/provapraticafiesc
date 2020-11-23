@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,8 @@ public class UsuarioGerenciaController {
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
         return UsuarioDto.of(
-                service.findByIdComAa(id),
-                usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+            usuario,
+            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
     @GetMapping
@@ -62,6 +63,13 @@ public class UsuarioGerenciaController {
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post) {
         return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
+    }
+
+    @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
+                                                                    @RequestBody UsuarioCargoSuperiorPost post,
+                                                                    @PathVariable List<ECanal> canal) {
+        return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
     }
 
     @GetMapping(params = "email")
@@ -115,7 +123,7 @@ public class UsuarioGerenciaController {
     }
 
     @GetMapping("{idUsuario}/supervisor")
-    public UsuarioResponse getUsuarioSuperior(@PathVariable("idUsuario") Integer idUsuario) {
+    public UsuarioResponse getUsuarioSuperior(@PathVariable Integer idUsuario) {
         return service.getUsuarioSuperior(idUsuario);
     }
 
@@ -127,8 +135,8 @@ public class UsuarioGerenciaController {
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
         service.exportUsuariosToCsv(
-                service.getAllForCsv(filtros),
-                response
+            service.getAllForCsv(filtros),
+            response
         );
     }
 }

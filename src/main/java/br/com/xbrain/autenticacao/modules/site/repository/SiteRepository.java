@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import com.querydsl.core.types.Predicate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,8 @@ public interface SiteRepository extends JpaRepository<Site, Integer>,
     QueryDslPredicateExecutor<Site>, SiteRepositoryCustom {
 
     Optional<Site> findFirstByCidadesIdInAndIdNot(List<Integer> cidadesIds, Integer id);
+
+    List<Site> findAll(Predicate predicate);
 
     @Modifying(clearAutomatically = true)
     @Query("update Site a set a.discadoraId = ?1 where a.id in (?2)")

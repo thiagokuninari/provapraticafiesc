@@ -13,4 +13,7 @@ public interface SiteRepositoryCustom {
     List<Site> findBySituacaoAtiva(Predicate predicate);
 
     List<Site> findByEstadoId(Integer estadoId);
+
+    Site findBySupervisorId(Integer supervisorId);
+
 }

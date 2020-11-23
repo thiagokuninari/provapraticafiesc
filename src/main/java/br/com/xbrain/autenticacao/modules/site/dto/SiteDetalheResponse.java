@@ -64,7 +64,7 @@ public class SiteDetalheResponse {
 
     private static Set<CidadeResponse> getCidades(Set<Cidade> coordenadores) {
         return coordenadores.stream()
-            .map(CidadeResponse::parse)
+            .map(CidadeResponse::of)
             .collect(Collectors.toSet());
     }
 }

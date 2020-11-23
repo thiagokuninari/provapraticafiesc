@@ -1,13 +1,11 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(of = "id")
 @ToString(of = "id")
+@NoArgsConstructor
 public class CargoDepartamentoFuncionalidade {
 
     @Id
@@ -49,8 +48,9 @@ public class CargoDepartamentoFuncionalidade {
     @Column(name = "DATA_CADASTRO", updatable = false)
     private LocalDateTime dataCadastro;
 
-    public CargoDepartamentoFuncionalidade() {
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "CANAL")
+    private ECanal canal;
 
     public CargoDepartamentoFuncionalidade(Integer cargoId, Integer departamentoId, Integer funcionalidadeId) {
         this.cargo = new Cargo(cargoId);

@@ -73,6 +73,11 @@ public class AutenticacaoService {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    public Optional<OAuth2AccessToken> getAccessToken() {
+        return Optional.ofNullable(getAuthentication())
+            .map(tokenStore::getAccessToken);
+    }
+
     @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)

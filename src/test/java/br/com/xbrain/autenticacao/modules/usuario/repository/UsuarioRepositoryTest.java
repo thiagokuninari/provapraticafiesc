@@ -2,26 +2,29 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ActiveProfiles("test")
-@SpringBootTest
 @RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_usuario_repository.sql"})
+@DataJpaTest
+@Sql({"classpath:/tests_usuario_repository.sql"})
 public class UsuarioRepositoryTest {
 
     @Autowired
@@ -116,4 +119,26 @@ public class UsuarioRepositoryTest {
                 tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
     }
 
+    @Test
+    public void getUsuarioSuperior_usuarioHierarquia_quandoBuscarUsuarioSuperiorDoUsuarioIdInformado() {
+        assertThat(repository.getUsuarioSuperior(115))
+            .isEqualTo(Optional.of(
+                UsuarioHierarquia.builder()
+                    .dataCadastro(LocalDateTime.of(2020, 4, 3, 12, 0))
+                    .usuario(new Usuario(115))
+                    .usuarioCadastro(new Usuario(113))
+                    .usuarioHierarquiaPk(new UsuarioHierarquiaPk(115, 113))
+                    .usuarioSuperior(new Usuario(113))
+                    .build()));
+    }
+
+    @Test
+    public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(110, "HUNTER 1"),
+                tuple(111, "HUNTER 2")
+            );
+    }
 }

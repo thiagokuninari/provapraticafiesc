@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -282,11 +279,11 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(4)))
-            .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
+            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_TABULACAO_MANUAL")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
-            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO_PROPRIO")));
+            .andExpect(jsonPath("$[0].canais[1]", is("D2D_PROPRIO")));
     }
 
     @Test
@@ -303,9 +300,10 @@ public class UsuarioControllerTest {
 
     @Test
     public void getPermissoesPorUsuarios_throwException_QuandoParametrosVazios() throws Exception {
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario")
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(new UsuarioPermissoesRequest())))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo permissoes é obrigatório.",
@@ -319,9 +317,11 @@ public class UsuarioControllerTest {
                 2844,
                 Collections.singletonList("ROLE_VDS_TABULACAO_CLICKTOCALL"))))
             .when(usuarioService).findUsuariosByPermissoes(any());
-        mvc.perform(get("/api/usuarios/permissoes-por-usuario?usuariosId=2844&permissoes=ROLE_VDS_TABULACAO_CLICKTOCALL")
+        var request = new UsuarioPermissoesRequest(List.of(2844), List.of("ROLE_VDS_TABULACAO_CLICKTOCALL"));
+        mvc.perform(post("/api/usuarios/permissoes-por-usuario")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
-            .accept(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].usuarioId", is(2844)))
@@ -554,6 +554,38 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
 
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+    }
+
+    @Test
+    public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
+        mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].value").value(300))
+            .andExpect(jsonPath("$[0].label").value("Operacao Supervisor NET"))
+            .andExpect(jsonPath("$[1].value").value(102))
+            .andExpect(jsonPath("$[1].label").value("Supervisor Operação"));
+    }
+
+    @Test
+    public void buscarUrlLojaOnline_deveRetornarUrls_quandoSolicitado() throws Exception {
+        mvc.perform(get("/api/usuarios/100/url-loja-online")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.urlLojaBase", is("http://loja.com.br/1")))
+            .andExpect(jsonPath("$.urlLojaProspect", is("http://loja.com.br/2")))
+            .andExpect(jsonPath("$.urlLojaProspectNextel", is("http://loja.com.br/3")));
+    }
+
+    @Test
+    public void buscarUrlLojaOnline_deveRetornarBadRequest_quandoNaoEncontrado() throws Exception {
+        mvc.perform(get("/api/usuarios/99999/url-loja-online")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {

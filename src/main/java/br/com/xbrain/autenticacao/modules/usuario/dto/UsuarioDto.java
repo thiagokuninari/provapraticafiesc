@@ -90,6 +90,11 @@ public class UsuarioDto implements Serializable {
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private String urlLojaBase;
+    private String urlLojaProspect;
+    private String urlLojaProspectNextel;
+    private String cupomLoja;
+    private Integer siteId;
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();
@@ -120,8 +125,8 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setNivelId(usuario.getNivelId());
         usuarioDto.setNivelCodigo(usuario.getNivelCodigo());
         usuarioDto.setHierarquiasId(usuario.getUsuariosHierarquia().stream()
-                .map(UsuarioHierarquia::getUsuarioSuperiorId)
-                .collect(Collectors.toList()));
+            .map(UsuarioHierarquia::getUsuarioSuperiorId)
+            .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
         return usuarioDto;
@@ -145,6 +150,6 @@ public class UsuarioDto implements Serializable {
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
         return !isEmpty(usuario.getUnidadesNegociosId())
-                ? usuario.getUnidadesNegociosId().get(0) : 0;
+            ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
 }

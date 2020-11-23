@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static java.util.Objects.nonNull;
 
@@ -18,7 +19,13 @@ public class SitePredicate extends PredicateBase {
         if (nonNull(id)) {
             builder.and(site.id.eq(id));
         }
+        return this;
+    }
 
+    public SitePredicate ignorarSite(Integer id) {
+        if (!isEmpty(id)) {
+            builder.and(site.id.ne(id));
+        }
         return this;
     }
 
@@ -55,6 +62,22 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate comCoordenadoresOuSupervisor(Integer usuarioId) {
+        if (!isEmpty(usuarioId)) {
+            builder.and(site.coordenadores.any().id.eq(usuarioId))
+                .or(site.supervisores.any().id.eq(usuarioId));
+        }
+        return this;
+    }
+
+    public SitePredicate comCoordenadoresOuSupervisores(List<Integer> coordenadoresOuSupervidoresIds) {
+        if (!isEmpty(coordenadoresOuSupervidoresIds)) {
+            builder.and(site.coordenadores.any().id.in(coordenadoresOuSupervidoresIds))
+                .or(site.supervisores.any().id.in(coordenadoresOuSupervidoresIds));
+        }
+        return this;
+    }
+
     public SitePredicate comSupervisores(List<Integer> supervisoresIds) {
         filtrarLista(supervisoresIds)
             .map(site.supervisores.any().id::in)
@@ -82,6 +105,11 @@ public class SitePredicate extends PredicateBase {
     public SitePredicate ignorarTodos() {
         builder.and(site.id.isNull());
 
+        return this;
+    }
+
+    public SitePredicate todosSitesAtivos() {
+        builder.and(site.situacao.eq(A));
         return this;
     }
 

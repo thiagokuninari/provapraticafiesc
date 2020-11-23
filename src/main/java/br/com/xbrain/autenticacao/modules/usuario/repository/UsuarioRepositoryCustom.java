@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UsuarioRepositoryCustom {
 
@@ -30,7 +32,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
@@ -72,12 +74,12 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                               List<CodigoCargo> cargos,
-                                                              ECanal canal);
+                                                              Set<ECanal> canais);
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
                                                     CodigoCargo cargo,
-                                                    ECanal canal);
+                                                    Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
@@ -101,7 +103,17 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
-    List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+    List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal);
+
+    List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate, CodigoCargo codigoCargo);
+
+    List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId);
+
+    List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
 }

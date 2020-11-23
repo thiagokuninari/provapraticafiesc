@@ -17,7 +17,7 @@ public class TimeZoneController {
     @GetMapping
     public List<SelectResponse> getTimeZones() {
         return Arrays.stream(ETimeZone.values())
-                .map(item -> SelectResponse.convertFrom(item.name(), item.getDescricao()))
+                .map(item -> SelectResponse.of(item.name(), item.getDescricao()))
                 .collect(Collectors.toList());
     }
 }
