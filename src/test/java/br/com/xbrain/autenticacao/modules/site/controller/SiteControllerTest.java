@@ -368,6 +368,24 @@ public class SiteControllerTest {
             .contains(ESituacao.I);
     }
 
+    @Test
+    @SneakyThrows
+    public void updateSite_siteAtualizadoExcetoDiscadoraId_quandoAtualizarDescricao() {
+        var siteRequest = umSiteRequest();
+        siteRequest.setId(102);
+        siteRequest.setNome("Koba");
+
+        mvc.perform(put(API_URI)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(convertObjectToJsonBytes(siteRequest))
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(102)))
+            .andExpect(jsonPath("$.nome", is("Koba")))
+            .andExpect(jsonPath("$.discadoraId", is(8)));
+
+    }
+
     private SiteRequest umSiteRequest() {
         return SiteRequest.builder()
             .nome("Arapa")
