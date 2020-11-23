@@ -48,12 +48,12 @@ public class CargoService {
 
     public  List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate().comNivel(nivelId);
-        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate);
+        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
     }
 
-    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate) {
-        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
-        cargoPredicate.comId(Collections.singletonList(cargoProprioId));
+    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
+        cargoPredicate.comId(getCargosPermitidosParaEditar());
+        cargoPredicate.comNivel(nivelId);
         return repository.findAll(cargoPredicate.build());
     }
 
@@ -99,5 +99,13 @@ public class CargoService {
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
+    }
+
+    private List<Integer> getCargosPermitidosParaEditar() {
+        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
+        var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
+        cargosPermitidos.add(cargoProprioId);
+
+        return cargosPermitidos;
     }
 }
