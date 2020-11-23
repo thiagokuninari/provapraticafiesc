@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +54,7 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of()))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
     }
@@ -67,7 +68,7 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null, true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1001, 1002, 1003, 1004);
     }
@@ -81,7 +82,8 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO)))
+        assertThat(service
+            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003, 1004);
     }
@@ -95,11 +97,11 @@ public class CargoServiceTest {
             .build();
         when(cargoRepository.findAll(eq(predicate))).thenReturn(umaListadeCargosComCanais());
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO)))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.D2D_PROPRIO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1001, 1002, 1003, 1004);
 
-        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO)))
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.AGENTE_AUTORIZADO), true))
             .extracting(Cargo::getId)
             .containsExactlyInAnyOrder(1000, 1002, 1003);
     }
@@ -116,7 +118,7 @@ public class CargoServiceTest {
         when(cargoRepository.findAll(any(BooleanBuilder.class)))
                 .thenReturn(umaListaDeCargos());
 
-        assertThat(service.getPermitidosPorNivel(1))
+        assertThat(service.getPermitidosPorNivel(new CargoPredicate().comNivel(1)))
                 .extracting("id", "nome")
                 .containsExactlyInAnyOrder(
                         tuple(1, "Analista"),
@@ -145,7 +147,7 @@ public class CargoServiceTest {
         when(cargoRepository.findAll(any(BooleanBuilder.class)))
                 .thenReturn(List.of(umCargo(8, "Vendedor", ESituacao.A)));
 
-        assertThat(service.getPermitidosPorNivel(1))
+        assertThat(service.getPermitidosPorNivel(new CargoPredicate().comNivel(1)))
                 .extracting("id", "nome")
                 .containsExactly(
                         tuple(8, "Vendedor"));
@@ -182,6 +184,49 @@ public class CargoServiceTest {
 
         assertThat(service.situacao(umCargoRequest(1, "Vendedor", ESituacao.I)))
                 .extracting("situacao").contains(ESituacao.I);
+    }
+
+    @Test
+    public void canaisComCargo_deveRetornarCargosComCanalAtivoESemCanal_quandoParametroCanalForAtivo() {
+        when(cargoRepository.findAll((Predicate) any())).thenReturn(umaListadeCargosComCanais());
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .cargoId(10)
+                .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                .build());
+
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO), true))
+            .extracting("id", "Canais")
+            .contains(
+                tuple(1002, Set.of()),
+                tuple(1004, Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+            );
+    }
+
+    @Test
+    public void cargoEditar_deveRetornarOProprioCargo_quandoUsuarioEditarNaoTerPermissaoParaEditarCargoProprio() {
+        when(cargoRepository.findAll((Predicate) any())).thenReturn(List.of(umCargo(7, "Gerente", ESituacao.A)));
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .cargoId(10)
+                .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+                .build());
+        assertThat(service
+            .getPermitidosPorNivelECanaisPermitidos(31, Set.of(ECanal.ATIVO_PROPRIO), false))
+            .extracting("id", "Nome")
+            .contains(tuple(7, "Gerente"));
+    }
+
+    @Test
+    public void cargoEditarComPermissaoPermissao_deveRetornarTodosOsCargos_quandoParametroEditarForFalso() {
+        when(cargoRepository.findAll((Predicate) any())).thenReturn(umaListaDeCargos());
+        mockUmUsuarioGerenteVisualizarGeral();
+        assertThat(service.getPermitidosPorNivelECanaisPermitidos(31, null, true))
+            .hasSize(12);
     }
 
     private void mockUmUsuarioGerenteVisualizarGeral() {

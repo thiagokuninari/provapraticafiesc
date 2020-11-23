@@ -64,7 +64,10 @@ public class CargoControllerTest {
 
     @Test
     public void getAll_deveRetornarOsCargos_conformeNivelECanaisPermitidosFiltrados() throws Exception {
-        when(cargoService.getPermitidosPorNivelECanaisPermitidos(eq(7), eq(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))))
+        when(cargoService.getAll(any(), any()))
+            .thenReturn(umCargoPage(1, "Administrador", 4));
+        when(cargoService
+            .getPermitidosPorNivelECanaisPermitidos(eq(7), eq(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO)), eq(true)))
                 .thenReturn(List.of(Cargo.builder()
                         .codigo(CodigoCargo.OPERACAO_TECNICO)
                         .nome("OPERADOR TECNICO")
@@ -76,6 +79,7 @@ public class CargoControllerTest {
         mvc.perform(get(API_CARGO)
                 .param("nivelId", "7")
                 .param("canais", canaisParam)
+                .param("permiteEditarCompleto", "true")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
