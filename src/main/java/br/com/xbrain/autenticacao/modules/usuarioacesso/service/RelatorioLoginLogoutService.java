@@ -76,10 +76,6 @@ public class RelatorioLoginLogoutService {
     public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso(ECanal canal, Integer agenteAutorizadoId) {
         var usuarioAutenticado = getUsuarioAutenticado();
 
-        if (usuarioAutenticado.isMsoOrXbrain()) {
-            return Optional.empty();
-        }
-
         var usuariosIdsAa = Objects.nonNull(agenteAutorizadoId)
             ? agenteAutorizadoService.getUsuariosIdsByAaId(agenteAutorizadoId, true)
             : null;

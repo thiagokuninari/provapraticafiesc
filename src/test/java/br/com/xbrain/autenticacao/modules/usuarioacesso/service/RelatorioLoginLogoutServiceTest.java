@@ -51,37 +51,6 @@ public class RelatorioLoginLogoutServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
-    public void getColaboradores_colaboradoresComIdENome_quandoUsuarioXBrainBuscarInativos() {
-        mockAutenticacao(umUsuarioXBrain());
-
-        when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.empty())))
-            .thenReturn(List.of(100, 2002, 1));
-
-        var predicate = new UsuarioPredicate()
-            .comIds(List.of(100, 2002, 1))
-            .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
-            .build();
-        when(usuarioRepository.findAllUsuariosNomeComSituacao(eq(predicate), eq(QUsuario.usuario.nome.upper().asc())))
-            .thenReturn(List.of(
-                UsuarioNomeResponse.of(100, "Hwasa Maria", ESituacao.A),
-                UsuarioNomeResponse.of(2002, "Ary da Disney", ESituacao.A),
-                UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
-            ));
-
-        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
-
-        assertThat(colaboradores)
-            .extracting("id", "nome", "situacao")
-            .containsExactly(
-                tuple(100, "Hwasa Maria", ESituacao.A),
-                tuple(2002, "Ary da Disney", ESituacao.A),
-                tuple(1, "Adilson Elias", ESituacao.I)
-            );
-
-        verify(usuarioService, never()).getUsuariosPermitidosIdsComParceiros();
-    }
-
-    @Test
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioAgenteAutorizadoBuscarInativos() {
         var usuarioAutenticado = umUsuarioAgenteAutorizado();
         mockAutenticacao(usuarioAutenticado);
@@ -182,24 +151,6 @@ public class RelatorioLoginLogoutServiceTest {
         var expectedPredicate = new BooleanBuilder(QUsuario.usuario.id.isNull())
             .and(QUsuario.usuario.situacao.in(Set.of(ESituacao.A, ESituacao.I, ESituacao.R)));
         assertThat(predicateArgCaptor.getValue()).isEqualTo(expectedPredicate);
-    }
-
-    @Test
-    public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioXBrain() {
-        mockAutenticacao(umUsuarioXBrain());
-        assertThat(service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null)).isNotPresent();
-
-        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
-        verify(usuarioService, never()).getIdDosUsuariosSubordinadosDoPol(anyOrNull());
-    }
-
-    @Test
-    public void getUsuariosIdsComNivelDeAcesso_optionalEmpty_quandoUsuarioMso() {
-        mockAutenticacao(umUsuarioMso());
-        assertThat(service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 885)).isNotPresent();
-
-        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
-        verify(usuarioService, never()).getIdDosUsuariosSubordinadosDoPol(anyOrNull());
     }
 
     @Test
