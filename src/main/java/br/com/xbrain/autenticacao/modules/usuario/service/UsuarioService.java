@@ -1041,6 +1041,14 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
+    public void inativar(Integer id) {
+        repository.findById(id)
+            .ifPresent(user -> {
+                user.setSituacao(INATIVO);
+                repository.save(user);
+            });
+    }
+
     @Transactional
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());

@@ -71,6 +71,11 @@ public class UsuarioController {
         usuarioService.inativarSocioPrincipal(email);
     }
 
+    @PutMapping("inativar/{id}")
+    public void inativar(@PathVariable Integer id) {
+        usuarioService.inativar(id);
+    }
+
     @GetMapping("/autenticado/{id}")
     public UsuarioAutenticado getUsuarioAutenticadoById(@PathVariable("id") int id) {
         return new UsuarioAutenticado(
