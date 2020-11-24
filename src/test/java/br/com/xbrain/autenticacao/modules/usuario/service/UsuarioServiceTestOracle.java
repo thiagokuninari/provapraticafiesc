@@ -189,7 +189,7 @@ public class UsuarioServiceTestOracle {
                 "ROLE_VDS_TABULACAO_CLICKTOCALL",
                 "ROLE_VDS_TABULACAO_PERSONALIZADA",
                 "ROLE_VDS_TABULACAO_MANUAL"));
-        request.setUsuariosId(Arrays.asList(245, 243, 231, 238));
+        request.setUsuariosId(Arrays.asList(231, 238, 245, 243));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
         Assert.assertEquals(4, response.size());
@@ -274,6 +274,18 @@ public class UsuarioServiceTestOracle {
         filtros.setCnpjAa("15.765.222/0001-72");
 
         assertThat(service.getAll(new PageRequest(), filtros)).isNotNull();
+    }
+
+    @Test
+    public void getAll_deveRetornarVazia_quandoInformarListaSemRegistro() {
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
+
+        var filtros = new UsuarioFiltros();
+        filtros.setCnpjAa("15.765.222/0001-72");
+
+        assertThat(service.getAll(new PageRequest(), filtros)).isEmpty();
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
