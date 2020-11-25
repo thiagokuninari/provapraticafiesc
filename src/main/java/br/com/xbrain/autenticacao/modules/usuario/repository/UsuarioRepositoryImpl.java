@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -12,9 +13,12 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import com.google.common.collect.Lists;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -33,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
@@ -818,14 +824,30 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<Integer> findUsuariosIdsPorSiteId(Integer siteId) {
-        var sql = "SELECT DISTINCT U.ID "
-            + "FROM USUARIO_HIERARQUIA UH "
-            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-            + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
-            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR";
+        var sql = "SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId"
+            + " UNION SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S WHERE S.FK_SITE = :siteId";
         var params = new MapSqlParameterSource()
             .addValue("siteId", siteId);
         var rowMapper = SingleColumnRowMapper.newInstance(Integer.class);
-        return jdbcTemplate.query(sql, params, rowMapper);
+        var rootIds = jdbcTemplate.query(sql, params, rowMapper);
+
+        return findUsuariosSubordinadosIds(rootIds).collect(Collectors.toList());
+    }
+
+    private Stream<Integer> findUsuariosSubordinadosIds(List<Integer> usuariosIds) {
+        var predicatesInParts = Lists.partition(usuariosIds, Constantes.QTD_MAX_IN_NO_ORACLE).stream()
+            .map(usuarioHierarquia.usuarioHierarquiaPk.usuarioSuperior::in)
+            .toArray(BooleanExpression[]::new);
+        var idsSubordinadosDiretos = new JPAQueryFactory(entityManager)
+            .selectDistinct(usuarioHierarquia.usuarioHierarquiaPk.usuario)
+            .from(usuarioHierarquia)
+            .where(Expressions.anyOf(predicatesInParts))
+            .fetch();
+
+        if (ObjectUtils.isEmpty(idsSubordinadosDiretos)) {
+            return usuariosIds.stream();
+        } else {
+            return Stream.concat(usuariosIds.stream(), findUsuariosSubordinadosIds(idsSubordinadosDiretos));
+        }
     }
 }
