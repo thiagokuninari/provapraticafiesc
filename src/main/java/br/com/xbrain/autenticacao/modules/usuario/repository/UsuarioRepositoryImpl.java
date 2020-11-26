@@ -821,8 +821,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var sql = "SELECT DISTINCT U.ID "
             + "FROM USUARIO_HIERARQUIA UH "
             + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-            + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId) "
-            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR";
+            + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId "
+            + "UNION SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S WHERE S.FK_SITE = :siteId) "
+            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = FK_USUARIO";
         var params = new MapSqlParameterSource()
             .addValue("siteId", siteId);
         var rowMapper = SingleColumnRowMapper.newInstance(Integer.class);
