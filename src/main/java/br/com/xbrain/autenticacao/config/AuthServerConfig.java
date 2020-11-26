@@ -39,6 +39,8 @@ import static br.com.xbrain.autenticacao.config.EScopes.INDICACAO;
 import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
 import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
+import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
+
 
 @Configuration
 @EnableAuthorizationServer
@@ -155,6 +157,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String chatbotApiClient;
     @Value("${app-config.oauth-clients.chatbot-api.secret}")
     private String chatbotApiSecret;
+    @Value("${app-config.oauth-clients.solicitacao-pap-api.client}")
+    private String solicitacaoPapApiClient;
+    @Value("${app-config.oauth-clients.solicitacao-pap-api.secret}")
+    private String solicitacaoPapApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -323,6 +329,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(chatbotApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(CHATBOT.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(solicitacaoPapApiClient)
+            .secret(solicitacaoPapApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(SOLICITACAO_PAP.getScope())
             .authorities(ROLE_APPLICATION);
     }
 
