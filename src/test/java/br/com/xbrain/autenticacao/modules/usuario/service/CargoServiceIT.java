@@ -50,7 +50,6 @@ public class CargoServiceIT {
             .containsExactlyInAnyOrder(
                 tuple(40, "Aceite - Agente Autorizado"),
                 tuple(1, "Analista - Operação"),
-                tuple(51, "Analista de Suporte - X-BRAIN"),
                 tuple(43, "Aprendiz - Agente Autorizado"),
                 tuple(44, "Assistente - Agente Autorizado"),
                 tuple(2, "Assistente - Operação"),
