@@ -118,6 +118,24 @@ public class CargoServiceTest {
             .extracting("situacao").contains(ESituacao.I);
     }
 
+    @Test
+    public void isAgenteAutorizado_deveRetornarTrue_quandoForNivelAgenteAutorizado() {
+        var response = service.isAgenteAutorizado(CodigoCargo.AGENTE_AUTORIZADO_ACEITE);
+        assertThat(response).isTrue();
+    }
+
+    @Test
+    public void isAgenteAutorizado_deveRetornarFalse_quandoForNivelXbrain() {
+        var response = service.isAgenteAutorizado(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN);
+        assertThat(response).isFalse();
+    }
+
+    @Test
+    public void isAgenteAutorizado_deveRetornarFalse_quandoNaoForNivelAgenteAutorizado() {
+        var response = service.isAgenteAutorizado(CodigoCargo.ADMINISTRADOR);
+        assertThat(response).isFalse();
+    }
+
     private Cargo umCargo(Integer id, String nome, ESituacao situacao) {
         return Cargo.builder()
             .id(id)

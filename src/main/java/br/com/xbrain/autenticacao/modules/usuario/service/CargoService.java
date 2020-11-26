@@ -99,7 +99,7 @@ public class CargoService {
         }
     }
 
-    private boolean isAgenteAutorizado(CodigoCargo codigoCargo) {
+    public boolean isAgenteAutorizado(CodigoCargo codigoCargo) {
         return codigoCargo.name().contains("AGENTE_AUTORIZADO") && !codigoCargo.name().contains("XBRAIN");
     }
 
