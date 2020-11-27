@@ -721,4 +721,22 @@ public class UsuarioServiceTest {
             pageRequest,
             usuariosList.size());
     }
+
+    @Test
+    public void ativar_void_quandoDesejarAlterarSituacaoDoUsuarioComId100ParaAtivo() {
+        var usuarioInativo = Usuario.builder()
+            .id(100)
+            .nome("RENATO")
+            .situacao(ESituacao.I)
+            .build();
+
+        when(repository.findById(100))
+            .thenReturn(Optional.of(usuarioInativo));
+
+        service.ativar(100);
+
+        assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
+
+        verify(repository).save(usuarioInativo);
+    }
 }
