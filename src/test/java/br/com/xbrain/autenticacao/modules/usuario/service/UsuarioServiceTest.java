@@ -730,7 +730,6 @@ public class UsuarioServiceTest {
             .situacao(ESituacao.I)
             .build();
 
-
         when(repository.findById(100))
             .thenReturn(Optional.of(usuarioInativo));
 
