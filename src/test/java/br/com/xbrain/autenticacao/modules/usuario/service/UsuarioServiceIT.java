@@ -149,8 +149,10 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
+
         Usuario usuario = service.findByIdCompleto(100);
-        assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
+        assertEquals(EXECUTIVO, usuario.getCargoCodigo());
+        assertEquals(ESituacao.A, usuario.getSituacao());
     }
 
     @Test

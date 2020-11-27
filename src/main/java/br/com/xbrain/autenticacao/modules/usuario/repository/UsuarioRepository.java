@@ -75,7 +75,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     void updateEmail(String email, Integer usuarioId);
 
     @Modifying
-    @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")
+    @Query("update Usuario u set u.cargo = ?1, u.situacao = 'A' where u.id = ?2")
     void updateCargo(Cargo cargo, Integer usuarioId);
 
     @Modifying
