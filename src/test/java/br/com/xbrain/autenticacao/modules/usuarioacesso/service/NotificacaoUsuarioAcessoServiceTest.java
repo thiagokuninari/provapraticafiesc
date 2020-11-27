@@ -154,6 +154,8 @@ public class NotificacaoUsuarioAcessoServiceTest {
 
         assertThat(service.getUsuariosIdsByIds(Optional.of(List.of(14, 44, 1))))
             .containsExactlyInAnyOrder(44, 1);
+
+        verify(client, never()).getUsuariosIdsByIds(isNull());
     }
 
     @Test
