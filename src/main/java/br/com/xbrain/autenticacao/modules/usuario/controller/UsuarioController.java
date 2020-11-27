@@ -66,6 +66,11 @@ public class UsuarioController {
         usuarioService.ativarSocioPrincipal(email);
     }
 
+    @PutMapping("ativar/{id}")
+    public void ativar(@PathVariable Integer id) {
+        usuarioService.ativar(id);
+    }
+
     @PutMapping("inativar-socio")
     public void inativarSocioPrincipal(@RequestParam String email) {
         usuarioService.inativarSocioPrincipal(email);

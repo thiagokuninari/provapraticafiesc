@@ -1008,6 +1008,14 @@ public class UsuarioService {
 
     }
 
+    public void ativar(Integer id) {
+        repository.findById(id)
+            .ifPresent(user -> {
+                user.setSituacao(ATIVO);
+                repository.save(user);
+            });
+    }
+
     private void validarAtivacao(Usuario usuario) {
         if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
