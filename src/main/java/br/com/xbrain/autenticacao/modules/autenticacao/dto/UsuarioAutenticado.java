@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -42,6 +43,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private ESituacao situacao;
     private List<String> empresasNome;
     private List<Empresa> empresas;
+    private List<Integer> agentesAutorizados;
     private Collection<? extends GrantedAuthority> permissoes;
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
@@ -132,6 +134,16 @@ public class UsuarioAutenticado extends OAuth2Request {
             || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
+    }
+
+    public void validarPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        if (isAgenteAutorizado() && !isAgenteAutorizadoPermitido(agenteAutorizadoId)) {
+            throw new PermissaoException();
+        }
+    }
+
+    private boolean isAgenteAutorizadoPermitido(Integer agenteAutorizadoId) {
+        return Objects.nonNull(agentesAutorizados) && agentesAutorizados.contains(agenteAutorizadoId);
     }
 
     public boolean isAgenteAutorizado() {
