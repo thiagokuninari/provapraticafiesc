@@ -11,7 +11,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasSe
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -77,7 +77,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private List<SelectResponse> getSites(Usuario usuario) {
-        return List.of(CodigoCargo.MSO_CONSULTOR, CodigoCargo.ADMINISTRADOR).contains(usuario.getCargoCodigo())
+        return List.of(CodigoNivel.MSO, CodigoNivel.XBRAIN).contains(usuario.getNivelCodigo())
             || usuario.getCanais().contains(ATIVO_PROPRIO)
             ? siteService.getSitesPorPermissao(usuario)
             : Collections.emptyList();

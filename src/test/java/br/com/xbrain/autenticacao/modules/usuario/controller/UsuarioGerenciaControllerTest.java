@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -86,6 +87,8 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private SiteService siteService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
