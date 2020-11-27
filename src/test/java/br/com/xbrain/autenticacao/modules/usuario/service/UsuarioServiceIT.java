@@ -152,7 +152,6 @@ public class UsuarioServiceIT {
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(EXECUTIVO, usuario.getCargoCodigo());
-        assertEquals(ESituacao.A, usuario.getSituacao());
     }
 
     @Test
