@@ -63,7 +63,7 @@ public class RelatorioLoginLogoutServiceTest {
             .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
+        when(usuarioRepository.findAllIds(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
@@ -82,7 +82,7 @@ public class RelatorioLoginLogoutServiceTest {
 
         var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
 
-        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicateBuscaIds));
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicateBuscaIds));
 
         assertThat(colaboradores)
             .extracting("id", "nome", "situacao")
@@ -106,7 +106,7 @@ public class RelatorioLoginLogoutServiceTest {
             .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicateBuscaIds)))
+        when(usuarioRepository.findAllIds(eq(predicateBuscaIds)))
             .thenReturn(List.of(98, 100, 333, 2002, 15, 1, 9, 16));
 
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.of(List.of(98, 100, 333, 2002, 15, 1, 9, 16)))))
@@ -125,7 +125,7 @@ public class RelatorioLoginLogoutServiceTest {
 
         var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
 
-        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicateBuscaIds));
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicateBuscaIds));
 
         assertThat(colaboradores)
             .extracting("id", "nome", "situacao")
@@ -167,7 +167,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
@@ -188,11 +188,11 @@ public class RelatorioLoginLogoutServiceTest {
             .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.AGENTE_AUTORIZADO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null);
 
-        verify(usuarioRepository, times(1)).findAllIdsDistinct(eq(predicate));
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
@@ -214,7 +214,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
@@ -234,7 +234,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
@@ -254,7 +254,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
@@ -274,7 +274,7 @@ public class RelatorioLoginLogoutServiceTest {
             .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
-        when(usuarioRepository.findAllIdsDistinct(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+        when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())

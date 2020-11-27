@@ -76,18 +76,16 @@ public class RelatorioLoginLogoutService {
     public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso(ECanal canal, Integer agenteAutorizadoId) {
         var usuarioAutenticado = getUsuarioAutenticado();
 
-        var usuariosIdsAa = Objects.nonNull(agenteAutorizadoId)
-            ? agenteAutorizadoService.getUsuariosIdsByAaId(agenteAutorizadoId, true)
-            : null;
         var predicate = new UsuarioPredicate()
             .comCanais(usuarioAutenticado.getUsuario().getCanais())
             .comCanal(canal)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(usuariosIdsAa)
-            .filtrarPermitidosRelatorioLoginLogout(canal)
-            .build();
+            .filtrarPermitidosRelatorioLoginLogout(canal);
+        if (Objects.nonNull(agenteAutorizadoId)) {
+            predicate.comIds(agenteAutorizadoService.getUsuariosIdsByAaId(agenteAutorizadoId, true));
+        }
 
-        return Optional.of(usuarioRepository.findAllIdsDistinct(predicate));
+        return Optional.of(usuarioRepository.findAllIds(predicate.build()));
     }
 
     private UsuarioAutenticado getUsuarioAutenticado() {

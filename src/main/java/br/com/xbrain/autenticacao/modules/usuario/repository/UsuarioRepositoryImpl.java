@@ -762,11 +762,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findAllIdsDistinct(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
+    public List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
         return new JPAQueryFactory(entityManager)
-            .selectDistinct(usuario.id)
+            .select(usuario.id)
             .from(usuario)
             .where(predicate)
+            .innerJoin(usuario.cargo, cargo)
             .orderBy(orderSpecifiers)
             .fetch();
     }

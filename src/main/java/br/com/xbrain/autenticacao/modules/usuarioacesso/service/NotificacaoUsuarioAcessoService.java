@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class NotificacaoUsuarioAcessoService {
+
+    private static final int USUARIOS_IDS_PART_SIZE = 100;
 
     @Autowired
     private NotificacaoUsuarioAcessoClient client;
@@ -73,7 +76,12 @@ public class NotificacaoUsuarioAcessoService {
             if (usuariosIds.isPresent() && usuariosIds.get().isEmpty()) {
                 return List.of();
             }
-            return client.getUsuariosIdsByIds(usuariosIds.orElse(null)).stream()
+            return usuariosIds
+                .map(ids -> Lists.partition(List.copyOf(ids), USUARIOS_IDS_PART_SIZE))
+                .map(idsParts -> idsParts.parallelStream()
+                    .map(idsPart -> client.getUsuariosIdsByIds(idsPart))
+                    .flatMap(Collection::stream))
+                .orElseGet(() -> client.getUsuariosIdsByIds(null).stream())
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         } catch (RetryableException ex) {
