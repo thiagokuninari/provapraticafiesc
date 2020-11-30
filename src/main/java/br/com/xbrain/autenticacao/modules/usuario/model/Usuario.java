@@ -488,4 +488,9 @@ public class Usuario {
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
     }
+
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(canais) && canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
 }
