@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -13,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
@@ -20,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -28,8 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static helpers.MatchersHelper.anyOrNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -51,6 +54,25 @@ public class RelatorioLoginLogoutServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
+    public void getLoginsLogoutsDeHoje_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
+        mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO, 101));
+    }
+
+    @Test
+    public void getCsv_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
+        mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.getCsv(
+                new RelatorioLoginLogoutCsvFiltro(),
+                new MockHttpServletResponse(),
+                ECanal.D2D_PROPRIO, 101));
+    }
+
+    @Test
     public void getColaboradores_colaboradoresComIdENome_quandoUsuarioAgenteAutorizadoBuscarInativos() {
         var usuarioAutenticado = umUsuarioAgenteAutorizado();
         mockAutenticacao(usuarioAutenticado);
@@ -60,7 +82,6 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIds(eq(predicateBuscaIds)))
@@ -103,7 +124,6 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
             .build();
         when(usuarioRepository.findAllIds(eq(predicateBuscaIds)))
@@ -154,6 +174,14 @@ public class RelatorioLoginLogoutServiceTest {
     }
 
     @Test
+    public void getColaboradores_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
+        mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.getColaboradores(ECanal.D2D_PROPRIO, 101));
+    }
+
+    @Test
     public void getUsuariosIdsComNivelDeAcesso_deveBuscarIdsNoParceiros_quandoUsuarioAgenteAutorizado() {
         var usuarioAutenticado = umUsuarioAgenteAutorizado();
 
@@ -164,12 +192,15 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -185,7 +216,6 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.AGENTE_AUTORIZADO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .ignorarTodos()
             .filtrarPermitidosRelatorioLoginLogout(ECanal.AGENTE_AUTORIZADO)
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
@@ -211,11 +241,15 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -231,11 +265,15 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -251,11 +289,15 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
@@ -271,14 +313,26 @@ public class RelatorioLoginLogoutServiceTest {
             .comCanais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
             .comCanal(ECanal.D2D_PROPRIO)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .comIds(List.of(12, 7, 90, 1, 3, 100))
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
+
         var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+
+        verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
+
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+    }
+
+    @Test
+    public void getUsuariosIdsComNivelDeAcesso_permissaoException_quandoNaoHouverPermissaoSobreOAa() {
+        mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, 101));
     }
 
     private void mockAutenticacao(UsuarioAutenticado usuarioAutenticado) {
@@ -320,6 +374,7 @@ public class RelatorioLoginLogoutServiceTest {
     private UsuarioAutenticado umUsuarioAgenteAutorizado() {
         var usuario = umUsuarioAutenticado();
         usuario.setNivelCodigo(CodigoNivel.AGENTE_AUTORIZADO.name());
+        usuario.setAgentesAutorizados(List.of(67, 90));
         return usuario;
     }
 
