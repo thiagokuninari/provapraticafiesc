@@ -233,12 +233,6 @@ public class UsuarioService {
         return pages;
     }
 
-    public List<Integer> getUsuariosPermitidosIdsComParceiros() {
-        var predicate = new UsuarioPredicate()
-            .filtraPermitidosComParceiros(autenticacaoService.getUsuarioAutenticado(), this).build();
-        return repository.findAllIds(predicate);
-    }
-
     private void popularUsuarios(List<Usuario> usuarios) {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
