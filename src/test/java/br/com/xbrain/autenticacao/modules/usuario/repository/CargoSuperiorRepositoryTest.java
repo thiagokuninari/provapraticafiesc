@@ -26,7 +26,7 @@ public class CargoSuperiorRepositoryTest {
     public void getCargosHierarquia_deveRetornarAHierarquiaDeCargos_quandoExistir() {
 
         assertThat(repository.getCargosHierarquia(GERENTE_OPERACAO_ID))
-                .containsExactly(4, 5, 10);
+                .containsExactly(1, 4, 5, 8, 3, 10);
 
         assertThat(repository.getCargosHierarquia(VENDEDOR_OPERACAO_ID))
                 .isEmpty();

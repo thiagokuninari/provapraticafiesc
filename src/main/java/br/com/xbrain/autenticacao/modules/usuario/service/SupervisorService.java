@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_ANALISTA;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_CONSULTOR;
+
 @Service
 public class SupervisorService {
 
@@ -28,11 +31,11 @@ public class SupervisorService {
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
 
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
+    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
-            getAssistentesDoSupervisor(supervisorId).stream(),
+            getCargosDescendentesDoSupervisor(supervisorId).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
@@ -43,10 +46,10 @@ public class SupervisorService {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
-    private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId) {
+    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
             supervisorId,
-            List.of(CodigoCargo.ASSISTENTE_OPERACAO),
+            List.of(CodigoCargo.ASSISTENTE_OPERACAO, OPERACAO_ANALISTA, OPERACAO_CONSULTOR),
             ECanal.D2D_PROPRIO);
     }
 
