@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
@@ -35,6 +36,8 @@ public class AutenticacaoService {
     private TokenStore tokenStore;
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -82,7 +85,11 @@ public class AutenticacaoService {
                 .map(usuarioAutenticadoObj -> (UsuarioAutenticado)usuarioAutenticadoObj)
                 .or(() -> usuarioRepository.findComplete(getUsuarioId())
                     .map(Usuario::forceLoad)
-                    .map(usuario -> new UsuarioAutenticado(usuario, authentication.getAuthorities()))
+                    .map(usuario -> new UsuarioAutenticado(
+                        usuario,
+                        authentication.getAuthorities(),
+                        agenteAutorizadoService.getAasPermitidos(usuario.getId())
+                    ))
                     .map(usuarioAutenticado -> {
                         details.putIfAbsent(USUARIO_AUTENTICADO_KEY, usuarioAutenticado);
                         return usuarioAutenticado;

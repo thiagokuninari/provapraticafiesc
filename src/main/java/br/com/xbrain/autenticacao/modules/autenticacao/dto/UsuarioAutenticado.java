@@ -75,7 +75,9 @@ public class UsuarioAutenticado extends OAuth2Request {
         getOrganizacao(usuario);
     }
 
-    public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
+    public UsuarioAutenticado(Usuario usuario,
+                              Collection<? extends GrantedAuthority> permissoes,
+                              List<Integer> agentesAutorizados) {
         this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -89,6 +91,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
+        this.agentesAutorizados = agentesAutorizados;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
