@@ -12,12 +12,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class NotificacaoUsuarioAcessoService {
 
@@ -45,12 +47,11 @@ public class NotificacaoUsuarioAcessoService {
             });
 
             return client.getLoginsLogoutsDeHoje(pageRequestParams);
-        } catch (RetryableException ex) {
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            log.error("Erro ao consultar os Logins / Logouts de hoje.", ex);
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
@@ -62,12 +63,11 @@ public class NotificacaoUsuarioAcessoService {
                 return List.of();
             }
             return client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
-        } catch (RetryableException ex) {
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            log.error("Erro ao buscar relatório de Login / Logout.", ex);
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 
@@ -84,12 +84,11 @@ public class NotificacaoUsuarioAcessoService {
                 .orElseGet(() -> client.getUsuariosIdsByIds(null).stream())
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        } catch (RetryableException ex) {
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            log.error("Erro ao consultar os usuários do relatório de Login / Logout.", ex);
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 }
