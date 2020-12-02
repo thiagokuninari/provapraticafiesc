@@ -58,7 +58,10 @@ public enum EErrors {
             "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
     ERRO_OBTER_AA(
             "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#018 - Erro ao tentar recuperar o AA.");
+            "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
+        "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#032 - Erro ao tentar recuperar o número de usuários logados por hora.");
 
     @Getter
     @Setter

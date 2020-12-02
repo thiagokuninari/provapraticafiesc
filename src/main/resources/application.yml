@@ -194,6 +194,9 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    notificacao:
+      #url: http://localhost:8081
+      url: http://192.168.50.1:6595
 
 flyway:
   enabled: true

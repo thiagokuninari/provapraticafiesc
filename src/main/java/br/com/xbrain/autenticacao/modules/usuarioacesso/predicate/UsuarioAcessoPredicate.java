@@ -1,15 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.predicate;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.QCargo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAcesso;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -17,7 +13,6 @@ public class UsuarioAcessoPredicate {
 
     private BooleanBuilder builder;
     private QUsuarioAcesso usuarioAcesso = QUsuarioAcesso.usuarioAcesso;
-    private QCargo cargo = QCargo.cargo;
 
     public UsuarioAcessoPredicate() {
         this.builder = new BooleanBuilder();
@@ -70,31 +65,6 @@ public class UsuarioAcessoPredicate {
     public UsuarioAcessoPredicate porAa(Integer aaId, List<Integer> listaUsuarioId) {
         if (!ObjectUtils.isEmpty(aaId)) {
             this.builder.and(usuarioAcesso.usuario.id.in(listaUsuarioId));
-        }
-        return this;
-    }
-
-    public UsuarioAcessoPredicate porPeriodoComHora(LocalDateTime dataInicio, LocalDateTime dataFim, ETipo tipo) {
-        if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim) && tipo.equals(ETipo.LOGOUT)) {
-            builder.and(usuarioAcesso.dataCadastro.goe(dataInicio).and(usuarioAcesso.dataCadastro.loe(dataFim)))
-                .and(usuarioAcesso.flagLogout.eq(Eboolean.V.name()));
-        } else {
-            builder.and(usuarioAcesso.dataCadastro.goe(dataInicio).and(usuarioAcesso.dataCadastro.loe(dataFim)))
-                .and(usuarioAcesso.flagLogout.eq(Eboolean.F.name()));
-        }
-        return this;
-    }
-
-    public UsuarioAcessoPredicate porOrganizacao(Integer organizacaoId) {
-        if (!ObjectUtils.isEmpty(organizacaoId)) {
-            this.builder.and(usuarioAcesso.usuario.organizacao.id.eq(organizacaoId));
-        }
-        return this;
-    }
-
-    public UsuarioAcessoPredicate porCargos(List<CodigoCargo> cargos) {
-        if (!ObjectUtils.isEmpty(cargos)) {
-            this.builder.and(cargo.codigo.in(cargos));
         }
         return this;
     }

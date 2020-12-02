@@ -13,7 +13,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -56,6 +55,8 @@ public class UsuarioAcessoService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @Autowired
+    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     @Transactional
     public void registrarAcesso(Integer usuarioId) {
@@ -204,10 +205,14 @@ public class UsuarioAcessoService {
             : "Registros não encontrados.");
     }
 
-    public List<PaLogadoResponse> getAllLoginByFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        usuarioAcessoFiltros.setTipo(ETipo.LOGIN);
-        return usuarioAcessoRepository.getAllLoginByFiltros(usuarioAcessoFiltros.toPredicate()).stream()
-            .distinct()
+    public List<PaLogadoResponse> getTotalUsuariosLogadosPorHoraByFiltros(UsuarioAcessoFiltros filtros) {
+        var usuariosIds = StreamSupport
+            .stream(usuarioRepository
+                .findAll(filtros.toUsuarioPredicate()).spliterator(), false)
+            .map(Usuario::getId)
             .collect(Collectors.toList());
+
+        return notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(usuariosIds, filtros.getDataInicial(),
+            filtros.getDataFinal());
     }
 }

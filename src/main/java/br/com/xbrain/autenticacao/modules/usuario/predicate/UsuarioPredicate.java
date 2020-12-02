@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
 import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
 import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -249,6 +250,13 @@ public class UsuarioPredicate {
     public UsuarioPredicate comCanal(ECanal canal) {
         if (!isEmpty(canal)) {
             builder.and(usuario.canais.any().eq(canal));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCodigosCargos(List<CodigoCargo> cargos) {
+        if (!isEmpty(cargos)) {
+            this.builder.and(usuario.cargo.codigo.in(cargos));
         }
         return this;
     }

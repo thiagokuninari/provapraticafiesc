@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class PaLogadoResponse {
 
     private Integer hora;
-    private Long paLogados;
+    private Integer totalUsuariosLogados;
 }

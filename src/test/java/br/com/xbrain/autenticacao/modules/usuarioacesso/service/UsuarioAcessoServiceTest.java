@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
+import com.querydsl.core.types.Predicate;
 import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,8 @@ public class UsuarioAcessoServiceTest {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     @Before
     public void setup() {
@@ -152,22 +155,41 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
-    public void getAllLoginByFiltros_loginsDeAcordoComFiltro_quandoExistirLogins() {
-        when(usuarioAcessoRepository.getAllLoginByFiltros(any())).thenReturn(getLogadoResponse());
+    public void getTotalUsuariosLogadosPorHoraByFiltros_totalUsuariosLogadosDeAcordoComFiltro_quandoExistirUsuariosLogados() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of(new Usuario(101)));
+        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(any(), any(), any())).thenReturn(getLogadoResponse());
 
         var filtros = new UsuarioAcessoFiltros();
         filtros.setDataInicial(LocalDateTime.now());
         filtros.setDataFinal(LocalDateTime.now());
-        var response = usuarioAcessoService.getAllLoginByFiltros(filtros);
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorHoraByFiltros(filtros);
 
         assertThat(response)
             .hasSize(3)
-            .extracting("hora", "paLogados")
+            .extracting("hora", "totalUsuariosLogados")
             .containsExactly(
-                tuple(8, 20L),
-                tuple(9, 10L),
-                tuple(10, 1L)
+                tuple(8, 20),
+                tuple(9, 10),
+                tuple(10, 1)
             );
+        verify(notificacaoUsuarioAcessoService, times(1)).countUsuariosLogadosPorHora(eq(List.of(101)),
+            eq(filtros.getDataInicial()), eq(filtros.getDataFinal()));
+    }
+
+    @Test
+    public void getTotalUsuariosLogadosPorHoraByFiltros_deveRetornarListaVazia_quandoNaoExistirUsuariosLogados() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of());
+        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(any(), any(), any())).thenReturn(List.of());
+
+        var filtros = new UsuarioAcessoFiltros();
+        filtros.setDataInicial(LocalDateTime.now());
+        filtros.setDataFinal(LocalDateTime.now());
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorHoraByFiltros(filtros);
+
+        assertThat(response).isEmpty();
+
+        verify(notificacaoUsuarioAcessoService, times(1)).countUsuariosLogadosPorHora(eq(List.of()),
+            eq(filtros.getDataInicial()), eq(filtros.getDataFinal()));
     }
 
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
@@ -197,9 +219,9 @@ public class UsuarioAcessoServiceTest {
 
     private List<PaLogadoResponse> getLogadoResponse() {
         return List.of(
-            new PaLogadoResponse(8, 20L),
-            new PaLogadoResponse(9, 10L),
-            new PaLogadoResponse(10, 1L)
+            new PaLogadoResponse(8, 20),
+            new PaLogadoResponse(9, 10),
+            new PaLogadoResponse(10, 1)
         );
     }
 }

@@ -1,12 +1,17 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.filtros;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.querydsl.core.BooleanBuilder;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
@@ -51,9 +56,15 @@ public class UsuarioAcessoFiltros {
             .porEmail(email)
             .porPeriodo(dataInicio, dataFim, tipo)
             .porAa(aaId, agenteAutorizadosIds)
-            .porPeriodoComHora(dataInicial, dataFinal, tipo)
-            .porOrganizacao(organizacaoId)
-            .porCargos(cargos)
+            .build();
+    }
+
+    @JsonIgnore
+    public BooleanBuilder toUsuarioPredicate() {
+        return new UsuarioPredicate()
+            .comOrganizacaoId(organizacaoId)
+            .comCodigosCargos(cargos)
+            .isAtivo(Eboolean.V)
             .build();
     }
 

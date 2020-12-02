@@ -43,8 +43,8 @@ public class UsuarioAcessoController {
         this.usuarioAcessoService.exportRegistrosToCsv(response, usuarioAcessoFiltros);
     }
 
-    @GetMapping("logins-por-filtro")
-    public List<PaLogadoResponse> getAllLoginByFiltros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return usuarioAcessoService.getAllLoginByFiltros(usuarioAcessoFiltros);
+    @GetMapping("usuarios-logados/por-hora")
+    public List<PaLogadoResponse> getTotalUsuariosLogadosPorHora(UsuarioAcessoFiltros usuarioAcessoFiltros) {
+        return usuarioAcessoService.getTotalUsuariosLogadosPorHoraByFiltros(usuarioAcessoFiltros);
     }
 }
