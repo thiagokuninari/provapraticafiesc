@@ -2,10 +2,13 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collection;
@@ -17,8 +20,8 @@ import java.util.Map;
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface NotificacaoUsuarioAcessoClient {
 
-    @GetMapping("api/relatorio-login-logout/hoje")
-    MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(@RequestParam Map<String, Object> filtro);
+    @PostMapping("api/relatorio-login-logout/hoje")
+    MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(@RequestBody GetLoginLogoutHojeRequest request);
 
     @GetMapping("api/relatorio-login-logout/csv")
     List<LoginLogoutCsv> getCsv(@RequestParam Map<String, Object> filtro);

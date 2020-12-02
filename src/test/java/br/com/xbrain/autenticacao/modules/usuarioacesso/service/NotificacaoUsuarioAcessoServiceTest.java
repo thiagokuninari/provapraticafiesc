@@ -1,12 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
-import br.com.xbrain.autenticacao.config.JacksonConfig;
 import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,35 +38,27 @@ public class NotificacaoUsuarioAcessoServiceTest {
     private NotificacaoUsuarioAcessoClient client;
     @Captor
     private ArgumentCaptor<Map<String, Object>> requestParamsArgCaptor;
-
-    @Before
-    public void setup() {
-        var objectMapper = new JacksonConfig().viewsObjectMapper();
-        ReflectionTestUtils.setField(service, "objectMapper", objectMapper);
-    }
+    @Captor
+    private ArgumentCaptor<GetLoginLogoutHojeRequest> getLoginLogoutHojeRequestArgCaptor;
 
     @Test
     public void getLoginsLogoutsDeHoje_devePassarParametrosComPageRequestEUsuariosIds_quandoPassarVariosUsuariosIds() {
         service.getLoginsLogoutsDeHoje(Optional.of(List.of(12, 1, 98)), umPageRequest());
 
-        verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
+        verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
 
-        assertThat(requestParamsArgCaptor.getValue()).contains(
-            entry("page", 6),
-            entry("size", 35),
-            entry("orderBy", "nomeFantasia"),
-            entry("orderDirection", "DESC"),
-            entry(USUARIOS_IDS_REQUEST_PARAM, "12,1,98")
-        );
+        assertThat(getLoginLogoutHojeRequestArgCaptor.getValue())
+            .extracting("usuariosIds", "page", "size", "orderBy", "orderDirection")
+            .containsExactly(Set.of(12, 1, 98), 6, 35, "nomeFantasia", "DESC");
     }
 
     @Test
     public void getLoginsLogoutsDeHoje_deveNaoPassarParametroUsuarioIds_quandoUsuarioIdsForNull() {
         service.getLoginsLogoutsDeHoje(Optional.empty(), umPageRequest());
 
-        verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
+        verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
 
-        assertThat(requestParamsArgCaptor.getValue()).doesNotContainKey(USUARIOS_IDS_REQUEST_PARAM);
+        assertThat(getLoginLogoutHojeRequestArgCaptor.getValue().getUsuariosIds()).isNull();
     }
 
     @Test
@@ -84,9 +74,9 @@ public class NotificacaoUsuarioAcessoServiceTest {
     public void getLoginsLogoutsDeHoje_devePassarParametroUsuarioIdsUmIdVazia_quandoUsuarioIdsTiverApenasUmId() {
         service.getLoginsLogoutsDeHoje(Optional.of(Set.of(2002)), umPageRequest());
 
-        verify(client, times(1)).getLoginsLogoutsDeHoje(requestParamsArgCaptor.capture());
+        verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
 
-        assertThat(requestParamsArgCaptor.getValue()).containsEntry(USUARIOS_IDS_REQUEST_PARAM, "2002");
+        assertThat(getLoginLogoutHojeRequestArgCaptor.getValue().getUsuariosIds()).containsExactly(2002);
     }
 
     @Test
