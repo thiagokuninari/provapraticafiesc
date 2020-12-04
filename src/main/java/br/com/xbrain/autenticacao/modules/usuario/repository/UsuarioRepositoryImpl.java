@@ -44,7 +44,6 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
-import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -55,6 +54,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -703,24 +703,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate,
-                                                                                    CodigoCargo codigoCargo) {
-        var usuarioSupervisor = new QUsuario("usuario");
-        var usuarioCoordenador = new QUsuario("usuario");
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate) {
 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
+            .join(usuario.cidades, usuarioCidade).distinct()
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.id.notIn(select(usuarioCoordenador.id)
+                .and(usuario.id.notIn(select(usuario.id)
                     .from(site)
-                    .join(site.coordenadores, usuarioCoordenador)
-                    .where(sitePredicate)))
-                .and(usuario.id.notIn(select(usuarioSupervisor.id)
-                    .from(site)
-                    .join(site.supervisores, usuarioSupervisor)
-                    .where(sitePredicate)))
-                .and(usuario.cargo.codigo.eq(codigoCargo)))
+                    .join(site.coordenadores, usuario)
+                    .where(site.situacao.eq(A))))
+            .and(sitePredicate))
             .fetch();
     }
 
@@ -784,8 +778,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<UsuarioNomeResponse> findSupervisoresSemSitePorCoordenadorId(Predicate sitePredicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .join(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(SUPERVISOR_OPERACAO)
+                .and(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO))
+                .and(sitePredicate))
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo) {
-        return jdbcTemplate.query("SELECT U.ID, U.NOME "
+        return jdbcTemplate.query("SELECT DISTINCT U.ID, U.NOME "
                 + "FROM USUARIO_HIERARQUIA UH "
                 + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                 + "JOIN CARGO C ON C.ID = U.FK_CARGO "
@@ -827,5 +833,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .addValue("siteId", siteId);
         var rowMapper = SingleColumnRowMapper.newInstance(Integer.class);
         return jdbcTemplate.query(sql, params, rowMapper);
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .join(usuario.cidades, usuarioCidade).distinct()
+            .distinct()
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(usuario.id.notIn(select(usuario.id)
+                    .from(site)
+                    .join(site.coordenadores, usuario)
+                    .join(site.cidades, cidade)
+                    .where(site.situacao.eq(A)
+                    .and(site.id.ne(siteId)))))
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
+                .and(sitePredicate))
+            .fetch();
     }
 }

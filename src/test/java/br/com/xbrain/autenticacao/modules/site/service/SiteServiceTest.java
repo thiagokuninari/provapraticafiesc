@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -139,7 +140,7 @@ public class SiteServiceTest {
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umSiteRequest()))
-            .withMessage("Site já cadastrado no sistema.");
+            .withMessage("Site já cadastrado anteriormente com esse nome.");
 
         verify(siteRepository, atLeastOnce()).findAll();
         verifyZeroInteractions(cidadeRepository);
@@ -161,25 +162,6 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void save_deveSalvarIncluindoCidadesDisponiveis_quandoFlagForIncluirCidadesDisponiveis() {
-        when(siteRepository.findAll()).thenReturn(List.of());
-        when(cidadeRepository.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(anyList()))
-            .thenReturn(umListaCidades());
-
-        var request = umSiteRequest();
-        request.setIncluirCidadesDisponiveis(true);
-
-        service.save(request);
-
-        assertThat(request.getCidadesIds())
-            .contains(1, 2);
-
-        verify(siteRepository, atLeastOnce()).findAll();
-        verify(siteRepository, atLeastOnce()).save(any(Site.class));
-        verify(siteRepository, never()).findFirstByCidadesIdInAndIdNot(any(), any());
-    }
-
-    @Test
     public void update_deveAtualizarAsInformacoesDeUmSiteExistente() {
         when(siteRepository.findById(anyInt()))
             .thenReturn(Optional.of(umSite(1, "Sitezão", AMT)));
@@ -197,8 +179,9 @@ public class SiteServiceTest {
 
     @Test
     public void buscarEstadosNaoAtribuidosEmSites_deveRetornarOsEstados_quandoBuscadoEmTodosOsSites() {
-        when(ufRepository.buscarEstadosNaoAtribuidosEmSites())
+        when(ufRepository.buscarEstadosNaoAtribuidosEmSites(any()))
             .thenReturn(umaListaUfs());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         assertThat(service.buscarEstadosNaoAtribuidosEmSites(null))
             .extracting("value", "label")
@@ -207,15 +190,14 @@ public class SiteServiceTest {
                 tuple(2, "UF 2"),
                 tuple(3, "UF 3")
             );
-
-        verify(ufRepository, atLeastOnce()).buscarEstadosNaoAtribuidosEmSites();
-        verify(ufRepository, never()).buscarEstadosNaoAtribuidosEmSitesExcetoPor(any());
+        verify(ufRepository, never()).buscarEstadosNaoAtribuidosEmSitesExcetoPor(any(), any());
     }
 
     @Test
     public void buscarEstadosNaoAtribuidosEmSites_deveRetornarOsEstados_quandoBuscadoEmTodosOsSitesExcetoPeloAtual() {
-        when(ufRepository.buscarEstadosNaoAtribuidosEmSitesExcetoPor(any()))
+        when(ufRepository.buscarEstadosNaoAtribuidosEmSitesExcetoPor(any(), any()))
             .thenReturn(umaListaUfs());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         assertThat(service.buscarEstadosNaoAtribuidosEmSites(1))
             .extracting("value", "label")
@@ -224,15 +206,13 @@ public class SiteServiceTest {
                 tuple(2, "UF 2"),
                 tuple(3, "UF 3")
             );
-
-        verify(ufRepository, never()).buscarEstadosNaoAtribuidosEmSites();
-        verify(ufRepository, atLeastOnce()).buscarEstadosNaoAtribuidosEmSitesExcetoPor(eq(1));
     }
 
     @Test
     public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveRetornarAsCidades_quandoBuscadoEmTodosOsSites() {
-        when(cidadeRepository.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(anyList()))
+        when(cidadeRepository.buscarCidadesVinculadasAoUsuarioSemSite(any(), anyList()))
             .thenReturn(umListaCidades());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
 
         assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1, 2), null))
             .extracting("value", "label")
@@ -241,16 +221,16 @@ public class SiteServiceTest {
                 tuple(2, "CIDADE 2 - SP")
             );
 
-        verify(cidadeRepository, never()).buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(anyList(), any());
-        verify(cidadeRepository, atLeastOnce()).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(
+        verify(cidadeRepository, never()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any());
+        verify(cidadeRepository, atLeastOnce()).buscarCidadesVinculadasAoUsuarioSemSite(any(),
             argThat(arg -> arg.size() == 2 && arg.containsAll(List.of(1, 2))));
     }
 
     @Test
     public void buscarCidadesNaoAtribuidasEmSitesPorEstadosIds_deveReotnarAsCidades_quandoBuscarOsSitesIgnorandoOAtual() {
-        when(cidadeRepository.buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(anyList(), any()))
+        when(cidadeRepository.buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(), anyList(), any()))
             .thenReturn(umListaCidades());
-
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         assertThat(service.buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List.of(1, 2), 1))
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
@@ -258,9 +238,9 @@ public class SiteServiceTest {
                 tuple(2, "CIDADE 2 - SP")
             );
 
-        verify(cidadeRepository, atLeastOnce()).buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(
+        verify(cidadeRepository, atLeastOnce()).buscarCidadesSemSitesPorEstadosIdsExcetoPor(any(),
             argThat(arg -> arg.size() == 2 && arg.containsAll(List.of(1, 2))), eq(1));
-        verify(cidadeRepository, never()).buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(any());
+        verify(cidadeRepository, never()).buscarCidadesVinculadasAoUsuarioSemSite(any(), any());
     }
 
     @Test
@@ -420,29 +400,6 @@ public class SiteServiceTest {
         assertNull(service.getAll(new SiteFiltros(), new PageRequest()));
     }
 
-    public UsuarioSubordinadoDto usuarioSubordinadoDtoDtoResponse(Integer id, CodigoCargo codigoCargo) {
-        return UsuarioSubordinadoDto.builder()
-                .id(id)
-                .codigoCargo(codigoCargo)
-                .build();
-    }
-
-    private PageRequest umPageRequest() {
-        return new PageRequest();
-    }
-
-    private Predicate umSitePredicateComSupervidorOuCoordenador(Integer id) {
-        return new SitePredicate()
-            .comCoordenadoresOuSupervisor(id)
-            .build();
-    }
-
-    private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {
-        return new SitePredicate()
-            .comCoordenadoresOuSupervisores(id)
-            .build();
-    }
-
     @Test
     public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
         when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
@@ -463,8 +420,24 @@ public class SiteServiceTest {
                 .nome("CARLOS")
                 .build()
         );
-
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    public void getSiteBySupervisorId_siteSp_quandoBuscarSitePeloSupervisorId() {
+        when(siteRepository.findBySupervisorId(100))
+            .thenReturn(umSite(100, "SITE SP", BRT));
+
+        assertThat(service.getSiteBySupervisorId(100))
+            .isInstanceOf(SiteResponse.class)
+            .extracting("id", "nome")
+            .containsExactly(100, "SITE SP");
+    }
+
+    private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {
+        return new SitePredicate()
+            .comCoordenadoresOuSupervisores(id)
+            .build();
     }
 
     private Site umSiteComSupervisores() {
@@ -489,14 +462,25 @@ public class SiteServiceTest {
             .build();
     }
 
-    @Test
-    public void getSiteBySupervisorId_siteSp_quandoBuscarSitePeloSupervisorId() {
-        when(siteRepository.findBySupervisorId(100))
-            .thenReturn(umSite(100, "SITE SP", BRT));
+    public UsuarioSubordinadoDto usuarioSubordinadoDtoDtoResponse(Integer id, CodigoCargo codigoCargo) {
+        return UsuarioSubordinadoDto.builder()
+            .id(id)
+            .codigoCargo(codigoCargo)
+            .build();
+    }
 
-        assertThat(service.getSiteBySupervisorId(100))
-            .isInstanceOf(SiteResponse.class)
-            .extracting("id", "nome")
-            .containsExactly(100, "SITE SP");
+    private PageRequest umPageRequest() {
+        return new PageRequest();
+    }
+
+    private Predicate umSitePredicateComSupervidorOuCoordenador(Integer id) {
+        return new SitePredicate()
+            .comCoordenadoresOuSupervisor(id)
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return umUsuarioAutenticadoAtivoProprioComCargo(1, COORDENADOR_OPERACAO,
+            CodigoDepartamento.COMERCIAL);
     }
 }

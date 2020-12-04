@@ -4,10 +4,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioSiteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,14 +25,25 @@ public class UsuarioSiteController {
         return usuarioSiteService.buscarUsuariosSitePorCargo(codigoCargo);
     }
 
-    @GetMapping("{codigoCargo}/disponiveis")
-    public List<UsuarioNomeResponse> buscarUsuariosDisponiveisPorCargo(@PathVariable CodigoCargo codigoCargo) {
-        return usuarioSiteService.getUsuariosDisponiveisPorCargo(codigoCargo);
+    @GetMapping("coordenadores/disponiveis")
+    public List<UsuarioNomeResponse> buscarUsuariosDisponiveisPorCargo(@RequestParam(required = false) List<Integer> cidadesIds) {
+        return usuarioSiteService.getCoordenadoresDisponiveisPorCidade(cidadesIds);
     }
 
-    @GetMapping("editar/{siteId}/{codigoCargo}")
-    public List<UsuarioNomeResponse> getUsuariosEditarSite(@PathVariable Integer siteId,
-                                                           @PathVariable CodigoCargo codigoCargo) {
-        return usuarioSiteService.getUsuariosParaVincularAoSitePorSiteIdECargo(siteId, codigoCargo);
+    @GetMapping("editar/{siteId}/coordenador")
+    public List<UsuarioNomeResponse> editarCoordenadorSite(@PathVariable Integer siteId,
+                                                           @RequestParam(required = false) List<Integer> cidadesIds) {
+        return usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(siteId, cidadesIds);
+    }
+
+    @GetMapping("editar/{siteId}/supervisor")
+    public List<UsuarioNomeResponse> editarSupervisorSite(@PathVariable Integer siteId,
+                                                          @RequestParam List<Integer> coordenadoresIds) {
+        return usuarioSiteService.buscarSupervisoresDisponiveisEVinculadosAoSite(coordenadoresIds, siteId);
+    }
+
+    @GetMapping("supervisores-hierarquia/disponiveis")
+    public List<UsuarioNomeResponse> getSupervidoresSemSitePorCoodenadoresId(@RequestParam List<Integer> coordenadoresIds) {
+        return usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(coordenadoresIds);
     }
 }

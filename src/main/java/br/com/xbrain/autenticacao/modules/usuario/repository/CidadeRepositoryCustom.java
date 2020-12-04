@@ -26,9 +26,11 @@ public interface CidadeRepositoryCustom {
 
     ClusterizacaoDto getClusterizacao(Integer id);
 
-    List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds);
+    List<Cidade> buscarCidadesVinculadasAoUsuarioSemSite(Predicate permissaoPredicate,
+                                                         List<Integer> estadosIds);
 
-    List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(List<Integer> estadosIds, Integer siteId);
+    List<Cidade> buscarCidadesSemSitesPorEstadosIdsExcetoPor(Predicate permissaoPredicate,
+                                                             List<Integer> estadosIds, Integer siteId);
 
     Optional<CidadeSiteResponse> findCidadeComSite(Predicate predicate);
 

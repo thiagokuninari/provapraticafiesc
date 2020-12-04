@@ -31,13 +31,14 @@ public class UsuarioAutenticadoHelper {
     public static UsuarioAutenticado umUsuarioAutenticadoNivelMso() {
         return UsuarioAutenticado.builder()
                 .id(101)
-                .nivelCodigo(CodigoNivel.OPERACAO.name())
+                .nivelCodigo(CodigoNivel.MSO.name())
                 .organizacaoId(8)
                 .cargoCodigo(CodigoCargo.MSO_CONSULTOR)
                 .cargoId(6)
                 .usuario(buildUsuario())
                 .permissoes(List.of())
                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .usuario(buildUsuarioMso())
                 .nivelId(18)
                 .build();
     }
@@ -49,15 +50,28 @@ public class UsuarioAutenticadoHelper {
                 .nivelCodigo(CodigoNivel.OPERACAO.name())
                 .cargoCodigo(codigoCargo)
                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .usuario(buildUsuario())
                 .departamentoCodigo(codigoDepartamento)
                 .build();
     }
 
     public static Usuario buildUsuario() {
         return Usuario.builder()
+            .id(1)
             .cargo(Cargo.builder()
+                .id(1)
                 .nivel(Nivel.builder()
                     .codigo(CodigoNivel.OPERACAO)
+                    .build())
+                .build())
+            .build();
+    }
+
+    public static Usuario buildUsuarioMso() {
+        return Usuario.builder()
+            .cargo(Cargo.builder()
+                .nivel(Nivel.builder()
+                    .codigo(CodigoNivel.MSO)
                     .build())
                 .build())
             .build();

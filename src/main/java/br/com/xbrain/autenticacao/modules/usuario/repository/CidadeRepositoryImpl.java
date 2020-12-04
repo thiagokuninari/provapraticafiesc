@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -18,6 +19,8 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subClus
 import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static com.querydsl.jpa.JPAExpressions.select;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -158,33 +161,43 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds) {
+    public List<Cidade> buscarCidadesVinculadasAoUsuarioSemSite(Predicate permissaoPredicate,
+                                                                List<Integer> estadosIds) {
+
         return new JPAQueryFactory(entityManager)
-            .selectFrom(cidade)
-            .join(cidade.uf, uf1).fetchJoin()
+            .select(usuarioCidade.cidade)
+            .from(usuario, usuario)
+            .join(usuario.cidades, usuarioCidade)
+            .join(usuarioCidade.cidade.uf, uf1).distinct()
             .where(uf1.id.in(estadosIds)
-            .and(cidade.id.notIn(
+            .and(usuarioCidade.cidade.id.notIn(
                 select(cidade.id)
                 .from(site)
-                .join(site.cidades, cidade)
-            )))
-            .orderBy(cidade.nome.asc())
+                    .join(site.cidades, cidade)
+                .where(site.situacao.eq(ESituacao.A))))
+            .and(permissaoPredicate))
+            .orderBy(usuarioCidade.cidade.nome.asc())
             .fetch();
     }
 
     @Override
-    public List<Cidade> buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(List<Integer> estadosIds, Integer siteId) {
+    public List<Cidade> buscarCidadesSemSitesPorEstadosIdsExcetoPor(Predicate permissaoPredicate,
+                                                                    List<Integer> estadosIds, Integer siteId) {
         return new JPAQueryFactory(entityManager)
-            .selectFrom(cidade)
-            .join(cidade.uf, uf1).fetchJoin()
+            .select(usuarioCidade.cidade)
+            .from(usuario, usuario)
+            .join(usuario.cidades, usuarioCidade)
+            .join(usuarioCidade.cidade.uf, uf1).distinct()
             .where(uf1.id.in(estadosIds)
-                .and(cidade.id.notIn(
+                .and(usuarioCidade.cidade.id.notIn(
                     select(cidade.id)
                         .from(site)
                         .join(site.cidades, cidade)
-                        .where(site.id.ne(siteId))
-                )))
-            .orderBy(cidade.nome.asc())
+                        .where(site.situacao.ne(ESituacao.I)
+                            .and(site.id.ne(siteId)))
+                ))
+            .and(permissaoPredicate))
+            .orderBy(usuarioCidade.cidade.nome.asc())
             .fetch();
     }
 

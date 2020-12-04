@@ -20,7 +20,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -49,7 +48,8 @@ import static java.util.stream.Collectors.toList;
 public class SiteService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
-    private static final ValidacaoException EX_SITE_EXISTENTE = new ValidacaoException("Site já cadastrado no sistema.");
+    private static final ValidacaoException EX_SITE_EXISTENTE =
+        new ValidacaoException("Site já cadastrado anteriormente com esse nome.");
     private static final ValidacaoException EX_CIDADE_VINCULADA_A_OUTRO_SITE =
         new ValidacaoException("Existem cidades vinculadas à outro site.");
     @Autowired
@@ -93,8 +93,8 @@ public class SiteService {
 
     public Predicate filtrarPorUsuario(SitePredicate filtros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        if (!usuarioAutenticado.hasCanal(ECanal.ATIVO_PROPRIO) && !usuarioAutenticado.isXbrainOuMso()) {
-            return filtros.ignorarTodos().build();
+        if (usuarioAutenticado.isXbrainOuMso()) {
+            return filtros.build();
         }
         setFiltrosHierarquia(usuarioAutenticado.getId(), usuarioAutenticado.getCargoCodigo(),
             usuarioAutenticado.getDepartamentoCodigo(), filtros);
@@ -208,15 +208,17 @@ public class SiteService {
     }
 
     public List<SelectResponse> buscarEstadosNaoAtribuidosEmSites(Integer siteExclusoId) {
+        var estadosPermitidos = filtrarVisualizacao();
         return Optional.ofNullable(siteExclusoId)
-            .map(ufRepository::buscarEstadosNaoAtribuidosEmSitesExcetoPor)
-            .orElseGet(ufRepository::buscarEstadosNaoAtribuidosEmSites)
+            .map(site -> ufRepository.buscarEstadosNaoAtribuidosEmSitesExcetoPor(estadosPermitidos, site))
+            .orElseGet(() -> ufRepository.buscarEstadosNaoAtribuidosEmSites(estadosPermitidos))
             .stream()
             .map(estado -> SelectResponse.of(estado.getId(), estado.getNome()))
             .collect(toList());
     }
 
     public List<SelectResponse> buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(List<Integer> estadosIds, Integer siteIgnoradoId) {
+
         return buscarCidadesDisponiveis(estadosIds, siteIgnoradoId)
             .stream()
             .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
@@ -249,11 +251,12 @@ public class SiteService {
     }
 
     private List<Cidade> buscarCidadesDisponiveis(List<Integer> estadosIds, Integer siteIgnoradoId) {
+        var filtroVisualizacaoPredicate = filtrarVisualizacao();
         return Optional.ofNullable(siteIgnoradoId)
             .map(id -> cidadeRepository
-                .buscarCidadesNaoAtribuidasEmSitesPorEstadosIdsExcetoPor(estadosIds, id))
+                .buscarCidadesSemSitesPorEstadosIdsExcetoPor(filtroVisualizacaoPredicate, estadosIds, id))
             .orElseGet(() -> cidadeRepository
-                .buscarCidadesNaoAtribuidasEmSitesPorEstadosIds(estadosIds));
+                .buscarCidadesVinculadasAoUsuarioSemSite(filtroVisualizacaoPredicate, estadosIds));
     }
 
     public List<SelectResponse> getSitesByEstadoId(Integer estadoId) {
@@ -293,5 +296,12 @@ public class SiteService {
     public List<SelectResponse> findSitesPermitidosAoUsuarioAutenticado() {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         return getSitesPorPermissao(usuario);
+    }
+
+    private Predicate filtrarVisualizacao() {
+        var usarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        return new SitePredicate()
+            .comFiltroVisualizar(usarioAutenticado)
+            .build();
     }
 }

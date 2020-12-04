@@ -109,11 +109,16 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 
-    List<UsuarioNomeResponse> findAllSubordinadosDisponiveisParaSitePorCargo(Predicate sitePredicate, CodigoCargo codigoCargo);
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate);
 
     List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findSupervisoresSemSitePorCoordenadorId(Predicate sitePredicate);
 
     List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId);
 
     List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
+
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId);
+
 }
