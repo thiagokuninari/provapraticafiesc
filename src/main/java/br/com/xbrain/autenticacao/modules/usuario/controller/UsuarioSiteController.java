@@ -44,6 +44,6 @@ public class UsuarioSiteController {
 
     @GetMapping("supervisores-hierarquia/disponiveis")
     public List<UsuarioNomeResponse> getSupervidoresSemSitePorCoodenadoresId(@RequestParam List<Integer> coordenadoresIds) {
-        return usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(coordenadoresIds);
+        return usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(coordenadoresIds);
     }
 }

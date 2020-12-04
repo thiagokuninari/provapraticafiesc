@@ -83,7 +83,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of(umUsuarioNomeResponse(11123), umUsuarioNomeResponse(11124)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(List.of(11122)))
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11122)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactlyInAnyOrder(
                 tuple(11123, "Supervisor operacao ativo local"),
@@ -130,7 +130,7 @@ public class UsuarioSiteServiceIT {
     @Test
     public void retornarAll_deveRetornarTodosSupervisoresDisponiveisDoCoordenador_quandoUsuarioLogadoForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoMSO(1));
-        assertThat(usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(List.of(11122)))
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11122)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
                 tuple(11124, "Supervisor2 operacao ativo local")
@@ -163,7 +163,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(List.of(100)))
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(100)))
             .hasSize(0);
     }
 

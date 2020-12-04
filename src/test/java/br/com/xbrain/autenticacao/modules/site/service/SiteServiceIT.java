@@ -105,7 +105,7 @@ public class SiteServiceIT {
     public void supervisor_deveRetornarSupevisoresDisponiveisEVinculadosAoCoordenador_quandoReceberCoordenadoresIds() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
 
-        assertThat(usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(List.of(11122)))
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11122)))
             .extracting(UsuarioNomeResponse::getId)
             .contains(11124);
     }
@@ -122,7 +122,7 @@ public class SiteServiceIT {
     @Test
     public void supervisoresNaoDisponiveis_deveretornarVazio_quandoEditarSiteSemSupervisoresDisponiveis() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        assertThat(usuarioSiteService.getSupervidoresSemSitePorCoordenadorsId(List.of(11126)))
+        assertThat(usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(List.of(11126)))
             .hasSize(0);
     }
 

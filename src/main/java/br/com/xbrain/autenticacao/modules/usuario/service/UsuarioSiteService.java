@@ -66,16 +66,16 @@ public class UsuarioSiteService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioNomeResponse> getSupervidoresSemSitePorCoordenadorsId(List<Integer> coordenadoresIds) {
+    public List<UsuarioNomeResponse> getSupervisoresSemSitePorCoordenadorsId(List<Integer> coordenadoresIds) {
         var sitePredicate = new SitePredicate()
-            .comSupervisisoresDisponiveisDosCoordenadores(coordenadoresIds);
+            .comSupervisoresDisponiveisDosCoordenadores(coordenadoresIds);
         return repository.findSupervisoresSemSitePorCoordenadorId(sitePredicate.build());
     }
 
     public List<UsuarioNomeResponse> buscarSupervisoresDisponiveisEVinculadosAoSite(List<Integer> coordenadoresIds,
                                                                                     Integer siteId) {
         var sitePredicate = new SitePredicate()
-            .comSupervisisoresDisponiveisDosCoordenadoresEsite(coordenadoresIds, siteId);
+            .comSupervisoresDisponiveisDosCoordenadoresEsite(coordenadoresIds, siteId);
         return repository.findSupervisoresSemSitePorCoordenadorId(sitePredicate.build());
     }
 

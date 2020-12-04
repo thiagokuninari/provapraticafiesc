@@ -137,7 +137,7 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
-    public SitePredicate comSupervisisoresDisponiveisDosCoordenadores(List<Integer> coordenadoresIds) {
+    public SitePredicate comSupervisoresDisponiveisDosCoordenadores(List<Integer> coordenadoresIds) {
         filtrarLista(coordenadoresIds)
             .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
             .map(builder::and)
@@ -149,7 +149,7 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
-    public SitePredicate comSupervisisoresDisponiveisDosCoordenadoresEsite(List<Integer> coordenadoresIds, Integer siteId) {
+    public SitePredicate comSupervisoresDisponiveisDosCoordenadoresEsite(List<Integer> coordenadoresIds, Integer siteId) {
         filtrarLista(coordenadoresIds)
             .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
             .map(builder::and)
@@ -173,8 +173,10 @@ public class SitePredicate extends PredicateBase {
     }
 
     public SitePredicate comCoordenadoresComCidade(List<Integer> cidadesIds) {
-        builder.and(usuarioCidade.cidade.id.in(cidadesIds))
-            .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
+        if (!cidadesIds.isEmpty()) {
+            builder.and(usuarioCidade.cidade.id.in(cidadesIds))
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
+        }
         return this;
     }
 
