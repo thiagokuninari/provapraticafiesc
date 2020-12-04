@@ -76,6 +76,16 @@ public class AutenticacaoService {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    public void validarPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        var usuarioAutenticado = getUsuarioAutenticado();
+        @SuppressWarnings("unchecked")
+        var agentesAutorizados = Optional.ofNullable((List<Integer>) tokenStore.getAccessToken(getAuthentication())
+            .getAdditionalInformation()
+            .get("agentesAutorizados"))
+            .orElseGet(() -> agenteAutorizadoService.getAasPermitidos(getUsuarioId()));
+        usuarioAutenticado.hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, agentesAutorizados);
+    }
+
     @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)
@@ -85,11 +95,7 @@ public class AutenticacaoService {
                 .map(usuarioAutenticadoObj -> (UsuarioAutenticado)usuarioAutenticadoObj)
                 .or(() -> usuarioRepository.findComplete(getUsuarioId())
                     .map(Usuario::forceLoad)
-                    .map(usuario -> new UsuarioAutenticado(
-                        usuario,
-                        authentication.getAuthorities(),
-                        agenteAutorizadoService.getAasPermitidos(usuario.getId())
-                    ))
+                    .map(usuario -> new UsuarioAutenticado(usuario, authentication.getAuthorities()))
                     .map(usuarioAutenticado -> {
                         details.putIfAbsent(USUARIO_AUTENTICADO_KEY, usuarioAutenticado);
                         return usuarioAutenticado;

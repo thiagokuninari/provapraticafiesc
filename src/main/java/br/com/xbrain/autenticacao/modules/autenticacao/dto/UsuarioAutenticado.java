@@ -14,7 +14,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -76,8 +75,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public UsuarioAutenticado(Usuario usuario,
-                              Collection<? extends GrantedAuthority> permissoes,
-                              List<Integer> agentesAutorizados) {
+                              Collection<? extends GrantedAuthority> permissoes) {
         this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -91,7 +89,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
         this.permissoes = permissoes;
-        this.agentesAutorizados = agentesAutorizados;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
@@ -137,16 +134,6 @@ public class UsuarioAutenticado extends OAuth2Request {
             || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
-    }
-
-    public void validarPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
-        if (isAgenteAutorizado() && !isAgenteAutorizadoPermitido(agenteAutorizadoId)) {
-            throw new PermissaoException();
-        }
-    }
-
-    private boolean isAgenteAutorizadoPermitido(Integer agenteAutorizadoId) {
-        return Objects.nonNull(agentesAutorizados) && agentesAutorizados.contains(agenteAutorizadoId);
     }
 
     public boolean isAgenteAutorizado() {

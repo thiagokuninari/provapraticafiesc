@@ -76,7 +76,7 @@ public class RelatorioLoginLogoutService {
     public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso(ECanal canal, Integer agenteAutorizadoId) {
         var usuarioAutenticado = getUsuarioAutenticado();
         if (Objects.nonNull(agenteAutorizadoId)) {
-            usuarioAutenticado.validarPermissaoSobreOAgenteAutorizado(agenteAutorizadoId);
+            autenticacaoService.validarPermissaoSobreOAgenteAutorizado(agenteAutorizadoId);
         }
 
         var predicate = new UsuarioPredicate()

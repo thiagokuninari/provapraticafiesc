@@ -57,6 +57,9 @@ public class RelatorioLoginLogoutServiceTest {
     public void getLoginsLogoutsDeHoje_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
 
+        doThrow(new PermissaoException())
+            .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
+
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO, 101));
     }
@@ -64,6 +67,9 @@ public class RelatorioLoginLogoutServiceTest {
     @Test
     public void getCsv_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        doThrow(new PermissaoException())
+            .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> service.getCsv(
@@ -112,6 +118,8 @@ public class RelatorioLoginLogoutServiceTest {
                 tuple(2002, "Ary da Disney", ESituacao.A),
                 tuple(1, "Adilson Elias", ESituacao.I)
             );
+
+        verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
     }
 
     @Test
@@ -154,6 +162,8 @@ public class RelatorioLoginLogoutServiceTest {
                 tuple(2002, "Ary da Disney", ESituacao.A),
                 tuple(1, "Adilson Elias", ESituacao.I)
             );
+
+        verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
     }
 
     @Test
@@ -171,11 +181,16 @@ public class RelatorioLoginLogoutServiceTest {
         var expectedPredicate = new BooleanBuilder(QUsuario.usuario.id.isNull())
             .and(QUsuario.usuario.situacao.in(Set.of(ESituacao.A, ESituacao.I, ESituacao.R)));
         assertThat(predicateArgCaptor.getValue()).isEqualTo(expectedPredicate);
+
+        verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
     }
 
     @Test
     public void getColaboradores_permissaoException_quandoNaoTiverPermissaoSobreOAa() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
+
+        doThrow(new PermissaoException())
+            .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> service.getColaboradores(ECanal.D2D_PROPRIO, 101));
@@ -204,6 +219,8 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(autenticacaoService, times(1)).validarPermissaoSobreOAgenteAutorizado(eq(67));
     }
 
     @Test
@@ -228,6 +245,7 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
 
+        verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
         verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
     }
 
@@ -253,6 +271,8 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(autenticacaoService, times(1)).validarPermissaoSobreOAgenteAutorizado(eq(67));
     }
 
     @Test
@@ -277,6 +297,8 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(autenticacaoService, times(1)).validarPermissaoSobreOAgenteAutorizado(eq(67));
     }
 
     @Test
@@ -301,6 +323,8 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(autenticacaoService, times(1)).validarPermissaoSobreOAgenteAutorizado(eq(67));
     }
 
     @Test
@@ -325,11 +349,15 @@ public class RelatorioLoginLogoutServiceTest {
         assertThat(usuariosIds).isPresent();
         assertThat(usuariosIds.get())
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
+
+        verify(autenticacaoService, times(1)).validarPermissaoSobreOAgenteAutorizado(eq(67));
     }
 
     @Test
     public void getUsuariosIdsComNivelDeAcesso_permissaoException_quandoNaoHouverPermissaoSobreOAa() {
         mockAutenticacao(umUsuarioAgenteAutorizado());
+        doThrow(new PermissaoException())
+            .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, 101));
