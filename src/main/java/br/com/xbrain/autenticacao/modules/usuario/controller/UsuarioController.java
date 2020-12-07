@@ -22,10 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -91,6 +88,11 @@ public class UsuarioController {
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuarioByNivel(@RequestParam CodigoNivel nivel) {
         return usuarioService.getUsuarioByNivel(nivel);
+    }
+
+    @GetMapping(value = "ids", params = "nivel")
+    public List<Integer> getUsuariosIdsByNivel(@RequestParam CodigoNivel nivel) {
+        return usuarioService.getUsuariosIdsByNivel(nivel);
     }
 
     @GetMapping(value = "/{id}/cidades")

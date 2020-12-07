@@ -1186,6 +1186,10 @@ public class UsuarioService {
             .map(UsuarioResponse::of).collect(Collectors.toList());
     }
 
+    public List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel) {
+        return repository.getUsuariosIdsByNivel(nivel);
+    }
+
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
         Usuario usuario = findComplete(usuarioId);
         return usuario.getCidades().stream()

@@ -62,6 +62,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
+    List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel);
+
     Page<Usuario> findAll(Predicate predicate, Pageable pageable);
 
     Optional<Usuario> findComConfiguracao(Integer usuarioId);
