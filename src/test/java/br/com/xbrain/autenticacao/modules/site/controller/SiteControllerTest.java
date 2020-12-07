@@ -215,32 +215,23 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarEstadosDisponiveis_estadosDisponiveis_quandoNaoTerVinculosComOutrosSites() {
-        mvc.perform(get(API_URI + "/estados-disponiveis")
-            .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(17)));
-    }
-
-    @Test
-    @SneakyThrows
     public void buscarCidadesDisponiveisPorEstadosIds_cidadesDisponiveis_quandoNaoVinculadasEmOutrosSites() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
             .param("estadosIds", "1")
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(6)));
+            .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     @SneakyThrows
-    public void buscarCidadesDisponiveisPorEstadosIds_cidadesDisponiveis_quandoNaoVinculadasEmOutrosSitesExcetoPorUm() {
+    public void buscarCidadesSemSitePorUsuarioEUfE_cidadesDisponiveisEComSiteEditado_quandoEditarSite() {
         mvc.perform(get(API_URI + "/cidades-disponiveis")
             .param("estadosIds", "1")
             .param("siteIgnoradoId", "100")
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(7)));
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
@@ -302,7 +293,7 @@ public class SiteControllerTest {
             .content(convertObjectToJsonBytes(request))
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Site já cadastrado no sistema.")));
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("Site já cadastrado anteriormente com esse nome.")));
     }
 
     @Test
@@ -423,5 +414,14 @@ public class SiteControllerTest {
             .andExpect(jsonPath("$[3].label", is("Rio Branco")))
             .andExpect(jsonPath("$[4].value", is(111)))
             .andExpect(jsonPath("$[4].label", is("Manaus")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarEstadosDisponiveis_deveBuscarTodosestadosDisponiveis_quandoNaoTerVinculosComOutrosSitesEAdmin() {
+        mvc.perform(get(API_URI + "/estados-disponiveis")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 }

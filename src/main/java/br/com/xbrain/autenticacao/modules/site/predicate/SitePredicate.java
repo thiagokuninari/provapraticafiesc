@@ -1,8 +1,12 @@
 package br.com.xbrain.autenticacao.modules.site.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import com.querydsl.jpa.JPAExpressions;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -11,8 +15,12 @@ import java.util.function.Predicate;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static java.util.Objects.nonNull;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class SitePredicate extends PredicateBase {
 
     public SitePredicate comId(Integer id) {
@@ -72,8 +80,8 @@ public class SitePredicate extends PredicateBase {
 
     public SitePredicate comCoordenadoresOuSupervisores(List<Integer> coordenadoresOuSupervidoresIds) {
         if (!isEmpty(coordenadoresOuSupervidoresIds)) {
-            builder.and(site.coordenadores.any().id.in(coordenadoresOuSupervidoresIds))
-                .or(site.supervisores.any().id.in(coordenadoresOuSupervidoresIds));
+            builder.and(site.coordenadores.any().id.in(coordenadoresOuSupervidoresIds)
+                .or(site.supervisores.any().id.in(coordenadoresOuSupervidoresIds)));
         }
         return this;
     }
@@ -126,6 +134,66 @@ public class SitePredicate extends PredicateBase {
             builder.and(site.discadoraId.eq(discadoraId));
         }
 
+        return this;
+    }
+
+    public SitePredicate comSupervisoresDisponiveisDosCoordenadores(List<Integer> coordenadoresIds) {
+        filtrarLista(coordenadoresIds)
+            .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
+            .map(builder::and)
+            .map(booleanBuilder -> booleanBuilder.and(usuario.id.notIn(
+                JPAExpressions.select(usuario.id)
+                    .from(site)
+                    .join(site.supervisores, usuario)
+                    .where(site.situacao.eq(A)))));
+        return this;
+    }
+
+    public SitePredicate comSupervisoresDisponiveisDosCoordenadoresEsite(List<Integer> coordenadoresIds, Integer siteId) {
+        filtrarLista(coordenadoresIds)
+            .map(usuario.usuariosHierarquia.any().usuarioSuperior.id::in)
+            .map(builder::and)
+            .map(booleanBuilder -> booleanBuilder.and(usuario.id.notIn(
+                JPAExpressions.select(usuario.id)
+                    .from(site)
+                    .join(site.supervisores, usuario)
+                    .where(site.situacao.eq(A)
+                    .and(site.id.ne(siteId))))));
+        return this;
+    }
+
+    public SitePredicate comCoordenadoresDisponiveis() {
+        builder.and(usuario.id.notIn(JPAExpressions
+            .select(usuario.id)
+            .from(site)
+            .join(site.coordenadores, usuario)
+            .where(site.situacao.eq(A))))
+            .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
+        return this;
+    }
+
+    public SitePredicate comCoordenadoresComCidade(List<Integer> cidadesIds) {
+        if (!cidadesIds.isEmpty()) {
+            builder.and(usuarioCidade.cidade.id.in(cidadesIds))
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
+        }
+        return this;
+    }
+
+    public SitePredicate comSupervisoresDisponiveis() {
+        builder.and(usuario.id.notIn(JPAExpressions
+            .select(usuario.id)
+            .from(site)
+            .join(site.supervisores, usuario)
+            .where(site.situacao.eq(A)))
+            .and(usuario.cargo.codigo.eq(CodigoCargo.SUPERVISOR_OPERACAO)));
+        return this;
+    }
+
+    public SitePredicate comFiltroVisualizar(UsuarioAutenticado usuarioAutenticado) {
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+            builder.and(usuario.id.eq(usuarioAutenticado.getId()));
+        }
         return this;
     }
 
