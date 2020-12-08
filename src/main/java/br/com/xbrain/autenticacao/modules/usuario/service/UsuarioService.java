@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -20,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -173,6 +175,8 @@ public class UsuarioService {
     private FeederService feederService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1676,5 +1680,31 @@ public class UsuarioService {
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
+    }
+
+    public List<UsuarioResponse> buscarBackOfficesEmailPorAaIds(List<Integer> agentesAutorizadoId) {
+        return agentesAutorizadoId.stream()
+            .map(aaId -> buscarBackOfficesPorUsuariosId(buscarUsuariosIdDoAaId(aaId, false), aaId))
+            .flatMap(List::stream)
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    private List<Usuario> buscarBackOfficesPorUsuariosId(List<Integer> usuariosId, Integer aaId) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCodigoCargoIn(FeederUtil.CARGOS_BACKOFFICE);
+        predicate.comIds(usuariosId);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(usuario -> preencherAaId(usuario, aaId))
+            .collect(Collectors.toList());
+    }
+
+    private Usuario preencherAaId(Usuario usuario, Integer aaId) {
+        usuario.setAgenteAutorizadoId(aaId);
+        return usuario;
+    }
+
+    private List<Integer> buscarUsuariosIdDoAaId(Integer aaId, Boolean buscarInativos) {
+        return agenteAutorizadoNovoService.buscarUsuariosIdsPorAaId(aaId, buscarInativos);
     }
 }

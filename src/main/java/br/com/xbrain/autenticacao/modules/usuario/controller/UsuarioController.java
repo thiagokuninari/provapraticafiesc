@@ -380,4 +380,9 @@ public class UsuarioController {
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
+
+    @GetMapping("/backoffices-por-agentes-autorizado-id")
+    public List<UsuarioResponse> buscarBackOfficesEmailPorAaIds(@RequestParam List<Integer> agentesAutorizadoId) {
+        return usuarioService.buscarBackOfficesEmailPorAaIds(agentesAutorizadoId);
+    }
 }

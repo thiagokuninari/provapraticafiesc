@@ -308,6 +308,14 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCodigoCargoIn(List<CodigoCargo> codigosCargo) {
+        Optional.ofNullable(codigosCargo)
+            .map(usuario.cargo.codigo::in)
+            .map(builder::and);
+
+        return this;
+    }
+
     public BooleanBuilder build() {
         return this.builder;
     }
