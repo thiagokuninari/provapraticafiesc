@@ -425,6 +425,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Integer> getUsuariosIdsByNivel(CodigoNivel codigoNivel) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
+            .where(nivel.codigo.eq(codigoNivel))
+            .fetch();
+    }
+
+    @Override
     public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
 
         Expression<Cargo> expressionCargo = Projections.fields(Cargo.class,
