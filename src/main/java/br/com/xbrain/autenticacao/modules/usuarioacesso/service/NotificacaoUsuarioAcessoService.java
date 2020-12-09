@@ -58,9 +58,9 @@ public class NotificacaoUsuarioAcessoService {
             return usuariosIdsPermitidos
                 .map(ids -> Lists.partition(List.copyOf(ids), USUARIOS_IDS_PART_SIZE))
                 .map(idsParts -> idsParts.parallelStream()
-                    .map(idsPart -> client.getCsv(filtro.toFeignRequestMap(Optional.of(idsPart))))
+                    .map(idsPart -> getCsvPart(filtro, Optional.of(idsPart)))
                     .flatMap(Collection::stream))
-                .orElseGet(() -> client.getCsv(filtro.toFeignRequestMap(Optional.empty())).stream())
+                .orElseGet(() -> getCsvPart(filtro, Optional.empty()).stream())
                 .collect(Collectors.toList());
         } catch (RetryableException | HystrixBadRequestException ex) {
             log.error("Erro ao buscar relatório de Login / Logout.", ex);
@@ -68,6 +68,14 @@ public class NotificacaoUsuarioAcessoService {
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV);
         }
+    }
+
+    private List<LoginLogoutCsv> getCsvPart(
+        RelatorioLoginLogoutCsvFiltro filtro,
+        Optional<? extends Collection<Integer>> usuariosIdsPermitidos) {
+        return usuariosIdsPermitidos.isPresent() && usuariosIdsPermitidos.get().isEmpty()
+            ? List.of()
+            : client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
     }
 
     public List<Integer> getUsuariosIdsByIds(Optional<? extends Collection<Integer>> usuariosIds) {
