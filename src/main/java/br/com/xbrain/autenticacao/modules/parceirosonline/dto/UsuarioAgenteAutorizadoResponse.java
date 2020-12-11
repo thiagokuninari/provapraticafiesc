@@ -30,7 +30,7 @@ public class UsuarioAgenteAutorizadoResponse {
     }
 
     public static UsuarioAgenteAutorizadoResponse of(Usuario usuario) {
-        UsuarioAgenteAutorizadoResponse usuarioResponse = new UsuarioAgenteAutorizadoResponse();
+        var usuarioResponse = new UsuarioAgenteAutorizadoResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         return usuarioResponse;
     }
