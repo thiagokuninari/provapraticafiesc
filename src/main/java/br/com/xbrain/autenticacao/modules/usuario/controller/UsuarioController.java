@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.UsuarioExcessoUsoResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -381,8 +382,9 @@ public class UsuarioController {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
 
-    @GetMapping("/backoffices-por-agentes-autorizado-id")
-    public List<UsuarioResponse> buscarBackOfficesEmailPorAaIds(@RequestParam List<Integer> agentesAutorizadoId) {
-        return usuarioService.buscarBackOfficesEmailPorAaIds(agentesAutorizadoId);
+    @GetMapping("/backoffices-socios-por-agentes-autorizado-id")
+    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(
+        @RequestParam List<Integer> agentesAutorizadoId) {
+        return usuarioService.buscarBackOfficesAndSociosAaPorAaIds(agentesAutorizadoId);
     }
 }
