@@ -1,13 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
-import java.util.Map;
 
 @FeignClient(name = "notificacaoUsuarioAcessoClient",
     url = "${app-config.services.notificacao.url}",
@@ -16,6 +16,6 @@ public interface NotificacaoUsuarioAcessoClient {
 
     String API_USUARIOS_LOGADOS = "api/usuarios-logados";
 
-    @GetMapping(API_USUARIOS_LOGADOS + "/por-hora")
-    List<PaLogadoResponse> countUsuariosLogadosPorHora(@RequestParam Map<String, Object> filtro);
+    @PostMapping(API_USUARIOS_LOGADOS + "/por-periodo")
+    List<PaLogadoDto> countUsuariosLogadosPorPeriodo(@RequestBody UsuarioLogadoRequest request);
 }

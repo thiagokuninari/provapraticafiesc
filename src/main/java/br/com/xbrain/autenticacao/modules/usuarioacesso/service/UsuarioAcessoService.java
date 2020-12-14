@@ -11,8 +11,9 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
@@ -23,7 +24,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Transactional
 @Service
@@ -143,7 +145,7 @@ public class UsuarioAcessoService {
     }
 
     public Page<UsuarioAcessoResponse> getAll(PageRequest pageRequest, UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (!ObjectUtils.isEmpty(usuarioAcessoFiltros.getAaId())) {
+        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
         }
 
@@ -184,7 +186,7 @@ public class UsuarioAcessoService {
     }
 
     public List<UsuarioAcessoResponse> getRegistros(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        if (!ObjectUtils.isEmpty(usuarioAcessoFiltros.getAaId())) {
+        if (!isEmpty(usuarioAcessoFiltros.getAaId())) {
             usuarioAcessoFiltros.setAgenteAutorizadosIds(getIdUsuariosByAaId(usuarioAcessoFiltros));
         }
         return StreamSupport
@@ -205,14 +207,19 @@ public class UsuarioAcessoService {
             : "Registros não encontrados.");
     }
 
-    public List<PaLogadoResponse> getTotalUsuariosLogadosPorHoraByFiltros(UsuarioAcessoFiltros filtros) {
+    public List<PaLogadoDto> getTotalUsuariosLogadosPorPeriodoByFiltros(UsuarioLogadoRequest usuarioLogadoRequest) {
         var usuariosIds = StreamSupport
             .stream(usuarioRepository
-                .findAll(filtros.toUsuarioPredicate()).spliterator(), false)
+                .findAll(usuarioLogadoRequest.toUsuarioPredicate()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
 
-        return notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(usuariosIds, filtros.getDataInicial(),
-            filtros.getDataFinal());
+        if (isEmpty(usuariosIds)) {
+            usuarioLogadoRequest.getPeriodos()
+                .forEach(periodo -> periodo.setTotalUsuariosLogados(0));
+            return usuarioLogadoRequest.getPeriodos();
+        }
+        usuarioLogadoRequest.setUsuariosIds(usuariosIds);
+        return notificacaoUsuarioAcessoService.countUsuariosLogadosPorPeriodo(usuarioLogadoRequest);
     }
 }

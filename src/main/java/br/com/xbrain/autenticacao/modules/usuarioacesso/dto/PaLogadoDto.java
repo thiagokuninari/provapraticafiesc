@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaLogadoResponse {
+public class PaLogadoDto {
 
-    private Integer hora;
+    private String dataInicial;
+    private String dataFinal;
     private Integer totalUsuariosLogados;
 }

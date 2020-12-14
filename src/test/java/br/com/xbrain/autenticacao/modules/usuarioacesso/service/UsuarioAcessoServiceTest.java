@@ -3,12 +3,14 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
@@ -155,41 +157,36 @@ public class UsuarioAcessoServiceTest {
     }
 
     @Test
-    public void getTotalUsuariosLogadosPorHoraByFiltros_totalUsuariosLogadosDeAcordoComFiltro_quandoExistirUsuariosLogados() {
+    public void getTotalUsuariosLogadosPorPeriodoByFiltros_totalUsuariosLogadosDeAcordoComFiltro_quandoExistirUsuariosLogados() {
         when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of(new Usuario(101)));
-        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(any(), any(), any())).thenReturn(getLogadoResponse());
+        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorPeriodo(any())).thenReturn(umUsuarioLogadoResponse());
 
-        var filtros = new UsuarioAcessoFiltros();
-        filtros.setDataInicial(LocalDateTime.now());
-        filtros.setDataFinal(LocalDateTime.now());
-        var response = usuarioAcessoService.getTotalUsuariosLogadosPorHoraByFiltros(filtros);
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorPeriodoByFiltros(umUsuarioLogadoRequest());
 
         assertThat(response)
-            .hasSize(3)
-            .extracting("hora", "totalUsuariosLogados")
+            .extracting("dataInicial", "dataFinal", "totalUsuariosLogados")
             .containsExactly(
-                tuple(8, 20),
-                tuple(9, 10),
-                tuple(10, 1)
+                tuple("2020-12-01T10:00:00.000Z", "2020-12-01T10:59:59.999Z", 10),
+                tuple("2020-12-01T11:00:00.000Z", "2020-12-01T11:42:39.999Z", 3)
             );
-        verify(notificacaoUsuarioAcessoService, times(1)).countUsuariosLogadosPorHora(eq(List.of(101)),
-            eq(filtros.getDataInicial()), eq(filtros.getDataFinal()));
+
+        verify(notificacaoUsuarioAcessoService, times(1))
+            .countUsuariosLogadosPorPeriodo(any(UsuarioLogadoRequest.class));
     }
 
     @Test
-    public void getTotalUsuariosLogadosPorHoraByFiltros_deveRetornarListaVazia_quandoNaoExistirUsuariosLogados() {
+    public void getTotalUsuariosLogadosPorPeriodoByFiltros_deveRetornarPeriodosComTotalUsuariosZero_quandoNaoExistirUsuario() {
         when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of());
-        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorHora(any(), any(), any())).thenReturn(List.of());
 
-        var filtros = new UsuarioAcessoFiltros();
-        filtros.setDataInicial(LocalDateTime.now());
-        filtros.setDataFinal(LocalDateTime.now());
-        var response = usuarioAcessoService.getTotalUsuariosLogadosPorHoraByFiltros(filtros);
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorPeriodoByFiltros(umUsuarioLogadoRequest());
 
-        assertThat(response).isEmpty();
+        assertThat(response)
+            .extracting("dataInicial", "dataFinal", "totalUsuariosLogados")
+            .containsExactlyInAnyOrder(
+                tuple("2020-12-01T10:00:00.000Z", "2020-12-01T10:59:59.999Z", 0),
+                tuple("2020-12-01T11:00:00.000Z", "2020-12-01T11:42:39.999Z", 0));
 
-        verify(notificacaoUsuarioAcessoService, times(1)).countUsuariosLogadosPorHora(eq(List.of()),
-            eq(filtros.getDataInicial()), eq(filtros.getDataFinal()));
+        verify(notificacaoUsuarioAcessoService, never()).countUsuariosLogadosPorPeriodo(any());
     }
 
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
@@ -217,11 +214,32 @@ public class UsuarioAcessoServiceTest {
             .build();
     }
 
-    private List<PaLogadoResponse> getLogadoResponse() {
+    private List<PaLogadoDto> umUsuarioLogadoResponse() {
         return List.of(
-            new PaLogadoResponse(8, 20),
-            new PaLogadoResponse(9, 10),
-            new PaLogadoResponse(10, 1)
-        );
+            PaLogadoDto.builder()
+                .dataInicial("2020-12-01T10:00:00.000Z")
+                .dataFinal("2020-12-01T10:59:59.999Z")
+                .totalUsuariosLogados(10)
+                .build(),
+            PaLogadoDto.builder()
+                .dataInicial("2020-12-01T11:00:00.000Z")
+                .dataFinal("2020-12-01T11:42:39.999Z")
+                .totalUsuariosLogados(3)
+                .build());
+    }
+
+    private UsuarioLogadoRequest umUsuarioLogadoRequest() {
+        return UsuarioLogadoRequest.builder()
+            .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO))
+            .organizacaoId(6)
+            .periodos(List.of(PaLogadoDto.builder()
+                    .dataInicial("2020-12-01T10:00:00.000Z")
+                    .dataFinal("2020-12-01T10:59:59.999Z")
+                    .build(),
+                PaLogadoDto.builder()
+                    .dataInicial("2020-12-01T11:00:00.000Z")
+                    .dataFinal("2020-12-01T11:42:39.999Z")
+                    .build()))
+            .build();
     }
 }
