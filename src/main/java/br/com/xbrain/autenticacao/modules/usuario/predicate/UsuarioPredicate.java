@@ -308,10 +308,10 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCodigoCargoIn(List<CodigoCargo> codigosCargo) {
-        Optional.ofNullable(codigosCargo)
-            .map(usuario.cargo.codigo::in)
-            .map(builder::and);
+    public UsuarioPredicate comCodigosCargos(List<CodigoCargo> codigosCargos) {
+        if (!isEmpty(codigosCargos)) {
+            builder.and(usuario.cargo.codigo.in(codigosCargos));
+        }
 
         return this;
     }

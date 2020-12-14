@@ -1691,7 +1691,7 @@ public class UsuarioService {
     private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
         List<Integer> usuariosId, Integer aaId) {
         var predicate = new UsuarioPredicate();
-        predicate.comCodigoCargoIn(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
         predicate.comIds(usuariosId);
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(usuario -> preencherAaId(usuario, aaId))
