@@ -149,7 +149,7 @@ public class SiteServiceTest {
     @Test
     public void save_validacaoException_quandoCidadesJaExistentesEmOutroSite() {
         when(siteRepository.findAll()).thenReturn(List.of());
-        when(siteRepository.findFirstByCidadesIdInAndIdNot(anyList(), any()))
+        when(siteRepository.findFirstByCidadesIdInAndIdNotAndSituacao(anyList(), any(), any()))
             .thenReturn(Optional.of(umSite(1, "Brandin", BRT)));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -157,7 +157,7 @@ public class SiteServiceTest {
             .withMessage("Existem cidades vinculadas à outro site.");
 
         verify(siteRepository, atLeastOnce()).findAll();
-        verify(siteRepository, atLeastOnce()).findFirstByCidadesIdInAndIdNot(argThat(arg -> arg.size() == 2), eq(0));
+        verify(siteRepository, atLeastOnce()).findFirstByCidadesIdInAndIdNotAndSituacao(argThat(arg -> arg.size() == 2), eq(0), any());
         verifyZeroInteractions(cidadeRepository);
     }
 

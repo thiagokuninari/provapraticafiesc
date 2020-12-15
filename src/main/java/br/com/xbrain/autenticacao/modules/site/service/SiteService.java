@@ -243,8 +243,8 @@ public class SiteService {
     }
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
-        siteRepository.findFirstByCidadesIdInAndIdNot(siteRequest.getCidadesIds(),
-            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
+        siteRepository.findFirstByCidadesIdInAndIdNotAndSituacao(siteRequest.getCidadesIds(),
+            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()), A)
             .ifPresent(site -> {
                 throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
             });
