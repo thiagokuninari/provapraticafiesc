@@ -157,7 +157,8 @@ public class SiteServiceTest {
             .withMessage("Existem cidades vinculadas à outro site.");
 
         verify(siteRepository, atLeastOnce()).findAll();
-        verify(siteRepository, atLeastOnce()).findFirstByCidadesIdInAndIdNotAndSituacao(argThat(arg -> arg.size() == 2), eq(0), any());
+        verify(siteRepository, atLeastOnce()).findFirstByCidadesIdInAndIdNotAndSituacao(argThat(arg -> arg.size() == 2),
+            eq(0), any());
         verifyZeroInteractions(cidadeRepository);
     }
 
