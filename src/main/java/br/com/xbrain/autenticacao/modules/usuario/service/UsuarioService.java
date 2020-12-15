@@ -1677,4 +1677,9 @@ public class UsuarioService {
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
     }
+
+    public String obterNomeUsuarioPorId(Integer id) {
+        return findById(id)
+            .getNome();
+    }
 }

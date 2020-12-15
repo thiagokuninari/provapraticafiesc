@@ -380,4 +380,9 @@ public class UsuarioController {
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
+
+    @GetMapping("{id}/nome")
+    public String obterNomeUsuarioPorId(@PathVariable Integer id) {
+        return usuarioService.obterNomeUsuarioPorId(id);
+    }
 }

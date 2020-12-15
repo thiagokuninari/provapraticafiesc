@@ -675,6 +675,15 @@ public class UsuarioControllerTest {
             .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @SneakyThrows
+    public void obterNomeUsuarioPorId_deveRetornarOk_quandoUsuarioEncontrado() {
+        mvc.perform(get("/api/usuarios/100/nome")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()
