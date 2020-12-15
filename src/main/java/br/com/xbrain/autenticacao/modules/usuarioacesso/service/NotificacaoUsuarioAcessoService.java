@@ -15,6 +15,7 @@ import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -73,9 +74,11 @@ public class NotificacaoUsuarioAcessoService {
     private List<LoginLogoutCsv> getCsvPart(
         RelatorioLoginLogoutCsvFiltro filtro,
         Optional<? extends Collection<Integer>> usuariosIdsPermitidos) {
-        return usuariosIdsPermitidos.isPresent() && usuariosIdsPermitidos.get().isEmpty()
-            ? List.of()
-            : client.getCsv(filtro.toFeignRequestMap(usuariosIdsPermitidos));
+        if (usuariosIdsPermitidos.isPresent() && usuariosIdsPermitidos.get().isEmpty()) {
+            return List.of();
+        }
+        var request = filtro.toFeignRequestMap(usuariosIdsPermitidos);
+        return !ObjectUtils.isEmpty(request.get("usuariosIds")) ? client.getCsv(request) : List.of();
     }
 
     public List<Integer> getUsuariosIdsByIds(Optional<? extends Collection<Integer>> usuariosIds) {
