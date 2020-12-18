@@ -164,14 +164,15 @@ public class SiteServiceTest {
     @Test
     public void update_deveAtualizarAsInformacoesDeUmSiteExistente() {
         when(siteRepository.findById(anyInt()))
-            .thenReturn(Optional.of(umSite(1, "Sitezão", AMT)));
+            .thenReturn(Optional.of(umSiteComSupervisores()));
 
         var request = umSiteRequest();
         request.setId(1);
+        request.setSupervisoresIds(List.of(100, 110, 112));
 
         assertThat(service.update(request))
-            .extracting("id", "nome", "timeZone")
-            .containsExactly(1, "Site brandon big", BRT);
+            .extracting("id", "timeZone")
+            .contains(1, BRT);
 
         verify(siteRepository, never()).save(any(Site.class));
         verify(siteRepository, atLeastOnce()).findById(eq(1));
@@ -475,7 +476,7 @@ public class SiteServiceTest {
 
     private Predicate umSitePredicateComSupervidorOuCoordenador(Integer id) {
         return new SitePredicate()
-            .comCoordenadoresOuSupervisor(id)
+            .comCoordenadoresOuSupervisores(singletonList(id))
             .build();
     }
 

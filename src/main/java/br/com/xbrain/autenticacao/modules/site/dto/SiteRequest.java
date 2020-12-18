@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.util.ObjectUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -31,4 +32,8 @@ public class SiteRequest {
     private List<Integer> estadosIds;
     private List<Integer> cidadesIds;
     private boolean incluirCidadesDisponiveis;
+
+    public boolean isNovoSite() {
+        return ObjectUtils.isEmpty(id);
+    }
 }

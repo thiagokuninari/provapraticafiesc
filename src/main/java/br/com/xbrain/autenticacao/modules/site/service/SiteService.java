@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
@@ -66,6 +67,8 @@ public class SiteService {
     private CallService callService;
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     @Transactional(readOnly = true)
     public Site findById(Integer id) {
@@ -179,6 +182,29 @@ public class SiteService {
         return siteRepository.save(Site.of(request));
     }
 
+    private void validarAtualizacaoSupervisores(SiteRequest request) {
+        if (!request.isNovoSite()) {
+            siteRepository.findById(request.getId()).ifPresent(
+                site -> site.getSupervisores()
+                    .stream()
+                    .filter(ids -> !request.getSupervisoresIds().contains(ids.getId()))
+                    .forEach(this::verificarSupervisoresEmEquipes)
+            );
+        }
+    }
+
+    private void verificarSupervisoresEmEquipes(Usuario usuario) {
+        equipeVendaD2dService.getEquipeVendas(usuario.getId())
+            .stream()
+            .findFirst()
+            .ifPresent(equipeVendaDtos -> {
+                throw new ValidacaoException(String.format("Para remover o supervisor(a) "
+                        + "%s, é necessário remôve-lo(a) da equipe de vendas %s.",
+                    usuario.getNome(),
+                    equipeVendaDtos.getDescricao()));
+            });
+    }
+
     private void validarDadosCadastro(SiteRequest request) {
         verificarExistencia(request);
         verificarInclusaoCidades(request);
@@ -196,6 +222,7 @@ public class SiteService {
     public Site update(SiteRequest request) {
         validarDadosCadastro(request);
         var site = findById(request.getId());
+        validarAtualizacaoSupervisores(request);
         site.update(request);
         return site;
     }
