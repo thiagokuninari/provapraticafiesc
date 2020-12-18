@@ -18,10 +18,7 @@ import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,7 +54,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacoes(List<ESituacao> situacoes) {
+    public UsuarioPredicate comSituacoes(Collection<ESituacao> situacoes) {
         if (!isEmpty(situacoes)) {
             builder.and(usuario.situacao.in(situacoes));
         }
@@ -161,10 +158,22 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comUsuariosIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuario.id::in)
+                        .collect(Collectors.toList())));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comIds(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.and(ExpressionUtils.anyOf(
-                Lists.partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                Lists.partition(new ArrayList<>(usuariosIds), QTD_MAX_IN_NO_ORACLE)
                     .stream()
                     .map(usuario.id::in)
                     .collect(Collectors.toList()))
@@ -255,6 +264,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCanais(Collection<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
     private UsuarioPredicate somenteUsuariosBackoffice(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                        boolean incluirProrio) {
 
@@ -268,7 +284,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate ignorarTodos() {
+    public UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
         return this;
     }
@@ -296,6 +312,37 @@ public class UsuarioPredicate {
             somenteUsuariosBackoffice(usuario, usuarioService, true);
         } else if (!usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             ignorarTodos();
+        }
+        return this;
+    }
+
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
+            .build());
+        return this;
+    }
+
+    public UsuarioPredicate filtrarPermitidosRelatorioLoginLogout(ECanal canal) {
+        switch (canal) {
+            case AGENTE_AUTORIZADO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS
+                ));
+                break;
+            case D2D_PROPRIO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.VENDEDOR_OPERACAO,
+                    CodigoCargo.ASSISTENTE_OPERACAO
+                ));
+                break;
+            default:
         }
         return this;
     }

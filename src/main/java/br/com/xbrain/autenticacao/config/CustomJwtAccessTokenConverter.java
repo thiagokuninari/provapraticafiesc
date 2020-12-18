@@ -185,7 +185,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 .collect(Collectors.toList());
     }
 
-    private Set<String> getCanais(Usuario usuario) {
+    public static Set<String> getCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:

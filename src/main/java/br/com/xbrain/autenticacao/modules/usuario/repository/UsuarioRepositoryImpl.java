@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -749,6 +750,31 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .select(usuario.id)
             .from(usuario)
             .where(usuario.usuarioCadastro.id.eq(usuarioCadastroId))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?> ...orderSpecifiers) {
+        var projection = Projections.bean(UsuarioNomeResponse.class,
+            usuario.id,
+            usuario.nome,
+            usuario.situacao);
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(projection)
+            .from(usuario)
+            .where(predicate)
+            .orderBy(orderSpecifiers)
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(predicate)
+            .innerJoin(usuario.cargo, cargo)
+            .orderBy(orderSpecifiers)
             .fetch();
     }
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -69,6 +70,7 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
@@ -306,6 +308,19 @@ public class UsuarioService {
             usuariosSubordinados.add(usuarioId);
         }
         return usuariosSubordinados;
+    }
+
+    public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario) {
+        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            return List.of();
+        }
+
+        return Stream.of(
+            agenteAutorizadoService.getIdsUsuariosSubordinados(false),
+            repository.getUsuariosSubordinados(usuario.getId())
+        ).flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {

@@ -61,10 +61,28 @@ public enum EErrors {
             "#018 - Erro ao tentar recuperar o AA."),
     ERRO_OBTER_ESTRUTURA_AA(
         "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#019 - Erro ao tentar recuperar a Estrutura do AA."),
+        "#019 - Erro ao tentar recuperar a Estrutura do AA."
+    ),
     ERRO_OBTER_CEP(
         "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#020 - Erro ao tentar buscar o cep");
+        "#020 - Erro ao tentar buscar o cep"
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE(
+        "#021 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#021 - Erro ao tentar recuperar o relatório de logins e logouts de hoje."
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV(
+        "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#022 - Erro ao tentar recuperar o relatório de logins e logouts CSV."
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS(
+        "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#023 - Erro ao tentar recuperar os ids dos usuários dos acessos."
+    ),
+    ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
+        "#024 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#024 - Erro ao tentar recuperar os ids dos usuários subordinados."
+    );
 
     @Getter
     @Setter
