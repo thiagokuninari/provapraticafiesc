@@ -21,7 +21,9 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
@@ -1691,5 +1693,36 @@ public class UsuarioService {
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
+    }
+
+    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadoId) {
+        return agentesAutorizadoId
+            .stream()
+            .map(aaId -> buscarBackOfficesESociosAaPorUsuariosId(buscarUsuariosIdPorAaId(aaId), aaId))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
+        List<Integer> usuariosId, Integer aaId) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comIds(usuariosId);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(usuario -> preencherAaId(usuario, aaId))
+            .map(UsuarioAgenteAutorizadoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
+            .stream()
+            .map(UsuarioAgenteAutorizadoResponse::getId)
+            .collect(Collectors.toList());
+    }
+
+    private Usuario preencherAaId(Usuario usuario, Integer aaId) {
+        usuario.setAgenteAutorizadoId(aaId);
+        return usuario;
     }
 }

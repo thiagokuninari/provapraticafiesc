@@ -43,6 +43,7 @@ public class UsuarioResponse {
     private List<CodigoEmpresa> codigoEmpresas;
     private List<String> permissoes;
     private LocalDateTime nascimento;
+    private Integer aaId;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
@@ -68,6 +69,7 @@ public class UsuarioResponse {
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
         usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
+        usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
         return usuarioResponse;
     }
 

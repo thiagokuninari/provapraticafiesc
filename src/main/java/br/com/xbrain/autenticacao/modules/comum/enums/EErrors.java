@@ -82,6 +82,10 @@ public enum EErrors {
     ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
         "#024 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#024 - Erro ao tentar recuperar os ids dos usuários subordinados."
+    ),
+    ERRO_BUSCAR_USUARIOS_DO_AA(
+        "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#030 - Ocorreu um erro ao buscar usuários do agente autorizado"
     );
 
     @Getter

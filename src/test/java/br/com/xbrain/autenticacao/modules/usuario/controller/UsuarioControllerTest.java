@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -675,6 +676,37 @@ public class UsuarioControllerTest {
             .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarListaVazia_quandoNaoEncontrado() throws Exception {
+        when(usuarioService.buscarBackOfficesAndSociosAaPorAaIds(anyList())).thenReturn(Collections.emptyList());
+        mvc.perform(get(USUARIOS_ENDPOINT + "/backoffices-socios-por-agentes-autorizado-id")
+            .param("agentesAutorizadoId","100,101")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Collections.emptyList())));
+    }
+
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarUsuarios_quandoEncontrado() throws Exception {
+        when(usuarioService.buscarBackOfficesAndSociosAaPorAaIds(anyList())).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(100, 100),
+            umUsuarioAgenteAutorizadoResponse(101, 101)));
+        mvc.perform(get(USUARIOS_ENDPOINT + "/backoffices-socios-por-agentes-autorizado-id")
+            .param("agentesAutorizadoId","100,101")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("FULANO DE TESTE")))
+            .andExpect(jsonPath("$[0].email", is("TESTE@TESTE.COM")))
+            .andExpect(jsonPath("$[0].agenteAutorizadoId", is(100)))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].nome", is("FULANO DE TESTE")))
+            .andExpect(jsonPath("$[1].email", is("TESTE@TESTE.COM")))
+            .andExpect(jsonPath("$[1].agenteAutorizadoId", is(101)));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()
@@ -709,6 +741,15 @@ public class UsuarioControllerTest {
             .id(id)
             .nome(nome)
             .situacao(situacao)
+            .build();
+    }
+
+    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .agenteAutorizadoId(aaId)
             .build();
     }
 }

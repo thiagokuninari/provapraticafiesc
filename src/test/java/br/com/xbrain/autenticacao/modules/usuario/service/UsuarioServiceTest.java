@@ -15,7 +15,10 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
@@ -85,6 +88,8 @@ public class UsuarioServiceTest {
     private UsuarioCidadeRepository usuarioCidadeRepository;
     @Mock
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Mock
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -695,6 +700,92 @@ public class UsuarioServiceTest {
             .isNotEmpty();
     }
 
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosIdPorUmAaId() {
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(100, 100),
+            umUsuarioAgenteAutorizadoResponse(101, 100)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+            .thenReturn(List.of(
+                umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
+                umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
+
+        assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
+            .extracting("id", "nome", "email", "agenteAutorizadoId")
+            .containsExactly(
+                tuple(100, "FULANO DE TESTE", "TESTE@TESTE.COM", 100),
+                tuple(101, "FULANO DE TESTE", "TESTE@TESTE.COM", 100));
+    }
+
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosPorUmAaId() {
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(100, 100),
+            umUsuarioAgenteAutorizadoResponse(101, 100)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+            .thenReturn(Collections.emptyList());
+
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(200, 200),
+            umUsuarioAgenteAutorizadoResponse(201, 200)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
+            .thenReturn(List.of(
+                umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
+                umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+
+        assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
+            .extracting("id", "nome", "email", "agenteAutorizadoId")
+            .containsExactly(
+                tuple(200, "FULANO DE TESTE", "TESTE@TESTE.COM", 200),
+                tuple(201, "FULANO DE TESTE", "TESTE@TESTE.COM", 200));
+    }
+
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarUsuarioAgenteAutorizadoResponse_seEncontradoPorTodosAaId() {
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(100, 100),
+            umUsuarioAgenteAutorizadoResponse(101, 100)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+            .thenReturn(List.of(
+                umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
+                umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+
+        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(200, 200),
+            umUsuarioAgenteAutorizadoResponse(201, 200)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
+            .thenReturn(List.of(
+                umUsuarioDoIdECodigoCargo(200, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
+                umUsuarioDoIdECodigoCargo(201, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
+
+        assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
+            .extracting("id", "nome", "email", "agenteAutorizadoId")
+            .containsExactly(
+                tuple(100, "FULANO DE TESTE", "TESTE@TESTE.COM", 100),
+                tuple(101, "FULANO DE TESTE", "TESTE@TESTE.COM", 100),
+                tuple(200, "FULANO DE TESTE", "TESTE@TESTE.COM", 200),
+                tuple(201, "FULANO DE TESTE", "TESTE@TESTE.COM", 200));
+    }
+
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuariosId() {
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
+        assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuarios() {
+        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+            umUsuarioAgenteAutorizadoResponse(100, 100),
+            umUsuarioAgenteAutorizadoResponse(101, 100)));
+        when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
+            .thenReturn(Collections.emptyList());
+
+        assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
+    }
+
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
             .id(id)
@@ -715,11 +806,41 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
+    private Usuario umUsuarioDoIdECodigoCargo(int id, CodigoCargo codigoCargo) {
+        return Usuario.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .cargo(Cargo.builder()
+                .codigo(codigoCargo)
+                .nivel(Nivel.builder().codigo(CodigoNivel.XBRAIN).build())
+                .build())
+            .cpf("123.456.887-91")
+            .situacao(ESituacao.A)
+            .build();
+    }
+
     private Page<Usuario> umaPageUsuario(PageRequest pageRequest, List<Usuario> usuariosList) {
         return new PageImpl<>(
             usuariosList,
             pageRequest,
             usuariosList.size());
+    }
+
+    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .agenteAutorizadoId(aaId)
+            .build();
+    }
+
+    private UsuarioPredicate umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List<Integer> ids) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comIds(ids);
+        return predicate;
     }
 
     @Test
