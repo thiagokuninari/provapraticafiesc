@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import lombok.SneakyThrows;
@@ -27,6 +28,7 @@ import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -400,20 +402,19 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     public void buscarSitesPermitidos_sites_quandoUsuarioAutenticado() {
+        when(usuarioService.getSuperioresDoUsuario(anyInt()))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder()
+            .id(102).build()));
         mvc.perform(get(API_URI + "/permitidos")
             .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(5)))
+            .andExpect(jsonPath("$", hasSize(3)))
             .andExpect(jsonPath("$[0].value", is(100)))
             .andExpect(jsonPath("$[0].label", is("São Paulo")))
             .andExpect(jsonPath("$[1].value", is(101)))
             .andExpect(jsonPath("$[1].label", is("Rio Branco")))
             .andExpect(jsonPath("$[2].value", is(102)))
-            .andExpect(jsonPath("$[2].label", is("Manaus")))
-            .andExpect(jsonPath("$[3].value", is(110)))
-            .andExpect(jsonPath("$[3].label", is("Rio Branco")))
-            .andExpect(jsonPath("$[4].value", is(111)))
-            .andExpect(jsonPath("$[4].label", is("Manaus")));
+            .andExpect(jsonPath("$[2].label", is("Manaus")));
     }
 
     @Test

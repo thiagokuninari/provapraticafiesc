@@ -2,6 +2,10 @@ package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
@@ -26,8 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -50,6 +53,8 @@ public class SiteServiceIT {
     private SiteService siteService;
     @Autowired
     private SiteRepository siteRepository;
+    @MockBean
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     @Test
     public void buscarCoordenadores_deveRetornarCoordendoresDaHierarquiaDoUsuarioLogado_quandoSolicitarPorCidade() {
@@ -131,6 +136,36 @@ public class SiteServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
         assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1300)))
             .hasSize(0);
+    }
+
+    @Test
+    public void editarException_deveLancarException_quandoSupervisorRemovidoEstiverEmEquipeVendas() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(List.of(EquipeVendaDto.builder().descricao("Equipe 1")
+            .build()));
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> siteService.update(requestUpdateSite()))
+            .withMessage("Para remover o supervisor(a) Supervisor2 operacao ativo local"
+                + ", é necessário remôve-lo(a) da equipe de vendas Equipe 1.");
+    }
+
+    @Test
+    public void editarSucesso_deveEditarSiteComSucesso_quandoSupervisorRemovidoNaoEstiverVinculadoAEquipe() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(List.of());
+        assertThatCode(() -> siteService.update(requestUpdateSite()))
+            .doesNotThrowAnyException();
+    }
+
+    private SiteRequest requestUpdateSite() {
+        return SiteRequest.builder()
+            .id(1)
+            .supervisoresIds(List.of(11123))
+            .nome("Manaus")
+            .coordenadoresIds(List.of(11122))
+            .cidadesIds(List.of(1500))
+            .estadosIds(List.of(200))
+            .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticadoPadrao() {
