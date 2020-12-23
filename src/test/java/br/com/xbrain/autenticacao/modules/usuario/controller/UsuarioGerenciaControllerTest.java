@@ -19,7 +19,6 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.Usuarios;
-import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -552,21 +551,6 @@ public class UsuarioGerenciaControllerTest {
                         + ";;A\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
                         + ";;A", csv);
-    }
-
-    @Test
-    @SneakyThrows
-    public void buscarPorAasIdsEFiltros_deveRetornarOk_quandoSolicitado() {
-        var filtros = new UsuarioFiltros();
-        filtros.setAasIds(List.of(1));
-
-        mvc.perform(get(API_URI + "/por-agentes-autorizados")
-            .param("aasIds", "1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-        verify(usuarioService, times(1)).buscarPorAasIdsEFiltros(filtros);
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

@@ -42,8 +42,10 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(permitAll).permitAll()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .antMatchers("/api/usuarios/gerencia/**")
-            .hasAnyRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name(), CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuarios/vendedores-feeder")
+            .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.FDR_GERENCIAR_LEAD.name(),
+                CodigoFuncionalidade.MLG_5018_.name())
+            .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
             .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())

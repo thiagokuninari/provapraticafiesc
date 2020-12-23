@@ -355,4 +355,10 @@ public class UsuarioController {
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(CodigoCargo codigoCargo) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogado(codigoCargo);
     }
+
+    @GetMapping("vendedores-feeder")
+    public List<UsuarioConsultaDto> buscarVendedoresFeeder(@RequestParam List<Integer> aasIds,
+                                                           @RequestParam boolean comSocioPrincipal) {
+        return usuarioService.buscarVendedoresFeeder(aasIds, comSocioPrincipal);
+    }
 }

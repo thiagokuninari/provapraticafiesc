@@ -38,6 +38,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -102,8 +103,6 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
-    private static ValidacaoException AAS_IDS_OBRIGATORIO
-        = new ValidacaoException("O campo aasIds é obrigatório.");
 
     @Autowired
     @Setter
@@ -247,38 +246,6 @@ public class UsuarioService {
             popularUsuarios(pages.getContent());
         }
         return pages;
-    }
-
-    public List<UsuarioConsultaDto> buscarPorAasIdsEFiltros(UsuarioFiltros filtros) {
-        validarAasIds(filtros.getAasIds());
-
-        return filtros.getAasIds()
-            .stream()
-            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, true))
-            .filter(usuariosIds -> !isEmpty(usuariosIds))
-            .map(usuariosIds -> filtros.toPredicate().comIds(usuariosIds).build())
-            .map(this::buscarTodosPorPredicate)
-            .flatMap(List::stream)
-            .map(UsuarioConsultaDto::convertFrom)
-            .collect(Collectors.toList());
-    }
-
-    private void validarAasIds(List<Integer> aasIds) {
-        if (isEmpty(aasIds)) {
-            throw AAS_IDS_OBRIGATORIO;
-        }
-    }
-
-    private List<Integer> buscarUsuariosIdsPorAaId(Integer aaId, Boolean buscarInativos) {
-        return agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(aaId, buscarInativos)
-            .stream()
-            .map(UsuarioDtoVendas::getId)
-            .distinct()
-            .collect(Collectors.toList());
-    }
-
-    private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {
-        return (List<Usuario>) repository.findAll(predicate);
     }
 
     private void popularUsuarios(List<Usuario> usuarios) {
@@ -1536,5 +1503,48 @@ public class UsuarioService {
         return repository.findById(id)
             .map(UrlLojaOnlineResponse::of)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public List<UsuarioConsultaDto> buscarVendedoresFeeder(List<Integer> aasIds, boolean comSocioPrinciapl) {
+        return aasIds
+            .stream()
+            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, false))
+            .filter(usuariosIds -> !isEmpty(usuariosIds))
+            .map(usuariosIds -> montarPredicateVendedoresFeeder(usuariosIds, comSocioPrinciapl))
+            .map(this::buscarTodosPorPredicate)
+            .flatMap(List::stream)
+            .map(UsuarioConsultaDto::new)
+            .collect(Collectors.toList());
+    }
+
+    private List<Integer> buscarUsuariosIdsPorAaId(Integer aaId, Boolean buscarInativos) {
+        return agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(aaId, buscarInativos)
+            .stream()
+            .map(UsuarioDtoVendas::getId)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private BooleanBuilder montarPredicateVendedoresFeeder(List<Integer> usuariosIds, boolean comSocioPrincipal) {
+        var predicate = new UsuarioPredicate();
+
+        autenticacaoService.getUsuarioAutenticadoId()
+            .ifPresent(usuarioAutenticadoId -> predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this));
+
+        predicate.comIds(usuariosIds);
+        predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO));
+
+        if (comSocioPrincipal) {
+            predicate.comCodigosCargos(List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+                AGENTE_AUTORIZADO_SOCIO));
+        } else {
+            predicate.comCodigosCargos(List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D));
+        }
+
+        return predicate.build();
+    }
+
+    private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {
+        return (List<Usuario>) repository.findAll(predicate);
     }
 }

@@ -661,6 +661,20 @@ public class UsuarioControllerTest {
             .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @SneakyThrows
+    public void buscarVendedoresFeeder_deveRetornarOk_quandoSolicitado() {
+        mvc.perform(get("/api/usuarios/vendedores-feeder")
+            .param("aasIds", "1")
+            .param("comSocioPrincipal", "true")
+            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).buscarVendedoresFeeder(List.of(1), true);
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

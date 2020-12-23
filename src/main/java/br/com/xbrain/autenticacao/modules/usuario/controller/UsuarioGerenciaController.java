@@ -131,9 +131,4 @@ public class UsuarioGerenciaController {
                 response
         );
     }
-
-    @GetMapping("por-agentes-autorizados")
-    public List<UsuarioConsultaDto> buscarPorAasIdsEFiltros(UsuarioFiltros filtros) {
-        return service.buscarPorAasIdsEFiltros(filtros);
-    }
 }
