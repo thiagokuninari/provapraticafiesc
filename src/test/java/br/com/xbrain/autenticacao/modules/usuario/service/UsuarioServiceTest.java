@@ -596,7 +596,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarPorAasIdsEFiltros_deveRetornarListaVazia_quandoNaoHouverUsuariosDosAgentesAutorizados() {
+    public void buscarVendedoresFeeder_deveRetornarListaVazia_quandoNaoHouverUsuariosDosAgentesAutorizados() {
         when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
             .thenReturn(List.of());
 
@@ -607,7 +607,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarPorAasIdsEFiltros_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDosAgentesAutorizados() {
+    public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDosAgentesAutorizados() {
         when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(repository.findAll(eq(umUsuarioPredicate().build()))).thenReturn(List.of(umUsuarioCompleto()));
