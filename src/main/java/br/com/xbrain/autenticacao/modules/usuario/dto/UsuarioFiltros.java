@@ -1,8 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,9 +28,6 @@ public class UsuarioFiltros {
     private ECanal canal;
     private List<ESituacao> situacoes;
     private Integer organizacaoId;
-    private List<CodigoNivel> codigosNiveis;
-    private List<CodigoCargo> codigosCargos;
-    private List<Integer> aasIds;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -53,8 +48,6 @@ public class UsuarioFiltros {
             .comCargo(!ObjectUtils.isEmpty(cargoId)
                 ? Collections.singletonList(cargoId) : null)
             .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
-                ? Collections.singletonList(departamentoId) : null)
-            .comCodigosCargos(codigosCargos)
-            .comCodigosNiveis(codigosNiveis);
+                ? Collections.singletonList(departamentoId) : null);
     }
 }

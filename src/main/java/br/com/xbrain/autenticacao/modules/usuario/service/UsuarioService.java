@@ -1528,9 +1528,6 @@ public class UsuarioService {
     private BooleanBuilder montarPredicateVendedoresFeeder(List<Integer> usuariosIds, boolean comSocioPrincipal) {
         var predicate = new UsuarioPredicate();
 
-        autenticacaoService.getUsuarioAutenticadoId()
-            .ifPresent(usuarioAutenticadoId -> predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this));
-
         predicate.comIds(usuariosIds);
         predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO));
 
