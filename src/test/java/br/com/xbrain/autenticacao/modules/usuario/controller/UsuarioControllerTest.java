@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -70,6 +71,8 @@ public class UsuarioControllerTest {
     private UsuarioService usuarioService;
     @MockBean
     private UsuarioAgendamentoService usuarioAgendamentoService;
+    @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     @Before
     public void setup() {
@@ -663,12 +666,37 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresFeeder_deveRetornarOk_quandoSolicitado() {
+    public void buscarVendedoresFeeder_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(get("/api/usuarios/vendedores-feeder")
             .param("aasIds", "1")
             .param("comSocioPrincipal", "true")
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
-            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", "")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarVendedoresFeeder(List.of(1), true);
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarVendedoresFeeder_deveRetornarForbidden_quandoUsuarioAutenticadoESemPermissao() {
+        mvc.perform(get("/api/usuarios/vendedores-feeder")
+            .param("aasIds", "1")
+            .param("comSocioPrincipal", "true")
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verify(usuarioService, never()).buscarVendedoresFeeder(List.of(1), true);
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarVendedoresFeeder_deveRetornarOk_quandoUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get("/api/usuarios/vendedores-feeder")
+            .param("aasIds", "1")
+            .param("comSocioPrincipal", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 

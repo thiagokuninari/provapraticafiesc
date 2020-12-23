@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
@@ -87,8 +86,6 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
-    @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {

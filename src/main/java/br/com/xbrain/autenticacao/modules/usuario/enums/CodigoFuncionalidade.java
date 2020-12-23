@@ -30,7 +30,7 @@ public enum CodigoFuncionalidade {
     VDS_3061("Visualizar Relatório Consulta de Crédito"),
     REL_10014("Relatório Consulta de Crédito"),
     FDR_GERENCIAR_LEAD("Gerenciar Lead"),
-    MLG_5018_("Gerenciar Distribuição Mailing Segmentação");
+    MLG_5018("Gerenciar Distribuição Mailing Segmentação");
 
     @Getter
     private String descricao;
