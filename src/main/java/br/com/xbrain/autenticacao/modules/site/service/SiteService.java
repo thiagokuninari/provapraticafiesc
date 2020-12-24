@@ -198,8 +198,8 @@ public class SiteService {
             .stream()
             .findFirst()
             .ifPresent(equipeVendaDtos -> {
-                throw new ValidacaoException(String.format("Para remover o supervisor(a) "
-                        + "%s, é necessário remôve-lo(a) da equipe de vendas %s.",
+                throw new ValidacaoException(String.format("Para concluir essa operação é necessário remover o supervisor(a) "
+                        + "%s da equipe de vendas %s.",
                     usuario.getNome(),
                     equipeVendaDtos.getDescricao()));
             });
@@ -228,6 +228,7 @@ public class SiteService {
     }
 
     public void inativar(Integer id) {
+        validarInativacao(id);
         var site = findById(id);
         if (Objects.equals(site.getSituacao(), A)) {
             site.inativar();
@@ -252,6 +253,13 @@ public class SiteService {
             .collect(toList());
     }
 
+    private void validarInativacao(Integer siteId) {
+        siteRepository.findById(siteId).ifPresent(
+            site -> site.getSupervisores()
+                .forEach(this::verificarSupervisoresEmEquipes)
+        );
+    }
+
     private void verificarInclusaoCidades(SiteRequest siteRequest) {
         if (siteRequest.isIncluirCidadesDisponiveis()) {
             incluirCidadesDisponiveis(siteRequest);
@@ -270,7 +278,7 @@ public class SiteService {
     }
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
-        siteRepository.findFirstByCidadesIdInAndIdNot(siteRequest.getCidadesIds(),
+        siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(A, siteRequest.getCidadesIds(),
             Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
             .ifPresent(site -> {
                 throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;

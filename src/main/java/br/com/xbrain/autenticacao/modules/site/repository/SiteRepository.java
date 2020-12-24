@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ import java.util.Optional;
 public interface SiteRepository extends JpaRepository<Site, Integer>,
     QueryDslPredicateExecutor<Site>, SiteRepositoryCustom {
 
-    Optional<Site> findFirstByCidadesIdInAndIdNot(List<Integer> cidadesIds, Integer id);
+    Optional<Site> findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao situacao, List<Integer> cidadesIds, Integer id);
 
     List<Site> findAll(Predicate predicate);
 

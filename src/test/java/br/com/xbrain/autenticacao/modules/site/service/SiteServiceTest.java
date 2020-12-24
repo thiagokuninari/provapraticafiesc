@@ -8,6 +8,8 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
@@ -38,6 +40,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static helpers.TestBuilders.*;
+import static helpers.TestBuilders.umSiteVinculado;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertNull;
@@ -61,6 +64,8 @@ public class SiteServiceTest {
     private CallService callService;
     @Mock
     private UsuarioService usuarioService;
+    @Mock
+    private EquipeVendaD2dService equipeVendaD2dService;
 
     private void setupSite(Integer idUsuario, Integer idSite, CodigoCargo codigoCargo, String nomeSite, Integer vinculoIndireto) {
         var sitePredicate = umSitePredicateComSupervidorOuCoordenador(idUsuario);
@@ -149,7 +154,7 @@ public class SiteServiceTest {
     @Test
     public void save_validacaoException_quandoCidadesJaExistentesEmOutroSite() {
         when(siteRepository.findAll()).thenReturn(List.of());
-        when(siteRepository.findFirstByCidadesIdInAndIdNot(anyList(), any()))
+        when(siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(any(), anyList(), any()))
             .thenReturn(Optional.of(umSite(1, "Brandin", BRT)));
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -157,7 +162,7 @@ public class SiteServiceTest {
             .withMessage("Existem cidades vinculadas à outro site.");
 
         verify(siteRepository, atLeastOnce()).findAll();
-        verify(siteRepository, atLeastOnce()).findFirstByCidadesIdInAndIdNot(argThat(arg -> arg.size() == 2), eq(0));
+        verify(siteRepository, atLeastOnce()).findFirstBySituacaoAndCidadesIdInAndIdNot(any(), any(), any());
         verifyZeroInteractions(cidadeRepository);
     }
 
@@ -433,6 +438,25 @@ public class SiteServiceTest {
             .isInstanceOf(SiteResponse.class)
             .extracting("id", "nome")
             .containsExactly(100, "SITE SP");
+    }
+
+    @Test
+    public void exceptionInativar_deveLancarException_quandoInativarSiteComSupervisorVinculadoAEquipe() {
+        var site = umSiteVinculado(8, "site", umUsuario(110, SUPERVISOR_OPERACAO));
+        when(siteRepository.findById(any())).thenReturn(Optional.of(site));
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(umaListEquipeResponse());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.inativar(12))
+            .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
+                + "UM USUARIO SUPERVISOR_OPERACAO da equipe de vendas Equipe ativo.");
+    }
+
+    public List<EquipeVendaDto> umaListEquipeResponse() {
+        return List.of(EquipeVendaDto.builder()
+        .id(10)
+        .descricao("Equipe ativo")
+        .build());
     }
 
     private Predicate umSitePredicateComSupervidoresOuCoordenadores(List<Integer> id) {

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import org.assertj.core.api.Assertions;
@@ -27,19 +28,19 @@ public class SiteRepositoryTest {
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(1, 2), 100))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(1, 2), 100))
             .isNotPresent();
     }
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(5578), 100))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 100))
             .isNotPresent();
     }
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNot(List.of(5578), 0))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 0))
             .isPresent();
     }
 
