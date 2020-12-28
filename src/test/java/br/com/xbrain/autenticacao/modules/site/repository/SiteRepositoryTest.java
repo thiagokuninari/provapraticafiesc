@@ -28,19 +28,19 @@ public class SiteRepositoryTest {
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNotAndSituacao(List.of(1, 2), 100, ESituacao.A))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(1, 2), 100))
             .isNotPresent();
     }
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNotAndSituacao(List.of(5578), 100, ESituacao.A))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 100))
             .isNotPresent();
     }
 
     @Test
     public void findFirstByCidadesIdInAndIdNot_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
-        assertThat(repository.findFirstByCidadesIdInAndIdNotAndSituacao(List.of(5578), 0, ESituacao.A))
+        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 0))
             .isPresent();
     }
 

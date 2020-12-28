@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface SiteRepository extends JpaRepository<Site, Integer>,
     QueryDslPredicateExecutor<Site>, SiteRepositoryCustom {
 
-    Optional<Site> findFirstByCidadesIdInAndIdNotAndSituacao(List<Integer> cidadesIds, Integer id, ESituacao situacao);
+    Optional<Site> findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao situacao, List<Integer> cidadesIds, Integer id);
 
     List<Site> findAll(Predicate predicate);
 

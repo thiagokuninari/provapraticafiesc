@@ -145,8 +145,8 @@ public class SiteServiceIT {
             .build()));
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> siteService.update(requestUpdateSite()))
-            .withMessage("Para remover o supervisor(a) Supervisor2 operacao ativo local"
-                + ", é necessário remôve-lo(a) da equipe de vendas Equipe 1.");
+            .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
+                + "Supervisor2 operacao ativo local da equipe de vendas Equipe 1.");
     }
 
     @Test
