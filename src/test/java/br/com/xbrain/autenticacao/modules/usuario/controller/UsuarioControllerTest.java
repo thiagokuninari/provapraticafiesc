@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -674,7 +675,7 @@ public class UsuarioControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService, never()).buscarVendedoresFeeder(List.of(1), true);
+        verify(usuarioService, never()).buscarVendedoresFeeder(any());
     }
 
     @Test
@@ -687,20 +688,35 @@ public class UsuarioControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
 
-        verify(usuarioService, never()).buscarVendedoresFeeder(List.of(1), true);
+        verify(usuarioService, never()).buscarVendedoresFeeder(any());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresFeeder_deveRetornarOk_quandoUsuarioAutenticadoEComPermissao() {
+    public void buscarVendedoresFeeder_deveRetornarBadRequest_quandoFiltrosObrigatoriosNaoInformados() {
+        mvc.perform(get("/api/usuarios/vendedores-feeder")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo aasIds é obrigatório.",
+                "O campo comSocioPrincipal é obrigatório.")));
+
+        verify(usuarioService, never()).buscarVendedoresFeeder(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarVendedoresFeeder_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
         mvc.perform(get("/api/usuarios/vendedores-feeder")
             .param("aasIds", "1")
             .param("comSocioPrincipal", "true")
+            .param("buscarInativos", "true")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioService, times(1)).buscarVendedoresFeeder(List.of(1), true);
+        verify(usuarioService, times(1)).buscarVendedoresFeeder(eq(umVendedoresFeederFiltros(List.of(1), true, true)));
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {

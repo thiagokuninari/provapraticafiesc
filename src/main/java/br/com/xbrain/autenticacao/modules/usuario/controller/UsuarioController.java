@@ -357,8 +357,7 @@ public class UsuarioController {
     }
 
     @GetMapping("vendedores-feeder")
-    public List<UsuarioConsultaDto> buscarVendedoresFeeder(@RequestParam List<Integer> aasIds,
-                                                           @RequestParam boolean comSocioPrincipal) {
-        return usuarioService.buscarVendedoresFeeder(aasIds, comSocioPrincipal);
+    public List<UsuarioConsultaDto> buscarVendedoresFeeder(@Validated VendedoresFeederFiltros filtros) {
+        return usuarioService.buscarVendedoresFeeder(filtros);
     }
 }

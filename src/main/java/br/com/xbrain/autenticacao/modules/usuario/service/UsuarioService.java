@@ -38,7 +38,6 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -1505,12 +1504,12 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<UsuarioConsultaDto> buscarVendedoresFeeder(List<Integer> aasIds, boolean comSocioPrinciapl) {
-        return aasIds
+    public List<UsuarioConsultaDto> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
+        return filtros.getAasIds()
             .stream()
-            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, false))
+            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, filtros.obterBuscarInativos()))
             .filter(usuariosIds -> !isEmpty(usuariosIds))
-            .map(usuariosIds -> montarPredicateVendedoresFeeder(usuariosIds, comSocioPrinciapl))
+            .map(filtros::toPredicate)
             .map(this::buscarTodosPorPredicate)
             .flatMap(List::stream)
             .map(UsuarioConsultaDto::new)
@@ -1523,22 +1522,6 @@ public class UsuarioService {
             .map(UsuarioDtoVendas::getId)
             .distinct()
             .collect(Collectors.toList());
-    }
-
-    private BooleanBuilder montarPredicateVendedoresFeeder(List<Integer> usuariosIds, boolean comSocioPrincipal) {
-        var predicate = new UsuarioPredicate();
-
-        predicate.comIds(usuariosIds);
-        predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO));
-
-        if (comSocioPrincipal) {
-            predicate.comCodigosCargos(List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
-                AGENTE_AUTORIZADO_SOCIO));
-        } else {
-            predicate.comCodigosCargos(List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D));
-        }
-
-        return predicate.build();
     }
 
     private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {

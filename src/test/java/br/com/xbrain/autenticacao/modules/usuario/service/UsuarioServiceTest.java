@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -600,19 +602,50 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
             .thenReturn(List.of());
 
-        assertThat(service.buscarVendedoresFeeder(List.of(1), true))
+        assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), null, false)))
             .isEmpty();
 
-        verify(repository, never()).findAll(umUsuarioPredicate().build());
+        verify(repository, never()).findAll(any(Predicate.class));
     }
 
     @Test
-    public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoHouverUsuariosDosAgentesAutorizados() {
+    public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosNull() {
         when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
-        when(repository.findAll(eq(umUsuarioPredicate().build()))).thenReturn(List.of(umUsuarioCompleto()));
+        when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
+            .thenReturn(List.of(umUsuarioCompleto()));
 
-        assertThat(service.buscarVendedoresFeeder(List.of(1), true))
+        assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, false)))
+            .hasSize(1)
+            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
+                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
+            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
+                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+    }
+
+    @Test
+    public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosFalse() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
+            .thenReturn(List.of(umUsuarioDtoVendas(1)));
+        when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
+            .thenReturn(List.of(umUsuarioCompleto()));
+
+        assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, false)))
+            .hasSize(1)
+            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
+                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
+            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
+                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+    }
+
+    @Test
+    public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosTrue() {
+        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(true)))
+            .thenReturn(List.of(umUsuarioDtoVendas(1)));
+        when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
+            .thenReturn(List.of(umUsuarioCompleto()));
+
+        assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, true)))
             .hasSize(1)
             .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
                 "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
@@ -645,17 +678,6 @@ public class UsuarioServiceTest {
             .builder()
             .id(id)
             .build();
-    }
-
-    private UsuarioPredicate umUsuarioPredicate() {
-        var predicate = new UsuarioPredicate();
-
-        predicate.comIds(List.of(1));
-        predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO));
-        predicate.comCodigosCargos(List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
-            AGENTE_AUTORIZADO_SOCIO));
-
-        return predicate;
     }
 
     private Usuario umUsuarioCompleto() {
