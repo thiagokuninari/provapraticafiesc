@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.VendedoresFeederFiltros;
+import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 
 import java.util.List;
 

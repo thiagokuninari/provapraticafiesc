@@ -1,6 +1,5 @@
-package br.com.xbrain.autenticacao.modules.usuario.dto;
+package br.com.xbrain.autenticacao.modules.feeder.dto;
 
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.core.types.Predicate;
@@ -14,18 +13,14 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.CODIGOS_CARGOS_VENDEDORES_FEEDER;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.CODIGOS_CARGOS_VENDEDORES_FEEDER_E_SOCIO_PRINCIPAL;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class VendedoresFeederFiltros {
-
-    private static final List<CodigoCargo> CODIGOS_CARGOS_VENDEDORES_FEEDER_E_SOCIO_PRINCIPAL =
-        List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D, AGENTE_AUTORIZADO_SOCIO);
-    private static final List<CodigoCargo> CODIGOS_CARGOS_VENDEDORES_FEEDER =
-        List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D);
 
     @NotEmpty
     private List<Integer> aasIds;

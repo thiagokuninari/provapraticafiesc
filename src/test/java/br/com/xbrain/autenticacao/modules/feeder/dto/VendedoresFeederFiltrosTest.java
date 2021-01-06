@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.dto;
+package br.com.xbrain.autenticacao.modules.feeder.dto;
 
 import org.junit.Test;
 
