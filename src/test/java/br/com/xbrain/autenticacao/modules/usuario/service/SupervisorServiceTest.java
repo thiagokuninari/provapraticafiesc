@@ -142,8 +142,8 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
-        doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+        doReturn(singletonList(umVendedorComId(1, VENDEDOR_OPERACAO.name())))
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
@@ -152,17 +152,17 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
-                tuple("VENDEDOR", VENDEDOR_OPERACAO));
+                tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
-                tuple("VENDEDOR", VENDEDOR_OPERACAO));
+                tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
@@ -172,8 +172,9 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
 
-        doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
-            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
+        doReturn(List.of(umVendedorComId(1, VENDEDOR_OPERACAO.name()), umVendedorComId(2, OPERACAO_EXECUTIVO_VENDAS.name()),
+            umVendedorComId(3, VENDEDOR_OPERACAO.name())))
+            .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
 
@@ -183,14 +184,13 @@ public class SupervisorServiceTest {
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
-                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO));
-
+                tuple(2, "VENDEDOR2", OPERACAO_EXECUTIVO_VENDAS));
     }
 
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
@@ -200,7 +200,7 @@ public class SupervisorServiceTest {
     @Test
     public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         doReturn(emptyList())
-            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
+            .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anySet());
 
         assertThat(
             service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
@@ -234,7 +234,7 @@ public class SupervisorServiceTest {
                 tuple(5, "SUPERVISOR CURITIBA"));
     }
 
-    private Object[] umVendedorComId(int id) {
-        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
+    private Object[] umVendedorComId(int id, String cargoCodigo) {
+        return new Object[]{new BigDecimal(id), "VENDEDOR" + id, "EMAIL@GMAIL.COM", "VENDEDOR", cargoCodigo};
     }
 }

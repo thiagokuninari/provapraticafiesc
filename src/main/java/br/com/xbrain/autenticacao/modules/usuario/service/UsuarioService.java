@@ -1473,7 +1473,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
-        return repository.getSubordinadosPorCargo(usuarioId, VENDEDOR_OPERACAO.name())
+        return repository.getSubordinadosPorCargo(usuarioId,
+            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_EXECUTIVO_VENDAS.name()))
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());
@@ -1552,7 +1553,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdsSubordinadosDaHierarquia(Integer usuarioId, String codigoCargo) {
-        return repository.getSubordinadosPorCargo(usuarioId, codigoCargo)
+        return repository.getSubordinadosPorCargo(usuarioId, Set.of(codigoCargo))
             .stream()
             .map(row -> objectToInteger(row[POSICAO_ZERO]))
             .collect(Collectors.toList());

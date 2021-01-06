@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ public class SupervisorService {
 
     private static final int COLUNA_USUARIO_ID = 0;
     private static final int COLUNA_USUARIO_NOME = 1;
+    private static final int COLUNA_CARGO_CODIGO = 4;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -52,12 +54,13 @@ public class SupervisorService {
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
-                .getSubordinadosPorCargo(supervisorId, CodigoCargo.VENDEDOR_OPERACAO.name())
+                .getSubordinadosPorCargo(supervisorId,
+                    Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()))
                 .stream()
                 .map(row -> new UsuarioResponse(
-                        ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
-                        (String) row[COLUNA_USUARIO_NOME],
-                        CodigoCargo.VENDEDOR_OPERACAO))
+                    ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
+                    (String) row[COLUNA_USUARIO_NOME],
+                    CodigoCargo.valueOf((String) row[COLUNA_CARGO_CODIGO])))
                 .collect(Collectors.toList());
     }
 

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UsuarioRepositoryCustom {
 
@@ -32,7 +33,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
