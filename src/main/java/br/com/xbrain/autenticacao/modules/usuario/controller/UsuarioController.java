@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.UsuarioExcessoUsoResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
+import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -358,7 +359,7 @@ public class UsuarioController {
     }
 
     @GetMapping("vendedores-feeder")
-    public List<UsuarioConsultaDto> buscarVendedoresFeeder(@Validated VendedoresFeederFiltros filtros) {
+    public List<VendedoresFeederResponse> buscarVendedoresFeeder(@Validated VendedoresFeederFiltros filtros) {
         return usuarioService.buscarVendedoresFeeder(filtros);
     }
 }

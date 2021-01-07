@@ -43,11 +43,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -617,10 +616,8 @@ public class UsuarioServiceTest {
 
         assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, false)))
             .hasSize(1)
-            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
-                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
-            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
-                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+            .extracting("id", "nome", "situacao", "nivelCodigo")
+            .containsExactly(tuple(1, "NOME UM", "A", "AGENTE_AUTORIZADO"));
     }
 
     @Test
@@ -632,10 +629,8 @@ public class UsuarioServiceTest {
 
         assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, false)))
             .hasSize(1)
-            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
-                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
-            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
-                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+            .extracting("id", "nome", "situacao", "nivelCodigo")
+            .containsExactly(tuple(1, "NOME UM", "A", "AGENTE_AUTORIZADO"));
     }
 
     @Test
@@ -647,10 +642,8 @@ public class UsuarioServiceTest {
 
         assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), true, true)))
             .hasSize(1)
-            .extracting("id", "nome", "email", "cpf", "unidadeNegocioNome", "empresaNome", "situacao",
-                "nivelCodigo", "nivelNome", "cargoNome", "departamentoNome")
-            .containsExactly(tuple(1, "NOME UM", "email@email.com", "111.111.111-11",
-                "UNIDADE NEGÓCIO UM", "EMPRESA UM", "A", "AGENTE_AUTORIZADO", "AGENTE AUTORIZADO", null, "DEPARTAMENTO UM"));
+            .extracting("id", "nome", "situacao", "nivelCodigo")
+            .containsExactly(tuple(1, "NOME UM", "A", "AGENTE_AUTORIZADO"));
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {

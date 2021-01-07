@@ -6,7 +6,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateSemSocioPrincipal;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class VendedoresFeederFiltrosTest {

@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.usuario.helpers;
+package br.com.xbrain.autenticacao.modules.feeder.helper;
 
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 

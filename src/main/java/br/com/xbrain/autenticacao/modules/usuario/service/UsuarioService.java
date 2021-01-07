@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
+import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -1505,7 +1506,7 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<UsuarioConsultaDto> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
+    public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
         return filtros.getAasIds()
             .stream()
             .map(aaId -> buscarUsuariosIdsPorAaId(aaId, filtros.obterBuscarInativos()))
@@ -1513,7 +1514,7 @@ public class UsuarioService {
             .map(filtros::toPredicate)
             .map(this::buscarTodosPorPredicate)
             .flatMap(List::stream)
-            .map(UsuarioConsultaDto::new)
+            .map(VendedoresFeederResponse::of)
             .collect(Collectors.toList());
     }
 
