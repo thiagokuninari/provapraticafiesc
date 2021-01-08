@@ -6,6 +6,8 @@ server:
 
 spring:
   redis:
+#    host: 127.0.0.1
+#    port: 6379
     host: 192.168.50.1
     port: 6379
     pool:
@@ -46,6 +48,7 @@ spring:
 
   rabbitmq:
     host: 192.168.50.1
+    #host: localhost
     port: 5671
     username: xbrain
     password: xbrain
@@ -243,6 +246,9 @@ app-config:
       url: https://api-dev.conexaoclarobrasil.com.br/solicitacao-cliente-pap
     consulta-cep:
       url: http://192.168.2.28:8186
+    notificacao:
+      #url: http://localhost:8081
+      url: http://192.168.50.1:6595
 
 flyway:
   enabled: true

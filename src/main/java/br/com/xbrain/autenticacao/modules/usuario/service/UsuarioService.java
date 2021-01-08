@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -20,7 +21,9 @@ import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
@@ -69,6 +72,7 @@ import java.util.stream.StreamSupport;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
@@ -306,6 +310,19 @@ public class UsuarioService {
             usuariosSubordinados.add(usuarioId);
         }
         return usuariosSubordinados;
+    }
+
+    public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario) {
+        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            return List.of();
+        }
+
+        return Stream.of(
+            agenteAutorizadoService.getIdsUsuariosSubordinados(false),
+            repository.getUsuariosSubordinados(usuario.getId())
+        ).flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
@@ -1676,5 +1693,36 @@ public class UsuarioService {
 
     public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
         return repository.obterIdsPorUsuarioCadastroId(usuarioCadastroId);
+    }
+
+    public List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesAndSociosAaPorAaIds(List<Integer> agentesAutorizadoId) {
+        return agentesAutorizadoId
+            .stream()
+            .map(aaId -> buscarBackOfficesESociosAaPorUsuariosId(buscarUsuariosIdPorAaId(aaId), aaId))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    private List<UsuarioAgenteAutorizadoResponse> buscarBackOfficesESociosAaPorUsuariosId(
+        List<Integer> usuariosId, Integer aaId) {
+        var predicate = new UsuarioPredicate();
+        predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
+        predicate.comIds(usuariosId);
+        return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
+            .map(usuario -> preencherAaId(usuario, aaId))
+            .map(UsuarioAgenteAutorizadoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
+        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
+            .stream()
+            .map(UsuarioAgenteAutorizadoResponse::getId)
+            .collect(Collectors.toList());
+    }
+
+    private Usuario preencherAaId(Usuario usuario, Integer aaId) {
+        usuario.setAgenteAutorizadoId(aaId);
+        return usuario;
     }
 }

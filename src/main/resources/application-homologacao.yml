@@ -50,6 +50,8 @@ app-config:
       url: http://172.10.10.106:8300
     gestao:
       url: http://172.10.10.71:8091
+    notificacao:
+      url: http://172.10.10.98:8081
 
   email:
     enviar: true

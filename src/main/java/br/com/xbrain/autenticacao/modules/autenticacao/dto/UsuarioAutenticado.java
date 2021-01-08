@@ -1,12 +1,10 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.config.CustomJwtAccessTokenConverter;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -20,6 +18,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
@@ -44,6 +43,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private ESituacao situacao;
     private List<String> empresasNome;
     private List<Empresa> empresas;
+    private List<Integer> agentesAutorizados;
     private Collection<? extends GrantedAuthority> permissoes;
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
@@ -76,7 +76,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         getOrganizacao(usuario);
     }
 
-    public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
+    public UsuarioAutenticado(Usuario usuario,
+                              Collection<? extends GrantedAuthority> permissoes) {
         this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -113,12 +114,20 @@ public class UsuarioAutenticado extends OAuth2Request {
             .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
+    public boolean isOperacao() {
+        return getNivelCodigoEnum() == CodigoNivel.OPERACAO;
+    }
+
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
     }
 
     public boolean isMso() {
-        return MSO == usuario.getNivelCodigo();
+        return MSO == getNivelCodigoEnum();
+    }
+
+    public boolean isMsoOrXbrain() {
+        return isMso() || isXbrain();
     }
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
@@ -130,7 +139,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         }
     }
 
-    private boolean isAgenteAutorizado() {
+    public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 
@@ -142,6 +151,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(usuario) && usuario.isUsuarioEquipeVendas();
     }
 
+    public boolean isAssistenteOperacao() {
+        return cargoCodigo == CodigoCargo.ASSISTENTE_OPERACAO && isOperacao();
+    }
+
     public boolean isCoordenadorOperacao() {
         return cargoCodigo.equals(CodigoCargo.COORDENADOR_OPERACAO);
     }
@@ -150,7 +163,30 @@ public class UsuarioAutenticado extends OAuth2Request {
         return cargoCodigo.equals(CodigoCargo.GERENTE_OPERACAO);
     }
 
+    public boolean isExecutivo() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO;
+    }
+
+    public boolean isExecutivoHunter() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO_HUNTER;
+    }
+
+    public boolean isExecutivoOuExecutivoHunter() {
+        return isExecutivo() || isExecutivoHunter();
+    }
+
     public boolean isBackoffice() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean haveCanalAgenteAutorizado() {
+        return haveCanal(AGENTE_AUTORIZADO);
+    }
+
+    private boolean haveCanal(ECanal canal) {
+        return ObjectUtils.isEmpty(usuario.getCanais())
+            ? CustomJwtAccessTokenConverter.getCanais(usuario).contains(canal.name())
+            : usuario.getCanais()
+            .contains(canal);
     }
 }
