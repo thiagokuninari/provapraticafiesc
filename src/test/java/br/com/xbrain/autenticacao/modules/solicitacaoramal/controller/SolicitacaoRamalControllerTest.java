@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
@@ -68,6 +69,8 @@ public class SolicitacaoRamalControllerTest {
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @MockBean
     private EquipeVendasService equipeVendasService;
     @MockBean
     private EmailService emailService;
@@ -78,9 +81,9 @@ public class SolicitacaoRamalControllerTest {
 
     @Before
     public void setUp() {
-        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
-        when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+        when(agenteAutorizadoNovoService.getAaById(anyInt())).thenReturn(criaAa());
     }
 
     @Test
@@ -119,7 +122,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
-        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
         when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());

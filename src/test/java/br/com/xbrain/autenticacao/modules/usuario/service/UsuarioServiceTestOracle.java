@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -67,6 +68,8 @@ public class UsuarioServiceTestOracle {
     private UsuarioRepository usuarioRepository;
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
+    @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     @Before
     public void setUp() {
@@ -268,7 +271,7 @@ public class UsuarioServiceTestOracle {
             .boxed().collect(Collectors.toList());
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
+        when(agenteAutorizadoNovoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(lista1000Ids);
 
         var filtros = new UsuarioFiltros();
         filtros.setCnpjAa("15.765.222/0001-72");
@@ -280,7 +283,7 @@ public class UsuarioServiceTestOracle {
     public void getAll_deveRetornarVazia_quandoInformarListaSemRegistro() {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
+        when(agenteAutorizadoNovoService.getIdUsuariosPorAa(anyString(), anyBoolean())).thenReturn(List.of());
 
         var filtros = new UsuarioFiltros();
         filtros.setCnpjAa("15.765.222/0001-72");
