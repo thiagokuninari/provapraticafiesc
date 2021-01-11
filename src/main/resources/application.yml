@@ -218,8 +218,8 @@ app-config:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       #url: http://localhost:8094
     parceiros-online:
-      #url: https://parceiros-dev.conexaoclarobrasil.com.br/
-      url: http://localhost:8099
+      url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      #url: http://localhost:8099
     vendas:
       # url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
@@ -236,8 +236,8 @@ app-config:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
     agente-autorizado:
-      url: http://localhost:8300
-      #url: http://api-dev.conexaoclarobrasil.com.br/parceiros
+      #url: http://localhost:8300
+      url: http://api-dev.conexaoclarobrasil.com.br/parceiros
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br

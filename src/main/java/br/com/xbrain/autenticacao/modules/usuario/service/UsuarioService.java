@@ -1054,7 +1054,6 @@ public class UsuarioService {
         return agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
-    // todo manter
     public void limparCpfUsuario(Integer id) {
         Usuario usuario = limpaCpf(id);
         agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
