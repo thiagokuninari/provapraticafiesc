@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;

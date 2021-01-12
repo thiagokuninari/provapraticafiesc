@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;

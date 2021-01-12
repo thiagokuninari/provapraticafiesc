@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.CustomTokenEndpointAuthenticationFilter;
-import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;

@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizado.service.AgenteAutorizadoNovoService;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
