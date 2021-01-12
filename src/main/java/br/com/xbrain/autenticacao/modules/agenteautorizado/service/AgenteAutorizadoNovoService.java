@@ -51,9 +51,9 @@ public class AgenteAutorizadoNovoService {
 
     public AgenteAutorizadoResponse getAaByCpnj(String cnpj) {
         try {
-            AgenteAutorizadoRequest request = new AgenteAutorizadoRequest();
+            var request = new AgenteAutorizadoRequest();
             request.setCnpj(cnpj);
-            Map map = new ObjectMapper().convertValue(request, Map.class);
+            var map = new ObjectMapper().convertValue(request, Map.class);
             return agenteAutorizadoNovoClient.getAaByCpnj(map);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
@@ -134,7 +134,7 @@ public class AgenteAutorizadoNovoService {
 
     public List<Integer> getIdUsuariosPorAa(String cnpj, Boolean buscarInativos) {
         try {
-            AgenteAutorizadoResponse aaResponse = getAaByCpnj(cnpj);
+            var aaResponse = getAaByCpnj(cnpj);
             return getUsuariosByAaId(Integer.valueOf(aaResponse.getId()), buscarInativos).stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
