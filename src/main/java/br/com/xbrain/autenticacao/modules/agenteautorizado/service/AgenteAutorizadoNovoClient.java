@@ -21,11 +21,11 @@ public interface AgenteAutorizadoNovoClient {
     @GetMapping("api/subordinados")
     Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);
 
-    @GetMapping("/api/agente-autorizado-por-cnpj")
+    @GetMapping("api/agente-autorizado-por-cnpj")
     AgenteAutorizadoResponse getAaByCpnj(@RequestParam Map request);
 
-    @GetMapping("api/id/{idAgenteAutorizado}")
-    AgenteAutorizadoResponse getAaById(@PathVariable("idAgenteAutorizado") Integer idAgenteAutorizado);
+    @GetMapping("api/id/{agenteAutorizadoId}")
+    AgenteAutorizadoResponse getAaById(@PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
 
     @GetMapping("api/empresas-matriz-filiais/{usuarioId}")
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
