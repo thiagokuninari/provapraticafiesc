@@ -13,9 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@FeignClient(name = "agenteAutorizadoClient",
+@FeignClient(name = "agenteAutorizadoNovoClient",
     url = "${app-config.services.agente-autorizado.url}",
-    configuration = FeignSkipBadRequestsConfiguration.class)
+    configuration = {
+        FeignSkipBadRequestsConfiguration.class
+    })
 public interface AgenteAutorizadoNovoClient {
 
     @GetMapping("api/subordinados")
