@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
+package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;

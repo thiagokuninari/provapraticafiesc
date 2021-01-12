@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -29,13 +30,13 @@ public class AgenteAutorizadoNovoService {
     private final Logger logger = LoggerFactory.getLogger(AgenteAutorizadoService.class);
 
     @Autowired
-    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
+    private AgenteAutorizadoNovoClient client;
     @Autowired
     private AutenticacaoService autenticacaoService;
 
     public Set<Integer> getIdsUsuariosSubordinados(boolean incluirProprio) {
         try {
-            var idsUsuarios = agenteAutorizadoNovoClient.getIdUsuariosDoUsuario(Map.of());
+            var idsUsuarios = client.getIdUsuariosDoUsuario(Map.of());
             return Stream.concat(
                 idsUsuarios.stream(),
                 Optional.ofNullable(incluirProprio ? autenticacaoService.getUsuarioId() : null).stream()
@@ -54,7 +55,7 @@ public class AgenteAutorizadoNovoService {
             var request = new AgenteAutorizadoRequest();
             request.setCnpj(cnpj);
             var map = new ObjectMapper().convertValue(request, Map.class);
-            return agenteAutorizadoNovoClient.getAaByCpnj(map);
+            return client.getAaByCpnj(map);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
@@ -66,7 +67,7 @@ public class AgenteAutorizadoNovoService {
 
     public AgenteAutorizadoResponse getAaById(Integer idAgenteAutorizado) {
         try {
-            return agenteAutorizadoNovoClient.getAaById(idAgenteAutorizado);
+            return client.getAaById(idAgenteAutorizado);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
@@ -78,7 +79,7 @@ public class AgenteAutorizadoNovoService {
 
     public List<Empresa> getEmpresasPermitidas(int usuarioId) {
         try {
-            return agenteAutorizadoNovoClient
+            return client
                 .getEmpresasPermitidas(usuarioId)
                 .stream()
                 .map(EmpresaResponse::convertTo)
@@ -92,7 +93,7 @@ public class AgenteAutorizadoNovoService {
 
     public String getEstrutura(Integer usuarioId) {
         try {
-            return agenteAutorizadoNovoClient.getEstrutura(usuarioId);
+            return client.getEstrutura(usuarioId);
         } catch (Exception ex) {
             logger.warn("Erro ao consultar a estrutura do AA", ex);
             return null;
@@ -101,7 +102,7 @@ public class AgenteAutorizadoNovoService {
 
     public boolean existeAaAtivoBySocioEmail(String usuarioEmail) {
         try {
-            return agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(usuarioEmail);
+            return client.existeAaAtivoBySocioEmail(usuarioEmail);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(
                 ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
@@ -110,7 +111,7 @@ public class AgenteAutorizadoNovoService {
 
     public boolean existeAaAtivoByUsuarioId(Integer usuarioId) {
         try {
-            return agenteAutorizadoNovoClient.existeAaAtivoByUsuarioId(usuarioId);
+            return client.existeAaAtivoByUsuarioId(usuarioId);
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(
                 ex.getCause(), AgenteAutorizadoService.class.getName(), EErrors.ERRO_OBTER_AA);
@@ -119,7 +120,7 @@ public class AgenteAutorizadoNovoService {
 
     public List<Integer> getAasPermitidos(int usuarioId) {
         try {
-            return agenteAutorizadoNovoClient.getAasPermitidos(usuarioId);
+            return client.getAasPermitidos(usuarioId);
         } catch (Exception ex) {
             logger.warn("Erro ao consultar agentes autorizados do usuário", ex);
             return Collections.emptyList();
@@ -149,7 +150,7 @@ public class AgenteAutorizadoNovoService {
 
     public List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(Integer aaId, Boolean buscarInativos) {
         try {
-            return agenteAutorizadoNovoClient.getUsuariosByAaId(aaId, buscarInativos);
+            return client.getUsuariosByAaId(aaId, buscarInativos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
