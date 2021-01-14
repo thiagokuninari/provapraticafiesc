@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.*;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
@@ -111,5 +112,10 @@ public class SiteController {
     @GetMapping("permitidos")
     public List<SelectResponse> findSitesPermitidosAoUsuarioAutenticado() {
         return service.findSitesPermitidosAoUsuarioAutenticado();
+    }
+
+    @GetMapping("assistentes-do-supervisor/{supervisorId}")
+    public List<UsuarioResponse> buscarAssistentesDoSupervisor(@PathVariable Integer supervisorId) {
+        return service.buscarAssistentesDoSupervisor(supervisorId);
     }
 }

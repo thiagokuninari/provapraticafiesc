@@ -39,6 +39,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -449,6 +450,22 @@ public class SiteServiceTest {
             .isThrownBy(() -> service.inativar(12))
             .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
                 + "UM USUARIO SUPERVISOR_OPERACAO da equipe de vendas Equipe ativo.");
+    }
+
+    @Test
+    public void buscarAssistentesDoSupervisor_usuarioResponse_seSolicitado() {
+        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+            .thenReturn(List.of(
+                umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
+
+        assertThat(service.buscarAssistentesDoSupervisor(1))
+            .extracting("id", "nome", "nomeCargo", "codigoCargo")
+            .containsExactlyInAnyOrder(
+                tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
+                tuple(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
+                tuple(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO));
     }
 
     public List<EquipeVendaDto> umaListEquipeResponse() {

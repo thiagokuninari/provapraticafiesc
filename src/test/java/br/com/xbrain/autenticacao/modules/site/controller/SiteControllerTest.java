@@ -425,4 +425,27 @@ public class SiteControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)));
     }
+
+    @Test
+    @SneakyThrows
+    public void buscarAssistentesDoSupervisor_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarAssistentesDoSupervisor_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarAssistentesDoSupervisor_ok_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
 }

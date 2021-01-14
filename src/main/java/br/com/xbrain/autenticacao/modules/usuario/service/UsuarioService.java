@@ -1485,4 +1485,12 @@ public class UsuarioService {
     public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
         return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
+
+    public List<UsuarioResponse> buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(Integer usuarioId,
+                                                                                      Set<String> codigosCargos) {
+        return repository.getSubordinadosPorCargo(usuarioId, codigosCargos)
+            .stream()
+            .map(UsuarioResponse::ofUsuarioObjectArray)
+            .collect(Collectors.toList());
+    }
 }

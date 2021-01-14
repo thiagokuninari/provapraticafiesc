@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -34,13 +35,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -338,5 +337,10 @@ public class SiteService {
         return new SitePredicate()
             .comFiltroVisualizar(usarioAutenticado)
             .build();
+    }
+
+    public List<UsuarioResponse> buscarAssistentesDoSupervisor(Integer supervisorId) {
+        return usuarioService
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(supervisorId, Set.of(ASSISTENTE_OPERACAO.name()));
     }
 }
