@@ -341,13 +341,13 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioResponse> buscarAssistentesDoSupervisor(Integer supervisorId) {
+    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(Integer usuarioSuperiorId) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(supervisorId, Set.of(ASSISTENTE_OPERACAO.name()));
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(ASSISTENTE_OPERACAO.name()));
     }
 
-    public List<UsuarioResponse> buscarVendedoresDoSupervisor(Integer supervisorId) {
+    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorId(Integer usuarioSuperiorId) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(supervisorId, Set.of(OPERACAO_TELEVENDAS.name()));
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name()));
     }
 }

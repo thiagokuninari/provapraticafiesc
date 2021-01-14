@@ -428,46 +428,46 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDoSupervisor_unauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1"))
+    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDoSupervisor_forbidden_seUsuarioNaoPossuiPermissao() {
-        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1")
+    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
     }
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDoSupervisor_ok_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/assistentes-do-supervisor/1")
+    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDoSupervisor_unauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/vendedores-do-supervisor/1"))
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDoSupervisor_forbidden_seUsuarioNaoPossuiPermissao() {
-        mvc.perform(get(API_URI + "/vendedores-do-supervisor/1")
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDoSupervisor_ok_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/vendedores-do-supervisor/1")
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
