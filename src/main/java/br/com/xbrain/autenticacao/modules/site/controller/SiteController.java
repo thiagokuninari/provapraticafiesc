@@ -119,8 +119,9 @@ public class SiteController {
         return service.buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(usuarioSuperiorId);
     }
 
-    @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}")
-    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorId(@PathVariable Integer usuarioSuperiorId) {
-        return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorId(usuarioSuperiorId);
+    @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda")
+    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(@PathVariable Integer
+                                                                                                       usuarioSuperiorId) {
+        return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
     }
 }

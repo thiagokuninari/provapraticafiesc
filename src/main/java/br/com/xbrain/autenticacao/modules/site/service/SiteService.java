@@ -346,8 +346,8 @@ public class SiteService {
             .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(ASSISTENTE_OPERACAO.name()));
     }
 
-    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorId(Integer usuarioSuperiorId) {
-        return usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name()));
+    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
+        return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null);
     }
 }

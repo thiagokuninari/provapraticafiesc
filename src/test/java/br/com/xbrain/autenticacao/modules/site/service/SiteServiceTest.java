@@ -462,23 +462,27 @@ public class SiteServiceTest {
 
         assertThat(service.buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(1))
             .extracting("id", "nome", "nomeCargo", "codigoCargo")
-            .containsExactlyInAnyOrder(
+            .containsExactly(
                 tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 tuple(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 tuple(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO));
     }
 
     @Test
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_usuarioResponse_seSolicitado() {
-        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
-            .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-                umUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-                umUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS)));
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
+        var umaListaUsuarioResponse = List.of(
+            umUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            umUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            umUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
 
-        assertThat(service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorId(1))
+        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
+            .thenReturn(umaListaUsuarioResponse);
+        when(equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(eq(umaListaUsuarioResponse), eq(null)))
+            .thenReturn(umaListaUsuarioResponse);
+
+        assertThat(service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
             .extracting("id", "nome", "nomeCargo", "codigoCargo")
-            .containsExactlyInAnyOrder(
+            .containsExactly(
                 tuple(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
                 tuple(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
                 tuple(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));

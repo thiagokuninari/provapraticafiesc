@@ -451,23 +451,23 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_unauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1"))
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1/sem-equipe-venda"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_forbidden_seUsuarioNaoPossuiPermissao() {
-        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1")
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1/sem-equipe-venda")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
     }
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioAutenticadoEComPermissao() {
-        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1")
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_ok_seUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1/sem-equipe-venda")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }

@@ -1491,6 +1491,7 @@ public class UsuarioService {
         return repository.getSubordinadosPorCargo(usuarioId, codigosCargos)
             .stream()
             .map(UsuarioResponse::ofUsuarioObjectArray)
+            .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
     }
 }
