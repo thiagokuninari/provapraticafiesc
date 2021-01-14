@@ -468,6 +468,22 @@ public class SiteServiceTest {
                 tuple(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO));
     }
 
+    @Test
+    public void buscarVendedoresDoSupervisor_usuarioResponse_seSolicitado() {
+        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
+            .thenReturn(List.of(
+                umUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+                umUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+                umUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS)));
+
+        assertThat(service.buscarVendedoresDoSupervisor(1))
+            .extracting("id", "nome", "nomeCargo", "codigoCargo")
+            .containsExactlyInAnyOrder(
+                tuple(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+                tuple(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+                tuple(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
+    }
+
     public List<EquipeVendaDto> umaListEquipeResponse() {
         return List.of(EquipeVendaDto.builder()
         .id(10)

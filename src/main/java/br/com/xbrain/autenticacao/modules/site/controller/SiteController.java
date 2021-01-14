@@ -118,4 +118,9 @@ public class SiteController {
     public List<UsuarioResponse> buscarAssistentesDoSupervisor(@PathVariable Integer supervisorId) {
         return service.buscarAssistentesDoSupervisor(supervisorId);
     }
+
+    @GetMapping("vendedores-do-supervisor/{supervisorId}")
+    public List<UsuarioResponse> buscarVendedoresDoSupervisor(@PathVariable Integer supervisorId) {
+        return service.buscarVendedoresDoSupervisor(supervisorId);
+    }
 }

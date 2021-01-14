@@ -40,11 +40,13 @@ import java.util.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
 @Transactional
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class SiteService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
@@ -342,5 +344,10 @@ public class SiteService {
     public List<UsuarioResponse> buscarAssistentesDoSupervisor(Integer supervisorId) {
         return usuarioService
             .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(supervisorId, Set.of(ASSISTENTE_OPERACAO.name()));
+    }
+
+    public List<UsuarioResponse> buscarVendedoresDoSupervisor(Integer supervisorId) {
+        return usuarioService
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(supervisorId, Set.of(OPERACAO_TELEVENDAS.name()));
     }
 }
