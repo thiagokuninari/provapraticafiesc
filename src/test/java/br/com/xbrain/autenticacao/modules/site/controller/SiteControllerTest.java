@@ -443,7 +443,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioNaoAutenticado() {
+    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
@@ -466,7 +466,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioNaoAutenticado() {
+    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/vendedores-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
