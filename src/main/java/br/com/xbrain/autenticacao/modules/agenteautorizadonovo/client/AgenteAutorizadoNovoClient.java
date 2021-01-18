@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
-import br.com.xbrain.autenticacao.config.feign.FeignTimeoutConfiguration;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
