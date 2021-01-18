@@ -1507,19 +1507,20 @@ public class UsuarioService {
     }
 
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
-        return filtros.getAasIds()
-            .stream()
-            .map(aaId -> buscarUsuariosIdsPorAaId(aaId, filtros.obterBuscarInativos()))
+        return Optional.ofNullable(buscarUsuariosIdsPorAasIds(filtros.getAasIds(), filtros.obterBuscarInativos()))
             .filter(usuariosIds -> !isEmpty(usuariosIds))
             .map(filtros::toPredicate)
             .map(this::buscarTodosPorPredicate)
-            .flatMap(List::stream)
-            .map(VendedoresFeederResponse::of)
-            .collect(Collectors.toList());
+            .map(usuarios -> usuarios
+                .stream()
+                .map(VendedoresFeederResponse::of)
+                .sorted(Comparator.comparing(VendedoresFeederResponse::getNome))
+                .collect(Collectors.toList()))
+            .orElse(List.of());
     }
 
-    private List<Integer> buscarUsuariosIdsPorAaId(Integer aaId, Boolean buscarInativos) {
-        return agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(aaId, buscarInativos)
+    private List<Integer> buscarUsuariosIdsPorAasIds(List<Integer> aasIds, Boolean buscarInativos) {
+        return agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
             .stream()
             .map(UsuarioDtoVendas::getId)
             .distinct()

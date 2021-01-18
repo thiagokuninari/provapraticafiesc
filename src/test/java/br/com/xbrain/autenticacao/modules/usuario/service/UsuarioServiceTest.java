@@ -598,7 +598,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaVazia_quandoNaoHouverUsuariosDosAgentesAutorizados() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
+        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(false)))
             .thenReturn(List.of());
 
         assertThat(service.buscarVendedoresFeeder(umVendedoresFeederFiltros(List.of(1), null, false)))
@@ -609,7 +609,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosNull() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
+        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(false)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));
@@ -622,7 +622,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosFalse() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(false)))
+        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(false)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));
@@ -635,7 +635,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarVendedoresFeeder_deveRetornarListaUsuarioConsultaDto_quandoBuscarInativosTrue() {
-        when(agenteAutorizadoNovoService.buscarUsuariosDoAgenteAutorizado(eq(1), eq(true)))
+        when(agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(eq(List.of(1)), eq(true)))
             .thenReturn(List.of(umUsuarioDtoVendas(1)));
         when(repository.findAll(eq(umVendedoresFeederPredicateComSocioPrincipal(List.of(1)).build())))
             .thenReturn(List.of(umUsuarioCompleto()));

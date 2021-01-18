@@ -62,9 +62,9 @@ public enum EErrors {
     ERRO_OBTER_ESTRUTURA_AA(
         "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#019 - Erro ao tentar recuperar a Estrutura do AA."),
-    ERRO_BUSCAR_USUARIOS_DO_AA(
-        "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#030 - Ocorreu um erro ao buscar usuários do agente autorizado");
+    ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS(
+        "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados.");
 
     @Getter
     @Setter

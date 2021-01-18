@@ -19,11 +19,13 @@ public class AgenteAutorizadoNovoService {
     @Autowired
     private AgenteAutorizadoNovoClient client;
 
-    public List<UsuarioDtoVendas> buscarUsuariosDoAgenteAutorizado(Integer agenteAutorizadoId, Boolean buscarInativos) {
+    public List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(List<Integer> aasIds, Boolean buscarInativos) {
         try {
-            return client.buscarUsuariosDoAgenteAutorizado(agenteAutorizadoId, buscarInativos);
+            return client.buscarTodosUsuariosDosAas(aasIds, buscarInativos);
         } catch (RetryableException ex) {
-            throw new IntegracaoException(ex, AgenteAutorizadoNovoService.class.getName(), EErrors.ERRO_BUSCAR_USUARIOS_DO_AA);
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoNovoService.class.getName(),
+                EErrors.ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
