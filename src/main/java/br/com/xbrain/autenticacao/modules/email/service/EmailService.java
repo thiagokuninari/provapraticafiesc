@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.email.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.email.handler.EmailResponseErrorHandler;
 import br.com.xbrain.autenticacao.modules.email.model.Email;
@@ -119,11 +120,15 @@ public class EmailService {
     }
 
     private Email obterEmail(List<String> emails, String assunto, String conteudo) {
-        return new EmailBuilder()
-                .comAssunto(assunto)
-                .comCorpo(conteudo)
-                .comDestinatarios(emails)
-                .build();
+        Email email = new EmailBuilder()
+            .comAssunto(assunto)
+            .comCorpo(conteudo)
+            .comDestinatarios(emails)
+            .build();
+        if (isEsqueciSenha(Boolean.TRUE)) {
+            email.setPriority(EmailPrioridade.ALTA);
+        }
+        return email;
     }
 
     private String formataCorpo(String content) {
@@ -144,4 +149,7 @@ public class EmailService {
         return restTemplateObj;
     }
 
+    public boolean isEsqueciSenha(Boolean esqueciSenha) {
+        return esqueciSenha;
+    }
 }

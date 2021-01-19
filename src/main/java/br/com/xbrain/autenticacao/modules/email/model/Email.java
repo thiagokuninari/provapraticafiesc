@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.email.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
@@ -15,5 +16,6 @@ public class Email {
     private String replyTo;
     private String subject;
     private List<String> to;
+    private EmailPrioridade priority = EmailPrioridade.ALTA;
 
 }
