@@ -120,15 +120,12 @@ public class EmailService {
     }
 
     private Email obterEmail(List<String> emails, String assunto, String conteudo) {
-        Email email = new EmailBuilder()
+        return new EmailBuilder()
             .comAssunto(assunto)
             .comCorpo(conteudo)
             .comDestinatarios(emails)
+            .comPriority(getPrioridade(assunto))
             .build();
-        if (isEsqueciSenha(Boolean.TRUE)) {
-            email.setPriority(EmailPrioridade.ALTA);
-        }
-        return email;
     }
 
     private String formataCorpo(String content) {
@@ -148,8 +145,10 @@ public class EmailService {
         restTemplateObj.setErrorHandler(new EmailResponseErrorHandler());
         return restTemplateObj;
     }
-
-    public boolean isEsqueciSenha(Boolean esqueciSenha) {
-        return esqueciSenha;
+    private EmailPrioridade getPrioridade(String assunto) {
+        if (assunto.equals("Parceiros Online - Confirmação de Alterar a Senha")) {
+            return EmailPrioridade.ALTA;
+        }
+        return null;
     }
 }

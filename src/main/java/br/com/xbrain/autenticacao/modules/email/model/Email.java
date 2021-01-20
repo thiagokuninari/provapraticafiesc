@@ -16,6 +16,6 @@ public class Email {
     private String replyTo;
     private String subject;
     private List<String> to;
-    private EmailPrioridade priority = EmailPrioridade.ALTA;
+    private EmailPrioridade priority;
 
 }
