@@ -69,7 +69,8 @@ public class NotificacaoService {
                 Arrays.asList(usuario.getEmail()),
                 "Parceiros Online - Confirmação de Alterar a Senha",
                 "confirmar-reset-senha",
-                context, EmailPrioridade.ALTA);
+                context,
+                EmailPrioridade.ALTA);
     }
 
     @Async
