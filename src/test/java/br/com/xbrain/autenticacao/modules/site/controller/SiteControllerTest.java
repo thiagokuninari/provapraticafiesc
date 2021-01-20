@@ -66,7 +66,7 @@ public class SiteControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(6)))
+            .andExpect(jsonPath("$.content", hasSize(7)))
             .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
             .andExpect(jsonPath("$.content[0].timeZone.descricao", is("Horário de Brasília")))
             .andExpect(jsonPath("$.content[0].timeZone.zoneId", is("America/Sao_Paulo")))
@@ -106,12 +106,13 @@ public class SiteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(5)))
+                .andExpect(jsonPath("$.content", hasSize(6)))
                 .andExpect(jsonPath("$.content[0].nome", is("São Paulo")))
                 .andExpect(jsonPath("$.content[1].nome", is("Rio Branco")))
                 .andExpect(jsonPath("$.content[2].nome", is("Site Inativo")))
-                .andExpect(jsonPath("$.content[3].nome", is("Rio Branco")))
-                .andExpect(jsonPath("$.content[4].nome", is("Manaus")));
+                .andExpect(jsonPath("$.content[3].nome", is("Site inativo 2")))
+                .andExpect(jsonPath("$.content[4].nome", is("Rio Branco")))
+                .andExpect(jsonPath("$.content[5].nome", is("Manaus")));
     }
 
     @Test

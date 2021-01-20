@@ -52,7 +52,8 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             .selectFrom(site)
             .innerJoin(site.supervisores, usuario)
             .where(usuario.cargo.codigo.eq(CodigoCargo.SUPERVISOR_OPERACAO)
-                .and(usuario.id.eq(supervisorId)))
+                .and(usuario.id.eq(supervisorId))
+            .and(site.situacao.eq(ESituacao.A)))
             .fetchFirst();
     }
 }

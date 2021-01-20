@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.site.repository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -94,5 +96,18 @@ public class SiteRepositoryTest {
         assertThat(repository.findBySupervisorId(102))
             .extracting("id", "nome")
             .contains(100, "São Paulo");
+    }
+
+    @Test
+    public void findSupervisor_deveIgnorarSupervisorDeSitesInativos() {
+        var site = repository.findById(105).get();
+
+        assertEquals(site.getSituacao(), ESituacao.I);
+        assertThat(site.getSupervisores())
+            .extracting(Usuario::getId)
+            .contains(400);
+        assertThat(repository.findBySupervisorId(400))
+            .extracting("situacao")
+            .contains(ESituacao.A);
     }
 }
