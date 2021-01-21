@@ -41,7 +41,8 @@ public class EmailBuilder {
         email.setReplyTo(destino);
         return this;
     }
-    public EmailBuilder comPriority (EmailPrioridade prioridade) {
+
+    public EmailBuilder comPriority(EmailPrioridade prioridade) {
         email.setPriority(prioridade);
         return this;
     }

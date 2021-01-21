@@ -59,7 +59,8 @@ public class EmailService {
         enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias, EmailPrioridade.NORMAL);
     }
 
-    public void enviarEmailTemplate(List<String> emailsDestino, String assunto, String template, Context context, EmailPrioridade prioridade) {
+    public void enviarEmailTemplate(List<String> emailsDestino, String assunto, String template, Context context,
+                                    EmailPrioridade prioridade) {
         obterContexto(assunto, template, context);
 
         String htmlContent = templateEngine.process("email-template", context);
@@ -101,7 +102,8 @@ public class EmailService {
     }
 
     @Async
-    public void enviarEmail(List<String> emailsDestino, String assunto, String conteudo, String empresaAlias, EmailPrioridade prioridade) {
+    public void enviarEmail(List<String> emailsDestino, String assunto, String conteudo, String empresaAlias,
+                            EmailPrioridade prioridade) {
         if (validaCampos(emailsDestino, empresaAlias)) {
             Email email = obterEmail(getEmails(emailsDestino), assunto, formataCorpo(conteudo), prioridade);
             HttpEntity<String> emailEntity = processaRequisicao(converteEmailJson(email), MediaType.APPLICATION_JSON_UTF8);
