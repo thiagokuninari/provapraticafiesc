@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.email.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
+
 import java.util.List;
 
 public class EmailBuilder {
@@ -37,6 +39,11 @@ public class EmailBuilder {
 
     public EmailBuilder comResponderPara(String destino) {
         email.setReplyTo(destino);
+        return this;
+    }
+
+    public EmailBuilder comPriority(EmailPrioridade prioridade) {
+        email.setPriority(prioridade);
         return this;
     }
 

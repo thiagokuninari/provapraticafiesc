@@ -268,7 +268,7 @@ public class UsuarioControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(convertObjectToJsonBytes(umEsqueciSenha())))
             .andExpect(status().isOk());
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -287,7 +287,7 @@ public class UsuarioControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(convertObjectToJsonBytes(umEsqueciSenha())))
             .andExpect(status().isOk());
-        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(emailService, times(1)).enviarEmailTemplate(any(), any(), any(), any(), any());
     }
 
     @Test

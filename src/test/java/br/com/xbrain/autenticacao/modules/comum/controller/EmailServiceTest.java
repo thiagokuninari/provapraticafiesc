@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,8 @@ public class EmailServiceTest {
         emailService.enviarEmail(Collections.singletonList("luisdias@xbrain.com.br"),
                 ASSUNTO_EMAIL,
                 CONTEUDO_EMAIL,
-                "XBRAIN");
+                "XBRAIN",
+                EmailPrioridade.NORMAL);
 
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
     }
@@ -70,7 +72,8 @@ public class EmailServiceTest {
                 Collections.singletonList("luisdias@xbrain.com.br"),
                 ASSUNTO_EMAIL,
                 CONTEUDO_EMAIL,
-                "XBRAIN");
+                "XBRAIN",
+                EmailPrioridade.NORMAL);
 
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
     }
@@ -81,7 +84,8 @@ public class EmailServiceTest {
                 Collections.singletonList("luisdias@xbrain.com.br"),
                 ASSUNTO_EMAIL,
                 CONTEUDO_EMAIL,
-                null);
+                null,
+                EmailPrioridade.NORMAL);
 
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
     }
@@ -92,7 +96,8 @@ public class EmailServiceTest {
                 new ArrayList<>(),
                 ASSUNTO_EMAIL,
                 CONTEUDO_EMAIL,
-                "XBRAIN");
+                "XBRAIN",
+                EmailPrioridade.NORMAL);
 
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
     }
