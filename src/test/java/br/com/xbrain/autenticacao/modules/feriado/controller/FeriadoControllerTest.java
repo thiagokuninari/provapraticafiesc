@@ -132,7 +132,7 @@ public class FeriadoControllerTest {
                                 .header("Authorization", getAccessToken(mvc, ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn()
-                ).withCause(new NoClassDefFoundError("com.sun.activation.registries.LogSupport"));
+                ).withMessageContaining("java.lang.NoClassDefFoundError: com/sun/activation/registries/LogSupport");
     }
 
     @Test
