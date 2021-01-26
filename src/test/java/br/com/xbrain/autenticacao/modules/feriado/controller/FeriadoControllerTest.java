@@ -133,7 +133,8 @@ public class FeriadoControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn()
                 )
-                .withMessageContaining("java.lang.NoClassDefFoundError: com/sun/activation/registries/LogSupport");
+                .withMessageContaining("Handler dispatch failed; nested exception is java.lang.NoClassDefFoundError: "
+                    + "com.sun.activation.registries.LogSupport");
     }
 
     @Test

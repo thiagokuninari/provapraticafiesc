@@ -303,7 +303,6 @@ public class SiteService {
     }
 
     public List<SelectResponse> getSitesPorPermissao(Usuario usuario) {
-
         var sitePredicate = new SitePredicate();
         setFiltrosHierarquia(usuario.getId(), usuario.getCargoCodigo(), usuario.getDepartamentoCodigo(), sitePredicate);
         return siteRepository.findBySituacaoAtiva(sitePredicate.build())
