@@ -132,9 +132,7 @@ public class FeriadoControllerTest {
                                 .header("Authorization", getAccessToken(mvc, ADMIN))
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andReturn()
-                )
-                .withMessageContaining("Handler dispatch failed; nested exception is java.lang.NoClassDefFoundError: "
-                    + "com.sun.activation.registries.LogSupport");
+                ).withCause(new NoClassDefFoundError("com.sun.activation.registries.LogSupport"));
     }
 
     @Test
