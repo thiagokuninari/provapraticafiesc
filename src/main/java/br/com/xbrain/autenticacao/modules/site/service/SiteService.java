@@ -161,16 +161,7 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
-            .map(supervisor -> SiteSupervisorResponse.of(
-                supervisor,
-                buscarSuperioresIdsDoUsuarioIdPorCodigoCargo(supervisor.getId(), COORDENADOR_OPERACAO)))
-            .collect(toList());
-    }
-
-    private List<Integer> buscarSuperioresIdsDoUsuarioIdPorCodigoCargo(Integer usuarioId, CodigoCargo codigoCargo) {
-        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, codigoCargo)
-            .stream()
-            .map(UsuarioHierarquiaResponse::getId)
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -357,5 +348,12 @@ public class SiteService {
     public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
             .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null);
+    }
+
+    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(Integer usuarioId) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, COORDENADOR_OPERACAO)
+            .stream()
+            .map(UsuarioHierarquiaResponse::getId)
+            .collect(toList());
     }
 }

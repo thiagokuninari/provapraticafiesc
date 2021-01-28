@@ -125,4 +125,9 @@ public class SiteController {
                                                                                                        usuarioSuperiorId) {
         return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
     }
+
+    @GetMapping("coordenadores/{usuarioId}")
+    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(@PathVariable Integer usuarioId) {
+        return service.buscarCoordenadoresIdsDoUsuarioId(usuarioId);
+    }
 }

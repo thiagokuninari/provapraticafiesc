@@ -494,6 +494,15 @@ public class SiteServiceTest {
                 tuple(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
     }
 
+    @Test
+    public void buscarCoordenadoresIdsDoUsuarioId_listaDeInteiros_seSolicitado() {
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+
+        assertThat(service.buscarCoordenadoresIdsDoUsuarioId(1))
+            .isEqualTo(List.of(100));
+    }
+
     public List<EquipeVendaDto> umaListEquipeResponse() {
         return List.of(EquipeVendaDto.builder()
         .id(10)
