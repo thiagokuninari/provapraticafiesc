@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -270,12 +271,16 @@ public class SiteServiceTest {
 
         when(siteRepository.findById(1))
             .thenReturn(Optional.of(site));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(2), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
-            .extracting("id", "nome")
+            .extracting("id", "nome", "coordenadoresIds")
             .containsExactlyInAnyOrder(
-                tuple(1, "RENATO"),
-                tuple(2, "MARIA")
+                tuple(1, "RENATO", List.of(100)),
+                tuple(2, "MARIA", List.of(100))
             );
     }
 

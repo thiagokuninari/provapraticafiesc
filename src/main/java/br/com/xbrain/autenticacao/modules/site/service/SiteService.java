@@ -39,8 +39,7 @@ import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -162,7 +161,16 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
-            .map(SiteSupervisorResponse::of)
+            .map(supervisor -> SiteSupervisorResponse.of(
+                supervisor,
+                buscarSuperioresIdsDoUsuarioIdPorCodigoCargo(supervisor.getId(), COORDENADOR_OPERACAO)))
+            .collect(toList());
+    }
+
+    private List<Integer> buscarSuperioresIdsDoUsuarioIdPorCodigoCargo(Integer usuarioId, CodigoCargo codigoCargo) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, codigoCargo)
+            .stream()
+            .map(UsuarioHierarquiaResponse::getId)
             .collect(toList());
     }
 
