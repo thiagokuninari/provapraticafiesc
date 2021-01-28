@@ -459,13 +459,14 @@ public class SiteServiceTest {
 
     @Test
     public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_usuarioResponse_seSolicitado() {
-        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+        when(usuarioService
+            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
                 umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
 
-        assertThat(service.buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(1))
+        assertThat(service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
             .extracting("id", "nome", "nomeCargo", "codigoCargo")
             .containsExactly(
                 tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),

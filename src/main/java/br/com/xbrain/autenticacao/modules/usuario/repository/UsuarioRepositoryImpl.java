@@ -866,4 +866,25 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(sitePredicate))
             .fetch();
     }
+
+    @Override
+    public List<UsuarioResponse> buscarSubordinadosPorUsuariosIdsECodigosCargos(List<Integer> usuariosIds,
+                                                                                Set<String> codigosCargos) {
+        return jdbcTemplate.query(" SELECT UH.FK_USUARIO AS ID, "
+            + "U.NOME AS NOME, "
+            + "U.EMAIL_01 AS EMAIL, "
+            + "C.NOME AS NOME_CARGO,  "
+            + "C.CODIGO AS CODIGO_CARGO "
+            + "FROM USUARIO_HIERARQUIA UH "
+            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+            + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+            + "WHERE C.CODIGO in (:_codigosCargos) "
+            + "GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO "
+            + "START WITH UH.FK_USUARIO_SUPERIOR in (:_usuariosIds) "
+            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("_usuariosIds", usuariosIds)
+                .addValue("_codigosCargos", codigosCargos),
+            new BeanPropertyRowMapper<>(UsuarioResponse.class));
+    }
 }

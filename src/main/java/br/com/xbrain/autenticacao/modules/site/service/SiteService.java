@@ -349,9 +349,9 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(Integer usuarioSuperiorId) {
+    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(ASSISTENTE_OPERACAO.name()));
+            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()));
     }
 
     public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
