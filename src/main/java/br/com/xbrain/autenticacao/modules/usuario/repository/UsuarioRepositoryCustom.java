@@ -123,4 +123,5 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId);
 
+    List<UsuarioResponse> buscarSubordinadosPorUsuariosIdsECodigosCargos(List<Integer> usuariosIds, Set<String> codigoCargo);
 }

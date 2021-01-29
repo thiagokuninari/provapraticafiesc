@@ -1494,4 +1494,12 @@ public class UsuarioService {
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
     }
+
+    public List<UsuarioResponse> buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(List<Integer> usuariosIds,
+                                                                                        Set<String> codigosCargos) {
+        return repository.buscarSubordinadosPorUsuariosIdsECodigosCargos(usuariosIds, codigosCargos)
+            .stream()
+            .sorted(Comparator.comparing(UsuarioResponse::getNome))
+            .collect(Collectors.toList());
+    }
 }

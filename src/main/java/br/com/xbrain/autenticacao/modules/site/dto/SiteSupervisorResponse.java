@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,6 +18,7 @@ public class SiteSupervisorResponse {
 
     private Integer id;
     private String nome;
+    private List<Integer> coordenadoresIds;
 
     public static SiteSupervisorResponse of(Usuario usuarioSupervisor) {
         var supervisorResponse = new SiteSupervisorResponse();
@@ -26,6 +29,12 @@ public class SiteSupervisorResponse {
     public static SiteSupervisorResponse of(UsuarioSubordinadoDto usuario) {
         var supervisorResponse = new SiteSupervisorResponse();
         BeanUtils.copyProperties(usuario, supervisorResponse);
+        return supervisorResponse;
+    }
+
+    public static SiteSupervisorResponse of(Usuario usuarioSupervisor, List<Integer> coordenadoresIds) {
+        var supervisorResponse = of(usuarioSupervisor);
+        supervisorResponse.setCoordenadoresIds(coordenadoresIds);
         return supervisorResponse;
     }
 }

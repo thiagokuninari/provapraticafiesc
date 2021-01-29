@@ -114,14 +114,20 @@ public class SiteController {
         return service.findSitesPermitidosAoUsuarioAutenticado();
     }
 
-    @GetMapping("assistentes-da-hierarquia/{usuarioSuperiorId}")
-    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(@PathVariable Integer usuarioSuperiorId) {
-        return service.buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(usuarioSuperiorId);
+    @GetMapping("assistentes-da-hierarquia/{usuariosSuperioresIds}")
+    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(@PathVariable List<Integer>
+                                                                                               usuariosSuperioresIds) {
+        return service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(usuariosSuperioresIds);
     }
 
     @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda")
     public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(@PathVariable Integer
                                                                                                        usuarioSuperiorId) {
         return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
+    }
+
+    @GetMapping("coordenadores/{usuarioId}")
+    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(@PathVariable Integer usuarioId) {
+        return service.buscarCoordenadoresIdsDoUsuarioId(usuarioId);
     }
 }

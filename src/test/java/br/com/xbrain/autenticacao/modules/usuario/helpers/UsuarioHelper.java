@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import java.math.BigDecimal;
 
@@ -12,6 +13,14 @@ public class UsuarioHelper {
     private static final int COLUNA_CARGO_NOME = 3;
     private static final int COLUNA_CARGO_CODIGO = 4;
     private static final int QTDE_COLUNAS = 5;
+
+    public static Usuario doisUsuario(Integer id, String nome) {
+        return Usuario
+            .builder()
+            .id(id)
+            .nome(nome)
+            .build();
+    }
 
     public static Object[] umUsuarioObjectArray(BigDecimal id, String email, String nome,
                                                 String cargoNome, CodigoCargo codigoCargo) {

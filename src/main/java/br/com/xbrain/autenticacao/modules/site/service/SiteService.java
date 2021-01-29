@@ -39,8 +39,7 @@ import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.enums.EHierarquiaSite.getHierarquia;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -162,7 +161,7 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
-            .map(SiteSupervisorResponse::of)
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -340,13 +339,20 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(Integer usuarioSuperiorId) {
+    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(ASSISTENTE_OPERACAO.name()));
+            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()));
     }
 
     public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
             .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null);
+    }
+
+    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(Integer usuarioId) {
+        return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, COORDENADOR_OPERACAO)
+            .stream()
+            .map(UsuarioHierarquiaResponse::getId)
+            .collect(toList());
     }
 }

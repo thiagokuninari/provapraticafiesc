@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -270,12 +271,16 @@ public class SiteServiceTest {
 
         when(siteRepository.findById(1))
             .thenReturn(Optional.of(site));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(2), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
-            .extracting("id", "nome")
+            .extracting("id", "nome", "coordenadoresIds")
             .containsExactlyInAnyOrder(
-                tuple(1, "RENATO"),
-                tuple(2, "MARIA")
+                tuple(1, "RENATO", List.of(100)),
+                tuple(2, "MARIA", List.of(100))
             );
     }
 
@@ -454,13 +459,14 @@ public class SiteServiceTest {
 
     @Test
     public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_usuarioResponse_seSolicitado() {
-        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+        when(usuarioService
+            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
                 umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
                 umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
 
-        assertThat(service.buscarAssistentesDaHierarquiaDoUsuarioSuperiorId(1))
+        assertThat(service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
             .extracting("id", "nome", "nomeCargo", "codigoCargo")
             .containsExactly(
                 tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
@@ -486,6 +492,15 @@ public class SiteServiceTest {
                 tuple(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
                 tuple(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
                 tuple(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
+    }
+
+    @Test
+    public void buscarCoordenadoresIdsDoUsuarioId_listaDeInteiros_seSolicitado() {
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+
+        assertThat(service.buscarCoordenadoresIdsDoUsuarioId(1))
+            .isEqualTo(List.of(100));
     }
 
     public List<EquipeVendaDto> umaListEquipeResponse() {
