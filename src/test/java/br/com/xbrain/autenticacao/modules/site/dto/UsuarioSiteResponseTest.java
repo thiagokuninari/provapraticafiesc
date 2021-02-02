@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UsuarioSiteResponseTest {
 
     @Test
-    public void of_UsuarioSiteResponse_seSolicitado() {
+    public void of_usuarioSiteResponse_seSolicitado() {
         assertThat(UsuarioSiteResponse.of(umUsuarioResponse(1, "USUARIO NOME", OPERACAO_TELEVENDAS.name(), OPERACAO_TELEVENDAS)))
             .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(1, "USUARIO NOME", "OPERACAO_TELEVENDAS");
