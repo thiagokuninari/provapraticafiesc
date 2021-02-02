@@ -467,11 +467,11 @@ public class SiteServiceTest {
                 umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
 
         assertThat(service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
-            .extracting("id", "nome", "nomeCargo", "codigoCargo")
+            .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
-                tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                tuple(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                tuple(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO));
+                tuple(1, "NOME 1", "ASSISTENTE_OPERACAO"),
+                tuple(2, "NOME 2", "ASSISTENTE_OPERACAO"),
+                tuple(3, "NOME 3", "ASSISTENTE_OPERACAO"));
     }
 
     @Test
@@ -487,11 +487,11 @@ public class SiteServiceTest {
             .thenReturn(umaListaUsuarioResponse);
 
         assertThat(service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
-            .extracting("id", "nome", "nomeCargo", "codigoCargo")
+            .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
-                tuple(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-                tuple(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-                tuple(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
+                tuple(1, "NOME 1", "OPERACAO_TELEVENDAS"),
+                tuple(2, "NOME 2", "OPERACAO_TELEVENDAS"),
+                tuple(3, "NOME 3", "OPERACAO_TELEVENDAS"));
     }
 
     @Test

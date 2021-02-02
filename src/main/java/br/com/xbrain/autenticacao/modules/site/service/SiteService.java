@@ -10,15 +10,11 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.*;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -340,14 +336,20 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
+    public List<UsuarioSiteResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()));
+            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
+            .stream()
+            .map(UsuarioSiteResponse::of)
+            .collect(toList());
     }
 
-    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
+    public List<UsuarioSiteResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null);
+            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null)
+            .stream()
+            .map(UsuarioSiteResponse::of)
+            .collect(toList());
     }
 
     public List<Integer> buscarCoordenadoresIdsDoUsuarioId(Integer usuarioId) {

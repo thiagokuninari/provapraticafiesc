@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.*;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
@@ -115,13 +114,13 @@ public class SiteController {
     }
 
     @GetMapping("assistentes-da-hierarquia/{usuariosSuperioresIds}")
-    public List<UsuarioResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(@PathVariable List<Integer>
+    public List<UsuarioSiteResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(@PathVariable List<Integer>
                                                                                                usuariosSuperioresIds) {
         return service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(usuariosSuperioresIds);
     }
 
     @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda")
-    public List<UsuarioResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(@PathVariable Integer
+    public List<UsuarioSiteResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(@PathVariable Integer
                                                                                                        usuarioSuperiorId) {
         return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
     }
