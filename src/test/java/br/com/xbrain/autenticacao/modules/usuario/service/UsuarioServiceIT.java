@@ -1068,7 +1068,7 @@ public class UsuarioServiceIT {
     public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
         return UsuarioMqRequest.builder()
             .agenteAutorizadoId(10)
-            .usuarioCadastroId(1)
+            .usuarioCadastroId(100)
             .usuarioCadastroNome("RENATO")
             .nome("JOSÉ")
             .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))

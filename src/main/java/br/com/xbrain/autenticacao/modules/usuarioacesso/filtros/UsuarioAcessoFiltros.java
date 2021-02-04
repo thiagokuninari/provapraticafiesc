@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.filtros;
 
 import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.predicate.UsuarioAcessoPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,12 @@ public class UsuarioAcessoFiltros {
     private LocalDate dataFim;
     @NotNull
     private ETipo tipo;
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime dataInicial;
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime dataFinal;
+    private Integer organizacaoId;
+    private List<CodigoCargo> cargos;
 
     @JsonIgnore
     public BooleanBuilder toPredicate() {
