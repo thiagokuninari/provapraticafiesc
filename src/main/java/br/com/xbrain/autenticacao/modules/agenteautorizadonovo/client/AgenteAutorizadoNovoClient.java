@@ -35,7 +35,7 @@ public interface AgenteAutorizadoNovoClient {
     @GetMapping("api/{usuarioId}/estrutura")
     String getEstrutura(@PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping("api/{agenteAutorizadoId}/{buscarInativos}")
+    @GetMapping("api/usuarios-agente-autorizado/{agenteAutorizadoId}/{buscarInativos}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
         @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
         @PathVariable("buscarInativos") Boolean buscarInativos);
