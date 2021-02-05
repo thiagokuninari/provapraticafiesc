@@ -86,7 +86,10 @@ public enum EErrors {
     ERRO_BUSCAR_USUARIOS_DO_AA(
         "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#030 - Ocorreu um erro ao buscar usuários do agente autorizado"
-    );
+    ),
+    ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
+        "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#032 - Erro ao tentar recuperar o número de usuários logados por hora.");
 
     @Getter
     @Setter

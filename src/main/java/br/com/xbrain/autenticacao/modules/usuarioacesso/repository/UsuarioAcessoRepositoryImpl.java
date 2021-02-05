@@ -14,7 +14,7 @@ import static br.com.xbrain.autenticacao.modules.usuarioacesso.model.QUsuarioAce
 import static com.querydsl.core.types.Projections.constructor;
 
 public class UsuarioAcessoRepositoryImpl
-        extends CustomRepository<UsuarioHierarquia> implements UsuarioAcessoRepositoryCustom {
+    extends CustomRepository<UsuarioHierarquia> implements UsuarioAcessoRepositoryCustom {
 
     private static final int DOIS_MESES = 2;
 
@@ -34,17 +34,17 @@ public class UsuarioAcessoRepositoryImpl
     @Override
     public long deletarHistoricoUsuarioAcesso() {
         return new JPAQueryFactory(entityManager)
-                .delete(usuarioAcesso)
-                .where(usuarioAcesso.dataCadastro.before(
-                        LocalDateTime.now().minusMonths(DOIS_MESES)))
-                .execute();
+            .delete(usuarioAcesso)
+            .where(usuarioAcesso.dataCadastro.before(
+                LocalDateTime.now().minusMonths(DOIS_MESES)))
+            .execute();
     }
 
     @Override
     public long countUsuarioAcesso() {
         return new JPAQueryFactory(entityManager)
-                .select(usuarioAcesso)
-                .from(usuarioAcesso)
-                .fetchCount();
+            .select(usuarioAcesso)
+            .from(usuarioAcesso)
+            .fetchCount();
     }
 }
