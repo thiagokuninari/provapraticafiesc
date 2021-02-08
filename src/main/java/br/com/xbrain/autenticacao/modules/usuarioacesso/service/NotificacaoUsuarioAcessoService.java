@@ -5,9 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.*;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.google.common.collect.Lists;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -99,6 +97,16 @@ public class NotificacaoUsuarioAcessoService {
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS);
+        }
+    }
+
+    public List<PaLogadoDto> countUsuariosLogadosPorPeriodo(UsuarioLogadoRequest usuarioLogadoRequest) {
+        try {
+            return client.countUsuariosLogadosPorPeriodo(usuarioLogadoRequest);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA);
         }
     }
 }
