@@ -47,16 +47,17 @@ public class UsuarioAcessoPredicate {
         return this;
     }
 
-    public UsuarioAcessoPredicate porPeriodo(
-        LocalDate dataInicio, LocalDate dataFim, ETipo tipo) {
-        if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim) && tipo.equals(ETipo.LOGOUT)) {
-            builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
-                .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
-                .and(usuarioAcesso.flagLogout.eq("V"));
-        } else {
-            builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
-                .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
-                .and(usuarioAcesso.flagLogout.eq("F"));
+    public UsuarioAcessoPredicate porPeriodo(LocalDate dataInicio, LocalDate dataFim, ETipo tipo) {
+        if (!ObjectUtils.isEmpty(dataInicio) && !ObjectUtils.isEmpty(dataFim)) {
+            if (tipo.equals(ETipo.LOGOUT)) {
+                builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
+                    .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
+                    .and(usuarioAcesso.flagLogout.eq("V"));
+            } else {
+                builder.and(usuarioAcesso.dataCadastro.after(dataInicio.atTime(LocalTime.MIN))
+                    .and(usuarioAcesso.dataCadastro.before(dataFim.atTime(LocalTime.MAX))))
+                    .and(usuarioAcesso.flagLogout.eq("F"));
+            }
         }
         return this;
     }
