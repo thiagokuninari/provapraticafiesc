@@ -120,9 +120,10 @@ public class SiteController {
     }
 
     @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda")
-    public List<UsuarioSiteResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(@PathVariable Integer
-                                                                                                       usuarioSuperiorId) {
-        return service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
+    public List<UsuarioSiteResponse> buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(
+        @PathVariable Integer usuarioSuperiorId) {
+        
+        return service.buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(usuarioSuperiorId);
     }
 
     @GetMapping("coordenadores/{usuarioId}")

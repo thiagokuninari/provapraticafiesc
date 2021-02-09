@@ -476,18 +476,19 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
+    public void buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
         var umaListaUsuarioResponse = List.of(
             doisUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
             doisUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
             doisUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
 
-        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
+        when(usuarioService.buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
+                eq(List.of(1)), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
             .thenReturn(umaListaUsuarioResponse);
         when(equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(eq(umaListaUsuarioResponse), eq(null)))
             .thenReturn(umaListaUsuarioResponse);
 
-        assertThat(service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
+        assertThat(service.buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
             .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
                 tuple(1, "NOME 1", "OPERACAO_TELEVENDAS"),

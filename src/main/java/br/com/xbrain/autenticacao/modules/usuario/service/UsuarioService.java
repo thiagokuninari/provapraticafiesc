@@ -1486,15 +1486,6 @@ public class UsuarioService {
         return repository.buscarUsuariosPorCanalECargo(canal, cargo);
     }
 
-    public List<UsuarioResponse> buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(Integer usuarioId,
-                                                                                      Set<String> codigosCargos) {
-        return repository.getSubordinadosPorCargo(usuarioId, codigosCargos)
-            .stream()
-            .map(UsuarioResponse::ofUsuarioObjectArray)
-            .sorted(Comparator.comparing(UsuarioResponse::getNome))
-            .collect(Collectors.toList());
-    }
-
     public List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> superioresIds,
                                                                                         Set<String> codigosCargos) {
         return repository.buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(superioresIds, codigosCargos)

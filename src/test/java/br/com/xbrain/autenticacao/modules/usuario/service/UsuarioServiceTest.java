@@ -42,7 +42,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.doisUsuarioObjectArray;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -361,22 +360,6 @@ public class UsuarioServiceTest {
                 .codigoNivel(CodigoNivel.OPERACAO)
                 .cpf("333.333.333-33")
                 .build());
-    }
-
-    @Test
-    public void buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos_usuarioResponse_seSolicitado() {
-        when(usuarioRepository.getSubordinadosPorCargo(eq(1), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
-            .thenReturn(List.of(
-                doisUsuarioObjectArray(1, "ASSISTENTE 1", ASSISTENTE_OPERACAO),
-                doisUsuarioObjectArray(2, "ASSISTENTE 2", ASSISTENTE_OPERACAO),
-                doisUsuarioObjectArray(3, "ASSISTENTE 3", ASSISTENTE_OPERACAO)));
-
-        assertThat(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(1, Set.of(ASSISTENTE_OPERACAO.name())))
-            .extracting("id", "nome", "codigoCargo")
-            .containsExactlyInAnyOrder(
-                tuple(1, "ASSISTENTE 1", ASSISTENTE_OPERACAO),
-                tuple(2, "ASSISTENTE 2", ASSISTENTE_OPERACAO),
-                tuple(3, "ASSISTENTE 3", ASSISTENTE_OPERACAO));
     }
 
     @Test

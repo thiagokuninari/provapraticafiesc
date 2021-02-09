@@ -345,9 +345,11 @@ public class SiteService {
             .collect(toList());
     }
 
-    public List<UsuarioSiteResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
+    public List<UsuarioSiteResponse> buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer
+                                                                                                             usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null)
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
+                        List.of(usuarioSuperiorId), Set.of(OPERACAO_TELEVENDAS.name())), null)
             .stream()
             .map(UsuarioSiteResponse::of)
             .collect(toList());
