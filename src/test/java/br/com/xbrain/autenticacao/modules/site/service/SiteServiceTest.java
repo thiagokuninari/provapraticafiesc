@@ -274,15 +274,11 @@ public class SiteServiceTest {
             .thenReturn(Optional.of(site));
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
             .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
-        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(2), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
             .extracting("id", "nome", "coordenadoresIds")
             .containsExactlyInAnyOrder(
-                tuple(1, "RENATO", List.of(100)),
-                tuple(2, "MARIA", List.of(100))
-            );
+                tuple(1, "RENATO", List.of(100)));
     }
 
     @Test

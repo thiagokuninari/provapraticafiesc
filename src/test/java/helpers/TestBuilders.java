@@ -89,10 +89,17 @@ public class TestBuilders {
             Usuario.builder()
                 .id(1)
                 .nome("RENATO")
+                .situacao(ESituacao.A)
                 .build(),
             Usuario.builder()
                 .id(2)
                 .nome("MARIA")
+                .situacao(ESituacao.I)
+                .build(),
+            Usuario.builder()
+                .id(3)
+                .nome("JOAO")
+                .situacao(ESituacao.R)
                 .build()
         );
     }

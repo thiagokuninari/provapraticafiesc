@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
@@ -157,6 +158,7 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
+            .filter(supervisor -> ESituacao.A.equals(supervisor.getSituacao()))
             .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
