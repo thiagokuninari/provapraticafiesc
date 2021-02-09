@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioObjectArray;
@@ -57,26 +58,34 @@ public class UsuarioRepositoryOracleTest {
     }
 
     @Test
-    public void buscarSubordinadosPorUsuariosIdsECodigosCargos_listaVazia_seNaoHouverUsuariosSubordinados() {
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listaVazia_seNaoHouverUsuariosSubordinados() {
         assertThat(repository
-            .buscarSubordinadosPorUsuariosIdsECodigosCargos(List.of(1001, 1004), Set.of(OPERACAO_TELEVENDAS.name())))
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1001, 1004), Set.of(OPERACAO_TELEVENDAS.name())))
             .isEmpty();
     }
 
     @Test
-    public void buscarSubordinadosPorUsuariosIdsECodigosCargos_listaVazia_seNaoHouverUsuariosSubordinadosDoCargo() {
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listaVazia_seNaoHouverUsuariosSubordinadosDosCargos() {
         assertThat(repository
-            .buscarSubordinadosPorUsuariosIdsECodigosCargos(List.of(1002, 1005), Set.of(ASSISTENTE_OPERACAO.name())))
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1002, 1005), Set.of(ASSISTENTE_OPERACAO.name())))
             .isEmpty();
     }
 
     @Test
-    public void buscarSubordinadosPorUsuariosIdsECodigosCargos_listaDeUsuarioResponse_seHouverUsuariosSubordinadosDoCargo() {
+    @SuppressWarnings("LineLength")
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listaVazia_seNaoHouverUsuariosSubordinadosAtivosDosCargos() {
         assertThat(repository
-            .buscarSubordinadosPorUsuariosIdsECodigosCargos(List.of(1002, 1005), Set.of(OPERACAO_TELEVENDAS.name())))
-            .extracting("id", "nome", "email", "nomeCargo", "codigoCargo")
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1005), Set.of(ASSISTENTE_OPERACAO.name())))
+            .isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listaDeUsuarioResponse_seHouverUsuariosSubordinadosAtivosDosCargos() {
+        assertThat(repository
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1002), Set.of(OPERACAO_TELEVENDAS.name())))
+            .extracting("id", "nome", "situacao", "codigoCargo")
             .containsExactly(
-                tuple(1003, "TELEVENDAS 1", "TELEVENDAS_1@XBRAIN.COM.BR", "Operador Televendas", OPERACAO_TELEVENDAS),
-                tuple(1006, "TELEVENDAS 2", "TELEVENDAS_2@XBRAIN.COM.BR", "Operador Televendas", OPERACAO_TELEVENDAS));
+                tuple(1003, "TELEVENDAS 1", A, OPERACAO_TELEVENDAS));
     }
 }

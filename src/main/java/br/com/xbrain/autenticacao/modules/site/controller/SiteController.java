@@ -114,9 +114,9 @@ public class SiteController {
     }
 
     @GetMapping("assistentes-da-hierarquia/{usuariosSuperioresIds}")
-    public List<UsuarioSiteResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(@PathVariable List<Integer>
+    public List<UsuarioSiteResponse> buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(@PathVariable List<Integer>
                                                                                                usuariosSuperioresIds) {
-        return service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(usuariosSuperioresIds);
+        return service.buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(usuariosSuperioresIds);
     }
 
     @GetMapping("vendedores-da-hierarquia/{usuarioSuperiorId}/sem-equipe-venda")

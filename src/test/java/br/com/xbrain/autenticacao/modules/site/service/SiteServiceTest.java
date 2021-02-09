@@ -40,6 +40,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
@@ -458,15 +459,15 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_usuarioResponse_seSolicitado() {
+    public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_usuarioResponse_seSolicitado() {
         when(usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
+                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
 
-        assertThat(service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
+        assertThat(service.buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
             .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
                 tuple(1, "NOME 1", "ASSISTENTE_OPERACAO"),
@@ -477,9 +478,9 @@ public class SiteServiceTest {
     @Test
     public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
         var umaListaUsuarioResponse = List.of(
-            umUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-            umUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-            umUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
+            doisUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            doisUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            doisUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
 
         when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
             .thenReturn(umaListaUsuarioResponse);

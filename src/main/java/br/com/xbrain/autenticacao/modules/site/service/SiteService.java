@@ -336,9 +336,10 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioSiteResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
+    public List<UsuarioSiteResponse> buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List<Integer>
+                                                                                                     usuariosSuperioresIds) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
+            .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
             .stream()
             .map(UsuarioSiteResponse::of)
             .collect(toList());

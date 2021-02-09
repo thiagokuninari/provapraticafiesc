@@ -428,14 +428,14 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_unauthorized_seUsuarioNaoAutenticado() {
+    public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_unauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_forbidden_seUsuarioNaoPossuiPermissao() {
+    public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_forbidden_seUsuarioNaoPossuiPermissao() {
         mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
@@ -443,7 +443,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_ok_seUsuarioAutenticadoEComPermissao() {
+    public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/assistentes-da-hierarquia/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
