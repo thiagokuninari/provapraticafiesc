@@ -412,9 +412,10 @@ public class SiteServiceTest {
     public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
         when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
             .thenReturn(List.of(110, 112));
-
         when(siteRepository.findById(100))
             .thenReturn(Optional.of(umSiteComSupervisores()));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(110), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
 
         var actual = service.getAllSupervisoresByHierarquia(100, 200);
 
@@ -422,12 +423,8 @@ public class SiteServiceTest {
             SiteSupervisorResponse.builder()
                 .id(110)
                 .nome("JOAO")
-                .build(),
-            SiteSupervisorResponse.builder()
-                .id(112)
-                .nome("CARLOS")
-                .build()
-        );
+                .coordenadoresIds(List.of(100))
+                .build());
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
@@ -524,14 +521,17 @@ public class SiteServiceTest {
                     Usuario.builder()
                         .id(100)
                         .nome("RENATO")
+                        .situacao(ESituacao.R)
                         .build(),
                     Usuario.builder()
                         .id(110)
                         .nome("JOAO")
+                        .situacao(ESituacao.A)
                         .build(),
                     Usuario.builder()
                         .id(112)
                         .nome("CARLOS")
+                        .situacao(ESituacao.I)
                         .build()))
             .build();
     }

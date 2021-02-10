@@ -170,8 +170,9 @@ public class SiteService {
         return findById(siteId)
             .getSupervisores()
             .stream()
-            .filter(u -> supervisoresSubordinadosIds.contains(u.getId()))
-            .map(SiteSupervisorResponse::of)
+            .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId())
+                && ESituacao.A.equals(supervisor.getSituacao()))
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
