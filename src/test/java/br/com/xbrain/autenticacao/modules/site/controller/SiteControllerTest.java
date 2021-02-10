@@ -474,14 +474,14 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarCoordenadoresIdsDoUsuarioId_unauthorized_seUsuarioNaoAutenticado() {
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_unauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/coordenadores/1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarCoordenadoresIdsDoUsuarioId_forbidden_seUsuarioNaoPossuiPermissao() {
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_forbidden_seUsuarioNaoPossuiPermissao() {
         mvc.perform(get(API_URI + "/coordenadores/1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
@@ -489,7 +489,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarCoordenadoresIdsDoUsuarioId_ok_seUsuarioAutenticadoEComPermissao() {
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/coordenadores/1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());

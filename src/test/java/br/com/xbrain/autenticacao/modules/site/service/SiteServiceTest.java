@@ -273,7 +273,7 @@ public class SiteServiceTest {
         when(siteRepository.findById(1))
             .thenReturn(Optional.of(site));
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
             .extracting("id", "nome", "coordenadoresIds")
@@ -415,7 +415,7 @@ public class SiteServiceTest {
         when(siteRepository.findById(100))
             .thenReturn(Optional.of(umSiteComSupervisores()));
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(110), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
 
         var actual = service.getAllSupervisoresByHierarquia(100, 200);
 
@@ -490,11 +490,20 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarCoordenadoresIdsDoUsuarioId_listaDeInteiros_seSolicitado() {
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_listaVazia_seNaoHouverCoordenadoresAtivos() {
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("INATIVO").build()));
 
-        assertThat(service.buscarCoordenadoresIdsDoUsuarioId(1))
+        assertThat(service.buscarCoordenadoresIdsAtivosDoUsuarioId(1))
+            .isEmpty();
+    }
+
+    @Test
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_listaDeInteiros_seSolicitado() {
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
+
+        assertThat(service.buscarCoordenadoresIdsAtivosDoUsuarioId(1))
             .isEqualTo(List.of(100));
     }
 

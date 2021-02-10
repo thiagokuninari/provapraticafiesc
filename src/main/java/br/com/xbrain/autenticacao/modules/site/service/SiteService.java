@@ -159,7 +159,7 @@ public class SiteService {
             .getSupervisores()
             .stream()
             .filter(supervisor -> ESituacao.A.equals(supervisor.getSituacao()))
-            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -172,7 +172,7 @@ public class SiteService {
             .stream()
             .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId())
                 && ESituacao.A.equals(supervisor.getSituacao()))
-            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -358,9 +358,10 @@ public class SiteService {
             .collect(toList());
     }
 
-    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(Integer usuarioId) {
+    public List<Integer> buscarCoordenadoresIdsAtivosDoUsuarioId(Integer usuarioId) {
         return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, COORDENADOR_OPERACAO)
             .stream()
+            .filter(usuario -> ESituacao.A.getDescricao().toUpperCase().equals(usuario.getStatus()))
             .map(UsuarioHierarquiaResponse::getId)
             .collect(toList());
     }
