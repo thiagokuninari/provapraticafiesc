@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.site.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ public class SiteSupervisorResponse {
 
     private Integer id;
     private String nome;
+    private ESituacao situacao;
     private List<Integer> coordenadoresIds;
 
     public static SiteSupervisorResponse of(Usuario usuarioSupervisor) {

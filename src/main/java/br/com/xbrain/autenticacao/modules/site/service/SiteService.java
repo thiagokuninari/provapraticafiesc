@@ -158,7 +158,6 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
-            .filter(supervisor -> ESituacao.A.equals(supervisor.getSituacao()))
             .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
@@ -170,8 +169,7 @@ public class SiteService {
         return findById(siteId)
             .getSupervisores()
             .stream()
-            .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId())
-                && ESituacao.A.equals(supervisor.getSituacao()))
+            .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId()))
             .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }

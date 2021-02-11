@@ -276,9 +276,11 @@ public class SiteServiceTest {
             .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
-            .extracting("id", "nome", "coordenadoresIds")
+            .extracting("id", "nome", "situacao", "coordenadoresIds")
             .containsExactlyInAnyOrder(
-                tuple(1, "RENATO", List.of(100)));
+                tuple(1, "RENATO", ESituacao.A, List.of(100)),
+                tuple(2, "MARIA", ESituacao.I, List.of()),
+                tuple(3, "JOAO", ESituacao.R, List.of()));
     }
 
     @Test
@@ -423,7 +425,14 @@ public class SiteServiceTest {
             SiteSupervisorResponse.builder()
                 .id(110)
                 .nome("JOAO")
+                .situacao(ESituacao.A)
                 .coordenadoresIds(List.of(100))
+                .build(),
+            SiteSupervisorResponse.builder()
+                .id(112)
+                .nome("CARLOS")
+                .situacao(ESituacao.I)
+                .coordenadoresIds(List.of())
                 .build());
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
