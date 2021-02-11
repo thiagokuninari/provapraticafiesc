@@ -40,6 +40,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
@@ -272,16 +273,12 @@ public class SiteServiceTest {
         when(siteRepository.findById(1))
             .thenReturn(Optional.of(site));
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
-        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(2), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
 
         assertThat(service.getAllSupervisoresBySiteId(1))
             .extracting("id", "nome", "coordenadoresIds")
             .containsExactlyInAnyOrder(
-                tuple(1, "RENATO", List.of(100)),
-                tuple(2, "MARIA", List.of(100))
-            );
+                tuple(1, "RENATO", List.of(100)));
     }
 
     @Test
@@ -415,9 +412,10 @@ public class SiteServiceTest {
     public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
         when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
             .thenReturn(List.of(110, 112));
-
         when(siteRepository.findById(100))
             .thenReturn(Optional.of(umSiteComSupervisores()));
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(110), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
 
         var actual = service.getAllSupervisoresByHierarquia(100, 200);
 
@@ -425,12 +423,8 @@ public class SiteServiceTest {
             SiteSupervisorResponse.builder()
                 .id(110)
                 .nome("JOAO")
-                .build(),
-            SiteSupervisorResponse.builder()
-                .id(112)
-                .nome("CARLOS")
-                .build()
-        );
+                .coordenadoresIds(List.of(100))
+                .build());
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
     }
 
@@ -458,15 +452,15 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarAssistentesDaHierarquiaDoUsuarioSuperiorId_usuarioResponse_seSolicitado() {
+    public void buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds_usuarioResponse_seSolicitado() {
         when(usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
+                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
 
-        assertThat(service.buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
+        assertThat(service.buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List.of(1)))
             .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
                 tuple(1, "NOME 1", "ASSISTENTE_OPERACAO"),
@@ -475,18 +469,19 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
+    public void buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda_usuarioResponse_seSolicitado() {
         var umaListaUsuarioResponse = List.of(
-            umUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-            umUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
-            umUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
+            doisUsuarioResponse(1, "NOME 1", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            doisUsuarioResponse(2, "NOME 2", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS),
+            doisUsuarioResponse(3, "NOME 3", "OPERACAO TELEVENDAS", OPERACAO_TELEVENDAS));
 
-        when(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(eq(1), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
+        when(usuarioService.buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
+                eq(List.of(1)), eq(Set.of(OPERACAO_TELEVENDAS.name()))))
             .thenReturn(umaListaUsuarioResponse);
         when(equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(eq(umaListaUsuarioResponse), eq(null)))
             .thenReturn(umaListaUsuarioResponse);
 
-        assertThat(service.buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
+        assertThat(service.buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(1))
             .extracting("usuarioId", "usuarioNome", "cargoNome")
             .containsExactly(
                 tuple(1, "NOME 1", "OPERACAO_TELEVENDAS"),
@@ -495,11 +490,20 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarCoordenadoresIdsDoUsuarioId_listaDeInteiros_seSolicitado() {
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_listaVazia_seNaoHouverCoordenadoresAtivos() {
         when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
-            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).build()));
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("INATIVO").build()));
 
-        assertThat(service.buscarCoordenadoresIdsDoUsuarioId(1))
+        assertThat(service.buscarCoordenadoresIdsAtivosDoUsuarioId(1))
+            .isEmpty();
+    }
+
+    @Test
+    public void buscarCoordenadoresIdsAtivosDoUsuarioId_listaDeInteiros_seSolicitado() {
+        when(usuarioService.getSuperioresDoUsuarioPorCargo(eq(1), eq(COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(UsuarioHierarquiaResponse.builder().id(100).status("ATIVO").build()));
+
+        assertThat(service.buscarCoordenadoresIdsAtivosDoUsuarioId(1))
             .isEqualTo(List.of(100));
     }
 
@@ -526,14 +530,17 @@ public class SiteServiceTest {
                     Usuario.builder()
                         .id(100)
                         .nome("RENATO")
+                        .situacao(ESituacao.R)
                         .build(),
                     Usuario.builder()
                         .id(110)
                         .nome("JOAO")
+                        .situacao(ESituacao.A)
                         .build(),
                     Usuario.builder()
                         .id(112)
                         .nome("CARLOS")
+                        .situacao(ESituacao.I)
                         .build()))
             .build();
     }

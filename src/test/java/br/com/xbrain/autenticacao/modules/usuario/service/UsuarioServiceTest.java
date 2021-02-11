@@ -42,7 +42,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.doisUsuarioObjectArray;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -364,37 +363,21 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos_usuarioResponse_seSolicitado() {
-        when(usuarioRepository.getSubordinadosPorCargo(eq(1), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
-            .thenReturn(List.of(
-                doisUsuarioObjectArray(1, "ASSISTENTE 1", ASSISTENTE_OPERACAO),
-                doisUsuarioObjectArray(2, "ASSISTENTE 2", ASSISTENTE_OPERACAO),
-                doisUsuarioObjectArray(3, "ASSISTENTE 3", ASSISTENTE_OPERACAO)));
-
-        assertThat(usuarioService.buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(1, Set.of(ASSISTENTE_OPERACAO.name())))
-            .extracting("id", "nome", "codigoCargo")
-            .containsExactlyInAnyOrder(
-                tuple(1, "ASSISTENTE 1", ASSISTENTE_OPERACAO),
-                tuple(2, "ASSISTENTE 2", ASSISTENTE_OPERACAO),
-                tuple(3, "ASSISTENTE 3", ASSISTENTE_OPERACAO));
-    }
-
-    @Test
-    public void buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos_listUsuarioResponse_seSolicitado() {
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listUsuarioResponse_seSolicitado() {
         when(usuarioRepository
-            .buscarSubordinadosPorUsuariosIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                umUsuarioResponse(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO)));
+                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
 
         assertThat(usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(List.of(1), Set.of(ASSISTENTE_OPERACAO.name())))
-            .extracting("id", "nome", "nomeCargo", "codigoCargo")
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1), Set.of(ASSISTENTE_OPERACAO.name())))
+            .extracting("id", "nome", "situacao", "codigoCargo")
             .containsExactlyInAnyOrder(
-                tuple(1, "NOME 1", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                tuple(2, "NOME 2", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO),
-                tuple(3, "NOME 3", "ASSISTENTE OPERACAO", ASSISTENTE_OPERACAO));
+                tuple(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                tuple(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                tuple(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO));
     }
 
     private UsuarioHierarquia umUsuarioHierarquia() {

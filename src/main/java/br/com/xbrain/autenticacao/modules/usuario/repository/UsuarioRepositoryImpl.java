@@ -153,12 +153,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     + " , U.NOME "
                     + " , U.EMAIL_01 "
                     + " , C.NOME AS NOME_CARGO "
-                    + " , C.CODIGO AS CARGO_CODIGO"
                     + " FROM USUARIO_HIERARQUIA UH"
                     + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                     + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                     + " WHERE C.CODIGO in (:_codigoCargo)"
-                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
+                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                     + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                     + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
             .setParameter("_usuarioId", usuarioId)
@@ -868,22 +867,22 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioResponse> buscarSubordinadosPorUsuariosIdsECodigosCargos(List<Integer> usuariosIds,
-                                                                                Set<String> codigosCargos) {
+    public List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> supervisoresIds,
+                                                                                        Set<String> codigosCargos) {
         return jdbcTemplate.query(" SELECT UH.FK_USUARIO AS ID, "
             + "U.NOME AS NOME, "
-            + "U.EMAIL_01 AS EMAIL, "
-            + "C.NOME AS NOME_CARGO,  "
+            + "U.SITUACAO AS SITUACAO, "
             + "C.CODIGO AS CODIGO_CARGO "
             + "FROM USUARIO_HIERARQUIA UH "
             + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
             + "JOIN CARGO C ON C.ID = U.FK_CARGO "
             + "WHERE C.CODIGO in (:_codigosCargos) "
-            + "GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO "
-            + "START WITH UH.FK_USUARIO_SUPERIOR in (:_usuariosIds) "
+            + "AND U.SITUACAO = 'A' "
+            + "GROUP BY FK_USUARIO, U.NOME, U.SITUACAO, C.CODIGO "
+            + "START WITH UH.FK_USUARIO_SUPERIOR in (:_supervisoresIds) "
             + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource()
-                .addValue("_usuariosIds", usuariosIds)
+                .addValue("_supervisoresIds", supervisoresIds)
                 .addValue("_codigosCargos", codigosCargos),
             new BeanPropertyRowMapper<>(UsuarioResponse.class));
     }

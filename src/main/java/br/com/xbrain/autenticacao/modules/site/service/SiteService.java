@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
@@ -157,7 +158,8 @@ public class SiteService {
         return findById(id)
             .getSupervisores()
             .stream()
-            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsDoUsuarioId(supervisor.getId())))
+            .filter(supervisor -> ESituacao.A.equals(supervisor.getSituacao()))
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -168,8 +170,9 @@ public class SiteService {
         return findById(siteId)
             .getSupervisores()
             .stream()
-            .filter(u -> supervisoresSubordinadosIds.contains(u.getId()))
-            .map(SiteSupervisorResponse::of)
+            .filter(supervisor -> supervisoresSubordinadosIds.contains(supervisor.getId())
+                && ESituacao.A.equals(supervisor.getSituacao()))
+            .map(supervisor -> SiteSupervisorResponse.of(supervisor, buscarCoordenadoresIdsAtivosDoUsuarioId(supervisor.getId())))
             .collect(toList());
     }
 
@@ -335,25 +338,29 @@ public class SiteService {
             .build();
     }
 
-    public List<UsuarioSiteResponse> buscarAssistentesDaHierarquiaDosUsuariosSuperioresIds(List<Integer> usuariosSuperioresIds) {
+    public List<UsuarioSiteResponse> buscarAssistentesAtivosDaHierarquiaDosUsuariosSuperioresIds(List<Integer>
+                                                                                                     usuariosSuperioresIds) {
         return usuarioService
-            .buscarUsuariosSubordinadosPorUsuariosIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
+            .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(usuariosSuperioresIds, Set.of(ASSISTENTE_OPERACAO.name()))
             .stream()
             .map(UsuarioSiteResponse::of)
             .collect(toList());
     }
 
-    public List<UsuarioSiteResponse> buscarVendedoresDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer usuarioSuperiorId) {
+    public List<UsuarioSiteResponse> buscarVendedoresAtivosDaHierarquiaDoUsuarioSuperiorIdSemEquipeVenda(Integer
+                                                                                                             usuarioSuperiorId) {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(usuarioService
-            .buscarUsuariosSubordinadosPorUsuarioIdECodigosCargos(usuarioSuperiorId, Set.of(OPERACAO_TELEVENDAS.name())), null)
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(
+                        List.of(usuarioSuperiorId), Set.of(OPERACAO_TELEVENDAS.name())), null)
             .stream()
             .map(UsuarioSiteResponse::of)
             .collect(toList());
     }
 
-    public List<Integer> buscarCoordenadoresIdsDoUsuarioId(Integer usuarioId) {
+    public List<Integer> buscarCoordenadoresIdsAtivosDoUsuarioId(Integer usuarioId) {
         return usuarioService.getSuperioresDoUsuarioPorCargo(usuarioId, COORDENADOR_OPERACAO)
             .stream()
+            .filter(usuario -> ESituacao.A.getDescricao().toUpperCase().equals(usuario.getStatus()))
             .map(UsuarioHierarquiaResponse::getId)
             .collect(toList());
     }
