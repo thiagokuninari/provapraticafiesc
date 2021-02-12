@@ -1507,7 +1507,7 @@ public class UsuarioService {
     }
 
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
-        return Optional.ofNullable(buscarUsuariosIdsPorAasIds(filtros.getAasIds(), filtros.obterBuscarInativos()))
+        return Optional.ofNullable(buscarUsuariosIdsPorAasIds(filtros.getAasIds(), true))
             .filter(usuariosIds -> !isEmpty(usuariosIds))
             .map(filtros::toPredicate)
             .map(this::buscarTodosPorPredicate)
