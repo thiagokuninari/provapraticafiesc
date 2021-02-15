@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -56,7 +56,7 @@ public class UsuarioAcessoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private AgenteAutorizadoClient agenteAutorizadoClient;
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
@@ -168,7 +168,7 @@ public class UsuarioAcessoService {
     }
 
     private List<Integer> getIdUsuariosByAaId(UsuarioAcessoFiltros usuarioAcessoFiltros) {
-        return agenteAutorizadoClient.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
+        return agenteAutorizadoNovoClient.getUsuariosByAaId(usuarioAcessoFiltros.getAaId(), false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
@@ -86,6 +87,8 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -647,7 +650,7 @@ public class UsuarioGerenciaControllerTest {
                 .cnpj("09.489.617/0001-97")
                 .build();
 
-        when(agenteAutorizadoClient.getAaByCpnj(Matchers.anyMap()))
+        when(agenteAutorizadoNovoClient.getAaByCpnj(Matchers.anyMap()))
                 .thenReturn(response);
     }
 
@@ -658,7 +661,7 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(104));
         response.add(new UsuarioAgenteAutorizadoResponse(105));
 
-        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
+        when(agenteAutorizadoNovoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
                 .thenReturn(response);
     }
 

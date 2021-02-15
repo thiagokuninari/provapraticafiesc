@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
@@ -38,7 +38,7 @@ public class RelatorioLoginLogoutService {
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -85,7 +85,7 @@ public class RelatorioLoginLogoutService {
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
             .filtrarPermitidosRelatorioLoginLogout(canal);
         if (Objects.nonNull(agenteAutorizadoId)) {
-            predicate.comIds(agenteAutorizadoService.getUsuariosIdsByAaId(agenteAutorizadoId, true));
+            predicate.comIds(agenteAutorizadoNovoService.getUsuariosIdsByAaId(agenteAutorizadoId, true));
         }
 
         return Optional.of(usuarioRepository.findAllIds(predicate.build()));

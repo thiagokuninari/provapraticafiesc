@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -25,7 +26,6 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -156,7 +156,7 @@ public class UsuarioService {
     @Autowired
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -278,7 +278,7 @@ public class UsuarioService {
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
-        List<Integer> lista = agenteAutorizadoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
+        List<Integer> lista = agenteAutorizadoNovoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -318,7 +318,7 @@ public class UsuarioService {
         }
 
         return Stream.of(
-            agenteAutorizadoService.getIdsUsuariosSubordinados(false),
+            agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
             repository.getUsuariosSubordinados(usuario.getId())
         ).flatMap(Collection::stream)
             .distinct()
@@ -1047,11 +1047,11 @@ public class UsuarioService {
     }
 
     private boolean encontrouAgenteAutorizadoByUsuarioId(Integer usuarioId) {
-        return agenteAutorizadoService.existeAaAtivoByUsuarioId(usuarioId);
+        return agenteAutorizadoNovoService.existeAaAtivoByUsuarioId(usuarioId);
     }
 
     private boolean encontrouAgenteAutorizadoBySocioEmail(String usuarioEmail) {
-        return agenteAutorizadoService.existeAaAtivoBySocioEmail(usuarioEmail);
+        return agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(usuarioEmail);
     }
 
     public void limparCpfUsuario(Integer id) {
@@ -1715,7 +1715,7 @@ public class UsuarioService {
     }
 
     private List<Integer> buscarUsuariosIdPorAaId(Integer aaId) {
-        return agenteAutorizadoService.getUsuariosByAaId(aaId, false)
+        return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, false)
             .stream()
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .collect(Collectors.toList());

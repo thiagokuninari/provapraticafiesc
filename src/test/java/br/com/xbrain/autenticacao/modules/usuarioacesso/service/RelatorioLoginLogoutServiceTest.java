@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -50,6 +51,8 @@ public class RelatorioLoginLogoutServiceTest {
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
     @Mock
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Mock
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Mock
     private UsuarioRepository usuarioRepository;
 
@@ -246,7 +249,7 @@ public class RelatorioLoginLogoutServiceTest {
             .containsExactlyInAnyOrder(12, 7, 90, 1, 3, 100);
 
         verify(autenticacaoService, never()).validarPermissaoSobreOAgenteAutorizado(anyOrNull());
-        verify(agenteAutorizadoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
+        verify(agenteAutorizadoNovoService, never()).getUsuariosIdsByAaId(anyOrNull(), anyOrNull());
     }
 
     @Test
@@ -369,7 +372,7 @@ public class RelatorioLoginLogoutServiceTest {
     }
 
     private void mockBuscarUsuariosPermitidosIds(List<Integer> ids) {
-        when(agenteAutorizadoService.getUsuariosIdsByAaId(eq(67), eq(true)))
+        when(agenteAutorizadoNovoService.getUsuariosIdsByAaId(eq(67), eq(true)))
             .thenReturn(ids);
     }
 

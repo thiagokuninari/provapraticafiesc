@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -83,6 +84,8 @@ public class UsuarioServiceIT {
     private EmailService emailService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -333,7 +336,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         service.ativar(UsuarioAtivacaoDto.builder()
                 .idUsuario(245)
                 .observacao("ATIVANDO O SÓCIO PRINCIPAL")
@@ -360,7 +363,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
-        when(agenteAutorizadoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
                 + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
@@ -372,7 +375,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
-        when(agenteAutorizadoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        when(agenteAutorizadoNovoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()

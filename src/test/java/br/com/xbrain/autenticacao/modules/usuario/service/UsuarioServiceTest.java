@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -90,6 +91,8 @@ public class UsuarioServiceTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @Mock
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Mock
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -702,7 +705,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosIdPorUmAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
@@ -710,7 +713,7 @@ public class UsuarioServiceTest {
                 umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
                 umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
 
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(Collections.emptyList());
 
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200)))
             .extracting("id", "nome", "email", "agenteAutorizadoId")
@@ -721,13 +724,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarResponse_seEncontradoUsuariosPorUmAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
             .thenReturn(Collections.emptyList());
 
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(200, 200),
             umUsuarioAgenteAutorizadoResponse(201, 200)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
@@ -744,7 +747,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarUsuarioAgenteAutorizadoResponse_seEncontradoPorTodosAaId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))
@@ -752,7 +755,7 @@ public class UsuarioServiceTest {
                 umUsuarioDoIdECodigoCargo(100, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO),
                 umUsuarioDoIdECodigoCargo(101, CodigoCargo.AGENTE_AUTORIZADO_SOCIO)));
 
-        when(agenteAutorizadoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(200, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(200, 200),
             umUsuarioAgenteAutorizadoResponse(201, 200)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(200, 201)).build()))
@@ -771,13 +774,13 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuariosId() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(Collections.emptyList());
         assertThat(service.buscarBackOfficesAndSociosAaPorAaIds(List.of(100, 200))).isEqualTo(Collections.emptyList());
     }
 
     @Test
     public void buscarBackOfficesAndSociosAaPorAaIds_naoDeveRetornarUsuarioAgenteAutorizadoResponse_seNaoEncontrarUsuarios() {
-        when(agenteAutorizadoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(100, false)).thenReturn(List.of(
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 100)));
         when(repository.findAll(umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List.of(100, 101)).build()))

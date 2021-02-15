@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
@@ -39,7 +39,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private EquipeVendasService equipeVendasService;
     @Autowired
@@ -71,13 +71,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private List<Integer> getAgentesAutorizadosPermitidos(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-                ? agenteAutorizadoService.getAasPermitidos(usuario.getId())
+                ? agenteAutorizadoNovoService.getAasPermitidos(usuario.getId())
                 : Collections.emptyList();
     }
 
     private List<Empresa> getEmpresasDoUsuario(Usuario usuario) {
         return usuario.getNivelCodigo() == AGENTE_AUTORIZADO
-                ? agenteAutorizadoService.getEmpresasPermitidas(usuario.getId())
+                ? agenteAutorizadoNovoService.getEmpresasPermitidas(usuario.getId())
                 : usuario.getEmpresas();
     }
 
@@ -102,7 +102,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     private String getEstrutura(Usuario usuario) {
-        return usuario.isAgenteAutorizado() ? agenteAutorizadoService.getEstrutura(usuario.getId()) : null;
+        return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstrutura(usuario.getId()) : null;
     }
 
     private void setAdditionalInformation(OAuth2AccessToken token,

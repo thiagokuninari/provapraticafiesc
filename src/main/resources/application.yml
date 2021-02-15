@@ -285,6 +285,9 @@ zuul:
     gestao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.gestao.url}
+    agente-autorizado:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.agente-autorizado.url}
 
   host:
     connect-timeout-millis: 1800000

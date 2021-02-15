@@ -1,9 +1,9 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -46,7 +46,7 @@ public class AutenticacaoService {
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
     @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -91,7 +91,7 @@ public class AutenticacaoService {
         var agentesAutorizados = Optional.ofNullable((List<Integer>) tokenStore.getAccessToken(getAuthentication())
             .getAdditionalInformation()
             .get("agentesAutorizados"))
-            .orElseGet(() -> agenteAutorizadoService.getAasPermitidos(getUsuarioId()));
+            .orElseGet(() -> agenteAutorizadoNovoService.getAasPermitidos(getUsuarioId()));
         usuarioAutenticado.hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, agentesAutorizados);
     }
 
