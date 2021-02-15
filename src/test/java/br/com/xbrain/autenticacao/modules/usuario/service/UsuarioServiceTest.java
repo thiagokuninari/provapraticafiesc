@@ -106,6 +106,15 @@ public class UsuarioServiceTest {
             .build();
     }
 
+    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .agenteAutorizadoId(aaId)
+            .build();
+    }
+
     @Test
     public void getSubclustersUsuario_deveConverterORetornoEmSelectResponse_conformeListaDeSubclusters() {
         when(repository.getSubclustersUsuario(anyInt()))
@@ -309,9 +318,9 @@ public class UsuarioServiceTest {
 
     @Test
     public void getVendedoresByIds_deveRetornarUsuarios() {
-        when(repository.findByIdIn(List.of(1,2,3)))
+        when(repository.findByIdIn(List.of(1, 2, 3)))
             .thenReturn(umaUsuariosList());
-        assertThat(service.getVendedoresByIds(List.of(1,2,3)))
+        assertThat(service.getVendedoresByIds(List.of(1, 2, 3)))
             .extracting("id", "nome", "loginNetSales", "email")
             .containsExactly(
                 tuple(1, "Caio", "H", "caio@teste.com"),
@@ -388,18 +397,134 @@ public class UsuarioServiceTest {
             .findAll(any(Predicate.class), eq(new Sort(Sort.Direction.ASC, "nome")));
     }
 
+    @Test
+    public void findByCpfAa_deveRetornarUsuario_quandoBuscarPorCpfNaoInformandoFiltro() {
+        when(repository.findTop1UsuarioByCpf(anyString())).thenReturn(Optional.of(umUsuarioAtivo()));
+
+        var usuario = service.findByCpfAa("31114231827", null);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+    }
+
+    @Test
+    public void findByCpfAa_deveRetornarUsuario_quandoBuscarPorCpfIgnorandoBuscaPorSomenteUsuarioAtivo() {
+        when(repository.findTop1UsuarioByCpf(anyString())).thenReturn(Optional.of(umUsuarioInativo()));
+
+        var usuario = service.findByCpfAa("31114231827", false);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(11, "31114231827", "Usuario Inativo", ESituacao.I, "usuarioinativo@email.com");
+    }
+
+    @Test
+    public void findByCpfAa_deveRetornarUsuario_quandoBuscarPorCpfBuscandoSomenteUsuarioAtivo() {
+        when(repository.findTop1UsuarioByCpfAndSituacao(anyString(), any())).thenReturn(Optional.of(umUsuarioAtivo()));
+
+        var usuario = service.findByCpfAa("98471883007", true);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+    }
+
+    @Test
+    public void findByCpfAa_deveRetornarVazio_quandoBuscarPorCpfENaoEncontrarUsuarioCorrespondente() {
+        when(repository.findTop1UsuarioByCpf(anyString())).thenReturn(Optional.empty());
+
+        var usuario = service.findByCpfAa("12345678901", null);
+
+        assertThat(usuario).isEmpty();
+    }
+
+    @Test
+    public void findByCpfAa_deveRetornarVazio_quandoBuscarPorCpfSomenteSituacaoAtivoEUsuarioEstiverInativoOuRealocado() {
+        when(repository.findTop1UsuarioByCpfAndSituacao(anyString(), any())).thenReturn(Optional.empty());
+
+        var usuario = service.findByCpfAa("31114231827", true);
+
+        assertThat(usuario).isEmpty();
+    }
+
+    @Test
+    public void findByEmailAa_deveRetornarUsuario_quandoBuscarPorEmailNaoInformandoFiltro() {
+        when(repository.findByEmail(anyString())).thenReturn(Optional.of(umUsuarioAtivo()));
+
+        var usuario = service.findByEmailAa("usuarioativo@email.com", null);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+    }
+
+    @Test
+    public void findByEmailAa_deveRetornarUsuario_quandoBuscarPorEmailIgnorandoBuscaPorSomenteUsuarioAtivo() {
+        when(repository.findByEmail(anyString())).thenReturn(Optional.of(umUsuarioInativo()));
+
+        var usuario = service.findByEmailAa("usuarioinativo@email.com", false);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(11, "31114231827", "Usuario Inativo", ESituacao.I, "usuarioinativo@email.com");
+    }
+
+    @Test
+    public void findByEmailAa_deveRetornarUsuario_quandoBuscarPorEmailBuscandoSomenteUsuarioAtivo() {
+        when(repository.findByEmailAndSituacao(anyString(), any())).thenReturn(Optional.of(umUsuarioAtivo()));
+
+        var usuario = service.findByEmailAa("usuarioativo@email.com", true);
+
+        assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
+            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+    }
+
+    @Test
+    public void findByEmailAa_deveRetornarVazio_quandoBuscarPorEmailENaoEncontrarUsuarioCorrespondente() {
+        when(repository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        var usuario = service.findByEmailAa("teste@teste.com", null);
+
+        assertThat(usuario).isEmpty();
+    }
+
+    @Test
+    public void findByEmailAa_deveRetornarVazio_quandoBuscarPorEmailSomenteSituacaoAtivoEUsuarioEstiverInativoOuRealocado() {
+        when(repository.findByEmailAndSituacao(anyString(), any())).thenReturn(Optional.empty());
+
+        var usuario = service.findByEmailAa("usuarioinativo@email.com", true);
+
+        assertThat(usuario).isEmpty();
+    }
+
+    private Usuario umUsuarioAtivo() {
+        return Usuario.builder()
+            .id(10)
+            .cpf("98471883007")
+            .nome("Usuario Ativo")
+            .situacao(ESituacao.A)
+            .email("usuarioativo@email.com")
+            .build();
+    }
+
+    private Usuario umUsuarioInativo() {
+        return Usuario.builder()
+            .id(11)
+            .cpf("31114231827")
+            .nome("Usuario Inativo")
+            .situacao(ESituacao.I)
+            .email("usuarioinativo@email.com")
+            .build();
+    }
+
     private Usuario umUsuarioBackoffice() {
         return Usuario.builder()
-                .nome("Backoffice")
-                .cargo(new Cargo(110))
-                .departamento(new Departamento(69))
-                .organizacao(new Organizacao(5))
-                .cpf("097.238.645-92")
-                .email("usuario@teste.com")
-                .telefone("43995565661")
-                .hierarquiasId(List.of())
-                .usuariosHierarquia(new HashSet<>())
-                .build();
+            .nome("Backoffice")
+            .cargo(new Cargo(110))
+            .departamento(new Departamento(69))
+            .organizacao(new Organizacao(5))
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .telefone("43995565661")
+            .hierarquiasId(List.of())
+            .usuariosHierarquia(new HashSet<>())
+            .build();
     }
 
     private Usuario umUsuario() {
@@ -434,7 +559,7 @@ public class UsuarioServiceTest {
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(int usuarioId, String nivelCodigo, CodigoCargo cargo,
-                                         CodigoFuncionalidade... permissoes) {
+                                                    CodigoFuncionalidade... permissoes) {
         return UsuarioAutenticado.builder()
             .usuario(getUser(usuarioId, getCargo(cargo)))
             .nivelCodigo(nivelCodigo)
@@ -825,15 +950,6 @@ public class UsuarioServiceTest {
             usuariosList,
             pageRequest,
             usuariosList.size());
-    }
-
-    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
-        return UsuarioAgenteAutorizadoResponse.builder()
-            .id(id)
-            .nome("FULANO DE TESTE")
-            .email("TESTE@TESTE.COM")
-            .agenteAutorizadoId(aaId)
-            .build();
     }
 
     private UsuarioPredicate umUsuarioPredicateComCargoCodigoBackOfficeESocioAaDosIds(List<Integer> ids) {
