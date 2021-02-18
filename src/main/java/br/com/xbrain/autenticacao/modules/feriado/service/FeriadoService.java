@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -62,6 +63,8 @@ public class FeriadoService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private FeriadoHistoricoService historicoService;
+    @Autowired
+    private CallService callService;
 
     public boolean consulta(String data) {
         return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(DateUtils.parseStringToLocalDate(data),
@@ -113,6 +116,8 @@ public class FeriadoService {
         var feriado = repository.save(Feriado.of(request, autenticacaoService.getUsuarioId()));
         salvarFeriadoEstadualParaCidadesDoEstado(feriado);
         historicoService.salvarHistorico(feriado, CADASTRADO, autenticacaoService.getUsuarioAutenticado());
+        flushCacheFeriados();
+        flushCacheFeriadoTelefonia();
         return FeriadoResponse.of(feriado);
     }
 
@@ -137,6 +142,8 @@ public class FeriadoService {
             editarFeriadosFilhos(feriadoEditado, isEstadoAlterado(estadoOriginal, request));
         }
         historicoService.salvarHistorico(feriadoEditado, EDITADO, autenticacaoService.getUsuarioAutenticado());
+        flushCacheFeriados();
+        flushCacheFeriadoTelefonia();
         return FeriadoResponse.of(feriadoEditado);
     }
 
@@ -147,6 +154,8 @@ public class FeriadoService {
         feriado.excluir();
         var feriadoExcluido = repository.save(feriado);
         historicoService.salvarHistorico(feriadoExcluido, EXCLUIDO, autenticacaoService.getUsuarioAutenticado());
+        flushCacheFeriados();
+        flushCacheFeriadoTelefonia();
     }
 
     public Feriado findById(Integer id) {
@@ -251,5 +260,9 @@ public class FeriadoService {
         allEntries = true)
     public void flushCacheFeriados() {
         log.info("Flush Cache Feriados");
+    }
+
+    public void flushCacheFeriadoTelefonia() {
+        callService.cleanCacheFeriadosTelefonia();
     }
 }

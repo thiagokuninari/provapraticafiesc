@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -49,6 +51,8 @@ public class FeriadoGerenciamentoControllerTest {
 
     @SpyBean
     private FeriadoService service;
+    @MockBean
+    private CallService callService;
     @Autowired
     private MockMvc mvc;
 
@@ -318,7 +322,6 @@ public class FeriadoGerenciamentoControllerTest {
         byte[] bytes = ByteStreams.toByteArray(getFileInputStream("test_importacao_feriado/test_feriado.csv"));
         var request = FeriadoImportacaoRequest.builder()
             .anoReferencia(2019)
-            .descricao("Feriados 2019")
             .build();
 
         mvc.perform(fileUpload(URL_GERENCIAR + "/importar")
@@ -427,7 +430,6 @@ public class FeriadoGerenciamentoControllerTest {
     private FeriadoImportacaoRequest umFeriadoImportacaoRequest() {
         return FeriadoImportacaoRequest.builder()
             .anoReferencia(2019)
-            .descricao("Feriados 2019")
             .build();
     }
 }

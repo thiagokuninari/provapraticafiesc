@@ -1,7 +1,10 @@
 package br.com.xbrain.autenticacao.modules.feriado.dto;
 
-import lombok.*;
-import org.hibernate.validator.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -10,8 +13,6 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class FeriadoImportacaoRequest {
 
-    @NotBlank
-    private String descricao;
     @NotNull
     private Integer anoReferencia;
 }

@@ -247,7 +247,6 @@ public class FeriadoImportacaoServiceTest {
     private FeriadoImportacaoRequest umFeriadoImportacaoRequest() {
         return FeriadoImportacaoRequest.builder()
             .anoReferencia(2019)
-            .descricao("Feriados 2019")
             .build();
     }
 

@@ -82,6 +82,11 @@ public class Feriado {
     @JsonIgnore
     private Usuario usuarioCadastro;
 
+    @PrePersist
+    public void setup() {
+        nome = nome.toUpperCase();
+    }
+
     public static Feriado of(FeriadoRequest request, Integer usuarioCadastroId) {
         var feriado = new Feriado();
         BeanUtils.copyProperties(request, feriado);

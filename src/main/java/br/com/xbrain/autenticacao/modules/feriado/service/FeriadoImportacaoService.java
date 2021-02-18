@@ -60,6 +60,8 @@ public class FeriadoImportacaoService {
         linhas.remove(PRIMEIRA_LINHA);
         var linhasProcessados = processarLinhas(linhas, request.getAnoReferencia());
         validarLinhasProcessados(linhasProcessados);
+        feriadoService.flushCacheFeriados();
+        feriadoService.flushCacheFeriadoTelefonia();
         return linhasProcessados;
     }
 
