@@ -198,7 +198,7 @@ public class CidadeControllerTest {
 
     @Test
     public void findCidadeByCodigoIbge_deveRetornarCidade_quandoEncontrarPorCodigoIbge() throws Exception {
-        mvc.perform(get("/api/cidades/{codigoIbge}", 4101507)
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 4101507)
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -209,7 +209,7 @@ public class CidadeControllerTest {
 
     @Test
     public void findCidadeByCodigoIbge_deveRetornar200ComResponseBodyVazio_quandoNaoEncontrarPorCodigoIbge() throws Exception {
-        mvc.perform(get("/api/cidades/{codigoIbge}", 123456)
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 123456)
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

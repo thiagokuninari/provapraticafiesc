@@ -97,7 +97,7 @@ public class CidadeController {
         return CidadeUfResponse.of(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
-    @GetMapping("{codigoIbge}")
+    @GetMapping("codigo-ibge/{codigoIbge}")
     public CidadeResponse findCidadeByCodigoIbge(@PathVariable String codigoIbge) {
         return service.findCidadeByCodigoIbge(codigoIbge);
     }
