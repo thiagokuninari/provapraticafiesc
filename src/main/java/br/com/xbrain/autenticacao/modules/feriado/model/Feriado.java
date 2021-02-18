@@ -17,7 +17,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
+
+import static java.util.Objects.nonNull;
 
 @Builder
 @AllArgsConstructor
@@ -86,10 +87,10 @@ public class Feriado {
         BeanUtils.copyProperties(request, feriado);
         feriado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
         feriado.setFeriadoNacional(Eboolean.valueOf(request.isFeriadoNacional()));
-        if (Objects.nonNull(request.getEstadoId())) {
+        if (nonNull(request.getEstadoId())) {
             feriado.setUf(new Uf(request.getEstadoId()));
         }
-        if (Objects.nonNull(request.getCidadeId())) {
+        if (nonNull(request.getCidadeId())) {
             feriado.setCidade(new Cidade(request.getCidadeId()));
         }
         feriado.setDataCadastro(LocalDateTime.now());
@@ -113,10 +114,10 @@ public class Feriado {
         BeanUtils.copyProperties(feriado, feriadoEditado);
         feriadoEditado.setNome(request.getNome());
         feriadoEditado.setDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()));
-        if (Objects.nonNull(request.getEstadoId())) {
+        if (nonNull(request.getEstadoId())) {
             feriadoEditado.setUf(new Uf(request.getEstadoId()));
         }
-        if (Objects.nonNull(request.getCidadeId())) {
+        if (nonNull(request.getCidadeId())) {
             feriadoEditado.setCidade(new Cidade(request.getCidadeId()));
         }
         return feriadoEditado;
@@ -134,7 +135,7 @@ public class Feriado {
 
     @JsonIgnore
     public boolean isFeriadoEstadual() {
-        return tipoFeriado.equals(ETipoFeriado.ESTADUAL);
+        return nonNull(tipoFeriado) && tipoFeriado.equals(ETipoFeriado.ESTADUAL);
     }
 
     public void excluir() {
