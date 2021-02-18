@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
@@ -47,6 +48,8 @@ public class FeriadoServiceIT {
     private FeriadoHistoricoService feriadoHistoricoService;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private CallService callService;
     @Autowired
     private EntityManager entityManager;
 

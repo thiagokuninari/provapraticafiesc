@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.service.CsvFileService;
@@ -53,6 +54,8 @@ public class FeriadoImportacaoServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private FeriadoHistoricoService feriadoHistoricoService;
+    @MockBean
+    private CallService callService;
 
     MockMultipartFile mockMultipartFile;
 
