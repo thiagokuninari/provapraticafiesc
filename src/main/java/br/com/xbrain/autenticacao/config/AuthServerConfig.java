@@ -40,6 +40,7 @@ import static br.com.xbrain.autenticacao.config.EScopes.GERADOR_LEAD;
 import static br.com.xbrain.autenticacao.config.EScopes.CLICK_TO_CALL;
 import static br.com.xbrain.autenticacao.config.EScopes.CHATBOT;
 import static br.com.xbrain.autenticacao.config.EScopes.SOLICITACAO_PAP;
+import static br.com.xbrain.autenticacao.config.EScopes.CLARO_INDICO;
 
 
 @Configuration
@@ -161,6 +162,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private String solicitacaoPapApiClient;
     @Value("${app-config.oauth-clients.solicitacao-pap-api.secret}")
     private String solicitacaoPapApiSecret;
+    @Value("${app-config.oauth-clients.claro-indico-api.client}")
+    private String claroIndicoApiClient;
+    @Value("${app-config.oauth-clients.claro-indico-api.secret}")
+    private String claroIndicoApiSecret;
     @Autowired
     private CustomTokenEndpointAuthenticationFilter customTokenEndpointAuthenticationFilter;
     @Autowired
@@ -335,6 +340,12 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
             .secret(solicitacaoPapApiSecret)
             .authorizedGrantTypes(CLIENT_CREDENTIALS)
             .scopes(SOLICITACAO_PAP.getScope())
+            .authorities(ROLE_APPLICATION)
+            .and()
+            .withClient(claroIndicoApiClient)
+            .secret(claroIndicoApiSecret)
+            .authorizedGrantTypes(CLIENT_CREDENTIALS)
+            .scopes(CLARO_INDICO.getScope())
             .authorities(ROLE_APPLICATION);
     }
 

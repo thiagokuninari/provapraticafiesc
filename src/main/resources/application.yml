@@ -209,6 +209,9 @@ app-config:
     solicitacao-pap-api:
       client: solicitacao-pap-api
       secret: s0l1c1t4c40p4p4p1
+    claro-indico-api:
+      client: claro-indico-api
+      secret: cl4r0_1nd1c0_4p1
 
   services:
     autenticacao:
