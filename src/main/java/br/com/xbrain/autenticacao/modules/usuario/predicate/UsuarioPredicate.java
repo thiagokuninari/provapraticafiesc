@@ -355,6 +355,14 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCodigosNiveis(List<CodigoNivel> codigosNiveis) {
+        if (!isEmpty(codigosNiveis)) {
+            builder.and(usuario.cargo.nivel.codigo.in(codigosNiveis));
+        }
+
+        return this;
+    }
+
     public UsuarioPredicate comCodigosCargos(List<CodigoCargo> codigosCargos) {
         if (!isEmpty(codigosCargos)) {
             builder.and(usuario.cargo.codigo.in(codigosCargos));

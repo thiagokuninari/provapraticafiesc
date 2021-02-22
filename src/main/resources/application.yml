@@ -236,8 +236,8 @@ app-config:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
     agente-autorizado:
-#      url: http://localhost:8300
-      url: http://api-dev.conexaoclarobrasil.com.br/parceiros
+      #url: http://localhost:8300
+      url: https://api-dev.conexaoclarobrasil.com.br/parceiros/agente-autorizado
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br

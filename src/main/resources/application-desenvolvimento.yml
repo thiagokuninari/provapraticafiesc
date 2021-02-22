@@ -21,6 +21,8 @@ app-config:
       url: http://172.10.10.21:8091
     notificacao:
       url: http://172.10.10.95:8081
+    agente-autorizado:
+      url: http://172.10.10.105:8300
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
