@@ -394,4 +394,9 @@ public class UsuarioController {
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(@Validated VendedoresFeederFiltros filtros) {
         return usuarioService.buscarVendedoresFeeder(filtros);
     }
+
+    @GetMapping("{id}/nome")
+    public String obterNomeUsuarioPorId(@PathVariable Integer id) {
+        return usuarioService.obterNomeUsuarioPorId(id);
+    }
 }

@@ -507,6 +507,13 @@ public class UsuarioServiceTest {
                 .build());
     }
 
+    @Test
+    public void obterNomeUsuarioPorId_deveRetornarNome_quandoSolicitado() {
+        when(repository.findById(eq(1))).thenReturn(Optional.of(Usuario.builder().nome("NOME UM").build()));
+
+        assertThat(service.obterNomeUsuarioPorId(1)).isEqualTo("NOME UM");
+    }
+
     private UsuarioHierarquia umUsuarioHierarquia() {
         return UsuarioHierarquia.builder()
             .usuarioSuperior(umUsuarioSuperior())

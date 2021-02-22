@@ -1757,4 +1757,9 @@ public class UsuarioService {
     private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {
         return (List<Usuario>) repository.findAll(predicate);
     }
+
+    public String obterNomeUsuarioPorId(Integer id) {
+        return findById(id)
+            .getNome();
+    }
 }
