@@ -89,7 +89,10 @@ public enum EErrors {
     ),
     ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
         "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#032 - Erro ao tentar recuperar o número de usuários logados por hora.");
+        "#032 - Erro ao tentar recuperar o número de usuários logados por hora."),
+    ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS(
+        "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados.");
 
     @Getter
     @Setter

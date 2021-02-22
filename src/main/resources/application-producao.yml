@@ -58,6 +58,8 @@ app-config:
       url: http://172.10.10.71:8091
     notificacao:
       url: http://172.10.10.91:8081
+    agente-autorizado:
+      url: http://172.10.10.113:8300
 
   email:
     enviar: true

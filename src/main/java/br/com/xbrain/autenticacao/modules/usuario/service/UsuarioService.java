@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -23,6 +24,8 @@ import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResp
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
+import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -44,6 +47,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
+import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -1724,5 +1728,30 @@ public class UsuarioService {
     private Usuario preencherAaId(Usuario usuario, Integer aaId) {
         usuario.setAgenteAutorizadoId(aaId);
         return usuario;
+    }
+
+    public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
+        return Optional.ofNullable(buscarUsuariosIdsPorAasIds(filtros.getAasIds(), true))
+            .filter(usuariosIds -> !isEmpty(usuariosIds))
+            .map(filtros::toPredicate)
+            .map(this::buscarTodosPorPredicate)
+            .map(usuarios -> usuarios
+                .stream()
+                .map(VendedoresFeederResponse::of)
+                .sorted(Comparator.comparing(VendedoresFeederResponse::getNome))
+                .collect(Collectors.toList()))
+            .orElse(List.of());
+    }
+
+    private List<Integer> buscarUsuariosIdsPorAasIds(List<Integer> aasIds, Boolean buscarInativos) {
+        return agenteAutorizadoNovoService.buscarTodosUsuariosDosAas(aasIds, buscarInativos)
+            .stream()
+            .map(UsuarioDtoVendas::getId)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private List<Usuario> buscarTodosPorPredicate(Predicate predicate) {
+        return (List<Usuario>) repository.findAll(predicate);
     }
 }

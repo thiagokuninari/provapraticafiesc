@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -19,6 +20,12 @@ import java.util.Set;
         FeignSkipBadRequestsConfiguration.class
     })
 public interface AgenteAutorizadoNovoClient {
+
+    String URL_AGENTE_AUTORIZADO = "api";
+
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/todos-usuarios-dos-aas")
+    List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(@RequestParam("aasIds") List<Integer> aasIds,
+                                                     @RequestParam("buscarInativos") Boolean buscarInativos);
 
     @GetMapping("api/subordinados")
     Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);

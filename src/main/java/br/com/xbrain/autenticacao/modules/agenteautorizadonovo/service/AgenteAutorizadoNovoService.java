@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -14,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,7 @@ import java.util.stream.Stream;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 
 @Service
+@Slf4j
 public class AgenteAutorizadoNovoService {
     private final Logger logger = LoggerFactory.getLogger(AgenteAutorizadoService.class);
 
@@ -33,6 +36,18 @@ public class AgenteAutorizadoNovoService {
     private AgenteAutorizadoNovoClient client;
     @Autowired
     private AutenticacaoService autenticacaoService;
+
+    public List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(List<Integer> aasIds, Boolean buscarInativos) {
+        try {
+            return client.buscarTodosUsuariosDosAas(aasIds, buscarInativos);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoNovoService.class.getName(),
+                EErrors.ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 
     public Set<Integer> getIdsUsuariosSubordinados(boolean incluirProprio) {
         try {
