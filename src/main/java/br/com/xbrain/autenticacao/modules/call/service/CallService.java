@@ -40,4 +40,13 @@ public class CallService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public void cleanCacheFeriadosTelefonia() {
+        try {
+            callClient.cleanCacheFeriadosTelefonia();
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex, CallService.class.getName(), EErrors.ERRO_LIMPAR_CACHE_CALL);
+        }
+    }
+
 }

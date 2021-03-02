@@ -92,7 +92,10 @@ public enum EErrors {
         "#032 - Erro ao tentar recuperar o número de usuários logados por hora."),
     ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS(
         "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados.");
+        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
+    ERRO_LIMPAR_CACHE_CALL(
+            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#019 - Erro ao limpar cache dos feriados na telefonia.");
 
     @Getter
     @Setter

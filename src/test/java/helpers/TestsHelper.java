@@ -2,11 +2,12 @@ package helpers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.SneakyThrows;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.Base64Utils;
-
-import java.io.IOException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -41,7 +42,8 @@ public class TestsHelper {
         }
     }
 
-    public static byte[] convertObjectToJsonBytes(Object object) throws IOException {
+    @SneakyThrows
+    public static byte[] convertObjectToJsonBytes(Object object) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsBytes(object);
@@ -66,10 +68,18 @@ public class TestsHelper {
         }
     }
 
-    public static String convertObjectToJsonString(Object object) throws IOException {
+    @SneakyThrows
+    public static String convertObjectToJsonString(Object object) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsString(object);
     }
 
+    public static MockMultipartFile converterObjectParaMultipart(String nome, Object json) {
+        return new MockMultipartFile(nome, null, MediaType.APPLICATION_JSON_VALUE, convertObjectToJsonBytes(json));
+    }
+
+    public static MockMultipartFile converterJsonStringParaMultipart(String nome, String json) {
+        return new MockMultipartFile(nome, null, MediaType.APPLICATION_JSON_VALUE, json.getBytes());
+    }
 }

@@ -20,5 +20,8 @@ spring:
     host: 192.168.50.1
     port: 6381
 
+app-config:
+  upload-async: false
+
 flyway:
   enabled: false

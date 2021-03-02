@@ -26,6 +26,7 @@ public enum CodigoFuncionalidade {
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
     MLG_5013("Distribuir Agendamentos Proprietários"),
+    CTR_2050("Gerenciar Feriados"),
     VDS_3059("Visualizar Relatório Consulta de Endereço"),
     REL_10012("Relatório Consulta de Endereço"),
     VDS_3061("Visualizar Relatório Consulta de Crédito"),
