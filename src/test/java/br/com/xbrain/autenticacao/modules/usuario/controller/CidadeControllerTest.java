@@ -196,6 +196,26 @@ public class CidadeControllerTest {
             .andExpect(jsonPath("$[0].cidade", is("ARAPONGAS")));
     }
 
+    @Test
+    public void findCidadeByCodigoIbge_deveRetornarCidade_quandoEncontrarPorCodigoIbge() throws Exception {
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 4101507)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(3237)))
+            .andExpect(jsonPath("$.nome", is("ARAPONGAS")))
+            .andExpect(jsonPath("$.codigoIbge", is("4101507")));
+    }
+
+    @Test
+    public void findCidadeByCodigoIbge_deveRetornar200ComResponseBodyVazio_quandoNaoEncontrarPorCodigoIbge() throws Exception {
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 123456)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
+    }
+
     private Cidade umaCidade() {
 
         return Cidade.builder()

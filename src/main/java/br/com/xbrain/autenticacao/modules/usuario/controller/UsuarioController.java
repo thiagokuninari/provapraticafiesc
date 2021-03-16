@@ -185,15 +185,15 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "email")
-    public UsuarioResponse getUsuarioByEmail(@RequestParam String email) {
-        Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email);
+    public UsuarioResponse getUsuarioByEmail(@RequestParam String email, @RequestParam(required = false) Boolean buscarAtivo) {
+        Optional<UsuarioResponse> emailAaOptional = usuarioService.findByEmailAa(email, buscarAtivo);
         return emailAaOptional.orElse(null);
 
     }
 
     @GetMapping(params = "cpf")
-    public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf) {
-        Optional<UsuarioResponse> cpfAaOpt = usuarioService.findByCpfAa(cpf);
+    public UsuarioResponse getUsuarioByCpf(@RequestParam String cpf, @RequestParam(required = false) Boolean buscarAtivo) {
+        Optional<UsuarioResponse> cpfAaOpt = usuarioService.findByCpfAa(cpf, buscarAtivo);
         return cpfAaOpt.orElse(null);
     }
 

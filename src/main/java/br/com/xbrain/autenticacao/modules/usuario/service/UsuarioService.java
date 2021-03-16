@@ -101,10 +101,10 @@ public class UsuarioService {
     private static final List<CodigoCargo> cargosOperadoresBackoffice
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
-            "Usuário não possui login NetSales válido."
+        "Usuário não possui login NetSales válido."
     );
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
-            "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
+        "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
@@ -236,15 +236,23 @@ public class UsuarioService {
         return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 
-    public Optional<UsuarioResponse> findByEmailAa(String email) {
-        Optional<Usuario> usuarioOptional = repository.findByEmail(email);
+    public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
+        if (Boolean.TRUE.equals(buscarAtivo)) {
+            return repository.findByEmailAndSituacao(email, ESituacao.A)
+                .map(UsuarioResponse::of);
+        }
 
-        return usuarioOptional.map(UsuarioResponse::of);
+        return repository.findByEmail(email)
+            .map(UsuarioResponse::of);
     }
 
-    public Optional<UsuarioResponse> findByCpfAa(String cpf) {
-        return repository
-            .findTop1UsuarioByCpf(getOnlyNumbers(cpf))
+    public Optional<UsuarioResponse> findByCpfAa(String cpf, Boolean buscarAtivo) {
+        if (Boolean.TRUE.equals(buscarAtivo)) {
+            return repository.findTop1UsuarioByCpfAndSituacao(getOnlyNumbers(cpf), ESituacao.A)
+                .map(UsuarioResponse::of);
+        }
+
+        return repository.findTop1UsuarioByCpf(getOnlyNumbers(cpf))
             .map(UsuarioResponse::of);
     }
 
@@ -1444,7 +1452,7 @@ public class UsuarioService {
     }
 
     public void ativarSocioPrincipal(String email) {
-        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        Optional<UsuarioResponse> usuario = findByEmailAa(email, null);
         usuario.ifPresent(u -> {
             Optional<Usuario> usuarioCompleto = repository.findById(u.getId());
             usuarioCompleto.ifPresent(user -> {
@@ -1455,7 +1463,7 @@ public class UsuarioService {
     }
 
     public void inativarSocioPrincipal(String email) {
-        Optional<UsuarioResponse> usuario = findByEmailAa(email);
+        Optional<UsuarioResponse> usuario = findByEmailAa(email, null);
         usuario.ifPresent(u -> {
             Optional<Usuario> usuarioCompleto = repository.findById(usuario.get().getId());
             usuarioCompleto.ifPresent(user -> {

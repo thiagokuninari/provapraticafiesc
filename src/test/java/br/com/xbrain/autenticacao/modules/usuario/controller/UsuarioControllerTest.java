@@ -76,6 +76,28 @@ public class UsuarioControllerTest {
     @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
+    private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
+        return new UsuarioExecutivoResponse(id, email, nome);
+    }
+
+    private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
+        return UsuarioSituacaoResponse
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
+    }
+
+    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("FULANO DE TESTE")
+            .email("TESTE@TESTE.COM")
+            .agenteAutorizadoId(aaId)
+            .build();
+    }
+
     @Before
     public void setup() {
         when(autenticacaoService.getUsuarioId())
@@ -116,7 +138,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRetornarUsuariosPorIds() throws Exception {
         mvc.perform(get("/api/usuarios?ids=100,101,104")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(3)));
@@ -125,7 +147,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveNaoRetornarUsuariosPorIdsInativos() throws Exception {
         mvc.perform(get("/api/usuarios?ids=105")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
@@ -134,8 +156,8 @@ public class UsuarioControllerTest {
     @Test
     public void getUsuarioVendedorById_deveRetornarUsuariosPorIds() throws Exception {
         mvc.perform(get("/api/usuarios/vendedores")
-            .param("ids","100,101")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .param("ids", "100,101")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
@@ -148,7 +170,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRetornarUsuarioPorIdEVerificarPermissoes() throws Exception {
         mvc.perform(get("/api/usuarios/100")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(100)))
@@ -160,7 +182,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRetornarUsuarioAutenticadoPorId() throws Exception {
         mvc.perform(get("/api/usuarios/autenticado/101")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(101)))
@@ -169,31 +191,137 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void deveRetornarOUsuarioPorEmail() throws Exception {
-        mvc.perform(get("/api/usuarios?email=ADMIN@XBRAIN.COM.BR")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", is(100)))
-            .andExpect(jsonPath("$.nome", is("ADMIN")))
-            .andExpect(jsonPath("$.email", is(Usuarios.ADMIN)));
-    }
-
-    @Test
-    public void deveRetornarUsuarioPorCpf() throws Exception {
-        mvc.perform(get("/api/usuarios?cpf=65710871036")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+    public void getUsuarioByCpf_deveRetornarUsuarioPorCpf_naoInformandoFiltro() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("cpf", "65710871036")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(101)))
             .andExpect(jsonPath("$.nome", is("HELPDESK")))
-            .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)));
+            .andExpect(jsonPath("$.email", is(Usuarios.HELP_DESK)))
+            .andExpect(jsonPath("$.situacao", is("A")));
+    }
+
+    @Test
+    public void getUsuarioByCpf_deveRetornarUsuarioPorCpf_ignorandoBuscaPorSomenteSituacaoAtivo() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("cpf", "41842888803")
+            .param("buscarAtivo", "false")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(105)))
+            .andExpect(jsonPath("$.nome", is("INATIVO")))
+            .andExpect(jsonPath("$.email", is(INATIVO)))
+            .andExpect(jsonPath("$.situacao", is("I")));
+    }
+
+    @Test
+    public void getUsuarioByCpf_deveRetornarUsuarioPorCpf_comSituacaoAtivo() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("cpf", "28667582506")
+            .param("buscarAtivo", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(366)))
+            .andExpect(jsonPath("$.nome", is("Mso Analista Adm Claro Pessoal")))
+            .andExpect(jsonPath("$.email", is(MSO_ANALISTAADM_CLAROMOVEL_PESSOAL)))
+            .andExpect(jsonPath("$.situacao", is("A")));
+    }
+
+    @Test
+    public void getUsuarioByCpf_deveRetornar200ComResponseBodyVazio_quandoCpfNaoEncontrado() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("cpf", "12345678901")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    public void getUsuarioByCpf_deveRetornar200ComResponseBodyVazio_quandoUsuarioForInativoOuRealocadoBuscandoApenasUsuarioAtivo()
+        throws Exception {
+
+        mvc.perform(get("/api/usuarios")
+            .param("cpf", "41842888803")
+            .param("buscarAtivo", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    public void getUsuarioByEmail_deveRetornarOUsuarioPorEmail_naoInformandoFiltro() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("email", "ADMIN@XBRAIN.COM.BR")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.email", is(ADMIN)))
+            .andExpect(jsonPath("$.situacao", is("A")));
+    }
+
+    @Test
+    public void getUsuarioByEmail_deveRetornarOUsuarioPorEmail_ignorandoBuscaPorSomenteSituacaoAtivo() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("email", "INATIVO@XBRAIN.COM.BR")
+            .param("buscarAtivo", "false")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(105)))
+            .andExpect(jsonPath("$.nome", is("INATIVO")))
+            .andExpect(jsonPath("$.email", is(INATIVO)))
+            .andExpect(jsonPath("$.situacao", is("I")));
+    }
+
+    @Test
+    public void getUsuarioByEmail_deveRetornarUsuarioPorEmail_comSituacaoAtivo() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("email", "MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")
+            .param("buscarAtivo", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(366)))
+            .andExpect(jsonPath("$.nome", is("Mso Analista Adm Claro Pessoal")))
+            .andExpect(jsonPath("$.email", is(MSO_ANALISTAADM_CLAROMOVEL_PESSOAL)))
+            .andExpect(jsonPath("$.situacao", is("A")));
+    }
+
+    @Test
+    public void getUsuarioByEmail_deveRetornar200ComResponseBodyVazio_quandoEmailNaoEncontrado() throws Exception {
+        mvc.perform(get("/api/usuarios")
+            .param("email", "TESTE@TESTE.COM")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    public void getUsuarioByEmail_deveRetornar200ComResponseBodyVazio_quandoUsuarioForInativoOuRealocadoBuscandoPorUsuarioAtivo()
+        throws Exception {
+
+        mvc.perform(get("/api/usuarios")
+            .param("email", "INATIVO@XBRAIN.COM.BR")
+            .param("buscarAtivo", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
     }
 
     @Test
     public void deveRetornarAsEmpresasDoUsuario() throws Exception {
         mvc.perform(get("/api/usuarios/100/empresas")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)));
@@ -202,7 +330,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRetornarUsuariosPorNivelDoCargo() throws Exception {
         mvc.perform(get("/api/usuarios?nivel=XBRAIN")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(5)));
@@ -211,7 +339,7 @@ public class UsuarioControllerTest {
     @Test
     public void deveRetornarUsuariosPorPermissaoEspecial() throws Exception {
         mvc.perform(get("/api/usuarios?funcionalidade=POL_AGENTE_AUTORIZADO_APROVACAO_MSO_NOVO_CADASTRO")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)));
@@ -618,11 +746,11 @@ public class UsuarioControllerTest {
         final var umUsuarioId = 226;
 
         mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
-                .accept(MediaType.APPLICATION_JSON)
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "Usuário não possui login NetSales válido.")));
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Usuário não possui login NetSales válido.")));
     }
 
     @Test
@@ -631,11 +759,11 @@ public class UsuarioControllerTest {
         final var umUsuarioId = 999;
 
         mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
-                .accept(MediaType.APPLICATION_JSON)
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "Usuário não encontrado.")));
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Usuário não encontrado.")));
     }
 
     @Test
@@ -644,14 +772,14 @@ public class UsuarioControllerTest {
         final var umUsuarioId = 1000;
 
         mvc.perform(get("/api/usuarios/{id}/com-login-netsales", umUsuarioId)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalAgenteAutorizado() throws Exception {
         mvc.perform(get("/api/usuarios/ativos/nivel/operacao/canal-aa")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
@@ -664,7 +792,7 @@ public class UsuarioControllerTest {
     @Test
     public void buscarUrlLojaOnline_deveRetornarUrls_quandoSolicitado() throws Exception {
         mvc.perform(get("/api/usuarios/100/url-loja-online")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.urlLojaBase", is("http://loja.com.br/1")))
@@ -675,7 +803,7 @@ public class UsuarioControllerTest {
     @Test
     public void buscarUrlLojaOnline_deveRetornarBadRequest_quandoNaoEncontrado() throws Exception {
         mvc.perform(get("/api/usuarios/99999/url-loja-online")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
     }
@@ -684,8 +812,8 @@ public class UsuarioControllerTest {
     public void buscarBackOfficesAndSociosAaPorAaIds_deveRetornarListaVazia_quandoNaoEncontrado() throws Exception {
         when(usuarioService.buscarBackOfficesAndSociosAaPorAaIds(anyList())).thenReturn(Collections.emptyList());
         mvc.perform(get(USUARIOS_ENDPOINT + "/backoffices-socios-por-agentes-autorizado-id")
-            .param("agentesAutorizadoId","100,101")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .param("agentesAutorizadoId", "100,101")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Collections.emptyList())));
@@ -697,8 +825,8 @@ public class UsuarioControllerTest {
             umUsuarioAgenteAutorizadoResponse(100, 100),
             umUsuarioAgenteAutorizadoResponse(101, 101)));
         mvc.perform(get(USUARIOS_ENDPOINT + "/backoffices-socios-por-agentes-autorizado-id")
-            .param("agentesAutorizadoId","100,101")
-            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .param("agentesAutorizadoId", "100,101")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id", is(100)))
@@ -795,28 +923,6 @@ public class UsuarioControllerTest {
         return UsuarioResponse.builder()
             .id(id)
             .situacao(ESituacao.I)
-            .build();
-    }
-
-    private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
-        return new UsuarioExecutivoResponse(id, email, nome);
-    }
-
-    private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
-        return UsuarioSituacaoResponse
-            .builder()
-            .id(id)
-            .nome(nome)
-            .situacao(situacao)
-            .build();
-    }
-
-    private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
-        return UsuarioAgenteAutorizadoResponse.builder()
-            .id(id)
-            .nome("FULANO DE TESTE")
-            .email("TESTE@TESTE.COM")
-            .agenteAutorizadoId(aaId)
             .build();
     }
 }
