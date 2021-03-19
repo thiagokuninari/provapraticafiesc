@@ -33,5 +33,4 @@ public class SupervisorController {
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(@PathVariable Integer id) {
         return service.getSupervisoresDoSubclusterDoUsuario(id);
     }
-
 }

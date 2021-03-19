@@ -18,10 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
@@ -98,6 +95,8 @@ public class UsuarioServiceIT {
     private CargoRepository cargoRepository;
     @Autowired
     private DepartamentoRepository departamentoRepository;
+    @Autowired
+    private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
@@ -860,7 +859,53 @@ public class UsuarioServiceIT {
         verify(usuarioFeederCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
     }
 
-    private UsuarioMqRequest umUsuarioTrocaCpf() {
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisor_quandoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_naoDeveAtualizarOSupervisor_quandoNaoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(null);
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .isNull();
+    }
+
+    private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("21145664523");
@@ -911,6 +956,15 @@ public class UsuarioServiceIT {
         var usuario = usuarioRepository.findOne(100);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.ASSISTENTE_OPERACAO));
         return usuario;
+    }
+
+    private UsuarioAutenticado umOutroUsuarioAutenticado() {
+        var usuario = usuarioRepository.findOne(100);
+        return UsuarioAutenticado
+                .builder()
+                .id(110)
+                .usuario(usuario)
+                .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {
@@ -1084,5 +1138,15 @@ public class UsuarioServiceIT {
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();
+    }
+
+    private UsuarioMqRequest umUsuarioTrocaCpf() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        return usuarioMqRequest;
     }
 }

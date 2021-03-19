@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -528,12 +529,55 @@ public class UsuarioService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         idUsuarioNovo.stream()
             .map(id -> {
-                UsuarioHierarquia usuario = usuarioHierarquiaRepository.findOne(id);
+                var usuario = usuarioHierarquiaRepository.findOne(id);
                 usuario.setUsuarioSuperior(usuarioSuperior);
-                usuarioHierarquiaRepository.save(usuario);
                 return usuario;
-            })
-            .collect(Collectors.toList());
+            }).forEach(usuarioHierarquiaRepository::save);
+    }
+
+    @Transactional
+    public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorRequest) {
+        var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
+                new NotFoundException("Usuário não encontrado"));
+
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        superiorRequest.getUsuarioIds()
+                .forEach(id -> {
+                    var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
+                            superiorRequest.getSuperiorAntigo());
+
+                    if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
+                        usuarioHierarquiaRepository.delete(usuarioHierarquia);
+                    }
+                    if (!isEmpty(usuarioAutenticado)) {
+                        usuarioHierarquiaRepository.save(
+                                criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
+                    }
+                });
+    }
+
+    private UsuarioHierarquia criarHierarquia(Integer id,
+                                              Usuario superiorNovo,
+                                              AlteraSuperiorRequest request,
+                                              UsuarioAutenticado usuarioAutenticado) {
+        var usuario = repository.findOne(id);
+
+        return UsuarioHierarquia.builder()
+                .usuario(usuario)
+                .usuarioSuperior(superiorNovo)
+                .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
+                .dataCadastro(superiorNovo.getDataCadastro())
+                .usuarioCadastro(usuarioAutenticado.getUsuario())
+                .build();
+    }
+
+    private UsuarioHierarquiaPk criarUsuarioHierarquiaPk(Integer id, AlteraSuperiorRequest superiorRequest) {
+        return UsuarioHierarquiaPk
+                .builder()
+                .usuario(id)
+                .usuarioSuperior(superiorRequest.getSuperiorNovo())
+                .build();
     }
 
     private Usuario getUsuarioAtivacao(UsuarioAtivacaoDto usuarioAtivacaoDto) {

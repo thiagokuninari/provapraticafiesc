@@ -225,10 +225,10 @@ app-config:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
     vendas:
-      # url: http://localhost:8097
+      #url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
-      # url: http://localhost:8095
+      #url: http://localhost:8095
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089

@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USUARIO_HIERARQUIA")
+@Builder
+@AllArgsConstructor
 @Data
 @EqualsAndHashCode(of = "usuarioHierarquiaPk")
 @ToString(of = "usuarioHierarquiaPk")
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class UsuarioHierarquia {
 

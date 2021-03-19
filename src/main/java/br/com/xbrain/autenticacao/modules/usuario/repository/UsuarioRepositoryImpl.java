@@ -68,6 +68,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
 
+    private static final Integer CARGO_SUPERVISOR_ID = 10;
+
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
                 new JPAQueryFactory(entityManager)

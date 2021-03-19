@@ -1,0 +1,14 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< br.com.xbrain:autenticacao-api >-------------------
+[INFO] Building autenticacao-api 2.20.2
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] The artifact org.apache.commons:commons-io:jar:1.3.2 has been relocated to commons-io:commons-io:jar:1.3.2
+[INFO] 
+[INFO] --- maven-clean-plugin:2.6.1:clean (default-clean) @ autenticacao-api ---
+[INFO] Deleting /home/xbrain/Projects/Backend/autenticacao-api/target
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.8.3:prepare-agent (default-prepare-agent) @ autenticacao-api ---
+[INFO] argLine set to -javaagent:/home/xbrain/.m2/repository/org/jacoco/org.jacoco.agent/0.8.3/org.jacoco.agent-0.8.3-runtime.jar=destfile=/home/xbrain/Projects/Backend/autenticacao-api/target/jacoco.exec
+[INFO] 
+[INFO] --- apt-maven-plugin:1.1.3:process (default) @ autenticacao-api ---
