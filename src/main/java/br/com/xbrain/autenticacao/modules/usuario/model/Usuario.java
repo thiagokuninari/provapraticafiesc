@@ -37,6 +37,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
 @Data
 @ToString(of = "id")
@@ -521,5 +523,17 @@ public class Usuario {
     public boolean isOperadorTelevendasAtivoLocal() {
         return isCargo(OPERACAO_TELEVENDAS)
                 && hasCanal(ECanal.ATIVO_PROPRIO);
+    }
+
+    public boolean isXbrain() {
+        return XBRAIN == getNivelCodigo();
+    }
+
+    public boolean isXbrainOuMso() {
+        return isXbrain() || isMso();
+    }
+
+    public boolean isMso() {
+        return MSO == getNivelCodigo();
     }
 }
