@@ -67,7 +67,6 @@ app-config:
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
-  url-servico-email: http://192.168.50.1:6541/emails/
   url-estatico: https://estatico.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
@@ -253,6 +252,9 @@ app-config:
     notificacao:
       #url: http://localhost:8081
       url: http://192.168.50.1:6595
+    emails:
+      #url: http://localhost:8080
+      url: http://192.168.50.1:6541
 
 flyway:
   enabled: true
@@ -294,7 +296,7 @@ zuul:
       url: ${app-config.services.agente-autorizado.url}
     emails:
       sensitiveHeaders: Cookie,Set-Cookie
-      url: ${app-config.url-servico-email}
+      url: ${app-config.services.emails.url}
 
   host:
     connect-timeout-millis: 1800000
