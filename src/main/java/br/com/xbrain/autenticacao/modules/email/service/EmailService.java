@@ -120,6 +120,7 @@ public class EmailService {
 
     private String obterUrl(String alias, boolean temAnexo) {
         StringBuilder url = new StringBuilder(urlServico);
+        url.append("/emails/");
         if (temAnexo) {
             url.append("withFiles/");
         }
