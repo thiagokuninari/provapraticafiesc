@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioSiteService;
@@ -45,5 +46,13 @@ public class UsuarioSiteController {
     @GetMapping("supervisores-hierarquia/disponiveis")
     public List<UsuarioNomeResponse> getSupervidoresSemSitePorCoodenadoresId(@RequestParam List<Integer> coordenadoresIds) {
         return usuarioSiteService.getSupervisoresSemSitePorCoordenadorsId(coordenadoresIds);
+    }
+
+    @GetMapping("{siteId}/vendedores-hierarquia")
+    public List<UsuarioEquipeDto> getVendoresDoSiteIdPorHierarquiaComEquipe(@PathVariable Integer siteId,
+                                                                            @RequestParam Integer usuarioId,
+                                                                            @RequestParam(required = false, defaultValue = "true")
+                                                                                    boolean buscarInativo ) {
+        return usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, usuarioId, buscarInativo);
     }
 }

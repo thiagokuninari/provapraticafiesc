@@ -886,4 +886,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .addValue("_codigosCargos", codigosCargos),
             new BeanPropertyRowMapper<>(UsuarioResponse.class));
     }
+
+    @Override
+    public List<UsuarioSituacaoResponse> findVendedoresDoSiteIdPorHierarquiaUsuarioId(Integer usuarioId, Integer siteId) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME, U.SITUACAO "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S WHERE S.FK_SITE = :siteId) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR AND UH.FK_USUARIO_SUPERIOR = :usuarioId",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId)
+                .addValue("siteId", siteId)
+                .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
+            new BeanPropertyRowMapper<>(UsuarioSituacaoResponse.class));
+    }
 }

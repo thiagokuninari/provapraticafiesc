@@ -125,4 +125,6 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> superioresIds,
                                                                                  Set<String> codigoCargo);
+
+    List<UsuarioSituacaoResponse> findVendedoresDoSiteIdPorHierarquiaUsuarioId(Integer usuarioId, Integer siteId);
 }
