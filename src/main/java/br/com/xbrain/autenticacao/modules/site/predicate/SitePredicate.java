@@ -199,4 +199,30 @@ public class SitePredicate extends PredicateBase {
         return Optional.ofNullable(lista)
             .filter(Predicate.not(super::isEmpty));
     }
+
+    public SitePredicate comCidade(String cidade) {
+        Optional.ofNullable(cidade)
+            .filter(StringUtils::isNotEmpty)
+            .map(site.cidades.any().nome::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
+
+    public SitePredicate comUf(String uf) {
+        Optional.ofNullable(uf)
+            .filter(StringUtils::isNotEmpty)
+            .map(site.cidades.any().uf.uf::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
+
+    public SitePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        Optional.ofNullable(codigoCidadeDbm)
+            .map(site.cidades.any().codigoCidadeDbm::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
 }

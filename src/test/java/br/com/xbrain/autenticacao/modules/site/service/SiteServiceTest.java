@@ -516,6 +516,56 @@ public class SiteServiceTest {
             .isEqualTo(List.of(100));
     }
 
+    @Test
+    public void buscarSitePorCidadeUf_notFoundException_seNaoHouverResultados() {
+        var predicate = new SitePredicate().comCidade("LONDRINA").comUf("PR").todosSitesAtivos().build();
+
+        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.buscarSitePorCidadeUf("LONDRINA", "PR"))
+            .withMessage("Site não encontrado.");
+    }
+
+    @Test
+    public void buscarSitePorCidadeUf_siteResponse_seNaoHouverResultados() {
+        var predicate = new SitePredicate().comCidade("LONDRINA").comUf("PR").todosSitesAtivos().build();
+
+        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.of(umSite(1, "SITE UM", BRT)));
+
+        assertThat(service.buscarSitePorCidadeUf("LONDRINA", "PR"))
+            .extracting("id", "nome", "timeZone", "coordenadoresIds", "supervisoresIds", "estadosIds",
+                "cidadesIds", "discadoraId")
+            .containsExactly(1, "SITE UM", BRT, null, null, null, null, null);
+    }
+
+    @Test
+    public void buscarSitePorCodigoCidadeDbm_notFoundException_seNaoHouverResultados() {
+        var predicate = new SitePredicate().comCodigoCidadeDbm(1).todosSitesAtivos().build();
+
+        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.buscarSitePorCodigoCidadeDbm(1))
+            .withMessage("Site não encontrado.");
+    }
+
+    @Test
+    public void buscarSitePorCodigoCidadeDbm_siteResponse_seNaoHouverResultados() {
+        var predicate = new SitePredicate().comCodigoCidadeDbm(1).todosSitesAtivos().build();
+
+        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.of(umSite(1, "SITE UM", BRT)));
+
+        assertThat(service.buscarSitePorCodigoCidadeDbm(1))
+            .extracting("id", "nome", "timeZone", "coordenadoresIds", "supervisoresIds", "estadosIds",
+                "cidadesIds", "discadoraId")
+            .containsExactly(1, "SITE UM", BRT, null, null, null, null, null);
+    }
+
     public List<EquipeVendaDto> umaListEquipeResponse() {
         return List.of(EquipeVendaDto.builder()
         .id(10)

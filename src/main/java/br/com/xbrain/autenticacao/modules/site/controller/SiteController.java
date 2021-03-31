@@ -130,4 +130,14 @@ public class SiteController {
     public List<Integer> buscarCoordenadoresIdsAtivosDoUsuarioId(@PathVariable Integer usuarioId) {
         return service.buscarCoordenadoresIdsAtivosDoUsuarioId(usuarioId);
     }
+
+    @GetMapping("cidade-uf/{cidade}/{uf}")
+    public SiteResponse buscarSitePorCidadeUf(@PathVariable String cidade, @PathVariable String uf) {
+        return service.buscarSitePorCidadeUf(cidade, uf);
+    }
+
+    @GetMapping("codigo-cidade-dbm/{codigoCidadeDbm}")
+    public SiteResponse buscarSitePorCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
+        return service.buscarSitePorCodigoCidadeDbm(codigoCidadeDbm);
+    }
 }

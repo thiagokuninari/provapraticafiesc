@@ -16,4 +16,5 @@ public interface SiteRepositoryCustom {
 
     Site findBySupervisorId(Integer supervisorId);
 
+    Optional<Site> findTop1ByPredicate(Predicate predicate);
 }

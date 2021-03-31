@@ -495,4 +495,50 @@ public class SiteControllerTest {
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCidadeUf_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCidadeUf_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCidadeUf_ok_seUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCodigoCidadeDbm_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/codigo-cidade-dbm/1"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCodigoCidadeDbm_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/codigo-cidade-dbm/1")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSitePorCodigoCidadeDbm_ok_seUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get(API_URI + "/codigo-cidade-dbm/3")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
 }

@@ -362,4 +362,25 @@ public class SiteService {
             .map(UsuarioHierarquiaResponse::getId)
             .collect(toList());
     }
+
+    public SiteResponse buscarSitePorCidadeUf(String cidade, String uf) {
+        return siteRepository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCidade(cidade)
+                .comUf(uf)
+                .todosSitesAtivos()
+                .build())
+            .map(SiteResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public SiteResponse buscarSitePorCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        return siteRepository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCodigoCidadeDbm(codigoCidadeDbm)
+                .todosSitesAtivos()
+                .build())
+            .map(SiteResponse::of)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
 }
