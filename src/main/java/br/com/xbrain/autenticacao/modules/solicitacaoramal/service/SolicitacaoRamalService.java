@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -62,6 +63,8 @@ public class SolicitacaoRamalService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
@@ -144,7 +147,7 @@ public class SolicitacaoRamalService {
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
 
         solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
-                agenteAutorizadoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId())
+                agenteAutorizadoNovoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId())
         );
 
         solicitacaoRamal.retirarMascara();
@@ -174,7 +177,7 @@ public class SolicitacaoRamalService {
 
     private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
         Usuario usuario = usuarioService.findComplete(autenticacaoService.getUsuarioId());
-        return agenteAutorizadoService.getAgentesAutorizadosPermitidos(usuario);
+        return agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(usuario);
     }
 
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
@@ -182,7 +185,7 @@ public class SolicitacaoRamalService {
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
         solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
-                agenteAutorizadoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
+                agenteAutorizadoNovoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
         );
 
         solicitacaoEncontrada.retirarMascara();
@@ -228,6 +231,7 @@ public class SolicitacaoRamalService {
         context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
+        context.setVariable("tipoImplantacao", solicitacaoRamal.getTipoImplantacao().getDescricao());
         context.setVariable("melhorDataImplantacao", DateUtils.parseLocalDateToString(
                 solicitacaoRamal.getMelhorDataImplantacao()));
         context.setVariable("melhorHoraImplantacao", solicitacaoRamal.getMelhorHorarioImplantacao());
@@ -298,7 +302,7 @@ public class SolicitacaoRamalService {
     }
 
     public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
-        AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoService.getAaById(agenteAutorizadoId);
+        AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(agenteAutorizadoId);
 
         return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
                 getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),

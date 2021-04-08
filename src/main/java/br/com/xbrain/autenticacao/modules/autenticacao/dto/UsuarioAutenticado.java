@@ -1,12 +1,10 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.dto;
 
+import br.com.xbrain.autenticacao.config.CustomJwtAccessTokenConverter;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -16,9 +14,11 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.AGENTE_AUTORIZADO;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
@@ -38,14 +38,18 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String departamento;
     private String nivel;
     private Integer nivelId;
+    private String loginNetSales;
     private String cpf;
     private ESituacao situacao;
     private List<String> empresasNome;
     private List<Empresa> empresas;
+    private List<Integer> agentesAutorizados;
     private Collection<? extends GrantedAuthority> permissoes;
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
     private CodigoCargo cargoCodigo;
+    private Integer organizacaoId;
+    private String organizacaoCodigo;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -63,14 +67,17 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivel = usuario.getNivelCodigo().toString();
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
+        this.loginNetSales = usuario.getLoginNetSales();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        getOrganizacao(usuario);
     }
 
-    public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
+    public UsuarioAutenticado(Usuario usuario,
+                              Collection<? extends GrantedAuthority> permissoes) {
         this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -83,18 +90,32 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
+        this.loginNetSales = usuario.getLoginNetSales();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        getOrganizacao(usuario);
+    }
+
+    private void getOrganizacao(Usuario usuario) {
+        Optional.ofNullable(usuario.getOrganizacao())
+            .ifPresent(organizacao -> {
+                this.organizacaoId = organizacao.getId();
+                this.organizacaoCodigo = organizacao.getCodigo();
+            });
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
         return permissoes != null
-                && permissoes
-                .stream()
-                .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
+            && permissoes
+            .stream()
+            .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
+    }
+
+    public boolean isOperacao() {
+        return getNivelCodigoEnum() == CodigoNivel.OPERACAO;
     }
 
     public boolean isXbrain() {
@@ -102,19 +123,23 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isMso() {
-        return MSO == usuario.getNivelCodigo();
+        return MSO == getNivelCodigoEnum();
+    }
+
+    public boolean isMsoOrXbrain() {
+        return isMso() || isXbrain();
     }
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
                                                    List<Integer> agentesAutorizadosIdDoUsuario) {
         if (isAgenteAutorizado()
-                && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
-                || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
+            && (ObjectUtils.isEmpty(agentesAutorizadosIdDoUsuario)
+            || !agentesAutorizadosIdDoUsuario.contains(agenteAutorizadoId))) {
             throw new PermissaoException();
         }
     }
 
-    private boolean isAgenteAutorizado() {
+    public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo) == CodigoNivel.AGENTE_AUTORIZADO;
     }
 
@@ -126,11 +151,42 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(usuario) && usuario.isUsuarioEquipeVendas();
     }
 
+    public boolean isAssistenteOperacao() {
+        return cargoCodigo == CodigoCargo.ASSISTENTE_OPERACAO && isOperacao();
+    }
+
     public boolean isCoordenadorOperacao() {
         return cargoCodigo.equals(CodigoCargo.COORDENADOR_OPERACAO);
     }
 
     public boolean isGerenteOperacao() {
         return cargoCodigo.equals(CodigoCargo.GERENTE_OPERACAO);
+    }
+
+    public boolean isExecutivo() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO;
+    }
+
+    public boolean isExecutivoHunter() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO_HUNTER;
+    }
+
+    public boolean isExecutivoOuExecutivoHunter() {
+        return isExecutivo() || isExecutivoHunter();
+    }
+
+    public boolean isBackoffice() {
+        return !ObjectUtils.isEmpty(nivelCodigo) && CodigoNivel.valueOf(nivelCodigo).equals(CodigoNivel.BACKOFFICE);
+    }
+
+    public boolean haveCanalAgenteAutorizado() {
+        return haveCanal(AGENTE_AUTORIZADO);
+    }
+
+    private boolean haveCanal(ECanal canal) {
+        return ObjectUtils.isEmpty(usuario.getCanais())
+            ? CustomJwtAccessTokenConverter.getCanais(usuario).contains(canal.name())
+            : usuario.getCanais()
+            .contains(canal);
     }
 }

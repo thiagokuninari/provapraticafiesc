@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
@@ -86,6 +87,8 @@ public class UsuarioGerenciaControllerTest {
     private EquipeVendaD2dService equipeVendaD2dService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -103,7 +106,6 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-
     public void getById_deveRetornarOUsuario_quandoInformadoOId() throws Exception {
         mvc.perform(get(concat(API_URI, "/", ID_USUARIO_HELPDESK))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -258,20 +260,47 @@ public class UsuarioGerenciaControllerTest {
     @Test
     public void deveValidarOsCamposNulosNoCadastro() throws Exception {
         mvc.perform(MockMvcRequestBuilders
+            .fileUpload(API_URI)
+            .file(umUsuario(new UsuarioDto()))
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "O campo nome é obrigatório.",
+                "O campo cpf é obrigatório.",
+                "O campo email é obrigatório.",
+                "O campo unidadesNegociosId é obrigatório.",
+                "O campo empresasId é obrigatório.",
+                "O campo cargoId é obrigatório.",
+                "O campo departamentoId é obrigatório.",
+                "O campo loginNetSales may not be empty")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoUnidadeNegocioVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setUnidadesNegociosId(List.of());
+        mvc.perform(MockMvcRequestBuilders
                 .fileUpload(API_URI)
-                .file(umUsuario(new UsuarioDto()))
+                .file(umUsuario(request))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", hasSize(7)))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "O campo nome é obrigatório.",
-                        "O campo cpf é obrigatório.",
-                        "O campo email é obrigatório.",
-                        "O campo unidadesNegociosId é obrigatório.",
-                        "O campo empresasId é obrigatório.",
-                        "O campo cargoId é obrigatório.",
-                        "O campo departamentoId é obrigatório.")));
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo unidadesNegociosId é obrigatório.")));
+    }
+
+    @Test
+    public void deveValidarOCampo_throwException_quandoEmpresaVazio() throws Exception {
+        var request = umUsuario("Big");
+        request.setEmpresasId(List.of());
+        mvc.perform(MockMvcRequestBuilders
+                .fileUpload(API_URI)
+                .file(umUsuario(request))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.[*].message", containsInAnyOrder("O campo empresasId é obrigatório.")));
     }
 
     @Test
@@ -524,6 +553,41 @@ public class UsuarioGerenciaControllerTest {
                         + ";;A", csv);
     }
 
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveRetornarTrue_quandoEmailECpfNaoExistem() throws Exception {
+
+        mvc.perform(get(API_URI + "/existir/usuario")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("email", "JOHN@GMAIL.COM")
+            .param("cpf", "48503182076"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Boolean.TRUE)));
+    }
+
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoEmailCadastrado() throws Exception {
+
+        mvc.perform(get(API_URI + "/existir/usuario")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("cpf", "48503182076")
+            .param("email", "HELPDESK@XBRAIN.COM.BR"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "Email já cadastrado.")));
+    }
+
+    @Test
+    public void validarSeUsuarioNovoCadastro_deveThrowValidacaoException_quandoCpfCadastrado() throws Exception {
+
+        mvc.perform(get(API_URI + "/existir/usuario")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("cpf", "99898798782")
+            .param("email", "JOHN@GMAIL.COM"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                "CPF já cadastrado.")));
+    }
+
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {
         UsuarioDadosAcessoRequest dto = new UsuarioDadosAcessoRequest();
         dto.setUsuarioId(101);
@@ -554,6 +618,7 @@ public class UsuarioGerenciaControllerTest {
         Usuario usuario = repository.findComplete(ID_USUARIO_HELPDESK).get();
         usuario.forceLoad();
         usuario.setNome("JOAOZINHO");
+        usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         return UsuarioDto.of(usuario);
     }
 
@@ -569,6 +634,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setTelefone("43 995565661");
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
+        usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
         return usuario;
     }
@@ -584,7 +650,7 @@ public class UsuarioGerenciaControllerTest {
                 .cnpj("09.489.617/0001-97")
                 .build();
 
-        when(agenteAutorizadoClient.getAaByCpnj(Matchers.anyMap()))
+        when(agenteAutorizadoNovoClient.getAaByCpnj(Matchers.anyMap()))
                 .thenReturn(response);
     }
 
@@ -595,7 +661,7 @@ public class UsuarioGerenciaControllerTest {
         response.add(new UsuarioAgenteAutorizadoResponse(104));
         response.add(new UsuarioAgenteAutorizadoResponse(105));
 
-        when(agenteAutorizadoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
+        when(agenteAutorizadoNovoClient.getUsuariosByAaId(Matchers.anyInt(), Matchers.anyBoolean()))
                 .thenReturn(response);
     }
 

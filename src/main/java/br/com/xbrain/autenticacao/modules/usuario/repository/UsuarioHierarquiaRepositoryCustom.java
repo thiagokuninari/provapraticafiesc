@@ -7,4 +7,6 @@ import java.util.List;
 public interface UsuarioHierarquiaRepositoryCustom {
 
     List<UsuarioHierarquia> findAllByIdUsuarioSuperior(Integer idUsuario);
+
+    UsuarioHierarquia findByUsuarioHierarquia(Integer usuarioId, Integer supervisorId);
 }

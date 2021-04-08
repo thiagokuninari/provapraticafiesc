@@ -140,7 +140,7 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
+    public void getCargosDescendentesEVendedoresD2dDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
         doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
@@ -148,14 +148,14 @@ public class SupervisorServiceTest {
             .thenReturn(List.of(1, 2));
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple("VENDEDOR", VENDEDOR_OPERACAO));
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
@@ -165,12 +165,12 @@ public class SupervisorServiceTest {
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_SEM_CIDADE_ID, null))
             .isEmpty();
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
+    public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
 
         doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anyString());
@@ -178,7 +178,7 @@ public class SupervisorServiceTest {
             .thenReturn(List.of(1, 2));
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LONDRINA_ID, null))
             .extracting("id", "nome", "codigoCargo")
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
@@ -188,22 +188,22 @@ public class SupervisorServiceTest {
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
+    public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveNaoRetornar_senaoForemDoCanalD2D() {
         doReturn(emptyList())
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
     }
 
     @Test
-    public void getAssistentesEVendedoresD2dDaCidadeDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
+    public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveNaoRetornar_quandoEstiverInativo() {
         doReturn(emptyList())
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_LINS_ID), anyString());
 
         assertThat(
-            service.getAssistentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
+            service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_LINS_ID, null))
             .isEmpty();
     }
 

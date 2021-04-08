@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
@@ -11,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -99,5 +101,15 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
+    List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
+
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+
+    List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
+
+    List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
+
+    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+
+    List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
 }

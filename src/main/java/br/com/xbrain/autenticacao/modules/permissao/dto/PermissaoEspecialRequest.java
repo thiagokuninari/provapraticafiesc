@@ -1,12 +1,18 @@
 package br.com.xbrain.autenticacao.modules.permissao.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PermissaoEspecialRequest {
 
     @NotNull
@@ -14,12 +20,4 @@ public class PermissaoEspecialRequest {
     @NotEmpty
     private List<Integer> funcionalidadesIds;
 
-    public PermissaoEspecialRequest() {
-    }
-
-    public PermissaoEspecialRequest(Integer usuarioId,
-                                    List<Integer> funcionalidadesIds) {
-        this.usuarioId = usuarioId;
-        this.funcionalidadesIds = funcionalidadesIds;
-    }
 }

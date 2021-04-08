@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.util.ObjectUtils;
@@ -9,6 +10,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "USUARIO_HISTORICO")
@@ -19,6 +22,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioHistorico {
+
+    private static final Integer ID_MOTIVO_INATIVACAO_EXCESSO_USO = 9;
 
     @Id
     @SequenceGenerator(name = "SEQ_USUARIO_HISTORICO", sequenceName = "SEQ_USUARIO_HISTORICO", allocationSize = 1)
@@ -76,10 +81,26 @@ public class UsuarioHistorico {
         this.situacao = situacao;
     }
 
+    public static List<UsuarioHistorico> gerarHistorico(List<Integer> usuariosIds,
+                                                        String observacao, ESituacao situacao) {
+        return usuariosIds.stream()
+            .map(id -> gerarHistorico(id, null, observacao, situacao))
+            .collect(Collectors.toList());
+    }
+
     public static UsuarioHistorico gerarHistorico(Integer usuarioId, MotivoInativacao motivo,
                                                   String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
         return new UsuarioHistorico(usuario, motivo, usuario, LocalDateTime.now(), observacao, situacao);
+    }
+
+    public static UsuarioHistorico gerarHistorico(Usuario usuario, EObservacaoHistorico observacao) {
+        return UsuarioHistorico.builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .observacao(observacao.getObservacao())
+            .situacao(usuario.getSituacao())
+            .build();
     }
 
     public static UsuarioHistorico criarHistoricoAtivacao(Usuario usuarioAlteracao,
@@ -99,5 +120,22 @@ public class UsuarioHistorico {
                 + (!ObjectUtils.isEmpty(motivoInativacao)
                         ? " / " +  motivoInativacao.getDescricao()
                         : "");
+    }
+
+    public static UsuarioHistorico gerarHistoricoDeBloqueioPorExcessoDeUso(Usuario usuario,
+                                                                           MotivoInativacao motivoInativacao) {
+        return UsuarioHistorico
+            .builder()
+            .situacao(ESituacao.I)
+            .observacao("Inativado pelo timer de usuários por excesso de uso da API.")
+            .motivoInativacao(motivoInativacao)
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .build();
+    }
+
+    @PrePersist
+    public void prePersist() {
+        dataCadastro = LocalDateTime.now();
     }
 }

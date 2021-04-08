@@ -1,10 +1,14 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -20,11 +24,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static com.google.common.collect.Lists.partition;
+import static org.springframework.util.ObjectUtils.isEmpty;
+
+@Slf4j
 @Service
 public class AutenticacaoService {
 
     private static final String USUARIO_AUTENTICADO_KEY = "usuarioAutenticado";
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
+
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
     @Autowired
@@ -35,6 +45,8 @@ public class AutenticacaoService {
     private TokenStore tokenStore;
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
+    @Autowired
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     public static boolean hasAuthentication() {
         OAuth2Authentication authentication = getAuthentication();
@@ -73,6 +85,16 @@ public class AutenticacaoService {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    public void validarPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
+        var usuarioAutenticado = getUsuarioAutenticado();
+        @SuppressWarnings("unchecked")
+        var agentesAutorizados = Optional.ofNullable((List<Integer>) tokenStore.getAccessToken(getAuthentication())
+            .getAdditionalInformation()
+            .get("agentesAutorizados"))
+            .orElseGet(() -> agenteAutorizadoNovoService.getAasPermitidos(getUsuarioId()));
+        usuarioAutenticado.hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, agentesAutorizados);
+    }
+
     @SuppressWarnings("unchecked")
     private UsuarioAutenticado loadUsuarioDataBase(Authentication authentication) {
         LinkedHashMap details = (LinkedHashMap)
@@ -104,12 +126,27 @@ public class AutenticacaoService {
     }
 
     public void logout(Integer usuarioId) {
-        logout(usuarioRepository.findOne(usuarioId).getLogin());
+        logout(usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new ValidacaoException("O usuário " + usuarioId + " não foi encontrado."))
+            .getLogin());
     }
 
-    public void logout(List<Integer> usuariosId) {
-        usuarioRepository.findByIdIn(usuariosId)
-            .forEach(usuario -> logout(usuario.getLogin()));
+    public void logout(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            partition(usuariosIds, QTD_MAX_IN_NO_ORACLE)
+                .forEach(this::deslogarUsuariosPorIds);
+        }
+    }
+
+    private void deslogarUsuariosPorIds(List<Integer> usuariosIds) {
+        usuarioRepository.findByIdIn(usuariosIds)
+            .forEach(usuario -> {
+                try {
+                    logout(usuario.getLogin());
+                } catch (Exception ex) {
+                    log.error("Houve um erro ao deslogar o usuário: " + usuario.getId(), ex);
+                }
+            });
     }
 
     public void logoutAllUsers() {
@@ -125,13 +162,30 @@ public class AutenticacaoService {
         return (Integer) token.getAdditionalInformation().get("usuarioId");
     }
 
+    public void forcarLogoutGeradorLeads(Usuario usuario) {
+        if (usuario.isCargo(CodigoCargo.GERADOR_LEADS)) {
+            tokenStore
+                .findTokensByClientIdAndUserName(
+                    AuthServerConfig.APP_CLIENT,
+                    usuario.getLogin())
+                .forEach(token -> tokenStore.removeAccessToken(token));
+        }
+    }
+
     public boolean isEmulacao() {
         return request.getAttribute("emulacao") != null;
     }
 
     public boolean somenteUmLoginPorUsuario(String login) {
-        return emailsPermitidosComMultiplosLogins
+        return !isUsuarioGeradorLeads(login)
+            && emailsPermitidosComMultiplosLogins
                 .stream()
                 .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
+    }
+
+    private boolean isUsuarioGeradorLeads(String login) {
+        return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
+            .map(usuario -> usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS))
+            .orElse(Boolean.FALSE);
     }
 }

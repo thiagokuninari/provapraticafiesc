@@ -1,8 +1,11 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,13 +52,43 @@ public class FuncionalidadeServiceTest {
                 service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
 
         assertThat(funcionalidades)
-                .extracting("nome")
-                .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+            .extracting("nome")
+            .containsExactly(
+                "Visualizar Tabulação Manual",
+                "Visualizar Agendamento",
+                "Relatório - Resumo de Mailing",
+                "Relatório - Ticket Médio Analítico",
+                "Relatório - Ticket Médio por Vendedor",
+                "Relatório - Gerenciamento Operacional",
+                "Cadastrar venda para o vendedor D2D");
+    }
+
+    @Test
+    public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoMsoConsultor() {
+        var usuario = Usuario.builder()
+                .id(100)
+                .cargo(umCargoMsoConsultor())
+                .departamento(new Departamento(21))
+                .nome("RENATO")
+                .build();
+
+        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
+                .hasSize(39);
+    }
+
+    private Cargo umCargoMsoConsultor() {
+        return Cargo.builder()
+                .id(22)
+                .codigo(CodigoCargo.MSO_CONSULTOR)
+                .nivel(umNivelMso())
+                .build();
+    }
+
+    private Nivel umNivelMso() {
+        return Nivel.builder()
+                .id(2)
+                .codigo(CodigoNivel.MSO)
+                .build();
     }
 
     private Usuario umUsuarioSocio() {

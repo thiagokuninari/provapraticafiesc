@@ -16,6 +16,10 @@ import java.util.List;
 @Builder
 public class Funcionalidade {
 
+    public Funcionalidade(Integer id) {
+        this.id = id;
+    }
+
     @Id
     @Column(name = "ID")
     @SequenceGenerator(name = "SEQ_FUNCIONALIDADE", sequenceName = "SEQ_FUNCIONALIDADE", allocationSize = 1)

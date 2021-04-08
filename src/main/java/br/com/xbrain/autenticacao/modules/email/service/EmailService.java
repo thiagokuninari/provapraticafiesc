@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.email.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.email.handler.EmailResponseErrorHandler;
 import br.com.xbrain.autenticacao.modules.email.model.Email;
@@ -55,14 +56,22 @@ public class EmailService {
         obterContexto(assunto, template, context);
 
         String htmlContent = templateEngine.process("email-template", context);
-        enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias);
+        enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias, EmailPrioridade.NORMAL);
+    }
+
+    public void enviarEmailTemplate(List<String> emailsDestino, String assunto, String template, Context context,
+                                    EmailPrioridade prioridade) {
+        obterContexto(assunto, template, context);
+
+        String htmlContent = templateEngine.process("email-template", context);
+        enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias, prioridade);
     }
 
     public void enviarEmailConexaoClaroBrasil(List<String> emailsDestino, String assunto, String template, Context context) {
         obterContexto(assunto, template, context);
 
         String htmlContent = templateEngine.process("email-template-conexao", context);
-        enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias);
+        enviarEmail(emailsDestino, assunto, htmlContent, empresaAlias, EmailPrioridade.NORMAL);
     }
 
     private void obterContexto(String assunto, String template, Context context) {
@@ -93,9 +102,10 @@ public class EmailService {
     }
 
     @Async
-    public void enviarEmail(List<String> emailsDestino, String assunto, String conteudo, String empresaAlias) {
+    public void enviarEmail(List<String> emailsDestino, String assunto, String conteudo, String empresaAlias,
+                            EmailPrioridade prioridade) {
         if (validaCampos(emailsDestino, empresaAlias)) {
-            Email email = obterEmail(getEmails(emailsDestino), assunto, formataCorpo(conteudo));
+            Email email = obterEmail(getEmails(emailsDestino), assunto, formataCorpo(conteudo), prioridade);
             HttpEntity<String> emailEntity = processaRequisicao(converteEmailJson(email), MediaType.APPLICATION_JSON_UTF8);
             String url = obterUrl(empresaAlias, false);
             restTemplate.postForEntity(url, emailEntity, String.class);
@@ -118,12 +128,13 @@ public class EmailService {
         return url.toString();
     }
 
-    private Email obterEmail(List<String> emails, String assunto, String conteudo) {
+    private Email obterEmail(List<String> emails, String assunto, String conteudo, EmailPrioridade prioridade) {
         return new EmailBuilder()
-                .comAssunto(assunto)
-                .comCorpo(conteudo)
-                .comDestinatarios(emails)
-                .build();
+            .comAssunto(assunto)
+            .comCorpo(conteudo)
+            .comDestinatarios(emails)
+            .comPriority(prioridade)
+            .build();
     }
 
     private String formataCorpo(String content) {
@@ -143,5 +154,4 @@ public class EmailService {
         restTemplateObj.setErrorHandler(new EmailResponseErrorHandler());
         return restTemplateObj;
     }
-
 }

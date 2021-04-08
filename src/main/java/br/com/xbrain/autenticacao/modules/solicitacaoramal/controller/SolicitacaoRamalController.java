@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
@@ -67,6 +68,11 @@ public class SolicitacaoRamalController {
     @GetMapping("/colaboradores/{solicitacaoId}")
     public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(@PathVariable Integer solicitacaoId) {
         return solicitacaoRamalService.getColaboradoresBySolicitacaoId(solicitacaoId);
+    }
+
+    @GetMapping("tipo-implantacao")
+    public ETipoImplantacao[] getAllTipoImplantacao() {
+        return ETipoImplantacao.values();
     }
 
 }
