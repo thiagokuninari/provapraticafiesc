@@ -20,7 +20,7 @@ public class HierarquiaController {
     @GetMapping("coordenadores-subordinados")
     public List<UsuarioNomeResponse> getCoordenadoresSubordinados(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
         canalService.usuarioHierarquia().validarCanal(usuarioHierarquiaFiltros);
-        return canalService.usuarioHierarquia().coordenadoresSuborinadosHierarquia(usuarioHierarquiaFiltros);
+        return canalService.usuarioHierarquia().coordenadoresSubordinadosHierarquia(usuarioHierarquiaFiltros);
 
     }
 

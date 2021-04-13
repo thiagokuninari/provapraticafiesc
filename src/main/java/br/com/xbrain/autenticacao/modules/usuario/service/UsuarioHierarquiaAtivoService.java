@@ -38,7 +38,7 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
     }
 
     @Override
-    public List<UsuarioNomeResponse> coordenadoresSuborinadosHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
+    public List<UsuarioNomeResponse> coordenadoresSubordinadosHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
         return usuarioSiteService.coordenadoresDoSiteId(usuarioHierarquiaFiltros.getSiteId());
     }
 

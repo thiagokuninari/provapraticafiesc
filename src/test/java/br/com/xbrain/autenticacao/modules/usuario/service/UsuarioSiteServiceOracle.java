@@ -136,7 +136,7 @@ public class UsuarioSiteServiceOracle {
     }
 
     @Test
-    public void coordenadoresPorGerente_deveForaHierarquiaCoordenadoresVinculadosAoGerente_quandoLogadoComGerente() {
+    public void coordenadoresPorGerente_deveRetornarVazia_quandoGerenteNaoPossuirHierarquiaComSiteId() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoGerente(301));
         var coordenadores = usuarioSiteService.coordenadoresDoSiteId(110);
         assertThat(coordenadores)

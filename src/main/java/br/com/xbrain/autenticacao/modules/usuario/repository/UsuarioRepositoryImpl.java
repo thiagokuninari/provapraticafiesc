@@ -625,7 +625,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario>    findAllUsuariosSemDataUltimoAcesso() {
+    public List<Usuario> findAllUsuariosSemDataUltimoAcesso() {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
             .from(usuario)

@@ -10,7 +10,7 @@ public interface IUsuarioHierarquia {
 
     List<Integer> getUsuariosDaHierarquia(Integer usuarioId, CodigoCargo cargo);
 
-    List<UsuarioNomeResponse> coordenadoresSuborinadosHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros);
+    List<UsuarioNomeResponse> coordenadoresSubordinadosHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros);
 
     List<UsuarioNomeResponse> supervisoresDaHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros);
 
