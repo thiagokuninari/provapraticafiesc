@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.autenticacao.service;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.UsuarioAcessoService;
@@ -20,11 +22,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static org.springframework.util.ObjectUtils.isEmpty;
+
 @Service
 public class AutenticacaoService {
 
     private static final String USUARIO_AUTENTICADO_KEY = "usuarioAutenticado";
     public static final String HEADER_USUARIO_EMULADOR = "X-Usuario-Emulador";
+    public static final String HEADER_USUARIO_CANAL = "X-Usuario-Canal";
+    private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Canal não encontrado.");
     @Value("#{'${app-config.multiplo-login.emails}'.split(',')}")
     private List<String> emailsPermitidosComMultiplosLogins;
     @Autowired
@@ -138,5 +144,14 @@ public class AutenticacaoService {
         return emailsPermitidosComMultiplosLogins
                 .stream()
                 .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
+    }
+
+    public static Optional<ECanal> getUsuarioCanal(HttpServletRequest request) {
+        return Optional.ofNullable(!isEmpty(request.getHeader(HEADER_USUARIO_CANAL))
+            ? ECanal.valueOf(request.getHeader(HEADER_USUARIO_CANAL)) : null);
+    }
+
+    public ECanal getUsuarioCanal() {
+        return AutenticacaoService.getUsuarioCanal(request).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }
