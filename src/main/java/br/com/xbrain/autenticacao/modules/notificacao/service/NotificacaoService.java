@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.notificacao.service;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.notificacao.dto.BoaVindaAgenteAutorizadoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
@@ -68,7 +69,8 @@ public class NotificacaoService {
                 Arrays.asList(usuario.getEmail()),
                 "Parceiros Online - Confirmação de Alterar a Senha",
                 "confirmar-reset-senha",
-                context);
+                context,
+                EmailPrioridade.ALTA);
     }
 
     @Async

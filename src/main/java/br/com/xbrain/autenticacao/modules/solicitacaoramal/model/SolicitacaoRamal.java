@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -13,6 +14,7 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -80,6 +82,11 @@ public class SolicitacaoRamal {
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
     private Integer quantidadeRamais;
 
+    @Column(name = "TIPO_IMPLANTACAO")
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private ETipoImplantacao tipoImplantacao;
+
     @Column(name = "ENVIOU_EMAIL_EXPIRACAO")
     @Enumerated(EnumType.STRING)
     private Eboolean enviouEmailExpiracao;
@@ -119,6 +126,7 @@ public class SolicitacaoRamal {
         this.agenteAutorizadoId = request.getAgenteAutorizadoId();
         this.melhorHorarioImplantacao = request.getMelhorHorarioImplantacao();
         this.quantidadeRamais = request.getQuantidadeRamais();
+        this.tipoImplantacao = ETipoImplantacao.valueOf(request.getTipoImplantacao());
         this.melhorDataImplantacao = request.getMelhorDataImplantacao();
         this.telefoneTi = request.getTelefoneTi();
         this.emailTi = request.getEmailTi();
@@ -136,7 +144,7 @@ public class SolicitacaoRamal {
     }
 
     public void atualizarNomeECnpjDoAgenteAutorizado(AgenteAutorizadoResponse agenteAutorizado) {
-        this.agenteAutorizadoNome = agenteAutorizado.getNomeFantasia();
+        this.agenteAutorizadoNome = agenteAutorizado.getRazaoSocial();
         this.agenteAutorizadoCnpj = agenteAutorizado.getCnpj();
     }
 

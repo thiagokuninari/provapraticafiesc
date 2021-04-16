@@ -24,12 +24,16 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/call/**",
             "/parceiros-online/**",
             "/equipe-venda/**",
+            "/api/ufs",
+            "/api/cidades",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
             "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
             "/api/public/disparar-timer-inativar-usuarios",
-            "/api/usuarios/usuario-funil-prospeccao"
+            "/api/usuarios/usuario-funil-prospeccao",
+            "/api/usuarios/gerencia/existir/usuario",
+            "/api/cep/**"
         };
 
         http
@@ -40,11 +44,17 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(permitAll).permitAll()
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/api/usuarios/vendedores-feeder")
+            .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.FDR_GERENCIAR_LEAD.name(),
+                CodigoFuncionalidade.MLG_5018.name())
+            .antMatchers("/api/usuarios/situacoes/timer")
+            .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
             .antMatchers(HttpMethod.PUT, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
             .antMatchers("/api/funcionalidades").hasAnyRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .antMatchers("/api/feriado/gerenciar/**").hasRole(CodigoFuncionalidade.CTR_2050.name())
             .antMatchers("/api/cargo-departamento-funcionalidade")
             .hasRole(CodigoFuncionalidade.AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO.name())
             .antMatchers("/api/permissoes-especiais")
@@ -53,9 +63,10 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .hasAnyRole(CodigoFuncionalidade.CTR_2033.name(), CodigoFuncionalidade.CTR_2034.name())
             .antMatchers("/api/solicitacao-ramal/gerencia/**")
             .hasRole(CodigoFuncionalidade.CTR_2034.name())
-                .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
-                .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
-                .anyRequest().authenticated();
+            .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
+            .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
+            .antMatchers("/api/relatorio-login-logout/**").hasRole(CodigoFuncionalidade.AUT_2100.name())
+            .anyRequest().authenticated();
     }
 
     @Override

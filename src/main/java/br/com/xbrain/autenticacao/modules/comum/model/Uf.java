@@ -28,4 +28,8 @@ public class Uf {
     @NotNull
     @Column(name = "UF")
     private String uf;
+
+    public Uf(Integer id) {
+        this.id = id;
+    }
 }

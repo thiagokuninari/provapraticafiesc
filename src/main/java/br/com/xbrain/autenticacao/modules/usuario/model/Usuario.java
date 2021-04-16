@@ -162,7 +162,7 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
-    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
+    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
@@ -214,6 +214,18 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
 
+    @Column(name = "URL_LOJA_BASE", length = 200)
+    private String urlLojaBase;
+
+    @Column(name = "URL_LOJA_PROSPECT", length = 200)
+    private String urlLojaProspect;
+
+    @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
+    private String urlLojaProspectNextel;
+
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
+
     @Transient
     private List<Integer> hierarquiasId;
 
@@ -222,6 +234,9 @@ public class Usuario {
 
     @Transient
     private Integer agenteAutorizadoId;
+
+    @Transient
+    private String senhaDescriptografada;
 
     public Usuario(Integer id) {
         this.id = id;
@@ -381,6 +396,13 @@ public class Usuario {
         return null;
     }
 
+    public String getNivelNome() {
+        if (!ObjectUtils.isEmpty(this.cargo) && !ObjectUtils.isEmpty(this.cargo.getNivel())) {
+            return this.cargo.getNivel().getNome();
+        }
+        return null;
+    }
+
     public List<CodigoEmpresa> getCodigosEmpresas() {
         if (!CollectionUtils.isEmpty(empresas)) {
             return empresas.stream().map(Empresa::getCodigo).collect(Collectors.toList());
@@ -392,7 +414,7 @@ public class Usuario {
         if (!CollectionUtils.isEmpty(unidadesNegocios)) {
             return unidadesNegocios.stream().map(UnidadeNegocio::getCodigo).collect(Collectors.toList());
         }
-        return null;
+        return List.of();
     }
 
     public String getLogin() {
@@ -436,6 +458,11 @@ public class Usuario {
                 && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
+    public boolean isBackoffice() {
+        return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
+                && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
+    }
+
     public void adicionarHistorico(UsuarioHistorico historico) {
         if (Objects.isNull(this.historicos)) {
             this.historicos = new ArrayList<>();
@@ -454,11 +481,16 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isAtivo() {
-        return situacao.equals(ESituacao.A);
+        return ESituacao.A.equals(situacao);
     }
 
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
     }
+
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(canais) && canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
 }

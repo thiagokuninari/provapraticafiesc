@@ -86,7 +86,7 @@ public class NivelServiceTest {
 
         assertThat(service.getPermitidos(NivelTipoVisualizacao.CADASTRO))
                 .extracting("id", "nome")
-                .containsExactly(
+                .containsExactlyInAnyOrder(
                         tuple(6, "Atendimento Pessoal"),
                         tuple(16, "Ativo Local Colaborador"),
                         tuple(9, "Ativo Local Proprio"),
@@ -98,6 +98,7 @@ public class NivelServiceTest {
                         tuple(2, "MSO"),
                         tuple(1, "Operação"),
                         tuple(15, "Ouvidoria"),
-                        tuple(8, "Receptivo"));
+                        tuple(8, "Receptivo"),
+                        tuple(18, "Backoffice"));
     }
 }

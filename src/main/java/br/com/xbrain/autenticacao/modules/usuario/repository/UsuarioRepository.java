@@ -4,25 +4,32 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, Integer>,
+public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
         QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
 
     Optional<Usuario> findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
     Optional<Usuario> findTop1UsuarioByCpf(String cpf);
+
+    Optional<Usuario> findTop1UsuarioByCpfAndSituacao(String cpf, ESituacao situacao);
+
+    Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(String cpf, ESituacao situacao);
+
+    Optional<Usuario> findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(String email, ESituacao situacao);
 
     Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
@@ -30,9 +37,13 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
 
     Optional<Usuario> findByEmail(String email);
 
+    Optional<Usuario> findByEmailAndSituacao(String email, ESituacao situacao);
+
     Optional<Usuario> findUsuarioByEmail(String email);
 
     List<Usuario> findAllByCpf(String cpf);
+
+    Boolean existsByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
@@ -68,10 +79,6 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     void updateEmail(String email, Integer usuarioId);
 
     @Modifying
-    @Query("update Usuario u set u.cpf = ?1 where u.id = ?2")
-    void updateCpf(String cpf, Integer usuarioId);
-
-    @Modifying
     @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")
     void updateCargo(Cargo cargo, Integer usuarioId);
 
@@ -92,4 +99,6 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, I
     @Modifying
     @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
+
+    List<Usuario> findByOrganizacaoIdAndCargo_CodigoIn(Integer organizacaoId, List<CodigoCargo> cargos);
 }

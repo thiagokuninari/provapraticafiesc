@@ -1,0 +1,27 @@
+package br.com.xbrain.autenticacao.modules.feeder.service;
+
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+
+import java.util.List;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+
+public class FeederUtil {
+
+    public static final Integer FUNCIONALIDADE_GERENCIAR_LEAD_ID = 15000;
+    public static final Integer FUNCIONALIDADE_TRATAR_LEAD_ID = 3046;
+    public static final String OBSERVACAO_FEEDER =
+        "AGENTE AUTORIZADO COM PERMISSÃO DE FEEDER.";
+    public static final String OBSERVACAO_NAO_FEEDER =
+        "AGENTE AUTORIZADO SEM PERMISSÃO DE FEEDER.";
+    public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_AA = List.of(15000, 15005, 3046);
+    public static List<CodigoCargo> CARGOS_BACKOFFICE = List.of(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_BACKOFFICE_D2D, AGENTE_AUTORIZADO_BACKOFFICE_TEMP, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO);
+    public static List<CodigoCargo> CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA = List.of(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+        AGENTE_AUTORIZADO_BACKOFFICE_D2D, AGENTE_AUTORIZADO_BACKOFFICE_TEMP, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO,
+        AGENTE_AUTORIZADO_SOCIO);
+    public static final List<CodigoCargo> CODIGOS_CARGOS_VENDEDORES_FEEDER_E_SOCIO_PRINCIPAL =
+        List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D, AGENTE_AUTORIZADO_SOCIO);
+    public static final List<CodigoCargo> CODIGOS_CARGOS_VENDEDORES_FEEDER =
+        List.of(AGENTE_AUTORIZADO_VENDEDOR_D2D, AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D);
+}

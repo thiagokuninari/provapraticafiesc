@@ -29,4 +29,14 @@ public class UsuarioHierarquiaRepositoryImpl
                 .where(usuarioHierarquia.usuarioSuperior.id.eq(idUsuario))
                 .fetch();
     }
+
+    public UsuarioHierarquia findByUsuarioHierarquia(Integer usuarioId, Integer supervisorId) {
+        return new JPAQueryFactory(entityManager)
+                .select(usuarioHierarquia)
+                .from(usuarioHierarquia)
+                .innerJoin(usuarioHierarquia.usuario, usuario)
+                .innerJoin(usuario.cargo, cargo)
+                .where(usuarioHierarquia.usuarioSuperior.id.eq(supervisorId).and(usuarioHierarquia.usuario.id.eq(usuarioId)))
+                .fetchOne();
+    }
 }

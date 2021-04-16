@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
@@ -56,6 +57,7 @@ public class UsuarioAgendamentoService {
 
     private final AutenticacaoService autenticacaoService;
     private final AgenteAutorizadoService agenteAutorizadoService;
+    private final AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     private final EquipeVendasService equipeVendasService;
     private final UsuarioService usuarioService;
     private final CargoService cargoService;
@@ -63,7 +65,7 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> recuperarUsuariosParaDistribuicao(Integer usuarioId,
                                                                                               Integer agenteAutorizadoId) {
-        var usuariosDoAa = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuariosDoAa = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
         var usuariosIds = usuariosDoAa
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
@@ -177,7 +179,7 @@ public class UsuarioAgendamentoService {
 
     public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
 
-        var usuarios = agenteAutorizadoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        var usuarios = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
 
         if (isUsuarioAutenticadoSupervisor()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
