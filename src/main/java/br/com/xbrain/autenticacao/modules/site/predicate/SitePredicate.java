@@ -18,6 +18,7 @@ import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static java.util.Objects.nonNull;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -192,6 +193,13 @@ public class SitePredicate extends PredicateBase {
         if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             builder.and(usuario.id.eq(usuarioAutenticado.getId()));
         }
+        return this;
+    }
+
+    public SitePredicate comUsuarioSuperior(Integer usuarioId) {
+        Optional.ofNullable(usuarioId)
+            .map(usuarioHierarquia.usuarioSuperior.id::eq)
+            .ifPresent(builder::and);
         return this;
     }
 

@@ -55,4 +55,9 @@ public class UsuarioSiteController {
                                                                                     boolean buscarInativo ) {
         return usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, usuarioId, buscarInativo);
     }
+
+    @GetMapping("{siteId}/coordenadores")
+    public List<UsuarioNomeResponse> coordenadoresDoSiteId(@PathVariable Integer siteId) {
+        return usuarioSiteService.coordenadoresDoSiteId(siteId);
+    }
 }

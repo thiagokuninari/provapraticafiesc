@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -40,7 +41,6 @@ public class UsuarioSiteServiceOracle {
     @Test
     public void filtrarVendedoresInativosHierarquia_deveRetornarApenasUsuarioAtivosHierarquiaCoordenador_quandoEParametroFalse() {
         var vendedoresAtivos = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(110, 103, false);
-
         assertThat(vendedoresAtivos).hasSize(1)
             .extracting(UsuarioEquipeDto::getUsuarioId)
             .contains(109);
@@ -107,6 +107,42 @@ public class UsuarioSiteServiceOracle {
             .isThrownBy(() -> usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(110, 99, true));
     }
 
+    @Test
+    public void coordenadores_deveRetornarCoordenadoresDoSitePorHierarquia_quandoUsuarioLogadoForAdmin() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
+        var coordenadores = usuarioSiteService.coordenadoresDoSiteId(110);
+        assertThat(coordenadores)
+            .hasSize(1)
+            .extracting(UsuarioNomeResponse::getId)
+            .contains(103);
+    }
+
+    @Test
+    public void coordenadores_deveRetornarCoordenadoresListaVazia_quandoSiteDoCoordenadorForInativo() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
+        var coordenadores = usuarioSiteService.coordenadoresDoSiteId(302);
+        assertThat(coordenadores)
+            .hasSize(0);
+    }
+
+    @Test
+    public void coordenadoresPorGerente_deveRetornarCoordenadoresVinculadosAoGerente_quandoGerenteComUsuariosNaHierarquia() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoGerente(101));
+        var coordenadores = usuarioSiteService.coordenadoresDoSiteId(110);
+        assertThat(coordenadores)
+            .hasSize(1)
+            .extracting(UsuarioNomeResponse::getId)
+            .contains(103);
+    }
+
+    @Test
+    public void coordenadoresPorGerente_deveRetornarVazia_quandoGerenteNaoPossuirHierarquiaComSiteId() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoGerente(301));
+        var coordenadores = usuarioSiteService.coordenadoresDoSiteId(110);
+        assertThat(coordenadores)
+            .hasSize(0);
+    }
+
     private UsuarioAutenticado umUsuarioAutenticadoAdmin() {
         return UsuarioAutenticado.builder()
             .id(99)
@@ -127,6 +163,20 @@ public class UsuarioSiteServiceOracle {
             .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
             .nivelCodigo(CodigoNivel.OPERACAO.name())
             .usuario(Usuario.builder()
+                .cargo(null)
+                .build())
+            .departamentoCodigo(CodigoDepartamento.COMERCIAL)
+            .build();
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoGerente(Integer id) {
+        return UsuarioAutenticado.builder()
+            .id(id)
+            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
+            .nivelCodigo(CodigoNivel.OPERACAO.name())
+            .usuario(Usuario.builder()
+                .id(id)
                 .cargo(null)
                 .build())
             .departamentoCodigo(CodigoDepartamento.COMERCIAL)

@@ -1493,4 +1493,8 @@ public class UsuarioService {
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
     }
+
+    public List<UsuarioCargoResponse> getSuperioresPorId(Integer usuarioId) {
+        return repository.findSuperioresDoUsuarioId(usuarioId);
+    }
 }

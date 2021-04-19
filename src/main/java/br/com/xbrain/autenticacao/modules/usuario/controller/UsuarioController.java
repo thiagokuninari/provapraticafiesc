@@ -352,4 +352,9 @@ public class UsuarioController {
                                                                   @PathVariable CodigoCargo codigoCargo) {
         return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
     }
+
+    @GetMapping("usuarios-superiores/{usuarioId}")
+    public List<UsuarioCargoResponse> buscarUsuariosSuperiores(@PathVariable Integer usuarioId) {
+        return usuarioService.getSuperioresPorId(usuarioId);
+    }
 }

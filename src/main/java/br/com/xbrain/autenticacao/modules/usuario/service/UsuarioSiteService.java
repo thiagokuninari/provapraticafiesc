@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -8,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -46,7 +46,7 @@ public class UsuarioSiteService {
             return repository.findCoordenadoresDisponiveisExetoPorSiteId(sitePredicate.build(), siteId);
         }
         var coordenadoresDisponiveis = repository.findCoordenadoresDisponiveisExetoPorSiteId(sitePredicate.build(), siteId);
-        return filtrarHierarquia(coordenadoresDisponiveis, usuarioAutenticado);
+        return filtrarHierarquia(coordenadoresDisponiveis, usuarioAutenticado.getId());
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +58,7 @@ public class UsuarioSiteService {
             return repository.findCoordenadoresDisponiveis(sitePredicate.build());
         }
         return filtrarHierarquia(repository
-            .findCoordenadoresDisponiveis(sitePredicate.build()), usuarioAutenticado);
+            .findCoordenadoresDisponiveis(sitePredicate.build()), usuarioAutenticado.getId());
     }
 
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprioPorSiteId(Integer siteId) {
@@ -89,19 +89,21 @@ public class UsuarioSiteService {
     public List<UsuarioEquipeDto> getVendoresDoSiteIdPorHierarquiaComEquipe(Integer siteId,
                                                                             Integer usuarioId,
                                                                             Boolean buscarInativos) {
-        var usuarioNomeResponseList = repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(usuarioId, siteId);
+        var usuario = getUsuarioById(usuarioId);
+        var vendedores = usuario.isXbrainOuMso()
+                ? getVendedorPorSiteId(siteId)
+                : getVendedoresPorCargoUsuario(usuario, siteId);
 
-        return usuarioNomeResponseList
+        return vendedores
             .stream()
             .map(UsuarioEquipeDto::of)
-            .filter(usuarioEquipe -> validarPermissaoSobreUsuario(usuarioEquipe, usuarioId))
+            .filter(usuarioEquipe -> isAssistenteOperacao(usuario) || validarPermissaoSobreUsuario(usuarioEquipe, usuario))
             .filter(usuarioEquipeDto -> usuarioEquipeDto.isAtivo(buscarInativos))
             .map(this::getEquipeById)
             .collect(Collectors.toList());
     }
 
-    public Boolean validarPermissaoSobreUsuario(UsuarioEquipeDto usuarioEquipeDto, Integer usuarioId) {
-        var usuario = getUsuarioById(usuarioId);
+    public Boolean validarPermissaoSobreUsuario(UsuarioEquipeDto usuarioEquipeDto, Usuario usuario) {
         validarPermissaoUsuarioAdminOuMso(usuario);
         return usuario.isXbrainOuMso()
             || repository.getUsuariosSubordinados(usuario.getId())
@@ -123,8 +125,8 @@ public class UsuarioSiteService {
     }
 
     private List<UsuarioNomeResponse> filtrarHierarquia(List<UsuarioNomeResponse> usuariosDisponiveis,
-                                                        UsuarioAutenticado usuarioAutenticado) {
-        var usuariosDaHierarquia = getSubordinadosPorIdECargo(usuarioAutenticado.getId(), CodigoCargo.COORDENADOR_OPERACAO);
+                                                        Integer usuarioAutenticadoId) {
+        var usuariosDaHierarquia = getSubordinadosPorIdECargo(usuarioAutenticadoId, CodigoCargo.COORDENADOR_OPERACAO);
         return usuariosDisponiveis
             .stream()
             .filter(usuarioNomeResponse -> usuariosDaHierarquia.contains(usuarioNomeResponse.getId()))
@@ -136,5 +138,38 @@ public class UsuarioSiteService {
         if (usuario.isXbrainOuMso() && !usuarioAutenticado.isXbrainOuMso()) {
             throw new PermissaoException();
         }
+    }
+
+    public List<UsuarioNomeResponse> coordenadoresDoSiteId(Integer siteId) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var coordenadoresResponse = repository.findCoordenadoresDoSiteId(siteId);
+
+        return usuarioAutenticado.isXbrainOuMso()
+            ? coordenadoresResponse
+            : filtrarHierarquia(coordenadoresResponse, usuarioAutenticado.getId());
+    }
+
+    private List<UsuarioSituacaoResponse> getVendedorPorSiteId(Integer siteId) {
+        return repository.findVendedoresPorSiteId(siteId)
+            .stream()
+            .map(UsuarioSituacaoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public List<UsuarioSituacaoResponse> getVendedoresPorCargoUsuario(Usuario usuario, Integer siteId) {
+        return isAssistenteOperacao(usuario)
+            ? repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(getCoordenadoresIdsDoUsuariod(usuario.getId()), siteId)
+            : repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(List.of(usuario.getId()), siteId);
+    }
+
+    private boolean isAssistenteOperacao(Usuario usuario) {
+        return usuario.getCargo().getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO);
+    }
+
+    private List<Integer> getCoordenadoresIdsDoUsuariod(Integer usuarioId) {
+        return repository.getSuperioresDoUsuarioPorCargo(usuarioId, CodigoCargo.COORDENADOR_OPERACAO)
+            .stream()
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 }
