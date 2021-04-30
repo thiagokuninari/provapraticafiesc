@@ -15,6 +15,7 @@ public class CidadeUfResponse {
     private Integer cidadeId;
     private String cidade;
     private String uf;
+    private String ufSigla;
     private Integer ufId;
 
     public static CidadeUfResponse of(Cidade cidade) {
@@ -22,6 +23,7 @@ public class CidadeUfResponse {
             .cidadeId(cidade.getId())
             .cidade(cidade.getNome())
             .uf(cidade.getNomeUf())
+            .ufSigla(cidade.getUf().getUf())
             .ufId(cidade.getIdUf())
             .build();
     }

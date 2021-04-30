@@ -41,7 +41,7 @@ public class EmailService {
     private boolean enviarEmail;
     @Value("${app-config.email.emails}")
     private String emails;
-    @Value("${app-config.url-servico-email}")
+    @Value("${app-config.services.emails.url}")
     private String urlServico;
     @Value(("${app-config.email.empresa-alias}"))
     private String empresaAlias;
@@ -120,6 +120,7 @@ public class EmailService {
 
     private String obterUrl(String alias, boolean temAnexo) {
         StringBuilder url = new StringBuilder(urlServico);
+        url.append("/emails/");
         if (temAnexo) {
             url.append("withFiles/");
         }
