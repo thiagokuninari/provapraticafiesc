@@ -126,6 +126,33 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void findCompleteByIdComLoginNetSales_deveDispararExcecao_seUsuarioNaoEncontrado() {
+        when(repository.findComplete(eq(1))).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findCompleteByIdComLoginNetSales(1))
+            .withMessage("Usuário não encontrado.");
+    }
+
+    @Test
+    public void findCompleteByIdComLoginNetSales_deveDispararExcecao_seUsuarioNaoPossuirLoginNetsales() {
+        var usuario = umUsuarioCompleto();
+        usuario.setLoginNetSales(null);
+
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findCompleteByIdComLoginNetSales(1))
+            .withMessage("Usuário não possui login NetSales válido.");
+    }
+
+    @Test
+    public void findCompleteByIdComLoginNetSales_deveRetornarUsuarioCompleto_seUsuarioPossuirLoginNetsales() {
+        when(repository.findComplete(eq(1))).thenReturn(Optional.of(umUsuarioCompleto()));
+        assertThat(service.findCompleteByIdComLoginNetSales(1)).isEqualTo(umUsuarioCompleto());
+    }
+
+    @Test
     public void getSubclustersUsuario_deveConverterORetornoEmSelectResponse_conformeListaDeSubclusters() {
         when(repository.getSubclustersUsuario(anyInt()))
             .thenReturn(List.of(
@@ -1059,6 +1086,7 @@ public class UsuarioServiceTest {
             .email("email@email.com")
             .cpf("111.111.111-11")
             .situacao(ESituacao.A)
+            .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
                 .nivel(Nivel

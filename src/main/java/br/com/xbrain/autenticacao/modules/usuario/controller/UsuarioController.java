@@ -90,6 +90,12 @@ public class UsuarioController {
             usuarioService.findCompleteById(id));
     }
 
+    @GetMapping("/autenticado-com-login-netsales/{id}")
+    public UsuarioAutenticado getUsuarioAutenticadoComLoginNetSalesById(@PathVariable int id) {
+        return new UsuarioAutenticado(
+            usuarioService.findCompleteByIdComLoginNetSales(id));
+    }
+
     @GetMapping("vendedores")
     public List<UsuarioResponse> getUsuarioVendedorById(@RequestParam List<Integer> ids) {
         return usuarioService.getVendedoresByIds(ids);
