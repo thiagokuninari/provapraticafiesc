@@ -232,6 +232,12 @@ public class UsuarioService {
         return repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    public Usuario findCompleteByIdComLoginNetSales(int id) {
+        return Optional.of(findCompleteById(id))
+            .filter(Usuario::hasLoginNetSales)
+            .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
+    }
+
     @Transactional
     public UsuarioDto findByEmail(String email) {
         return UsuarioDto.of(repository.findByEmail(email).orElseThrow(() -> EX_NAO_ENCONTRADO));

@@ -34,8 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -188,6 +188,23 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$.id", is(101)))
             .andExpect(jsonPath("$.nome", is("HELPDESK")))
             .andExpect(jsonPath("$.email", is("HELPDESK@XBRAIN.COM.BR")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioAutenticadoComLoginNetSalesById_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/usuarios/autenticado-com-login-netsales/101")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuarioAutenticadoComLoginNetSalesById_deveRetornarOk_seUsuarioAutenticado() {
+        mvc.perform(get("/api/usuarios/autenticado-com-login-netsales/227")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
     @Test
