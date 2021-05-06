@@ -3,15 +3,18 @@ package br.com.xbrain.autenticacao.modules.site.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRepositoryCustom {
@@ -58,9 +61,19 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
     }
 
     @Override
-    public Optional<Site> findTop1ByPredicate(Predicate predicate) {
+    public Optional<SiteCidadeResponse> findSiteCidadeTop1ByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
-            .selectFrom(site)
+            .select(Projections.constructor(SiteCidadeResponse.class,
+                site.id,
+                site.nome,
+                cidade.codigoCidadeDbm,
+                cidade.id,
+                cidade.nome,
+                cidade.uf.id,
+                cidade.uf.uf
+            ))
+            .from(site)
+            .innerJoin(site.cidades, cidade)
             .where(predicate)
             .fetchFirst());
     }

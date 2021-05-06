@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -363,24 +364,15 @@ public class SiteService {
             .collect(toList());
     }
 
-    public SiteResponse buscarSitePorCidadeUf(String cidade, String uf) {
-        return siteRepository.findTop1ByPredicate(
-            new SitePredicate()
-                .comCidade(cidade)
-                .comUf(uf)
-                .todosSitesAtivos()
-                .build())
-            .map(SiteResponse::of)
+    public SiteCidadeResponse buscarSiteCidadePorCidadeUf(String cidade, String uf) {
+        return siteRepository.findSiteCidadeTop1ByPredicate(new CidadePredicate().comNome(cidade).comUf(uf).build()
+                .and(new SitePredicate().todosSitesAtivos().build()))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public SiteResponse buscarSitePorCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return siteRepository.findTop1ByPredicate(
-            new SitePredicate()
-                .comCodigoCidadeDbm(codigoCidadeDbm)
-                .todosSitesAtivos()
-                .build())
-            .map(SiteResponse::of)
+    public SiteCidadeResponse buscarSiteCidadePorCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        return siteRepository.findSiteCidadeTop1ByPredicate(new CidadePredicate().comCodigoCidadeDbm(codigoCidadeDbm).build()
+                .and(new SitePredicate().todosSitesAtivos().build()))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }
