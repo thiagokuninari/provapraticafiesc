@@ -183,7 +183,7 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
-    @RequestMapping(value = "todas-situacoes", params = "ids", method = RequestMethod.GET)
+    @GetMapping("todas-situacoes")
     public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(@RequestParam Set<Integer> ids) {
         return usuarioService.getUsuariosByIdsTodasSituacoes(ids);
     }
