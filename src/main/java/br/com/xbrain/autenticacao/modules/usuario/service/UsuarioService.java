@@ -1235,6 +1235,13 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(Set<Integer> idsUsuarios) {
+        var usuarios = repository.findByIdIn(idsUsuarios);
+        return usuarios.stream()
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
