@@ -9,10 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -208,6 +205,10 @@ public class Usuario {
     @ElementCollection
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
+
+    @Column(name = "TIPO_CANAL")
+    @Enumerated(EnumType.STRING)
+    private ETipoCanal tipoCanal;
 
     @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
