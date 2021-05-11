@@ -1,8 +1,10 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
@@ -15,7 +17,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.BRT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -109,5 +113,81 @@ public class SiteRepositoryTest {
         assertThat(repository.findBySupervisorId(400))
             .extracting("situacao")
             .contains(ESituacao.A);
+    }
+
+    @Test
+    public void findTop1ByPredicate_optionalVazio_seBuscarPorCodigoCidadeDbmENaoHouverResultados() {
+        assertThat(repository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCidade("CASCAVEL")
+                .comUf("PR")
+                .todosSitesAtivos()
+                .build()))
+            .isEmpty();
+    }
+
+    @Test
+    public void findTop1ByPredicate_optionalSite_seBuscarPorCodigoCidadeDbmEHouverResultados() {
+        var site = repository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCidade("LONDRINA")
+                .comUf("PR")
+                .todosSitesAtivos()
+                .build());
+
+        assertThat(site)
+            .isNotEmpty();
+        assertThat(site.get())
+            .extracting("id", "nome", "timeZone", "estados", "cidades", "supervisores", "coordenadores",
+                "situacao", "discadoraId")
+            .containsExactly(100, "São Paulo", BRT, Set.of(umaUf(1, "PARANA", "PR")), Set.of(umaCidade(5578)),
+                Set.of(umUsuario(102)), Set.of(umUsuario(300)), ESituacao.A, null);
+    }
+
+    @Test
+    public void findTop1ByPredicate_optionalVazio_seBuscarPorCidadeUfENaoHouverResultados() {
+        assertThat(repository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCodigoCidadeDbm(1)
+                .todosSitesAtivos()
+                .build()))
+            .isEmpty();
+    }
+
+    @Test
+    public void findTop1ByPredicate_optionalSite_seBuscarPorCidadeUfEHouverResultados() {
+        var site = repository.findTop1ByPredicate(
+            new SitePredicate()
+                .comCodigoCidadeDbm(3)
+                .todosSitesAtivos()
+                .build());
+
+        assertThat(site)
+            .isNotEmpty();
+        assertThat(site.get())
+            .extracting("id", "nome", "timeZone", "estados", "cidades", "supervisores", "coordenadores",
+                "situacao", "discadoraId")
+            .containsExactly(100, "São Paulo", BRT, Set.of(umaUf(1, "PARANA", "PR")), Set.of(umaCidade(5578)),
+                Set.of(umUsuario(102)), Set.of(umUsuario(300)), ESituacao.A, null);
+    }
+
+    private Uf umaUf(Integer id, String nome, String uf) {
+        return Uf.builder()
+            .id(id)
+            .nome(nome)
+            .uf(uf)
+            .build();
+    }
+
+    private Cidade umaCidade(Integer id) {
+        return Cidade.builder()
+            .id(id)
+            .build();
+    }
+
+    private Usuario umUsuario(Integer id) {
+        return Usuario.builder()
+            .id(id)
+            .build();
     }
 }

@@ -56,4 +56,12 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             .and(site.situacao.eq(ESituacao.A)))
             .fetchFirst();
     }
+
+    @Override
+    public Optional<Site> findTop1ByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .selectFrom(site)
+            .where(predicate)
+            .fetchFirst());
+    }
 }

@@ -18,6 +18,7 @@ import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static java.util.Objects.nonNull;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -195,8 +196,41 @@ public class SitePredicate extends PredicateBase {
         return this;
     }
 
+    public SitePredicate comUsuarioSuperior(Integer usuarioId) {
+        Optional.ofNullable(usuarioId)
+            .map(usuarioHierarquia.usuarioSuperior.id::eq)
+            .ifPresent(builder::and);
+        return this;
+    }
+
     private Optional<List<Integer>> filtrarLista(List<Integer> lista) {
         return Optional.ofNullable(lista)
             .filter(Predicate.not(super::isEmpty));
+    }
+
+    public SitePredicate comCidade(String cidade) {
+        Optional.ofNullable(cidade)
+            .filter(StringUtils::isNotEmpty)
+            .map(site.cidades.any().nome::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
+
+    public SitePredicate comUf(String uf) {
+        Optional.ofNullable(uf)
+            .filter(StringUtils::isNotEmpty)
+            .map(site.cidades.any().uf.uf::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
+
+    public SitePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        Optional.ofNullable(codigoCidadeDbm)
+            .map(site.cidades.any().codigoCidadeDbm::eq)
+            .ifPresent(builder::and);
+
+        return this;
     }
 }

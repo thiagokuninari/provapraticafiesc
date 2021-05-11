@@ -4,9 +4,11 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
 public class UsuarioNomeResponse {
 
     private Integer id;
@@ -29,6 +31,14 @@ public class UsuarioNomeResponse {
             .id(usuario.getId())
             .nome(usuario.getNome())
             .situacao(usuario.getSituacao())
+            .build();
+    }
+
+    public static UsuarioNomeResponse of(UsuarioEquipeDto usuarioEquipeDto) {
+        return UsuarioNomeResponse.builder()
+            .id(usuarioEquipeDto.getUsuarioId())
+            .nome(usuarioEquipeDto.getUsuarioNome())
+            .situacao(usuarioEquipeDto.getSituacao())
             .build();
     }
 }
