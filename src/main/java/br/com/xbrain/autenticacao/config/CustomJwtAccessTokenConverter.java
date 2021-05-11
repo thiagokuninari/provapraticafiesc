@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -104,9 +104,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
             : Collections.emptyList();
     }
 
-    private List<EquipeVendaSupervisorDto> getEquipeVendas(Usuario usuario) {
+    private List<EquipeVendaDto> getEquipeVendas(Usuario usuario) {
         if (usuario.getNivelCodigo() == AGENTE_AUTORIZADO) {
-            EquipeVendaSupervisorDto equipeVendas = equipeVendasService.getByUsuario(usuario.getId());
+            EquipeVendaDto equipeVendas = equipeVendasService.getByUsuario(usuario.getId());
             return !ObjectUtils.isEmpty(equipeVendas)
                 ? Collections.singletonList(equipeVendas)
                 : Collections.emptyList();
@@ -129,7 +129,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                                           List<Integer> agentesAutorizados,
                                           List<Empresa> empresas,
                                           List<Integer> equipesSupervisionadas,
-                                          List<EquipeVendaSupervisorDto> equipeVendas,
+                                          List<EquipeVendaDto> equipeVendas,
                                           List<SelectResponse> sites) {
         token.getAdditionalInformation().put("usuarioId", usuario.getId());
         token.getAdditionalInformation().put("cpf", usuario.getCpf());

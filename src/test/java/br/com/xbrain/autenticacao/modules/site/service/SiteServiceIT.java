@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.site.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
@@ -143,8 +143,7 @@ public class SiteServiceIT {
     public void editarException_deveLancarException_quandoSupervisorRemovidoEstiverEmEquipeVendas() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
         when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(
-            List.of(EquipeVendaSupervisorDto.builder().descricao("Equipe 1")
-            .build()));
+            List.of(EquipeVendaDto.builder().descricao("Equipe 1").build()));
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> siteService.update(requestUpdateSite()))
             .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "

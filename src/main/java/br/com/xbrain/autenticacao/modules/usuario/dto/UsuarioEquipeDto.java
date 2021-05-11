@@ -17,7 +17,7 @@ public class UsuarioEquipeDto {
     private String usuarioNome;
     private Integer equipeVendaId;
     private String equipeVendaNome;
-    private String supervisorEquipeNome;
+    private String supervisorNome;
     private ESituacao situacao;
 
     public static UsuarioEquipeDto of(UsuarioSituacaoResponse usuarioSituacaoResponse) {
@@ -35,7 +35,7 @@ public class UsuarioEquipeDto {
     public UsuarioEquipeDto setEquipe(EquipeVendaSupervisorDto equipe) {
         this.equipeVendaId = equipe.getId();
         this.equipeVendaNome = equipe.getDescricao();
-        this.supervisorEquipeNome = equipe.getSupervisorNome();
+        this.supervisorNome = equipe.getSupervisorNome();
         return this;
     }
 }

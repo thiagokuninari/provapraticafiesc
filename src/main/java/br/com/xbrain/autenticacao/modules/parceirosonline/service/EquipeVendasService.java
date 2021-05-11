@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class EquipeVendasService {
         }
     }
 
-    public EquipeVendaSupervisorDto getByUsuario(Integer usuarioId) {
+    public EquipeVendaDto getByUsuario(Integer usuarioId) {
         try {
             return equipeVendasClient.getByUsuario(usuarioId);
         } catch (Exception ex) {

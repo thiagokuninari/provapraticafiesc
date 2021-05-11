@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -24,7 +25,7 @@ public interface EquipeVendaD2dClient {
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
-    List<EquipeVendaSupervisorDto> getUsuario(@RequestParam Map request);
+    List<EquipeVendaDto> getUsuario(@RequestParam Map request);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);
@@ -32,4 +33,7 @@ public interface EquipeVendaD2dClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
     List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
                                                                   @RequestParam("equipeId") Integer equipeId);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
+    List<EquipeVendaSupervisorDto> getUsuarioComSupervisor(@RequestParam Map request);
 }

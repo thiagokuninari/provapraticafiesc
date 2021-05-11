@@ -117,7 +117,7 @@ public class UsuarioSiteService {
     }
 
     public UsuarioEquipeDto getEquipeById(UsuarioEquipeDto usuarioEquipeDto) {
-        return equipeVendasService.getEquipeVendas(usuarioEquipeDto.getUsuarioId())
+        return equipeVendasService.getEquipeVendasComSupervisor(usuarioEquipeDto.getUsuarioId())
             .stream()
             .findFirst()
             .map(usuarioEquipeDto::setEquipe)
