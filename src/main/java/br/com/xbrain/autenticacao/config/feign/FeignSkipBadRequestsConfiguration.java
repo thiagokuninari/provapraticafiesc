@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +29,7 @@ public class FeignSkipBadRequestsConfiguration {
 
     private String getBody(Response response) {
         try {
-            return IOUtils.toString(response.body().asReader());
+            return response.body().asReader().toString();
         } catch (Exception ignored) {
             throw new IntegracaoException(ignored,
                     FeignSkipBadRequestsConfiguration.class.getName(),

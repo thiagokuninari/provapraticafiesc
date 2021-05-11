@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -24,7 +24,7 @@ public interface EquipeVendaD2dClient {
     boolean verificarPausaEmAndamento(@PathVariable("username") String username);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
-    List<EquipeVendaDto> getUsuario(@RequestParam Map request);
+    List<EquipeVendaSupervisorDto> getUsuario(@RequestParam Map request);
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-equipe")
     List<EquipeVendaUsuarioResponse> getUsuariosPermitidos(@RequestParam("cargos") List<CodigoCargo> cargos);

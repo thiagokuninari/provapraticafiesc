@@ -8,7 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
@@ -516,8 +516,8 @@ public class SiteServiceTest {
             .isEqualTo(List.of(100));
     }
 
-    public List<EquipeVendaDto> umaListEquipeResponse() {
-        return List.of(EquipeVendaDto.builder()
+    public List<EquipeVendaSupervisorDto> umaListEquipeResponse() {
+        return List.of(EquipeVendaSupervisorDto.builder()
         .id(10)
         .descricao("Equipe ativo")
         .build());
