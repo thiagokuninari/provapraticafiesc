@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
@@ -100,6 +101,8 @@ public class UsuarioHierarquiaAtivoServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.GERENTE_OPERACAO,
             CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
         when(equipeVendasService.getEquipeVendas(any())).thenReturn(List.of(new EquipeVendaDto(114, "Equipe", null)));
+        when(equipeVendasService.getEquipeVendasComSupervisor(any()))
+            .thenReturn(List.of(new EquipeVendaSupervisorDto(114, "Equipe", null, null)));
         var filtro = umUsuarioHieraquiaFiltro(null, 110, 114);
         filtro.setBuscarInativo(false);
         var usuarioNomeResponses = service.vendedoresDaHierarquia(filtro);
@@ -113,6 +116,8 @@ public class UsuarioHierarquiaAtivoServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.GERENTE_OPERACAO,
             CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
         when(equipeVendasService.getEquipeVendas(any())).thenReturn(List.of(new EquipeVendaDto(166, "Equipe", null)));
+        when(equipeVendasService.getEquipeVendasComSupervisor(any()))
+            .thenReturn(List.of(new EquipeVendaSupervisorDto(166, "Equipe", null, null)));
         var filtro = umUsuarioHieraquiaFiltro(null, 110, 114);
         filtro.setBuscarInativo(false);
         var usuarioNomeResponses = service.vendedoresDaHierarquia(filtro);
