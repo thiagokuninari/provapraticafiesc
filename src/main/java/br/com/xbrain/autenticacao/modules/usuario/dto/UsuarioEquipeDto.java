@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +17,7 @@ public class UsuarioEquipeDto {
     private String usuarioNome;
     private Integer equipeVendaId;
     private String equipeVendaNome;
+    private String supervisorNome;
     private ESituacao situacao;
 
     public static UsuarioEquipeDto of(UsuarioSituacaoResponse usuarioSituacaoResponse) {
@@ -31,9 +32,10 @@ public class UsuarioEquipeDto {
         return buscarInativo || ESituacao.A.equals(situacao);
     }
 
-    public UsuarioEquipeDto setEquipe(EquipeVendaDto equipe) {
+    public UsuarioEquipeDto setEquipe(EquipeVendaSupervisorDto equipe) {
         this.equipeVendaId = equipe.getId();
         this.equipeVendaNome = equipe.getDescricao();
+        this.supervisorNome = equipe.getSupervisorNome();
         return this;
     }
 }

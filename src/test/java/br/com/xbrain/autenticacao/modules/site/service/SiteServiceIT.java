@@ -29,7 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.buildUsuario;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -141,8 +142,8 @@ public class SiteServiceIT {
     @Test
     public void editarException_deveLancarException_quandoSupervisorRemovidoEstiverEmEquipeVendas() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(List.of(EquipeVendaDto.builder().descricao("Equipe 1")
-            .build()));
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(
+            List.of(EquipeVendaDto.builder().descricao("Equipe 1").build()));
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> siteService.update(requestUpdateSite()))
             .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "

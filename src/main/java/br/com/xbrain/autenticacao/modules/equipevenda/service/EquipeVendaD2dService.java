@@ -3,12 +3,15 @@ package br.com.xbrain.autenticacao.modules.equipevenda.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioRequest;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +58,18 @@ public class EquipeVendaD2dService {
     @SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.UnusedPrivateMethod"})
     private List<EquipeVendaDto> getEquipeVendasOnError(Integer id) {
         return Collections.emptyList();
+    }
+
+    public List<EquipeVendaSupervisorDto> getEquipeVendasComSupervisor(Integer id) {
+        try {
+            var request = EquipeVendaUsuarioRequest.builder()
+                .usuarioId(id)
+                .build();
+            var map = new ObjectMapper().convertValue(request, Map.class);
+            return equipeVendaD2dClient.getUsuarioComSupervisor(map);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(), EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIO);
+        }
     }
 
     @HystrixCommand(fallbackMethod = "getUsuariosPermitidosOnError")
