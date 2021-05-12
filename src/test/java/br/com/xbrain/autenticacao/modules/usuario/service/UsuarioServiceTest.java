@@ -1,12 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
@@ -23,7 +21,6 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
@@ -56,12 +53,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
-import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -1069,6 +1066,43 @@ public class UsuarioServiceTest {
         assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
 
         verify(repository).save(usuarioInativo);
+    }
+
+    @Test
+    public void getUsuariosByIdsTodasSituacoes_deveEfetuarABuscaParticionada_quandoQtdeIdsMaiorQueMaximoOracle() {
+        when(repository.findByIdIn(IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toList()))).thenReturn(List.of(
+            Usuario.builder()
+                .id(133)
+                .nome("Márcio Oliveira")
+                .build(),
+            Usuario.builder()
+                .id(988)
+                .nome("Any Gabrielly")
+                .build()
+        ));
+
+        var emptyUsersIdsPart = IntStream.rangeClosed(1001, 2000).boxed().collect(Collectors.toList());
+        when(repository.findByIdIn(emptyUsersIdsPart)).thenReturn(List.of());
+
+        when(repository.findByIdIn(IntStream.rangeClosed(2001, 2700).boxed().collect(Collectors.toList()))).thenReturn(List.of(
+            Usuario.builder()
+                .id(2029)
+                .nome("Lee Ji Eun")
+                .build()
+        ));
+
+        var idsUsuarios = IntStream.rangeClosed(1, 2700).boxed().collect(Collectors.toCollection(LinkedHashSet::new));
+        var usuarios = service.getUsuariosByIdsTodasSituacoes(idsUsuarios);
+
+        assertThat(usuarios)
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(133, "Márcio Oliveira"),
+                tuple(988, "Any Gabrielly"),
+                tuple(2029, "Lee Ji Eun")
+            );
+
+        verify(repository, times(1)).findByIdIn(eq(emptyUsersIdsPart));
     }
 
     private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
