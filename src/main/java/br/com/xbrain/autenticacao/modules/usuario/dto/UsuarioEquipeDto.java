@@ -6,12 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UsuarioEquipeDto {
+
+    private static final String VAZIO = "";
 
     private Integer usuarioId;
     private String usuarioNome;
@@ -33,9 +36,11 @@ public class UsuarioEquipeDto {
     }
 
     public UsuarioEquipeDto setEquipe(EquipeVendaSupervisorDto equipe) {
-        this.equipeVendaId = equipe.getId();
-        this.equipeVendaNome = equipe.getDescricao();
-        this.supervisorNome = equipe.getSupervisorNome();
+        if (!ObjectUtils.isEmpty(equipe)) {
+            this.equipeVendaId = equipe.getId();
+            this.equipeVendaNome = equipe.getDescricao();
+            this.supervisorNome = equipe.getSupervisorNome();
+        }
         return this;
     }
 }
