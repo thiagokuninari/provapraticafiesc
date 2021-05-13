@@ -919,6 +919,42 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
     }
 
+    @Test
+    @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_unauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of(1, 2, 3))))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarUsuarioSituacaoPorIds(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_badRequest_seListaVazia() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of())))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo usuariosIds é obrigatório.")));
+
+        verify(usuarioService, never()).buscarUsuarioSituacaoPorIds(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_ok_seListaNaoVazia() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of(1, 2, 3))))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

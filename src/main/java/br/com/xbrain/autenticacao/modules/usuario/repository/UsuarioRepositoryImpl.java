@@ -777,4 +777,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .orderBy(orderSpecifiers)
             .fetch();
     }
+
+    @Override
+    public List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.situacao
+            ))
+            .from(usuario)
+            .where(predicate)
+            .fetch();
+    }
 }
