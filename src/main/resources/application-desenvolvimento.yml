@@ -1,5 +1,4 @@
 app-config:
-  url-servico-email: http://api-hom.conexaoclarobrasil.com.br/email/emails/
   services:
     autenticacao:
       url: http://172.10.10.33:8096
@@ -23,6 +22,8 @@ app-config:
       url: http://172.10.10.95:8081
     agente-autorizado:
       url: http://172.10.10.105:8300
+    emails:
+      url: http://api-hom.conexaoclarobrasil.com.br/email
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
