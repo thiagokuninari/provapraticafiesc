@@ -498,14 +498,14 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCidadeUf_unauthorized_seUsuarioNaoAutenticado() {
+    public void buscarSiteCidadePorCidadeUf_unauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCidadeUf_forbidden_seUsuarioNaoPossuiPermissao() {
+    public void buscarSiteCidadePorCidadeUf_forbidden_seUsuarioNaoPossuiPermissao() {
         mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
@@ -513,7 +513,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCidadeUf_ok_seUsuarioAutenticadoEComPermissao() {
+    public void buscarSiteCidadePorCidadeUf_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/cidade-uf/LONDRINA/PR")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
@@ -521,14 +521,14 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCodigoCidadeDbm_unauthorized_seUsuarioNaoAutenticado() {
+    public void buscarSiteCidadePorCodigoCidadeDbm_unauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(get(API_URI + "/codigo-cidade-dbm/1"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCodigoCidadeDbm_forbidden_seUsuarioNaoPossuiPermissao() {
+    public void buscarSiteCidadePorCodigoCidadeDbm_forbidden_seUsuarioNaoPossuiPermissao() {
         mvc.perform(get(API_URI + "/codigo-cidade-dbm/1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
@@ -536,7 +536,7 @@ public class SiteControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarSitePorCodigoCidadeDbm_ok_seUsuarioAutenticadoEComPermissao() {
+    public void buscarSiteCidadePorCodigoCidadeDbm_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/codigo-cidade-dbm/3")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());

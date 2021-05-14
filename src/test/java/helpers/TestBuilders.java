@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
@@ -163,6 +164,19 @@ public class TestBuilders {
                 .supervisores(singleton(usuarioVinculado))
                 .timeZone(BRT)
                 .build();
+    }
+
+    public static SiteCidadeResponse umSiteCidade() {
+        return SiteCidadeResponse
+            .builder()
+            .siteId(1)
+            .siteNome("SITE 1")
+            .codigoCidadeDbm(1)
+            .cidadeId(1)
+            .cidadeNome("LONDRINA")
+            .ufId(1)
+            .ufNome("PR")
+            .build();
     }
 
     public static Usuario umUsuario(Integer id, CodigoCargo codigoCargo) {

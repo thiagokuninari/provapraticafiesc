@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -517,53 +518,55 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarSitePorCidadeUf_notFoundException_seNaoHouverResultados() {
-        var predicate = new SitePredicate().comCidade("LONDRINA").comUf("PR").todosSitesAtivos().build();
+    public void buscarSiteCidadePorCidadeUf_notFoundException_seNaoHouverResultados() {
+        var predicate = new CidadePredicate().comNome("LONDRINA").comUf("PR").build()
+            .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
             .thenReturn(Optional.empty());
 
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.buscarSitePorCidadeUf("LONDRINA", "PR"))
+            .isThrownBy(() -> service.buscarSiteCidadePorCidadeUf("LONDRINA", "PR"))
             .withMessage("Site não encontrado.");
     }
 
     @Test
-    public void buscarSitePorCidadeUf_siteResponse_seNaoHouverResultados() {
-        var predicate = new SitePredicate().comCidade("LONDRINA").comUf("PR").todosSitesAtivos().build();
+    public void buscarSiteCidadePorCidadeUf_siteCidadeResponse_seNaoHouverResultados() {
+        var predicate = new CidadePredicate().comNome("LONDRINA").comUf("PR").build()
+            .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findTop1ByPredicate(eq(predicate)))
-            .thenReturn(Optional.of(umSite(1, "SITE UM", BRT)));
+        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.of(umSiteCidade()));
 
-        assertThat(service.buscarSitePorCidadeUf("LONDRINA", "PR"))
-            .extracting("id", "nome", "timeZone", "coordenadoresIds", "supervisoresIds", "estadosIds",
-                "cidadesIds", "discadoraId")
-            .containsExactly(1, "SITE UM", BRT, null, null, null, null, null);
+        assertThat(service.buscarSiteCidadePorCidadeUf("LONDRINA", "PR"))
+            .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
+            .containsExactly(1, "SITE 1", 1, "LONDRINA", 1, "PR");
     }
 
     @Test
-    public void buscarSitePorCodigoCidadeDbm_notFoundException_seNaoHouverResultados() {
-        var predicate = new SitePredicate().comCodigoCidadeDbm(1).todosSitesAtivos().build();
+    public void buscarSiteCidadePorCodigoCidadeDbm_notFoundException_seNaoHouverResultados() {
+        var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
+            .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findTop1ByPredicate(eq(predicate)))
+        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
             .thenReturn(Optional.empty());
 
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.buscarSitePorCodigoCidadeDbm(1))
+            .isThrownBy(() -> service.buscarSiteCidadePorCodigoCidadeDbm(1))
             .withMessage("Site não encontrado.");
     }
 
     @Test
-    public void buscarSitePorCodigoCidadeDbm_siteResponse_seNaoHouverResultados() {
-        var predicate = new SitePredicate().comCodigoCidadeDbm(1).todosSitesAtivos().build();
+    public void buscarSiteCidadePorCodigoCidadeDbm_siteCidadeResponse_seNaoHouverResultados() {
+        var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
+            .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findTop1ByPredicate(eq(predicate)))
-            .thenReturn(Optional.of(umSite(1, "SITE UM", BRT)));
+        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.of(umSiteCidade()));
 
-        assertThat(service.buscarSitePorCodigoCidadeDbm(1))
-            .extracting("id", "nome", "timeZone", "coordenadoresIds", "supervisoresIds", "estadosIds",
-                "cidadesIds", "discadoraId")
-            .containsExactly(1, "SITE UM", BRT, null, null, null, null, null);
+        assertThat(service.buscarSiteCidadePorCodigoCidadeDbm(1))
+            .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
+            .containsExactly(1, "SITE 1", 1, "LONDRINA", 1, "PR");
     }
 
     public List<EquipeVendaDto> umaListEquipeResponse() {

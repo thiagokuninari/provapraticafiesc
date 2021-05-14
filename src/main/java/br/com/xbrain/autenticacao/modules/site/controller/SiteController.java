@@ -132,12 +132,12 @@ public class SiteController {
     }
 
     @GetMapping("cidade-uf/{cidade}/{uf}")
-    public SiteResponse buscarSitePorCidadeUf(@PathVariable String cidade, @PathVariable String uf) {
-        return service.buscarSitePorCidadeUf(cidade, uf);
+    public SiteCidadeResponse buscarSiteCidadePorCidadeUf(@PathVariable String cidade, @PathVariable String uf) {
+        return service.buscarSiteCidadePorCidadeUf(cidade, uf);
     }
 
     @GetMapping("codigo-cidade-dbm/{codigoCidadeDbm}")
-    public SiteResponse buscarSitePorCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
-        return service.buscarSitePorCodigoCidadeDbm(codigoCidadeDbm);
+    public SiteCidadeResponse buscarSiteCidadePorCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
+        return service.buscarSiteCidadePorCodigoCidadeDbm(codigoCidadeDbm);
     }
 }
