@@ -306,6 +306,11 @@ public class UsuarioController {
             .collect(Collectors.toList());
     }
 
+    @GetMapping("tipos-canal")
+    public List<SelectResponse> getTiposCanal() {
+        return usuarioService.getTiposCanalOptions();
+    }
+
     @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
     public List<Integer> getIdsDaHierarquia(@PathVariable Integer usuarioId, @PathVariable String codigoCargo) {
         return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigoCargo);

@@ -38,10 +38,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamento
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
@@ -1824,5 +1821,13 @@ public class UsuarioService {
     public String obterNomeUsuarioPorId(Integer id) {
         return findById(id)
             .getNome();
+    }
+
+    public List<SelectResponse> getTiposCanalOptions() {
+        return Arrays.stream(ETipoCanal.values())
+            .map(tipoCanal -> SelectResponse.of(
+                tipoCanal.name(),
+                tipoCanal.getDescricao().toUpperCase()
+            )).collect(Collectors.toList());
     }
 }

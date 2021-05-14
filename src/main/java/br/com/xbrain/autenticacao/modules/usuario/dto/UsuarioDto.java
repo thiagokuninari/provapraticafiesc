@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -91,6 +92,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
+    private ETipoCanal tipoCanal;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;

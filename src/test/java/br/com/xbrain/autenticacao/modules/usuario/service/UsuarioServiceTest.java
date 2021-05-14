@@ -1105,6 +1105,17 @@ public class UsuarioServiceTest {
         verify(repository, times(1)).findByIdIn(eq(emptyUsersIdsPart));
     }
 
+    @Test
+    public void getTiposCanalOptions_opcoesDeSelectParaOsTiposCanal_quandoBuscarOpcoesParaOSelect() {
+        assertThat(service.getTiposCanalOptions())
+            .extracting("value", "label")
+            .containsExactly(
+                tuple("PAP", "PAP"),
+                tuple("PAP_PREMIUM", "PAP PREMIUM"),
+                tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
+            );
+    }
+
     private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
         return UsuarioDtoVendas
             .builder()
