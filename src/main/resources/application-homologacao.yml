@@ -25,7 +25,6 @@ spring:
 
 app-config:
   url: https://autenticacao-hom.conexaoclarobrasil.com.br
-  url-servico-email: http://email-hom:8080/emails/
   url-estatico-upload: ${app-config.url-estatico}/homologacao/autenticacao
   upload-dir: ${app-config.estatico-dir}/homologacao/autenticacao
 
@@ -52,6 +51,8 @@ app-config:
       url: http://172.10.10.71:8091
     notificacao:
       url: http://172.10.10.98:8081
+    emails:
+      url: http://email-hom:8080
 
   email:
     enviar: true
