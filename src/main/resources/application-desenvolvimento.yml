@@ -1,5 +1,5 @@
 app-config:
-  url-servico-email: http://172.10.10.41:8080/emails/
+  url-servico-email: http://api-hom.conexaoclarobrasil.com.br/email/emails/
   services:
     autenticacao:
       url: http://172.10.10.33:8096

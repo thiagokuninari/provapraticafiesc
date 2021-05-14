@@ -79,8 +79,8 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: viola@xbrain.com.br
-    emails-solicitacao-ramal: renato@xbrain.com.br
+    emails: viola@xbrain.com.br,jose@xbrain.com.br
+    emails-solicitacao-ramal: jose@xbrain.com.br
 
   multiplo-login:
     emails: colaborador@claro.com.br
@@ -254,7 +254,7 @@ app-config:
       url: http://192.168.50.1:6595
     emails:
       #url: http://localhost:8080
-      url: http://192.168.50.1:6541
+      url: http://api-hom.conexaoclarobrasil.com.br/email/emails/
 
 flyway:
   enabled: true
