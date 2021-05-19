@@ -919,6 +919,47 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
     }
 
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "true")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "false")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(false));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

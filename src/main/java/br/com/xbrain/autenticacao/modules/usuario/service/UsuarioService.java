@@ -1719,9 +1719,12 @@ public class UsuarioService {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
+                                                                              boolean buscarInativos) {
+
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
             .stream()
+            .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
             .collect(Collectors.toList());
     }

@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -1003,6 +1003,33 @@ public class UsuarioServiceTest {
             .hasSize(1)
             .extracting("id", "nome", "situacao", "nivelCodigo")
             .containsExactly(tuple(1, "NOME UM", "A", "AGENTE_AUTORIZADO"));
+    }
+
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
+        when(repository.findByOrganizacaoIdAndCargo_CodigoIn(
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
+
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacao(5, true))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"),
+                tuple(11, "Usuario Inativo"),
+                tuple(1, "NOME UM"));
+    }
+
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
+        when(repository.findByOrganizacaoIdAndCargo_CodigoIn(
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
+
+        assertThat(service.findUsuariosOperadoresBackofficeByOrganizacao(5, false))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"),
+                tuple(1, "NOME UM"));
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {
