@@ -105,6 +105,11 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return usuario.isAgenteAutorizado() ? agenteAutorizadoNovoService.getEstrutura(usuario.getId()) : null;
     }
 
+    private String getTipoCanal(Usuario usuario) {
+        var tipoCanal = usuario.getTipoCanal();
+        return Objects.nonNull(tipoCanal) ? tipoCanal.name() : null;
+    }
+
     private void setAdditionalInformation(OAuth2AccessToken token,
                                           Usuario usuario,
                                           User user,
@@ -157,6 +162,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipesSupervisionadas",
                 equipesSupervisionadas);
         token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
+        token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
     }
 
     private String getOrganizacao(Usuario usuario) {
