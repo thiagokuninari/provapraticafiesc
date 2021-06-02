@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,6 +28,7 @@ public class UsuarioCsvResponse {
     private String unidadesNegocios;
     private String empresas;
     private ESituacao situacao;
+    private LocalDateTime dataUltimoAcesso;
     private String loginNetSales;
     private String nivel;
 
@@ -40,6 +42,7 @@ public class UsuarioCsvResponse {
                               String unidadesNegocios,
                               String empresas,
                               ESituacao situacao,
+                              LocalDateTime dataUltimoAcesso,
                               String loginNetSales,
                               String nivel) {
         this.id = id;
@@ -52,6 +55,7 @@ public class UsuarioCsvResponse {
         this.unidadesNegocios = removeDuplicadosWmConcat(unidadesNegocios);
         this.empresas = removeDuplicadosWmConcat(empresas);
         this.situacao = situacao;
+        this.dataUltimoAcesso = dataUltimoAcesso;
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
     }
@@ -68,6 +72,7 @@ public class UsuarioCsvResponse {
                 .concat("UNIDADE NEGOCIO;")
                 .concat("EMPRESA;")
                 .concat("SITUACAO;")
+                .concat("DATA ULTIMO ACESSO;")
                 .concat("LOGIN NETSALES;")
                 .concat("NIVEL;")
                 .concat("\n");
@@ -86,6 +91,8 @@ public class UsuarioCsvResponse {
                 this.unidadesNegocios,
                 this.empresas,
                 this.situacao.toString(),
+                !ObjectUtils.isEmpty(this.dataUltimoAcesso)
+                    ? this.dataUltimoAcesso.toString() : "",
                 getStringFormatadaCsv(this.loginNetSales),
                 getStringFormatadaCsv(this.nivel)
         ).map(CsvUtils::replaceCaracteres)
