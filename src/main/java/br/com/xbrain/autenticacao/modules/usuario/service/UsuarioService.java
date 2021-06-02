@@ -1566,9 +1566,23 @@ public class UsuarioService {
         return repository.getUsuariosCsv(predicate.build());
     }
 
+    public List<UsuarioReceptivoCsvResponse> getAllReceptivoForCsv(UsuarioFiltros filtros) {
+        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
+        return repository.getUsuariosReceptivosCsv(predicate.build());
+    }
+
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
         if (!CsvUtils.setCsvNoHttpResponse(
             getCsv(usuarios),
+            CsvUtils.createFileName(USUARIOS_CSV.name()),
+            response)) {
+            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
+        }
+    }
+
+    public void exportUsuariosReceptivosToCsv(List<UsuarioReceptivoCsvResponse> usuarios, HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(
+            getCsvReceptivo(usuarios),
             CsvUtils.createFileName(USUARIOS_CSV.name()),
             response)) {
             throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
@@ -1605,6 +1619,16 @@ public class UsuarioService {
             ? usuarios
             .stream()
             .map(UsuarioCsvResponse::toCsv)
+            .collect(Collectors.joining("\n"))
+            : "Registros não encontrados.");
+    }
+
+    private String getCsvReceptivo(List<UsuarioReceptivoCsvResponse> usuarios) {
+        return UsuarioReceptivoCsvResponse.getCabecalhoCsv()
+            + (!usuarios.isEmpty()
+            ? usuarios
+            .stream()
+            .map(UsuarioReceptivoCsvResponse::toCsv)
             .collect(Collectors.joining("\n"))
             : "Registros não encontrados.");
     }

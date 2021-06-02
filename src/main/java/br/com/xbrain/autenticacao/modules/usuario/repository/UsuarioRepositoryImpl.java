@@ -53,6 +53,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.comum.model.QOrganizacao.organizacao;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -507,6 +508,42 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                         usuario.loginNetSales, nivel.nome)
                 .orderBy(usuario.nome.asc())
                 .fetch();
+    }
+
+    @Override
+    public List<UsuarioReceptivoCsvResponse> getUsuariosReceptivosCsv(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(
+                Projections.constructor(UsuarioReceptivoCsvResponse.class,
+                    usuario.id,
+                    usuario.nome,
+                    usuario.email,
+                    usuario.telefone,
+                    usuario.cpf,
+                    cargo.nome,
+                    departamento.nome,
+                    stringTemplate("wm_concat({0})", unidadeNegocio.nome),
+                    stringTemplate("wm_concat({0})", empresa.nome),
+                    usuario.situacao,
+                    usuario.dataUltimoAcesso,
+                    usuario.loginNetSales,
+                    nivel.nome,
+                    organizacao.nome
+                )
+            )
+            .from(usuario)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(usuario.departamento, departamento)
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
+            .leftJoin(usuario.empresas, empresa)
+            .leftJoin(cargo.nivel, nivel)
+            .leftJoin(usuario.organizacao, organizacao)
+            .where(predicate)
+            .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
+                cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
+                usuario.loginNetSales, nivel.nome, organizacao.nome)
+            .orderBy(usuario.nome.asc())
+            .fetch();
     }
 
     @Override
