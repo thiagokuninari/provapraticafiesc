@@ -27,6 +27,7 @@ public class UsuarioCsvResponse {
     private String unidadesNegocios;
     private String empresas;
     private ESituacao situacao;
+    private String loginNetSales;
 
     public UsuarioCsvResponse(Integer id,
                               String nome,
@@ -37,7 +38,8 @@ public class UsuarioCsvResponse {
                               String departamento,
                               String unidadesNegocios,
                               String empresas,
-                              ESituacao situacao) {
+                              ESituacao situacao,
+                              String loginNetSales) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -48,6 +50,7 @@ public class UsuarioCsvResponse {
         this.unidadesNegocios = removeDuplicadosWmConcat(unidadesNegocios);
         this.empresas = removeDuplicadosWmConcat(empresas);
         this.situacao = situacao;
+        this.loginNetSales = loginNetSales;
     }
 
     @JsonIgnore
@@ -61,7 +64,8 @@ public class UsuarioCsvResponse {
                 .concat("DEPARTAMENTO;")
                 .concat("UNIDADE NEGOCIO;")
                 .concat("EMPRESA;")
-                .concat("SITUACAO")
+                .concat("SITUACAO;")
+                .concat("LOGIN NETSALES;")
                 .concat("\n");
     }
 
@@ -77,7 +81,8 @@ public class UsuarioCsvResponse {
                 getStringFormatadaCsv(this.departamento),
                 this.unidadesNegocios,
                 this.empresas,
-                this.situacao.toString()
+                this.situacao.toString(),
+                getStringFormatadaCsv(this.loginNetSales)
         ).map(CsvUtils::replaceCaracteres)
                 .collect(Collectors.joining(";"));
     }

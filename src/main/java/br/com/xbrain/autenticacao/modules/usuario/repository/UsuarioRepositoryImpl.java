@@ -489,7 +489,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                 departamento.nome,
                                 stringTemplate("wm_concat({0})", unidadeNegocio.nome),
                                 stringTemplate("wm_concat({0})", empresa.nome),
-                                usuario.situacao
+                                usuario.situacao,
+                                usuario.loginNetSales
                         )
                 )
                 .from(usuario)
@@ -499,7 +500,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .leftJoin(usuario.empresas, empresa)
                 .where(predicate)
                 .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
-                        cargo.nome, departamento.nome, usuario.situacao)
+                        cargo.nome, departamento.nome, usuario.situacao, usuario.loginNetSales)
                 .orderBy(usuario.nome.asc())
                 .fetch();
     }
