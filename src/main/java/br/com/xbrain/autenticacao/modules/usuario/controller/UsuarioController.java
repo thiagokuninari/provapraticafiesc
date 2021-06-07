@@ -418,4 +418,9 @@ public class UsuarioController {
     public String obterNomeUsuarioPorId(@PathVariable Integer id) {
         return usuarioService.obterNomeUsuarioPorId(id);
     }
+
+    @PostMapping("usuario-situacao/por-ids")
+    public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(@RequestBody @Validated UsuarioSituacaoFiltro filtro) {
+        return usuarioService.buscarUsuarioSituacaoPorIds(filtro);
+    }
 }
