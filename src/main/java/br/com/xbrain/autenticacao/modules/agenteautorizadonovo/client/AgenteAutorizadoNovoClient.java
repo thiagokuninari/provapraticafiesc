@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVen
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,4 +56,9 @@ public interface AgenteAutorizadoNovoClient {
 
     @GetMapping("api/possui-agente-autorizado-ativo-por-usuario-id")
     boolean existeAaAtivoByUsuarioId(@RequestParam("usuarioId") Integer usuarioId);
+
+    @GetMapping("api/agente-autorizado/{usuarioId}")
+    AgenteAutorizadoUsuarioDto getAgenteAutorizadoUsuarioDtoByUsuarioId(
+        @PathVariable("usuarioId") Integer usuarioId);
+
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
@@ -179,6 +180,8 @@ public class UsuarioService {
     private FeederService feederService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1566,9 +1569,30 @@ public class UsuarioService {
         return repository.getUsuariosCsv(predicate.build());
     }
 
-    public List<UsuarioReceptivoCsvResponse> getAllReceptivoForCsv(UsuarioFiltros filtros) {
+    public List<UsuarioReceptivoCsvResponse> getAllReceptivosForCsv(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         return repository.getUsuariosReceptivosCsv(predicate.build());
+    }
+
+    public List<UsuarioAgenteAutorizadoCsvResponse> getAllAgentesAutorizadosForCsv(UsuarioFiltros filtros) {
+        List<UsuarioCsvResponse> usuarioCsvResponseList = getAllForCsv(filtros);
+        List<UsuarioAgenteAutorizadoCsvResponse> usuarioAgenteAutorizadoCsvResponses = new ArrayList<>();
+        //um agente autorizado tem vários usuarios
+        //eu passo as informações dos usuarios para agente autorizado e faço uma call unica
+        //abaixo eu vou para cada usuario e procuro as informações de seu agente autorizado e o preencho aqui
+        //porém se tenho 60000 usuarios e cada call demorar 0,3 segundos isso vai demorar 300 minutos
+        //a chamada de um client é custosa ao algoritmo
+        usuarioCsvResponseList.forEach(usuarioCsvResponse -> {
+            if (encontrouAgenteAutorizadoByUsuarioId(usuarioCsvResponse.getId())) {
+                usuarioAgenteAutorizadoCsvResponses.add(UsuarioAgenteAutorizadoCsvResponse.of(
+                    usuarioCsvResponse,
+                    agenteAutorizadoNovoClient.getAgenteAutorizadoUsuarioDtoByUsuarioId(usuarioCsvResponse.getId())));
+            } else {
+                usuarioAgenteAutorizadoCsvResponses.add(UsuarioAgenteAutorizadoCsvResponse.of(
+                    usuarioCsvResponse));
+            }//nope, delay enorme
+        });
+        return usuarioAgenteAutorizadoCsvResponses;
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
@@ -1583,6 +1607,16 @@ public class UsuarioService {
     public void exportUsuariosReceptivosToCsv(List<UsuarioReceptivoCsvResponse> usuarios, HttpServletResponse response) {
         if (!CsvUtils.setCsvNoHttpResponse(
             getCsvReceptivo(usuarios),
+            CsvUtils.createFileName(USUARIOS_CSV.name()),
+            response)) {
+            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
+        }
+    }
+
+    public void exportUsuariosAgentesAutorizadosToCsv(List<UsuarioAgenteAutorizadoCsvResponse> usuarios,
+                                                      HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(
+            getCsvAgenteAutorizado(usuarios),
             CsvUtils.createFileName(USUARIOS_CSV.name()),
             response)) {
             throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
@@ -1629,6 +1663,16 @@ public class UsuarioService {
             ? usuarios
             .stream()
             .map(UsuarioReceptivoCsvResponse::toCsv)
+            .collect(Collectors.joining("\n"))
+            : "Registros não encontrados.");
+    }
+
+    private String getCsvAgenteAutorizado(List<UsuarioAgenteAutorizadoCsvResponse> usuarios) {
+        return UsuarioAgenteAutorizadoCsvResponse.getCabecalhoCsv()
+            + (!usuarios.isEmpty()
+            ? usuarios
+            .stream()
+            .map(UsuarioAgenteAutorizadoCsvResponse::toCsv)
             .collect(Collectors.joining("\n"))
             : "Registros não encontrados.");
     }
@@ -1853,5 +1897,23 @@ public class UsuarioService {
                 tipoCanal.name(),
                 tipoCanal.getDescricao().toUpperCase()
             )).collect(Collectors.toList());
+    }
+
+    public void selectExportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
+        if(filtros.getNivelId() != null) {
+            if (filtros.getNivelId() == ENivel.RECEPTIVO.getId()) {
+                exportUsuariosReceptivosToCsv(
+                    getAllReceptivosForCsv(filtros),
+                    response);
+            } else if (filtros.getNivelId() == ENivel.AGENTE_AUTORIZADO.getId()) {
+                exportUsuariosAgentesAutorizadosToCsv(
+                    getAllAgentesAutorizadosForCsv(filtros),
+                    response);
+            }
+        } else {
+            exportUsuariosToCsv(
+                getAllForCsv(filtros),
+                response);
+        }
     }
 }

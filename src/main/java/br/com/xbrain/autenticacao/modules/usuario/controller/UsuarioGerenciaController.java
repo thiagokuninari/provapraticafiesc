@@ -133,10 +133,11 @@ public class UsuarioGerenciaController {
         //);
         // SE NAO FOREM UTILIZAR ESTE
         //FAZER UM REDIRECIONAMENTO POR FILTROS
-        service.exportUsuariosReceptivosToCsv(
-            service.getAllReceptivoForCsv(filtros),
-            response
-        );
+        //service.exportUsuariosReceptivosToCsv(
+        //    service.getAllReceptivosForCsv(filtros),
+        //    response
+        //);
+        service.selectExportUsuariosToCsv(filtros,response);
     }
 
     @GetMapping("existir/usuario")

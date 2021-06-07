@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public enum IdNivel {
+public enum ENivel {
 
     RECEPTIVO(8),
     AGENTE_AUTORIZADO(3);
