@@ -1822,4 +1822,8 @@ public class UsuarioService {
                 tipoCanal.getDescricao().toUpperCase()
             )).collect(Collectors.toList());
     }
+
+    public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(UsuarioSituacaoFiltro filtro) {
+        return repository.buscarUsuarioSituacao(filtro.toPredicate().build());
+    }
 }

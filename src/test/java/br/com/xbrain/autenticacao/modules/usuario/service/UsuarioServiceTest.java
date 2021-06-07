@@ -31,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeReposi
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -1000,6 +1001,21 @@ public class UsuarioServiceTest {
             .hasSize(1)
             .extracting("id", "nome", "situacao", "nivelCodigo")
             .containsExactly(tuple(1, "NOME UM", "A", "AGENTE_AUTORIZADO"));
+    }
+
+    @Test
+    public void buscarUsuarioSituacaoPorIds_listaDeUsuarioSituacao_seSolicitado() {
+        var usuariosSituacao = List.of(
+            UsuarioSituacaoResponse.builder().id(1).nome("NOME 1").situacao(ESituacao.A).build(),
+            UsuarioSituacaoResponse.builder().id(2).nome("NOME 2").situacao(ESituacao.I).build(),
+            UsuarioSituacaoResponse.builder().id(3).nome("NOME 3").situacao(ESituacao.R).build()
+        );
+
+        when(repository.buscarUsuarioSituacao(eq(new BooleanBuilder(QUsuario.usuario.id.in(List.of(1, 2, 3))))))
+            .thenReturn(usuariosSituacao);
+
+        assertThat(service.buscarUsuarioSituacaoPorIds(new UsuarioSituacaoFiltro(List.of(1, 2, 3))))
+            .isEqualTo(usuariosSituacao);
     }
 
     private Usuario umUsuarioComLoginNetSales(int id) {
