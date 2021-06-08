@@ -78,7 +78,7 @@ public class UsuarioReceptivoCsvResponse {
             .concat("DATA ULTIMO ACESSO;")
             .concat("LOGIN NETSALES;")
             .concat("NIVEL;")
-            .concat("ORGANIZACAO;")
+            .concat("ORGANIZACAO")
             .concat("\n");
     }
 
