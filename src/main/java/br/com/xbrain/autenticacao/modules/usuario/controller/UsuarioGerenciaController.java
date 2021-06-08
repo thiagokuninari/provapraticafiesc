@@ -126,17 +126,6 @@ public class UsuarioGerenciaController {
 
     @GetMapping("/csv")
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
-        //SE FILTROS FOREM IGNORAVEIS USAR ESTE
-        //service.exportUsuariosToCsv(
-        //        service.getAllForCsv(filtros),
-        //        response
-        //);
-        // SE NAO FOREM UTILIZAR ESTE
-        //FAZER UM REDIRECIONAMENTO POR FILTROS
-        //service.exportUsuariosReceptivosToCsv(
-        //    service.getAllReceptivosForCsv(filtros),
-        //    response
-        //);
         service.selectExportUsuariosToCsv(filtros,response);
     }
 

@@ -73,7 +73,10 @@ public class UsuarioAgenteAutorizadoCsvResponse {
                                                         AgenteAutorizadoUsuarioDto agenteAutorizadoUsuarioDto) {
         UsuarioAgenteAutorizadoCsvResponse usuarioAgenteAutorizadoCsvResponse = new UsuarioAgenteAutorizadoCsvResponse();
         BeanUtils.copyProperties(usuarioCsvResponse, usuarioAgenteAutorizadoCsvResponse);
-        BeanUtils.copyProperties(agenteAutorizadoUsuarioDto, usuarioAgenteAutorizadoCsvResponse);
+        usuarioAgenteAutorizadoCsvResponse.razaoSocial = agenteAutorizadoUsuarioDto.getRazaoSocial();
+        usuarioAgenteAutorizadoCsvResponse.cnpj = agenteAutorizadoUsuarioDto.getCnpj();
+        usuarioAgenteAutorizadoCsvResponse.id = agenteAutorizadoUsuarioDto.getUsuarioId();
+
         return usuarioAgenteAutorizadoCsvResponse;
     }
 

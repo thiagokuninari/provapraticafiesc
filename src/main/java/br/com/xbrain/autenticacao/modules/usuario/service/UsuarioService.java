@@ -45,6 +45,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
@@ -112,6 +113,7 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
+    private static final int MAX_IDS_HTTP = 2048;
 
     @Autowired
     @Setter
@@ -1575,24 +1577,30 @@ public class UsuarioService {
     }
 
     public List<UsuarioAgenteAutorizadoCsvResponse> getAllAgentesAutorizadosForCsv(UsuarioFiltros filtros) {
+
         List<UsuarioCsvResponse> usuarioCsvResponseList = getAllForCsv(filtros);
+
+        List<Integer> usuarioIds = usuarioCsvResponseList.stream()
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList());
+
+        List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos =
+            agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(UsuarioRequest.of(usuarioIds));
+
         List<UsuarioAgenteAutorizadoCsvResponse> usuarioAgenteAutorizadoCsvResponses = new ArrayList<>();
-        //um agente autorizado tem vários usuarios
-        //eu passo as informações dos usuarios para agente autorizado e faço uma call unica
-        //abaixo eu vou para cada usuario e procuro as informações de seu agente autorizado e o preencho aqui
-        //porém se tenho 60000 usuarios e cada call demorar 0,3 segundos isso vai demorar 300 minutos
-        //a chamada de um client é custosa ao algoritmo
-        usuarioCsvResponseList.forEach(usuarioCsvResponse -> {
-            if (encontrouAgenteAutorizadoByUsuarioId(usuarioCsvResponse.getId())) {
-                usuarioAgenteAutorizadoCsvResponses.add(UsuarioAgenteAutorizadoCsvResponse.of(
-                    usuarioCsvResponse,
-                    agenteAutorizadoNovoClient.getAgenteAutorizadoUsuarioDtoByUsuarioId(usuarioCsvResponse.getId())));
-            } else {
-                usuarioAgenteAutorizadoCsvResponses.add(UsuarioAgenteAutorizadoCsvResponse.of(
-                    usuarioCsvResponse));
-            }//nope, delay enorme
+
+        usuarioCsvResponseList.forEach( usuarioCsvResponse -> {
+                agenteAutorizadoUsuarioDtos.stream().filter(
+                agenteAutorizadoUsuarioDto ->
+                    agenteAutorizadoUsuarioDto.getUsuarioId()
+                    .equals(usuarioCsvResponse.getId())
+            ).forEach( agenteAutorizadoUsuarioDto ->
+                    usuarioAgenteAutorizadoCsvResponses.add(
+                        UsuarioAgenteAutorizadoCsvResponse.of(usuarioCsvResponse,agenteAutorizadoUsuarioDto)
+                    ));
         });
-        return usuarioAgenteAutorizadoCsvResponses;
+
+        return usuarioAgenteAutorizadoCsvResponses.stream().distinct().collect(Collectors.toList());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
