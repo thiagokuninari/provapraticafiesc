@@ -1232,6 +1232,14 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(Collection<Integer> idsUsuarios) {
+        return partition(List.copyOf(idsUsuarios), QTD_MAX_IN_NO_ORACLE).stream()
+            .map(repository::findByIdIn)
+            .flatMap(List::stream)
+            .map(UsuarioResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
         var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 

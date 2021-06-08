@@ -1085,6 +1085,43 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void getUsuariosByIdsTodasSituacoes_deveEfetuarABuscaParticionada_quandoQtdeIdsMaiorQueMaximoOracle() {
+        when(repository.findByIdIn(IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toList()))).thenReturn(List.of(
+            Usuario.builder()
+                .id(133)
+                .nome("Márcio Oliveira")
+                .build(),
+            Usuario.builder()
+                .id(988)
+                .nome("Any Gabrielly")
+                .build()
+        ));
+
+        var emptyUsersIdsPart = IntStream.rangeClosed(1001, 2000).boxed().collect(Collectors.toList());
+        when(repository.findByIdIn(emptyUsersIdsPart)).thenReturn(List.of());
+
+        when(repository.findByIdIn(IntStream.rangeClosed(2001, 2700).boxed().collect(Collectors.toList()))).thenReturn(List.of(
+            Usuario.builder()
+                .id(2029)
+                .nome("Lee Ji Eun")
+                .build()
+        ));
+
+        var idsUsuarios = IntStream.rangeClosed(1, 2700).boxed().collect(Collectors.toCollection(LinkedHashSet::new));
+        var usuarios = service.getUsuariosByIdsTodasSituacoes(idsUsuarios);
+
+        assertThat(usuarios)
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(133, "Márcio Oliveira"),
+                tuple(988, "Any Gabrielly"),
+                tuple(2029, "Lee Ji Eun")
+            );
+
+        verify(repository, times(1)).findByIdIn(eq(emptyUsersIdsPart));
+    }
+
+    @Test
     public void getTiposCanalOptions_opcoesDeSelectParaOsTiposCanal_quandoBuscarOpcoesParaOSelect() {
         assertThat(service.getTiposCanalOptions())
             .extracting("value", "label")
