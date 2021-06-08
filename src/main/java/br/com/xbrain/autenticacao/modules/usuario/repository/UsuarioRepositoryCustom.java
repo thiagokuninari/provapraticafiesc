@@ -114,4 +114,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
 
     List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+
+    List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 }

@@ -45,7 +45,6 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
@@ -113,7 +112,6 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
-    private static final int MAX_IDS_HTTP = 2048;
 
     @Autowired
     @Setter
@@ -1905,6 +1903,10 @@ public class UsuarioService {
                 tipoCanal.name(),
                 tipoCanal.getDescricao().toUpperCase()
             )).collect(Collectors.toList());
+    }
+
+    public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(UsuarioSituacaoFiltro filtro) {
+        return repository.buscarUsuarioSituacao(filtro.toPredicate().build());
     }
 
     public void selectExportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
