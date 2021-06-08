@@ -388,6 +388,18 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<UsuarioHierarquia> getUsuarioSuperiores(List<Integer> usuarioIds) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuarioHierarquia)
+            .from(usuarioHierarquia)
+            .join(usuarioHierarquia.usuario).fetchJoin()
+            .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
+            .where(usuarioHierarquia.usuario.id.in(usuarioIds))
+            .distinct()
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHierarquia)

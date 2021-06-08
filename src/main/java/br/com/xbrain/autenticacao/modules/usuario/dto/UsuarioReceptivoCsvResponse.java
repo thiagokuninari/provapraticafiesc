@@ -32,6 +32,7 @@ public class UsuarioReceptivoCsvResponse {
     private String loginNetSales;
     private String nivel;
     private String organizacao;
+    private String hierarquia;
 
     public UsuarioReceptivoCsvResponse(Integer id,
                                        String nome,
@@ -46,7 +47,8 @@ public class UsuarioReceptivoCsvResponse {
                                        LocalDateTime dataUltimoAcesso,
                                        String loginNetSales,
                                        String nivel,
-                                       String organizacao) {
+                                       String organizacao,
+                                       String hierarquia) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -61,6 +63,7 @@ public class UsuarioReceptivoCsvResponse {
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
         this.organizacao = organizacao;
+        this.hierarquia = hierarquia;
     }
 
     @JsonIgnore
@@ -78,7 +81,8 @@ public class UsuarioReceptivoCsvResponse {
             .concat("DATA ULTIMO ACESSO;")
             .concat("LOGIN NETSALES;")
             .concat("NIVEL;")
-            .concat("ORGANIZACAO")
+            .concat("ORGANIZACAO;")
+            .concat("HIERARQUIA")
             .concat("\n");
     }
 
@@ -99,6 +103,7 @@ public class UsuarioReceptivoCsvResponse {
                 ? this.dataUltimoAcesso.toString() : "",
             getStringFormatadaCsv(this.loginNetSales),
             getStringFormatadaCsv(this.nivel),
+            getStringFormatadaCsv(this.hierarquia),
             getStringFormatadaCsv(this.organizacao)
         ).map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));

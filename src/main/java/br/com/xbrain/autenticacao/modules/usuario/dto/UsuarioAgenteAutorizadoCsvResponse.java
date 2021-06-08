@@ -34,6 +34,7 @@ public class UsuarioAgenteAutorizadoCsvResponse {
     private LocalDateTime dataUltimoAcesso;
     private String loginNetSales;
     private String nivel;
+    private String hierarquia;
     private String razaoSocial;
     private String cnpj;
 
@@ -50,6 +51,7 @@ public class UsuarioAgenteAutorizadoCsvResponse {
                               LocalDateTime dataUltimoAcesso,
                               String loginNetSales,
                               String nivel,
+                              String hierarquia,
                               String razaoSocial,
                               String cnpj) {
         this.id = id;
@@ -65,6 +67,7 @@ public class UsuarioAgenteAutorizadoCsvResponse {
         this.dataUltimoAcesso = dataUltimoAcesso;
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
+        this.hierarquia = hierarquia;
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
     }
@@ -75,7 +78,6 @@ public class UsuarioAgenteAutorizadoCsvResponse {
         BeanUtils.copyProperties(usuarioCsvResponse, usuarioAgenteAutorizadoCsvResponse);
         usuarioAgenteAutorizadoCsvResponse.razaoSocial = agenteAutorizadoUsuarioDto.getRazaoSocial();
         usuarioAgenteAutorizadoCsvResponse.cnpj = agenteAutorizadoUsuarioDto.getCnpj();
-        usuarioAgenteAutorizadoCsvResponse.id = agenteAutorizadoUsuarioDto.getUsuarioId();
 
         return usuarioAgenteAutorizadoCsvResponse;
     }
@@ -101,6 +103,7 @@ public class UsuarioAgenteAutorizadoCsvResponse {
             .concat("DATA ULTIMO ACESSO;")
             .concat("LOGIN NETSALES;")
             .concat("NIVEL;")
+            .concat("HIERARQUIA;")
             .concat("RAZAO SOCIAL;")
             .concat("CNPJ")
             .concat("\n");
@@ -123,6 +126,7 @@ public class UsuarioAgenteAutorizadoCsvResponse {
                 ? this.dataUltimoAcesso.toString() : "",
             getStringFormatadaCsv(this.loginNetSales),
             getStringFormatadaCsv(this.nivel),
+            getStringFormatadaCsv(this.hierarquia),
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj)
         ).map(CsvUtils::replaceCaracteres)

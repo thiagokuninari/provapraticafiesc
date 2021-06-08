@@ -45,6 +45,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
@@ -1296,6 +1297,10 @@ public class UsuarioService {
         return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
     }
 
+    public List<UsuarioHierarquia> getUsuarioSuperiores(List<Integer> idUsuarios) {
+        return repository.getUsuarioSuperiores(idUsuarios);
+    }
+
     public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
         List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
         return usuariosHierarquia
@@ -1566,7 +1571,32 @@ public class UsuarioService {
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        return repository.getUsuariosCsv(predicate.build());
+        List<UsuarioCsvResponse> usuarioCsvResponses = repository.getUsuariosCsv(predicate.build());
+
+        List<Integer> usuarioIds = usuarioCsvResponses.stream()
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList());
+
+        List<UsuarioHierarquia> usuariosSuperiores = new ArrayList<>();
+
+        Lists.partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
+            .forEach(usuarioId -> usuariosSuperiores.addAll(getUsuarioSuperiores(usuarioId)));
+
+        List<UsuarioCsvResponse> usuarioCsvResponseList = new ArrayList<>();
+
+        usuarioCsvResponses.forEach( usuarioCsvResponse -> {
+            usuariosSuperiores.stream().filter(usuarioHierarquia ->
+                usuarioHierarquia.getUsuario().getId().equals(usuarioCsvResponse.getId())
+            ).forEach( usuarioHierarquia ->
+                usuarioCsvResponseList.add(
+                    UsuarioCsvResponse.of(
+                        usuarioCsvResponse,
+                        usuarioHierarquia
+                    )
+                ));
+        });
+        usuarioCsvResponseList.addAll(usuarioCsvResponses);
+        return usuarioCsvResponseList.stream().distinct().collect(Collectors.toList());
     }
 
     public List<UsuarioReceptivoCsvResponse> getAllReceptivosForCsv(UsuarioFiltros filtros) {
@@ -1588,15 +1618,16 @@ public class UsuarioService {
         List<UsuarioAgenteAutorizadoCsvResponse> usuarioAgenteAutorizadoCsvResponses = new ArrayList<>();
 
         usuarioCsvResponseList.forEach( usuarioCsvResponse -> {
-                agenteAutorizadoUsuarioDtos.stream().filter(
+            agenteAutorizadoUsuarioDtos.stream().filter(
                 agenteAutorizadoUsuarioDto ->
                     agenteAutorizadoUsuarioDto.getUsuarioId()
-                    .equals(usuarioCsvResponse.getId())
+                        .equals(usuarioCsvResponse.getId())
             ).forEach( agenteAutorizadoUsuarioDto ->
                     usuarioAgenteAutorizadoCsvResponses.add(
-                        UsuarioAgenteAutorizadoCsvResponse.of(usuarioCsvResponse,agenteAutorizadoUsuarioDto)
+                        UsuarioAgenteAutorizadoCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto)
                     ));
         });
+
 
         return usuarioAgenteAutorizadoCsvResponses.stream().distinct().collect(Collectors.toList());
     }
