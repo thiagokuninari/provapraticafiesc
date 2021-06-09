@@ -1940,11 +1940,11 @@ public class UsuarioService {
 
     public void selectExportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
         if (filtros.getNivelId() != null) {
-            if (filtros.getNivelId() == ENivel.RECEPTIVO.getId()) {
+            if (ENivel.RECEPTIVO.getIds().contains(filtros.getNivelId())) {
                 exportUsuariosReceptivosToCsv(
                     getAllReceptivosForCsv(filtros),
                     response);
-            } else if (filtros.getNivelId() == ENivel.AGENTE_AUTORIZADO.getId()) {
+            } else if (ENivel.AGENTE_AUTORIZADO.getIds().contains(filtros.getNivelId())) {
                 exportUsuariosAgentesAutorizadosToCsv(
                     getAllAgentesAutorizadosForCsv(filtros),
                     response);
