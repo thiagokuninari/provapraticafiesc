@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,7 +12,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

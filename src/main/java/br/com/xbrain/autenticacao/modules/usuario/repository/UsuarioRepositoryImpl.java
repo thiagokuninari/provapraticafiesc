@@ -518,7 +518,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
                         cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
                         usuario.loginNetSales, nivel.nome)
-                .orderBy(usuario.nome.asc())
                 .fetch();
     }
 
@@ -554,7 +553,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
                 cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
                 usuario.loginNetSales, nivel.nome, organizacao.nome)
-            .orderBy(usuario.nome.asc())
             .fetch();
     }
 

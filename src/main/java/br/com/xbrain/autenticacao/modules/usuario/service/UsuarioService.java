@@ -45,7 +45,6 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
@@ -1579,7 +1578,7 @@ public class UsuarioService {
 
         List<UsuarioHierarquia> usuariosSuperiores = new ArrayList<>();
 
-        Lists.partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
+        partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
             .forEach(usuarioId -> usuariosSuperiores.addAll(getUsuarioSuperiores(usuarioId)));
 
         List<UsuarioCsvResponse> usuarioCsvResponseList = new ArrayList<>();
@@ -1627,7 +1626,6 @@ public class UsuarioService {
                         UsuarioAgenteAutorizadoCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto)
                     ));
         });
-
 
         return usuarioAgenteAutorizadoCsvResponses.stream().distinct().collect(Collectors.toList());
     }
@@ -1941,7 +1939,7 @@ public class UsuarioService {
     }
 
     public void selectExportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
-        if(filtros.getNivelId() != null) {
+        if (filtros.getNivelId() != null) {
             if (filtros.getNivelId() == ENivel.RECEPTIVO.getId()) {
                 exportUsuariosReceptivosToCsv(
                     getAllReceptivosForCsv(filtros),
