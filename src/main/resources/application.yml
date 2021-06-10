@@ -315,7 +315,7 @@ feign:
   client:
     config:
       agenteAutorizadoNovoClient:
-        connectTimeout: 180000
+        connectTimeout: 360000
         readTimeout: 360000
 
 keys:
