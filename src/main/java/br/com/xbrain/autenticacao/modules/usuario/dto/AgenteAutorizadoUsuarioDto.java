@@ -5,9 +5,8 @@ import lombok.Data;
 @Data
 public class AgenteAutorizadoUsuarioDto {
 
-    private int id;
+    private Integer usuarioId;
     private String cnpj;
     private String razaoSocial;
-    private Integer usuarioId;
 
 }

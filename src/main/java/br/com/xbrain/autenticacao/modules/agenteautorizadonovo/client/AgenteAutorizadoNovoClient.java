@@ -16,9 +16,7 @@ import java.util.Set;
 
 @FeignClient(name = "agenteAutorizadoNovoClient",
     url = "${app-config.services.agente-autorizado.url}",
-    configuration = {
-        FeignSkipBadRequestsConfiguration.class
-    })
+    configuration = FeignSkipBadRequestsConfiguration.class)
 public interface AgenteAutorizadoNovoClient {
 
     String URL_AGENTE_AUTORIZADO = "api";
