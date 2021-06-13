@@ -25,36 +25,36 @@ public interface AgenteAutorizadoNovoClient {
     List<UsuarioDtoVendas> buscarTodosUsuariosDosAas(@RequestParam("aasIds") List<Integer> aasIds,
                                                      @RequestParam("buscarInativos") Boolean buscarInativos);
 
-    @GetMapping("api/subordinados")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/subordinados")
     Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);
 
-    @GetMapping("api/agente-autorizado-por-cnpj")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/agente-autorizado-por-cnpj")
     AgenteAutorizadoResponse getAaByCpnj(@RequestParam Map request);
 
-    @GetMapping("api/id/{agenteAutorizadoId}")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/id/{agenteAutorizadoId}")
     AgenteAutorizadoResponse getAaById(@PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId);
 
-    @GetMapping("api/empresas-matriz-filiais/{usuarioId}")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/empresas-matriz-filiais/{usuarioId}")
     List<EmpresaResponse> getEmpresasPermitidas(@PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping("api/{usuarioId}/estrutura")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/{usuarioId}/estrutura")
     String getEstrutura(@PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping("api/usuarios-agente-autorizado/{agenteAutorizadoId}/{buscarInativos}")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/usuarios-agente-autorizado/{agenteAutorizadoId}/{buscarInativos}")
     List<UsuarioAgenteAutorizadoResponse> getUsuariosByAaId(
         @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
         @PathVariable("buscarInativos") Boolean buscarInativos);
 
-    @GetMapping("api/agentes-autorizados-permitidos/{usuarioId}")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/agentes-autorizados-permitidos/{usuarioId}")
     List<Integer> getAasPermitidos(@PathVariable("usuarioId") Integer usuarioId);
 
-    @GetMapping("api/possui-agente-autorizado-ativo-por-socio-email")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/possui-agente-autorizado-ativo-por-socio-email")
     boolean existeAaAtivoBySocioEmail(@RequestParam("usuarioEmail") String usuarioEmail);
 
-    @GetMapping("api/possui-agente-autorizado-ativo-por-usuario-id")
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/possui-agente-autorizado-ativo-por-usuario-id")
     boolean existeAaAtivoByUsuarioId(@RequestParam("usuarioId") Integer usuarioId);
 
-    @PostMapping("api/agente-autorizados")
+    @PostMapping(URL_AGENTE_AUTORIZADO + "/agente-autorizados")
     List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtoByUsuarioIds(
         @RequestBody UsuarioRequest request);
 
