@@ -491,41 +491,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(
-                        Projections.constructor(UsuarioCsvResponse.class,
-                                usuario.id,
-                                usuario.nome,
-                                usuario.email,
-                                usuario.telefone,
-                                usuario.cpf,
-                                cargo.nome,
-                                departamento.nome,
-                                stringTemplate("wm_concat({0})", unidadeNegocio.nome),
-                                stringTemplate("wm_concat({0})", empresa.nome),
-                                usuario.situacao,
-                                usuario.dataUltimoAcesso,
-                                usuario.loginNetSales,
-                                nivel.nome
-                        )
-                )
-                .from(usuario)
-                .leftJoin(usuario.cargo, cargo)
-                .leftJoin(usuario.departamento, departamento)
-                .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
-                .leftJoin(usuario.empresas, empresa)
-                .leftJoin(cargo.nivel, nivel)
-                .where(predicate)
-                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
-                        cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
-                        usuario.loginNetSales, nivel.nome)
-                .fetch();
-    }
-
-    @Override
-    public List<UsuarioReceptivoCsvResponse> getUsuariosReceptivosCsv(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
             .select(
-                Projections.constructor(UsuarioReceptivoCsvResponse.class,
+                Projections.constructor(UsuarioCsvResponse.class,
                     usuario.id,
                     usuario.nome,
                     usuario.email,

@@ -77,6 +77,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_I
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -1571,19 +1572,27 @@ public class UsuarioService {
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         List<UsuarioCsvResponse> usuarioCsvResponses = repository.getUsuariosCsv(predicate.build());
+        //trocar por remessas de 10000 por exemplo e chamar a api de agente-autorizado mais cedo no processo ?
+        //PageRequest pageRequest = new PageRequest(0,10000,"id","ASC");
+        //Page<Usuario> usuarios = repository.findAll(pageRequest);
 
         List<Integer> usuarioIds = usuarioCsvResponses.stream()
             .map(UsuarioCsvResponse::getId)
             .collect(Collectors.toList());
 
-        List<UsuarioHierarquia> usuariosSuperiores = new ArrayList<>();
+        List<UsuarioHierarquia> usuariosSuperiores =
+            partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(this::getUsuarioSuperiores)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
 
-        partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
-            .forEach(usuarioId -> usuariosSuperiores.addAll(getUsuarioSuperiores(usuarioId)));
+        List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos =
+            agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(UsuarioRequest.of(usuarioIds));
 
         List<UsuarioCsvResponse> usuarioCsvResponseList = new ArrayList<>();
 
-        usuarioCsvResponses.forEach( usuarioCsvResponse -> {
+        usuarioCsvResponses.stream().forEach( usuarioCsvResponse -> {
             usuariosSuperiores.stream().filter(usuarioHierarquia ->
                 usuarioHierarquia.getUsuario().getId().equals(usuarioCsvResponse.getId())
             ).forEach( usuarioHierarquia ->
@@ -1593,65 +1602,29 @@ public class UsuarioService {
                         usuarioHierarquia
                     )
                 ));
-        });
-        usuarioCsvResponseList.addAll(usuarioCsvResponses);
-        return usuarioCsvResponseList.stream().distinct().collect(Collectors.toList());
-    }
-
-    public List<UsuarioReceptivoCsvResponse> getAllReceptivosForCsv(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        return repository.getUsuariosReceptivosCsv(predicate.build());
-    }
-
-    public List<UsuarioAgenteAutorizadoCsvResponse> getAllAgentesAutorizadosForCsv(UsuarioFiltros filtros) {
-
-        List<UsuarioCsvResponse> usuarioCsvResponseList = getAllForCsv(filtros);
-
-        List<Integer> usuarioIds = usuarioCsvResponseList.stream()
-            .map(UsuarioCsvResponse::getId)
-            .collect(Collectors.toList());
-
-        List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos =
-            agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(UsuarioRequest.of(usuarioIds));
-
-        List<UsuarioAgenteAutorizadoCsvResponse> usuarioAgenteAutorizadoCsvResponses = new ArrayList<>();
-
-        usuarioCsvResponseList.forEach( usuarioCsvResponse -> {
             agenteAutorizadoUsuarioDtos.stream().filter(
                 agenteAutorizadoUsuarioDto ->
                     agenteAutorizadoUsuarioDto.getUsuarioId()
                         .equals(usuarioCsvResponse.getId())
             ).forEach( agenteAutorizadoUsuarioDto ->
-                    usuarioAgenteAutorizadoCsvResponses.add(
-                        UsuarioAgenteAutorizadoCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto)
-                    ));
-        });
+                usuarioCsvResponseList.add(
+                    UsuarioCsvResponse.of(
+                        usuarioCsvResponse,
+                        agenteAutorizadoUsuarioDto)
+                ));
+        });//melhorar esse monstro
 
-        return usuarioAgenteAutorizadoCsvResponses.stream().distinct().collect(Collectors.toList());
+        //filtros usuariosIds de usuariosOperacao -> buscar e incluir canal
+        usuarioCsvResponses.stream().filter( usuarioCsvResponse ->
+            OPERACAO.name().equals(usuarioCsvResponse.getNivel())
+        ).map(UsuarioCsvResponse::getId).collect(Collectors.toList());
+
+        return usuarioCsvResponseList.stream().distinct().collect(Collectors.toList());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
         if (!CsvUtils.setCsvNoHttpResponse(
             getCsv(usuarios),
-            CsvUtils.createFileName(USUARIOS_CSV.name()),
-            response)) {
-            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
-        }
-    }
-
-    public void exportUsuariosReceptivosToCsv(List<UsuarioReceptivoCsvResponse> usuarios, HttpServletResponse response) {
-        if (!CsvUtils.setCsvNoHttpResponse(
-            getCsvReceptivo(usuarios),
-            CsvUtils.createFileName(USUARIOS_CSV.name()),
-            response)) {
-            throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
-        }
-    }
-
-    public void exportUsuariosAgentesAutorizadosToCsv(List<UsuarioAgenteAutorizadoCsvResponse> usuarios,
-                                                      HttpServletResponse response) {
-        if (!CsvUtils.setCsvNoHttpResponse(
-            getCsvAgenteAutorizado(usuarios),
             CsvUtils.createFileName(USUARIOS_CSV.name()),
             response)) {
             throw new ValidacaoException("Falha ao tentar baixar relatório de usuários!");
@@ -1688,26 +1661,6 @@ public class UsuarioService {
             ? usuarios
             .stream()
             .map(UsuarioCsvResponse::toCsv)
-            .collect(Collectors.joining("\n"))
-            : "Registros não encontrados.");
-    }
-
-    private String getCsvReceptivo(List<UsuarioReceptivoCsvResponse> usuarios) {
-        return UsuarioReceptivoCsvResponse.getCabecalhoCsv()
-            + (!usuarios.isEmpty()
-            ? usuarios
-            .stream()
-            .map(UsuarioReceptivoCsvResponse::toCsv)
-            .collect(Collectors.joining("\n"))
-            : "Registros não encontrados.");
-    }
-
-    private String getCsvAgenteAutorizado(List<UsuarioAgenteAutorizadoCsvResponse> usuarios) {
-        return UsuarioAgenteAutorizadoCsvResponse.getCabecalhoCsv()
-            + (!usuarios.isEmpty()
-            ? usuarios
-            .stream()
-            .map(UsuarioAgenteAutorizadoCsvResponse::toCsv)
             .collect(Collectors.joining("\n"))
             : "Registros não encontrados.");
     }
@@ -1936,23 +1889,5 @@ public class UsuarioService {
 
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(UsuarioSituacaoFiltro filtro) {
         return repository.buscarUsuarioSituacao(filtro.toPredicate().build());
-    }
-
-    public void selectExportUsuariosToCsv(UsuarioFiltros filtros, HttpServletResponse response) {
-        if (filtros.getNivelId() != null) {
-            if (ENivel.RECEPTIVO.getIds().contains(filtros.getNivelId())) {
-                exportUsuariosReceptivosToCsv(
-                    getAllReceptivosForCsv(filtros),
-                    response);
-            } else if (ENivel.AGENTE_AUTORIZADO.getIds().contains(filtros.getNivelId())) {
-                exportUsuariosAgentesAutorizadosToCsv(
-                    getAllAgentesAutorizadosForCsv(filtros),
-                    response);
-            }
-        } else {
-            exportUsuariosToCsv(
-                getAllForCsv(filtros),
-                response);
-        }
     }
 }

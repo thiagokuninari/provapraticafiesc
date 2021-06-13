@@ -37,6 +37,10 @@ public class UsuarioCsvResponse {
     private LocalDateTime dataUltimoAcesso;
     private String loginNetSales;
     private String nivel;
+    private String razaoSocial;
+    private String cnpj;
+    private String organizacao;
+    private String canal;
     private String hierarquia;
 
     public UsuarioCsvResponse(Integer id,
@@ -51,7 +55,8 @@ public class UsuarioCsvResponse {
                               ESituacao situacao,
                               LocalDateTime dataUltimoAcesso,
                               String loginNetSales,
-                              String nivel) {
+                              String nivel,
+                              String hierarquia) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -65,62 +70,80 @@ public class UsuarioCsvResponse {
         this.dataUltimoAcesso = dataUltimoAcesso;
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
+        this.hierarquia = hierarquia;
     }
 
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"
-                .concat("NOME;")
-                .concat("EMAIL;")
-                .concat("TELEFONE;")
-                .concat("CPF;")
-                .concat("CARGO;")
-                .concat("DEPARTAMENTO;")
-                .concat("UNIDADE NEGOCIO;")
-                .concat("EMPRESA;")
-                .concat("SITUACAO;")
-                .concat("DATA ULTIMO ACESSO;")
-                .concat("LOGIN NETSALES;")
-                .concat("NIVEL;")
-                .concat("HIERARQUIA")
-                .concat("\n");
+            .concat("NOME;")
+            .concat("EMAIL;")
+            .concat("TELEFONE;")
+            .concat("CPF;")
+            .concat("CARGO;")
+            .concat("DEPARTAMENTO;")
+            .concat("UNIDADE NEGOCIO;")
+            .concat("EMPRESA;")
+            .concat("SITUACAO;")
+            .concat("DATA ULTIMO ACESSO;")
+            .concat("LOGIN NETSALES;")
+            .concat("NIVEL;")
+            .concat("RAZAO SOCIAL;")
+            .concat("CNPJ;")
+            .concat("ORGANIZACAO;")
+            .concat("CANAL;")
+            .concat("HIERARQUIA;")
+            .concat("\n");
     }
 
     @JsonIgnore
     public String toCsv() {
         return Stream.of(
-                this.id.toString(),
-                getStringFormatadaCsv(this.nome),
-                getStringFormatadaCsv(this.email),
-                getStringFormatadaCsv(this.telefone),
-                getCpfFormatado(this.cpf),
-                getStringFormatadaCsv(this.cargo),
-                getStringFormatadaCsv(this.departamento),
-                this.unidadesNegocios,
-                this.empresas,
-                this.situacao.toString(),
-                !ObjectUtils.isEmpty(this.dataUltimoAcesso)
-                    ? this.dataUltimoAcesso.toString() : "",
-                getStringFormatadaCsv(this.loginNetSales),
-                getStringFormatadaCsv(this.nivel),
-                getStringFormatadaCsv(this.hierarquia)
-        ).map(CsvUtils::replaceCaracteres)
-                .collect(Collectors.joining(";"));
+            this.id.toString(),
+            getStringFormatadaCsv(this.nome),
+            getStringFormatadaCsv(this.email),
+            getStringFormatadaCsv(this.telefone),
+            getCpfFormatado(this.cpf),
+            getStringFormatadaCsv(this.cargo),
+            getStringFormatadaCsv(this.departamento),
+            this.unidadesNegocios,
+            this.empresas,
+            this.situacao.toString(),
+            !ObjectUtils.isEmpty(this.dataUltimoAcesso)
+                ? this.dataUltimoAcesso.toString() : "",
+            getStringFormatadaCsv(this.loginNetSales),
+            getStringFormatadaCsv(this.nivel),
+            getStringFormatadaCsv(this.razaoSocial),
+            getStringFormatadaCsv(this.cnpj),
+            getStringFormatadaCsv(this.organizacao),
+            getStringFormatadaCsv(this.canal),
+            getStringFormatadaCsv(this.hierarquia))
+            .map(CsvUtils::replaceCaracteres)
+            .collect(Collectors.joining(";"));
     }
 
     public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
                                         UsuarioHierarquia usuarioHierarquia) {
-        UsuarioCsvResponse usuarioCsvResponseFinal = new UsuarioCsvResponse();
+        var usuarioCsvResponseFinal = new UsuarioCsvResponse();
         BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseFinal);
         usuarioCsvResponseFinal.hierarquia = usuarioHierarquia.getUsuarioSuperior().getNome();
         return usuarioCsvResponseFinal;
     }
 
+    public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
+                                                        AgenteAutorizadoUsuarioDto agenteAutorizadoUsuarioDto) {
+        var usuarioCsvResponseNovo = new UsuarioCsvResponse();
+        BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseNovo);
+        usuarioCsvResponseNovo.razaoSocial = agenteAutorizadoUsuarioDto.getRazaoSocial();
+        usuarioCsvResponseNovo.cnpj = agenteAutorizadoUsuarioDto.getCnpj();
+        return usuarioCsvResponseNovo;
+    }
+
     private String removeDuplicadosWmConcat(String input) {
         return !ObjectUtils.isEmpty(input)
-                ? Stream.of(input.split(","))
-                .distinct()
-                .collect(Collectors.joining("."))
-                : "";
+            ? Stream.of(input.split(","))
+            .distinct()
+            .collect(Collectors.joining("."))
+            : "";
     }
 }
