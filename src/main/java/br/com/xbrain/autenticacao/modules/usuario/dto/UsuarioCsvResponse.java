@@ -40,7 +40,6 @@ public class UsuarioCsvResponse {
     private String razaoSocial;
     private String cnpj;
     private String organizacao;
-    private String canal;
     private String hierarquia;
 
     public UsuarioCsvResponse(Integer id,
@@ -116,7 +115,6 @@ public class UsuarioCsvResponse {
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj),
             getStringFormatadaCsv(this.organizacao),
-            getStringFormatadaCsv(this.canal),
             getStringFormatadaCsv(this.hierarquia))
             .map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));

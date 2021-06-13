@@ -49,6 +49,7 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -77,7 +78,6 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_I
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.*;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
@@ -1572,54 +1572,62 @@ public class UsuarioService {
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         List<UsuarioCsvResponse> usuarioCsvResponses = repository.getUsuariosCsv(predicate.build());
-        //trocar por remessas de 10000 por exemplo e chamar a api de agente-autorizado mais cedo no processo ?
-        //PageRequest pageRequest = new PageRequest(0,10000,"id","ASC");
-        //Page<Usuario> usuarios = repository.findAll(pageRequest);
 
         List<Integer> usuarioIds = usuarioCsvResponses.stream()
             .map(UsuarioCsvResponse::getId)
             .collect(Collectors.toList());
 
-        List<UsuarioHierarquia> usuariosSuperiores =
-            partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
-            .stream()
-            .map(this::getUsuarioSuperiores)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        var usuariosSuperiores = getUsuariosSuperioresByIds(usuarioIds);
 
-        List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos =
-            agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(UsuarioRequest.of(usuarioIds));
+        var agenteAutorizadoUsuarioDtos =
+            getAgenteAutorizadosUsuarioDtoByUsuarioIds(usuarioCsvResponses);
+
+        return juntaListasDeUsuarios(usuarioCsvResponses, usuariosSuperiores, agenteAutorizadoUsuarioDtos);
+    }
+
+    private List<UsuarioCsvResponse> juntaListasDeUsuarios(List<UsuarioCsvResponse> usuarioCsvResponses,
+                                                           List<UsuarioHierarquia> usuariosSuperiores,
+                                                           List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos) {
 
         List<UsuarioCsvResponse> usuarioCsvResponseList = new ArrayList<>();
 
-        usuarioCsvResponses.stream().forEach( usuarioCsvResponse -> {
+        for (UsuarioCsvResponse usuarioCsvRespone : usuarioCsvResponses) {
             usuariosSuperiores.stream().filter(usuarioHierarquia ->
-                usuarioHierarquia.getUsuario().getId().equals(usuarioCsvResponse.getId())
-            ).forEach( usuarioHierarquia ->
+                usuarioHierarquia.getUsuario().getId().equals(usuarioCsvRespone.getId())
+            ).forEach(usuarioHierarquia ->
                 usuarioCsvResponseList.add(
                     UsuarioCsvResponse.of(
-                        usuarioCsvResponse,
+                        usuarioCsvRespone,
                         usuarioHierarquia
                     )
                 ));
             agenteAutorizadoUsuarioDtos.stream().filter(
-                agenteAutorizadoUsuarioDto ->
-                    agenteAutorizadoUsuarioDto.getUsuarioId()
-                        .equals(usuarioCsvResponse.getId())
-            ).forEach( agenteAutorizadoUsuarioDto ->
-                usuarioCsvResponseList.add(
-                    UsuarioCsvResponse.of(
-                        usuarioCsvResponse,
-                        agenteAutorizadoUsuarioDto)
-                ));
-        });//melhorar esse monstro
-
-        //filtros usuariosIds de usuariosOperacao -> buscar e incluir canal
-        usuarioCsvResponses.stream().filter( usuarioCsvResponse ->
-            OPERACAO.name().equals(usuarioCsvResponse.getNivel())
-        ).map(UsuarioCsvResponse::getId).collect(Collectors.toList());
-
+                agenteAutorizadoUsuarioDto -> agenteAutorizadoUsuarioDto
+                    .getUsuarioId().equals(usuarioCsvRespone.getId())
+            ).forEach(agenteAutorizadoUsuarioDto ->
+                usuarioCsvResponseList.add(UsuarioCsvResponse.of(
+                        usuarioCsvRespone,
+                        agenteAutorizadoUsuarioDto)));
+        }
         return usuarioCsvResponseList.stream().distinct().collect(Collectors.toList());
+    }
+
+    private List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtoByUsuarioIds(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        return agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(
+            UsuarioRequest.of(
+                usuarioCsvResponses.stream().filter(usuarioCsvResponse ->
+                    List.of("Agente Autorizado", "Agente Autorizado Nacional").contains(usuarioCsvResponse.getNivel())
+                ).map(UsuarioCsvResponse::getId).collect(Collectors.toList())
+            ));
+    }
+
+    @NotNull
+    private List<UsuarioHierarquia> getUsuariosSuperioresByIds(List<Integer> usuarioIds) {
+        return partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
+            .stream()
+            .map(this::getUsuarioSuperiores)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
