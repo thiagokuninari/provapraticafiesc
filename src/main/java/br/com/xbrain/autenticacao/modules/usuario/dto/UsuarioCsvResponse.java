@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -40,6 +39,7 @@ public class UsuarioCsvResponse {
     private String razaoSocial;
     private String cnpj;
     private String organizacao;
+    private String canal;
     private String hierarquia;
 
     public UsuarioCsvResponse(Integer id,
@@ -55,6 +55,7 @@ public class UsuarioCsvResponse {
                               LocalDateTime dataUltimoAcesso,
                               String loginNetSales,
                               String nivel,
+                              String organizacao,
                               String hierarquia) {
         this.id = id;
         this.nome = nome;
@@ -69,7 +70,8 @@ public class UsuarioCsvResponse {
         this.dataUltimoAcesso = dataUltimoAcesso;
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
-        this.hierarquia = hierarquia;
+        this.organizacao = organizacao;
+        this.hierarquia = removeDuplicadosWmConcat(hierarquia);
     }
 
     @JsonIgnore
@@ -90,7 +92,7 @@ public class UsuarioCsvResponse {
             .concat("RAZAO SOCIAL;")
             .concat("CNPJ;")
             .concat("ORGANIZACAO;")
-            .concat("CANAL;")
+            .concat("CANAL")
             .concat("HIERARQUIA;")
             .concat("\n");
     }
@@ -115,17 +117,9 @@ public class UsuarioCsvResponse {
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj),
             getStringFormatadaCsv(this.organizacao),
-            getStringFormatadaCsv(this.hierarquia))
+            this.hierarquia)
             .map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));
-    }
-
-    public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
-                                        UsuarioHierarquia usuarioHierarquia) {
-        var usuarioCsvResponseFinal = new UsuarioCsvResponse();
-        BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseFinal);
-        usuarioCsvResponseFinal.hierarquia = usuarioHierarquia.getUsuarioSuperior().getNome();
-        return usuarioCsvResponseFinal;
     }
 
     public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,

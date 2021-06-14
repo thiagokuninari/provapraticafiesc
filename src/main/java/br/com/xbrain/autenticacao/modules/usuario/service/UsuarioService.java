@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
@@ -49,7 +48,6 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -181,8 +179,6 @@ public class UsuarioService {
     private FeederService feederService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
-    @Autowired
-    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1297,10 +1293,6 @@ public class UsuarioService {
         return UsuarioResponse.of(usuarioHierarquia.getUsuarioSuperior());
     }
 
-    public List<UsuarioHierarquia> getUsuarioSuperiores(List<Integer> idUsuarios) {
-        return repository.getUsuarioSuperiores(idUsuarios);
-    }
-
     public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
         List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
         return usuariosHierarquia
@@ -1571,63 +1563,7 @@ public class UsuarioService {
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        List<UsuarioCsvResponse> usuarioCsvResponses = repository.getUsuariosCsv(predicate.build());
-
-        List<Integer> usuarioIds = usuarioCsvResponses.stream()
-            .map(UsuarioCsvResponse::getId)
-            .collect(Collectors.toList());
-
-        var usuariosSuperiores = getUsuariosSuperioresByIds(usuarioIds);
-
-        var agenteAutorizadoUsuarioDtos =
-            getAgenteAutorizadosUsuarioDtoByUsuarioIds(usuarioCsvResponses);
-
-        return juntaListasDeUsuarios(usuarioCsvResponses, usuariosSuperiores, agenteAutorizadoUsuarioDtos);
-    }
-
-    private List<UsuarioCsvResponse> juntaListasDeUsuarios(List<UsuarioCsvResponse> usuarioCsvResponses,
-                                                           List<UsuarioHierarquia> usuariosSuperiores,
-                                                           List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos) {
-
-        List<UsuarioCsvResponse> usuarioCsvResponseList = new ArrayList<>();
-
-        for (UsuarioCsvResponse usuarioCsvRespone : usuarioCsvResponses) {
-            usuariosSuperiores.stream().filter(usuarioHierarquia ->
-                usuarioHierarquia.getUsuario().getId().equals(usuarioCsvRespone.getId())
-            ).forEach(usuarioHierarquia ->
-                usuarioCsvResponseList.add(
-                    UsuarioCsvResponse.of(
-                        usuarioCsvRespone,
-                        usuarioHierarquia
-                    )
-                ));
-            agenteAutorizadoUsuarioDtos.stream().filter(
-                agenteAutorizadoUsuarioDto -> agenteAutorizadoUsuarioDto
-                    .getUsuarioId().equals(usuarioCsvRespone.getId())
-            ).forEach(agenteAutorizadoUsuarioDto ->
-                usuarioCsvResponseList.add(UsuarioCsvResponse.of(
-                        usuarioCsvRespone,
-                        agenteAutorizadoUsuarioDto)));
-        }
-        return usuarioCsvResponseList.stream().distinct().collect(Collectors.toList());
-    }
-
-    private List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtoByUsuarioIds(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        return agenteAutorizadoNovoClient.getAgenteAutorizadosUsuarioDtoByUsuarioIds(
-            UsuarioRequest.of(
-                usuarioCsvResponses.stream().filter(usuarioCsvResponse ->
-                    List.of("Agente Autorizado", "Agente Autorizado Nacional").contains(usuarioCsvResponse.getNivel())
-                ).map(UsuarioCsvResponse::getId).collect(Collectors.toList())
-            ));
-    }
-
-    @NotNull
-    private List<UsuarioHierarquia> getUsuariosSuperioresByIds(List<Integer> usuarioIds) {
-        return partition(usuarioIds, QTD_MAX_IN_NO_ORACLE)
-            .stream()
-            .map(this::getUsuarioSuperiores)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        return repository.getUsuariosCsv(predicate.build());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {

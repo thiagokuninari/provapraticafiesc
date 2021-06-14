@@ -388,18 +388,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioHierarquia> getUsuarioSuperiores(List<Integer> usuarioIds) {
-        return new JPAQueryFactory(entityManager)
-            .select(usuarioHierarquia)
-            .from(usuarioHierarquia)
-            .join(usuarioHierarquia.usuario).fetchJoin()
-            .join(usuarioHierarquia.usuarioSuperior).fetchJoin()
-            .where(usuarioHierarquia.usuario.id.in(usuarioIds))
-            .distinct()
-            .fetch();
-    }
-
-    @Override
     public List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
                 .select(usuarioHierarquia)
@@ -506,7 +494,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.dataUltimoAcesso,
                     usuario.loginNetSales,
                     nivel.nome,
-                    organizacao.nome
+                    organizacao.nome,
+                    stringTemplate("wm_concat({0})", usuarioHierarquia.usuarioSuperior.nome)
                 )
             )
             .from(usuario)
@@ -516,6 +505,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.empresas, empresa)
             .leftJoin(cargo.nivel, nivel)
             .leftJoin(usuario.organizacao, organizacao)
+            .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
             .where(predicate)
             .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
                 cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
