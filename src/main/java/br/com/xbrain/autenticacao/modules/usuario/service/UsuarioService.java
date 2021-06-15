@@ -48,6 +48,7 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -1600,13 +1601,10 @@ public class UsuarioService {
             agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
+    @NotNull
     private List<UsuarioCsvResponse> getUsuarioCsvResponses(UsuarioFiltros filtros) {
-        var usuariosComHierarquia =
-            repository.getUsuariosSemHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
-        filtros.setExcluiIds(usuariosComHierarquia
-            .stream()
-            .map(UsuarioCsvResponse::getId)
-            .collect(Collectors.toList()));
+        var usuariosComHierarquia = getUsuariosComHierarquiaCsv(filtros);
+        exluiIdsDeFiltro(filtros, usuariosComHierarquia);
         var usuariosSemHierarquia = getUsuariosSemHierarquiaCsv(filtros);
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
         usuarioCsvResponses.addAll(usuariosComHierarquia);
@@ -1620,6 +1618,12 @@ public class UsuarioService {
 
     private List<UsuarioCsvResponse> getUsuariosComHierarquiaCsv(UsuarioFiltros filtros) {
         return repository.getUsuariosComHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
+    }
+
+    private void exluiIdsDeFiltro(UsuarioFiltros filtros, List<UsuarioCsvResponse> usuariosComHierarquia) {
+        filtros.setExcluiIds(
+            usuariosComHierarquia.stream().map(UsuarioCsvResponse::getId).collect(Collectors.toList())
+        );
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {

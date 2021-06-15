@@ -42,7 +42,12 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
         if (!StringUtils.isEmpty(excluiIds)) {
-            builder.and(usuario.id.notIn(excluiIds));
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(excluiIds,QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::notIn)
+                    .collect(Collectors.toList())
+            ));
         }
         return this;
     }
