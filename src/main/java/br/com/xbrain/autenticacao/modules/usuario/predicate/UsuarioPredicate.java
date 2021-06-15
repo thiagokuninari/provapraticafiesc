@@ -40,6 +40,13 @@ public class UsuarioPredicate {
         this.builder = new BooleanBuilder();
     }
 
+    public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
+        if (!StringUtils.isEmpty(excluiIds)) {
+            builder.and(usuario.id.notIn(excluiIds));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comNome(String nome) {
         if (!StringUtils.isEmpty(nome)) {
             builder.and(usuario.nome.likeIgnoreCase("%" + nome + "%"));

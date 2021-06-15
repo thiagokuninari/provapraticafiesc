@@ -55,7 +55,7 @@ public interface AgenteAutorizadoNovoClient {
     boolean existeAaAtivoByUsuarioId(@RequestParam("usuarioId") Integer usuarioId);
 
     @PostMapping(URL_AGENTE_AUTORIZADO + "/agente-autorizados")
-    List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtoByUsuarioIds(
+    List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtosByUsuarioIds(
         @RequestBody UsuarioRequest request);
 
 }

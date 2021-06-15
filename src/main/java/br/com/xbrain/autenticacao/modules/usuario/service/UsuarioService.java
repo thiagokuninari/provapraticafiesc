@@ -1562,8 +1562,64 @@ public class UsuarioService {
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        return repository.getUsuariosCsv(predicate.build());
+        var usuarioCsvResponses = getUsuarioCsvResponses(filtros);
+        preencheUsuarioCsvResponsesDeAas(usuarioCsvResponses);
+        return usuarioCsvResponses;
+    }
+
+    private void preencheUsuarioCsvResponsesDeAas(List<UsuarioCsvResponse> usuarioCsvResponses) {
+
+        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.stream().filter(
+            usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
+        ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
+
+        var agenteAutorizadoUsuarioDtos = agenteAutorizadoNovoService.
+            getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
+
+
+        List<UsuarioCsvResponse> usuarioCsvResponseList = usuarioCsvResponses.stream().filter(
+            usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
+        ).collect(Collectors.toList());
+
+        usuarioCsvResponseList.forEach(
+            usuarioCsvResponse -> findAaDeUsuarioId(
+                agenteAutorizadoUsuarioDtos, usuarioCsvResponse.getId()
+            ).forEach(
+                agenteAutorizadoUsuarioDto -> usuarioCsvResponses.add(
+                    UsuarioCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto))
+            )
+        );
+
+        usuarioCsvResponses.removeAll(usuarioCsvResponseList);
+
+    }
+
+    private List<AgenteAutorizadoUsuarioDto> findAaDeUsuarioId(List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos,
+                                   Integer usuarioId) {
+        return agenteAutorizadoUsuarioDtos.stream().filter(agenteAutorizadoUsuarioDto ->
+            agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
+    }
+
+    private List<UsuarioCsvResponse> getUsuarioCsvResponses(UsuarioFiltros filtros) {
+        var usuariosComHierarquia =
+            repository.getUsuariosSemHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
+        filtros.setExcluiIds(usuariosComHierarquia
+            .stream()
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList()));
+        var usuariosSemHierarquia = getUsuariosSemHierarquiaCsv(filtros);
+        List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
+        usuarioCsvResponses.addAll(usuariosComHierarquia);
+        usuarioCsvResponses.addAll(usuariosSemHierarquia);
+        return usuarioCsvResponses;
+    }
+
+    private List<UsuarioCsvResponse> getUsuariosSemHierarquiaCsv(UsuarioFiltros filtros) {
+        return repository.getUsuariosSemHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
+    }
+
+    private List<UsuarioCsvResponse> getUsuariosComHierarquiaCsv(UsuarioFiltros filtros) {
+        return repository.getUsuariosComHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {

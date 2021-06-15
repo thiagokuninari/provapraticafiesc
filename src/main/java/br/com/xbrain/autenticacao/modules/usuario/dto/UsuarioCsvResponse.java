@@ -36,11 +36,12 @@ public class UsuarioCsvResponse {
     private LocalDateTime dataUltimoAcesso;
     private String loginNetSales;
     private String nivel;
+    private String hierarquia;
+
     private String razaoSocial;
     private String cnpj;
     private String organizacao;
     private String canal;
-    private String hierarquia;
 
     public UsuarioCsvResponse(Integer id,
                               String nome,
@@ -74,6 +75,36 @@ public class UsuarioCsvResponse {
         this.hierarquia = removeDuplicadosWmConcat(hierarquia);
     }
 
+    public UsuarioCsvResponse(Integer id,
+                              String nome,
+                              String email,
+                              String telefone,
+                              String cpf,
+                              String cargo,
+                              String departamento,
+                              String unidadesNegocios,
+                              String empresas,
+                              ESituacao situacao,
+                              LocalDateTime dataUltimoAcesso,
+                              String loginNetSales,
+                              String nivel,
+                              String organizacao) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.cpf = cpf;
+        this.cargo = cargo;
+        this.departamento = departamento;
+        this.unidadesNegocios = removeDuplicadosWmConcat(unidadesNegocios);
+        this.empresas = removeDuplicadosWmConcat(empresas);
+        this.situacao = situacao;
+        this.dataUltimoAcesso = dataUltimoAcesso;
+        this.loginNetSales = loginNetSales;
+        this.nivel = nivel;
+        this.organizacao = organizacao;
+    }
+
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"
@@ -92,7 +123,7 @@ public class UsuarioCsvResponse {
             .concat("RAZAO SOCIAL;")
             .concat("CNPJ;")
             .concat("ORGANIZACAO;")
-            .concat("CANAL")
+            .concat("CANAL;")
             .concat("HIERARQUIA;")
             .concat("\n");
     }
@@ -117,7 +148,8 @@ public class UsuarioCsvResponse {
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj),
             getStringFormatadaCsv(this.organizacao),
-            this.hierarquia)
+            getStringFormatadaCsv(this.canal),
+            getStringFormatadaCsv(this.hierarquia))
             .map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));
     }

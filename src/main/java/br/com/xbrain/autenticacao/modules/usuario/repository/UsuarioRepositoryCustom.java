@@ -68,7 +68,9 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioHierarquiaResponse> findAllUsuariosHierarquia(Predicate predicate);
 
-    List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate);
+    List<UsuarioCsvResponse> getUsuariosComHierarquiaCsv(Predicate predicate);
+
+    List<UsuarioCsvResponse> getUsuariosSemHierarquiaCsv(Predicate predicate);
 
     Optional<Usuario> findByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
