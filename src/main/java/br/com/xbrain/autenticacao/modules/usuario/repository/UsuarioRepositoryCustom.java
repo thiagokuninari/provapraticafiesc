@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
@@ -116,4 +117,6 @@ public interface UsuarioRepositoryCustom {
     List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
 
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
+
+    List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
 }

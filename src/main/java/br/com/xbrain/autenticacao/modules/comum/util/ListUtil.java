@@ -33,4 +33,10 @@ public class ListUtil {
             return Optional.empty();
         }
     }
+
+    public static <T> List<T> concatLists(List<T> list, List<T> anotherList) {
+        List<T> returnList = new ArrayList<>(list);
+        returnList.addAll(anotherList);
+        return returnList;
+    }
 }

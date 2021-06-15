@@ -74,6 +74,7 @@ import java.util.stream.StreamSupport;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
+import static br.com.xbrain.autenticacao.modules.comum.util.ListUtil.concatLists;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -1564,35 +1565,35 @@ public class UsuarioService {
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         var usuarioCsvResponses = getUsuarioCsvResponses(filtros);
-        preencheUsuarioCsvResponsesDeAas(usuarioCsvResponses);
+        repository.getCanaisByUsuarioIds(List.of(1,2,3,4,5,6,7,8,9,10,17,100,5255));
+        preencheUsuarioCsvsDeAas(usuarioCsvResponses);
         return usuarioCsvResponses;
     }
 
-    private void preencheUsuarioCsvResponsesDeAas(List<UsuarioCsvResponse> usuarioCsvResponses) {
-
+    private void preencheUsuarioCsvsDeAas(List<UsuarioCsvResponse> usuarioCsvResponses) {
         UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.stream().filter(
             usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
         ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
+        if (!usuarioRequest.getUsuarioIds().isEmpty()) {
+            var agenteAutorizadoUsuarioDtos = agenteAutorizadoNovoService
+                .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
 
-        var agenteAutorizadoUsuarioDtos = agenteAutorizadoNovoService.
-            getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
+            List<UsuarioCsvResponse> usuarioCsvResponseList = usuarioCsvResponses.stream().filter(
+                usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
+            ).collect(Collectors.toList());
 
+            usuarioCsvResponseList.forEach(
+                usuarioCsvResponse -> findAaDeUsuarioId(
+                    agenteAutorizadoUsuarioDtos, usuarioCsvResponse.getId()
+                ).forEach(
+                    agenteAutorizadoUsuarioDto -> usuarioCsvResponses.add(
+                        UsuarioCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto))
+                )
+            );
 
-        List<UsuarioCsvResponse> usuarioCsvResponseList = usuarioCsvResponses.stream().filter(
-            usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
-        ).collect(Collectors.toList());
+            usuarioCsvResponses.removeAll(usuarioCsvResponseList);
 
-        usuarioCsvResponseList.forEach(
-            usuarioCsvResponse -> findAaDeUsuarioId(
-                agenteAutorizadoUsuarioDtos, usuarioCsvResponse.getId()
-            ).forEach(
-                agenteAutorizadoUsuarioDto -> usuarioCsvResponses.add(
-                    UsuarioCsvResponse.of(usuarioCsvResponse, agenteAutorizadoUsuarioDto))
-            )
-        );
-
-        usuarioCsvResponses.removeAll(usuarioCsvResponseList);
-
+        }
     }
 
     private List<AgenteAutorizadoUsuarioDto> findAaDeUsuarioId(List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos,
@@ -1606,10 +1607,7 @@ public class UsuarioService {
         var usuariosComHierarquia = getUsuariosComHierarquiaCsv(filtros);
         exluiIdsDeFiltro(filtros, usuariosComHierarquia);
         var usuariosSemHierarquia = getUsuariosSemHierarquiaCsv(filtros);
-        List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
-        usuarioCsvResponses.addAll(usuariosComHierarquia);
-        usuarioCsvResponses.addAll(usuariosSemHierarquia);
-        return usuarioCsvResponses;
+        return concatLists(usuariosSemHierarquia,usuariosComHierarquia);
     }
 
     private List<UsuarioCsvResponse> getUsuariosSemHierarquiaCsv(UsuarioFiltros filtros) {

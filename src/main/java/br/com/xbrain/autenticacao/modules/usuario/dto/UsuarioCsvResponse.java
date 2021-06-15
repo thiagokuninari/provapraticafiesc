@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -160,6 +161,14 @@ public class UsuarioCsvResponse {
         BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseNovo);
         usuarioCsvResponseNovo.razaoSocial = agenteAutorizadoUsuarioDto.getRazaoSocial();
         usuarioCsvResponseNovo.cnpj = agenteAutorizadoUsuarioDto.getCnpj();
+        return usuarioCsvResponseNovo;
+    }
+
+    public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
+                                        Canal canal) {
+        var usuarioCsvResponseNovo = new UsuarioCsvResponse();
+        BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseNovo);
+        usuarioCsvResponseNovo.canal = canal.getCanal().getDescricao();
         return usuarioCsvResponseNovo;
     }
 

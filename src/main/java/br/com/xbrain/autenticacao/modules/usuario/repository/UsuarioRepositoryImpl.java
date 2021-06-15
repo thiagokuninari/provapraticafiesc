@@ -163,6 +163,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .getResultList();
     }
 
+
+    public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
+        return jdbcTemplate.query(" SELECT FK_USUARIO AS usuarioId, CANAL AS canal"
+                    + " FROM USUARIO_CANAL"
+                    + " WHERE FK_USUARIO IN (:usuarioIds)",
+            new MapSqlParameterSource()
+                .addValue("usuarioIds", usuarioIds),
+            new BeanPropertyRowMapper<>(Canal.class));
+    }
+
     @Override
     public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS ID"
