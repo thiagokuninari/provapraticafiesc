@@ -1834,4 +1834,9 @@ public class UsuarioService {
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(UsuarioSituacaoFiltro filtro) {
         return repository.buscarUsuarioSituacao(filtro.toPredicate().build());
     }
+
+    public List<UsuarioResponse> findAllResponsePorIds(UsuarioPorIdFiltro filtro) {
+        var usuarios = repository.findAll(filtro.toPredicate().build());
+        return StreamSupport.stream(usuarios.spliterator(), false).map(UsuarioResponse::of).collect(Collectors.toList());
+    }
 }
