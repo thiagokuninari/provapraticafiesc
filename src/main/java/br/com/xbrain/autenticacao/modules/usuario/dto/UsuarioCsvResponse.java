@@ -139,8 +139,8 @@ public class UsuarioCsvResponse {
             getCpfFormatado(this.cpf),
             getStringFormatadaCsv(this.cargo),
             getStringFormatadaCsv(this.departamento),
-            this.unidadesNegocios,
-            this.empresas,
+            getStringFormatadaCsv(this.unidadesNegocios),
+            getStringFormatadaCsv(this.empresas),
             this.situacao.toString(),
             !ObjectUtils.isEmpty(this.dataUltimoAcesso)
                 ? this.dataUltimoAcesso.toString() : "",
