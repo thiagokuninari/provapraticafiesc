@@ -163,7 +163,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .getResultList();
     }
 
-
     public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS usuarioId, CANAL AS canal"
                     + " FROM USUARIO_CANAL"

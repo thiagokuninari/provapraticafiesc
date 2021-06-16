@@ -1565,9 +1565,43 @@ public class UsuarioService {
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         var usuarioCsvResponses = getUsuarioCsvResponses(filtros);
-        repository.getCanaisByUsuarioIds(List.of(1,2,3,4,5,6,7,8,9,10,17,100,5255));
+        preencheUsuarioCsvsDeOperacao(usuarioCsvResponses);
         preencheUsuarioCsvsDeAas(usuarioCsvResponses);
         return usuarioCsvResponses;
+    }
+
+    private void preencheUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        List<Integer> usuarioIds = usuarioCsvResponses.stream().filter(
+            usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Operação"))
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList());
+
+        if (!usuarioIds.isEmpty()) {
+            List<Canal> canais = new ArrayList<>();
+            var usuarioCsvResponseList = usuarioCsvResponses.stream().filter(
+                usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Operação")
+            ).collect(Collectors.toList());
+
+            partition(usuarioIds,QTD_MAX_IN_NO_ORACLE)
+                .forEach( ids -> canais.addAll(repository.getCanaisByUsuarioIds(ids)));
+
+            usuarioCsvResponseList.forEach(
+                usuarioCsvResponse -> findCanalDeUsuarioId(canais, usuarioCsvResponse.getId()
+                ).forEach( canal -> usuarioCsvResponses.add(
+                    UsuarioCsvResponse.of(usuarioCsvResponse, canal))
+                )
+            );
+
+            usuarioCsvResponses.removeAll(usuarioCsvResponseList);
+
+        }
+    }
+
+    private List<Canal> findCanalDeUsuarioId(List<Canal> canais, Integer usuarioId) {
+        return canais
+            .stream()
+            .filter( canal -> canal.getUsuarioId().equals(usuarioId))
+            .collect(Collectors.toList());
     }
 
     private void preencheUsuarioCsvsDeAas(List<UsuarioCsvResponse> usuarioCsvResponses) {
