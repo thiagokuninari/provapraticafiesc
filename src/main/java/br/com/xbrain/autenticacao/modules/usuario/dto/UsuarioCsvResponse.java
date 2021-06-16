@@ -125,7 +125,7 @@ public class UsuarioCsvResponse {
             .concat("CNPJ;")
             .concat("ORGANIZACAO;")
             .concat("CANAL;")
-            .concat("HIERARQUIA;")
+            .concat("HIERARQUIA")
             .concat("\n");
     }
 

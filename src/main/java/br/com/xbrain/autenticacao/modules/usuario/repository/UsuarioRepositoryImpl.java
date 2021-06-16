@@ -63,6 +63,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private static final int TRINTA_DOIS_DIAS = 32;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
+    private static final String CONCATENA_STRINGS = "wm_concat({0})";
 
     @Autowired
     private EntityManager entityManager;
@@ -497,14 +498,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.cpf,
                     cargo.nome,
                     departamento.nome,
-                    stringTemplate("wm_concat({0})", unidadeNegocio.nome),
-                    stringTemplate("wm_concat({0})", empresa.nome),
+                    stringTemplate( CONCATENA_STRINGS, unidadeNegocio.nome),
+                    stringTemplate(CONCATENA_STRINGS, empresa.nome),
                     usuario.situacao,
                     usuario.dataUltimoAcesso,
                     usuario.loginNetSales,
                     nivel.nome,
                     organizacao.nome,
-                    stringTemplate("wm_concat({0})", usuarioHierarquia.usuarioSuperior.nome)
+                    stringTemplate(CONCATENA_STRINGS, usuarioHierarquia.usuarioSuperior.nome)
                 )
             )
             .from(usuario)
@@ -534,8 +535,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.cpf,
                     cargo.nome,
                     departamento.nome,
-                    stringTemplate("wm_concat({0})", unidadeNegocio.nome),
-                    stringTemplate("wm_concat({0})", empresa.nome),
+                    stringTemplate(CONCATENA_STRINGS, unidadeNegocio.nome),
+                    stringTemplate(CONCATENA_STRINGS, empresa.nome),
                     usuario.situacao,
                     usuario.dataUltimoAcesso,
                     usuario.loginNetSales,
@@ -634,7 +635,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> funcionalidades) {
-        var permissoes = select(stringTemplate("wm_concat({0})", cargoDepartamentoFuncionalidade.funcionalidade.role))
+        var permissoes = select(stringTemplate(CONCATENA_STRINGS, cargoDepartamentoFuncionalidade.funcionalidade.role))
                 .from(cargoDepartamentoFuncionalidade)
                 .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
                 .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
@@ -642,7 +643,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .where(cargo.eq(usuario.cargo)
                         .and(departamento.eq(usuario.departamento))
                         .and(funcionalidade.role.in(funcionalidades)));
-        var permissoesEspeciais = select(stringTemplate("wm_concat({0})", funcionalidade.role))
+        var permissoesEspeciais = select(stringTemplate(CONCATENA_STRINGS, funcionalidade.role))
                 .from(permissaoEspecial)
                 .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
                 .where(permissaoEspecial.usuario.id.eq(usuario.id)
