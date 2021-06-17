@@ -1583,15 +1583,16 @@ public class UsuarioService {
 
             partition(usuarioIds,QTD_MAX_IN_NO_ORACLE)
                 .forEach( ids -> canais.addAll(repository.getCanaisByUsuarioIds(ids)));
-
+            List<UsuarioCsvResponse> usuariosRepetidos = new ArrayList<>();
             usuarioCsvResponseList.forEach(
                 usuarioCsvResponse -> findCanalDeUsuarioId(canais, usuarioCsvResponse.getId()
-                ).forEach( canal -> usuarioCsvResponses.add(
-                    UsuarioCsvResponse.of(usuarioCsvResponse, canal))
-                )
+                ).forEach( canal -> {
+                    usuarioCsvResponses.add(UsuarioCsvResponse.of(usuarioCsvResponse, canal));
+                    usuariosRepetidos.add(usuarioCsvResponse);
+                })
             );
 
-            usuarioCsvResponses.removeAll(usuarioCsvResponseList);
+            usuarioCsvResponses.removeAll(usuariosRepetidos);
 
         }
     }
