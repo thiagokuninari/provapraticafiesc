@@ -1175,7 +1175,7 @@ public class UsuarioServiceTest {
     public void preencheUsuarioCsvsDeOperacao_devePreencherColunasDeCanal_seUsuarioForOperacao() {
 
         when(repository.getCanaisByUsuarioIds(Collections.singletonList(1)))
-            .thenReturn(Collections.singletonList(umCanal()));
+            .thenReturn(List.of(umCanal(),umOutroCanal()));
 
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
         usuarioCsvResponses.add(umUsuarioAaCsv());
@@ -1186,8 +1186,11 @@ public class UsuarioServiceTest {
         var usuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
         usuarioOperacaoCsvCompletado.setCanal("Agente autorizado");
 
+        var outroUsuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
+        outroUsuarioOperacaoCsvCompletado.setCanal("Varejo");
+
         assertThat(usuarioCsvResponses)
-            .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
+            .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado, outroUsuarioOperacaoCsvCompletado));
 
     }
 
@@ -1196,6 +1199,14 @@ public class UsuarioServiceTest {
             .builder()
             .usuarioId(1)
             .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    private Canal umOutroCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.VAREJO)
             .build();
     }
 
