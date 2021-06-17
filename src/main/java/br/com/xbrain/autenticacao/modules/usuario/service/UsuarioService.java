@@ -48,7 +48,6 @@ import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -1566,11 +1565,11 @@ public class UsuarioService {
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
         var usuarioCsvResponses = getUsuarioCsvResponses(filtros);
         preencheUsuarioCsvsDeOperacao(usuarioCsvResponses);
-        preencheUsuarioCsvsDeAas(usuarioCsvResponses);
+        preencheUsuarioCsvsDeAa(usuarioCsvResponses);
         return usuarioCsvResponses;
     }
 
-    private void preencheUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
+    void preencheUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
         List<Integer> usuarioIds = usuarioCsvResponses.stream().filter(
             usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Operação"))
             .map(UsuarioCsvResponse::getId)
@@ -1604,7 +1603,7 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    private void preencheUsuarioCsvsDeAas(List<UsuarioCsvResponse> usuarioCsvResponses) {
+    void preencheUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
         UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.stream().filter(
             usuarioCsvResponse -> usuarioCsvResponse.getNivel().equals("Agente Autorizado")
         ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
@@ -1636,7 +1635,6 @@ public class UsuarioService {
             agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
-    @NotNull
     private List<UsuarioCsvResponse> getUsuarioCsvResponses(UsuarioFiltros filtros) {
         var usuariosComHierarquia = getUsuariosComHierarquiaCsv(filtros);
         exluiIdsDeFiltro(filtros, usuariosComHierarquia);
