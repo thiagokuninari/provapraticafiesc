@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,7 +43,7 @@ public class UsuarioCsvResponse {
     private String razaoSocial;
     private String cnpj;
     private String organizacao;
-    private String canal;
+    private List<Canal> canais;
 
     public UsuarioCsvResponse(Integer id,
                               String nome,
@@ -149,10 +150,19 @@ public class UsuarioCsvResponse {
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj),
             getStringFormatadaCsv(this.organizacao),
-            getStringFormatadaCsv(this.canal),
+            !ObjectUtils.isEmpty(this.canais)
+                ? getCanaisString(this.canais) : "",
             getStringFormatadaCsv(this.hierarquia))
             .map(CsvUtils::replaceCaracteres)
             .collect(Collectors.joining(";"));
+    }
+
+    private String getCanaisString(List<Canal> canais) {
+        return getStringFormatadaCsv(canais
+            .stream()
+            .map(canal -> canal.getCanal().getDescricao())
+            .collect(Collectors.toList())
+            .toString());
     }
 
     public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
@@ -161,14 +171,6 @@ public class UsuarioCsvResponse {
         BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseNovo);
         usuarioCsvResponseNovo.razaoSocial = agenteAutorizadoUsuarioDto.getRazaoSocial();
         usuarioCsvResponseNovo.cnpj = agenteAutorizadoUsuarioDto.getCnpj();
-        return usuarioCsvResponseNovo;
-    }
-
-    public static UsuarioCsvResponse of(UsuarioCsvResponse usuarioCsvResponse,
-                                        Canal canal) {
-        var usuarioCsvResponseNovo = new UsuarioCsvResponse();
-        BeanUtils.copyProperties(usuarioCsvResponse, usuarioCsvResponseNovo);
-        usuarioCsvResponseNovo.canal = canal.getCanal().getDescricao();
         return usuarioCsvResponseNovo;
     }
 

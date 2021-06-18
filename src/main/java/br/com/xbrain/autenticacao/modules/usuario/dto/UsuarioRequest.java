@@ -15,7 +15,7 @@ public class UsuarioRequest {
     private List<Integer> usuarioIds;
 
     public static UsuarioRequest of(List<Integer> usuarioIds) {
-        UsuarioRequest usuarioRequest = new UsuarioRequest();
+        var usuarioRequest = new UsuarioRequest();
         usuarioRequest.setUsuarioIds(usuarioIds);
         return usuarioRequest;
     }

@@ -1160,7 +1160,7 @@ public class UsuarioServiceTest {
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
         usuarioCsvResponses.add(umUsuarioAaCsv());
         usuarioCsvResponses.add(umUsuarioOperacaoCsv());
-        service.preencheUsuarioCsvsDeAa(usuarioCsvResponses);
+        service.preencherUsuarioCsvsDeAa(usuarioCsvResponses);
 
         var usuarioAaCsvCompletado = umUsuarioAaCsv();
         usuarioAaCsvCompletado.setCnpj("78300110000166");
@@ -1181,16 +1181,13 @@ public class UsuarioServiceTest {
         usuarioCsvResponses.add(umUsuarioAaCsv());
         usuarioCsvResponses.add(umUsuarioOperacaoCsv());
 
-        service.preencheUsuarioCsvsDeOperacao(usuarioCsvResponses);
+        service.preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
 
         var usuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
-        usuarioOperacaoCsvCompletado.setCanal("Agente autorizado");
-
-        var outroUsuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
-        outroUsuarioOperacaoCsvCompletado.setCanal("Varejo");
+        usuarioOperacaoCsvCompletado.setCanais(List.of(umCanal(),umOutroCanal()));
 
         assertThat(usuarioCsvResponses)
-            .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado, outroUsuarioOperacaoCsvCompletado));
+            .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
 
     }
 
