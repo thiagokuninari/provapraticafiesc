@@ -1596,16 +1596,15 @@ public class UsuarioService {
         ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
 
         if (!usuarioRequest.getUsuarioIds().isEmpty()) {
-            var AaDtos = agenteAutorizadoNovoService
+            var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
                 .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
 
             for (UsuarioCsvResponse usuarioCsvResponse : usuarioCsvResponses) {
-                findAasDeUsuarioId(AaDtos, usuarioCsvResponse.getId())
+                findAasDeUsuarioId(agenteAutorizadosUsuarioDtos, usuarioCsvResponse.getId())
                     .forEach(agenteAutorizadoUsuarioDto -> {
                         usuarioCsvResponse.setRazaoSocial(agenteAutorizadoUsuarioDto.getRazaoSocial());
                         usuarioCsvResponse.setCnpj(agenteAutorizadoUsuarioDto.getCnpj());
-                    }
-                );
+                    });
             }
         }
     }

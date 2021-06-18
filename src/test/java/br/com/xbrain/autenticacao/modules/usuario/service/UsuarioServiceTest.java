@@ -1156,7 +1156,6 @@ public class UsuarioServiceTest {
         when(agenteAutorizadoNovoService.getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest.of(List.of(2))))
             .thenReturn(Collections.singletonList(umAgenteAutorizadoUsuarioDto()));
 
-
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
         usuarioCsvResponses.add(umUsuarioAaCsv());
         usuarioCsvResponses.add(umUsuarioOperacaoCsv());
