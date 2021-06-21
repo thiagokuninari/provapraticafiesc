@@ -65,7 +65,7 @@ public class SiteServiceIT {
         assertThat(usuarioRepository.findCoordenadoresDisponiveis(new SitePredicate()
             .comCoordenadoresComCidade(List.of(1700)).build()))
             .hasSize(2);
-        var coordenadoresDisponiveis = usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1700));
+        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700));
         assertThat(coordenadoresDisponiveis)
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(Tuple.tuple(11125, "Coordenador2 operacao ativo local"));
@@ -79,7 +79,7 @@ public class SiteServiceIT {
             .extracting(Site::getCoordenadores, Site::getId)
             .contains(Set.of(new Usuario(11126)), 2);
 
-        var coordenadoresDisponiveis = usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1700));
+        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700));
         assertThat(coordenadoresDisponiveis)
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(
@@ -91,7 +91,7 @@ public class SiteServiceIT {
     public void buscarComMso_deveRetornarTodosOsCoordenadoresDisponiveisPorCidade_quandoUsuarioLogadoForMso() {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1700)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(
                 tuple(11125, "Coordenador2 operacao ativo local"),
@@ -135,7 +135,7 @@ public class SiteServiceIT {
     @Test
     public void coordenadoresNaoDisponiveis_deveRetornarListaVazia_quandoCoordenadoresNaoDisponiveisParaCidade() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1300)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1300)))
             .hasSize(0);
     }
 

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "notificacaoClient",
-        url = "${app-config.services.notificacao-api.url}",
+        url = "${app-config.services.notificacao.url}",
         configuration = FeignSkipBadRequestsConfiguration.class)
 public interface NotificacaoClient {
 

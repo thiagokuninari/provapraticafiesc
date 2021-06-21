@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ import static java.util.stream.Collectors.toList;
 @Transactional
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SiteService {
+
+    public static final int LIMETE_IDS = 500;
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
     private static final ValidacaoException EX_SITE_EXISTENTE =
@@ -276,11 +279,15 @@ public class SiteService {
     }
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
-        siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(A, siteRequest.getCidadesIds(),
-            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
-            .ifPresent(site -> {
-                throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
-            });
+        Lists.partition(siteRequest.getCidadesIds(), LIMETE_IDS)
+            .stream()
+            .peek(cidadeIds ->
+                siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(A, cidadeIds,
+                    Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
+                    .ifPresent(site -> {
+                        throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
+                    })
+            );
     }
 
     private List<Cidade> buscarCidadesDisponiveis(List<Integer> estadosIds, Integer siteIgnoradoId) {
