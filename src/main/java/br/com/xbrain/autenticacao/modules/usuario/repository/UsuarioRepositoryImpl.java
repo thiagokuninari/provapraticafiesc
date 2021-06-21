@@ -498,7 +498,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.cpf,
                     cargo.nome,
                     departamento.nome,
-                    stringTemplate( CONCATENA_STRINGS, unidadeNegocio.nome),
+                    stringTemplate(CONCATENA_STRINGS, unidadeNegocio.nome),
                     stringTemplate(CONCATENA_STRINGS, empresa.nome),
                     usuario.situacao,
                     usuario.dataUltimoAcesso,

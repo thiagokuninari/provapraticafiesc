@@ -104,7 +104,7 @@ public class UsuarioService {
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
-    public static final String OPERAÇÃO = "Operação";
+    public static final String OPERACAO = "Operação";
     public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
@@ -1572,7 +1572,7 @@ public class UsuarioService {
 
     void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
         List<Integer> usuarioIds = usuarioCsvResponses.stream().filter(
-            usuarioCsvResponse -> OPERAÇÃO.equals(usuarioCsvResponse.getNivel()))
+            usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
             .map(UsuarioCsvResponse::getId)
             .collect(Collectors.toList());
 

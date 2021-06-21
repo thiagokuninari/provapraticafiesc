@@ -95,7 +95,10 @@ public enum EErrors {
         "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
     ERRO_LIMPAR_CACHE_CALL(
             "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#019 - Erro ao limpar cache dos feriados na telefonia.");
+            "#019 - Erro ao limpar cache dos feriados na telefonia."),
+    ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID(
+        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#020 - Ocorreu um Erro ao buscar agente autorizado usurario dto.");
 
     @Getter
     @Setter

@@ -185,6 +185,14 @@ public class AgenteAutorizadoNovoService {
     }
 
     public List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest request) {
-        return client.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+        try {
+            return client.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
     }
 }
