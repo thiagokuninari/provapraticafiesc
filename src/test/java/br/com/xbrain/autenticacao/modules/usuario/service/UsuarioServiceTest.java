@@ -1166,7 +1166,7 @@ public class UsuarioServiceTest {
         usuarioAaCsvCompletado.setRazaoSocial("Razao Social");
 
         assertThat(usuarioCsvResponses)
-            .isEqualTo(List.of(umUsuarioOperacaoCsv(), usuarioAaCsvCompletado));
+            .isEqualTo(List.of(usuarioAaCsvCompletado, umUsuarioOperacaoCsv()));
 
     }
 
