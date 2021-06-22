@@ -56,6 +56,11 @@ public class UsuarioController {
             usuarioService.findByIdCompleto(getUsuarioId(principal)));
     }
 
+    @PostMapping("por-ids")
+    public Collection<UsuarioResponse> getAllPorIds(@RequestBody @Validated UsuarioPorIdFiltro filtro) {
+        return usuarioService.findAllResponsePorIds(filtro);
+    }
+
     @GetMapping("ativos/nivel/operacao/canal-aa")
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa();
