@@ -32,9 +32,9 @@ public class UsuarioSiteController {
         return usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(cidadesIds.getCidadesIds());
     }
 
-    @GetMapping("editar/{siteId}/coordenador")
+    @PostMapping("editar/{siteId}/coordenador")
     public List<UsuarioNomeResponse> editarCoordenadorSite(@PathVariable Integer siteId,
-                                                               @RequestBody CidadeIdsRequest cidadesIds) {
+                                                           @RequestBody CidadeIdsRequest cidadesIds) {
         return usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(siteId, cidadesIds.getCidadesIds());
     }
 
