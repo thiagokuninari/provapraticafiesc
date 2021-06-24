@@ -156,16 +156,13 @@ public class SiteServiceTest {
 
     @Test
     public void save_validacaoException_quandoCidadesJaExistentesEmOutroSite() {
-        when(siteRepository.findAll()).thenReturn(List.of());
-        when(siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(any(), anyList(), any()))
-            .thenReturn(Optional.of(umSite(1, "Brandin", BRT)));
+        when(siteRepository.findAll(umSitePredicate())).thenReturn(List.of(umSite(1, "Brandin", BRT)));
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(umSiteRequest()))
             .withMessage("Existem cidades vinculadas à outro site.");
 
-        verify(siteRepository, atLeastOnce()).findAll();
-        verify(siteRepository, atLeastOnce()).findFirstBySituacaoAndCidadesIdInAndIdNot(any(), any(), any());
+        verify(siteRepository, atLeastOnce()).findAll(umSitePredicate());
         verifyZeroInteractions(cidadeRepository);
     }
 
@@ -567,6 +564,14 @@ public class SiteServiceTest {
         assertThat(service.buscarSiteCidadePorCodigoCidadeDbm(1))
             .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
             .containsExactly(1, "SITE 1", 1, "LONDRINA", 1, "PR");
+    }
+
+    private Predicate umSitePredicate() {
+        return new SitePredicate()
+            .comSituacao(ESituacao.A)
+            .comCidades(List.of(1, 10))
+            .excetoId(0)
+            .build();
     }
 
     public List<EquipeVendaDto> umaListEquipeResponse() {

@@ -6,12 +6,16 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
+import com.google.common.collect.Lists;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
@@ -24,9 +28,18 @@ import static java.util.Objects.nonNull;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SitePredicate extends PredicateBase {
 
+    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
+
     public SitePredicate comId(Integer id) {
         if (nonNull(id)) {
             builder.and(site.id.eq(id));
+        }
+        return this;
+    }
+
+    public SitePredicate excetoId(Integer id) {
+        if (nonNull(id)) {
+            builder.and(site.id.ne(id));
         }
         return this;
     }
@@ -48,10 +61,15 @@ public class SitePredicate extends PredicateBase {
     }
 
     public SitePredicate comCidades(List<Integer> cidadesIds) {
-        filtrarLista(cidadesIds)
-            .map(site.cidades.any().id::in)
-            .map(builder::and);
-
+        if (!CollectionUtils.isEmpty(cidadesIds)) {
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(site.cidades.any().id::in)
+                        .collect(Collectors.toList()))
+            );
+        }
         return this;
     }
 
@@ -173,8 +191,13 @@ public class SitePredicate extends PredicateBase {
 
     public SitePredicate comCoordenadoresComCidade(List<Integer> cidadesIds) {
         if (!cidadesIds.isEmpty()) {
-            builder.and(usuarioCidade.cidade.id.in(cidadesIds))
-                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(usuarioCidade.cidade.id::in)
+                        .collect(Collectors.toList())))
+                    .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO));
         }
         return this;
     }

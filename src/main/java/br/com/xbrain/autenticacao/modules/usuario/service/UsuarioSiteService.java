@@ -12,19 +12,16 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UsuarioSiteService {
 
-    public static final int LIMETE_IDS = 500;
 
     @Autowired
     private UsuarioRepository repository;
@@ -53,16 +50,8 @@ public class UsuarioSiteService {
         return filtrarHierarquia(coordenadoresDisponiveis, usuarioAutenticado.getId());
     }
 
-    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisPorCidade(List<Integer> cidadesIds) {
-        return Lists.partition(cidadesIds, LIMETE_IDS)
-            .stream()
-            .map(this::obterUsuarioNomeResponses)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
-    }
-
     @Transactional(readOnly = true)
-    private List<UsuarioNomeResponse> obterUsuarioNomeResponses(List<Integer> cidadesIds) {
+    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisPorCidade(List<Integer> cidadesIds) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var sitePredicate = new SitePredicate();
         sitePredicate.comCoordenadoresComCidade(cidadesIds);
