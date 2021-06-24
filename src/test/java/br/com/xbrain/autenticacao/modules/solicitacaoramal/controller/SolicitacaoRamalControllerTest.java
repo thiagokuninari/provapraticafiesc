@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
@@ -13,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
@@ -67,6 +69,8 @@ public class SolicitacaoRamalControllerTest {
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @MockBean
     private EquipeVendasService equipeVendasService;
     @MockBean
     private EmailService emailService;
@@ -77,9 +81,9 @@ public class SolicitacaoRamalControllerTest {
 
     @Before
     public void setUp() {
-        when(agenteAutorizadoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(any())).thenReturn(Arrays.asList(1, 2));
         when(equipeVendasService.getEquipesPorSupervisor(anyInt())).thenReturn(Collections.emptyList());
-        when(agenteAutorizadoService.getAaById(anyInt())).thenReturn(criaAa());
+        when(agenteAutorizadoNovoService.getAaById(anyInt())).thenReturn(criaAa());
     }
 
     @Test
@@ -118,7 +122,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
-        when(agenteAutorizadoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
         when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());
@@ -296,6 +300,7 @@ public class SolicitacaoRamalControllerTest {
                         "O campo melhorDataImplantacao é obrigatório.",
                         "O campo telefoneTi é obrigatório.",
                         "O campo emailTi é obrigatório.",
+                        "O campo tipoImplantacao é obrigatório.",
                         "O campo usuariosSolicitadosIds é obrigatório.")));
     }
 
@@ -432,6 +437,20 @@ public class SolicitacaoRamalControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
+    @Test
+    public void getAllTipoImplantacao_deveRetornarTipoImplantacao_seEnumPossuirValores() throws Exception {
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/tipo-implantacao")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$.[0].codigo", is("ESCRITORIO")))
+                .andExpect(jsonPath("$.[0].descricao", is("ESCRITÓRIO")))
+                .andExpect(jsonPath("$.[1].codigo", is("HOME_OFFICE")))
+                .andExpect(jsonPath("$.[1].descricao", is("HOME OFFICE")));
+
+    }
+
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
                 .id(id)
@@ -439,6 +458,7 @@ public class SolicitacaoRamalControllerTest {
                 .agenteAutorizadoId(aaId)
                 .melhorHorarioImplantacao(LocalTime.of(10, 00))
                 .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
+                .tipoImplantacao(ETipoImplantacao.ESCRITORIO.getCodigo())
                 .emailTi("reanto@ti.com.br")
                 .telefoneTi("(18) 3322-2388")
                 .usuariosSolicitadosIds(Arrays.asList(100, 101))

@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -16,9 +17,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,10 +25,10 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
@@ -37,8 +36,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
-
-    public static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private BooleanBuilder builder;
 
@@ -60,7 +57,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comSituacoes(List<ESituacao> situacoes) {
+    public UsuarioPredicate comSituacoes(Collection<ESituacao> situacoes) {
         if (!isEmpty(situacoes)) {
             builder.and(usuario.situacao.in(situacoes));
         }
@@ -176,6 +173,20 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comIds(List<Integer> usuariosIds) {
+        if (!isEmpty(usuariosIds)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(new ArrayList<>(usuariosIds), QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::in)
+                    .collect(Collectors.toList()))
+            );
+        } else {
+            ignorarTodos();
+        }
+        return this;
+    }
+
     public UsuarioPredicate ouComUsuariosIds(List<Integer> usuariosIds) {
         if (!isEmpty(usuariosIds)) {
             builder.or(
@@ -185,11 +196,6 @@ public class UsuarioPredicate {
                         .map(usuario.id::in)
                         .collect(Collectors.toList())));
         }
-        return this;
-    }
-
-    public UsuarioPredicate comIds(Collection<Integer> usuariosIds) {
-        builder.and(usuario.id.in(usuariosIds));
         return this;
     }
 
@@ -261,14 +267,10 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate daCarteiraHierarquiaOuUsuarioCadastro(List<Integer> ids, int usuarioAutenticadoId) {
-        builder.and(usuario.id.in(
-            JPAExpressions
-                .select(usuario.id)
-                .from(usuario)
-                .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
-                .where(usuarioHierarquia.usuario.id.in(ids)
-                    .or(usuario.usuarioCadastro.id.eq(usuarioAutenticadoId)))));
+    public UsuarioPredicate comCanais(Collection<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
         return this;
     }
 
@@ -285,7 +287,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    private UsuarioPredicate ignorarTodos() {
+    public UsuarioPredicate ignorarTodos() {
         builder.and(usuario.id.isNull());
         return this;
     }
@@ -364,9 +366,11 @@ public class UsuarioPredicate {
                 .collect(Collectors.toList()));
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
-            daCarteiraHierarquiaOuUsuarioCadastro(
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
-                usuario.getUsuario().getId());
+            comIds(Stream.of(
+                usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList()));
 
         } else if (usuario.isBackoffice()) {
             somenteUsuariosBackoffice(usuario, usuarioService, true);
@@ -414,7 +418,62 @@ public class UsuarioPredicate {
             .comSubCluster(filtros.getSubClusterId());
     }
 
-    public Predicate build() {
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
+            .build());
+        return this;
+    }
+
+    public UsuarioPredicate filtrarPermitidosRelatorioLoginLogout(ECanal canal) {
+        switch (canal) {
+            case AGENTE_AUTORIZADO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+                    CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS
+                ));
+                break;
+            case D2D_PROPRIO:
+                builder.and(usuario.cargo.codigo.in(
+                    CodigoCargo.VENDEDOR_OPERACAO,
+                    CodigoCargo.ASSISTENTE_OPERACAO
+                ));
+                break;
+            default:
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCodigoCargo(CodigoCargo codigoCargo) {
+        Optional.ofNullable(codigoCargo)
+            .map(usuario.cargo.codigo::eq)
+            .map(builder::and);
+
+        return this;
+    }
+
+    public UsuarioPredicate comCodigosCargos(List<CodigoCargo> codigosCargos) {
+        if (!isEmpty(codigosCargos)) {
+            builder.and(usuario.cargo.codigo.in(codigosCargos));
+        }
+
+        return this;
+    }
+
+    public UsuarioPredicate comCodigosNiveis(List<CodigoNivel> codigosNiveis) {
+        if (!isEmpty(codigosNiveis)) {
+            builder.and(usuario.cargo.nivel.codigo.in(codigosNiveis));
+        }
+
+        return this;
+    }
+
+    public BooleanBuilder build() {
         return this.builder;
     }
 

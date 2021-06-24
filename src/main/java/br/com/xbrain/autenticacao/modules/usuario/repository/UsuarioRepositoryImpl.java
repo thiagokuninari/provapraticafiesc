@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
@@ -842,15 +843,59 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa() {
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(SelectResponse.class,
-                usuario.id,
-                usuario.nome))
+            .select(Projections.constructor(SelectResponse.class, usuario.id, usuario.nome))
             .from(usuario)
-            .leftJoin(usuario.cargo, cargo)
-            .leftJoin(cargo.nivel, nivel)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
             .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
-                .and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO)))
-            .orderBy(usuario.nome.asc())
+                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.usuarioCadastro.id.eq(usuarioCadastroId))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?> ...orderSpecifiers) {
+        var projection = Projections.bean(UsuarioNomeResponse.class,
+            usuario.id,
+            usuario.nome,
+            usuario.situacao);
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(projection)
+            .from(usuario)
+            .where(predicate)
+            .orderBy(orderSpecifiers)
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(predicate)
+            .innerJoin(usuario.cargo, cargo)
+            .orderBy(orderSpecifiers)
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioSituacaoResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.situacao
+            ))
+            .from(usuario)
+            .where(predicate)
             .fetch();
     }
 }

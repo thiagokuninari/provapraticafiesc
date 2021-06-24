@@ -27,18 +27,23 @@ public class UsuarioResponse {
     private String nome;
     private String cpf;
     private String email;
+    private String rg;
     private String telefone;
     private String telefone02;
     private String telefone03;
+    private String loginNetSales;
     private ESituacao situacao;
     private LocalDateTime dataCadastro;
     private CodigoNivel codigoNivel;
+    private String nomeNivel;
     private CodigoDepartamento codigoDepartamento;
     private String nomeCargo;
     private CodigoCargo codigoCargo;
     private List<CodigoUnidadeNegocio> codigoUnidadesNegocio;
     private List<CodigoEmpresa> codigoEmpresas;
     private List<String> permissoes;
+    private LocalDateTime nascimento;
+    private Integer aaId;
 
     public UsuarioResponse(Integer id, String nome, CodigoCargo codigoCargo) {
         this.id = id;
@@ -58,10 +63,13 @@ public class UsuarioResponse {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+        usuarioResponse.setNomeNivel(usuario.getNivelNome());
         usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
         usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+        usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
+        usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
         return usuarioResponse;
     }
 
@@ -69,6 +77,7 @@ public class UsuarioResponse {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         BeanUtils.copyProperties(usuario, usuarioResponse);
         usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+        usuarioResponse.setNomeNivel(usuario.getNivelNome());
         usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
         usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
         usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());

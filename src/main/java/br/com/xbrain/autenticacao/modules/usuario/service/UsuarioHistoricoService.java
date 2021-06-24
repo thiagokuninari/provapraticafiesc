@@ -8,11 +8,14 @@ import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.INATIVADO_SEM_ACESSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistorico.INATIVACAO_AA;
 
 @Service
 public class UsuarioHistoricoService {
@@ -37,7 +40,23 @@ public class UsuarioHistoricoService {
         ));
     }
 
+    public void gerarHistoricoDeInativacaoPorAgenteAutorizado(Integer usuarioId) {
+        usuarioHistoricoRepository.save(UsuarioHistorico
+            .gerarHistorico(usuarioId, motivoInativacaoService
+                .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
+    }
+
     private MotivoInativacao getMotivoInativacao() {
         return motivoInativacaoService.findByCodigoMotivoInativacao(INATIVADO_SEM_ACESSO);
+    }
+
+    @Transactional
+    public void save(List<UsuarioHistorico> historicos) {
+        usuarioHistoricoRepository.save(historicos);
+    }
+
+    @Transactional
+    public void save(UsuarioHistorico historico) {
+        usuarioHistoricoRepository.save(historico);
     }
 }

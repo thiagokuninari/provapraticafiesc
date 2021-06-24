@@ -60,8 +60,45 @@ public enum EErrors {
         "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#017 - Erro ao tentar recuperar cidades do pol."),
     ERRO_OBTER_AA(
-        "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#018 - Erro ao tentar recuperar o AA.");
+            "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_OBTER_ESTRUTURA_AA(
+        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#019 - Erro ao tentar recuperar a Estrutura do AA."
+    ),
+    ERRO_OBTER_CEP(
+        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#020 - Erro ao tentar buscar o cep"
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE(
+        "#021 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#021 - Erro ao tentar recuperar o relatório de logins e logouts de hoje."
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_CSV(
+        "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#022 - Erro ao tentar recuperar o relatório de logins e logouts CSV."
+    ),
+    ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_USUARIOS_IDS(
+        "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#023 - Erro ao tentar recuperar os ids dos usuários dos acessos."
+    ),
+    ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS(
+        "#024 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#024 - Erro ao tentar recuperar os ids dos usuários subordinados."
+    ),
+    ERRO_BUSCAR_USUARIOS_DO_AA(
+        "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#030 - Ocorreu um erro ao buscar usuários do agente autorizado"
+    ),
+    ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
+        "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#032 - Erro ao tentar recuperar o número de usuários logados por hora."),
+    ERRO_BUSCAR_TODOS_USUARIOS_DOS_AAS(
+        "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
+    ERRO_LIMPAR_CACHE_CALL(
+            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#019 - Erro ao limpar cache dos feriados na telefonia.");
 
     @Getter
     @Setter

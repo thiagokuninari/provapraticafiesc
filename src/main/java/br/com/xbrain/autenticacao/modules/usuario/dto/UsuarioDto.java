@@ -6,12 +6,16 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +36,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UsuarioDto implements Serializable {
 
     private Integer id;
@@ -57,6 +63,7 @@ public class UsuarioDto implements Serializable {
     @Size(max = 30)
     private String orgaoExpedidor;
     @Size(max = 120)
+    @NotBlank
     private String loginNetSales;
     private LocalDateTime nascimento;
     @NotEmpty
@@ -80,10 +87,12 @@ public class UsuarioDto implements Serializable {
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
     private Integer usuarioCadastroId;
+    private String usuarioCadastroNome;
     private List<Integer> hierarquiasId;
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
+    private ETipoCanal tipoCanal;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
@@ -93,6 +102,11 @@ public class UsuarioDto implements Serializable {
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
+    private String cupomLoja;
+
+    public UsuarioDto(Integer id) {
+        this.id = id;
+    }
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
         Usuario usuario = new Usuario();

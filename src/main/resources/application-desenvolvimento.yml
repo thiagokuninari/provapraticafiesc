@@ -1,5 +1,4 @@
 app-config:
-  url-servico-email: http://172.10.10.41:8080/emails/
   services:
     autenticacao:
       url: http://172.10.10.33:8096
@@ -17,6 +16,16 @@ app-config:
       url: http://172.10.10.65:8084
     comunicados:
       url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
+    claro-indico:
+      url: http://172.10.10.54:8055
+    gestao:
+      url: http://172.10.10.21:8091
+    notificacao:
+      url: http://172.10.10.95:8081
+    agente-autorizado:
+      url: http://172.10.10.105:8300
+    emails:
+      url: http://api-hom.conexaoclarobrasil.com.br/email
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log

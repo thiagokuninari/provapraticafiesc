@@ -10,6 +10,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "USUARIO_HISTORICO")
@@ -79,6 +81,13 @@ public class UsuarioHistorico {
         this.situacao = situacao;
     }
 
+    public static List<UsuarioHistorico> gerarHistorico(List<Integer> usuariosIds,
+                                                        String observacao, ESituacao situacao) {
+        return usuariosIds.stream()
+            .map(id -> gerarHistorico(id, null, observacao, situacao))
+            .collect(Collectors.toList());
+    }
+
     public static UsuarioHistorico gerarHistorico(Integer usuarioId, MotivoInativacao motivo,
                                                   String observacao, ESituacao situacao) {
         Usuario usuario = new Usuario(usuarioId);
@@ -123,5 +132,10 @@ public class UsuarioHistorico {
             + (!ObjectUtils.isEmpty(motivoInativacao)
             ? " / " + motivoInativacao.getDescricao()
             : "");
+    }
+
+    @PrePersist
+    public void prePersist() {
+        dataCadastro = LocalDateTime.now();
     }
 }

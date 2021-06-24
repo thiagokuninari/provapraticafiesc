@@ -9,10 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -162,7 +159,7 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
-    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID", updatable = false,
+    @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
@@ -209,6 +206,10 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @Column(name = "TIPO_CANAL")
+    @Enumerated(EnumType.STRING)
+    private ETipoCanal tipoCanal;
+
     @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
@@ -222,6 +223,9 @@ public class Usuario {
 
     @Column(name = "URL_LOJA_PROSPECT_NEXTEL", length = 200)
     private String urlLojaProspectNextel;
+
+    @Column(name = "CUPOM_LOJA", length = 100)
+    private String cupomLoja;
 
     @Transient
     private List<Integer> hierarquiasId;
@@ -393,6 +397,13 @@ public class Usuario {
         return null;
     }
 
+    public String getNivelNome() {
+        if (!ObjectUtils.isEmpty(this.cargo) && !ObjectUtils.isEmpty(this.cargo.getNivel())) {
+            return this.cargo.getNivel().getNome();
+        }
+        return null;
+    }
+
     public List<CodigoEmpresa> getCodigosEmpresas() {
         if (!CollectionUtils.isEmpty(empresas)) {
             return empresas.stream().map(Empresa::getCodigo).collect(Collectors.toList());
@@ -404,7 +415,7 @@ public class Usuario {
         if (!CollectionUtils.isEmpty(unidadesNegocios)) {
             return unidadesNegocios.stream().map(UnidadeNegocio::getCodigo).collect(Collectors.toList());
         }
-        return null;
+        return List.of();
     }
 
     public String getLogin() {
@@ -471,11 +482,19 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isAtivo() {
-        return situacao.equals(ESituacao.A);
+        return ESituacao.A.equals(situacao);
     }
 
     @JsonIgnore
     public boolean isCargo(CodigoCargo codigoCargo) {
         return cargo.getCodigo().equals(codigoCargo);
+    }
+
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(canais) && canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
+    public boolean hasLoginNetSales() {
+        return !StringUtils.isEmpty(loginNetSales);
     }
 }

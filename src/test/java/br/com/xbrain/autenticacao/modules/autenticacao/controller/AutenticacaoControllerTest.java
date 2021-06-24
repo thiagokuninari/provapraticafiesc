@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.CustomTokenEndpointAuthenticationFilter;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
@@ -59,6 +60,8 @@ public class AutenticacaoControllerTest {
     private MockMvc mvc;
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
+    @MockBean
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -130,7 +133,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirOsAAsPermitidos_quandoForNivelAgenteAutorizado() throws Exception {
-        when(agenteAutorizadoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoNovoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
@@ -145,7 +148,7 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveIncluirAsEmpresasDoAa_quandoForNivelAgenteAutorizado() throws Exception {
-        when(agenteAutorizadoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
+        when(agenteAutorizadoNovoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
                 .thenReturn(Arrays.asList(
                         new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
                         new Empresa(2, "NET", CodigoEmpresa.NET)
@@ -165,8 +168,8 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
-                .thenReturn(true);
+        when(agenteAutorizadoNovoService.getEstrutura(USUARIO_SOCIO_ID))
+                .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
@@ -175,21 +178,7 @@ public class AutenticacaoControllerTest {
                         .param("token", token.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.aaPme", is(true)));
-    }
-
-    public void getAccessToken_deveNaoRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
-        when(agenteAutorizadoService.isExclusivoPme(USUARIO_SOCIO_ID))
-                .thenReturn(false);
-
-        OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
-
-        mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.aaPme", is(false)));
+                .andExpect(jsonPath("$.estruturaAa", is("AA_PME")));
     }
 
     @Test

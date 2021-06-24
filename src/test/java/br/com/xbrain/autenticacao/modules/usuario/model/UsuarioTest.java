@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import org.junit.Test;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -65,6 +66,21 @@ public class UsuarioTest {
             .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
+    @Test
+    public void hasLoginNetSales_deveRetornarFalse_seUsuarioPossuirLoginNetSalesNulo() {
+        assertThat(umUsuarioComLoginNetSales(null).hasLoginNetSales()).isFalse();
+    }
+
+    @Test
+    public void hasLoginNetSales_deveRetornarFalse_seUsuarioPossuirLoginNetSalesVazio() {
+        assertThat(umUsuarioComLoginNetSales("").hasLoginNetSales()).isFalse();
+    }
+
+    @Test
+    public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
+        assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {
         return UsuarioAutenticado
             .builder()
@@ -95,6 +111,20 @@ public class UsuarioTest {
                 .builder()
                 .codigo(codigoCargo)
                 .build())
+            .build();
+    }
+
+    private static Usuario umUsuarioComLoginNetSales(String loginNetSales) {
+        return Usuario
+            .builder()
+            .loginNetSales(loginNetSales)
+            .build();
+    }
+
+    private static Cargo umCargo(CodigoCargo codigoCargo) {
+        return Cargo
+            .builder()
+            .codigo(codigoCargo)
             .build();
     }
 }

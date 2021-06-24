@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -14,6 +15,7 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +26,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     Optional<Usuario> findTop1UsuarioByCpf(String cpf);
 
+    Optional<Usuario> findTop1UsuarioByCpfAndSituacao(String cpf, ESituacao situacao);
+
+    Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(String cpf, ESituacao situacao);
+
+    Optional<Usuario> findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(String email, ESituacao situacao);
+
     Optional<Usuario> findTop1UsuarioByCpfAndSituacaoNot(String cpf, ESituacao situacao);
 
     Optional<Usuario> findById(Integer id);
 
     Optional<Usuario> findByEmail(String email);
+
+    Optional<Usuario> findByEmailAndSituacao(String email, ESituacao situacao);
 
     Optional<Usuario> findUsuarioByEmail(String email);
 
@@ -38,7 +48,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
-    List<Usuario> findByIdIn(List<Integer> ids);
+    List<Usuario> findByIdIn(Collection<Integer> ids);
 
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);
 
@@ -90,4 +100,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Modifying
     @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
+
+    List<Usuario> findByOrganizacaoIdAndCargo_CodigoIn(Integer organizacaoId, List<CodigoCargo> cargos);
 }

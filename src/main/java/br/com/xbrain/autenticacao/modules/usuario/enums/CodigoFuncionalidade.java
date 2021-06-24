@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CodigoFuncionalidade {
 
+    APPLICATION("Visualizar via integração"),
     AUT_VISUALIZAR_USUARIO("Visualizar Usuários"),
     AUT_VISUALIZAR_GERAL("AUT_VISUALIZAR_GERAL"),
     AUT_VISUALIZAR_USUARIOS_AA("Visualizar usuários dos Agentes Autorizados"),
@@ -17,13 +18,21 @@ public enum CodigoFuncionalidade {
     AUT_DESLOGAR_USUARIO("Deslogar Usuários"),
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),
     AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário"),
+    AUT_2100("Visualizar relatório de login / logout"),
     CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
     CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
     CHM_ABRIR_CHAMADO("Abrir chamado"),
     CHM_TRATAR_CHAMADO_SUPORTE("Tratar chamado suporte"),
     CHM_TRATAR_CHAMADO_PROCESSO("Tratar chamado processo"),
     CHM_TRATAR_CHAMADO_GERAL("Tratar todos os chamados"),
-    MLG_5013("Distribuir Agendamentos Proprietários");
+    MLG_5013("Distribuir Agendamentos Proprietários"),
+    CTR_2050("Gerenciar Feriados"),
+    VDS_3059("Visualizar Relatório Consulta de Endereço"),
+    REL_10012("Relatório Consulta de Endereço"),
+    VDS_3061("Visualizar Relatório Consulta de Crédito"),
+    REL_10014("Relatório Consulta de Crédito"),
+    FDR_GERENCIAR_LEAD("Gerenciar Lead"),
+    MLG_5018("Gerenciar Distribuição Mailing Segmentação");
 
     @Getter
     private String descricao;

@@ -6,7 +6,7 @@
 
     <groupId>br.com.xbrain</groupId>
     <artifactId>autenticacao-api</artifactId>
-    <version>2.12.7</version>
+    <version>2.23.1</version>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -465,15 +465,11 @@
             </snapshots>
             <id>maven-central</id>
             <name>Maven Repository Switchboard</name>
-            <url>http://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>spring-releases</id>
-            <url>https://repo.spring.io/libs-release</url>
+            <url>https://repo1.maven.org/maven2</url>
         </repository>
         <repository>
             <id>xbrain</id>
-            <url>http://192.168.1.12:8092/nexus/content/groups/grupo_xbrain/</url>
+            <url>https://nexus.xbrain.com.br/nexus/content/groups/grupo_xbrain/</url>
         </repository>
     </repositories>
 

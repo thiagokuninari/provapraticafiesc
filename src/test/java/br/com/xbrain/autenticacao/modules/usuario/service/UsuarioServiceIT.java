@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -10,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -20,10 +22,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -42,13 +42,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.CLARO_TV;
-import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.CLARO_RESIDENCIAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
+import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,6 +85,8 @@ public class UsuarioServiceIT {
     private EmailService emailService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
@@ -95,6 +99,8 @@ public class UsuarioServiceIT {
     private CargoRepository cargoRepository;
     @Autowired
     private DepartamentoRepository departamentoRepository;
+    @Autowired
+    private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @MockBean
     private NotificacaoService notificacaoService;
     @MockBean
@@ -104,7 +110,9 @@ public class UsuarioServiceIT {
     @MockBean
     private UsuarioFeriasService usuarioFeriasService;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
+    @MockBean
+    private FeederService feederService;
 
     @Before
     public void setUp() {
@@ -119,6 +127,7 @@ public class UsuarioServiceIT {
         service.saveFromQueue(usuarioMqRequest);
         verify(sender, times(0)).sendSuccess(any());
         verify(emailService, times(0)).enviarEmailTemplate(any(), any(), any(), any());
+        verify(feederService, never()).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -128,6 +137,7 @@ public class UsuarioServiceIT {
         UsuarioDto usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -145,8 +155,9 @@ public class UsuarioServiceIT {
         usuarioAlteracaoRequest.setId(100);
         usuarioAlteracaoRequest.setCargo(EXECUTIVO);
         service.alterarCargoUsuario(usuarioAlteracaoRequest);
+
         Usuario usuario = service.findByIdCompleto(100);
-        assertEquals(usuario.getCargoCodigo(), EXECUTIVO);
+        assertEquals(EXECUTIVO, usuario.getCargoCodigo());
     }
 
     @Test
@@ -323,11 +334,12 @@ public class UsuarioServiceIT {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto)))
             .withMessage("CPF já cadastrado.");
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
-        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(245)
             .observacao("ATIVANDO O SÓCIO PRINCIPAL")
@@ -354,7 +366,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
-        when(agenteAutorizadoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
             + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
@@ -366,7 +378,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
-        when(agenteAutorizadoService.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        when(agenteAutorizadoNovoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -502,6 +514,12 @@ public class UsuarioServiceIT {
             .containsAnyOf(
                 tuple(ESituacao.A, "Alteração nos dados de cadastro do usuário.")
             );
+    }
+
+    @Test
+    public void updateFromQueue_deveEnviarParaFilaDeCadastroDeUsuario_quandoSalvarUsuarioCorretamente() {
+        service.updateFromQueue(umUsuario());
+        verify(sender, times(0)).sendSuccess(any(UsuarioDto.class));
     }
 
     @Test
@@ -997,16 +1015,13 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void remanejarUsuario_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
+    public void validarUsuarioComCpfDiferenteRemanejado_deveLancarException_quandoJaHouverUmUsuarioComCpfNaoRemanejado() {
         var usuarioMqRequest = umUsuarioRemanejamento();
         usuarioMqRequest.setId(999);
         usuarioMqRequest.setCpf("87458480092");
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.remanejarUsuario(usuarioMqRequest))
+            .isThrownBy(() -> service.validarUsuarioComCpfDiferenteRemanejado(Usuario.parse(usuarioMqRequest)))
             .withMessage("Não é possível remanejar o usuário pois já existe outro usuário para este CPF.");
-
-        verify(atualizarUsuarioMqSender, times(0)).sendUsuarioRemanejadoAut(any());
-        verify(atualizarUsuarioMqSender, times(1)).sendErrorUsuarioRemanejadoAut(any());
     }
 
     @Test
@@ -1025,10 +1040,11 @@ public class UsuarioServiceIT {
 
         assertThat(usuariosAposRemanejar)
             .extracting("id", "situacao")
-            .containsExactly(tuple(2, ESituacao.A), tuple(1000, ESituacao.R));
+            .containsAnyOf(tuple(1000, ESituacao.R));
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -1041,14 +1057,185 @@ public class UsuarioServiceIT {
         var usuarioRemanejado = usuarioRepository.findAllByCpf(umUsuarioRemanejamento().getCpf());
 
         assertThat(usuarioRemanejado)
-            .extracting("id", "situacao", "cpf")
-            .containsExactly(tuple(3, ESituacao.A, "95512593005"), tuple(1000, ESituacao.R, "95512593005"));
+            .extracting("situacao", "cpf")
+            .containsExactly(tuple(ESituacao.A, "95512593005"), tuple(ESituacao.R, "95512593005"));
 
         verify(atualizarUsuarioMqSender, times(1)).sendUsuarioRemanejadoAut(any());
         verify(atualizarUsuarioMqSender, times(0)).sendErrorUsuarioRemanejadoAut(any());
+        verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
-    private UsuarioMqRequest umUsuarioTrocaCpf() {
+    @Test
+    public void alterarDadosAcessoEmail_deveAlterarEmailEEnviarParaFila_quandoDadosEstiveremCorretos() {
+        service.alterarDadosAcessoEmail(umUsuarioDadosAcessoRequest());
+        verify(sender, times(1)).sendSuccess(any());
+    }
+
+    private UsuarioDadosAcessoRequest umUsuarioDadosAcessoRequest() {
+        return UsuarioDadosAcessoRequest
+            .builder()
+            .usuarioId(104)
+            .alterarSenha(Eboolean.F)
+            .emailAtual("operacao_gerente_comercial@net.com.br")
+            .emailNovo("NOVO@EMAIL.COM")
+            .ignorarSenhaAtual(true)
+            .build();
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveSalvarUsuarioEEnviarSenha_quandoEmailCpfNaoRegistrado() {
+        service.salvarUsuarioFeeder(umUsuarioFeeder());
+
+        assertThat(usuarioRepository.findByEmail("JOHN@GMAIL.COM").get())
+            .extracting("nome", "email", "cpf", "cargoCodigo", "cargoId",
+                "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
+                "alterarSenha")
+            .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
+                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                CodigoNivel.FEEDER, List.of(2), Eboolean.V);
+
+        verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveSalvarMesmoUsuarioComoUsuarioCadastro_quandoUsuarioAutocadastrado() {
+        var umGeradorLeadsAutoCadastrado = umUsuarioFeeder();
+        umGeradorLeadsAutoCadastrado.setUsuarioCadastroId(null);
+
+        service.salvarUsuarioFeeder(umGeradorLeadsAutoCadastrado);
+
+        var usuarioId = service.findByEmail("JOHN@GMAIL.COM").getId();
+
+        assertThat(usuarioRepository.findByEmail("JOHN@GMAIL.COM").get())
+            .extracting("nome", "email", "cpf", "cargoCodigo", "cargoId",
+                "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
+                "alterarSenha")
+            .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, usuarioId,
+                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                CodigoNivel.FEEDER, List.of(2), Eboolean.V);
+
+        verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveSalvarUsuarioComCargoImportador_quandoTipoGeradorForImportadorCargas() {
+        var umImportadorCargas = umUsuarioFeeder();
+        umImportadorCargas.setUsuarioCadastroId(null);
+        umImportadorCargas.setTipoGerador(IMPORTADOR_CARGAS);
+
+        service.salvarUsuarioFeeder(umImportadorCargas);
+
+        var usuarioId = service.findByEmail("JOHN@GMAIL.COM").getId();
+
+        assertThat(usuarioRepository.findByEmail("JOHN@GMAIL.COM").get())
+            .extracting("nome", "email", "cpf", "cargoCodigo", "cargoId",
+                "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
+                "alterarSenha")
+            .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", IMPORTADOR_CARGAS, 97, usuarioId,
+                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                CodigoNivel.FEEDER, List.of(2), Eboolean.V);
+
+        verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveDarErro_quandoCpfRegistrado() {
+        var umGeradorLeadsComCpfExistente = umUsuarioFeeder();
+        umGeradorLeadsComCpfExistente.setCpf("75952969874");
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioFeeder(umGeradorLeadsComCpfExistente))
+            .withMessageContaining("CPF já cadastrado.");
+
+        verify(notificacaoService, never()).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, never()).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveDarErro_quandoEmailRegistrado() {
+        var umGeradorLeadsComEmailExistente = umUsuarioFeeder();
+        umGeradorLeadsComEmailExistente.setEmail("USUARIO_TESTE@GMAIL.COM");
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.salvarUsuarioFeeder(umGeradorLeadsComEmailExistente))
+            .withMessageContaining("Email já cadastrado.");
+
+        verify(notificacaoService, never()).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, never()).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void salvarUsuarioFeeder_deveAlterarDadosENaoEnviarEmail_quandoUsuarioCadastrado() {
+        service.salvarUsuarioFeeder(umUsuarioFeeder());
+        var usuarioId = service.findByEmail("JOHN@GMAIL.COM").getId();
+        var geradorLeadsAlterado = umUsuarioFeeder();
+        geradorLeadsAlterado.setUsuarioId(usuarioId);
+        geradorLeadsAlterado.setEmail("JONNY@GMAIL.COM");
+
+        service.salvarUsuarioFeeder(geradorLeadsAlterado);
+
+        assertThat(service.findByIdCompleto(usuarioId))
+            .extracting("nome", "email", "cpf", "cargoCodigo", "cargoId",
+                "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
+                "alterarSenha")
+            .containsExactlyInAnyOrder("JOHN DOE", "JONNY@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
+                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                CodigoNivel.FEEDER, List.of(2), Eboolean.V);
+
+        verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
+        verify(usuarioFeederCadastroSucessoMqSender, times(1)).sendCadastroSuccessoMensagem(any());
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisorDoUsuario_quandoSupervisorForPassado() {
+
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_deveAtualizarOSupervisor_quandoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .extracting("usuario.id", "usuarioSuperior.id")
+                .contains(100, 113);
+    }
+
+    @Test
+    public void vincularUsuarioParaNovaHierarquia_naoDeveAtualizarOSupervisor_quandoNaoConterUsuarioAutenticado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(null);
+
+        service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
+                .builder()
+                .usuarioIds(List.of(100))
+                .superiorNovo(113)
+                .superiorAntigo(110)
+                .build());
+
+        assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
+                .isNull();
+    }
+
+    private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
         usuarioMqRequest.setCpf("21145664523");
@@ -1068,7 +1255,7 @@ public class UsuarioServiceIT {
             .cargo(AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS)
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .nivel(AGENTE_AUTORIZADO)
-            .unidadesNegocio(List.of(CLARO_RESIDENCIAL))
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(List.of(CLARO_TV))
             .build();
     }
@@ -1106,6 +1293,15 @@ public class UsuarioServiceIT {
             .value(id)
             .label("usuario " + id)
             .build();
+    }
+
+    private UsuarioAutenticado umOutroUsuarioAutenticado() {
+        var usuario = usuarioRepository.findOne(100);
+        return UsuarioAutenticado
+                .builder()
+                .id(110)
+                .usuario(usuario)
+                .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {
@@ -1151,11 +1347,11 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setNome("TESTE NOVO USUARIO PARCEIROS ONLINE");
         usuarioMqRequest.setEmail("novousuarioparceirosonline@xbrain.com.br");
         usuarioMqRequest.setCpf("76696512616");
-        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS));
+        usuarioMqRequest.setUnidadesNegocio(Collections.singletonList(RESIDENCIAL_COMBOS));
         usuarioMqRequest.setNivel(CodigoNivel.AGENTE_AUTORIZADO);
         usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_HIBRIDO);
         usuarioMqRequest.setDepartamento(CodigoDepartamento.AGENTE_AUTORIZADO);
-        usuarioMqRequest.setEmpresa(Collections.singletonList(CodigoEmpresa.CLARO_MOVEL));
+        usuarioMqRequest.setEmpresa(Collections.singletonList(CLARO_MOVEL));
         usuarioMqRequest.setUsuarioCadastroId(100);
         return usuarioMqRequest;
     }
@@ -1177,6 +1373,20 @@ public class UsuarioServiceIT {
             .build();
     }
 
+    private UsuarioFeederMqDto umUsuarioFeeder() {
+        return UsuarioFeederMqDto.builder()
+            .cpf("47492951671")
+            .dataCadastro(LocalDateTime.of(2020,1, 29, 11, 11, 11))
+            .email("JOHN@GMAIL.COM")
+            .geradorLeadsId(101)
+            .telefone("998230087")
+            .situacao(ESituacao.A)
+            .nome("JOHN DOE")
+            .tipoGerador(GERADOR_LEADS)
+            .usuarioCadastroId(231)
+            .build();
+    }
+
     @Test
     public void buscarUsuariosAtivosNivelOperacao_deveRetornarAtivosOperacao_quandoCanalDoUsuarioForAgenteAutorizado() {
         assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
@@ -1186,5 +1396,101 @@ public class UsuarioServiceIT {
                 tuple(239, "VENDEDOR OPERACAO 2"),
                 tuple(240, "VENDEDOR OPERACAO 3")
             );
+    }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarUsuarioAtual_quandoInformarCpf() {
+        var usuario = usuarioService.buscarAtualByCpf("38957979875");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void buscarAtualByCpf_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByCpf("123456789"))
+            .withMessage("O usuário não foi encontrado.");
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarUsuarioAtual_quandoInformarEmail() {
+        var usuario = usuarioService.buscarAtualByEmail("ADMIN@XBRAIN.COM.BR");
+
+        assertThat(usuario).isNotNull();
+        assertThat(usuario.getId()).isEqualTo(100);
+        assertThat(usuario.getCpf()).isEqualTo("38957979875");
+        assertThat(usuario.getEmail()).isEqualTo("ADMIN@XBRAIN.COM.BR");
+        assertThat(usuario.getSituacao()).isEqualTo(ESituacao.A);
+    }
+
+    @Test
+    public void findAtualByEmail_deveRetornarException_quandoNaoEncontrarUsuario() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.buscarAtualByEmail("EMAILNAOEXISTENTE@EMAIL.COM"))
+            .withMessage("O usuário não foi encontrado.");
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveInativarUsuarioEGerarHistorico_quandoInformarId() {
+        var usuarioAtivo = usuarioRepository.findById(100).get();
+        assertThat(usuarioAtivo.isAtivo()).isTrue();
+
+        service.inativarPorAgenteAutorizado(new UsuarioDto(usuarioAtivo.getId()));
+
+        var usuarioInativo = usuarioRepository.findById(100).get();
+
+        assertThat(usuarioInativo.isAtivo()).isFalse();
+
+        assertThat(usuarioHistoricoRepository.findByUsuarioId(usuarioInativo.getId()))
+            .extracting("motivoInativacao.codigo", "observacao", "situacao")
+            .contains(tuple(CodigoMotivoInativacao.DEMISSAO, "Inativado pelo Agente Autorizado.", ESituacao.I));
+
+        verify(autenticacaoService, times(1)).logout(anyInt());
+    }
+
+    @Test
+    public void inativarPorAgenteAutorizado_deveNaoOcorrerNada_quandoUsuarioNaoEstiverAtivo() {
+        service.inativarPorAgenteAutorizado((new UsuarioDto(12316)));
+
+        verify(autenticacaoService, times(0)).logout(anyInt());
+    }
+
+    @Test
+    public void saveFromQueue_salvarEEnviarParaFilaDeSocioPrincipalSalvoComSucesso_quandoFlagSocioPrincipalForTrue() {
+        usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
+
+        verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("JOSÉ")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("333.333.333-11")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("renato@hotmail.com")
+            .isCadastroSocioPrincipal(true)
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
+    }
+
+    private UsuarioMqRequest umUsuarioTrocaCpf() {
+        UsuarioMqRequest usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setId(104);
+        usuarioMqRequest.setCpf("21145664523");
+        usuarioMqRequest.setCargo(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D);
+        usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
+        usuarioMqRequest.setSituacao(ESituacao.A);
+        return usuarioMqRequest;
     }
 }

@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -115,4 +116,12 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
 
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
+
+    List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
+
+    List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+
+    List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
+
+    List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 }

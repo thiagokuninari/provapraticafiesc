@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,10 +136,36 @@ public class UsuarioRepositoryTest {
     @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
-            .extracting("value", "label")
+            .hasSize(2);
+    }
+
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaVazia_quandoNaoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(1000))
+            .isEmpty();
+    }
+
+    @Test
+    public void obterIdsPorUsuarioCadastroId_deveRetornarListaIds_quandoEncontrarUsuarios() {
+        assertThat(repository.obterIdsPorUsuarioCadastroId(100))
+            .hasSize(3)
+            .containsExactly(200, 300, 400);
+    }
+
+    @Test
+    public void buscarUsuarioSituacao_listaVazia_seNaoHouverResultados() {
+        assertThat(repository.buscarUsuarioSituacao(new UsuarioPredicate().comIds(List.of(999999999)).build()))
+            .isEmpty();
+    }
+
+    @Test
+    public void buscarUsuarioSituacao_listaDeUsuarioSituacao_seHouverResultados() {
+        assertThat(repository.buscarUsuarioSituacao(new UsuarioPredicate().comIds(List.of(200, 300, 400)).build()))
+            .extracting("id", "nome", "situacao")
             .containsExactly(
-                tuple(110, "HUNTER 1"),
-                tuple(111, "HUNTER 2")
+                tuple(200, "USUARIO 200", A),
+                tuple(300, "USUARIO 300", A),
+                tuple(400, "USUARIO 400", A)
             );
     }
 }

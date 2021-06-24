@@ -12,4 +12,5 @@ public interface SubClusterRepositoryCustom {
     List<SubCluster> findAllByClustersId(List<Integer> clusterId, Predicate predicate);
 
     List<SubCluster> findAllAtivo(Predicate predicate);
+
 }

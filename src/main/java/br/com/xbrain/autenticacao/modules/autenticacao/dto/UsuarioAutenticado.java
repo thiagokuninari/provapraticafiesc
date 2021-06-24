@@ -41,10 +41,12 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String departamento;
     private String nivel;
     private Integer nivelId;
+    private String loginNetSales;
     private String cpf;
     private ESituacao situacao;
     private List<String> empresasNome;
     private List<Empresa> empresas;
+    private List<Integer> agentesAutorizados;
     private Collection<? extends GrantedAuthority> permissoes;
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
@@ -69,6 +71,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivel = usuario.getNivelCodigo().toString();
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
+        this.loginNetSales = usuario.getLoginNetSales();
         this.situacao = usuario.getSituacao();
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -77,7 +80,8 @@ public class UsuarioAutenticado extends OAuth2Request {
         getOrganizacao(usuario);
     }
 
-    public UsuarioAutenticado(Usuario usuario, Collection<? extends GrantedAuthority> permissoes) {
+    public UsuarioAutenticado(Usuario usuario,
+                              Collection<? extends GrantedAuthority> permissoes) {
         this.usuario = usuario;
         this.id = usuario.getId();
         this.nome = usuario.getNome();
@@ -90,6 +94,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelId = usuario.getNivelId();
         this.cpf = usuario.getCpf();
         this.situacao = usuario.getSituacao();
+        this.loginNetSales = usuario.getLoginNetSales();
         this.permissoes = permissoes;
         this.empresasNome = usuario.getEmpresasNome();
         this.nivelCodigo = usuario.getNivelCodigo().toString();
@@ -113,12 +118,20 @@ public class UsuarioAutenticado extends OAuth2Request {
             .anyMatch(p -> p.getAuthority().equals("ROLE_" + codigoFuncionalidade));
     }
 
+    public boolean isOperacao() {
+        return getNivelCodigoEnum() == CodigoNivel.OPERACAO;
+    }
+
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
     }
 
     public boolean isMso() {
-        return MSO == usuario.getNivelCodigo();
+        return MSO == getNivelCodigoEnum();
+    }
+
+    public boolean isMsoOrXbrain() {
+        return isMso() || isXbrain();
     }
 
     public void hasPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId,
@@ -142,6 +155,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return !ObjectUtils.isEmpty(usuario) && usuario.isUsuarioEquipeVendas();
     }
 
+    public boolean isAssistenteOperacao() {
+        return cargoCodigo == CodigoCargo.ASSISTENTE_OPERACAO && isOperacao();
+    }
+
     public boolean isCoordenadorOperacao() {
         return cargoCodigo.equals(COORDENADOR_OPERACAO);
     }
@@ -152,6 +169,18 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean isSupervisorOperacao() {
         return cargoCodigo.equals(SUPERVISOR_OPERACAO);
+    }
+
+    public boolean isExecutivo() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO;
+    }
+
+    public boolean isExecutivoHunter() {
+        return cargoCodigo == CodigoCargo.EXECUTIVO_HUNTER;
+    }
+
+    public boolean isExecutivoOuExecutivoHunter() {
+        return isExecutivo() || isExecutivoHunter();
     }
 
     public boolean isBackoffice() {

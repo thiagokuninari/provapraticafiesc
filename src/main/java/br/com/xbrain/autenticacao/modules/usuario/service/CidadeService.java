@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -98,5 +100,15 @@ public class CidadeService {
             getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
             .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());
+    }
+
+    public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
+        return repository.findCidadeByUfIdInOrderByNome(ufIds).stream()
+            .map(CidadeUfResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
+        return repository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::parse).orElse(null);
     }
 }

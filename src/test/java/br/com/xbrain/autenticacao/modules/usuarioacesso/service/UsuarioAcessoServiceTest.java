@@ -3,15 +3,19 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.enums.ETipo;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
+import com.querydsl.core.types.Predicate;
 import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,11 +28,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -48,6 +54,8 @@ public class UsuarioAcessoServiceTest {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
     @Before
     public void setup() {
@@ -148,6 +156,39 @@ public class UsuarioAcessoServiceTest {
                 + "3;;;;28/01/2020 16:00:00");
     }
 
+    @Test
+    public void getTotalUsuariosLogadosPorPeriodoByFiltros_totalUsuariosLogadosDeAcordoComFiltro_quandoExistirUsuariosLogados() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of(new Usuario(101)));
+        when(notificacaoUsuarioAcessoService.countUsuariosLogadosPorPeriodo(any())).thenReturn(umUsuarioLogadoResponse());
+
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorPeriodoByFiltros(umUsuarioLogadoRequest());
+
+        assertThat(response)
+            .extracting("dataInicial", "dataFinal", "totalUsuariosLogados")
+            .containsExactly(
+                tuple("2020-12-01T10:00:00.000Z", "2020-12-01T10:59:59.999Z", 10),
+                tuple("2020-12-01T11:00:00.000Z", "2020-12-01T11:42:39.999Z", 3)
+            );
+
+        verify(notificacaoUsuarioAcessoService, times(1))
+            .countUsuariosLogadosPorPeriodo(any(UsuarioLogadoRequest.class));
+    }
+
+    @Test
+    public void getTotalUsuariosLogadosPorPeriodoByFiltros_deveRetornarPeriodosComTotalUsuariosZero_quandoNaoExistirUsuario() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of());
+
+        var response = usuarioAcessoService.getTotalUsuariosLogadosPorPeriodoByFiltros(umUsuarioLogadoRequest());
+
+        assertThat(response)
+            .extracting("dataInicial", "dataFinal", "totalUsuariosLogados")
+            .containsExactlyInAnyOrder(
+                tuple("2020-12-01T10:00:00.000Z", "2020-12-01T10:59:59.999Z", 0),
+                tuple("2020-12-01T11:00:00.000Z", "2020-12-01T11:42:39.999Z", 0));
+
+        verify(notificacaoUsuarioAcessoService, never()).countUsuariosLogadosPorPeriodo(any());
+    }
+
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
         return UsuarioAcesso.builder()
             .id(id)
@@ -160,6 +201,8 @@ public class UsuarioAcessoServiceTest {
         return UsuarioAcessoFiltros.builder()
             .dataInicio(LocalDate.now().minusDays(1))
             .dataFim(LocalDate.now())
+            .dataInicial(LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN))
+            .dataFinal(LocalDateTime.of(LocalDate.now(), LocalTime.MAX))
             .tipo(ETipo.LOGIN)
             .build();
     }
@@ -168,6 +211,35 @@ public class UsuarioAcessoServiceTest {
         return UsuarioAutenticado.builder()
             .id(100)
             .nivelCodigo(nivelCodigo)
+            .build();
+    }
+
+    private List<PaLogadoDto> umUsuarioLogadoResponse() {
+        return List.of(
+            PaLogadoDto.builder()
+                .dataInicial("2020-12-01T10:00:00.000Z")
+                .dataFinal("2020-12-01T10:59:59.999Z")
+                .totalUsuariosLogados(10)
+                .build(),
+            PaLogadoDto.builder()
+                .dataInicial("2020-12-01T11:00:00.000Z")
+                .dataFinal("2020-12-01T11:42:39.999Z")
+                .totalUsuariosLogados(3)
+                .build());
+    }
+
+    private UsuarioLogadoRequest umUsuarioLogadoRequest() {
+        return UsuarioLogadoRequest.builder()
+            .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO))
+            .organizacaoId(6)
+            .periodos(List.of(PaLogadoDto.builder()
+                    .dataInicial("2020-12-01T10:00:00.000Z")
+                    .dataFinal("2020-12-01T10:59:59.999Z")
+                    .build(),
+                PaLogadoDto.builder()
+                    .dataInicial("2020-12-01T11:00:00.000Z")
+                    .dataFinal("2020-12-01T11:42:39.999Z")
+                    .build()))
             .build();
     }
 }

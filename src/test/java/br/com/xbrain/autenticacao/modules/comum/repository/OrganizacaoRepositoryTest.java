@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.predicate.OrganizacaoPredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,29 @@ public class OrganizacaoRepositoryTest {
 
     @Test
     public void findAll_organizacoesFiltradas_quandoPorNivelId() {
-        assertThat(organizacaoRepository.findAllByNiveisIdIn(1))
+        var predicate = new OrganizacaoPredicate().comNivel(1);
+
+        assertThat(organizacaoRepository.findByPredicate(predicate.build()))
                 .hasSize(1)
                 .extracting("codigo", "nome")
                 .contains(tuple("BCC", "Brasil Center"));
+    }
+
+    @Test
+    public void findAll_organizacoesFiltradas_quandoPorId() {
+        var predicate = new OrganizacaoPredicate().comId(2);
+
+        assertThat(organizacaoRepository.findByPredicate(predicate.build()))
+                .hasSize(1)
+                .extracting("codigo", "nome")
+                .contains(tuple("CALLINK", "Callink"));
+    }
+
+    @Test
+    public void findById_organizacao_quandoExistir() {
+        var response = organizacaoRepository.findById(3).get();
+        assertThat(response.getId()).isEqualTo(3);
+        assertThat(response.getNome()).isEqualTo("Próprio");
+        assertThat(response.getCodigo()).isEqualTo("PROPRIO");
     }
 }

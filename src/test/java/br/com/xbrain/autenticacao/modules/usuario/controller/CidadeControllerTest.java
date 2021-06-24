@@ -42,28 +42,31 @@ public class CidadeControllerTest {
     private MockMvc mvc;
 
     @Test
-    public void deveSolicitarAutenticacao() throws Exception {
-        mvc.perform(get("/api/cidades")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     public void deveRetornarTodosPorUf() throws Exception {
         mvc.perform(get("/api/cidades?idUf=1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(8)));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(8)));
     }
 
     @Test
     public void deveRetornarCidadePorUfAndCidadeNome() throws Exception {
         mvc.perform(get("/api/cidades/uf-cidade/PR/LONDRINA")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome", is("LONDRINA")));
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nome", is("LONDRINA")));
+    }
+
+    @Test
+    public void buscarCidadeUfIds_deveRetornarOsIdsDaCidadeEUf() throws Exception {
+        mvc.perform(get("/api/cidades/uf-cidade-ids/PR/ARAPONGAS")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cidadeId", is(3237)))
+            .andExpect(jsonPath("$.ufId", is(1)));
     }
 
     @Test
@@ -180,6 +183,37 @@ public class CidadeControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
                 .andExpect(jsonPath("$[0].netUno", is("V")))
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    public void getAllCidadeByUfs_deveRetornarTodasAsCidadesDoEstados_quandoExistir() throws Exception {
+        mvc.perform(get("/api/cidades")
+            .param("ufIds", "1,2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$[0].cidade", is("ARAPONGAS")));
+    }
+
+    @Test
+    public void findCidadeByCodigoIbge_deveRetornarCidade_quandoEncontrarPorCodigoIbge() throws Exception {
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 4101507)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(3237)))
+            .andExpect(jsonPath("$.nome", is("ARAPONGAS")))
+            .andExpect(jsonPath("$.codigoIbge", is("4101507")));
+    }
+
+    @Test
+    public void findCidadeByCodigoIbge_deveRetornar200ComResponseBodyVazio_quandoNaoEncontrarPorCodigoIbge() throws Exception {
+        mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 123456)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").doesNotExist());
     }
 
     private Cidade umaCidade() {

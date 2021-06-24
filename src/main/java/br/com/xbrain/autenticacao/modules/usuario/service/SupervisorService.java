@@ -1,10 +1,10 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 
 @Service
 public class SupervisorService {
@@ -28,14 +32,26 @@ public class SupervisorService {
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
 
-    public List<UsuarioResponse> getAssistentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
+    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
-            getAssistentesDoSupervisor(supervisorId).stream(),
+            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
+    }
+
+    private ECanal getCanalBySupervisorId(Integer supervisorId) {
+        var supervisor = usuarioRepository.findById(supervisorId)
+            .orElseThrow(() -> new ValidacaoException("Supervisor não encontrado."));
+
+        if (supervisor.hasCanal(ATIVO_PROPRIO)) {
+            return ATIVO_PROPRIO;
+        } else if (supervisor.hasCanal(D2D_PROPRIO)) {
+            return D2D_PROPRIO;
+        }
+        throw new ValidacaoException("O supervisor deve ser do canal Ativo Próprio ou D2D Próprio.");
     }
 
     private List<UsuarioResponse> filtrarUsuariosParaAderirAEquipe(Integer equipeId,
@@ -43,21 +59,21 @@ public class SupervisorService {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
-    private List<UsuarioResponse> getAssistentesDoSupervisor(Integer supervisorId) {
+    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId, ECanal canal) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
             supervisorId,
-            List.of(CodigoCargo.ASSISTENTE_OPERACAO),
-            ECanal.D2D_PROPRIO);
+            List.of(ASSISTENTE_OPERACAO, OPERACAO_ANALISTA, OPERACAO_CONSULTOR),
+            canal);
     }
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
-                .getSubordinadosPorCargo(supervisorId, CodigoCargo.VENDEDOR_OPERACAO.name())
+                .getSubordinadosPorCargo(supervisorId, VENDEDOR_OPERACAO.name())
                 .stream()
                 .map(row -> new UsuarioResponse(
                         ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
                         (String) row[COLUNA_USUARIO_NOME],
-                        CodigoCargo.VENDEDOR_OPERACAO))
+                        VENDEDOR_OPERACAO))
                 .collect(Collectors.toList());
     }
 
@@ -66,8 +82,8 @@ public class SupervisorService {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
             areaAtuacao,
             areasAtuacaoId,
-            CodigoCargo.SUPERVISOR_OPERACAO,
-            ECanal.D2D_PROPRIO);
+            SUPERVISOR_OPERACAO,
+            D2D_PROPRIO);
     }
 
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {

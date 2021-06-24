@@ -1,7 +1,9 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.Lists;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ListUtil {
 
@@ -15,5 +17,20 @@ public class ListUtil {
             );
         }
         return parts;
+    }
+
+    public static <T> List<T> toShuffledList(List<T> source, Random random) {
+        var list = Lists.newArrayList(source);
+        Collections.shuffle(list, random);
+        //noinspection SimplifyStreamApiCallChains
+        return list.stream().collect(Collectors.toList());
+    }
+
+    public static <T> Optional<T> getElement(List<T> list, int position) {
+        try {
+            return Optional.ofNullable(list.get(position));
+        } catch (IndexOutOfBoundsException ex) {
+            return Optional.empty();
+        }
     }
 }

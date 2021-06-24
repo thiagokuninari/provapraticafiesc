@@ -57,5 +57,4 @@ public class SubClusterController {
     public List<SubClusterDto> getAllSubclustersByUsuarioAutenticado() {
         return service.getAllSubclustersByUsuarioAutenticado();
     }
-
 }
