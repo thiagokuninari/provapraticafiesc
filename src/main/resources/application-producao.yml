@@ -52,7 +52,7 @@ app-config:
     contato-crn:
       url: http://172.10.10.95:8084
     comunicados:
-      url: http://api.conexaoclarobrasil.com.br/comunicados/
+      url: http://172.10.10.53:8053
     claro-indico:
       url: http://172.10.10.55:8055
     gestao:

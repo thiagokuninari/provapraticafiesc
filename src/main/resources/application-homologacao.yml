@@ -44,7 +44,7 @@ app-config:
     contato-crn:
       url: http://172.10.10.64:8084
     comunicados:
-      url: http://api-hom.conexaoclarobrasil.com.br/comunicados/
+      url: http://172.10.10.53:6553
     claro-indico:
       url: http://172.10.10.55:8055
     agente-autorizado:
