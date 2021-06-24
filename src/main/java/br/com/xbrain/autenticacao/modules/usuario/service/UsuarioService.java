@@ -11,8 +11,8 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -31,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -47,7 +48,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +160,8 @@ public class UsuarioService {
     private UsuarioHierarquiaRepository usuarioHierarquiaRepository;
     @Autowired
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -562,23 +564,23 @@ public class UsuarioService {
     @Transactional
     public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorRequest) {
         var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
-                new NotFoundException("Usuário não encontrado"));
+            new NotFoundException("Usuário não encontrado"));
 
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         superiorRequest.getUsuarioIds()
-                .forEach(id -> {
-                    var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
-                            superiorRequest.getSuperiorAntigo());
+            .forEach(id -> {
+                var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
+                    superiorRequest.getSuperiorAntigo());
 
-                    if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
-                        usuarioHierarquiaRepository.delete(usuarioHierarquia);
-                    }
-                    if (!isEmpty(usuarioAutenticado)) {
-                        usuarioHierarquiaRepository.save(
-                                criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
-                    }
-                });
+                if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
+                    usuarioHierarquiaRepository.delete(usuarioHierarquia);
+                }
+                if (!isEmpty(usuarioAutenticado)) {
+                    usuarioHierarquiaRepository.save(
+                        criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
+                }
+            });
     }
 
     private UsuarioHierarquia criarHierarquia(Integer id,
@@ -588,20 +590,20 @@ public class UsuarioService {
         var usuario = repository.findOne(id);
 
         return UsuarioHierarquia.builder()
-                .usuario(usuario)
-                .usuarioSuperior(superiorNovo)
-                .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
-                .dataCadastro(superiorNovo.getDataCadastro())
-                .usuarioCadastro(usuarioAutenticado.getUsuario())
-                .build();
+            .usuario(usuario)
+            .usuarioSuperior(superiorNovo)
+            .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
+            .dataCadastro(superiorNovo.getDataCadastro())
+            .usuarioCadastro(usuarioAutenticado.getUsuario())
+            .build();
     }
 
     private UsuarioHierarquiaPk criarUsuarioHierarquiaPk(Integer id, AlteraSuperiorRequest superiorRequest) {
         return UsuarioHierarquiaPk
-                .builder()
-                .usuario(id)
-                .usuarioSuperior(superiorRequest.getSuperiorNovo())
-                .build();
+            .builder()
+            .usuario(id)
+            .usuarioSuperior(superiorRequest.getSuperiorNovo())
+            .build();
     }
 
     private Usuario getUsuarioAtivacao(UsuarioAtivacaoDto usuarioAtivacaoDto) {
@@ -1720,7 +1722,7 @@ public class UsuarioService {
     private List<Integer> getIdUsuariosAa(Integer aaId) {
 
         try {
-            return agenteAutorizadoService.getUsuariosByAaId(aaId, true)
+            return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, true)
                 .stream()
                 .map(UsuarioAgenteAutorizadoResponse::getId)
                 .collect(Collectors.toList());
@@ -1755,6 +1757,7 @@ public class UsuarioService {
         return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
             .orElseThrow(PermissaoException::new));
     }
+
     public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {
         return partition(idsUsuarios, QTD_MAX_IN_NO_ORACLE)
             .stream()
@@ -1831,7 +1834,7 @@ public class UsuarioService {
 
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         var predicate = new UsuarioPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
@@ -1840,7 +1843,7 @@ public class UsuarioService {
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado(CodigoCargo codigoCargo) {
         var predicate = new UsuarioPredicate();
 
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
             .comCodigoCargo(codigoCargo)
             .comSituacoes(List.of(ESituacao.A));
 

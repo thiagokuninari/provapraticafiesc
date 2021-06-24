@@ -71,8 +71,6 @@ public class UsuarioServiceTestOracle {
     @Autowired
     private UsuarioRepository usuarioRepository;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
     @Before

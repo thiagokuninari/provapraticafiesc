@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "agenteAutorizadoClient",
         url = "${app-config.services.parceiros-online.url}",
@@ -41,6 +42,9 @@ public interface AgenteAutorizadoClient {
     List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosByAaIdCanalDoUsuario(
         @PathVariable("agenteAutorizadoId") Integer agenteAutorizadoId,
         @PathVariable("usuarioId") Integer usuarioId);
+
+    @GetMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/superiores/usuario-autenticado")
+    List<Integer> getUsuariosIdsSuperioresPol();
 
     @GetMapping(API_AGENTE_AUTORIZADO_USUARIO + "/subordinados")
     List<Integer> getIdsUsuariosPermitidosDoUsuario(@RequestParam Map request);

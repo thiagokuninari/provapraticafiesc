@@ -156,7 +156,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isAssistenteOperacao() {
-        return cargoCodigo == CodigoCargo.ASSISTENTE_OPERACAO && isOperacao();
+        return cargoCodigo == ASSISTENTE_OPERACAO && isOperacao();
     }
 
     public boolean isCoordenadorOperacao() {
@@ -172,11 +172,11 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isExecutivo() {
-        return cargoCodigo == CodigoCargo.EXECUTIVO;
+        return cargoCodigo == EXECUTIVO;
     }
 
     public boolean isExecutivoHunter() {
-        return cargoCodigo == CodigoCargo.EXECUTIVO_HUNTER;
+        return cargoCodigo == EXECUTIVO_HUNTER;
     }
 
     public boolean isExecutivoOuExecutivoHunter() {

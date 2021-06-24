@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAuto
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -15,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -43,14 +41,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -898,7 +894,7 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
-            .when(agenteAutorizadoService).getUsuariosByAaId(anyInt(), any());
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(anyInt(), any());
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(100))
             .build());
@@ -949,7 +945,7 @@ public class UsuarioServiceIT {
         user.setId(115);
         user.setPermissoes(List.of());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
-        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+        when(agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario(any()))
             .thenReturn(List.of(111, 104, 115));
 
         assertThat(service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder().build()))
@@ -966,10 +962,10 @@ public class UsuarioServiceIT {
         usuarioRepository.findAll()
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         doReturn(umaListaUsuarioResponse(100))
-            .when(agenteAutorizadoService).getUsuariosByAaId(eq(10), any());
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(10), any());
 
         doReturn(umaListaUsuarioResponse(104))
-            .when(agenteAutorizadoService).getUsuariosByAaId(eq(20), any());
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(20), any());
 
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .agentesAutorizadosIds(List.of(10, 20))
@@ -1091,7 +1087,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -1112,7 +1108,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, usuarioId,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -1134,7 +1130,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", IMPORTADOR_CARGAS, 97, usuarioId,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -1182,7 +1178,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JONNY@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -1195,13 +1191,13 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .extracting("usuario.id", "usuarioSuperior.id")
-                .contains(100, 113);
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .contains(100, 113);
     }
 
     @Test
@@ -1209,15 +1205,15 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(List.of(100))
-                .superiorNovo(113)
-                .superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(List.of(100))
+            .superiorNovo(113)
+            .superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .extracting("usuario.id", "usuarioSuperior.id")
-                .contains(100, 113);
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .contains(100, 113);
     }
 
     @Test
@@ -1225,14 +1221,14 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(null);
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(List.of(100))
-                .superiorNovo(113)
-                .superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(List.of(100))
+            .superiorNovo(113)
+            .superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .isNull();
+            .isNull();
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {
@@ -1298,10 +1294,10 @@ public class UsuarioServiceIT {
     private UsuarioAutenticado umOutroUsuarioAutenticado() {
         var usuario = usuarioRepository.findOne(100);
         return UsuarioAutenticado
-                .builder()
-                .id(110)
-                .usuario(usuario)
-                .build();
+            .builder()
+            .id(110)
+            .usuario(usuario)
+            .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {
@@ -1376,7 +1372,7 @@ public class UsuarioServiceIT {
     private UsuarioFeederMqDto umUsuarioFeeder() {
         return UsuarioFeederMqDto.builder()
             .cpf("47492951671")
-            .dataCadastro(LocalDateTime.of(2020,1, 29, 11, 11, 11))
+            .dataCadastro(LocalDateTime.of(2020, 1, 29, 11, 11, 11))
             .email("JOHN@GMAIL.COM")
             .geradorLeadsId(101)
             .telefone("998230087")

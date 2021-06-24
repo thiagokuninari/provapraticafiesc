@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -37,7 +36,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
 
-    private BooleanBuilder builder;
+    private final BooleanBuilder builder;
 
     public UsuarioPredicate() {
         this.builder = new BooleanBuilder();
@@ -385,16 +384,6 @@ public class UsuarioPredicate {
         ignorarXbrain(!usuario.isXbrain());
     }
 
-    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
-                                                         PublicoAlvoComunicadoFiltros filtros) {
-        this.builder.and(new UsuarioPredicate()
-            .filtraPermitidos(usuario, usuarioService, false)
-            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario, filtros))
-            .build());
-
-        return this;
-    }
-
     public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
                                                      PublicoAlvoComunicadoFiltros filtros) {
         if (usuario.haveCanalAgenteAutorizado() && filtros.haveFiltrosDeLocalizacao()) {
@@ -420,9 +409,19 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
         this.builder.and(new UsuarioPredicate()
-            .filtraPermitidos(usuario, usuarioService)
+            .filtraPermitidos(usuario, usuarioService, true)
             .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
             .build());
+        return this;
+    }
+
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                         PublicoAlvoComunicadoFiltros filtros) {
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService, false)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario, filtros))
+            .build());
+
         return this;
     }
 

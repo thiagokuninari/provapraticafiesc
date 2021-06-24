@@ -618,19 +618,6 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[2].situacao", is(ESituacao.I.name())));
     }
 
-    private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
-        return new UsuarioExecutivoResponse(id, email, nome);
-    }
-
-    private static UsuarioSituacaoResponse umUsuarioSituacaoResponse(Integer id, String nome, ESituacao situacao) {
-        return UsuarioSituacaoResponse
-            .builder()
-            .id(id)
-            .nome(nome)
-            .situacao(situacao)
-            .build();
-    }
-
     @Test
     public void getUsuariosParaDistribuicaoDeAgendamentos_deveRetornar200_seUsuarioPossuirPermissao() throws Exception {
         mvc.perform(get(URL_USUARIOS_AGENDAMENTOS + "131/agenteautorizado/1300")

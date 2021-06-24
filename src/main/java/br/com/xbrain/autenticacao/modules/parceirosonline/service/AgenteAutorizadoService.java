@@ -1,22 +1,25 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.dto.*;
+import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
+import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.*;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AgenteAutorizadoService {
@@ -31,8 +34,8 @@ public class AgenteAutorizadoService {
             return agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(aaId);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                    AgenteAutorizadoService.class.getName(),
-                    EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }
@@ -43,8 +46,8 @@ public class AgenteAutorizadoService {
             return agenteAutorizadoClient.getUsuariosByAaIdCanalDoUsuario(aaId, usuarioId);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
-                    AgenteAutorizadoService.class.getName(),
-                    EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_AA_BY_ID);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

@@ -13,11 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.*;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -46,6 +42,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
@@ -59,7 +56,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate.QTD_MAX_IN_NO_ORACLE;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -708,7 +704,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros) {
         var query = new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario);
 
         montarQuery(query, filtros);
@@ -862,7 +858,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?> ...orderSpecifiers) {
+    public List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
         var projection = Projections.bean(UsuarioNomeResponse.class,
             usuario.id,
             usuario.nome,
@@ -871,17 +867,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .selectDistinct(projection)
             .from(usuario)
             .where(predicate)
-            .orderBy(orderSpecifiers)
-            .fetch();
-    }
-
-    @Override
-    public List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>... orderSpecifiers) {
-        return new JPAQueryFactory(entityManager)
-            .select(usuario.id)
-            .from(usuario)
-            .where(predicate)
-            .innerJoin(usuario.cargo, cargo)
             .orderBy(orderSpecifiers)
             .fetch();
     }
