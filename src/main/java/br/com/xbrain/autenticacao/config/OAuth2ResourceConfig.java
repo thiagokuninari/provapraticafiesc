@@ -66,6 +66,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
             .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
             .antMatchers("/api/relatorio-login-logout/**").hasRole(CodigoFuncionalidade.AUT_2100.name())
+            .antMatchers("/api/usuario-acesso/inativar").hasRole(CodigoFuncionalidade.AUT_INATIVAR_USUARIOS_SEM_ACESSO.name())
             .anyRequest().authenticated();
     }
 

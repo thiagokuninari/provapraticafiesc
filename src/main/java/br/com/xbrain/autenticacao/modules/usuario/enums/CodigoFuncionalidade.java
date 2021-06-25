@@ -19,6 +19,7 @@ public enum CodigoFuncionalidade {
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),
     AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário"),
     AUT_2100("Visualizar relatório de login / logout"),
+    AUT_INATIVAR_USUARIOS_SEM_ACESSO("Inativar Usuários Sem Acesso"),
     CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
     CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
     CHM_ABRIR_CHAMADO("Abrir chamado"),

@@ -19,13 +19,15 @@ import java.util.List;
 @RequestMapping("api/usuario-acesso")
 public class UsuarioAcessoController {
 
+    private static final String ORIGEM = "Usuário inativado pelo processo manual [endpoint]";
+
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
 
     @GetMapping("inativar")
     @ResponseStatus(HttpStatus.OK)
     public void inativarUsuariosSemAcesso() {
-        usuarioAcessoService.inativarUsuariosSemAcesso();
+        usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
     }
 
     @DeleteMapping("historico")

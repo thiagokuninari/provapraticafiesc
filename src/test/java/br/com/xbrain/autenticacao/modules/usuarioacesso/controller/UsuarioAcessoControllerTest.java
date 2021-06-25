@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
+import static helpers.Usuarios.OPERACAO_SUPERVISOR;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +44,17 @@ public class UsuarioAcessoControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        verify(usuarioAcessoService, times(1)).inativarUsuariosSemAcesso();
+        verify(usuarioAcessoService, times(1)).inativarUsuariosSemAcesso(any());
+    }
+
+    @Test
+    public void inativarUsuariosSemAcesso_deveRetornarHttpStatusIsForbidden_quandoUsuarioNaoForAdmin() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(ENDPOINT_USUARIO_ACESSO + "/inativar")
+            .header("Authorization", getAccessToken(mvc, OPERACAO_SUPERVISOR))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.status().isForbidden());
+
+        verify(usuarioAcessoService, times(0)).inativarUsuariosSemAcesso(any());
     }
 
     @Test

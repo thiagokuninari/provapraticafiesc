@@ -5,12 +5,28 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
-import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.dto.FunilProspeccaoUsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAutoComplete;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCsvResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioExecutivoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
@@ -43,7 +59,10 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.GERENTE_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
@@ -59,7 +78,7 @@ import static com.querydsl.jpa.JPAExpressions.select;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
-    private static final int TRINTA_DOIS_DIAS = 32;
+    private static final int SETE_DIAS = 7;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
 
@@ -617,7 +636,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .from(usuario)
                 .where(usuario.situacao.eq(A)
                         .and(usuario.dataUltimoAcesso.isNull()
-                                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
+                                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))))
                 .fetch();
     }
 

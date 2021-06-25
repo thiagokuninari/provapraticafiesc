@@ -74,14 +74,13 @@ public class UsuarioAcessoService {
     }
 
     @Transactional
-    public void inativarUsuariosSemAcesso() {
-        usuarioIsXbrain();
+    public void inativarUsuariosSemAcesso(String origem) {
         try {
             List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar();
             usuarios.forEach(usuarioAcesso -> {
                 Usuario usuario = usuarioAcesso.getUsuario();
                 usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
-                usuarioHistoricoService.gerarHistoricoInativacao(usuario);
+                usuarioHistoricoService.gerarHistoricoInativacao(usuario, origem);
                 inativarColaboradorPol(usuario);
             });
             log.info("Total de usuários inativados: " + usuarios.size());
@@ -107,16 +106,23 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioAcesso> buscarUsuariosParaInativar() {
-        List<UsuarioAcesso> usuariosAcesso = usuarioAcessoRepository.findAllUltimoAcessoUsuarios()
-            .stream()
-            .filter(this::ultrapassouTrintaEDoisDiasDesdeUltimoAcesso)
-            .collect(Collectors.toList());
+        List<UsuarioAcesso> usuariosAcessoExpirado = getUsuariosUltimoAcessoExpirado();
+        List<UsuarioAcesso> usuariosSemAcesso = getUsuariosSemUltimoAcesso();
+        return retornarListaUsuariosParaInativar(usuariosAcessoExpirado, usuariosSemAcesso);
+    }
 
-        List<UsuarioAcesso> usuarios = usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
+    private List<UsuarioAcesso> getUsuariosSemUltimoAcesso() {
+        return usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
             .stream()
             .map(UsuarioAcesso::of)
             .collect(Collectors.toList());
-        return retornarListaUsuariosParaInativar(usuariosAcesso, usuarios);
+    }
+
+    private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado() {
+        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios()
+            .stream()
+            .filter(this::ultrapassouTrintaEDoisDiasDesdeUltimoAcesso)
+            .collect(Collectors.toList());
     }
 
     private List<UsuarioAcesso> retornarListaUsuariosParaInativar(List<UsuarioAcesso> usuariosAcesso,

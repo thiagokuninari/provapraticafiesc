@@ -84,20 +84,11 @@ public class UsuarioAcessoServiceTest {
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("XBRAIN"));
-        usuarioAcessoService.inativarUsuariosSemAcesso();
+        usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
         verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class));
+        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
         verify(inativarColaboradorMqSender, times(3)).sendSuccess(anyString());
-    }
-
-    @Test
-    public void inativarUsuariosSemAcesso_deveInativarUsuarios_aa() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticado("MSO"));
-
-        assertThatThrownBy(() -> usuarioAcessoService.inativarUsuariosSemAcesso())
-            .isInstanceOf(PermissaoException.class);
     }
 
     @Test

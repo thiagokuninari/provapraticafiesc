@@ -45,7 +45,7 @@ public class UsuarioHistoricoServiceIT {
     @Test
     public void gerarHistoricoInativacao_deveGerarHistorico_quandoUsuarioForInativadoPeloSistema() {
         assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
-        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799));
+        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799), "Teste de histórico");
         refresh();
 
         List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
