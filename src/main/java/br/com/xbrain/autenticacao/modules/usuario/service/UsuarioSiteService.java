@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioSiteService {
 
+
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -50,7 +51,7 @@ public class UsuarioSiteService {
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioNomeResponse> getCoordenadoresDisponiveisPorCidade(List<Integer> cidadesIds) {
+    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisPorCidade(List<Integer> cidadesIds) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var sitePredicate = new SitePredicate();
         sitePredicate.comCoordenadoresComCidade(cidadesIds);

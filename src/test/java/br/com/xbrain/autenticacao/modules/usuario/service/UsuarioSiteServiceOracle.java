@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -10,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +24,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("oracle-test")
@@ -37,6 +42,13 @@ public class UsuarioSiteServiceOracle {
     private UsuarioSiteService usuarioSiteService;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private EquipeVendaD2dService equipeVendaD2dService;
+
+    @Before
+    public void setup() {
+        when(equipeVendaD2dService.getEquipeVendasComSupervisor(any())).thenReturn(umaEquipeVendaSupervisorDto());
+    }
 
     @Test
     public void filtrarVendedoresInativosHierarquia_deveRetornarApenasUsuarioAtivosHierarquiaCoordenador_quandoEParametroFalse() {
@@ -141,6 +153,17 @@ public class UsuarioSiteServiceOracle {
         var coordenadores = usuarioSiteService.coordenadoresDoSiteId(110);
         assertThat(coordenadores)
             .hasSize(0);
+    }
+
+    private List<EquipeVendaSupervisorDto> umaEquipeVendaSupervisorDto() {
+        return List.of(
+            EquipeVendaSupervisorDto.builder()
+                .id(1)
+                .supervisorNome("TESTE")
+                .canalVenda("TESTE")
+                .descricao("TESTE")
+                .build()
+        );
     }
 
     private UsuarioAutenticado umUsuarioAutenticadoAdmin() {

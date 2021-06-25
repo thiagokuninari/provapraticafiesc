@@ -61,7 +61,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of(umUsuarioNomeResponse(1)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1100)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1100)))
             .hasSize(0);
     }
 
@@ -119,7 +119,7 @@ public class UsuarioSiteServiceIT {
     @Test
     public void retornarTodosCoordenadores_deveRetornarTodosCoordenadoresDisponiveis_quandoUsuarioLogadoForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoMSO(1));
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(1100, 1500, 1700)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1100, 1500, 1700)))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
                 tuple(11125, "Coordenador2 operacao ativo local"),
@@ -143,7 +143,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of(umUsuarioNomeResponse(11155), umUsuarioNomeResponse(11145)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(100)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(100)))
             .hasSize(0);
     }
 
@@ -153,7 +153,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.getCoordenadoresDisponiveisPorCidade(List.of(11122)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(11122)))
             .hasSize(0);
     }
 

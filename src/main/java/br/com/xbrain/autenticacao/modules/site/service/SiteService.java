@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -276,11 +277,19 @@ public class SiteService {
     }
 
     private void validarCidadesDisponiveis(SiteRequest siteRequest) {
-        siteRepository.findFirstBySituacaoAndCidadesIdInAndIdNot(A, siteRequest.getCidadesIds(),
-            Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
-            .ifPresent(site -> {
-                throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
-            });
+        var lista = siteRepository.findAll(filtrarPorSituacaoAndCidadesIdInAndIdNot(siteRequest));
+
+        if (!CollectionUtils.isEmpty(lista)) {
+            throw EX_CIDADE_VINCULADA_A_OUTRO_SITE;
+        }
+    }
+
+    private Predicate filtrarPorSituacaoAndCidadesIdInAndIdNot(SiteRequest siteRequest) {
+        return new SitePredicate()
+            .comSituacao(A)
+            .comCidades(siteRequest.getCidadesIds())
+            .excetoId(Optional.ofNullable(siteRequest.getId()).orElse(BigInteger.ZERO.intValue()))
+            .build();
     }
 
     private List<Cidade> buscarCidadesDisponiveis(List<Integer> estadosIds, Integer siteIgnoradoId) {

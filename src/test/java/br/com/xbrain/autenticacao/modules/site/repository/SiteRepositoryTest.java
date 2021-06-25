@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.Test;
@@ -29,21 +30,21 @@ public class SiteRepositoryTest {
     private SiteRepository repository;
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
-        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(1, 2), 100))
-            .isNotPresent();
+    public void findAll_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
+        assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(1, 2), 100)))
+            .isEmpty();
     }
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
-        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 100))
-            .isNotPresent();
+    public void findAll_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
+        assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(5578), 100)))
+            .isEmpty();
     }
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
-        assertThat(repository.findFirstBySituacaoAndCidadesIdInAndIdNot(ESituacao.A, List.of(5578), 0))
-            .isPresent();
+    public void findAll_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
+        assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(5578), 0)))
+            .isNotEmpty();
     }
 
     @Test
@@ -161,5 +162,13 @@ public class SiteRepositoryTest {
         assertThat(site.get())
             .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
             .containsExactly(100, "São Paulo", 5578, "LONDRINA", 1, "PR");
+    }
+
+    private Predicate umSitePredicate(ESituacao situacao, List<Integer> cidadeIds, Integer id) {
+        return new SitePredicate()
+            .comSituacao(situacao)
+            .comCidades(cidadeIds)
+            .excetoId(id)
+            .build();
     }
 }
