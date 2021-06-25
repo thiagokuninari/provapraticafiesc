@@ -1142,7 +1142,7 @@ public class UsuarioServiceTest {
 
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(),service);
 
-        when(repository.getUsuariosComHierarquiaCsv(usuarioPredicate.build()))
+        when(repository.getUsuariosCsv(usuarioPredicate.build()))
             .thenReturn(List.of(umUsuarioOperacaoCsv(), umUsuarioAaCsv()));
 
         var usuarioCsvs = service.getAllForCsv(usuarioFiltros);

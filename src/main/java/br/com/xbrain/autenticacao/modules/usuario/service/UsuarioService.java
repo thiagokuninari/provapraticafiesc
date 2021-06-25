@@ -1564,7 +1564,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
-        var usuarioCsvResponses = getUsuarioCsvResponses(filtros);
+        var usuarioCsvResponses =
+            repository.getUsuariosCsv(filtrarUsuariosPermitidos(filtros).build());
         preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
         preencherUsuarioCsvsDeAa(usuarioCsvResponses);
         return usuarioCsvResponses;
@@ -1613,29 +1614,6 @@ public class UsuarioService {
                                                                 Integer usuarioId) {
         return agenteAutorizadoUsuarioDtos.stream().filter(agenteAutorizadoUsuarioDto ->
             agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
-    }
-
-    private List<UsuarioCsvResponse> getUsuarioCsvResponses(UsuarioFiltros filtros) {
-        var usuariosComHierarquia = getUsuariosComHierarquiaCsv(filtros);
-        exluiIdsDeFiltro(filtros, usuariosComHierarquia);
-        var usuariosSemHierarquia = getUsuariosSemHierarquiaCsv(filtros);
-        return Stream.of(usuariosSemHierarquia,usuariosComHierarquia)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
-    }
-
-    private List<UsuarioCsvResponse> getUsuariosSemHierarquiaCsv(UsuarioFiltros filtros) {
-        return repository.getUsuariosSemHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
-    }
-
-    private List<UsuarioCsvResponse> getUsuariosComHierarquiaCsv(UsuarioFiltros filtros) {
-        return repository.getUsuariosComHierarquiaCsv(filtrarUsuariosPermitidos(filtros).build());
-    }
-
-    private void exluiIdsDeFiltro(UsuarioFiltros filtros, List<UsuarioCsvResponse> usuariosComHierarquia) {
-        filtros.setExcluiIds(
-            usuariosComHierarquia.stream().map(UsuarioCsvResponse::getId).collect(Collectors.toList())
-        );
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {

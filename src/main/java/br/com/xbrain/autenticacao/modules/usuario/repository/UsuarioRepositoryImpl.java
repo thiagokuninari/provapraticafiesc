@@ -487,7 +487,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioCsvResponse> getUsuariosComHierarquiaCsv(Predicate predicate) {
+    public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(
                 Projections.constructor(UsuarioCsvResponse.class,
@@ -516,45 +516,21 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(cargo.nivel, nivel)
             .leftJoin(usuario.organizacao, organizacao)
             .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
+            .leftJoin(usuarioHierarquia.usuarioSuperior)
             .where(predicate)
-            .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
-                cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
-                usuario.loginNetSales, nivel.nome, organizacao.nome)
-            .fetch();
-    }
-
-    @Override
-    public List<UsuarioCsvResponse> getUsuariosSemHierarquiaCsv(Predicate predicate) {
-        return new JPAQueryFactory(entityManager)
-            .select(
-                Projections.constructor(UsuarioCsvResponse.class,
-                    usuario.id,
-                    usuario.nome,
-                    usuario.email,
-                    usuario.telefone,
-                    usuario.cpf,
-                    cargo.nome,
-                    departamento.nome,
-                    stringTemplate(CONCATENA_STRINGS, unidadeNegocio.nome),
-                    stringTemplate(CONCATENA_STRINGS, empresa.nome),
-                    usuario.situacao,
-                    usuario.dataUltimoAcesso,
-                    usuario.loginNetSales,
-                    nivel.nome,
-                    organizacao.nome
-                )
-            )
-            .from(usuario)
-            .leftJoin(usuario.cargo, cargo)
-            .leftJoin(usuario.departamento, departamento)
-            .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
-            .leftJoin(usuario.empresas, empresa)
-            .leftJoin(cargo.nivel, nivel)
-            .leftJoin(usuario.organizacao, organizacao)
-            .where(predicate)
-            .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
-                cargo.nome, departamento.nome, usuario.situacao, usuario.dataUltimoAcesso,
-                usuario.loginNetSales, nivel.nome, organizacao.nome)
+            .groupBy(
+                usuario.id,
+                usuario.nome,
+                usuario.email,
+                usuario.telefone,
+                usuario.cpf,
+                cargo.nome,
+                departamento.nome,
+                usuario.situacao,
+                usuario.dataUltimoAcesso,
+                usuario.loginNetSales,
+                nivel.nome,
+                organizacao.nome)
             .fetch();
     }
 
