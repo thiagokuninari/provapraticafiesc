@@ -30,19 +30,19 @@ public class SiteRepositoryTest {
     private SiteRepository repository;
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
+    public void findAll_naoDeveRetornarNada_quandoNaoExistirCidadesVinculadas() {
         assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(1, 2), 100)))
             .isEmpty();
     }
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
+    public void findAll_naoDeveRetornarNada_quandoExistirCidadesVinculadasEIdForDiferente() {
         assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(5578), 100)))
             .isEmpty();
     }
 
     @Test
-    public void findFirstByCidadesIdInAndIdNot_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
+    public void findAll_deveRetornarUmSite_quandoExistirCidadesVinculadasNele() {
         assertThat(repository.findAll(umSitePredicate(ESituacao.A, List.of(5578), 0)))
             .isNotEmpty();
     }

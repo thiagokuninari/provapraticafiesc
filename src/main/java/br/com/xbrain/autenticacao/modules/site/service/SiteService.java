@@ -47,8 +47,6 @@ import static java.util.stream.Collectors.toList;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SiteService {
 
-    public static final int LIMETE_IDS = 500;
-
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Site não encontrado.");
     private static final ValidacaoException EX_SITE_EXISTENTE =
         new ValidacaoException("Site já cadastrado anteriormente com esse nome.");
