@@ -54,7 +54,7 @@ public class UsuarioHistoricoServiceIT {
         assertThat(usuarioHistoricos.get(0))
                 .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
                 .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
-                        "INATIVADO POR FALTA DE ACESSO", 799);
+                        "Teste de histórico", 799);
     }
 
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {
