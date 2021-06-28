@@ -77,36 +77,6 @@ public class UsuarioCsvResponse {
         this.hierarquia = removeDuplicadosWmConcat(hierarquia);
     }
 
-    public UsuarioCsvResponse(Integer id,
-                              String nome,
-                              String email,
-                              String telefone,
-                              String cpf,
-                              String cargo,
-                              String departamento,
-                              String unidadesNegocios,
-                              String empresas,
-                              ESituacao situacao,
-                              LocalDateTime dataUltimoAcesso,
-                              String loginNetSales,
-                              String nivel,
-                              String organizacao) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.telefone = telefone;
-        this.cpf = cpf;
-        this.cargo = cargo;
-        this.departamento = departamento;
-        this.unidadesNegocios = removeDuplicadosWmConcat(unidadesNegocios);
-        this.empresas = removeDuplicadosWmConcat(empresas);
-        this.situacao = situacao;
-        this.dataUltimoAcesso = dataUltimoAcesso;
-        this.loginNetSales = loginNetSales;
-        this.nivel = nivel;
-        this.organizacao = organizacao;
-    }
-
     @JsonIgnore
     public static String getCabecalhoCsv() {
         return "CODIGO;"
