@@ -1572,16 +1572,16 @@ public class UsuarioService {
     }
 
     void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        List<Integer> usuarioIds = usuarioCsvResponses.stream().filter(
+        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream().filter(
             usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
             .map(UsuarioCsvResponse::getId)
             .collect(Collectors.toList());
 
         if (!usuarioIds.isEmpty()) {
 
-            var map = partition(usuarioIds,QTD_MAX_IN_NO_ORACLE).stream()
+            var map = partition(usuarioIds,QTD_MAX_IN_NO_ORACLE).parallelStream()
                 .map(parte -> repository.getCanaisByUsuarioIds(parte))
-                .flatMap(Collection::stream)
+                .flatMap(Collection::parallelStream)
                 .collect(Collectors.groupingBy(Canal::getUsuarioId));
 
             usuarioCsvResponses.forEach(
@@ -1592,7 +1592,7 @@ public class UsuarioService {
     }
 
     void preencherUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.stream().filter(
+        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
             usuarioCsvResponse -> AGENTE_AUTORIZADO.equals(usuarioCsvResponse.getNivel())
         ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
 
@@ -1600,19 +1600,20 @@ public class UsuarioService {
             var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
                 .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
 
-            for (UsuarioCsvResponse usuarioCsvResponse : usuarioCsvResponses) {
-                findAasDeUsuarioId(agenteAutorizadosUsuarioDtos, usuarioCsvResponse.getId())
-                    .forEach(agenteAutorizadoUsuarioDto -> {
-                        usuarioCsvResponse.setRazaoSocial(agenteAutorizadoUsuarioDto.getRazaoSocial());
-                        usuarioCsvResponse.setCnpj(agenteAutorizadoUsuarioDto.getCnpj());
-                    });
-            }
+            usuarioCsvResponses.parallelStream().forEach(usuarioCsvResponse -> {
+                findAasDeUsuarioId(
+                    agenteAutorizadosUsuarioDtos, usuarioCsvResponse.getId()
+                ).parallelStream().forEach(agenteAutorizadoUsuarioDto -> {
+                    usuarioCsvResponse.setRazaoSocial(agenteAutorizadoUsuarioDto.getRazaoSocial());
+                    usuarioCsvResponse.setCnpj(agenteAutorizadoUsuarioDto.getCnpj());
+                });
+            });
         }
     }
 
     private List<AgenteAutorizadoUsuarioDto> findAasDeUsuarioId(List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos,
                                                                 Integer usuarioId) {
-        return agenteAutorizadoUsuarioDtos.stream().filter(agenteAutorizadoUsuarioDto ->
+        return agenteAutorizadoUsuarioDtos.parallelStream().filter(agenteAutorizadoUsuarioDto ->
             agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
