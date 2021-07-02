@@ -53,6 +53,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.comum.model.QOrganizacao.organizacao;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -62,6 +63,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private static final int TRINTA_DOIS_DIAS = 32;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
+    private static final String CONCATENA_STRINGS = "wm_concat({0})";
 
     @Autowired
     private EntityManager entityManager;
@@ -160,6 +162,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .setParameter("_usuarioId", usuarioId)
                 .setParameter("_codigoCargo", codigoCargo)
                 .getResultList();
+    }
+
+    public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
+        return jdbcTemplate.query(" SELECT FK_USUARIO AS usuarioId, CANAL AS canal"
+                    + " FROM USUARIO_CANAL"
+                    + " WHERE FK_USUARIO IN (:usuarioIds)",
+            new MapSqlParameterSource()
+                .addValue("usuarioIds", usuarioIds),
+            new BeanPropertyRowMapper<>(Canal.class));
     }
 
     @Override
@@ -478,30 +489,49 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioCsvResponse> getUsuariosCsv(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(
-                        Projections.constructor(UsuarioCsvResponse.class,
-                                usuario.id,
-                                usuario.nome,
-                                usuario.email,
-                                usuario.telefone,
-                                usuario.cpf,
-                                cargo.nome,
-                                departamento.nome,
-                                stringTemplate("wm_concat({0})", unidadeNegocio.nome),
-                                stringTemplate("wm_concat({0})", empresa.nome),
-                                usuario.situacao
-                        )
+            .select(
+                Projections.constructor(UsuarioCsvResponse.class,
+                    usuario.id,
+                    usuario.nome,
+                    usuario.email,
+                    usuario.telefone,
+                    usuario.cpf,
+                    cargo.nome,
+                    departamento.nome,
+                    stringTemplate(CONCATENA_STRINGS, unidadeNegocio.nome),
+                    stringTemplate(CONCATENA_STRINGS, empresa.nome),
+                    usuario.situacao,
+                    usuario.dataUltimoAcesso,
+                    usuario.loginNetSales,
+                    nivel.nome,
+                    organizacao.nome,
+                    stringTemplate(CONCATENA_STRINGS, usuarioHierarquia.usuarioSuperior.nome)
                 )
-                .from(usuario)
-                .leftJoin(usuario.cargo, cargo)
-                .leftJoin(usuario.departamento, departamento)
-                .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
-                .leftJoin(usuario.empresas, empresa)
-                .where(predicate)
-                .groupBy(usuario.id, usuario.nome, usuario.email, usuario.telefone, usuario.cpf, usuario.rg,
-                        cargo.nome, departamento.nome, usuario.situacao)
-                .orderBy(usuario.nome.asc())
-                .fetch();
+            )
+            .from(usuario)
+            .leftJoin(usuario.cargo, cargo)
+            .leftJoin(usuario.departamento, departamento)
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio)
+            .leftJoin(usuario.empresas, empresa)
+            .leftJoin(cargo.nivel, nivel)
+            .leftJoin(usuario.organizacao, organizacao)
+            .leftJoin(usuario.usuariosHierarquia, usuarioHierarquia)
+            .leftJoin(usuarioHierarquia.usuarioSuperior)
+            .where(predicate)
+            .groupBy(
+                usuario.id,
+                usuario.nome,
+                usuario.email,
+                usuario.telefone,
+                usuario.cpf,
+                cargo.nome,
+                departamento.nome,
+                usuario.situacao,
+                usuario.dataUltimoAcesso,
+                usuario.loginNetSales,
+                nivel.nome,
+                organizacao.nome)
+            .fetch();
     }
 
     @Override
@@ -581,7 +611,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> funcionalidades) {
-        var permissoes = select(stringTemplate("wm_concat({0})", cargoDepartamentoFuncionalidade.funcionalidade.role))
+        var permissoes = select(stringTemplate(CONCATENA_STRINGS, cargoDepartamentoFuncionalidade.funcionalidade.role))
                 .from(cargoDepartamentoFuncionalidade)
                 .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
                 .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
@@ -589,7 +619,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .where(cargo.eq(usuario.cargo)
                         .and(departamento.eq(usuario.departamento))
                         .and(funcionalidade.role.in(funcionalidades)));
-        var permissoesEspeciais = select(stringTemplate("wm_concat({0})", funcionalidade.role))
+        var permissoesEspeciais = select(stringTemplate(CONCATENA_STRINGS, funcionalidade.role))
                 .from(permissaoEspecial)
                 .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
                 .where(permissaoEspecial.usuario.id.eq(usuario.id)

@@ -525,17 +525,19 @@ public class UsuarioGerenciaControllerTest {
                 .getContentAsString();
 
         assertEquals(
-                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A\n"
+                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A", csv);
+                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A;;;;;;;;", csv);
     }
 
     @Test
     public void getCsv_CsvFormatadoCorretamente_QuandoUsuarioNaoPossuirEmpresaEUnidadeNegocio() throws Exception {
         doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
                 .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
+
         String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -545,12 +547,12 @@ public class UsuarioGerenciaControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(
-                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+        assertEquals("\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + ";;A\n"
+                        + ";;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + ";;A", csv);
+                        + ";;A;;;;;;;;", csv);
     }
 
     @Test

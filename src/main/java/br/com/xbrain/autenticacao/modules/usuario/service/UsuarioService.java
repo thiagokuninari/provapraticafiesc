@@ -104,6 +104,8 @@ public class UsuarioService {
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
+    public static final String OPERACAO = "Operação";
+    public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -1562,8 +1564,57 @@ public class UsuarioService {
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        return repository.getUsuariosCsv(predicate.build());
+        var usuarioCsvResponses =
+            repository.getUsuariosCsv(filtrarUsuariosPermitidos(filtros).build());
+        preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
+        preencherUsuarioCsvsDeAa(usuarioCsvResponses);
+        return usuarioCsvResponses;
+    }
+
+    void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream().filter(
+            usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList());
+
+        if (!usuarioIds.isEmpty()) {
+
+            var map = partition(usuarioIds,QTD_MAX_IN_NO_ORACLE).parallelStream()
+                .map(parte -> repository.getCanaisByUsuarioIds(parte))
+                .flatMap(Collection::parallelStream)
+                .collect(Collectors.groupingBy(Canal::getUsuarioId));
+
+            usuarioCsvResponses.forEach(
+                usuarioCsvResponse -> usuarioCsvResponse.setCanais(
+                    map.getOrDefault(usuarioCsvResponse.getId(),null))
+            );
+        }
+    }
+
+    void preencherUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
+            usuarioCsvResponse -> AGENTE_AUTORIZADO.equals(usuarioCsvResponse.getNivel())
+        ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
+
+        if (!usuarioRequest.getUsuarioIds().isEmpty()) {
+            var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
+                .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
+
+            usuarioCsvResponses.parallelStream().forEach(usuarioCsvResponse -> {
+                findAasDeUsuarioId(
+                    agenteAutorizadosUsuarioDtos, usuarioCsvResponse.getId()
+                ).parallelStream().forEach(agenteAutorizadoUsuarioDto -> {
+                    usuarioCsvResponse.setRazaoSocial(agenteAutorizadoUsuarioDto.getRazaoSocial());
+                    usuarioCsvResponse.setCnpj(agenteAutorizadoUsuarioDto.getCnpj());
+                });
+            });
+        }
+    }
+
+    private List<AgenteAutorizadoUsuarioDto> findAasDeUsuarioId(List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos,
+                                                                Integer usuarioId) {
+        return agenteAutorizadoUsuarioDtos.parallelStream().filter(agenteAutorizadoUsuarioDto ->
+            agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {

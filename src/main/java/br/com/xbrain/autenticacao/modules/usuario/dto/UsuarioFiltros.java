@@ -28,6 +28,7 @@ public class UsuarioFiltros {
     private ECanal canal;
     private List<ESituacao> situacoes;
     private Integer organizacaoId;
+    private List<Integer> excluiIds;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -48,6 +49,7 @@ public class UsuarioFiltros {
             .comCargo(!ObjectUtils.isEmpty(cargoId)
                 ? Collections.singletonList(cargoId) : null)
             .comDepartamento(!ObjectUtils.isEmpty(departamentoId)
-                ? Collections.singletonList(departamentoId) : null);
+                ? Collections.singletonList(departamentoId) : null)
+            .excluiIds(excluiIds);
     }
 }
