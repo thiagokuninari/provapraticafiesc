@@ -32,7 +32,7 @@ public class SiteResponse {
 
     public static SiteResponse of(Site site, boolean trazerTudo) {
         var siteResponse = new SiteResponse();
-        BeanUtils.copyProperties(site, siteResponse);
+        BeanUtils.copyProperties(site, siteResponse, "siteNacional");
         siteResponse.setSiteNacional(site.getSiteNacional() == Eboolean.V);
 
         if (trazerTudo) {
