@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -27,10 +28,12 @@ public class SiteResponse {
     private Set<Integer> estadosIds;
     private Set<Integer> cidadesIds;
     private Integer discadoraId;
+    private boolean siteNacional;
 
     public static SiteResponse of(Site site, boolean trazerTudo) {
         var siteResponse = new SiteResponse();
         BeanUtils.copyProperties(site, siteResponse);
+        siteResponse.setSiteNacional(site.getSiteNacional() == Eboolean.V);
 
         if (trazerTudo) {
             siteResponse.setCoordenadoresIds(Usuario.convertFrom(site.getCoordenadores()));

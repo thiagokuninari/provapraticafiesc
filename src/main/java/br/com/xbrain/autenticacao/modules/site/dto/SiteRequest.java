@@ -28,10 +28,10 @@ public class SiteRequest {
     private List<Integer> coordenadoresIds;
     @NotEmpty
     private List<Integer> supervisoresIds;
-    @NotEmpty
     private List<Integer> estadosIds;
     private List<Integer> cidadesIds;
     private boolean incluirCidadesDisponiveis;
+    private boolean siteNacional;
 
     public boolean isNovoSite() {
         return ObjectUtils.isEmpty(id);
