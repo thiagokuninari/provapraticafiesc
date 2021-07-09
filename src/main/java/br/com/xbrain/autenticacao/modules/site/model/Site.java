@@ -2,12 +2,14 @@ package br.com.xbrain.autenticacao.modules.site.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -72,6 +74,10 @@ public class Site {
     @Column(name = "DISCADORA_ID")
     private Integer discadoraId;
 
+    @Column(name = "SITE_NACIONAL", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Eboolean siteNacional;
+
     public void inativar() {
         situacao = ESituacao.I;
     }
@@ -90,16 +96,24 @@ public class Site {
             .supervisores(Usuario.of(request.getSupervisoresIds()))
             .coordenadores(Usuario.of(request.getCoordenadoresIds()))
             .cidades(Cidade.of(request.getCidadesIds()))
+            .siteNacional(request.isSiteNacional() ? Eboolean.V : Eboolean.F)
             .build();
     }
 
     public void update(SiteRequest request) {
         var site = of(request);
-        BeanUtils.copyProperties(site, this, "situacao", "discadoraId");
+        if (!ObjectUtils.isEmpty(request.getCidadesIds())) {
+            BeanUtils.copyProperties(site, this, "situacao", "discadoraId");
+        } else {
+            BeanUtils.copyProperties(site, this, "situacao", "discadoraId", "cidades");
+        }
     }
 
     public Site(Integer id) {
         this.id = id;
     }
 
+    public boolean isSiteNacional() {
+        return this.siteNacional == Eboolean.V;
+    }
 }

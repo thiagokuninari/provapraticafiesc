@@ -27,6 +27,11 @@ public class UsuarioSiteController {
         return usuarioSiteService.buscarUsuariosSitePorCargo(codigoCargo);
     }
 
+    @GetMapping(value = "coordenadores/disponiveis")
+    public List<UsuarioNomeResponse> buscarTodosCoordenadoresDisponiveis() {
+        return usuarioSiteService.buscarTodosCoordenadoresDisponiveis();
+    }
+
     @PostMapping(value = "coordenadores/disponiveis")
     public List<UsuarioNomeResponse> buscarUsuariosDisponiveisPorCargo(@RequestBody CidadeIdsRequest cidadesIds) {
         return usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(cidadesIds.getCidadesIds());

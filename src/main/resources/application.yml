@@ -90,6 +90,7 @@ app-config:
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
+    usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
@@ -111,9 +112,17 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
+    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
+    cadastro-usuario-feeder: cadastro-usuario-feeder.queue
+    cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
+    sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
+    sucesso-cadastro-usuario-feeder-failure: sucesso-cadastro-usuario-feeder-failure.queue
+    alterar-situacao-usuario-feeder: alterar-situacao-usuario-feeder.queue
+    alterar-situacao-usuario-feeder-failure: alterar-situacao-usuario-feeder-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -183,7 +192,7 @@ app-config:
       url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
-      #url: http://localhost:8094
+      # url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
@@ -199,15 +208,28 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    comunicados:
+      url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+    agente-autorizado:
+      #url: http://localhost:8300
+      url: https://api-dev.conexaoclarobrasil.com.br/parceiros/agente-autorizado
     gestao:
       #url: http://localhost:8091
       url: http://gestao-api-dev.conexaoclarobrasil.com.br
+    solicitacao-pap:
+      #url: http://localhost:8108
+      url: https://api-dev.conexaoclarobrasil.com.br/solicitacao-cliente-pap
+    consulta-cep:
+      url: http://192.168.2.28:8186
     notificacao:
       #url: http://localhost:8081
       url: http://192.168.50.1:6595
+    emails:
+      #url: http://localhost:8080
+      url: http://api-hom.conexaoclarobrasil.com.br/email
 
 flyway:
   enabled: true
