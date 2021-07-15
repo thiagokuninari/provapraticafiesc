@@ -62,18 +62,6 @@ public class UsuarioSiteService {
             .findCoordenadoresDisponiveis(sitePredicate.build()), usuarioAutenticado.getId());
     }
 
-    @Transactional(readOnly = true)
-    public List<UsuarioNomeResponse> buscarTodosCoordenadoresDisponiveis() {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        var sitePredicate = new SitePredicate();
-        sitePredicate.comCoordenadoresDisponiveis();
-        if (usuarioAutenticado.isXbrainOuMso()) {
-            return repository.findCoordenadoresDisponiveis(sitePredicate.build());
-        }
-        return filtrarHierarquia(repository
-            .findCoordenadoresDisponiveis(sitePredicate.build()), usuarioAutenticado.getId());
-    }
-
     public List<UsuarioNomeResponse> getVendedoresOperacaoAtivoProprioPorSiteId(Integer siteId) {
         return repository.findVendedoresPorSiteId(siteId);
     }
