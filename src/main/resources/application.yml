@@ -316,6 +316,13 @@ hystrix:
             timeoutInMilliseconds: 300000
   shareSecurityContext: true
 
+feign:
+  client:
+    config:
+      agenteAutorizadoNovoClient:
+        connectTimeout: 360000
+        readTimeout: 360000
+
 keys:
   public: |
     -----BEGIN RSA PUBLIC KEY-----

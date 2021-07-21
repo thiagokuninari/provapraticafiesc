@@ -128,8 +128,7 @@ public class UsuarioGerenciaController {
     public void getCsv(@Validated UsuarioFiltros filtros, HttpServletResponse response) {
         service.exportUsuariosToCsv(
             service.getAllForCsv(filtros),
-                response
-        );
+            response);
     }
 
     @GetMapping("existir/usuario")

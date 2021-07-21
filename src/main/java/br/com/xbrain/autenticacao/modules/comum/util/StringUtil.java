@@ -48,7 +48,7 @@ public class StringUtil {
             }
         }
 
-        return valorFormatado.replaceAll("[;|,|\t]", "");
+        return valorFormatado.replaceAll("[\\[\\];|,|\t]", "");
     }
 
     public static String getNomeAbreviado(String nome) {

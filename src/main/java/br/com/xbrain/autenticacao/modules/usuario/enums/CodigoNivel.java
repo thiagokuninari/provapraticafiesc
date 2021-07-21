@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.enums;
 
 public enum CodigoNivel {
     AGENTE_AUTORIZADO,
+    AGENTE_AUTORIZADO_NACIONAL,
     MSO,
     OPERACAO,
     XBRAIN,
@@ -19,5 +20,5 @@ public enum CodigoNivel {
     BACKOFFICE,
     OUVIDORIA,
     INTEGRACAO,
-    FEEDER;
+    FEEDER
 }

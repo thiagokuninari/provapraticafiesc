@@ -42,6 +42,18 @@ public class UsuarioPredicate {
         this.builder = new BooleanBuilder();
     }
 
+    public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
+        if (!StringUtils.isEmpty(excluiIds)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(excluiIds,QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::notIn)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comNome(String nome) {
         if (!StringUtils.isEmpty(nome)) {
             builder.and(usuario.nome.likeIgnoreCase("%" + nome + "%"));
