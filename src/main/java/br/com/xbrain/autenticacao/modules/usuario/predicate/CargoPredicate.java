@@ -1,7 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
@@ -29,8 +33,34 @@ public class CargoPredicate extends PredicateBase {
         return this;
     }
 
+    public CargoPredicate comNiveis(List<Integer> niveisId) {
+        if (!ObjectUtils.isEmpty(niveisId)) {
+            builder.and(cargo.nivel.id.in(niveisId));
+        }
+        return this;
+    }
+
     public CargoPredicate comId(List<Integer> cargosId) {
         builder.and(cargo.id.in(cargosId));
+        return this;
+    }
+
+    private CargoPredicate comIds(List<Integer> cargosId) {
+        builder.and(cargo.id.in(cargosId));
+        return this;
+    }
+
+    public CargoPredicate ouComCodigos(List<CodigoCargo> codigoCargos) {
+        if (!ObjectUtils.isEmpty(codigoCargos)) {
+            builder.or(cargo.codigo.in(codigoCargos));
+        }
+        return this;
+    }
+
+    public CargoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado, List<Integer> cargosId) {
+        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
+            comIds(cargosId);
+        }
         return this;
     }
 

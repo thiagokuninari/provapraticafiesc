@@ -81,6 +81,11 @@ public class UsuarioController {
         usuarioService.inativarSocioPrincipal(email);
     }
 
+    @GetMapping("ids/superiores/usuario-logado")
+    public Set<Integer> getAllUsuariosIdsSuperiores() {
+        return usuarioService.getAllUsuariosIdsSuperiores();
+    }
+
     @PutMapping("inativar/{id}")
     public void inativar(@PathVariable Integer id) {
         usuarioService.inativar(id);
@@ -254,7 +259,7 @@ public class UsuarioController {
     @RequestMapping(params = "funcionalidade", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuariosByPermissao(
         @RequestParam String funcionalidade) {
-        return usuarioService.getUsuarioByPermissao(funcionalidade);
+        return usuarioService.getUsuarioByPermissaoEspecial(funcionalidade);
     }
 
     @RequestMapping(value = "/configuracao", method = RequestMethod.GET)
@@ -349,7 +354,7 @@ public class UsuarioController {
 
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
     public List<UsuarioAgenteAutorizadoAgendamentoResponse> getUsuariosParaDistribuicaoDeAgendamentos(
-            @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
+        @PathVariable Integer usuarioId, @PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosParaDistribuicao(usuarioId, agenteAutorizadoId);
     }
 
@@ -361,6 +366,21 @@ public class UsuarioController {
     @GetMapping("executivos")
     public List<UsuarioExecutivoResponse> findUsuariosExecutivos() {
         return usuarioService.buscarExecutivosPorSituacao(ESituacao.A);
+    }
+
+    @GetMapping("ids/alvo/comunicado")
+    public List<Integer> findUsuarioIdsAlvoDosComunicados(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        return usuarioService.getIdDosUsuariosAlvoDoComunicado(usuarioFiltros);
+    }
+
+    @GetMapping("cidades")
+    public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
+        return usuarioService.findCidadesDoUsuarioLogado();
+    }
+
+    @GetMapping("alvo/comunicado")
+    public List<UsuarioNomeResponse> findUsuarioAlvoDosComunicados(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        return usuarioService.getUsuariosAlvoDoComunicado(usuarioFiltros);
     }
 
     @GetMapping("{id}/sem-permissoes")

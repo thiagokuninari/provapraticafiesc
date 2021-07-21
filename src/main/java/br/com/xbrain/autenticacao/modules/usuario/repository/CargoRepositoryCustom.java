@@ -12,4 +12,6 @@ public interface CargoRepositoryCustom {
     Page<Cargo> findAll(Predicate predicate, Pageable pageable);
 
     List<Cargo> findAll(Predicate predicate);
+
+    List<Cargo> buscarTodosComNiveis(Predicate predicate);
 }

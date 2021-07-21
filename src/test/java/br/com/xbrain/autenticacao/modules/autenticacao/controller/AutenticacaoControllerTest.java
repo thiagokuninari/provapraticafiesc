@@ -40,6 +40,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -239,11 +240,11 @@ public class AutenticacaoControllerTest {
 
     @Test
     public void getAccessTokenObject_deveNaoGerarHistorico_quandoNaoAutenticar() {
-        long totalRegistrosAntes =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistrosAntes = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
 
         TestsHelper.getAccessTokenObject(mvc, "INVALIDO@XBRAIN.COM.BR");
 
-        long totalRegistroApos =  usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
+        long totalRegistroApos = usuarioHistoricoRepository.findAll().spliterator().getExactSizeIfKnown();
         assertTrue(totalRegistrosAntes == totalRegistroApos);
     }
 

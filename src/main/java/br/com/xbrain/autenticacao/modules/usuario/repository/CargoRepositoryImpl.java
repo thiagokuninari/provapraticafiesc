@@ -17,20 +17,30 @@ public class CargoRepositoryImpl extends CustomRepository<Cargo> implements Carg
 
     public Page<Cargo> findAll(Predicate predicate, Pageable pageable) {
         return super.findAll(
-                List.of(innerJoin(cargo.nivel)),
-                predicate,
-                pageable);
+            List.of(innerJoin(cargo.nivel)),
+            predicate,
+            pageable);
     }
 
     @Override
     public List<Cargo> findAll(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(cargo)
-                .from(cargo)
-                .where(cargo.situacao.eq(ESituacao.A)
-                        .and(predicate))
-                .orderBy(cargo.nome.asc())
-                .fetch();
+            .select(cargo)
+            .from(cargo)
+            .where(cargo.situacao.eq(ESituacao.A)
+                .and(predicate))
+            .orderBy(cargo.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<Cargo> buscarTodosComNiveis(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cargo)
+            .join(cargo.nivel).fetchJoin()
+            .where(predicate, cargo.situacao.eq(ESituacao.A))
+            .orderBy(cargo.nome.asc(), cargo.nivel.nome.asc())
+            .fetch();
     }
 }
 

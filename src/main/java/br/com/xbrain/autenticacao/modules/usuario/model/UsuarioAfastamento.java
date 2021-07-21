@@ -27,7 +27,7 @@ public class UsuarioAfastamento {
     @NotNull
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_AFASTAMENTO_USUARIO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_AFASTAMENTO_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
 
@@ -44,11 +44,11 @@ public class UsuarioAfastamento {
 
     public static UsuarioAfastamento of(Usuario usuario, LocalDate inicio, LocalDate fim) {
         return UsuarioAfastamento
-                .builder()
-                .dataCadastro(LocalDateTime.now())
-                .usuario(usuario)
-                .inicio(inicio)
-                .fim(fim)
-                .build();
+            .builder()
+            .dataCadastro(LocalDateTime.now())
+            .usuario(usuario)
+            .inicio(inicio)
+            .fim(fim)
+            .build();
     }
 }

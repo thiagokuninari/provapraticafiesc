@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class CidadeService {
@@ -28,39 +32,42 @@ public class CidadeService {
     @Autowired
     private CidadeRepository repository;
 
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
+
     private Supplier<BooleanBuilder> predicateCidadesPermitidas = () ->
         new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
-        return UsuarioCidadeDto.parse(
+        return UsuarioCidadeDto.of(
             repository.findAllByRegionalId(
                 regionalId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
-        return UsuarioCidadeDto.parse(
+        return UsuarioCidadeDto.of(
             repository.findAllBySubClusterId(
                 subClusterId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClustersId(List<Integer> subClustersId) {
-        return UsuarioCidadeDto.parse(
+        return UsuarioCidadeDto.of(
             repository.findAllBySubClustersId(
                 subClustersId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
-        return UsuarioCidadeDto.parse(
+        return UsuarioCidadeDto.of(
             repository.findAllByGrupoId(
                 grupoId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
-        return UsuarioCidadeDto.parse(
+        return UsuarioCidadeDto.of(
             repository.findAllByClusterId(clusterId,
                 predicateCidadesPermitidas.get()));
     }
@@ -85,6 +92,14 @@ public class CidadeService {
 
     public ClusterizacaoDto getClusterizacao(Integer id) {
         return repository.getClusterizacao(id);
+    }
+
+    public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
+        return Stream.concat(
+            agenteAutorizadoService.getCidades(subclusterId).stream(),
+            getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
+            .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
+            .collect(Collectors.toList());
     }
 
     public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {

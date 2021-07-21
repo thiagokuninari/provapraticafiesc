@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.equipevenda.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -13,11 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 @FeignClient(name = "equipeVendaClient",
-        url = "${app-config.services.equipe-venda.url}",
-        configuration = FeignSkipBadRequestsConfiguration.class)
+    url = "${app-config.services.equipe-venda.url}",
+    configuration = FeignSkipBadRequestsConfiguration.class)
 public interface EquipeVendaD2dClient {
 
     String EQUIPE_VENDAS_ENDPOINT = "api/equipes-vendas";
+    String USUARIOS_EQUIPE_ENDPOINT = "api/usuarios-equipe";
     String PAUSA_AGENDADA_ENDPOINT = "api/pausa-agendada";
 
     @GetMapping(PAUSA_AGENDADA_ENDPOINT + "/verificar-pausa/{username}")
@@ -32,4 +34,10 @@ public interface EquipeVendaD2dClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
     List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
                                                                   @RequestParam("equipeId") Integer equipeId);
+
+    @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
+    List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);
+
+    @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select/usuarios")
+    List<SelectResponse> getUsuariosDaEquipe(@RequestParam Map filtros);
 }

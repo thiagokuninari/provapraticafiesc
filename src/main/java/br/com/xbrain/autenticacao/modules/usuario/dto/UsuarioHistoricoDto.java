@@ -29,42 +29,42 @@ public class UsuarioHistoricoDto {
 
     public static UsuarioHistoricoDto of(UsuarioHistorico historico) {
         return UsuarioHistoricoDto
-                .builder()
-                .id(historico.getId())
-                .situacao(historico.getSituacaoComMotivo())
-                .observacao(historico.getObservacao())
-                .cadastro(historico.getDataCadastro())
-                .feriasInicio(getFeriasInicio(historico))
-                .feriasFim(getFeriasFim(historico))
-                .afastamentoInicio(getAfastamentoInicio(historico))
-                .afastamentoFim(getAfastamentoFim(historico))
-                .usuarioAlteracao(!isEmpty(historico.getUsuarioAlteracao())
-                    ? historico.getUsuarioAlteracao().getNome()
-                    : null)
-                .build();
+            .builder()
+            .id(historico.getId())
+            .situacao(historico.getSituacaoComMotivo())
+            .observacao(historico.getObservacao())
+            .cadastro(historico.getDataCadastro())
+            .feriasInicio(getFeriasInicio(historico))
+            .feriasFim(getFeriasFim(historico))
+            .afastamentoInicio(getAfastamentoInicio(historico))
+            .afastamentoFim(getAfastamentoFim(historico))
+            .usuarioAlteracao(!isEmpty(historico.getUsuarioAlteracao())
+                ? historico.getUsuarioAlteracao().getNome()
+                : null)
+            .build();
     }
 
     public static LocalDate getFeriasInicio(UsuarioHistorico historico) {
         return !isEmpty(historico.getFerias())
-                ? historico.getFerias().getInicio()
-                : null;
+            ? historico.getFerias().getInicio()
+            : null;
     }
 
     public static LocalDate getFeriasFim(UsuarioHistorico historico) {
         return !isEmpty(historico.getFerias())
-                ? historico.getFerias().getFim()
-                : null;
+            ? historico.getFerias().getFim()
+            : null;
     }
 
     public static LocalDate getAfastamentoInicio(UsuarioHistorico historico) {
         return !isEmpty(historico.getAfastamento())
-                ? historico.getAfastamento().getInicio()
-                : null;
+            ? historico.getAfastamento().getInicio()
+            : null;
     }
 
     public static LocalDate getAfastamentoFim(UsuarioHistorico historico) {
         return !isEmpty(historico.getAfastamento())
-                ? historico.getAfastamento().getFim()
-                : null;
+            ? historico.getAfastamento().getFim()
+            : null;
     }
 }

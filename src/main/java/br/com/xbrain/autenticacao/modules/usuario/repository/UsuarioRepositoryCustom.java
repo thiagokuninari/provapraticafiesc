@@ -51,6 +51,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosSuperiores(UsuarioFiltrosHierarquia filtros);
 
+    List<Integer> getUsuariosSuperiores(Integer usuarioId);
+
     List<Usuario> findAllLideresComerciaisDoExecutivo(Integer executivoId);
 
     List<Usuario> getUsuariosSuperioresDoExecutivoDoAa(Integer executivoId);
@@ -59,7 +61,9 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioHierarquia> getUsuarioSuperiores(Integer usuarioId);
 
-    List<PermissaoEspecial> getUsuariosByPermissao(String codigoFuncionalidade);
+    List<Integer> getUsuariosSuperioresIds(List<Integer> usuariosIds);
+
+    List<PermissaoEspecial> getUsuariosByPermissaoEspecial(String codigoFuncionalidade);
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
@@ -92,6 +96,12 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioAutoComplete> findAllExecutivosDosIdsCoordenadorGerente(List<Integer> agenteAutorizadoId, Integer usuarioId);
 
+    List<Integer> findAllIds(Predicate predicate);
+
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
+
+    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
+
     long deleteUsuarioHierarquia(Integer usuarioId);
 
     List<UsuarioExecutivoResponse> findAllExecutivosBySituacao(ESituacao situacao);
@@ -111,8 +121,6 @@ public interface UsuarioRepositoryCustom {
     List<Integer> obterIdsPorUsuarioCadastroId(Integer usuarioCadastroId);
 
     List<UsuarioNomeResponse> findAllUsuariosNomeComSituacao(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
-
-    List<Integer> findAllIds(Predicate predicate, OrderSpecifier<?>...orderSpecifiers);
 
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 

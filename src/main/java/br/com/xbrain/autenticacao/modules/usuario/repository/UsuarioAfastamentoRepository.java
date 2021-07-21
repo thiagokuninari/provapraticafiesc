@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UsuarioAfastamentoRepository extends CrudRepository<UsuarioAfastamento, Integer>,
-        UsuarioAfastamentoRepositoryCustom {
+    UsuarioAfastamentoRepositoryCustom {
 }
 

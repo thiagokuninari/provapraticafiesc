@@ -12,8 +12,8 @@ public class CargoFiltros {
 
     public BooleanBuilder toPredicate() {
         return new CargoPredicate()
-                .comNome(nome)
-                .comNivel(nivelId)
-                .build();
+            .comNome(nome)
+            .comNivel(nivelId)
+            .build();
     }
 }

@@ -1,13 +1,19 @@
 package br.com.xbrain.autenticacao.modules.permissao.model;
 
 import br.com.xbrain.autenticacao.modules.permissao.enums.CodigoAplicacao;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "APLICACAO")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
 public class Aplicacao {
 

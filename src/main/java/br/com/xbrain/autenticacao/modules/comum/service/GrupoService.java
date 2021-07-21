@@ -7,14 +7,17 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto.of;
+import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
 @Service
 public class GrupoService {
@@ -25,14 +28,17 @@ public class GrupoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
+    @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
+
     public List<GrupoDto> getAllByRegionalId(Integer regionalId) {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         GrupoPredicate predicate = new GrupoPredicate();
         predicate.filtrarPermitidos(usuarioAutenticado);
         return repository.findAllByRegionalId(regionalId, predicate.build())
-                .stream()
-                .map(GrupoDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(GrupoDto::of)
+            .collect(Collectors.toList());
     }
 
     public List<GrupoDto> getAllByRegionalIdAndUsuarioId(Integer regionalId, Integer usuarioId) {
@@ -46,9 +52,9 @@ public class GrupoService {
 
     public List<GrupoDto> getAllAtiva() {
         return repository.findBySituacao(ESituacao.A, new Sort("nome"))
-                .stream()
-                .map(GrupoDto::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(GrupoDto::of)
+            .collect(Collectors.toList());
     }
 
     public GrupoDto findById(Integer grupoId) {
@@ -56,4 +62,11 @@ public class GrupoService {
             .orElseThrow(() -> new ValidacaoException("Grupo não encontrado.")));
     }
 
+    public List<GrupoDto> getAtivosParaComunicados(Integer regionalId) {
+        return Stream.concat(
+            getAllByRegionalId(regionalId).stream(),
+            agenteAutorizadoService.getGrupos(regionalId).stream())
+            .filter(distinctByKey(GrupoDto::getId))
+            .collect(Collectors.toList());
+    }
 }
