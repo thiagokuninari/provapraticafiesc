@@ -1140,7 +1140,7 @@ public class UsuarioServiceTest {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa());
 
-        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(),service);
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), service, true);
 
         when(repository.getUsuariosCsv(usuarioPredicate.build()))
             .thenReturn(List.of(umUsuarioOperacaoCsv(), umUsuarioAaCsv()));
@@ -1174,7 +1174,7 @@ public class UsuarioServiceTest {
     public void preencheUsuarioCsvsDeOperacao_devePreencherColunasDeCanal_seUsuarioForOperacao() {
 
         when(repository.getCanaisByUsuarioIds(Collections.singletonList(1)))
-            .thenReturn(List.of(umCanal(),umOutroCanal()));
+            .thenReturn(List.of(umCanal(), umOutroCanal()));
 
         List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
         usuarioCsvResponses.add(umUsuarioAaCsv());
@@ -1183,7 +1183,7 @@ public class UsuarioServiceTest {
         service.preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
 
         var usuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
-        usuarioOperacaoCsvCompletado.setCanais(List.of(umCanal(),umOutroCanal()));
+        usuarioOperacaoCsvCompletado.setCanais(List.of(umCanal(), umOutroCanal()));
 
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
