@@ -62,6 +62,11 @@ public class CidadeController {
         return service.getAllBySubClusterId(subclusterId);
     }
 
+    @RequestMapping("comunicados")
+    public List<UsuarioCidadeDto> getAtivosParaComunicados(@RequestParam Integer subclusterId) {
+        return service.getAtivosParaComunicados(subclusterId);
+    }
+
     @RequestMapping("sub-clusters")
     public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
         return service.getAllBySubClustersId(subclustersId);
@@ -69,7 +74,7 @@ public class CidadeController {
 
     @RequestMapping(value = "cidade/{cidadeId}")
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
-        return UsuarioCidadeDto.parse(repository.findOne(id));
+        return UsuarioCidadeDto.of(repository.findOne(id));
     }
 
     @RequestMapping(value = "{cidadeId}")

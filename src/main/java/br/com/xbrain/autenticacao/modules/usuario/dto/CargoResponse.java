@@ -23,8 +23,8 @@ public class CargoResponse {
         CargoResponse response = new CargoResponse();
         BeanUtils.copyProperties(cargo, response);
         response.setCodigo(!isNull(cargo.getCodigo())
-                ? cargo.getCodigo().name()
-                : null);
+            ? cargo.getCodigo().name()
+            : null);
         response.setSituacao(cargo.getSituacao());
         response.setPossuiCargoSuperior(!isEmpty(cargo.getSuperiores()));
         response.setNivel(!isNull(cargo.getNivel()) ? cargo.getNivel().getId() : null);

@@ -46,16 +46,19 @@ public enum EErrors {
             "#013 - Erro ao inativar o colaborador de vendas."),
     ERRO_OBTER_COLABORADOR_VENDAS_BY_ID(
             "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#014 - Erro ao tentar recuperar o colaborador de vendas por ID do usuário."),
+        "#014 - Erro ao tentar recuperar o colaborador de vendas por ID do usuário."),
     ERRO_DISTRIBUIR_TABULACOES(
-            "#015 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#015 - Erro ao tentar distribuir os agendamentos do usuário."),
+        "#015 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#015 - Erro ao tentar distribuir os agendamentos do usuário."),
     ERRO_RECUPERAR_TABULACOES(
-            "#016 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#016 - Erro ao tentar recuperar os agendamentos do usuário."),
+        "#016 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#016 - Erro ao tentar recuperar os agendamentos do usuário."),
     ERRO_OBTER_EQUIPE_VENDAS_USUARIOS_PERMITIDOS(
-            "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
+        "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#017 - Erro ao tentar recuperar usuários permitidos por equipe."),
+    ERRO_OBTER_CIDADE_DO_POL(
+        "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#017 - Erro ao tentar recuperar cidades do pol."),
     ERRO_OBTER_AA(
             "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
             "#018 - Erro ao tentar recuperar o AA."),
@@ -94,8 +97,11 @@ public enum EErrors {
         "#033 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#033 - Ocorreu um erro ao buscar todos os usuários dos agentes autorizados."),
     ERRO_LIMPAR_CACHE_CALL(
-            "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#019 - Erro ao limpar cache dos feriados na telefonia.");
+        "#034 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#034 - Erro ao limpar cache dos feriados na telefonia."),
+    ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID(
+        "#035 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#035 - Ocorreu um Erro ao buscar agente autorizado usurario dto.");
 
     @Getter
     @Setter

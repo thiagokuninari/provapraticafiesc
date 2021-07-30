@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import com.querydsl.core.BooleanBuilder;
+import org.springframework.util.ObjectUtils;
 
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 
@@ -20,9 +21,21 @@ public class NivelPredicate {
         return this;
     }
 
-    public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel) {
+    public NivelPredicate semCodigoNivel(CodigoNivel codigoNivel) {
+        if (!ObjectUtils.isEmpty(codigoNivel)) {
+            builder.and(nivel.codigo.ne(codigoNivel));
+        }
+        return this;
+    }
+
+    public NivelPredicate exibeProprioNivelSeNaoVisualizarGeral(boolean visualizaGeral, CodigoNivel codigoNivel,
+                                                                boolean haveCanalAa) {
         if (!visualizaGeral) {
-            builder.and(nivel.codigo.eq(codigoNivel));
+            if (haveCanalAa) {
+                builder.and(nivel.codigo.in(codigoNivel, CodigoNivel.AGENTE_AUTORIZADO));
+            } else {
+                builder.and(nivel.codigo.eq(codigoNivel));
+            }
         }
         return this;
     }

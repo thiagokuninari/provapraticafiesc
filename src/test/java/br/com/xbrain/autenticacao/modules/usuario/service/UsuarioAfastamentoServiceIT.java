@@ -34,29 +34,29 @@ public class UsuarioAfastamentoServiceIT {
     @Test
     public void save_deveGerarORegistroDeAfastamemto_quandoOMotivoDeInativacaoForAfastamento() {
         service.save(
-                usuarioService.findByIdCompleto(101),
-                UsuarioInativacaoDto
-                        .builder()
-                        .codigoMotivoInativacao(AFASTAMENTO)
-                        .dataInicio(LocalDate.of(2019, 1, 1))
-                        .dataFim(LocalDate.of(2019, 2, 1))
-                        .build());
+            usuarioService.findByIdCompleto(101),
+            UsuarioInativacaoDto
+                .builder()
+                .codigoMotivoInativacao(AFASTAMENTO)
+                .dataInicio(LocalDate.of(2019, 1, 1))
+                .dataFim(LocalDate.of(2019, 2, 1))
+                .build());
 
         assertThat(repository.findAll())
-                .extracting("inicio", "fim")
-                .contains(
-                        tuple(LocalDate.of(2019, 1, 1),
-                                LocalDate.of(2019, 2, 1)));
+            .extracting("inicio", "fim")
+            .contains(
+                tuple(LocalDate.of(2019, 1, 1),
+                    LocalDate.of(2019, 2, 1)));
     }
 
     @Test
     public void save_deveNaoGerarORegistroDeAfastamento_quandoNaoConterDataInicialEDataFim() {
         service.save(
-                usuarioService.findByIdCompleto(101),
-                UsuarioInativacaoDto
-                        .builder()
-                        .codigoMotivoInativacao(AFASTAMENTO)
-                        .build());
+            usuarioService.findByIdCompleto(101),
+            UsuarioInativacaoDto
+                .builder()
+                .codigoMotivoInativacao(AFASTAMENTO)
+                .build());
 
         assertThat(repository.findAll()).isEmpty();
     }

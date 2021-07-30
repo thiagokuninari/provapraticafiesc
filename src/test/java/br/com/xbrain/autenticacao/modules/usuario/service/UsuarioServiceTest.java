@@ -1132,6 +1132,132 @@ public class UsuarioServiceTest {
             );
     }
 
+    @Test
+    public void getAllForCsv_deveRetornarCsv_quandoEncontrarUsuarios() {
+        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
+        UsuarioPredicate usuarioPredicate = usuarioFiltros.toPredicate();
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa());
+
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), service, true);
+
+        when(repository.getUsuariosCsv(usuarioPredicate.build()))
+            .thenReturn(List.of(umUsuarioOperacaoCsv(), umUsuarioAaCsv()));
+
+        var usuarioCsvs = service.getAllForCsv(usuarioFiltros);
+
+        assertThat(usuarioCsvs)
+            .isEqualTo(List.of(umUsuarioOperacaoCsv(), umUsuarioAaCsv()));
+    }
+
+    @Test
+    public void preencheUsuarioCsvsDeAa_devePreencherColunasDeAa_seUsuarioForAa() {
+        when(agenteAutorizadoNovoService.getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest.of(List.of(2))))
+            .thenReturn(Collections.singletonList(umAgenteAutorizadoUsuarioDto()));
+
+        List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
+        usuarioCsvResponses.add(umUsuarioAaCsv());
+        usuarioCsvResponses.add(umUsuarioOperacaoCsv());
+        service.preencherUsuarioCsvsDeAa(usuarioCsvResponses);
+
+        var usuarioAaCsvCompletado = umUsuarioAaCsv();
+        usuarioAaCsvCompletado.setCnpj("78300110000166");
+        usuarioAaCsvCompletado.setRazaoSocial("Razao Social");
+
+        assertThat(usuarioCsvResponses)
+            .isEqualTo(List.of(usuarioAaCsvCompletado, umUsuarioOperacaoCsv()));
+
+    }
+
+    @Test
+    public void preencheUsuarioCsvsDeOperacao_devePreencherColunasDeCanal_seUsuarioForOperacao() {
+
+        when(repository.getCanaisByUsuarioIds(Collections.singletonList(1)))
+            .thenReturn(List.of(umCanal(), umOutroCanal()));
+
+        List<UsuarioCsvResponse> usuarioCsvResponses = new ArrayList<>();
+        usuarioCsvResponses.add(umUsuarioAaCsv());
+        usuarioCsvResponses.add(umUsuarioOperacaoCsv());
+
+        service.preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
+
+        var usuarioOperacaoCsvCompletado = umUsuarioOperacaoCsv();
+        usuarioOperacaoCsvCompletado.setCanais(List.of(umCanal(), umOutroCanal()));
+
+        assertThat(usuarioCsvResponses)
+            .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
+
+    }
+
+    private Canal umCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.AGENTE_AUTORIZADO)
+            .build();
+    }
+
+    private Canal umOutroCanal() {
+        return Canal
+            .builder()
+            .usuarioId(1)
+            .canal(ECanal.VAREJO)
+            .build();
+    }
+
+    private AgenteAutorizadoUsuarioDto umAgenteAutorizadoUsuarioDto() {
+        return AgenteAutorizadoUsuarioDto
+            .builder()
+            .usuarioId(2)
+            .cnpj("78300110000166")
+            .razaoSocial("Razao Social")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioOperacaoCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(1)
+            .nome("Usuario_1_teste")
+            .email("usuario1@teste.com")
+            .telefone("999999999")
+            .cpf("11111111111")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Operação")
+            .hierarquia("hierarquia")
+            .razaoSocial("razaoSocial")
+            .cnpj("cnpj")
+            .organizacao("organizacao")
+            .build();
+    }
+
+    private UsuarioCsvResponse umUsuarioAaCsv() {
+        return UsuarioCsvResponse
+            .builder()
+            .id(2)
+            .nome("Usuario_2_teste")
+            .email("usuario2@teste.com")
+            .telefone("999999998")
+            .cpf("22222222222")
+            .cargo("cargo")
+            .departamento("departamento")
+            .unidadesNegocios("unidadeNegocio")
+            .empresas("empresa")
+            .situacao(ESituacao.A)
+            .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
+            .loginNetSales("loginNetSales")
+            .nivel("Agente Autorizado")
+            .organizacao("organizacao")
+            .build();
+    }
+
     private UsuarioDtoVendas umUsuarioDtoVendas(Integer id) {
         return UsuarioDtoVendas
             .builder()

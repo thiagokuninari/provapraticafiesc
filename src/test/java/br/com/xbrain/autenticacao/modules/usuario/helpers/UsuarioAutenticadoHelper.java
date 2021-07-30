@@ -14,4 +14,14 @@ public class UsuarioAutenticadoHelper {
             .nivelId(18)
             .build();
     }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoNivelAa() {
+        return UsuarioAutenticado.builder()
+            .id(101)
+            .nivelCodigo(CodigoNivel.AGENTE_AUTORIZADO.name())
+            .organizacaoId(8)
+            .cargoId(47)
+            .nivelId(3)
+            .build();
+    }
 }

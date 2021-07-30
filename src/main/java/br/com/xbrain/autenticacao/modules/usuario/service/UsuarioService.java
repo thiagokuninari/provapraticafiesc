@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -30,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.filtros.FuncionalidadePredicate;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
@@ -46,7 +48,6 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.Predicate;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,8 @@ public class UsuarioService {
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
+    public static final String OPERACAO = "Operação";
+    public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -111,9 +114,9 @@ public class UsuarioService {
         = new ValidacaoException("Senha atual está incorreta.");
     private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
-
+    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
+        VENDEDOR_OPERACAO);
     @Autowired
-    @Setter
     private UsuarioRepository repository;
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -160,6 +163,8 @@ public class UsuarioService {
     @Autowired
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Autowired
+    private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
     private EntityManager entityManager;
     @Autowired
     private FileService fileService;
@@ -179,6 +184,9 @@ public class UsuarioService {
     private FeederService feederService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+
+    @Autowired
+    private CargoSuperiorRepository cargoSuperiorRepository;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -339,6 +347,23 @@ public class UsuarioService {
         ).flatMap(Collection::stream)
             .distinct()
             .collect(Collectors.toList());
+    }
+
+    public List<Integer> getIdDosUsuariosSubordinadosDoPol(UsuarioAutenticado usuario, PublicoAlvoComunicadoFiltros filtros) {
+        if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
+            return List.of();
+        }
+        var usuariosPol = isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
+            ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
+            : filtros.getUsuariosFiltradosPorCidadePol();
+        var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuario.getId()));
+        usuariosSubordinados.addAll(usuariosPol);
+
+        return List.copyOf(usuariosSubordinados);
+    }
+
+    public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
+        return agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros);
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
@@ -541,23 +566,23 @@ public class UsuarioService {
     @Transactional
     public void vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest superiorRequest) {
         var usuarioSuperiorNovo = repository.findById(superiorRequest.getSuperiorNovo()).orElseThrow(() ->
-                new NotFoundException("Usuário não encontrado"));
+            new NotFoundException("Usuário não encontrado"));
 
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         superiorRequest.getUsuarioIds()
-                .forEach(id -> {
-                    var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
-                            superiorRequest.getSuperiorAntigo());
+            .forEach(id -> {
+                var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
+                    superiorRequest.getSuperiorAntigo());
 
-                    if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
-                        usuarioHierarquiaRepository.delete(usuarioHierarquia);
-                    }
-                    if (!isEmpty(usuarioAutenticado)) {
-                        usuarioHierarquiaRepository.save(
-                                criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
-                    }
-                });
+                if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
+                    usuarioHierarquiaRepository.delete(usuarioHierarquia);
+                }
+                if (!isEmpty(usuarioAutenticado)) {
+                    usuarioHierarquiaRepository.save(
+                        criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
+                }
+            });
     }
 
     private UsuarioHierarquia criarHierarquia(Integer id,
@@ -567,20 +592,20 @@ public class UsuarioService {
         var usuario = repository.findOne(id);
 
         return UsuarioHierarquia.builder()
-                .usuario(usuario)
-                .usuarioSuperior(superiorNovo)
-                .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
-                .dataCadastro(superiorNovo.getDataCadastro())
-                .usuarioCadastro(usuarioAutenticado.getUsuario())
-                .build();
+            .usuario(usuario)
+            .usuarioSuperior(superiorNovo)
+            .usuarioHierarquiaPk(criarUsuarioHierarquiaPk(id, request))
+            .dataCadastro(superiorNovo.getDataCadastro())
+            .usuarioCadastro(usuarioAutenticado.getUsuario())
+            .build();
     }
 
     private UsuarioHierarquiaPk criarUsuarioHierarquiaPk(Integer id, AlteraSuperiorRequest superiorRequest) {
         return UsuarioHierarquiaPk
-                .builder()
-                .usuario(id)
-                .usuarioSuperior(superiorRequest.getSuperiorNovo())
-                .build();
+            .builder()
+            .usuario(id)
+            .usuarioSuperior(superiorRequest.getSuperiorNovo())
+            .build();
     }
 
     private Usuario getUsuarioAtivacao(UsuarioAtivacaoDto usuarioAtivacaoDto) {
@@ -1185,7 +1210,7 @@ public class UsuarioService {
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
         UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
-        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
@@ -1193,7 +1218,7 @@ public class UsuarioService {
     public List<Usuario> getUsuariosCargoSuperior(Integer cargoId, List<Integer> cidadesId) {
         return repository.getUsuariosFilter(
             new UsuarioPredicate()
-                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .build());
@@ -1301,9 +1326,9 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getUsuarioByPermissao(String funcionalidade) {
-        List<PermissaoEspecial> permissoes = repository.getUsuariosByPermissao(funcionalidade);
-        return permissoes.stream()
+    public List<UsuarioResponse> getUsuarioByPermissaoEspecial(String funcionalidade) {
+        return repository.getUsuariosByPermissaoEspecial(funcionalidade)
+            .stream()
             .map(PermissaoEspecial::getUsuario)
             .map(UsuarioResponse::of)
             .collect(Collectors.toList());
@@ -1429,7 +1454,7 @@ public class UsuarioService {
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
         Usuario usuario = findComplete(usuarioId);
         return usuario.getCidades().stream()
-            .map(c -> UsuarioCidadeDto.parse(c.getCidade()))
+            .map(c -> UsuarioCidadeDto.of(c.getCidade()))
             .collect(Collectors.toList());
     }
 
@@ -1562,8 +1587,57 @@ public class UsuarioService {
     }
 
     public List<UsuarioCsvResponse> getAllForCsv(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        return repository.getUsuariosCsv(predicate.build());
+        var usuarioCsvResponses =
+            repository.getUsuariosCsv(filtrarUsuariosPermitidos(filtros).build());
+        preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
+        preencherUsuarioCsvsDeAa(usuarioCsvResponses);
+        return usuarioCsvResponses;
+    }
+
+    void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream().filter(
+            usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
+            .map(UsuarioCsvResponse::getId)
+            .collect(Collectors.toList());
+
+        if (!usuarioIds.isEmpty()) {
+
+            var map = partition(usuarioIds,QTD_MAX_IN_NO_ORACLE).parallelStream()
+                .map(parte -> repository.getCanaisByUsuarioIds(parte))
+                .flatMap(Collection::parallelStream)
+                .collect(Collectors.groupingBy(Canal::getUsuarioId));
+
+            usuarioCsvResponses.forEach(
+                usuarioCsvResponse -> usuarioCsvResponse.setCanais(
+                    map.getOrDefault(usuarioCsvResponse.getId(),null))
+            );
+        }
+    }
+
+    void preencherUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
+        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
+            usuarioCsvResponse -> AGENTE_AUTORIZADO.equals(usuarioCsvResponse.getNivel())
+        ).map(UsuarioCsvResponse::getId).collect(Collectors.toList()));
+
+        if (!usuarioRequest.getUsuarioIds().isEmpty()) {
+            var agenteAutorizadosUsuarioDtos = agenteAutorizadoNovoService
+                .getAgenteAutorizadosUsuarioDtosByUsuarioIds(usuarioRequest);
+
+            usuarioCsvResponses.parallelStream().forEach(usuarioCsvResponse -> {
+                findAasDeUsuarioId(
+                    agenteAutorizadosUsuarioDtos, usuarioCsvResponse.getId()
+                ).parallelStream().forEach(agenteAutorizadoUsuarioDto -> {
+                    usuarioCsvResponse.setRazaoSocial(agenteAutorizadoUsuarioDto.getRazaoSocial());
+                    usuarioCsvResponse.setCnpj(agenteAutorizadoUsuarioDto.getCnpj());
+                });
+            });
+        }
+    }
+
+    private List<AgenteAutorizadoUsuarioDto> findAasDeUsuarioId(List<AgenteAutorizadoUsuarioDto> agenteAutorizadoUsuarioDtos,
+                                                                Integer usuarioId) {
+        return agenteAutorizadoUsuarioDtos.parallelStream().filter(agenteAutorizadoUsuarioDto ->
+            agenteAutorizadoUsuarioDto.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
     }
 
     public void exportUsuariosToCsv(List<UsuarioCsvResponse> usuarios, HttpServletResponse response) {
@@ -1577,7 +1651,7 @@ public class UsuarioService {
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
         }
@@ -1587,11 +1661,7 @@ public class UsuarioService {
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
         return IntStream.concat(
             equipeVendaD2dService
-                .getUsuariosPermitidos(List.of(
-                    SUPERVISOR_OPERACAO,
-                    ASSISTENTE_OPERACAO,
-                    VENDEDOR_OPERACAO
-                ))
+                .getUsuariosPermitidos(CARGOS_PARA_INTEGRACAO_D2D)
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
             IntStream.of(autenticacaoService.getUsuarioId()))
@@ -1680,6 +1750,65 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        if (!isEmpty(usuarioFiltros.getEquipesVendasIds())) {
+            var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasIds());
+            usuarioFiltros.adicionarUsuariosId(usuarios);
+        }
+    }
+
+    private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+
+        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosIds())) {
+            var usuarios = new ArrayList<Integer>();
+            usuarioFiltros.getAgentesAutorizadosIds()
+                .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
+            if (usuarios.isEmpty()) {
+                throw new ValidacaoException("Não foi encontrado nenhum usuário do agente autorizado");
+            }
+            usuarioFiltros.adicionarUsuariosId(usuarios);
+        }
+    }
+
+    private List<Integer> getIdUsuariosAa(Integer aaId) {
+
+        try {
+            return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, true)
+                .stream()
+                .map(UsuarioAgenteAutorizadoResponse::getId)
+                .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Erro ao recuperar usuarios do agente autorizado.", ex);
+            return List.of();
+        }
+    }
+
+    public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        montarPredicate(usuarioFiltros);
+        usuarioFiltros.setComUsuariosLogadosHoje(true);
+        return repository.findAllIds(usuarioFiltros);
+    }
+
+    private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        usuarioFiltros.tratarFiltrosLocalizacaoParaMelhorDesempenho();
+        adicionarFiltroAgenteAutorizado(usuarioFiltros);
+        adicionarFiltroEquipeVendas(usuarioFiltros);
+        usuarioFiltros.setUsuarioService(this);
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        usuarioFiltros.setUsuarioAutenticado(usuarioAutenticado);
+    }
+
+    public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
+        montarPredicate(usuarioFiltros);
+        return repository.findAllNomesIds(usuarioFiltros);
+    }
+
+    public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
+
+        return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
+            .orElseThrow(PermissaoException::new));
+    }
+
     public List<UsuarioResponse> getVendedoresByIds(List<Integer> idsUsuarios) {
         return partition(idsUsuarios, QTD_MAX_IN_NO_ORACLE)
             .stream()
@@ -1724,6 +1853,29 @@ public class UsuarioService {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 
+    public Set<Integer> getAllUsuariosIdsSuperiores() {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var cargosAceitos = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
+        var usuarios = new HashSet<Integer>();
+        if (usuarioAutenticado.haveCanalAgenteAutorizado()) {
+            var usuariosPol = agenteAutorizadoService.getUsuariosIdsSuperioresPol();
+
+            if (!isEmpty(usuariosPol)) {
+                usuarios.addAll(repository.findAllIds(new UsuarioPredicate()
+                    .comCargo(cargosAceitos)
+                    .comUsuariosIds(usuariosPol)
+                    .build()));
+                usuarios.addAll(repository.getUsuariosSuperioresIds(usuariosPol));
+            }
+        }
+        if (usuarioAutenticado.haveCanalDoorToDoor()
+            && CARGOS_PARA_INTEGRACAO_D2D.contains(usuarioAutenticado.getCargoCodigo())) {
+            usuarios.addAll(getUsuariosPermitidosPelaEquipeDeVenda());
+        }
+        usuarios.addAll(repository.getUsuariosSuperiores(usuarioAutenticado.getUsuario().getId()));
+        return usuarios;
+    }
+
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId) {
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
             .stream()
@@ -1733,7 +1885,7 @@ public class UsuarioService {
 
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         var predicate = new UsuarioPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this);
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(Usuario::getId)
             .collect(Collectors.toList());
@@ -1742,7 +1894,7 @@ public class UsuarioService {
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogado(CodigoCargo codigoCargo) {
         var predicate = new UsuarioPredicate();
 
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
             .comCodigoCargo(codigoCargo)
             .comSituacoes(List.of(ESituacao.A));
 

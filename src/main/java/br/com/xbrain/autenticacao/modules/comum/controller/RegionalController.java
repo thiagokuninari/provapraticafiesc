@@ -21,6 +21,11 @@ public class RegionalController {
         return service.getAll();
     }
 
+    @GetMapping("comunicados")
+    public List<RegionalDto> getAtivosParaComunicados() {
+        return service.getAtivosParaComunicados();
+    }
+
     @GetMapping("/usuario/{id}")
     public List<SelectResponse> getAllByUsuarioId(@PathVariable("id") int usuarioId) {
         return service.getAllByUsuarioId(usuarioId);

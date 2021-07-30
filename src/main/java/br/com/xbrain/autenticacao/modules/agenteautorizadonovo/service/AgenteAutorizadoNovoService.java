@@ -11,6 +11,8 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -180,5 +182,17 @@ public class AgenteAutorizadoNovoService {
             .map(UsuarioAgenteAutorizadoResponse::getId)
             .distinct()
             .collect(Collectors.toList());
+    }
+
+    public List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtosByUsuarioIds(UsuarioRequest request) {
+        try {
+            return client.getAgenteAutorizadosUsuarioDtosByUsuarioIds(request);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
     }
 }

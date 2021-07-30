@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoComNivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
@@ -23,15 +25,15 @@ public class CargoController {
     @GetMapping
     public List<CargoResponse> getAll(Integer nivelId) {
         return service.getPermitidosPorNivel(nivelId)
-                .stream()
-                .map(CargoResponse::of)
-                .collect(Collectors.toList());
+            .stream()
+            .map(CargoResponse::of)
+            .collect(Collectors.toList());
     }
 
     @GetMapping("/gerencia")
     public Page<CargoResponse> getAll(PageRequest pageRequest, CargoFiltros filtros) {
         return service.getAll(pageRequest, filtros)
-                .map(CargoResponse::of);
+            .map(CargoResponse::of);
     }
 
     @GetMapping("/{id}")
@@ -52,5 +54,18 @@ public class CargoController {
     @PutMapping("/altera-situacao")
     public CargoResponse situacao(@Validated @RequestBody CargoRequest request) {
         return CargoResponse.of(service.situacao(request));
+    }
+
+    @GetMapping("com-nivel")
+    public List<CargoComNivelResponse> getAllComNiveisConcatenado(@RequestParam List<Integer> niveisId) {
+        return service.getPermitidosPorNiveis(niveisId)
+            .stream()
+            .map(CargoComNivelResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    @GetMapping("comunicados")
+    public List<SelectResponse> getAllPermitidosAoComunicados(@RequestParam List<Integer> niveisId) {
+        return service.getPermitidosAosComunicados(niveisId);
     }
 }

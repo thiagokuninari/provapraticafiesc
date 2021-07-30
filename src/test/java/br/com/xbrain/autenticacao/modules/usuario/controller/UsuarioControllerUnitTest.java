@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import static helpers.TestsHelper.getAccessToken;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Matchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -42,7 +43,7 @@ public class UsuarioControllerUnitTest {
 
     @Before
     public void setup() {
-        Mockito.when(usuarioService.getIdDosUsuariosSubordinados(any(), any()))
+        Mockito.when(usuarioService.getIdDosUsuariosSubordinados(any(), anyBoolean()))
                 .thenReturn(Arrays.asList(1, 2, 3));
     }
 

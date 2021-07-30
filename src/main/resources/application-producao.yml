@@ -51,6 +51,8 @@ app-config:
       url: http://172.10.10.80:8089
     contato-crn:
       url: http://172.10.10.95:8084
+    comunicados:
+      url: http://172.10.10.53:8053
     claro-indico:
       url: http://172.10.10.55:8055
     gestao:

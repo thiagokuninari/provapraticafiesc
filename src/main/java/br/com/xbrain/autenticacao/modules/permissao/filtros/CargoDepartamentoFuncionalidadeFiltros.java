@@ -15,10 +15,10 @@ public class CargoDepartamentoFuncionalidadeFiltros {
     @JsonIgnore
     public BooleanBuilder toPredicate() {
         return new CargoDepartamentoFuncionalidadePredicate()
-                .comCargo(this.cargoId)
-                .comDepartamento(this.departamentoId)
-                .comFuncionalidadeNome(this.funcionalidadeNome)
-                .comAplicacaoNome(this.aplicacaoNome)
-                .build();
+            .comCargo(this.cargoId)
+            .comDepartamento(this.departamentoId)
+            .comFuncionalidadeNome(this.funcionalidadeNome)
+            .comAplicacaoNome(this.aplicacaoNome)
+            .build();
     }
 }

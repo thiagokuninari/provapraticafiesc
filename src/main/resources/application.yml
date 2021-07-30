@@ -6,8 +6,8 @@ server:
 
 spring:
   redis:
-    #    host: 127.0.0.1
-    #    port: 6379
+#    host: 127.0.0.1
+#    port: 6379
     host: 192.168.50.1
     port: 6379
     pool:
@@ -215,11 +215,11 @@ app-config:
 
   services:
     autenticacao:
-      #url: http://localhost:8096
+      # url: http://localhost:8096
       url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
-      #url: http://localhost:8094
+      # url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
@@ -235,6 +235,8 @@ app-config:
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    comunicados:
+      url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
@@ -282,6 +284,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    comunicados:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.comunicados.url}
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
@@ -310,6 +315,13 @@ hystrix:
           thread:
             timeoutInMilliseconds: 300000
   shareSecurityContext: true
+
+feign:
+  client:
+    config:
+      agenteAutorizadoNovoClient:
+        connectTimeout: 360000
+        readTimeout: 360000
 
 keys:
   public: |

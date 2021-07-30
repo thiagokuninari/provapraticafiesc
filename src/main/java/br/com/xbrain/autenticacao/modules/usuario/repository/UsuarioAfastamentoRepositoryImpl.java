@@ -13,26 +13,26 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioAfastamen
 import static com.querydsl.jpa.JPAExpressions.select;
 
 public class UsuarioAfastamentoRepositoryImpl extends CustomRepository<UsuarioAfastamento>
-        implements UsuarioAfastamentoRepositoryCustom {
+    implements UsuarioAfastamentoRepositoryCustom {
 
     @Override
     public List<Usuario> getUsuariosInativosComAfastamentoEmAberto(LocalDate dataFimAfastamento) {
         return new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
-                .where(usuario.id.in(select(usuarioAfastamento.usuario.id)
-                        .from(usuarioAfastamento)
-                        .where(usuarioAfastamento.fim.eq(dataFimAfastamento))))
-                .fetch();
+            .select(usuario)
+            .from(usuario)
+            .where(usuario.id.in(select(usuarioAfastamento.usuario.id)
+                .from(usuarioAfastamento)
+                .where(usuarioAfastamento.fim.eq(dataFimAfastamento))))
+            .fetch();
     }
 
     @Override
     public Long atualizaDataFim(Integer usuarioId) {
         return new JPAQueryFactory(entityManager)
-                .update(usuarioAfastamento)
-                .where(usuarioAfastamento.usuario.id.eq(usuarioId)
-                        .and(usuarioAfastamento.fim.isNull()))
-                .set(usuarioAfastamento.fim, LocalDate.now())
-                .execute();
+            .update(usuarioAfastamento)
+            .where(usuarioAfastamento.usuario.id.eq(usuarioId)
+                .and(usuarioAfastamento.fim.isNull()))
+            .set(usuarioAfastamento.fim, LocalDate.now())
+            .execute();
     }
 }

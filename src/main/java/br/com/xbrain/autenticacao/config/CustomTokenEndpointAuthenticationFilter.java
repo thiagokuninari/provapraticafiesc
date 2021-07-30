@@ -26,7 +26,7 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
+        throws IOException, ServletException {
         if (isValidTokenRequest(servletRequest) && verificarPausaCasoPossuaUsername(servletRequest)) {
             sendErrorValidation(servletResponse);
         }
@@ -41,8 +41,8 @@ public class CustomTokenEndpointAuthenticationFilter extends GenericFilterBean i
     private boolean isValidTokenRequest(ServletRequest servletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         return !(servletRequest instanceof SecurityContextHolderAwareRequestWrapper)
-                && request.getRequestURI().contains(URL_OAUTH_TOKEN)
-                && request.getContentType().contains(CONTENT_TYPE_TOKEN_REQUEST);
+            && request.getRequestURI().contains(URL_OAUTH_TOKEN)
+            && request.getContentType().contains(CONTENT_TYPE_TOKEN_REQUEST);
     }
 
     private void sendErrorValidation(ServletResponse servletResponse) throws IOException {
