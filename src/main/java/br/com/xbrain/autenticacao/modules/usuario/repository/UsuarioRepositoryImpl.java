@@ -57,6 +57,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarqui
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
+import static com.querydsl.jpa.JPAExpressions.selectDistinct;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
@@ -852,15 +853,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId) {
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
-            .join(usuario.cidades, usuarioCidade).distinct()
-            .distinct()
+            .join(usuario.cidades, usuarioCidade)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.id.notIn(select(usuario.id)
+                .and(usuario.id.notIn(selectDistinct(usuario.id)
                     .from(site)
-                    .join(site.coordenadores, usuario)
-                    .join(site.cidades, cidade)
+                    .leftJoin(site.coordenadores, usuario)
+                    .leftJoin(site.cidades, cidade)
                     .where(site.situacao.eq(A)
                     .and(site.id.ne(siteId)))))
                 .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
