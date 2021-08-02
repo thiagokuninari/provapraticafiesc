@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioSiteService {
 
-
     @Autowired
     private UsuarioRepository repository;
     @Autowired

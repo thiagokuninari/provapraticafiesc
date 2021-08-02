@@ -20,19 +20,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRepositoryCustom {
 
     @Override
-    public Optional<Site> findById(Integer id) {
-        return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
-                .selectFrom(site)
-                .leftJoin(site.cidades).fetchJoin()
-                .leftJoin(site.coordenadores).fetchJoin()
-                .leftJoin(site.supervisores).fetchJoin()
-                .leftJoin(site.estados).fetchJoin()
-                .where(site.id.eq(id))
-                .fetchOne());
-    }
-
-    @Override
     public List<Site> findBySituacaoAtiva(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .selectFrom(site)
