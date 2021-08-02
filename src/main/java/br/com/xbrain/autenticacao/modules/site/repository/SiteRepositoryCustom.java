@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface SiteRepositoryCustom {
 
-    Optional<Site> findById(Integer id);
-
     List<Site> findBySituacaoAtiva(Predicate predicate);
 
     List<Site> findByEstadoId(Integer estadoId);
