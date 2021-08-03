@@ -716,15 +716,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate) {
-
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
-            .join(usuario.cidades, usuarioCidade).distinct()
+            .leftJoin(usuario.cidades, usuarioCidade)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.id.notIn(select(usuario.id)
+                .and(usuario.id.notIn(selectDistinct(usuario.id)
                     .from(site)
-                    .join(site.coordenadores, usuario)
+                    .leftJoin(site.coordenadores, usuario)
                     .where(site.situacao.eq(A))))
             .and(sitePredicate))
             .fetch();
@@ -792,9 +791,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioNomeResponse> findSupervisoresSemSitePorCoordenadorId(Predicate sitePredicate) {
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
-            .join(usuario.cargo, cargo)
+            .leftJoin(usuario.cargo, cargo)
             .where(cargo.codigo.eq(SUPERVISOR_OPERACAO)
                 .and(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO))
                 .and(sitePredicate))
