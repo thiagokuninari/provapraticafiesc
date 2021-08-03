@@ -854,7 +854,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
             .from(usuario, usuario)
-            .join(usuario.cidades, usuarioCidade)
+            .leftJoin(usuario.cidades, usuarioCidade)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
                 .and(usuario.id.notIn(selectDistinct(usuario.id)
                     .from(site)
