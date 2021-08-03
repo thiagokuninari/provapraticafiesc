@@ -59,7 +59,7 @@ public class UsuarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
+        when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios(LocalDateTime.parse("2021-07-30T00:00:00.000")))
             .thenReturn(List.of(
                 new UsuarioAcesso(
                     LocalDateTime.now().minusDays(45), 102, "RENATO@XBRAIN.COM.BR"),
@@ -83,12 +83,12 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado("XBRAIN"));
+
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
-        verify(inativarColaboradorMqSender, times(3)).sendSuccess(anyString());
+        verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
+        verify(inativarColaboradorMqSender, times(4)).sendSuccess(anyString());
     }
 
     @Test

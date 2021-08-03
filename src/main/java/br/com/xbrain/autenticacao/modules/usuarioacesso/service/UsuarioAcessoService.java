@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.annotation.Async;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +42,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 public class UsuarioAcessoService {
 
-    private static final int TRINTA_E_DOIS_DIAS = 32;
     private static final String MSG_ERRO_AO_INATIVAR_USUARIO = "ocorreu um erro desconhecido ao inativar "
         + "usuários que estão a mais de 32 dias sem efetuar login.";
     private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
@@ -60,6 +61,12 @@ public class UsuarioAcessoService {
     @Autowired
     private NotificacaoUsuarioAcessoService notificacaoUsuarioAcessoService;
 
+    @Value("${app-config.timer-usuario.data-hora-inativar-usuario-a-partir-de}")
+    private String dataHoraInativarUsuario;
+
+    @Value("${app-config.timer-usuario.email-usuario-viabilidade}")
+    private String emailUsuarioViabilidade;
+
     @Transactional
     public void registrarAcesso(Integer usuarioId) {
         usuarioAcessoRepository.save(UsuarioAcesso.builder()
@@ -74,19 +81,21 @@ public class UsuarioAcessoService {
     }
 
     @Transactional
-    public void inativarUsuariosSemAcesso(String origem) {
+    public Integer inativarUsuariosSemAcesso(String origem) {
+        int usuariosInativados = 0;
         try {
-            List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar();
+            List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar(LocalDateTime.parse(dataHoraInativarUsuario));
             usuarios.forEach(usuarioAcesso -> {
                 Usuario usuario = usuarioAcesso.getUsuario();
                 usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
                 usuarioHistoricoService.gerarHistoricoInativacao(usuario, origem);
                 inativarColaboradorPol(usuario);
             });
-            log.info("Total de usuários inativados: " + usuarios.size());
+            usuariosInativados = usuarios.size();
         } catch (Exception ex) {
             log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, ex);
         }
+        return usuariosInativados;
     }
 
     @Transactional
@@ -100,40 +109,39 @@ public class UsuarioAcessoService {
         return 0;
     }
 
-    private boolean ultrapassouTrintaEDoisDiasDesdeUltimoAcesso(UsuarioAcesso usuarioAcesso) {
-        return usuarioAcesso.getDataCadastro()
-            .isBefore(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS));
+    private List<UsuarioAcesso> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
+        List<UsuarioAcesso> usuariosUnificados =
+            unificar(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario),
+                getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
+        removerUsuarioViabilidade(usuariosUnificados);
+        return usuariosUnificados;
     }
 
-    private List<UsuarioAcesso> buscarUsuariosParaInativar() {
-        List<UsuarioAcesso> usuariosAcessoExpirado = getUsuariosUltimoAcessoExpirado();
-        List<UsuarioAcesso> usuariosSemAcesso = getUsuariosSemUltimoAcesso();
-        return retornarListaUsuariosParaInativar(usuariosAcessoExpirado, usuariosSemAcesso);
+    private void removerUsuarioViabilidade(List<UsuarioAcesso> usuariosUnificados) {
+        usuariosUnificados.removeIf(u ->
+            emailUsuarioViabilidade.equals(u.getUsuario().getEmail() != null ? u.getUsuario().getEmail() : ""));
     }
 
-    private List<UsuarioAcesso> getUsuariosSemUltimoAcesso() {
-        return usuarioRepository.findAllUsuariosSemDataUltimoAcesso()
+    private List<UsuarioAcesso> getUsuariosSemUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioRepository.findAllUsuariosSemDataUltimoAcesso(dataHoraInativarUsuario)
             .stream()
             .map(UsuarioAcesso::of)
             .collect(Collectors.toList());
     }
 
-    private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado() {
-        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios()
-            .stream()
-            .filter(this::ultrapassouTrintaEDoisDiasDesdeUltimoAcesso)
-            .collect(Collectors.toList());
+    private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios(dataHoraInativarUsuario);
     }
 
-    private List<UsuarioAcesso> retornarListaUsuariosParaInativar(List<UsuarioAcesso> usuariosAcesso,
-                                                                  List<UsuarioAcesso> usuarios) {
-        if (!usuariosAcesso.isEmpty() && !usuarios.isEmpty()) {
-            usuariosAcesso.addAll(usuarios);
-            return usuariosAcesso;
-        } else if (!usuariosAcesso.isEmpty()) {
-            return usuariosAcesso;
+    private List<UsuarioAcesso> unificar(List<UsuarioAcesso> usuariosAcesso, List<UsuarioAcesso> usuarios) {
+        List<UsuarioAcesso> usuariosUnificados = new ArrayList<>();
+        if (!usuariosAcesso.isEmpty()) {
+            usuariosUnificados.addAll(usuariosAcesso);
         }
-        return usuarios;
+        if (!usuarios.isEmpty()) {
+            usuariosUnificados.addAll(usuarios);
+        }
+        return usuariosUnificados;
     }
 
     private void inativarColaboradorPol(Usuario usuario) {

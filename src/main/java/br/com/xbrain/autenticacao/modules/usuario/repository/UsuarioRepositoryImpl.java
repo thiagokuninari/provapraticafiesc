@@ -201,8 +201,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS usuarioId, CANAL AS canal"
-                    + " FROM USUARIO_CANAL"
-                    + " WHERE FK_USUARIO IN (:usuarioIds)",
+                + " FROM USUARIO_CANAL"
+                + " WHERE FK_USUARIO IN (:usuarioIds)",
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(Canal.class));
@@ -680,19 +680,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> funcionalidades) {
         var permissoes = select(stringTemplate(CONCATENA_STRINGS, cargoDepartamentoFuncionalidade.funcionalidade.role))
-                .from(cargoDepartamentoFuncionalidade)
-                .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
-                .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
-                .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
-                .where(cargo.eq(usuario.cargo)
-                        .and(departamento.eq(usuario.departamento))
-                        .and(funcionalidade.role.in(funcionalidades)));
+            .from(cargoDepartamentoFuncionalidade)
+            .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
+            .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
+            .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
+            .where(cargo.eq(usuario.cargo)
+                .and(departamento.eq(usuario.departamento))
+                .and(funcionalidade.role.in(funcionalidades)));
         var permissoesEspeciais = select(stringTemplate(CONCATENA_STRINGS, funcionalidade.role))
-                .from(permissaoEspecial)
-                .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
-                .where(permissaoEspecial.usuario.id.eq(usuario.id)
-                        .and(permissaoEspecial.funcionalidade.role.in(funcionalidades))
-                        .and(permissaoEspecial.dataBaixa.isNull()));
+            .from(permissaoEspecial)
+            .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
+            .where(permissaoEspecial.usuario.id.eq(usuario.id)
+                .and(permissaoEspecial.funcionalidade.role.in(funcionalidades))
+                .and(permissaoEspecial.dataBaixa.isNull()));
 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(
@@ -709,14 +709,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findAllUsuariosSemDataUltimoAcesso() {
+    public List<Usuario> findAllUsuariosSemDataUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
         return new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
-                .from(usuario)
-                .where(usuario.situacao.eq(A)
-                        .and(usuario.dataUltimoAcesso.isNull()
-                                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))))
-                .fetch();
+            .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
+            .from(usuario)
+            .where(usuario.situacao.eq(A)
+                .and(usuario.dataUltimoAcesso.isNull())
+                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
+                .and(usuario.dataCadastro.after(dataHoraInativarUsuario)))
+            .fetch();
     }
 
     @Override

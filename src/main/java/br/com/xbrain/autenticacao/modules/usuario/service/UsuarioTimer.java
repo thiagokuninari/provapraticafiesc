@@ -44,7 +44,8 @@ public class UsuarioTimer {
     @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
-        usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
+        Integer usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
+        log.info("Usuários inativados: {}", usuariosInativados);
     }
 
     @Scheduled(cron = EVERY_DAY_AT_FOUR_AM)

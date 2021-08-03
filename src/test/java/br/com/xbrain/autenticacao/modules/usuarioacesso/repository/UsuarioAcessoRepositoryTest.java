@@ -9,13 +9,15 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Sql(scripts = {"classpath:/tests_usuario_acesso.sql"})
+@Sql(scripts = {"classpath:/tests_usuario_acesso.sql", "classpath:/tests_usuario_inativacao.sql"})
 @Transactional
 public class UsuarioAcessoRepositoryTest {
 
@@ -24,21 +26,20 @@ public class UsuarioAcessoRepositoryTest {
 
     @Test
     public void findAllUltimoAcessoUsuarios_deveRetornarUsuarios_queNaoEfetuaramAcessoAoSistemaDuranteTrintaEDoisDias() {
-        assertThat(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
+        assertThat(usuarioAcessoRepository.findAllUltimoAcessoUsuarios(LocalDateTime.parse("2021-06-30T00:00:00.000")))
             .extracting("usuario.id", "usuario.email")
             .containsExactly(
-                tuple(301, "JOAO@XBRAIN.COM.BR"),
-                tuple(302, "CAIO@XBRAIN.COM.BR"),
                 tuple(303, "ALBERTO@XBRAIN.COM.BR"),
                 tuple(304, "MARIA@XBRAIN.COM.BR"),
                 tuple(305, "EDUARDA@XBRAIN.COM.BR"),
-                tuple(306, "ERICA@XBRAIN.COM.BR"));
+                tuple(306, "ERICA@XBRAIN.COM.BR"),
+                tuple(307, "LUCAS@XBRAIN.COM.BR"));
     }
 
     @Test
     public void deletarHistoricoUsuarioAcesso_removerHistoricos_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
-        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(19);
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(20);
         usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
-        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(15);
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(16);
     }
 }

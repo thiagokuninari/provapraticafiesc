@@ -48,16 +48,11 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
-        assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
+        assertThat(repository.findAllUsuariosSemDataUltimoAcesso(LocalDateTime.parse("2021-06-30T00:00:00.000")))
             .extracting("id", "email")
             .containsExactlyInAnyOrder(
                 tuple(100, "ADMIN@XBRAIN.COM.BR"),
-                tuple(103, "CARLOS@HOTMAIL.COM"),
-                tuple(104, "MARIA@HOTMAIL.COM"),
-                tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
-                tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(103, "CARLOS@HOTMAIL.COM"));
     }
 
     @Test

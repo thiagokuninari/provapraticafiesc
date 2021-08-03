@@ -32,6 +32,10 @@ spring:
     password: xbrain
 
 app-config:
+  timer-usuario:
+    data-hora-inativar-usuario-a-partir-de: 2021-07-30T00:00:00.000
+    email-usuario-viabilidade: LUIZ@XBRAIN.COM.BR
+
   url: https://autenticacao.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
   upload-dir: ${app-config.estatico-dir}/producao/autenticacao
