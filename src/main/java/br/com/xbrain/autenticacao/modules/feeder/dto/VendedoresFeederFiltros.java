@@ -39,7 +39,7 @@ public class VendedoresFeederFiltros {
         var predicate = new UsuarioPredicate();
 
         predicate.comIds(usuariosIds);
-        predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO));
+        predicate.comCodigosNiveis(List.of(CodigoNivel.AGENTE_AUTORIZADO, CodigoNivel.OPERACAO));
         predicate.comSituacoes(obterSituacoes());
 
         if (comSocioPrincipal) {
