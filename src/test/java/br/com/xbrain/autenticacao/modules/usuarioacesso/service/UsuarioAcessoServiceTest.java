@@ -86,8 +86,8 @@ public class UsuarioAcessoServiceTest {
 
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
+        verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
         verify(inativarColaboradorMqSender, times(4)).sendSuccess(anyString());
     }
 

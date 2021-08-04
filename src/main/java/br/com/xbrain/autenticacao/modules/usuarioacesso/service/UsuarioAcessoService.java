@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.UsuarioAcessoFil
 import br.com.xbrain.autenticacao.modules.usuarioacesso.model.UsuarioAcesso;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.repository.UsuarioAcessoRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -28,11 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -110,16 +112,14 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioAcesso> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
-        List<UsuarioAcesso> usuariosUnificados =
-            unificar(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario),
-                getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
-        removerUsuarioViabilidade(usuariosUnificados);
-        return usuariosUnificados;
-    }
+        Collection<UsuarioAcesso> usuariosUltimoAcessoExpirado =
+            CollectionUtils.emptyIfNull(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario));
+        Collection<UsuarioAcesso> usuariosSemUltimoAcesso =
+            CollectionUtils.emptyIfNull(getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
 
-    private void removerUsuarioViabilidade(List<UsuarioAcesso> usuariosUnificados) {
-        usuariosUnificados.removeIf(u ->
-            emailUsuarioViabilidade.equals(u.getUsuario().getEmail() != null ? u.getUsuario().getEmail() : ""));
+        return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
+            .filter(u -> u.getUsuario().getEmail() != null && !u.getUsuario().getEmail().equals(emailUsuarioViabilidade))
+            .collect(Collectors.toList());
     }
 
     private List<UsuarioAcesso> getUsuariosSemUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
@@ -131,17 +131,6 @@ public class UsuarioAcessoService {
 
     private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
         return usuarioAcessoRepository.findAllUltimoAcessoUsuarios(dataHoraInativarUsuario);
-    }
-
-    private List<UsuarioAcesso> unificar(List<UsuarioAcesso> usuariosAcesso, List<UsuarioAcesso> usuarios) {
-        List<UsuarioAcesso> usuariosUnificados = new ArrayList<>();
-        if (!usuariosAcesso.isEmpty()) {
-            usuariosUnificados.addAll(usuariosAcesso);
-        }
-        if (!usuarios.isEmpty()) {
-            usuariosUnificados.addAll(usuarios);
-        }
-        return usuariosUnificados;
     }
 
     private void inativarColaboradorPol(Usuario usuario) {
