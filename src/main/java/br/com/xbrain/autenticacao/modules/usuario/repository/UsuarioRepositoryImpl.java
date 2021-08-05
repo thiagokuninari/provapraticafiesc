@@ -44,6 +44,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.uni
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -54,10 +55,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
-import static com.querydsl.jpa.JPAExpressions.selectDistinct;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
@@ -716,17 +715,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate) {
+        var usuarioCoordenadores = new QUsuario("usuarioCoordenadores");
         return new JPAQueryFactory(entityManager)
-            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario, usuario)
-            .leftJoin(usuario.cidades, usuarioCidade)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.id.notIn(selectDistinct(usuario.id)
-                    .from(site)
-                    .leftJoin(site.coordenadores, usuario)
-                    .where(site.situacao.eq(A))))
-            .and(sitePredicate))
-            .fetch();
+                .and(select(site).from(site)
+                    .leftJoin(site.coordenadores, usuarioCoordenadores)
+                    .where(
+                        site.situacao.eq(A)
+                        .and(usuario.id.eq(usuarioCoordenadores.id)))
+                    .notExists())
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
+                .and(sitePredicate)
+            ).fetch();
     }
 
     @Override
@@ -851,19 +853,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId) {
+        var usuarioCoordenadores = new QUsuario("usuarioCoordenadores");
         return new JPAQueryFactory(entityManager)
-            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario, usuario)
-            .leftJoin(usuario.cidades, usuarioCidade)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
-                .and(usuario.id.notIn(selectDistinct(usuario.id)
-                    .from(site)
-                    .leftJoin(site.coordenadores, usuario)
-                    .leftJoin(site.cidades, cidade)
-                    .where(site.situacao.eq(A)
-                    .and(site.id.ne(siteId)))))
+                .and(select(site).from(site)
+                .leftJoin(site.coordenadores, usuarioCoordenadores)
+                .where(site.situacao.eq(A)
+                    .and(site.id.ne(siteId))
+                    .and(usuario.id.eq(usuarioCoordenadores.id)))
+                    .notExists())
                 .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
-                .and(sitePredicate))
+                .and(sitePredicate)
+            )
             .fetch();
     }
 

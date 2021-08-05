@@ -39,9 +39,9 @@ public class UsuarioSiteService {
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisEVinculadosAoSite(Integer siteId, List<Integer> cidadesIds) {
+    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisEVinculadosAoSite(Integer siteId) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        var sitePredicate = new SitePredicate().comCoordenadoresComCidade(cidadesIds);
+        var sitePredicate = new SitePredicate();
         if (usuarioAutenticado.isXbrainOuMso()) {
             return repository.findCoordenadoresDisponiveisExetoPorSiteId(sitePredicate.build(), siteId);
         }
@@ -50,10 +50,9 @@ public class UsuarioSiteService {
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveisPorCidade(List<Integer> cidadesIds) {
+    public List<UsuarioNomeResponse> buscarCoordenadoresDisponiveis() {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var sitePredicate = new SitePredicate();
-        sitePredicate.comCoordenadoresComCidade(cidadesIds);
         if (usuarioAutenticado.isXbrainOuMso()) {
             return repository.findCoordenadoresDisponiveis(sitePredicate.build());
         }

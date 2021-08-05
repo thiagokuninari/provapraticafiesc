@@ -61,7 +61,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of(umUsuarioNomeResponse(1)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1100)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .hasSize(0);
     }
 
@@ -97,7 +97,7 @@ public class UsuarioSiteServiceIT {
         doReturn(List.of(umUsuarioNomeResponse(11122))).when(usuarioRepository)
             .findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
 
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1, List.of(1100)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(tuple(11122, "Coordenador operacao ativo local"));
     }
@@ -109,7 +109,7 @@ public class UsuarioSiteServiceIT {
         doReturn(List.of(umUsuarioNomeResponse(11122), umUsuarioNomeResponse(11125)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
 
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1, List.of(1100, 1600)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
                 tuple(11122, "Coordenador operacao ativo local"),
@@ -119,7 +119,7 @@ public class UsuarioSiteServiceIT {
     @Test
     public void retornarTodosCoordenadores_deveRetornarTodosCoordenadoresDisponiveis_quandoUsuarioLogadoForMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoMSO(1));
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1100, 1500, 1700)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(
                 tuple(11125, "Coordenador2 operacao ativo local"),
@@ -143,7 +143,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of(umUsuarioNomeResponse(11155), umUsuarioNomeResponse(11145)))
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(100)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .hasSize(0);
     }
 
@@ -153,7 +153,7 @@ public class UsuarioSiteServiceIT {
             CodigoDepartamento.COMERCIAL, CodigoNivel.OPERACAO));
         doReturn(List.of())
             .when(usuarioRepository).findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(anyInt(), any());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(11122)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .hasSize(0);
     }
 

@@ -28,7 +28,7 @@ import static java.util.Objects.nonNull;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class SitePredicate extends PredicateBase {
 
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
+    private static final int QTD_MAX_NO_ORACLE = 1000;
 
     public SitePredicate comId(Integer id) {
         if (nonNull(id)) {
@@ -64,7 +64,7 @@ public class SitePredicate extends PredicateBase {
         if (!CollectionUtils.isEmpty(cidadesIds)) {
             builder.and(
                 ExpressionUtils.anyOf(
-                    Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                    Lists.partition(cidadesIds, QTD_MAX_NO_ORACLE)
                         .stream()
                         .map(site.cidades.any().id::in)
                         .collect(Collectors.toList()))
@@ -193,7 +193,7 @@ public class SitePredicate extends PredicateBase {
         if (!cidadesIds.isEmpty()) {
             builder.and(
                 ExpressionUtils.anyOf(
-                    Lists.partition(cidadesIds, QTD_MAX_IN_NO_ORACLE)
+                    Lists.partition(cidadesIds, QTD_MAX_NO_ORACLE)
                         .stream()
                         .map(usuarioCidade.cidade.id::in)
                         .collect(Collectors.toList())))
