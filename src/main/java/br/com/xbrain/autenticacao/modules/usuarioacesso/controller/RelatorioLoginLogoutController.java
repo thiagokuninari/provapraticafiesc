@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutFiltros;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.service.RelatorioLoginLogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,12 @@ public class RelatorioLoginLogoutController {
         @RequestHeader("X-Usuario-Canal") ECanal canal,
         @RequestParam(required = false) Integer agenteAutorizadoId) {
         return service.getLoginsLogoutsDeHoje(pageRequest, canal, agenteAutorizadoId);
+    }
+
+    @GetMapping("entre-datas")
+    public List<LoginLogoutResponse> getLoginsLogoutsEntreDatas(@Validated RelatorioLoginLogoutFiltros filtros) {
+        filtros.validarDatas();
+        return service.buscarAcessosEntreDatasPorUsuarios(filtros);
     }
 
     @GetMapping("csv")

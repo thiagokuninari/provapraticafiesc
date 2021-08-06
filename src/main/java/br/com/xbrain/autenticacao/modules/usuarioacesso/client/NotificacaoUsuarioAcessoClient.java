@@ -23,6 +23,9 @@ public interface NotificacaoUsuarioAcessoClient {
     @PostMapping("api/relatorio-login-logout/hoje")
     MongoosePage<LoginLogoutResponse> getLoginsLogoutsDeHoje(@RequestBody GetLoginLogoutHojeRequest request);
 
+    @GetMapping("api/relatorio-login-logout/entre-datas")
+    List<LoginLogoutResponse> getLoginsLogoutsEntreDatas(@RequestParam Map<String, Object> filtro);
+
     @GetMapping("api/relatorio-login-logout/csv")
     List<LoginLogoutCsv> getCsv(@RequestParam Map<String, Object> filtro);
 

@@ -38,4 +38,16 @@ public class DateUtil {
         }
         return response;
     }
+
+    public static void validarDataInicialPosteriorDataFinal(LocalDate dataInicial, LocalDate dataFinal) {
+        if (dataInicial.isAfter(dataFinal)) {
+            throw new ValidacaoException("Data inicial não pode ser posterior a data final.");
+        }
+    }
+
+    public static void validarDataFinalPosteriorAAtual(LocalDate data) {
+        if (data.isAfter(LocalDate.now())) {
+            throw new ValidacaoException("Data final não pode ser posterior a atual.");
+        }
+    }
 }

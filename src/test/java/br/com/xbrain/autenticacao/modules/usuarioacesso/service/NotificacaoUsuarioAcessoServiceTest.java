@@ -2,11 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutFiltros;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
+import feign.RetryableException;
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +23,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umLoginLogoutResponse;
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umaListaLoginLogoutResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -79,6 +86,102 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
 
         assertThat(getLoginLogoutHojeRequestArgCaptor.getValue().getUsuariosIds()).containsExactly(2002);
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveLancarIntegracaoException_quandoApiNaoAcessivel() {
+        var filtros =  RelatorioLoginLogoutFiltros.builder()
+            .usuariosOperadoresIds(List.of(1, 2, 3))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(List.of(1, 2, 3)))))
+            .thenThrow(new RetryableException("Connection refused", new Date()));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(filtros))
+            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveLancarIntegracaoException_quandoClientRetornarErro() {
+        var filtros =  RelatorioLoginLogoutFiltros.builder()
+            .usuariosOperadoresIds(List.of(1, 2, 3))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(List.of(1, 2, 3)))))
+            .thenThrow(new HystrixBadRequestException("Erro"));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(filtros))
+            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveRetornarLista_seHouveremDados() {
+        var filtros =  RelatorioLoginLogoutFiltros.builder()
+            .usuariosOperadoresIds(List.of(1, 2, 3))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(List.of(1, 2, 3)))))
+            .thenReturn(umaListaLoginLogoutResponse());
+
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(filtros))
+            .isEqualTo(umaListaLoginLogoutResponse());
+
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(List.of(1, 2, 3))));
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveDividirRequisicao_seHouveremMaisDeCemIds() {
+        var lista1 = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
+        var lista2 = IntStream.rangeClosed(101, 200).boxed().collect(Collectors.toList());
+        var lista3 = IntStream.rangeClosed(201, 300).boxed().collect(Collectors.toList());
+        var lista4 = IntStream.rangeClosed(301, 315).boxed().collect(Collectors.toList());
+
+        var filtros =  RelatorioLoginLogoutFiltros.builder()
+            .usuariosOperadoresIds(IntStream.rangeClosed(1, 315).boxed().collect(Collectors.toList()))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista1))))
+            .thenReturn(List.of(umLoginLogoutResponse(
+                1,
+                LocalDateTime.of(2021, 8, 5, 11, 18, 0),
+                LocalDateTime.of(2021, 8, 5, 12, 18, 0))));
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista2))))
+            .thenReturn(Collections.emptyList());
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista3))))
+            .thenReturn(List.of(umLoginLogoutResponse(
+                1,
+                LocalDateTime.of(2021, 7, 5, 11, 18, 0),
+                LocalDateTime.of(2021, 7, 8, 10, 18, 0))));
+        when(client.getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista4))))
+            .thenReturn(List.of(umLoginLogoutResponse(
+                2,
+                LocalDateTime.of(2021, 8, 5, 11, 18, 0),
+                null)));
+
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(filtros))
+            .isEqualTo(umaListaLoginLogoutResponse());
+
+        verify(client, times(4))
+            .getLoginsLogoutsEntreDatas(anyMap());
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista1)));
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista2)));
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista3)));
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(filtros.toRelatorioLoginLogoutMap(lista4)));
     }
 
     @Test

@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.*;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutFiltros;
 import com.google.common.collect.Lists;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -44,6 +45,22 @@ public class NotificacaoUsuarioAcessoService {
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_HOJE);
+        }
+    }
+
+    public List<LoginLogoutResponse> buscarAcessosEntreDatasPorUsuarios(RelatorioLoginLogoutFiltros filtros) {
+        try {
+            return Lists.partition(filtros.getUsuariosOperadoresIds(), USUARIOS_IDS_PART_SIZE)
+                .stream()
+                .map(idsParts -> client.getLoginsLogoutsEntreDatas(filtros.toRelatorioLoginLogoutMap(idsParts)))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            log.error("Erro ao consultar os Logins / Logouts entre datas.", ex);
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_ENTRE_DATAS);
         }
     }
 
