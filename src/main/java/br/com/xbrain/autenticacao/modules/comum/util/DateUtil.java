@@ -30,6 +30,12 @@ public class DateUtil {
         }
     }
 
+    public static void validarPeriodoMaximo(LocalDate dataInicial, LocalDate dataFinal, Integer qtdMaximaDias) {
+        if (ChronoUnit.DAYS.between(dataInicial, dataFinal) > qtdMaximaDias) {
+            throw new ValidacaoException("O período não deve ser superior a " + qtdMaximaDias + " dias.");
+        }
+    }
+
     public static String formatarDataHora(EFormatoDataHora format, LocalDateTime data) {
         var response = "";
         if (!ObjectUtils.isEmpty(data)) {

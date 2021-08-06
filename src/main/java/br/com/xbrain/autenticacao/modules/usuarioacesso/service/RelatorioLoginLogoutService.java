@@ -14,15 +14,18 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutFiltros;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.LOGIN_LOGOUT_CSV;
 
@@ -46,8 +49,8 @@ public class RelatorioLoginLogoutService {
             .toSpringPage(pageRequest);
     }
 
-    public List<LoginLogoutResponse> buscarAcessosEntreDatasPorUsuarios(RelatorioLoginLogoutFiltros filtros) {
-        return notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(filtros);
+    public List<LoginLogoutResponse> buscarAcessosEntreDatasPorUsuarios(RelatorioLoginLogoutRequest request) {
+        return notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(request);
     }
 
     public void getCsv(

@@ -16,8 +16,8 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
-import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutFiltros;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import org.junit.Test;
@@ -72,18 +72,18 @@ public class RelatorioLoginLogoutServiceTest {
 
     @Test
     public void buscarAcessosEntreDatasPorUsuarios_deveRetornarListaVazia_quandoNaoEncontrarLoginsLogouts() {
-        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutFiltros())))
+        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutRequest())))
             .thenReturn(Collections.emptyList());
 
-        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutFiltros())).isEmpty();
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutRequest())).isEmpty();
     }
 
     @Test
     public void buscarAcessosEntreDatasPorUsuarios_deveRetornarListaPreenchida_quandoEncontrarLoginsLogouts() {
-        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutFiltros())))
+        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutRequest())))
             .thenReturn(umaListaLoginLogoutResponse());
 
-        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutFiltros()))
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutRequest()))
             .isEqualTo(umaListaLoginLogoutResponse());
     }
 

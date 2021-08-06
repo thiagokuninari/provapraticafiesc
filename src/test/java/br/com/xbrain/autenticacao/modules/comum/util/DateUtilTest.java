@@ -6,11 +6,29 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 
-import static br.com.xbrain.autenticacao.modules.comum.util.DateUtil.validarDataFinalPosteriorAAtual;
-import static br.com.xbrain.autenticacao.modules.comum.util.DateUtil.validarDataInicialPosteriorDataFinal;
+import static br.com.xbrain.autenticacao.modules.comum.util.DateUtil.*;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 public class DateUtilTest {
+
+    @Test
+    public void validarPeriodoMaximo_validacaoException_seMaiorQueLimiteMaximo() {
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> validarPeriodoMaximo(LocalDate.now(), LocalDate.now().plusDays(31), 30))
+            .withMessage("O período não deve ser superior a 30 dias.");
+    }
+
+    @Test
+    public void validarPeriodoMaximo_naoDeveDispararException_seIgualALimiteMaximo() {
+        assertThatCode(() -> validarPeriodoMaximo(LocalDate.now(), LocalDate.now().plusDays(30), 30))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void validarPeriodoMaximo_naoDeveDispararException_seMenorQueLimiteMaximo() {
+        assertThatCode(() -> validarPeriodoMaximo(LocalDate.now(), LocalDate.now().plusDays(29), 30))
+            .doesNotThrowAnyException();
+    }
 
     @Test
     public void validarDataInicialPosteriorDataFinal_validacaoException_seDataInicialPosteriorADataFinal() {
