@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeIdsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioSiteService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,16 +14,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
@@ -42,32 +37,21 @@ public class UsuarioSiteControllerTest {
 
     @Test
     public void buscarUsuariosDisponiveisPorCargo_verificaSeAceitaRequisicaoComMaisDeMilIds() throws Exception {
-        mvc.perform(post("/api/usuarios/site/coordenadores/disponiveis")
+        mvc.perform(get("/api/usuarios/site/coordenadores/disponiveis")
             .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaCidadeIdsRequest())))
+            .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioSiteService, times(1)).buscarCoordenadoresDisponiveisPorCidade(any());
+        verify(usuarioSiteService, times(1)).buscarCoordenadoresDisponiveis();
     }
 
     @Test
     public void editarCoordenadorSite_verificaSeAceitaRequisicaoComMaisDeMilIds() throws Exception {
-        mvc.perform(post("/api/usuarios/site/editar/1/coordenador")
+        mvc.perform(get("/api/usuarios/site/editar/1/coordenador")
             .header("Authorization", getAccessToken(mvc, ADMIN))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(convertObjectToJsonBytes(umaCidadeIdsRequest())))
+            .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(usuarioSiteService, times(1)).buscarCoordenadoresDisponiveisEVinculadosAoSite(any(), any());
-    }
-
-    private CidadeIdsRequest umaCidadeIdsRequest() {
-        return CidadeIdsRequest.builder()
-            .cidadesIds(
-                IntStream.rangeClosed(0, 1500)
-                    .boxed()
-                    .collect(Collectors.toList())
-            ).build();
+        verify(usuarioSiteService, times(1)).buscarCoordenadoresDisponiveisEVinculadosAoSite(any());
     }
 }

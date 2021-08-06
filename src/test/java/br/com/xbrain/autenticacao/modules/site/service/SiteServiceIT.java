@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
-import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -62,10 +61,7 @@ public class SiteServiceIT {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoPadrao());
         doReturn(List.of(11125)).when(usuarioSiteService).getSubordinadosPorIdECargo(any(),any());
-        assertThat(usuarioRepository.findCoordenadoresDisponiveis(new SitePredicate()
-            .comCoordenadoresComCidade(List.of(1700)).build()))
-            .hasSize(2);
-        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700));
+        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveis();
         assertThat(coordenadoresDisponiveis)
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(Tuple.tuple(11125, "Coordenador2 operacao ativo local"));
@@ -79,7 +75,7 @@ public class SiteServiceIT {
             .extracting(Site::getCoordenadores, Site::getId)
             .contains(Set.of(new Usuario(11126)), 2);
 
-        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700));
+        var coordenadoresDisponiveis = usuarioSiteService.buscarCoordenadoresDisponiveis();
         assertThat(coordenadoresDisponiveis)
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(
@@ -91,7 +87,7 @@ public class SiteServiceIT {
     public void buscarComMso_deveRetornarTodosOsCoordenadoresDisponiveisPorCidade_quandoUsuarioLogadoForMso() {
 
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1700)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .containsExactly(
                 tuple(11125, "Coordenador2 operacao ativo local"),
@@ -102,7 +98,7 @@ public class SiteServiceIT {
     public void buscarEditar_deveRetornarCoordenadoresDisponiveisENoSiteSendoEditado_quandoEditarSiteComMso() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
 
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1, List.of(1700)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(1))
             .extracting(UsuarioNomeResponse::getId, UsuarioNomeResponse::getNome)
             .contains(tuple(11125, "Coordenador2 operacao ativo local"));
     }
@@ -135,7 +131,7 @@ public class SiteServiceIT {
     @Test
     public void coordenadoresNaoDisponiveis_deveRetornarListaVazia_quandoCoordenadoresNaoDisponiveisParaCidade() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNivelMso());
-        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(List.of(1300)))
+        assertThat(usuarioSiteService.buscarCoordenadoresDisponiveis())
             .hasSize(0);
     }
 

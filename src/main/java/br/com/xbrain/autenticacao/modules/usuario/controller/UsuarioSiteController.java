@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeIdsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -27,19 +26,18 @@ public class UsuarioSiteController {
         return usuarioSiteService.buscarUsuariosSitePorCargo(codigoCargo);
     }
 
-    @PostMapping(value = "coordenadores/disponiveis")
-    public List<UsuarioNomeResponse> buscarUsuariosDisponiveisPorCargo(@RequestBody CidadeIdsRequest cidadesIds) {
-        return usuarioSiteService.buscarCoordenadoresDisponiveisPorCidade(cidadesIds.getCidadesIds());
+    @GetMapping(value = "coordenadores/disponiveis")
+    public List<UsuarioNomeResponse> buscarUsuariosDisponiveisPorCargo() {
+        return usuarioSiteService.buscarCoordenadoresDisponiveis();
     }
 
-    @PostMapping("editar/{siteId}/coordenador")
-    public List<UsuarioNomeResponse> editarCoordenadorSite(@PathVariable Integer siteId,
-                                                           @RequestBody CidadeIdsRequest cidadesIds) {
-        return usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(siteId, cidadesIds.getCidadesIds());
+    @GetMapping("editar/{siteId}/coordenador")
+    public List<UsuarioNomeResponse> buscarCoordenadorSite(@PathVariable Integer siteId) {
+        return usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(siteId);
     }
 
     @GetMapping("editar/{siteId}/supervisor")
-    public List<UsuarioNomeResponse> editarSupervisorSite(@PathVariable Integer siteId,
+    public List<UsuarioNomeResponse> buscarSupervisorSite(@PathVariable Integer siteId,
                                                           @RequestParam List<Integer> coordenadoresIds) {
         return usuarioSiteService.buscarSupervisoresDisponiveisEVinculadosAoSite(coordenadoresIds, siteId);
     }
