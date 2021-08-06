@@ -32,12 +32,12 @@ public class UsuarioSiteController {
     }
 
     @GetMapping("editar/{siteId}/coordenador")
-    public List<UsuarioNomeResponse> editarCoordenadorSite(@PathVariable Integer siteId) {
+    public List<UsuarioNomeResponse> buscarCoordenadorSite(@PathVariable Integer siteId) {
         return usuarioSiteService.buscarCoordenadoresDisponiveisEVinculadosAoSite(siteId);
     }
 
     @GetMapping("editar/{siteId}/supervisor")
-    public List<UsuarioNomeResponse> editarSupervisorSite(@PathVariable Integer siteId,
+    public List<UsuarioNomeResponse> buscarSupervisorSite(@PathVariable Integer siteId,
                                                           @RequestParam List<Integer> coordenadoresIds) {
         return usuarioSiteService.buscarSupervisoresDisponiveisEVinculadosAoSite(coordenadoresIds, siteId);
     }
