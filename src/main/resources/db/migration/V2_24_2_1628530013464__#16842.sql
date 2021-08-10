@@ -23,8 +23,8 @@ INSERT INTO USUARIO
         'INTEGRAÇÃO MOTIVA',
         '$2a$10$t6Khqh8NUQwp2vfwiGuw4.6PSCfKXSmQWpe9tOY4yTbqd.TTSQxTi',
         'A',
-        1001,
-        1001,
+        (SELECT ID FROM CARGO WHERE CODIGO = 'INTEGRACAO'),
+        (SELECT ID FROM DEPARTAMENTO WHERE CODIGO = 'INTEGRACAO'),
         0
     );
 
