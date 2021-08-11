@@ -71,7 +71,7 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
 
         return Optional.ofNullable(equipeId)
             .map(equipe -> usuarioNomeResponses.stream()
-                .filter(usuarioEquipe -> validaEquipe(equipe, usuarioEquipe))
+                .filter(usuarioEquipe -> validarEquipe(equipe, usuarioEquipe))
                 .map(UsuarioNomeResponse::of)
                 .collect(Collectors.toList()))
             .orElse(usuarioNomeResponses.stream()
@@ -79,7 +79,7 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
                 .collect(Collectors.toList()));
     }
 
-    private boolean validaEquipe(Integer equipe, UsuarioEquipeDto usuarioEquipe) {
+    private boolean validarEquipe(Integer equipe, UsuarioEquipeDto usuarioEquipe) {
         var usuarioEquipeId = usuarioEquipe.getEquipeVendaId();
         return Objects.nonNull(usuarioEquipeId) && usuarioEquipeId.equals(equipe);
     }
