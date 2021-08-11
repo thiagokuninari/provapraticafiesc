@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -70,12 +71,17 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
 
         return Optional.ofNullable(equipeId)
             .map(equipe -> usuarioNomeResponses.stream()
-                .filter(usuarioEquipe -> usuarioEquipe.getEquipeVendaId().equals(equipe))
+                .filter(usuarioEquipe -> validarEquipe(equipe, usuarioEquipe))
                 .map(UsuarioNomeResponse::of)
                 .collect(Collectors.toList()))
             .orElse(usuarioNomeResponses.stream()
                 .map(UsuarioNomeResponse::of)
                 .collect(Collectors.toList()));
+    }
+
+    private boolean validarEquipe(Integer equipe, UsuarioEquipeDto usuarioEquipe) {
+        var usuarioEquipeId = usuarioEquipe.getEquipeVendaId();
+        return Objects.nonNull(usuarioEquipeId) && usuarioEquipeId.equals(equipe);
     }
 
     private void adicionaInativoNomeDoUsuario(List<UsuarioNomeResponse> usuarioNomeResponses) {
