@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
@@ -48,6 +49,9 @@ public class UsuarioAcessoService {
         + "usuários que estão a mais de 32 dias sem efetuar login.";
     private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
         + " os registros antigos da tabela usuário acesso.";
+
+    private static final int TRINTA_E_DOIS_DIAS = 32;
+
     @Autowired
     private UsuarioAcessoRepository usuarioAcessoRepository;
     @Autowired
@@ -130,7 +134,11 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
-        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios(dataHoraInativarUsuario);
+        List<UsuarioAcesso> usuarios = usuarioAcessoRepository.findAllUltimoAcessoUsuarios();
+        return usuarios.stream()
+            .filter(u -> u.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
+                && u.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
+            .collect(Collectors.toList());
     }
 
     private void inativarColaboradorPol(Usuario usuario) {

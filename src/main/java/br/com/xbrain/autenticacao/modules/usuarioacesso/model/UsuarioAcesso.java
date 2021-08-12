@@ -44,6 +44,13 @@ public class UsuarioAcesso {
             .build();
     }
 
+    public UsuarioAcesso(Integer usuarioId, String usuarioEmail) {
+        this.usuario = Usuario.builder()
+            .id(usuarioId)
+            .email(usuarioEmail)
+            .build();
+    }
+
     public static UsuarioAcesso of(Usuario usuario) {
         return UsuarioAcesso.builder()
             .usuario(usuario)

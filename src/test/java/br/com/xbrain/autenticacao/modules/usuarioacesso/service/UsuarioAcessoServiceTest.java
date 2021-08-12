@@ -35,7 +35,13 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.tuple;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -59,14 +65,14 @@ public class UsuarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios(LocalDateTime.parse("2021-07-30T00:00:00.000")))
+        when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
             .thenReturn(List.of(
                 new UsuarioAcesso(
                     LocalDateTime.now().minusDays(45), 102, "RENATO@XBRAIN.COM.BR"),
                 new UsuarioAcesso(
                     LocalDateTime.now().minusDays(33), 103, "MARIA@XBRAIN.COM.BR"),
                 new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(32), 104, "JOANA@XBRAIN.COM.BR"),
+                    LocalDateTime.now().minusDays(33), 104, "JOANA@XBRAIN.COM.BR"),
                 new UsuarioAcesso(
                     LocalDateTime.now().minusDays(45), 105, null),
                 new UsuarioAcesso(
@@ -83,12 +89,11 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
-
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(4)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(4)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
-        verify(inativarColaboradorMqSender, times(4)).sendSuccess(anyString());
+        verify(usuarioRepository, times(3)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(3)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
+        verify(inativarColaboradorMqSender, times(3)).sendSuccess(anyString());
     }
 
     @Test

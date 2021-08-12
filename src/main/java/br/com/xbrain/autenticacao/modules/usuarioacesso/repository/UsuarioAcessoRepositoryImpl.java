@@ -18,19 +18,15 @@ public class UsuarioAcessoRepositoryImpl
 
     private static final int DOIS_MESES = 2;
 
-    private static final int TRINTA_E_DOIS_DIAS = 32;
-
     @Override
-    public List<UsuarioAcesso> findAllUltimoAcessoUsuarios(LocalDateTime dataHoraInativarUsuario) {
+    public List<UsuarioAcesso> findAllUltimoAcessoUsuarios() {
         return new JPAQueryFactory(entityManager)
             .select(constructor(
                 UsuarioAcesso.class, usuarioAcesso.dataCadastro.max(),
                 usuarioAcesso.usuario.id, usuarioAcesso.usuario.email))
             .from(usuarioAcesso)
             .innerJoin(usuarioAcesso.usuario, usuario)
-            .where(usuario.situacao.eq(ESituacao.A)
-                .and(usuarioAcesso.usuario.dataCadastro.after(dataHoraInativarUsuario))
-                .and(usuarioAcesso.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS))))
+            .where(usuario.situacao.eq(ESituacao.A))
             .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
             .fetch();
     }
