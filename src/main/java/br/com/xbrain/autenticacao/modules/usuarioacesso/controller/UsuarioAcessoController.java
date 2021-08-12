@@ -29,7 +29,7 @@ public class UsuarioAcessoController {
     @GetMapping("inativar")
     @ResponseStatus(HttpStatus.OK)
     public void inativarUsuariosSemAcesso() {
-        Integer usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
+        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
         log.info("Usuários inativados: {}", usuariosInativados);
     }
 

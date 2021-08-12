@@ -90,7 +90,7 @@ public class UsuarioAcessoService {
     public Integer inativarUsuariosSemAcesso(String origem) {
         int usuariosInativados = 0;
         try {
-            List<UsuarioAcesso> usuarios = buscarUsuariosParaInativar(LocalDateTime.parse(dataHoraInativarUsuario));
+            var usuarios = buscarUsuariosParaInativar(LocalDateTime.parse(dataHoraInativarUsuario));
             usuarios.forEach(usuarioAcesso -> {
                 Usuario usuario = usuarioAcesso.getUsuario();
                 usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
@@ -134,10 +134,9 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
-        List<UsuarioAcesso> usuarios = usuarioAcessoRepository.findAllUltimoAcessoUsuarios();
-        return usuarios.stream()
-            .filter(u -> u.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
-                && u.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
+        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios().stream()
+            .filter(usuario -> usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
+                && usuario.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
             .collect(Collectors.toList());
     }
 
