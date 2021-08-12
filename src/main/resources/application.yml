@@ -45,6 +45,7 @@ spring:
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
       maximumPoolSize: 2
+      connectionTimeout: 10000
 
   rabbitmq:
     host: 192.168.50.1
