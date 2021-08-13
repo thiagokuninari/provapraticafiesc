@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeUfResponse;
-import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
 
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+
 @Service
 public class CidadeService {
 
@@ -30,7 +32,7 @@ public class CidadeService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private CidadeRepository repository;
+    private CidadeRepository cidadeRepository;
 
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
@@ -40,48 +42,48 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         return UsuarioCidadeDto.of(
-            repository.findAllByRegionalId(
+            cidadeRepository.findAllByRegionalId(
                 regionalId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
         return UsuarioCidadeDto.of(
-            repository.findAllBySubClusterId(
+            cidadeRepository.findAllBySubClusterId(
                 subClusterId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClustersId(List<Integer> subClustersId) {
         return UsuarioCidadeDto.of(
-            repository.findAllBySubClustersId(
+            cidadeRepository.findAllBySubClustersId(
                 subClustersId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByGrupoId(Integer grupoId) {
         return UsuarioCidadeDto.of(
-            repository.findAllByGrupoId(
+            cidadeRepository.findAllByGrupoId(
                 grupoId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getAllByClusterId(Integer clusterId) {
         return UsuarioCidadeDto.of(
-            repository.findAllByClusterId(clusterId,
+            cidadeRepository.findAllByClusterId(clusterId,
                 predicateCidadesPermitidas.get()));
     }
 
     public List<Cidade> getAllCidadeByUf(Integer idUf) {
-        return repository.findCidadeByUfId(idUf, new Sort("nome"));
+        return cidadeRepository.findCidadeByUfId(idUf, new Sort("nome"));
     }
 
     public List<Cidade> getAllBySubCluster(Integer idSubCluster) {
-        return repository.findBySubCluster(idSubCluster);
+        return cidadeRepository.findBySubCluster(idSubCluster);
     }
 
     public Cidade findByUfNomeAndCidadeNome(String uf, String cidade) {
-        return repository
+        return cidadeRepository
             .findByPredicate(
                 new CidadePredicate()
                     .comNome(cidade)
@@ -91,7 +93,24 @@ public class CidadeService {
     }
 
     public ClusterizacaoDto getClusterizacao(Integer id) {
-        return repository.getClusterizacao(id);
+        return cidadeRepository.getClusterizacao(id);
+    }
+
+    public List<SelectResponse> buscarCidadesPorEstadosIds(List<Integer> estadosIds) {
+        return cidadeRepository.findAllByUfIdInOrderByNome(estadosIds)
+            .stream()
+            .map(cidade -> SelectResponse.of(cidade.getId(), cidade.getNomeComUf()))
+            .collect(Collectors.toList());
+    }
+
+    public CidadeSiteResponse getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
+        return cidadeRepository.findCidadeComSite(cidade.codigoCidadeDbm.eq(codigoCidadeDbm))
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public CidadeSiteResponse findCidadeComSiteByUfECidade(String uf, String cidadeNome) {
+        return cidadeRepository.findCidadeComSite(cidade.uf.uf.eq(uf).and(cidade.nome.eq(cidadeNome)))
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
@@ -103,12 +122,23 @@ public class CidadeService {
     }
 
     public List<CidadeUfResponse> getAllCidadeByUfs(List<Integer> ufIds) {
-        return repository.findCidadeByUfIdInOrderByNome(ufIds).stream()
+        return cidadeRepository.findCidadeByUfIdInOrderByNome(ufIds).stream()
             .map(CidadeUfResponse::of)
             .collect(Collectors.toList());
     }
 
     public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
-        return repository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::parse).orElse(null);
+        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::parse).orElse(null);
+    }
+
+    public Cidade findById(Integer id) {
+        return cidadeRepository.findOne(id);
+    }
+
+    public List<CidadeResponse> getAllCidadeNetUno() {
+        return cidadeRepository.findAllByNetUno(Eboolean.V)
+            .stream()
+            .map(CidadeResponse::of)
+            .collect(Collectors.toList());
     }
 }

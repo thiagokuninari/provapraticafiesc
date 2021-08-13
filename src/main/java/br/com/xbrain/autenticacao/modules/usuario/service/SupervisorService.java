@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +22,13 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.ATIVO_PROP
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ECanal.D2D_PROPRIO;
 
 @Service
+@RequiredArgsConstructor
 public class SupervisorService {
 
     private static final int COLUNA_USUARIO_ID = 0;
     private static final int COLUNA_USUARIO_NOME = 1;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
@@ -36,7 +37,7 @@ public class SupervisorService {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
-            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
+            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId, getCanalBySupervisorId(supervisorId))).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
@@ -77,8 +78,7 @@ public class SupervisorService {
                 .collect(Collectors.toList());
     }
 
-    public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                               List<Integer> areasAtuacaoId) {
+    public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
             areaAtuacao,
             areasAtuacaoId,
@@ -86,7 +86,7 @@ public class SupervisorService {
             D2D_PROPRIO);
     }
 
-    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuario(Integer usuarioId) {
-        return usuarioRepository.getSupervisoresSubclusterDoUsuario(usuarioId);
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
+        return usuarioRepository.getSupervisoresDoSubclusterDoUsuarioPeloCanal(usuarioId, canal);
     }
 }

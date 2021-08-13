@@ -6,7 +6,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
-
 import java.util.Optional;
 
 public interface UfRepository extends PagingAndSortingRepository<Uf, Integer> {

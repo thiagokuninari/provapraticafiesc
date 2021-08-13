@@ -23,8 +23,8 @@ public class UsuarioPermissoesRequest {
     @JsonIgnore
     public List<String> getPermissoesWithoutPrefixRole() {
         return permissoes
-                .stream()
-                .map(permissao -> permissao.replaceAll(ROLE_PREFIX, ""))
-                .collect(Collectors.toList());
+            .stream()
+            .map(permissao -> permissao.replaceAll(ROLE_PREFIX, ""))
+            .collect(Collectors.toList());
     }
 }

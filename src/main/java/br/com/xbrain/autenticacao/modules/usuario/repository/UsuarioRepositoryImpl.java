@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.ObjectUtils;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -46,6 +48,7 @@ import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_I
 import static br.com.xbrain.autenticacao.modules.permissao.model.QCargoDepartamentoFuncionalidade.cargoDepartamentoFuncionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -111,6 +114,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .leftJoin(usuario.canais).fetchJoin()
                 .join(usuario.departamento).fetchJoin()
                 .leftJoin(usuario.empresas).fetchJoin()
+                .leftJoin(usuario.canais).fetchJoin()
                 .leftJoin(usuario.organizacao).fetchJoin()
                 .where(usuario.id.eq(id))
                 .distinct()
@@ -155,7 +159,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo) {
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> canais) {
         return entityManager
             .createNativeQuery(
                 " SELECT UH.FK_USUARIO "
@@ -165,12 +169,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     + " FROM USUARIO_HIERARQUIA UH"
                     + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                     + " JOIN CARGO C ON C.ID = U.FK_CARGO "
-                    + " WHERE C.CODIGO = :_codigoCargo"
+                    + " WHERE C.CODIGO in (:_codigoCargo)"
                     + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
                     + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                     + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
             .setParameter("_usuarioId", usuarioId)
-            .setParameter("_codigoCargo", codigoCargo)
+            .setParameter("_codigoCargo", canais)
             .getResultList();
     }
 
@@ -476,6 +480,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Integer> getUsuariosIdsByNivel(CodigoNivel codigoNivel) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(cargo.nivel, nivel)
+            .where(nivel.codigo.eq(codigoNivel))
+            .fetch();
+    }
+
+    @Override
     public Page<Usuario> findAll(Predicate predicate, Pageable pageable) {
 
         Expression<Cargo> expressionCargo = Projections.fields(Cargo.class,
@@ -570,7 +585,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 cargo.nome,
                 departamento.nome,
                 usuario.situacao,
-                usuario.dataUltimoAcesso,
+            usuario.dataUltimoAcesso,
                 usuario.loginNetSales,
                 nivel.nome,
                 organizacao.nome)
@@ -606,7 +621,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuarioCidade)
             .join(usuarioCidade.usuario, usuario)
             .where(usuario.cargo.codigo.in(cargos)
-                .and(usuario.canais.any().eq(canal))
+                .and(usuario.canais.contains(canal))
                 .and(usuario.cidades.any().cidade.id.in(
                     select(usuarioCidade.cidade.id)
                         .from(usuarioCidade)
@@ -620,7 +635,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                            List<Integer> areasAtuacaoIds,
                                                            CodigoCargo cargo,
-                                                           ECanal canal) {
+                                                           Set<ECanal> canais) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
                 usuarioCidade.usuario.id,
@@ -633,7 +648,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .join(cluster.grupo, grupo)
             .join(grupo.regional, regional)
             .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
-                .and(usuarioCidade.usuario.canais.any().eq(canal))
+                .and(usuarioCidade.usuario.canais.any().in(canais))
                 .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
             .distinct()
             .fetch();
@@ -655,19 +670,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> funcionalidades) {
         var permissoes = select(stringTemplate(CONCATENA_STRINGS, cargoDepartamentoFuncionalidade.funcionalidade.role))
-                .from(cargoDepartamentoFuncionalidade)
-                .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
-                .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
-                .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
-                .where(cargo.eq(usuario.cargo)
-                        .and(departamento.eq(usuario.departamento))
-                        .and(funcionalidade.role.in(funcionalidades)));
+            .from(cargoDepartamentoFuncionalidade)
+            .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
+            .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
+            .innerJoin(cargoDepartamentoFuncionalidade.funcionalidade, funcionalidade)
+            .where(cargo.eq(usuario.cargo)
+                .and(departamento.eq(usuario.departamento))
+                .and(funcionalidade.role.in(funcionalidades)));
         var permissoesEspeciais = select(stringTemplate(CONCATENA_STRINGS, funcionalidade.role))
-                .from(permissaoEspecial)
-                .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
-                .where(permissaoEspecial.usuario.id.eq(usuario.id)
-                        .and(permissaoEspecial.funcionalidade.role.in(funcionalidades))
-                        .and(permissaoEspecial.dataBaixa.isNull()));
+            .from(permissaoEspecial)
+            .innerJoin(permissaoEspecial.funcionalidade, funcionalidade)
+            .where(permissaoEspecial.usuario.id.eq(usuario.id)
+                .and(permissaoEspecial.funcionalidade.role.in(funcionalidades))
+                .and(permissaoEspecial.dataBaixa.isNull()));
 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(
@@ -800,7 +815,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId) {
+    public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {
         var subclusterIdList = getSubclustersUsuario(usuarioId)
             .stream()
             .map(SubCluster::getId)
@@ -817,9 +832,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .innerJoin(usuarioCidade.cidade, cidade)
             .innerJoin(cidade.subCluster, subCluster)
             .where(subCluster.id.in(subclusterIdList)
-                .and(cargo.id.eq(CARGO_SUPERVISOR_ID)))
+                .and(cargo.id.eq(CARGO_SUPERVISOR_ID))
+                .and(usuario.canais.contains(canal)))
             .distinct()
             .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.fields(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario)
+            .where(usuario.canais.any().eq(canal)
+                .and(usuario.cargo.codigo.eq(cargo)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate) {
+        var usuarioCoordenadores = new QUsuario("usuarioCoordenadores");
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
+            .from(usuario, usuario)
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(select(site).from(site)
+                    .leftJoin(site.coordenadores, usuarioCoordenadores)
+                    .where(
+                        site.situacao.eq(A)
+                        .and(usuario.id.eq(usuarioCoordenadores.id)))
+                    .notExists())
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
+                .and(sitePredicate)
+            ).fetch();
     }
 
     @Override
@@ -913,4 +957,175 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(predicate)
             .fetch();
     }
+
+    @Override
+    public List<UsuarioNomeResponse> findSupervisoresSemSitePorCoordenadorId(Predicate sitePredicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome))
+            .from(usuario, usuario)
+            .leftJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(SUPERVISOR_OPERACAO)
+                .and(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO))
+                .and(sitePredicate))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo) {
+        return jdbcTemplate.query("SELECT DISTINCT U.ID, U.NOME "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "JOIN USUARIO_CANAL UC ON UC.FK_USUARIO = U.ID "
+                + "WHERE UC.CANAL = :canal "
+                + "AND C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR = :usuarioId "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId)
+                .addValue("canal", ECanal.ATIVO_PROPRIO.name())
+                .addValue("cargo", cargo.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME, U.SITUACAO "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S "
+                + "JOIN SITE SI ON SI.ID = S.FK_SITE "
+                + "WHERE S.FK_SITE = :siteId AND SI.SITUACAO = 'A') "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("siteId", siteId)
+                .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
+            new BeanPropertyRowMapper<>(UsuarioNomeResponse.class));
+    }
+
+    @Override
+    public List<Integer> findUsuariosIdsPorSiteId(Integer siteId) {
+        var sql = "SELECT DISTINCT U.ID "
+            + "FROM USUARIO_HIERARQUIA UH "
+            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+            + "START WITH UH.FK_USUARIO_SUPERIOR IN (SELECT S.FK_USUARIO FROM SITE_COORDENADOR S WHERE S.FK_SITE = :siteId "
+            + "UNION SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S WHERE S.FK_SITE = :siteId) "
+            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = FK_USUARIO";
+        var params = new MapSqlParameterSource()
+            .addValue("siteId", siteId);
+        var rowMapper = SingleColumnRowMapper.newInstance(Integer.class);
+        return jdbcTemplate.query(sql, params, rowMapper);
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId) {
+        var usuarioCoordenadores = new QUsuario("usuarioCoordenadores");
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
+            .from(usuario, usuario)
+            .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
+                .and(select(site).from(site)
+                .leftJoin(site.coordenadores, usuarioCoordenadores)
+                .where(site.situacao.eq(A)
+                    .and(site.id.ne(siteId))
+                    .and(usuario.id.eq(usuarioCoordenadores.id)))
+                    .notExists())
+                .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
+                .and(sitePredicate)
+            )
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> supervisoresIds,
+                                                                                        Set<String> codigosCargos) {
+        return jdbcTemplate.query(" SELECT UH.FK_USUARIO AS ID, "
+            + "U.NOME AS NOME, "
+            + "U.SITUACAO AS SITUACAO, "
+            + "C.CODIGO AS CODIGO_CARGO "
+            + "FROM USUARIO_HIERARQUIA UH "
+            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+            + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+            + "WHERE C.CODIGO in (:_codigosCargos) "
+            + "AND U.SITUACAO = 'A' "
+            + "GROUP BY FK_USUARIO, U.NOME, U.SITUACAO, C.CODIGO "
+            + "START WITH UH.FK_USUARIO_SUPERIOR in (:_supervisoresIds) "
+            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("_supervisoresIds", supervisoresIds)
+                .addValue("_codigosCargos", codigosCargos),
+            new BeanPropertyRowMapper<>(UsuarioResponse.class));
+    }
+
+    @Override
+    public List<UsuarioSituacaoResponse> findVendedoresDoSiteIdPorHierarquiaUsuarioId(List<Integer> usuarioId, Integer siteId) {
+        return jdbcTemplate.query("SELECT U.ID, U.NOME, U.SITUACAO "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO = :cargo "
+                + "START WITH UH.FK_USUARIO_SUPERIOR IN "
+                + "(SELECT S.FK_USUARIO FROM SITE_SUPERVISOR S JOIN SITE SI ON SI.ID = S.FK_SITE "
+                + "WHERE S.FK_SITE = :siteId AND SI.SITUACAO = 'A' AND "
+                + "S.FK_USUARIO IN (SELECT FK_USUARIO FROM USUARIO_HIERARQUIA UUH "
+                + "START WITH UUH.FK_USUARIO_SUPERIOR IN (:usuarioId) "
+                + "CONNECT BY NOCYCLE PRIOR UUH.FK_USUARIO = FK_USUARIO_SUPERIOR) OR UH.FK_USUARIO_SUPERIOR = (:usuarioId)) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId)
+                .addValue("siteId", siteId)
+                .addValue("cargo", CodigoCargo.OPERACAO_TELEVENDAS.name()),
+            new BeanPropertyRowMapper<>(UsuarioSituacaoResponse.class));
+    }
+
+    public List<UsuarioCargoResponse> findSuperioresDoUsuarioId(Integer usuarioId) {
+        return jdbcTemplate.query("SELECT U.ID, "
+                + "U.NOME, "
+                + "C.CODIGO AS CODIGO_CARGO "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO_SUPERIOR "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE  U.SITUACAO = 'A' "
+                + "START WITH UH.FK_USUARIO IN (:usuarioId) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO_SUPERIOR = UH.FK_USUARIO ",
+            new MapSqlParameterSource()
+                .addValue("usuarioId", usuarioId),
+            new BeanPropertyRowMapper<>(UsuarioCargoResponse.class));
+
+    }
+
+    public List<UsuarioNomeResponse> findCoordenadoresDoSiteId(Integer siteId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class,
+                usuario.id, usuario.nome, usuario.situacao))
+            .from(site)
+            .join(site.coordenadores, usuario)
+            .where(site.situacao.eq(A)
+            .and(site.id.eq(siteId))
+            .and(usuario.situacao.eq(A)))
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> findSupervisoresDoSiteIdVinculadoAoCoordenador(Integer siteId, Predicate predicate) {
+        var usuarioSite = new QUsuario("usuario");
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioNomeResponse.class,
+                usuario.id, usuario.nome, usuario.situacao))
+            .from(usuarioHierarquia, usuarioHierarquia)
+            .join(usuarioHierarquia.usuario, usuario)
+            .where(usuario.cargo.codigo.eq(SUPERVISOR_OPERACAO)
+                .and(usuario.situacao.eq(A))
+                .and(predicate)
+                .and(usuario.id.in(new JPAQueryFactory(entityManager)
+                    .select(usuarioSite.id)
+                    .from(site)
+                    .join(site.supervisores, usuarioSite)
+                    .where(site.id.eq(siteId)
+                        .and(site.situacao.eq(A))))))
+            .fetch();
+    }
+
 }

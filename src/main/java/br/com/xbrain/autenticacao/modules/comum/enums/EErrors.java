@@ -60,8 +60,14 @@ public enum EErrors {
         "#017 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#017 - Erro ao tentar recuperar cidades do pol."),
     ERRO_OBTER_AA(
-            "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#018 - Erro ao tentar recuperar o AA."),
+        "#018 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#018 - Erro ao tentar recuperar o AA."),
+    ERRO_DESVINCULAR_RAMAIS(
+        "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#019 - Erro ao desvincular ramais."),
+    ERRO_LIMPAR_CACHE_ATIVO(
+        "#020 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#020 - Erro ao limpar cache ativo"),
     ERRO_OBTER_ESTRUTURA_AA(
         "#019 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#019 - Erro ao tentar recuperar a Estrutura do AA."
@@ -101,7 +107,16 @@ public enum EErrors {
         "#034 - Erro ao limpar cache dos feriados na telefonia."),
     ERRO_OBTER_AA_USUARIO_DTO_BY_USUARIO_ID(
         "#035 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#035 - Ocorreu um Erro ao buscar agente autorizado usurario dto.");
+        "#035 - Ocorreu um Erro ao buscar agente autorizado usurario dto."),
+    ERRO_CONSULTAR_STATUS_RAMAL_USUARIO(
+        "#21 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#21 - Erro ao tentar consultar status do ramal pelo usuário autenticado."),
+    ERRO_CONSULTAR_STATUS_TABULACAO_USUARIO(
+        "#022 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#022 - Erro ao tentar consultar status da tabulação do usuário."),
+    ERRO_LIBERAR_RAMAL_USUARIO(
+        "#023 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#023 - Erro ao tentar liberar ramal do usuário autenticado.");
 
     @Getter
     @Setter

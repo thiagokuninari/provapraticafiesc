@@ -51,8 +51,8 @@ public class SolicitacaoRamalResponse {
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
         response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
         response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
-                .map(ETipoImplantacao::getDescricao)
-                .orElse(""));
+            .map(ETipoImplantacao::getDescricao)
+            .orElse(""));
         BeanUtils.copyProperties(solicitacaoRamal, response);
         response.agenteAutorizadoCnpj = CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj());
 

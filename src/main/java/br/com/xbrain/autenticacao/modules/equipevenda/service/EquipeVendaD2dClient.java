@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.equipevenda.service;
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaSupervisorDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -34,10 +35,12 @@ public interface EquipeVendaD2dClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
     List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
                                                                   @RequestParam("equipeId") Integer equipeId);
-
     @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
     List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);
 
     @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select/usuarios")
     List<SelectResponse> getUsuariosDaEquipe(@RequestParam Map filtros);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
+    List<EquipeVendaSupervisorDto> getUsuarioComSupervisor(@RequestParam Map request);
 }

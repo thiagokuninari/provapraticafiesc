@@ -84,6 +84,11 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
+    public void getSupervisoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getSupervisoresOperacaoDaHierarquia(227).size());
+    }
+
+    @Test
     public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForOperacaoPelaHierarquia() {
         Assert.assertEquals(3, service.getVendedoresOperacaoDaHierarquia(228).size());
         Assert.assertEquals(2, service.getVendedoresOperacaoDaHierarquia(234).size());
@@ -325,14 +330,14 @@ public class UsuarioServiceTestOracle {
                         tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
                                 OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
-                                "Sócio Principal"),
-                        tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+                            CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                            "Sócio Principal"),
+                    tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
     }
 
     @Test
@@ -363,7 +368,7 @@ public class UsuarioServiceTestOracle {
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
         return UsuarioFiltrosHierarquia.builder()
-                .usuarioId(Collections.singletonList(101))
+            .usuarioId(Collections.singletonList(101))
             .codigoNivel(OPERACAO)
             .codigoDepartamento(COMERCIAL)
             .codigoCargo(GERENTE_OPERACAO)

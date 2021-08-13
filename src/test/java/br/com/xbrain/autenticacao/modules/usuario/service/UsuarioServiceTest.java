@@ -23,6 +23,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -53,6 +54,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
@@ -61,6 +63,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -112,6 +116,21 @@ public class UsuarioServiceTest {
             .nome(nome)
             .situacao(situacao)
             .build();
+    }
+
+    @Test
+    public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
@@ -278,6 +297,24 @@ public class UsuarioServiceTest {
         verify(unidadeNegocioRepository, atLeastOnce()).findAllAtivo();
         verify(repository, atLeastOnce()).findTop1UsuarioByCpfAndSituacaoNot(eq("09723864592"), any());
         verify(repository, atLeastOnce()).findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(any(), any());
+    }
+
+    @Test
+    public void salvarUsuarioBackoffice_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
+
+        var usuario = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(22)
+                .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .build();
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.salvarUsuarioBackoffice(usuario))
+            .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
     private List<Usuario> umaListaUsuariosExecutivosAtivo() {
@@ -663,6 +700,24 @@ public class UsuarioServiceTest {
         when(repository.findById(eq(1))).thenReturn(Optional.of(Usuario.builder().nome("NOME UM").build()));
 
         assertThat(service.obterNomeUsuarioPorId(1)).isEqualTo("NOME UM");
+    }
+
+    @Test
+    public void buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos_listUsuarioResponse_seSolicitado() {
+        when(usuarioRepository
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
+            .thenReturn(List.of(
+                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
+
+        assertThat(usuarioService
+                .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1), Set.of(ASSISTENTE_OPERACAO.name())))
+            .extracting("id", "nome", "situacao", "codigoCargo")
+            .containsExactlyInAnyOrder(
+                tuple(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
+                tuple(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
+                tuple(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO));
     }
 
     private UsuarioHierarquia umUsuarioHierarquia() {
