@@ -11,7 +11,6 @@ import org.springframework.util.Base64Utils;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-
 public class TestsHelper {
 
     public static String getAccessToken(MockMvc mvc, String usuario) {

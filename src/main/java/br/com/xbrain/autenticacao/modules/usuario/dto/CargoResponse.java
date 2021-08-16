@@ -1,9 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
+
+import java.util.Set;
 
 import static java.util.Objects.isNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -18,6 +21,7 @@ public class CargoResponse {
     private boolean possuiCargoSuperior;
     private ESituacao situacao;
     private Integer nivel;
+    private Set<ECanal> canais;
 
     public static CargoResponse of(Cargo cargo) {
         CargoResponse response = new CargoResponse();
@@ -28,6 +32,7 @@ public class CargoResponse {
         response.setSituacao(cargo.getSituacao());
         response.setPossuiCargoSuperior(!isEmpty(cargo.getSuperiores()));
         response.setNivel(!isNull(cargo.getNivel()) ? cargo.getNivel().getId() : null);
+        response.setCanais(cargo.getCanais());
 
         return response;
     }

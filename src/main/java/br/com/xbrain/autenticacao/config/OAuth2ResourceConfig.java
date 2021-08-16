@@ -22,6 +22,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         String[] permitAll = {
             "/call/**",
+            "/api/public/**",
             "/parceiros-online/**",
             "/equipe-venda/**",
             "/api/ufs",
@@ -33,7 +34,11 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/public/disparar-timer-inativar-usuarios",
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/usuarios/gerencia/existir/usuario",
-            "/api/cep/**"
+            "/api/cep/**",
+            "/api/usuarios/usuario-funil-prospeccao",
+            "/api/sites/{id}",
+            "/api/sites/{id}/supervisores",
+            "/api/sites/permitidos"
         };
 
         http
@@ -66,6 +71,11 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
             .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
             .antMatchers("/api/relatorio-login-logout/**").hasRole(CodigoFuncionalidade.AUT_2100.name())
+            .antMatchers(HttpMethod.GET, "/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name(),
+                CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
+                CodigoFuncionalidade.APPLICATION.name())
+            .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
             .anyRequest().authenticated();
     }
 

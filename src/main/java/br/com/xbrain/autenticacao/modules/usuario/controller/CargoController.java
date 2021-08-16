@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.CargoComNivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,8 +25,9 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping
-    public List<CargoResponse> getAll(Integer nivelId) {
-        return service.getPermitidosPorNivel(nivelId)
+    public List<CargoResponse> getAll(Integer nivelId, @RequestParam(required = false) Set<ECanal> canais,
+                                      @RequestParam(required = false, defaultValue = "true") boolean permiteEditarCompleto) {
+        return service.getPermitidosPorNivelECanaisPermitidos(nivelId, canais, permiteEditarCompleto)
             .stream()
             .map(CargoResponse::of)
             .collect(Collectors.toList());

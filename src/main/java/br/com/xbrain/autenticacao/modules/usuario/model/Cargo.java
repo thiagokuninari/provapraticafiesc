@@ -2,12 +2,14 @@ package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import lombok.*;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,19 @@ public class Cargo {
     @Column(name = "QUANTIDADE_SUPERIOR", length = 2)
     private Integer quantidadeSuperior;
 
+    @CollectionTable(
+        name = "CARGO_CANAL",
+        joinColumns = @JoinColumn(
+            name = "FK_CARGO",
+            foreignKey = @ForeignKey(name = "FK_CARGO_CANAL"),
+            referencedColumnName = "ID"
+        )
+    )
+    @Column(name = "CANAL", nullable = false, length = 50)
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private Set<ECanal> canais;
+
     @JsonIgnore
     @JoinTable(name = "CARGO_SUPERIOR", joinColumns = {
             @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID")}, inverseJoinColumns = {
@@ -61,5 +76,9 @@ public class Cargo {
         return !ObjectUtils.isEmpty(getSuperiores())
                 ? getSuperiores().stream().map(Cargo::getId).collect(Collectors.toSet())
                 : null;
+    }
+
+    public boolean hasPermissaoSobreOCanal(ECanal canal) {
+        return ObjectUtils.isEmpty(canais) || Objects.isNull(canal) || canais.contains(canal);
     }
 }
