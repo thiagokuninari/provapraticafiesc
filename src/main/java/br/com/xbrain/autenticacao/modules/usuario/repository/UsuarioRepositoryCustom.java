@@ -38,7 +38,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
-    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
+    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(Predicate predicate);
 
     List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> agenteAutorizadoId);
 

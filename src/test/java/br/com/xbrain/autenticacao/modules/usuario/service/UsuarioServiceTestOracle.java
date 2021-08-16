@@ -117,7 +117,7 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
-        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
+        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial(null))
             .extracting("value", "text")
             .containsExactly(
                 tuple(116, "ALBERTO PEREIRA"),

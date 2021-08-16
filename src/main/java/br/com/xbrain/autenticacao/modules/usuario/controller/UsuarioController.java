@@ -163,8 +163,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/executivos-comerciais")
-    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
-        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(CodigoCargo cargo) {
+        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial(cargo);
     }
 
     @PostMapping("/vincula/hierarquia")
