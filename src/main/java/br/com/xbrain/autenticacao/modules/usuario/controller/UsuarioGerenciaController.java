@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "api/usuarios/gerencia")
@@ -68,7 +69,7 @@ public class UsuarioGerenciaController {
     @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
-                                                                    @PathVariable List<ECanal> canal) {
+                                                                    @PathVariable Set<ECanal> canal) {
         return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
     }
 

@@ -47,7 +47,7 @@ public class CargoPredicate extends PredicateBase {
         return this;
     }
 
-    private CargoPredicate comIds(List<Integer> cargosId) {
+    public CargoPredicate comIds(List<Integer> cargosId) {
         builder.and(cargo.id.in(cargosId));
         return this;
     }
@@ -55,13 +55,6 @@ public class CargoPredicate extends PredicateBase {
     public CargoPredicate ouComCodigos(List<CodigoCargo> codigoCargos) {
         if (!ObjectUtils.isEmpty(codigoCargos)) {
             builder.or(cargo.codigo.in(codigoCargos));
-        }
-        return this;
-    }
-
-    public CargoPredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado, List<Integer> cargosId) {
-        if (!usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
-            comIds(cargosId);
         }
         return this;
     }

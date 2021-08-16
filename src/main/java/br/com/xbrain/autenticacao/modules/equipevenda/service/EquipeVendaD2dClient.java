@@ -35,6 +35,7 @@ public interface EquipeVendaD2dClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario-sem-equipe")
     List<Integer> filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(@RequestParam("usuariosId") List<Integer> usuariosId,
                                                                   @RequestParam("equipeId") Integer equipeId);
+
     @GetMapping(USUARIOS_EQUIPE_ENDPOINT + "/select")
     List<SelectResponse> getVendedoresPorEquipe(@RequestParam Map filtros);
 

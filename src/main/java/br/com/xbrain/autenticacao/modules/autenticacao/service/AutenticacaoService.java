@@ -88,6 +88,11 @@ public class AutenticacaoService {
         return loadUsuarioDataBase(getAuthentication());
     }
 
+    public Optional<OAuth2AccessToken> getAccessToken() {
+        return Optional.ofNullable(getAuthentication())
+            .map(tokenStore::getAccessToken);
+    }
+
     public void validarPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
         var usuarioAutenticado = getUsuarioAutenticado();
         @SuppressWarnings("unchecked")

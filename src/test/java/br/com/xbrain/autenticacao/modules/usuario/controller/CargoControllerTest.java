@@ -164,13 +164,6 @@ public class CargoControllerTest {
             .build()));
     }
 
-    private Cargo umCargo(Integer id, ECanal... canais) {
-        return Cargo.builder()
-            .id(id)
-            .canais(Set.of(canais))
-            .build();
-    }
-
     public Cargo umCargoNivelAdministrador(Integer id, String nome) {
         return Cargo.builder()
             .id(id)

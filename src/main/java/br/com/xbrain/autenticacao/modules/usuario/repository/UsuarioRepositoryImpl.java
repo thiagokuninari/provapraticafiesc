@@ -585,7 +585,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 cargo.nome,
                 departamento.nome,
                 usuario.situacao,
-            usuario.dataUltimoAcesso,
+                usuario.dataUltimoAcesso,
                 usuario.loginNetSales,
                 nivel.nome,
                 organizacao.nome)

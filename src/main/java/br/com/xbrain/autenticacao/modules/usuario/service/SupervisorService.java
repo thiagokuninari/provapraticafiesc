@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +38,7 @@ public class SupervisorService {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
 
         return Stream.concat(
-            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId, getCanalBySupervisorId(supervisorId))).stream(),
+            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
@@ -69,7 +70,7 @@ public class SupervisorService {
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
-                .getSubordinadosPorCargo(supervisorId, VENDEDOR_OPERACAO.name())
+                .getSubordinadosPorCargo(supervisorId, Set.of(VENDEDOR_OPERACAO.name()))
                 .stream()
                 .map(row -> new UsuarioResponse(
                         ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
@@ -83,7 +84,7 @@ public class SupervisorService {
             areaAtuacao,
             areasAtuacaoId,
             SUPERVISOR_OPERACAO,
-            D2D_PROPRIO);
+            Set.of(D2D_PROPRIO));
     }
 
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {

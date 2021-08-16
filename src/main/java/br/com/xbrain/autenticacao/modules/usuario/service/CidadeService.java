@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
-
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 
 @Service
@@ -128,7 +126,7 @@ public class CidadeService {
     }
 
     public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
-        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::parse).orElse(null);
+        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::of).orElse(null);
     }
 
     public Cidade findById(Integer id) {

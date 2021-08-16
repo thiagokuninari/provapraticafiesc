@@ -41,7 +41,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -1233,10 +1232,10 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
-                                                                           List<ECanal> canais) {
+                                                                           Set<ECanal> canais) {
         var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
-                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this)
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .comCanais(canais)

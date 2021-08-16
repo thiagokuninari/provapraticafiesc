@@ -73,22 +73,20 @@ public class FuncionalidadeServiceTest {
                 .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(42);
+                .hasSize(44);
     }
 
-    private Cargo umCargoMsoConsultor() {
-        return Cargo.builder()
-                .id(22)
-                .codigo(CodigoCargo.MSO_CONSULTOR)
-                .nivel(umNivelMso())
-                .build();
-    }
+    @Test
+    public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoVendedorOperacao() {
+        var usuario = Usuario.builder()
+            .id(100)
+            .cargo(umCargoVendedorOperacao())
+            .departamento(new Departamento(3))
+            .nome("RENATO")
+            .build();
 
-    private Nivel umNivelMso() {
-        return Nivel.builder()
-                .id(2)
-                .codigo(CodigoNivel.MSO)
-                .build();
+        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
+            .hasSize(11);
     }
 
     private Usuario umUsuarioSocio() {
@@ -107,19 +105,6 @@ public class FuncionalidadeServiceTest {
             .build();
     }
 
-    @Test
-    public void getFuncionalidadesPermitidasAoUsuario_dezenoveFuncionalidades_quandoUsuarioCargoMsoConsultor() {
-        var usuario = Usuario.builder()
-            .id(100)
-            .cargo(umCargoMsoConsultor())
-            .departamento(new Departamento(21))
-            .nome("RENATO")
-            .build();
-
-        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-            .hasSize(20);
-    }
-
     private Cargo umCargoMsoConsultor() {
         return Cargo.builder()
             .id(22)
@@ -133,19 +118,6 @@ public class FuncionalidadeServiceTest {
             .id(2)
             .codigo(CodigoNivel.MSO)
             .build();
-    }
-
-    @Test
-    public void getFuncionalidadesPermitidasAoUsuario_noveFuncionalidades_quandoUsuarioCargoVendedorOperacao() {
-        var usuario = Usuario.builder()
-            .id(100)
-            .cargo(umCargoVendedorOperacao())
-            .departamento(new Departamento(3))
-            .nome("RENATO")
-            .build();
-
-        assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-            .hasSize(9);
     }
 
     private Cargo umCargoVendedorOperacao() {

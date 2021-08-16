@@ -888,7 +888,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(47);
+        assertThat(usuarios).hasSize(54);
     }
 
     @Test

@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -286,7 +285,7 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCanais(List<ECanal> canais) {
+    public UsuarioPredicate comCanais(Set<ECanal> canais) {
         if (!isEmpty(canais)) {
             builder.and(usuario.canais.any().in(canais));
         }
@@ -295,13 +294,6 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate daHierarquia(List<Integer> ids) {
         builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
-        return this;
-    }
-
-    public UsuarioPredicate comCanais(Collection<ECanal> canais) {
-        if (!isEmpty(canais)) {
-            builder.and(usuario.canais.any().in(canais));
-        }
         return this;
     }
 

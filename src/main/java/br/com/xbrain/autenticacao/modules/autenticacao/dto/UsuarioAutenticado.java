@@ -212,7 +212,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     }
 
     public boolean isOperadorTelevendasAtivoLocal() {
-        return cargoCodigo.equals(CodigoCargo.OPERACAO_TELEVENDAS)
+        return cargoCodigo.equals(OPERACAO_TELEVENDAS)
                 && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 }

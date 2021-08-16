@@ -235,38 +235,38 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado
-                        .builder()
-                        .nivelCodigo(XBRAIN.name())
-                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                        .build());
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .nivelCodigo(XBRAIN.name())
+                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                .build());
 
         assertThat(service.getAllForCsv(getFiltroUsuario("USUARIO TESTE")))
-                .hasSize(1)
-                .extracting(
-                        "nome",
-                        "email",
-                        "empresas",
-                        "unidadesNegocios",
-                        "cargo",
-                        "departamento")
-                .containsExactly(tuple(
-                        "USUARIO TESTE",
-                        "USUARIO_TESTE@GMAIL.COM",
-                        "Xbrain.NET",
-                        "Pessoal.Xbrain",
-                        "Vendedor",
-                        "Administrador"));
+            .hasSize(1)
+            .extracting(
+                "nome",
+                "email",
+                "empresas",
+                "unidadesNegocios",
+                "cargo",
+                "departamento")
+            .containsExactly(tuple(
+                "USUARIO TESTE",
+                "USUARIO_TESTE@GMAIL.COM",
+                "Xbrain.NET",
+                "Pessoal.Xbrain",
+                "Vendedor",
+                "Administrador"));
     }
 
     @Test
     public void getPermissoesPorUsuarios_permissoesComUsuario_conformeParametroUsuarioIdAndPermissao() {
         UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
         request.setPermissoes(Arrays.asList(
-                "ROLE_VDS_TABULACAO_DISCADORA",
-                "ROLE_VDS_TABULACAO_CLICKTOCALL",
-                "ROLE_VDS_TABULACAO_PERSONALIZADA",
-                "ROLE_VDS_TABULACAO_MANUAL"));
+            "ROLE_VDS_TABULACAO_DISCADORA",
+            "ROLE_VDS_TABULACAO_CLICKTOCALL",
+            "ROLE_VDS_TABULACAO_PERSONALIZADA",
+            "ROLE_VDS_TABULACAO_MANUAL"));
         request.setUsuariosId(Arrays.asList(231, 238, 245, 243));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
@@ -276,7 +276,7 @@ public class UsuarioServiceTestOracle {
                 Arrays.asList(
                     new UsuarioPermissoesResponse(231, Collections.emptyList()),
                     new UsuarioPermissoesResponse(238, Collections.singletonList(
-                            "ROLE_VDS_TABULACAO_DISCADORA")),
+                        "ROLE_VDS_TABULACAO_DISCADORA")),
                     new UsuarioPermissoesResponse(243, Arrays.asList(
                         "ROLE_VDS_TABULACAO_CLICKTOCALL",
                         "ROLE_VDS_TABULACAO_DISCADORA",
