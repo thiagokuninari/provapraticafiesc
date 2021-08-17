@@ -73,7 +73,7 @@ public class FuncionalidadeServiceTest {
                 .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(42);
+                .hasSize(43);
     }
 
     private Cargo umCargoMsoConsultor() {
