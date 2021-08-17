@@ -52,7 +52,8 @@ public class UsuarioRepositoryTest {
             .extracting("id", "email")
             .containsExactlyInAnyOrder(
                 tuple(100, "ADMIN@XBRAIN.COM.BR"),
-                tuple(103, "CARLOS@HOTMAIL.COM"));
+                tuple(103, "CARLOS@HOTMAIL.COM"),
+                tuple(104, "MARIA@HOTMAIL.COM"));
     }
 
     @Test
