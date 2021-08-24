@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -11,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasSe
 import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAgendamentoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -21,10 +23,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +58,7 @@ public class UsuarioAgendamentoService {
     private final AgenteAutorizadoService agenteAutorizadoService;
     private final AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     private final EquipeVendasService equipeVendasService;
+    private final EquipeVendasUsuarioService equipeVendasUsuarioService;
     private final UsuarioService usuarioService;
     private final CargoService cargoService;
     private final UsuarioRepository usuarioRepository;
@@ -197,6 +197,17 @@ public class UsuarioAgendamentoService {
         return usuarios.stream()
                 .map(u -> new UsuarioAgendamentoResponse(u.getId(), u.getNome()))
                 .collect(Collectors.toList());
+    }
+
+    public List<UsuarioDistribuicaoResponse> getUsuariosParaDistribuicaoByEquipeVendaId(Integer equipeVendaId) {
+        return equipeVendasUsuarioService.getAll(getFiltros(equipeVendaId))
+            .stream()
+            .map(UsuarioDistribuicaoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> getFiltros(Integer equipeVendaId) {
+        return Map.of("ativo", true, "equipeVendaId", equipeVendaId);
     }
 
     private List<UsuarioAgendamentoResponse> getVendedoresSupervisionados(int supervisorId,

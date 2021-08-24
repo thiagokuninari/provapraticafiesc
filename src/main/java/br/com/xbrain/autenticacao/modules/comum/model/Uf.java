@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "UF")
@@ -31,5 +34,17 @@ public class Uf {
 
     public Uf(Integer id) {
         this.id = id;
+    }
+
+    public static Set<Uf> of(List<Integer> estadosIds) {
+        return estadosIds.stream()
+            .map(Uf::new)
+            .collect(Collectors.toSet());
+    }
+
+    public static Set<Integer> convertFrom(Set<Uf> estadosIds) {
+        return estadosIds.stream()
+            .map(Uf::getId)
+            .collect(Collectors.toSet());
     }
 }

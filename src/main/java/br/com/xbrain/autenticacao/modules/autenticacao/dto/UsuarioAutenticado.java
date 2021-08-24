@@ -12,9 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -53,7 +51,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private CodigoCargo cargoCodigo;
     private Integer organizacaoId;
     private String organizacaoCodigo;
-    private List<String> canais;
+    private Set<ECanal> canais;
+    private Integer siteId;
 
     public UsuarioAutenticado(OAuth2Request other) {
         super(other);
@@ -77,6 +76,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.canais = usuario.getCanais();
         getOrganizacao(usuario);
     }
 
@@ -100,6 +100,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.nivelCodigo = usuario.getNivelCodigo().toString();
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
+        this.canais = usuario.getCanais();
         getOrganizacao(usuario);
     }
 
@@ -122,8 +123,16 @@ public class UsuarioAutenticado extends OAuth2Request {
         return getNivelCodigoEnum() == CodigoNivel.OPERACAO;
     }
 
+    public boolean hasCanal(ECanal canal) {
+        return Objects.nonNull(this.canais) && this.canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
     public boolean isXbrain() {
         return XBRAIN == getNivelCodigoEnum();
+    }
+
+    public boolean isXbrainOuMso() {
+        return isXbrain() || isMso();
     }
 
     public boolean isMso() {
@@ -200,5 +209,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean haveCanalDoorToDoor() {
         return haveCanal(D2D_PROPRIO);
+    }
+
+    public boolean isOperadorTelevendasAtivoLocal() {
+        return cargoCodigo.equals(OPERACAO_TELEVENDAS)
+                && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 }

@@ -10,6 +10,8 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "CIDADE")
@@ -57,6 +59,9 @@ public class Cidade {
 
     @Column(name = "FK_CIDADE")
     private Integer fkCidade;
+
+    @Column(name = "CODIGO_CIDADE_DBM")
+    private Integer codigoCidadeDbm;
 
     public Cidade() {
     }
@@ -118,5 +123,17 @@ public class Cidade {
     @JsonIgnore
     public String getNomeUf() {
         return ObjectUtils.isEmpty(uf) ? null : uf.getNome();
+    }
+
+    public static Set<Cidade> of(List<Integer> cidades) {
+        return cidades.stream()
+                .map(Cidade::new)
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Integer> convertFrom(Set<Cidade> cidades) {
+        return cidades.stream()
+                .map(Cidade::getId)
+                .collect(Collectors.toSet());
     }
 }

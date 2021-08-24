@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.config;
 
+import br.com.xbrain.autenticacao.config.interceptor.AtivoLocalInterceptor;
 import br.com.xbrain.autenticacao.modules.logrequest.service.LogRequestInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -13,6 +15,8 @@ public class StaticResourceConfiguration {
 
     @Autowired
     private LogRequestInterceptor logRequestInterceptor;
+    @Autowired
+    private Environment env;
 
     @Bean
     public WebMvcConfigurerAdapter forwardToIndex() {
@@ -25,8 +29,16 @@ public class StaticResourceConfiguration {
             @Override
             public void addInterceptors(InterceptorRegistry registry) {
                 registry.addInterceptor(logRequestInterceptor);
+                if (env.acceptsProfiles("!test")) {
+                    registry.addInterceptor(ativoLocalInterceptor());
+                }
             }
         };
+    }
+
+    @Bean
+    public AtivoLocalInterceptor ativoLocalInterceptor() {
+        return new AtivoLocalInterceptor();
     }
 }
 

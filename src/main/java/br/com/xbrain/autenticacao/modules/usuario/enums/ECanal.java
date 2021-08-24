@@ -15,7 +15,6 @@ public enum ECanal {
     ATP("Atp", Boolean.FALSE),
     VAREJO( "Varejo", Boolean.TRUE);
 
-
     @Getter
     private String descricao;
     @Getter

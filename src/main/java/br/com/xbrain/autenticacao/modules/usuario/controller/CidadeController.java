@@ -1,27 +1,23 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "api/cidades")
 public class CidadeController {
 
     @Autowired
-    private CidadeRepository repository;
-    @Autowired
     private CidadeService service;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping()
     public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
         if (idUf != null) {
             return service.getAllCidadeByUf(idUf);
@@ -32,9 +28,14 @@ public class CidadeController {
         return Collections.emptyList();
     }
 
-    @RequestMapping(value = "uf-cidade/{uf}/{cidade}", method = RequestMethod.GET)
-    public CidadeResponse getByUfAndNome(@PathVariable("uf") String uf, @PathVariable("cidade") String cidade) {
-        return CidadeResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
+    @GetMapping("uf-cidade/{uf}/{cidade}")
+    public CidadeResponse getByUfAndNome(@PathVariable String uf, @PathVariable String cidade) {
+        return CidadeResponse.of(service.findByUfNomeAndCidadeNome(uf, cidade));
+    }
+
+    @GetMapping("{uf}/{cidade}/site")
+    public CidadeSiteResponse getCidadeSiteByUfAndNome(@PathVariable String uf, @PathVariable String cidade) {
+        return service.findCidadeComSiteByUfECidade(uf, cidade);
     }
 
     @GetMapping("recuperar-cidade/{uf}/{cidade}")
@@ -42,22 +43,22 @@ public class CidadeController {
         return CidadeSubClusterResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
-    @RequestMapping("regional/{regionalId}")
+    @GetMapping("regional/{regionalId}")
     public List<UsuarioCidadeDto> getByIdRegional(@PathVariable("regionalId") int regionalId) {
         return service.getAllByRegionalId(regionalId);
     }
 
-    @RequestMapping("grupo/{grupoId}")
+    @GetMapping("grupo/{grupoId}")
     public List<UsuarioCidadeDto> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
         return service.getAllByGrupoId(grupoId);
     }
 
-    @RequestMapping("cluster/{clusterId}")
+    @GetMapping("cluster/{clusterId}")
     public List<UsuarioCidadeDto> getByIdCluster(@PathVariable("clusterId") int clusterId) {
         return service.getAllByClusterId(clusterId);
     }
 
-    @RequestMapping("sub-cluster/{subclusterId}")
+    @GetMapping("sub-cluster/{subclusterId}")
     public List<UsuarioCidadeDto> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
         return service.getAllBySubClusterId(subclusterId);
     }
@@ -67,19 +68,19 @@ public class CidadeController {
         return service.getAtivosParaComunicados(subclusterId);
     }
 
-    @RequestMapping("sub-clusters")
+    @GetMapping("sub-clusters")
     public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
         return service.getAllBySubClustersId(subclustersId);
     }
 
-    @RequestMapping(value = "cidade/{cidadeId}")
+    @GetMapping("cidade/{cidadeId}")
     public UsuarioCidadeDto getById(@PathVariable("cidadeId") Integer id) {
-        return UsuarioCidadeDto.of(repository.findOne(id));
+        return UsuarioCidadeDto.of(service.findById(id));
     }
 
-    @RequestMapping(value = "{cidadeId}")
+    @GetMapping("{cidadeId}")
     public CidadeResponse getCidadeById(@PathVariable("cidadeId") Integer id) {
-        return CidadeResponse.parse(repository.findOne(id));
+        return CidadeResponse.of(service.findById(id));
     }
 
     @GetMapping("{id}/clusterizacao")
@@ -89,7 +90,17 @@ public class CidadeController {
 
     @GetMapping("net-uno")
     public List<CidadeResponse> getAllCidadeNetUno() {
-        return repository.findAllByNetUno(Eboolean.V).stream().map(CidadeResponse::parse).collect(Collectors.toList());
+        return service.getAllCidadeNetUno();
+    }
+
+    @GetMapping("por-estados")
+    public List<SelectResponse> buscarCidadesPorEstados(@RequestParam List<Integer> estadosIds) {
+        return service.buscarCidadesPorEstadosIds(estadosIds);
+    }
+
+    @GetMapping("cidade-dbm/{codigoCidadeDbm}")
+    public CidadeSiteResponse getCidadeByCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
+        return service.getCidadeByCodigoCidadeDbm(codigoCidadeDbm);
     }
 
     @GetMapping(params = "ufIds")

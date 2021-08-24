@@ -67,6 +67,7 @@ public class CargoServiceIT {
                 tuple(47, "Gerente - Agente Autorizado"),
                 tuple(7, "Gerente - Operação"),
                 tuple(82, "Gerente* - Agente Autorizado"),
+                tuple(120, "Operador Televendas - Operação"),
                 tuple(48, "Supervisor - Agente Autorizado"),
                 tuple(10, "Supervisor - Operação"),
                 tuple(81, "Supervisor* - Agente Autorizado"),

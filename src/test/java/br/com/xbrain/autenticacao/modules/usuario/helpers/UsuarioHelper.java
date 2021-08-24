@@ -26,4 +26,13 @@ public class UsuarioHelper {
                 .build())
             .build();
     }
+
+    public static Usuario doisUsuario(Integer id, String nome, ESituacao situacao) {
+        return Usuario
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
+    }
 }

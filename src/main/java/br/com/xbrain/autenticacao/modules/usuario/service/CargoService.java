@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
@@ -20,7 +21,9 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,16 +47,31 @@ public class CargoService {
     @Autowired
     private NivelRepository nivelRepository;
 
-    public List<Cargo> getPermitidosPorNivel(Integer nivelId) {
-        var predicate = new CargoPredicate().comNivel(nivelId);
-        filtrarPermitidos(predicate);
+    public List<Cargo> getPermitidosPorNivelECanaisPermitidos(Integer nivelId, Collection<ECanal> canais,
+                                                              boolean permiteEditarCompleto) {
+        return filtrarPorNivelOuCargoProprio(nivelId, permiteEditarCompleto).stream()
+            .filter(cargo -> ObjectUtils.isEmpty(canais) || canais.stream().anyMatch(cargo::hasPermissaoSobreOCanal))
+            .collect(Collectors.toList());
+    }
 
-        return repository.findAll(predicate.build());
+    public  List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
+        var predicate = new CargoPredicate().comNivel(nivelId);
+        return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
+    }
+
+    public List<Cargo> cargoProprio(CargoPredicate cargoPredicate, Integer nivelId) {
+        cargoPredicate.comId(getCargosPermitidosParaEditar());
+        cargoPredicate.comNivel(nivelId);
+        return repository.findAll(cargoPredicate.build());
+    }
+
+    public List<Cargo> getPermitidosPorNivel(CargoPredicate cargoPredicate) {
+        filtrarPermitidos(cargoPredicate);
+        return repository.findAll(cargoPredicate.build());
     }
 
     private void filtrarPermitidos(CargoPredicate predicate) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
         if (!
             usuarioAutenticado.hasPermissao(CodigoFuncionalidade.AUT_VISUALIZAR_GERAL)) {
             predicate.comId(cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId()));
@@ -133,5 +151,13 @@ public class CargoService {
         cargoToUpdate.setSituacao(cargoRequest.getSituacao());
 
         return repository.save(cargoToUpdate);
+    }
+
+    private List<Integer> getCargosPermitidosParaEditar() {
+        var cargoProprioId = autenticacaoService.getUsuarioAutenticado().getCargoId();
+        var cargosPermitidos = cargoSuperiorRepository.getCargosHierarquia(cargoProprioId);
+        cargosPermitidos.add(cargoProprioId);
+
+        return cargosPermitidos;
     }
 }
