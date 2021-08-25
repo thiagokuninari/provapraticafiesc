@@ -146,6 +146,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCargo(CodigoCargo cargo) {
+        if (!isEmpty(cargo)) {
+            builder.and(usuario.cargo.codigo.eq(cargo));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comCargos(Set<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));

@@ -62,6 +62,7 @@ import org.springframework.util.NumberUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
@@ -380,8 +381,11 @@ public class UsuarioService {
         return repository.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(usuarioId);
     }
 
-    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
-        return repository.findAllExecutivosOperacaoDepartamentoComercial();
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(@Nullable CodigoCargo cargo) {
+        var predicate = new UsuarioPredicate()
+            .comCargo(cargo)
+            .build();
+        return repository.findAllExecutivosOperacaoDepartamentoComercial(predicate);
     }
 
     public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {
