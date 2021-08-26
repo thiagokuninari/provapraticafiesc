@@ -955,6 +955,15 @@ public class UsuarioControllerTest {
         verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
     }
 
+    @Test
+    @SneakyThrows
+    public void getAllVendedoresReceptivos_deveRetornarIsOk_quandoValido() {
+        mvc.perform(get("/api/usuarios/vendedores-receptivos")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()

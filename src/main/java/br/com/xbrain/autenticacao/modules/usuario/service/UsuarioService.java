@@ -1991,4 +1991,8 @@ public class UsuarioService {
         var usuarios = repository.findAll(filtro.toPredicate().build());
         return StreamSupport.stream(usuarios.spliterator(), false).map(UsuarioResponse::of).collect(Collectors.toList());
     }
+
+    public List<SelectResponse> buscarTodosVendedoresReceptivos() {
+        return repository.findAllVendoresReceptivos();
+    }
 }

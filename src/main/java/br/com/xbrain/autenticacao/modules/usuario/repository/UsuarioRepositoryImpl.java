@@ -184,6 +184,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<SelectResponse> findAllVendoresReceptivos() {
+        return new JPAQueryFactory(entityManager)
+            .select(
+                Projections.constructor(SelectResponse.class, usuario.id, usuario.nome)
+            )
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(VENDEDOR_RECEPTIVO))
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS ID"
                 + "     , U.NOME "

@@ -1190,6 +1190,15 @@ public class UsuarioServiceTest {
 
     }
 
+    @Test
+    public void buscarTodosVendedoresReceptivos_deveRetornarVendedoresReceptivoComoSelectResponse_quandoValido() {
+        when(repository.findAllVendoresReceptivos())
+            .thenReturn(List.of(SelectResponse.builder().label("VR1").value(1).build()));
+
+        service.buscarTodosVendedoresReceptivos();
+        verify(repository, times(1)).findAllVendoresReceptivos();
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()

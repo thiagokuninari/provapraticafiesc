@@ -125,4 +125,6 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
+
+    List<SelectResponse> findAllVendoresReceptivos();
 }

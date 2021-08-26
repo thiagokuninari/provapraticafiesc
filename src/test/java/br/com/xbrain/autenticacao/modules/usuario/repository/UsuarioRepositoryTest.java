@@ -168,4 +168,14 @@ public class UsuarioRepositoryTest {
                 tuple(400, "USUARIO 400", A)
             );
     }
+
+    @Test
+    public void findAllVendoresReceptivos_deveRetornarTodosVendedoresReceptivos_seHouver() {
+        assertThat(repository.findAllVendoresReceptivos())
+            .extracting("value", "label")
+            .containsExactlyInAnyOrder(
+                tuple(121, "VR 1"),
+                tuple(122, "VR 2")
+            );
+    }
 }

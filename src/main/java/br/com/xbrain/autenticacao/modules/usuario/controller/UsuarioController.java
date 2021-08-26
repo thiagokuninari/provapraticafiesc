@@ -448,4 +448,9 @@ public class UsuarioController {
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(@RequestBody @Validated UsuarioSituacaoFiltro filtro) {
         return usuarioService.buscarUsuarioSituacaoPorIds(filtro);
     }
+
+    @GetMapping("vendedores-receptivos")
+    public List<SelectResponse> getAllVendedoresReceptivos() {
+        return usuarioService.buscarTodosVendedoresReceptivos();
+    }
 }
