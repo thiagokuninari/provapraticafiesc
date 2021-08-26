@@ -957,7 +957,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void getAllVendedoresReceptivos_deveRetornarIsOk_quandoValido() {
+    public void getAllVendedoresReceptivos_deveRetornarStatusOk_quandoValido() {
         mvc.perform(get("/api/usuarios/vendedores-receptivos")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())

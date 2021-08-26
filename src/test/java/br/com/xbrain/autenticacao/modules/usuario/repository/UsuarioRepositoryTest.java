@@ -170,8 +170,8 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findAllVendoresReceptivos_deveRetornarTodosVendedoresReceptivos_seHouver() {
-        assertThat(repository.findAllVendoresReceptivos())
+    public void findAllVendedoresReceptivos_deveRetornarTodosVendedoresReceptivos_seHouver() {
+        assertThat(repository.findAllVendedoresReceptivos())
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
                 tuple(121, "VR 1"),

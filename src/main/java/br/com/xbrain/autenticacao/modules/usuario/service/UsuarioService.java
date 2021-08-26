@@ -1993,6 +1993,6 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> buscarTodosVendedoresReceptivos() {
-        return repository.findAllVendoresReceptivos();
+        return repository.findAllVendedoresReceptivos();
     }
 }
