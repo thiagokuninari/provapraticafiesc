@@ -961,7 +961,11 @@ public class UsuarioControllerTest {
         mvc.perform(get("/api/usuarios/vendedores-receptivos")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)));
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].label", is("VR 1")))
+            .andExpect(jsonPath("$[0].value", is(301)))
+            .andExpect(jsonPath("$[1].label", is("VR 2")))
+            .andExpect(jsonPath("$[1].value", is(302)));
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
