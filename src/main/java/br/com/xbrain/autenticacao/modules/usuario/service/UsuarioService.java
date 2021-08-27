@@ -2004,9 +2004,9 @@ public class UsuarioService {
     }
 
     private static String verificarSituacao(String nome, ESituacao situacao) {
-        return ESituacao.I.equals(situacao)
+        return ESituacao.I == situacao
             ? nome.concat(" (INATIVO)")
-            : ESituacao.R.equals(situacao)
+            : ESituacao.R == situacao
             ? nome.concat(" (REALOCADO)")
             : nome;
     }
