@@ -1993,6 +1993,21 @@ public class UsuarioService {
     }
 
     public List<SelectResponse> buscarTodosVendedoresReceptivos() {
-        return repository.findAllVendedoresReceptivos();
+        return repository.findAllVendedoresReceptivos().stream()
+            .map(usuario -> {
+                usuario.setNome(verificarSituacao(usuario.getNome(), usuario.getSituacao()));
+                return SelectResponse.builder()
+                    .label(usuario.getNome())
+                    .value(usuario.getId())
+                    .build();
+            }).collect(Collectors.toList());
+    }
+
+    private static String verificarSituacao(String nome, ESituacao situacao) {
+        return ESituacao.I.equals(situacao)
+            ? nome.concat(" (INATIVO)")
+            : ESituacao.R.equals(situacao)
+            ? nome.concat(" (REALOCADO)")
+            : nome;
     }
 }

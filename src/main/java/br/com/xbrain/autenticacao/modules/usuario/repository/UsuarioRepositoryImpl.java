@@ -184,11 +184,9 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<SelectResponse> findAllVendedoresReceptivos() {
+    public List<Usuario> findAllVendedoresReceptivos() {
         return new JPAQueryFactory(entityManager)
-            .select(
-                Projections.constructor(SelectResponse.class, usuario.id, usuario.nome)
-            )
+            .select(usuario)
             .from(usuario)
             .innerJoin(usuario.cargo, cargo)
             .where(cargo.codigo.eq(VENDEDOR_RECEPTIVO))

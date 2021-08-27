@@ -1193,10 +1193,42 @@ public class UsuarioServiceTest {
     @Test
     public void buscarTodosVendedoresReceptivos_deveRetornarVendedoresReceptivoComoSelectResponse_quandoValido() {
         when(repository.findAllVendedoresReceptivos())
-            .thenReturn(List.of(SelectResponse.builder().label("VR1").value(1).build()));
+            .thenReturn(List.of(umVendedorReceptivo()));
 
-        service.buscarTodosVendedoresReceptivos();
+        var vendedores = service.buscarTodosVendedoresReceptivos();
         verify(repository, times(1)).findAllVendedoresReceptivos();
+        assertThat(vendedores.stream().allMatch(this::isSelectResponse)).isTrue();
+    }
+
+    @Test
+    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComInativo_quandoTerUsuairoInativo() {
+        var vendedorReceptivoInativo = umVendedorReceptivo();
+        vendedorReceptivoInativo.setSituacao(ESituacao.I);
+        when(repository.findAllVendedoresReceptivos())
+            .thenReturn(List.of(vendedorReceptivoInativo));
+
+        var vendedores = service.buscarTodosVendedoresReceptivos();
+        verify(repository, times(1)).findAllVendedoresReceptivos();
+        assertThat(vendedores.stream().allMatch(this::isSelectResponse)).isTrue();
+        assertThat(vendedores).contains(umSelectResponseDeVendedorReceptivoInativo());
+    }
+
+    @Test
+    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComRealocado_quandoTerUsuairoRealocado() {
+        var vendededorReceptivoRealocado = umVendedorReceptivo();
+        vendededorReceptivoRealocado.setSituacao(ESituacao.R);
+
+        when(repository.findAllVendedoresReceptivos())
+            .thenReturn(List.of(vendededorReceptivoRealocado));
+
+        var vendedores = service.buscarTodosVendedoresReceptivos();
+        verify(repository, times(1)).findAllVendedoresReceptivos();
+        assertThat(vendedores.stream().allMatch(this::isSelectResponse)).isTrue();
+        assertThat(vendedores).contains(umSelectResponseDeVendedorReceptivoRealocado());
+    }
+
+    private boolean isSelectResponse(Object obj) {
+        return obj instanceof SelectResponse;
     }
 
     private Canal umCanal() {
@@ -1303,6 +1335,36 @@ public class UsuarioServiceTest {
                 .builder()
                 .nome("EMPRESA UM")
                 .build()))
+            .build();
+    }
+
+    private Usuario umVendedorReceptivo() {
+        var usuario = umUsuarioCompleto();
+        var cargo = Cargo.builder()
+            .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
+            .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
+            .build();
+        var organizacao = Organizacao.builder().id(1).nome("Org teste").build();
+        usuario.setCargo(cargo);
+        usuario.setOrganizacao(organizacao);
+        return usuario;
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoInativo() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (INATIVO)"))
+            .value(vendedorReceptivo.getId())
+            .build();
+    }
+
+    private SelectResponse umSelectResponseDeVendedorReceptivoRealocado() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        return SelectResponse
+            .builder()
+            .label(vendedorReceptivo.getNome().concat(" (REALOCADO)"))
+            .value(vendedorReceptivo.getId())
             .build();
     }
 }
