@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
@@ -28,10 +29,12 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umaListaLoginLogoutResponse;
 import static helpers.MatchersHelper.anyOrNull;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -65,6 +68,23 @@ public class RelatorioLoginLogoutServiceTest {
 
         assertThatExceptionOfType(PermissaoException.class)
             .isThrownBy(() -> service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO, 101));
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveRetornarListaVazia_quandoNaoEncontrarLoginsLogouts() {
+        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutRequest())))
+            .thenReturn(Collections.emptyList());
+
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutRequest())).isEmpty();
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveRetornarListaPreenchida_quandoEncontrarLoginsLogouts() {
+        when(notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(eq(new RelatorioLoginLogoutRequest())))
+            .thenReturn(umaListaLoginLogoutResponse());
+
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(new RelatorioLoginLogoutRequest()))
+            .isEqualTo(umaListaLoginLogoutResponse());
     }
 
     @Test

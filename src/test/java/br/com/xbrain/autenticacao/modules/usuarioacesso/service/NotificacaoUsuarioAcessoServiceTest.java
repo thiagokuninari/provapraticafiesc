@@ -2,11 +2,16 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.MongoosePage;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.client.NotificacaoUsuarioAcessoClient;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.GetLoginLogoutHojeRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.PaLogadoDto;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.UsuarioLogadoRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
+import feign.RetryableException;
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +23,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static br.com.xbrain.autenticacao.modules.usuarioacesso.helper.LoginLogoutHelper.umaListaLoginLogoutResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -79,6 +84,56 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).getLoginsLogoutsDeHoje(getLoginLogoutHojeRequestArgCaptor.capture());
 
         assertThat(getLoginLogoutHojeRequestArgCaptor.getValue().getUsuariosIds()).containsExactly(2002);
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveLancarIntegracaoException_quandoApiNaoAcessivel() {
+        var request =  RelatorioLoginLogoutRequest.builder()
+            .usuariosIds(List.of(1, 2, 3))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(request)))
+            .thenThrow(new RetryableException("Connection refused", new Date()));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(request))
+            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveLancarIntegracaoException_quandoClientRetornarErro() {
+        var request =  RelatorioLoginLogoutRequest.builder()
+            .usuariosIds(List.of(1, 2, 3))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(request)))
+            .thenThrow(new HystrixBadRequestException("Erro"));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.buscarAcessosEntreDatasPorUsuarios(request))
+            .withMessage("#036 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+    }
+
+    @Test
+    public void buscarAcessosEntreDatasPorUsuarios_deveRetornarLista_seHouveremDados() {
+        var request =  RelatorioLoginLogoutRequest.builder()
+            .usuariosIds(IntStream.rangeClosed(1, 315).boxed().collect(Collectors.toList()))
+            .dataInicial(LocalDate.of(2021, 8, 5))
+            .dataFinal(LocalDate.of(2021, 8, 5))
+            .build();
+
+        when(client.getLoginsLogoutsEntreDatas(eq(request)))
+            .thenReturn(umaListaLoginLogoutResponse());
+
+        assertThat(service.buscarAcessosEntreDatasPorUsuarios(request))
+            .isEqualTo(umaListaLoginLogoutResponse());
+
+        verify(client, times(1))
+            .getLoginsLogoutsEntreDatas(eq(request));
     }
 
     @Test

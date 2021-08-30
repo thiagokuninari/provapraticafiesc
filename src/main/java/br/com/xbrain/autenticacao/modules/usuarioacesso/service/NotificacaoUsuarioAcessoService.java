@@ -47,6 +47,17 @@ public class NotificacaoUsuarioAcessoService {
         }
     }
 
+    public List<LoginLogoutResponse> buscarAcessosEntreDatasPorUsuarios(RelatorioLoginLogoutRequest request) {
+        try {
+            return client.getLoginsLogoutsEntreDatas(request);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            log.error("Erro ao consultar os Logins / Logouts entre datas.", ex);
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                EErrors.ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_ENTRE_DATAS);
+        }
+    }
+
     public List<LoginLogoutCsv> getCsv(
         RelatorioLoginLogoutCsvFiltro filtro,
         Optional<? extends Collection<Integer>> usuariosIdsPermitidos) {
