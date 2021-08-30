@@ -105,7 +105,7 @@ public class FeriadoControllerTest {
                     .andReturn()
             )
             .withMessage("Handler dispatch failed; "
-                + "nested exception is java.lang.NoClassDefFoundError: com.sun.activation.registries.LogSupport");
+                + "nested exception is java.lang.NoClassDefFoundError: com/sun/activation/registries/LogSupport");
     }
 
     @Test

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -13,6 +14,9 @@ import java.time.LocalTime;
 @Builder
 public class LoginLogoutResponse {
 
+    private Integer usuarioId;
+    private LocalDateTime dataLogin;
+    private LocalDateTime dataLogout;
     private String usuarioNome;
     private LocalTime horarioLogin;
     private LocalTime horarioLogout;

@@ -35,7 +35,8 @@ public enum CodigoFuncionalidade {
     REL_10014("Relatório Consulta de Crédito"),
     FDR_GERENCIAR_LEAD("Gerenciar Lead"),
     MLG_5018("Gerenciar Distribuição Mailing Segmentação"),
-    CTR_2044("Visualizar todos os Sites");
+    CTR_2044("Visualizar todos os Sites"),
+    INT_7007("Resgatar tratativas para motiva");
 
     @Getter
     private String descricao;
