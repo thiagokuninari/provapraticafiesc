@@ -2003,6 +2003,15 @@ public class UsuarioService {
             }).collect(Collectors.toList());
     }
 
+    public List<UsuarioVendedorReceptivoResponse> buscarVendedoresReceptivosPorId(List<Integer> ids) {
+        return repository.findAllVendedoresReceptivosByIds(ids).stream()
+            .map(usuario -> {
+                usuario.setNome(verificarSituacao(usuario.getNome(), usuario.getSituacao()));
+                return UsuarioVendedorReceptivoResponse.of(usuario);
+            })
+            .collect(Collectors.toList());
+    }
+
     private static String verificarSituacao(String nome, ESituacao situacao) {
         return ESituacao.I == situacao
             ? nome.concat(" (INATIVO)")

@@ -127,4 +127,6 @@ public interface UsuarioRepositoryCustom {
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
 
     List<Usuario> findAllVendedoresReceptivos();
+
+    List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 }

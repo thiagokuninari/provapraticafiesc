@@ -1201,7 +1201,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComInativo_quandoTerUsuairoInativo() {
+    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComInativo_quandoTerUsuarioInativo() {
         var vendedorReceptivoInativo = umVendedorReceptivo();
         vendedorReceptivoInativo.setSituacao(ESituacao.I);
         when(repository.findAllVendedoresReceptivos())
@@ -1214,7 +1214,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComRealocado_quandoTerUsuairoRealocado() {
+    public void buscarTodosVendedoresReceptivos_retornarVendedorReceptivoNomeComRealocado_quandoTerUsuarioRealocado() {
         var vendededorReceptivoRealocado = umVendedorReceptivo();
         vendededorReceptivoRealocado.setSituacao(ESituacao.R);
 
@@ -1229,6 +1229,52 @@ public class UsuarioServiceTest {
 
     private boolean isSelectResponse(Object obj) {
         return obj instanceof SelectResponse;
+    }
+
+    @Test
+    public void buscarVendedoresReceptivosPorId_deverRetornarUsuarioVendedorReceptivoResponse_quandoValido() {
+        when(repository.findAllVendedoresReceptivosByIds(anyList())).thenReturn(List.of(umVendedorReceptivo()));
+        var vendedores = service.buscarVendedoresReceptivosPorId(List.of(1));
+        assertThat(vendedores).extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
+            .containsExactly(
+                tuple(
+                    umVendedorReceptivo().getNome(),
+                    umVendedorReceptivo().getEmail(),
+                    umVendedorReceptivo().getLoginNetSales(),
+                    umVendedorReceptivo().getNivelNome(),
+                    umVendedorReceptivo().getOrganizacao().getNome()));
+    }
+
+    @Test
+    public void buscarVendedoresReceptivosPorId_deverRetornarUsuarioVendedorReceptivo_quandoTiverVendedorInativo() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        vendedorReceptivo.setSituacao(ESituacao.I);
+        when(repository.findAllVendedoresReceptivosByIds(anyList())).thenReturn(List.of((vendedorReceptivo)));
+        var vendedores = service.buscarVendedoresReceptivosPorId(List.of(1));
+        assertThat(vendedores).extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
+            .containsExactly(
+                tuple(
+                    umVendedorReceptivo().getNome() + " (INATIVO)",
+                    umVendedorReceptivo().getEmail(),
+                    umVendedorReceptivo().getLoginNetSales(),
+                    umVendedorReceptivo().getNivelNome(),
+                    umVendedorReceptivo().getOrganizacao().getNome()));
+    }
+
+    @Test
+    public void buscarVendedoresReceptivosPorId_deverRetornarUsuarioVendedorReceptivo_quandoTiverVendedorRealocado() {
+        var vendedorReceptivo = umVendedorReceptivo();
+        vendedorReceptivo.setSituacao(ESituacao.R);
+        when(repository.findAllVendedoresReceptivosByIds(anyList())).thenReturn(List.of((vendedorReceptivo)));
+        var vendedores = service.buscarVendedoresReceptivosPorId(List.of(1));
+        assertThat(vendedores).extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
+            .containsExactly(
+                tuple(
+                    umVendedorReceptivo().getNome() + " (REALOCADO)",
+                    umVendedorReceptivo().getEmail(),
+                    umVendedorReceptivo().getLoginNetSales(),
+                    umVendedorReceptivo().getNivelNome(),
+                    umVendedorReceptivo().getOrganizacao().getNome()));
     }
 
     private Canal umCanal() {

@@ -175,7 +175,18 @@ public class UsuarioRepositoryTest {
             .extracting("id", "nome")
             .containsExactlyInAnyOrder(
                 tuple(121, "VR 1"),
-                tuple(122, "VR 2")
+                tuple(122, "VR 2"),
+                tuple(123, "VR 3")
+            );
+    }
+
+    @Test
+    public void findAllVendoresReceptivosByIds_deveRetornarVendedoresReceptivos_quandoTerIdPassado() {
+        assertThat(repository.findAllVendedoresReceptivosByIds(List.of(121, 123)))
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(121, "VR 1"),
+                tuple(123, "VR 3")
             );
     }
 }

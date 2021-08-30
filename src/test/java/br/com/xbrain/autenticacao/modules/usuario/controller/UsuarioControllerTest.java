@@ -958,14 +958,30 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void getAllVendedoresReceptivos_deveRetornarStatusOk_quandoValido() {
-        mvc.perform(get("/api/usuarios/vendedores-receptivos")
+        mvc.perform(get(USUARIOS_ENDPOINT + "/vendedores-receptivos")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$", hasSize(3)))
             .andExpect(jsonPath("$[0].label", is("VR 1")))
             .andExpect(jsonPath("$[0].value", is(420)))
             .andExpect(jsonPath("$[1].label", is("VR 2 (REALOCADO)")))
-            .andExpect(jsonPath("$[1].value", is(421)));
+            .andExpect(jsonPath("$[1].value", is(421)))
+            .andExpect(jsonPath("$[2].label", is("VR 3")))
+            .andExpect(jsonPath("$[2].value", is(422)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllVendedoresReceptivosById_deveRetornarStatusOk_quandoValido() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/vendedores-receptivos/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("ids", "421,422"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(421)))
+            .andExpect(jsonPath("$[0].nome", is("VR 2 (REALOCADO)")))
+            .andExpect(jsonPath("$[1].id", is(422)))
+            .andExpect(jsonPath("$[1].nome", is("VR 3")));
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
