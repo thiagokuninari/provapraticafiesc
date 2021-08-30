@@ -142,7 +142,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(9)))
+                .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
                 .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
                 .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
