@@ -565,5 +565,4 @@ public class Usuario {
     public boolean isCoordenadorOuSupervisorOperacao() {
         return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
     }
-
 }

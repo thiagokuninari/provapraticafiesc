@@ -103,6 +103,8 @@ public class UsuarioService {
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
+    private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE  =
+        "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final List<CodigoCargo> cargosOperadoresBackoffice
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
@@ -427,6 +429,7 @@ public class UsuarioService {
     public UsuarioDto save(Usuario usuario) {
         try {
             validar(usuario);
+            validarEdicao(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
@@ -443,6 +446,43 @@ public class UsuarioService {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
         }
+    }
+
+    private void validarEdicao(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            repository.findById(usuario.getId())
+                .ifPresent(usuarioOriginal -> validarVinculoComSite(usuarioOriginal, usuario));
+        }
+    }
+
+    private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {
+        var sitesVinculados = siteService.buscarSitesPorCoordenadorOuSupervisor(usuarioOriginal.getId());
+
+        if (!isEmpty(sitesVinculados)) {
+            validarRemocaoCanalAtivoLocal(usuarioOriginal, usuarioAlterado, sitesVinculados);
+            validarAlteracaoDeCargo(usuarioOriginal, usuarioAlterado, sitesVinculados);
+        }
+    }
+
+    private void validarRemocaoCanalAtivoLocal(Usuario usuarioOriginal, Usuario usuarioAlterado, List<Site> sites) {
+        if (usuarioOriginal.isCoordenadorOuSupervisorOperacao()
+            && usuarioOriginal.isCanalAtivoLocalRemovido(usuarioAlterado.getCanais())) {
+            throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL, obterSitesNome(sites)));
+        }
+    }
+
+    private void validarAlteracaoDeCargo(Usuario usuarioOriginal, Usuario usuarioAlterado, List<Site> sites) {
+        if (usuarioOriginal.isCoordenadorOuSupervisorOperacao()
+            && usuarioOriginal.getCargoCodigo() != usuarioAlterado.getCargoCodigo()) {
+            throw new ValidacaoException(String.format(MSG_ERRO_AO_ALTERAR_CARGO_SITE, obterSitesNome(sites)));
+        }
+    }
+
+    public String obterSitesNome(List<Site> sites) {
+        return sites
+            .stream()
+            .map(Site::getNome)
+            .collect(Collectors.joining(", "));
     }
 
     public Usuario salvarUsuarioBackoffice(Usuario usuario) {
@@ -677,37 +717,9 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
-        validarRemocaoDeCanais(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
-    }
-
-    private void validarRemocaoDeCanais(Usuario usuario) {
-        if (!usuario.isNovoCadastro()) {
-            repository.findById(usuario.getId())
-                .ifPresent(usuarioAntigo -> validarRemocaoCanalAtivoLocal(usuarioAntigo, usuario));
-        }
-    }
-
-    private void validarRemocaoCanalAtivoLocal(Usuario usuarioAntigo, Usuario usuarioAlterado) {
-        if (usuarioAntigo.isCoordenadorOuSupervisorOperacao()
-            && usuarioAntigo.isCanalAtivoLocalRemovido(usuarioAlterado.getCanais())) {
-
-            var sites = siteService.buscarSitesPorCoordenadorOuSupervisor(usuarioAntigo.getId());
-            if (!isEmpty(sites)) {
-                throw new ValidacaoException(
-                    String.format(MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL, obterNomesSites(sites))
-                );
-            }
-        }
-    }
-
-    private String obterNomesSites(List<Site> sites) {
-        return sites
-            .stream()
-            .map(Site::getNome)
-            .collect(Collectors.joining(", "));
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {

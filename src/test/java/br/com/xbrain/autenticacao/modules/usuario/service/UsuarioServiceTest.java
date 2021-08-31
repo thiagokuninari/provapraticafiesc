@@ -1255,7 +1255,7 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_deveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoCanalAtivoProprioRemovidoEPossuirSitesVinculados() {
+    public void save_deveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosEUsuarioOriginalForCoordenadorOuSupervisorOperacaoECanalAtivoProprioRemovido() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
         when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
@@ -1269,75 +1269,65 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_deveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoCanalAtivoProprioRemovidoEPossuirSitesVinculados() {
+    public void save_deveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosECargoCoordenadorOuSupervisorOperacaoDoUsuarioOriginalAlterado() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
         when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of())))
-            .withMessage("Não é possível remover o canal Ativo Local,"
-                + " pois o usuário possui vínculo com o(s) Site(s): SITE UM, SITE DOIS.");
+            .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
+            .withMessage("Não é possível alterar o cargo, "
+                + "pois o usuário possui vínculo com o(s) Site(s): SITE UM, SITE DOIS.");
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoNaoForCoordenadorOuSupervisorOperacao() {
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioOriginalNaoPossuirSitesVinculados() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of());
 
         assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of())))
             .doesNotThrowAnyException();
-
-        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
-
     }
 
     @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoECanalAtivoProprioNaoRemovido() {
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosENaoForCoordenadorOuSupervisorOperacao() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        assertThatCode(() -> usuarioService
+                .save(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of(ECanal.ATIVO_PROPRIO))))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosEForCoordenadorOuSupervisorOperacaoECanalAtivoLocalMantido() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
 
         assertThatCode(() -> usuarioService
                 .save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
             .doesNotThrowAnyException();
-
-        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
-    }
-
-    @Test
-    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoECanalAtivoProprioNaoRemovido() {
-        when(usuarioRepository.findById(eq(1)))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
-
-        assertThatCode(() -> usuarioService
-                .save(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
-            .doesNotThrowAnyException();
-
-        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoCanalAtivoProprioRemovidoENaoPossuirSitesVinculados() {
+    public void save_naoDeveDispararValidacaoException_seUsuarioOriginalPossuirSitesVinculadosEForCoordenadorOuSupervisorOperacaoECanalAtivoLocalECargoMantido() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
         when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
-            .thenReturn(List.of());
+            .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
 
-        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.D2D_PROPRIO))))
-            .doesNotThrowAnyException();
-    }
-
-    @Test
-    @SuppressWarnings("LineLength")
-    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoCanalAtivoProprioRemovidoENaoPossuirSitesVinculados() {
-        when(usuarioRepository.findById(eq(1)))
-            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
-        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
-            .thenReturn(List.of());
-
-        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.D2D_PROPRIO))))
+        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
             .doesNotThrowAnyException();
     }
 
