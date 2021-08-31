@@ -548,4 +548,22 @@ public class Usuario {
     public boolean isMso() {
         return MSO == getNivelCodigo();
     }
+
+    @JsonIgnore
+    public boolean isCanalAtivoLocalRemovido(Set<ECanal> canaisNovos) {
+        return Optional.ofNullable(canais)
+            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
+            .map(canaisOptional ->
+                canaisOptional.contains(ECanal.ATIVO_PROPRIO)
+                    && !ObjectUtils.isEmpty(canaisOptional)
+                    && !canaisNovos.contains(ECanal.ATIVO_PROPRIO)
+            )
+            .orElse(false);
+    }
+
+    @JsonIgnore
+    public boolean isCoordenadorOuSupervisorOperacao() {
+        return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
+    }
+
 }

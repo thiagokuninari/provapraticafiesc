@@ -21,10 +21,12 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
@@ -57,6 +59,7 @@ import java.util.stream.Stream;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
@@ -102,6 +105,8 @@ public class UsuarioServiceTest {
     private AgenteAutorizadoService agenteAutorizadoService;
     @Mock
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @Mock
+    private SiteService siteService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1246,6 +1251,94 @@ public class UsuarioServiceTest {
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
 
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoCanalAtivoProprioRemovidoEPossuirSitesVinculados() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of())))
+            .withMessage("Não é possível remover o canal Ativo Local, "
+                + "pois o usuário possui vínculo com o(s) Site(s): SITE UM, SITE DOIS.");
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_deveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoCanalAtivoProprioRemovidoEPossuirSitesVinculados() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of())))
+            .withMessage("Não é possível remover o canal Ativo Local,"
+                + " pois o usuário possui vínculo com o(s) Site(s): SITE UM, SITE DOIS.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoNaoForCoordenadorOuSupervisorOperacao() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of(ECanal.ATIVO_PROPRIO))));
+
+        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.OPERACAO_TELEVENDAS, Set.of())))
+            .doesNotThrowAnyException();
+
+        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
+
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoECanalAtivoProprioNaoRemovido() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+
+        assertThatCode(() -> usuarioService
+                .save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
+            .doesNotThrowAnyException();
+
+        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoECanalAtivoProprioNaoRemovido() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+
+        assertThatCode(() -> usuarioService
+                .save(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))))
+            .doesNotThrowAnyException();
+
+        verify(siteService, never()).buscarSitesPorCoordenadorOuSupervisor(any());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForCoordenadorOperacaoCanalAtivoProprioRemovidoENaoPossuirSitesVinculados() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.COORDENADOR_OPERACAO, Set.of(ECanal.D2D_PROPRIO))))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioAntigoForSupervisorOperacaoCanalAtivoProprioRemovidoENaoPossuirSitesVinculados() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.ATIVO_PROPRIO))));
+        when(siteService.buscarSitesPorCoordenadorOuSupervisor(eq(1)))
+            .thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, CodigoCargo.SUPERVISOR_OPERACAO, Set.of(ECanal.D2D_PROPRIO))))
+            .doesNotThrowAnyException();
     }
 
     private Canal umCanal() {

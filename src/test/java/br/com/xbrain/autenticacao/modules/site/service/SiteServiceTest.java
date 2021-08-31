@@ -566,6 +566,17 @@ public class SiteServiceTest {
             .containsExactly(1, "SITE 1", 1, "LONDRINA", 1, "PR");
     }
 
+    @Test
+    public void buscarSitesPorCoordenadorOuSupervisor_deveChamarRepository_seSolicitado() {
+        var predicate = new SitePredicate()
+            .comCoordenadoresOuSupervisor(1)
+            .build();
+
+        service.buscarSitesPorCoordenadorOuSupervisor(1);
+
+        verify(siteRepository, times(1)).findAll(eq(predicate));
+    }
+
     private Predicate umSitePredicate() {
         return new SitePredicate()
             .comSituacao(ESituacao.A)

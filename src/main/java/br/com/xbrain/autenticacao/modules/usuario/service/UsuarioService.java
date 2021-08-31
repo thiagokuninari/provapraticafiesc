@@ -39,6 +39,8 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -99,6 +101,8 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
+        "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final List<CodigoCargo> cargosOperadoresBackoffice
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
@@ -186,6 +190,8 @@ public class UsuarioService {
     private FeederService feederService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
+    @Autowired
+    private SiteService siteService;
 
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
@@ -671,9 +677,37 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
+        validarRemocaoDeCanais(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
+    }
+
+    private void validarRemocaoDeCanais(Usuario usuario) {
+        if (!usuario.isNovoCadastro()) {
+            repository.findById(usuario.getId())
+                .ifPresent(usuarioAntigo -> validarRemocaoCanalAtivoLocal(usuarioAntigo, usuario));
+        }
+    }
+
+    private void validarRemocaoCanalAtivoLocal(Usuario usuarioAntigo, Usuario usuarioAlterado) {
+        if (usuarioAntigo.isCoordenadorOuSupervisorOperacao()
+            && usuarioAntigo.isCanalAtivoLocalRemovido(usuarioAlterado.getCanais())) {
+
+            var sites = siteService.buscarSitesPorCoordenadorOuSupervisor(usuarioAntigo.getId());
+            if (!isEmpty(sites)) {
+                throw new ValidacaoException(
+                    String.format(MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL, obterNomesSites(sites))
+                );
+            }
+        }
+    }
+
+    private String obterNomesSites(List<Site> sites) {
+        return sites
+            .stream()
+            .map(Site::getNome)
+            .collect(Collectors.joining(", "));
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
