@@ -456,7 +456,7 @@ public class UsuarioService {
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {
-        var sitesVinculados = siteService.buscarSitesPorCoordenadorOuSupervisor(usuarioOriginal.getId());
+        var sitesVinculados = siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(usuarioOriginal.getId());
 
         if (!isEmpty(sitesVinculados)) {
             validarRemocaoCanalAtivoLocal(usuarioOriginal, usuarioAlterado, sitesVinculados);
@@ -473,7 +473,7 @@ public class UsuarioService {
 
     private void validarAlteracaoDeCargo(Usuario usuarioOriginal, Usuario usuarioAlterado, List<Site> sites) {
         if (usuarioOriginal.isCoordenadorOuSupervisorOperacao()
-            && usuarioOriginal.getCargoCodigo() != usuarioAlterado.getCargoCodigo()) {
+            && !usuarioOriginal.getCargoId().equals(usuarioAlterado.getCargoId())) {
             throw new ValidacaoException(String.format(MSG_ERRO_AO_ALTERAR_CARGO_SITE, obterSitesNome(sites)));
         }
     }

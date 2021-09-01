@@ -31,14 +31,11 @@ public class UsuarioHelper {
             .build();
     }
 
-    public static Usuario umUsuario(Integer id, CodigoCargo codigoCargo, Set<ECanal> canais) {
+    public static Usuario umUsuario(Integer id, Cargo cargo, Set<ECanal> canais) {
         return Usuario
             .builder()
             .id(id)
-            .cargo(Cargo
-                .builder()
-                .codigo(codigoCargo)
-                .build())
+            .cargo(cargo)
             .canais(canais)
             .email("email@email.com")
             .usuariosHierarquia(new HashSet<>())

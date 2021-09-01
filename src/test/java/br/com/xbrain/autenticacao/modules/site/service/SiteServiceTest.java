@@ -567,12 +567,13 @@ public class SiteServiceTest {
     }
 
     @Test
-    public void buscarSitesPorCoordenadorOuSupervisor_deveChamarRepository_seSolicitado() {
+    public void buscarSitesAtivosPorCoordenadorOuSupervisor_deveChamarRepository_seSolicitado() {
         var predicate = new SitePredicate()
             .comCoordenadoresOuSupervisor(1)
+            .todosSitesAtivos()
             .build();
 
-        service.buscarSitesPorCoordenadorOuSupervisor(1);
+        service.buscarSitesAtivosPorCoordenadorOuSupervisor(1);
 
         verify(siteRepository, times(1)).findAll(eq(predicate));
     }

@@ -385,12 +385,12 @@ public class SiteService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public List<Site> buscarSitesPorCoordenadorOuSupervisor(Integer usuarioId) {
+    public List<Site> buscarSitesAtivosPorCoordenadorOuSupervisor(Integer usuarioId) {
         return siteRepository.findAll(
             new SitePredicate()
                 .comCoordenadoresOuSupervisor(usuarioId)
+                .todosSitesAtivos()
                 .build()
         );
     }
-
 }
