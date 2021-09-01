@@ -555,8 +555,7 @@ public class Usuario {
             .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
             .map(canaisOptional ->
                 canaisOptional.contains(ECanal.ATIVO_PROPRIO)
-                    && !ObjectUtils.isEmpty(canaisOptional)
-                    && !canaisNovos.contains(ECanal.ATIVO_PROPRIO)
+                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.ATIVO_PROPRIO))
             )
             .orElse(false);
     }
