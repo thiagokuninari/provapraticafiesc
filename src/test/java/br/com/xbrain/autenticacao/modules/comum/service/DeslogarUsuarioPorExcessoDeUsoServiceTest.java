@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
@@ -20,11 +19,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.comum.helper.DeslogarUsuarioPorExcessoDeUsoHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.intThat;
@@ -113,7 +112,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
     @Test
     public void validarUsuarioBloqueadoPorExcessoDeUso_deveRetornarUsuario_seExistirUsuarioBloqueado() {
-        when(repository.findByUsuarioId(anyInt())).thenReturn(Optional.of(umaListaDeUsuariosParaDeslogar().get(0)));
+        when(repository.findByUsuarioId(anyInt())).thenReturn(umaListaDeUsuariosParaDeslogar());
 
         var usuario = service.validarUsuarioBloqueadoPorExcessoDeUso(1);
 
@@ -126,7 +125,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
     @Test
     public void validarUsuarioBloqueadoPorExcessoDeUso_deveLancarException_seNaoHouverUsuarioBloqueado() {
-        when(repository.findByUsuarioId(anyInt())).thenReturn(Optional.empty());
+        when(repository.findByUsuarioId(anyInt())).thenReturn(umaListaDeUsuariosParaDeslogados_Vazia());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.validarUsuarioBloqueadoPorExcessoDeUso(1))
@@ -135,30 +134,10 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
         verify(repository, times(1)).findByUsuarioId(anyInt());
     }
 
-    private List<UsuarioParaDeslogar> umaListaDeUsuariosParaDeslogar() {
-        return List.of(
-            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.F));
-    }
+    @Test
+    public void removeUsuarioListaUsuarioParaDeslogar() {
+        repository.deleteByUsuarioId(123);
 
-    private Optional<Usuario> umUsuarioComSituacao(ESituacao situacao) {
-        return Optional.of(
-            Usuario
-                .builder()
-                .id(1)
-                .email("TESTE@TESTE.COM")
-                .situacao(situacao)
-                .build()
-        );
-    }
-
-    private List<UsuarioParaDeslogar> umaListaDeUsuariosDeslogados() {
-        return List.of(
-            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.V));
+        verify(repository, times(1)).deleteByUsuarioId(eq(123));
     }
 }

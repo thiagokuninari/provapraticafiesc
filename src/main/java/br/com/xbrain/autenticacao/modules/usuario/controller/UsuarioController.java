@@ -448,4 +448,9 @@ public class UsuarioController {
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(@RequestBody @Validated UsuarioSituacaoFiltro filtro) {
         return usuarioService.buscarUsuarioSituacaoPorIds(filtro);
     }
+
+    @DeleteMapping("usuario-para-deslogar-ativado/{usuarioId}")
+    public void removeUsuarioListaUsuarioParaDeslogar(@PathVariable Integer usuarioId) {
+        deslogarUsuarioPorExcessoDeUsoService.removeUsuarioListaUsuarioParaDeslogar(usuarioId);
+    }
 }

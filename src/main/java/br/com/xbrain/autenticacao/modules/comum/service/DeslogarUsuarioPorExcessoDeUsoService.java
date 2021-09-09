@@ -108,7 +108,16 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
     }
 
     public UsuarioExcessoUsoResponse validarUsuarioBloqueadoPorExcessoDeUso(Integer usuarioId) {
-        return UsuarioExcessoUsoResponse.of(repository.findByUsuarioId(usuarioId)
-            .orElseThrow(() -> new ValidacaoException("Não há bloqueios para este usuário.")));
+        List<UsuarioParaDeslogar> usuarioParaDeslogar = repository.findByUsuarioId(usuarioId);
+
+        if (usuarioParaDeslogar.isEmpty()) {
+            throw new ValidacaoException("Não há bloqueios para este usuário.");
+        } else {
+            return UsuarioExcessoUsoResponse.of(usuarioParaDeslogar.get(0));
+        }
+    }
+
+    public void removeUsuarioListaUsuarioParaDeslogar(Integer usuarioId) {
+        repository.deleteByUsuarioId(usuarioId);
     }
 }
