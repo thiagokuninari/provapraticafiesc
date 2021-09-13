@@ -384,4 +384,13 @@ public class SiteService {
                 .and(new SitePredicate().todosSitesAtivos().build()))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
+
+    public List<Site> buscarSitesAtivosPorCoordenadorOuSupervisor(Integer usuarioId) {
+        return siteRepository.findAll(
+            new SitePredicate()
+                .comCoordenadoresOuSupervisor(usuarioId)
+                .todosSitesAtivos()
+                .build()
+        );
+    }
 }

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -118,6 +119,30 @@ public class UsuarioTest {
     @Test
     public void hasLoginNetSales_deveRetornarFalse_seUsuarioPossuirLoginNetSalesVazio() {
         assertThat(umUsuarioComLoginNetSales("").hasLoginNetSales()).isFalse();
+    }
+
+    @Test
+    public void isCanalAtivoLocalRemovido_deveRetornarFalse_seNaoPossuirCanais() {
+        assertThat(new Usuario().isCanalAtivoLocalRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAtivoLocalRemovido_deveRetornarFalse_seCanaisNaoPossuirAtivoProprio() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.D2D_PROPRIO)).isCanalAtivoLocalRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAtivoLocalRemovido_deveRetornarTrue_seCanaisPossuirAtivoProprioMasCanaisNovosForNull() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(null))
+            .isTrue();
+    }
+
+    @Test
+    public void isCanalAtivoLocalRemovido_deveRetornarTrue_seCanaisPossuirAtivoProprioMasCanaisNovosNao() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(Set.of(ECanal.D2D_PROPRIO)))
+            .isTrue();
     }
 
     private static Cargo umCargo(CodigoCargo codigoCargo) {
