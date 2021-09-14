@@ -449,8 +449,8 @@ public class UsuarioController {
         return usuarioService.buscarUsuarioSituacaoPorIds(filtro);
     }
 
-    @DeleteMapping("usuario-para-deslogar-ativado/{usuarioId}")
-    public void removeUsuarioListaUsuarioParaDeslogar(@PathVariable Integer usuarioId) {
-        deslogarUsuarioPorExcessoDeUsoService.removeUsuarioListaUsuarioParaDeslogar(usuarioId);
+    @GetMapping("alterar-situacao-usuario-bloqueado/{usuarioId}")
+    public void alterarSituacaoUsuarioBLoqueado(@PathVariable Integer usuarioId) {
+        deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
     }
 }

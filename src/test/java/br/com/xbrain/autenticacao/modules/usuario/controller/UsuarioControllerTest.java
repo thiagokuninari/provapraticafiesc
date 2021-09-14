@@ -984,22 +984,22 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void removeUsuarioListaUsuarioParaDeslogar_deveAcessarService_seAutorizado() {
-        mvc.perform(delete("/api/usuarios/usuario-para-deslogar-ativado/{usuarioId}",123)
+    public void atualizarSituacaoUsuarioBloqueado_deveAcessarService_seAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}",123)
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(deslogarUsuarioPorExcessoDeUsoService, times(1)).removeUsuarioListaUsuarioParaDeslogar(any(Integer.class));
+        verify(deslogarUsuarioPorExcessoDeUsoService, times(1)).atualizarSituacaoUsuarioBloqueado(eq(123));
     }
 
     @Test
     @SneakyThrows
-    public void removeUsuarioListaUsuarioParaDeslogar_naoDeveAcessarService_seNaoAutorizado() {
-        mvc.perform(delete("/api/usuarios/usuario-para-deslogar-ativado/{usuarioId}",123)
+    public void atualizarSituacaoUsuarioBloqueado_naoDeveAcessarService_seNaoAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}",123)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(deslogarUsuarioPorExcessoDeUsoService, times(0)).removeUsuarioListaUsuarioParaDeslogar(any(Integer.class));
+        verify(deslogarUsuarioPorExcessoDeUsoService, never()).atualizarSituacaoUsuarioBloqueado(any(Integer.class));
     }
 }

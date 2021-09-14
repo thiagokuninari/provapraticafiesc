@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.UsuarioParaDeslogar;
 import br.com.xbrain.autenticacao.modules.comum.repository.UsuarioParaDeslogarRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
@@ -25,7 +24,6 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.helper.DeslogarUsuarioPorExcessoDeUsoHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.intThat;
 import static org.mockito.Mockito.*;
 
@@ -102,7 +100,7 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
 
     @Test
     public void deslogarUsuariosInativados_naoDeveDeslogarNenhumUsuario_quandoTodosEstiveremDeslogados() {
-        when(repository.findAll()).thenReturn(umaListaDeUsuariosDeslogados());
+        when(repository.findAll()).thenReturn(umaListaDeUsuariosParaDeslogar());
 
         service.deslogarUsuariosInativados();
 
@@ -111,33 +109,57 @@ public class DeslogarUsuarioPorExcessoDeUsoServiceTest {
     }
 
     @Test
-    public void validarUsuarioBloqueadoPorExcessoDeUso_deveRetornarUsuario_seExistirUsuarioBloqueado() {
-        when(repository.findByUsuarioId(anyInt())).thenReturn(umaListaDeUsuariosParaDeslogar());
+    public void validarUsuarioBloqueadoPorExcessoDeUso_deveRetornarBloqueioTrue_seExistirUsuarioBloqueado() {
+        when(repository.findFirstByUsuarioIdOrderByDataCadastroDesc(123)).thenReturn(umUsuarioParaDeslogarBloqueado());
 
-        var usuario = service.validarUsuarioBloqueadoPorExcessoDeUso(1);
+        assertThat(service.validarUsuarioBloqueadoPorExcessoDeUso(123))
+            .extracting("usuarioId", "bloqueado")
+            .containsExactly(123, true);
 
-        assertThat(usuario).isNotNull();
-        assertThat(usuario.getUsuarioId()).isEqualTo(1);
-        assertThat(usuario.isBloqueado()).isTrue();
-
-        verify(repository, times(1)).findByUsuarioId(anyInt());
+        verify(repository, times(1)).findFirstByUsuarioIdOrderByDataCadastroDesc(eq(123));
     }
 
     @Test
-    public void validarUsuarioBloqueadoPorExcessoDeUso_deveLancarException_seNaoHouverUsuarioBloqueado() {
-        when(repository.findByUsuarioId(anyInt())).thenReturn(umaListaDeUsuariosParaDeslogados_Vazia());
+    public void validarUsuarioBloqueadoPorExcessoDeUso_deveRetornarFalse_seUsuarioNaoBloqueado() {
+        when(repository.findFirstByUsuarioIdOrderByDataCadastroDesc(123)).thenReturn(umUsuarioParaDeslogarNaoBloqueado());
 
-        assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.validarUsuarioBloqueadoPorExcessoDeUso(1))
-            .withMessage("Não há bloqueios para este usuário.");
+        assertThat(service.validarUsuarioBloqueadoPorExcessoDeUso(123))
+            .extracting("usuarioId", "bloqueado")
+            .containsExactly(123, false);
 
-        verify(repository, times(1)).findByUsuarioId(anyInt());
+        verify(repository, times(1)).findFirstByUsuarioIdOrderByDataCadastroDesc(eq(123));
     }
 
     @Test
-    public void removeUsuarioListaUsuarioParaDeslogar() {
-        repository.deleteByUsuarioId(123);
+    public void validarUsuarioBloqueadoPorExcessoDeUso_deveRetornarFalse_seNaoEncontrarUsuarioNaLista() {
+        when(repository.findFirstByUsuarioIdOrderByDataCadastroDesc(123)).thenReturn(Optional.empty());
 
-        verify(repository, times(1)).deleteByUsuarioId(eq(123));
+        assertThat(service.validarUsuarioBloqueadoPorExcessoDeUso(123))
+            .extracting("usuarioId", "bloqueado")
+            .containsExactly(123, false);
+
+        verify(repository, times(1)).findFirstByUsuarioIdOrderByDataCadastroDesc(eq(123));
+    }
+
+    @Test
+    public void atualizarSituacaoUsuarioBloqueado_deveSalvarUsuario_seUsuarioPresenteListaDeBloqueados() {
+        when(repository.findFirstByUsuarioIdOrderByDataCadastroDesc(123))
+            .thenReturn(umUsuarioParaDeslogarBloqueado());
+
+        service.atualizarSituacaoUsuarioBloqueado(123);
+
+        verify(repository, times(1)).findFirstByUsuarioIdOrderByDataCadastroDesc(123);
+        verify(repository, times(1)).save(eq(umUsuarioParaDeslogarSituacaoAlterada()));
+    }
+
+    @Test
+    public void atualizarSituacaoUsuarioBloqueado_naoDeveSalvarUsuario_seUsuarioNaoEncontrado() {
+        when(repository.findFirstByUsuarioIdOrderByDataCadastroDesc(123))
+            .thenReturn(Optional.empty());
+
+        service.atualizarSituacaoUsuarioBloqueado(123);
+
+        verify(repository, times(1)).findFirstByUsuarioIdOrderByDataCadastroDesc(123);
+        verify(repository, never()).save(any(UsuarioParaDeslogar.class));
     }
 }

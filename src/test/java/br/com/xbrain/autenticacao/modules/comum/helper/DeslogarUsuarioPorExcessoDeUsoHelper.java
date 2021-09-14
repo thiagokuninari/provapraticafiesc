@@ -13,10 +13,10 @@ public class DeslogarUsuarioPorExcessoDeUsoHelper {
 
     public static List<UsuarioParaDeslogar> umaListaDeUsuariosParaDeslogar() {
         return List.of(
-            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.F),
-            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.F));
+            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.F, Eboolean.F),
+            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.F, Eboolean.V),
+            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.F, Eboolean.F),
+            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.F, Eboolean.V));
     }
 
     public static Optional<Usuario> umUsuarioComSituacao(ESituacao situacao) {
@@ -30,15 +30,40 @@ public class DeslogarUsuarioPorExcessoDeUsoHelper {
         );
     }
 
-    public static List<UsuarioParaDeslogar> umaListaDeUsuariosDeslogados() {
-        return List.of(
-            new UsuarioParaDeslogar(1, 1, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(2, 2, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(3, 3, LocalDateTime.now(), Eboolean.V),
-            new UsuarioParaDeslogar(4, 4, LocalDateTime.now(), Eboolean.V));
-    }
-
     public static List<UsuarioParaDeslogar> umaListaDeUsuariosParaDeslogados_Vazia() {
         return List.of();
+    }
+
+    public static Optional<UsuarioParaDeslogar> umUsuarioParaDeslogarBloqueado() {
+        return Optional.of(UsuarioParaDeslogar.builder()
+            .id(12300)
+            .usuarioId(123)
+            .bloqueado(Eboolean.V)
+            .build());
+    }
+
+    public static Optional<UsuarioParaDeslogar> umUsuarioParaDeslogarNaoBloqueado() {
+        return Optional.of(UsuarioParaDeslogar.builder()
+            .id(12300)
+            .usuarioId(123)
+            .bloqueado(Eboolean.F)
+            .build());
+    }
+
+    public static UsuarioParaDeslogar umUsuarioParaDeslogar() {
+        return UsuarioParaDeslogar.builder()
+            .id(10002)
+            .usuarioId(100)
+            .deslogado(Eboolean.V)
+            .bloqueado(Eboolean.V)
+            .build();
+    }
+
+    public static UsuarioParaDeslogar umUsuarioParaDeslogarSituacaoAlterada() {
+        return UsuarioParaDeslogar.builder()
+            .id(12300)
+            .usuarioId(123)
+            .bloqueado(Eboolean.F)
+            .build();
     }
 }
