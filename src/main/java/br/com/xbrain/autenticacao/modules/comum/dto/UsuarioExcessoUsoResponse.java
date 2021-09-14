@@ -12,11 +12,11 @@ public class UsuarioExcessoUsoResponse {
     private Integer usuarioId;
     private boolean bloqueado;
 
-    public static UsuarioExcessoUsoResponse of(Integer usuarioId, Boolean bool) {
+    public static UsuarioExcessoUsoResponse of(Integer usuarioId, Boolean situacao) {
         return UsuarioExcessoUsoResponse
             .builder()
             .usuarioId(usuarioId)
-            .bloqueado(bool)
+            .bloqueado(situacao)
             .build();
     }
 }

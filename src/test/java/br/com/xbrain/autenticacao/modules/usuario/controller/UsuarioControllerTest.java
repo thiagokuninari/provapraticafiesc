@@ -985,7 +985,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void atualizarSituacaoUsuarioBloqueado_deveAcessarService_seAutorizado() {
-        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}",123)
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -996,7 +996,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void atualizarSituacaoUsuarioBloqueado_naoDeveAcessarService_seNaoAutorizado() {
-        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}",123)
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 

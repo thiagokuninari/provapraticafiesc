@@ -117,6 +117,7 @@ public class DeslogarUsuarioPorExcessoDeUsoService {
 
     public void atualizarSituacaoUsuarioBloqueado(Integer usuarioId) {
         repository.findFirstByUsuarioIdOrderByDataCadastroDesc(usuarioId)
-            .ifPresent(usuario -> repository.save(usuario.atualizarSituacaoBloqueado()));
+            .map(UsuarioParaDeslogar::atualizarSituacaoBloqueado)
+            .ifPresent(repository::save);
     }
 }

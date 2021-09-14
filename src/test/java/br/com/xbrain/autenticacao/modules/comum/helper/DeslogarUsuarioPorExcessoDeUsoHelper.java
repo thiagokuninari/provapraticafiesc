@@ -30,10 +30,6 @@ public class DeslogarUsuarioPorExcessoDeUsoHelper {
         );
     }
 
-    public static List<UsuarioParaDeslogar> umaListaDeUsuariosParaDeslogados_Vazia() {
-        return List.of();
-    }
-
     public static Optional<UsuarioParaDeslogar> umUsuarioParaDeslogarBloqueado() {
         return Optional.of(UsuarioParaDeslogar.builder()
             .id(12300)
@@ -48,15 +44,6 @@ public class DeslogarUsuarioPorExcessoDeUsoHelper {
             .usuarioId(123)
             .bloqueado(Eboolean.F)
             .build());
-    }
-
-    public static UsuarioParaDeslogar umUsuarioParaDeslogar() {
-        return UsuarioParaDeslogar.builder()
-            .id(10002)
-            .usuarioId(100)
-            .deslogado(Eboolean.V)
-            .bloqueado(Eboolean.V)
-            .build();
     }
 
     public static UsuarioParaDeslogar umUsuarioParaDeslogarSituacaoAlterada() {
