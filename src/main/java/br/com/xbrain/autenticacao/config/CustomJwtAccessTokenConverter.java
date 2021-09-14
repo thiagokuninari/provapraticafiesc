@@ -177,12 +177,12 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipesSupervisionadas",
             equipesSupervisionadas);
         token.getAdditionalInformation().put("estruturaAa", getEstrutura(usuario));
+        token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
         token.getAdditionalInformation().put("sites", sites);
         token.getAdditionalInformation().put("siteId", sites.stream()
                 .map(SelectResponse::getValue)
                 .findFirst()
                 .orElse(null));
-        token.getAdditionalInformation().put("tipoCanal", getTipoCanal(usuario));
     }
 
     private String getOrganizacao(Usuario usuario) {
