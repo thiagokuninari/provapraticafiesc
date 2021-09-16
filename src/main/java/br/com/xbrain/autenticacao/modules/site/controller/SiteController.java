@@ -28,7 +28,7 @@ public class SiteController {
 
     @GetMapping("exportar-csv")
     public void exportarCsv(SiteFiltros filtros, HttpServletResponse response) {
-        service.gerarRelatorioCsv(filtros, response);
+        service.gerarRelatorioDiscadorasCsv(filtros, response);
     }
 
     @GetMapping("/estado/{estadoId}")

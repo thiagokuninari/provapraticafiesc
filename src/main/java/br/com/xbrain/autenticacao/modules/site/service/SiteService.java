@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -397,16 +396,16 @@ public class SiteService {
         );
     }
 
-    public void gerarRelatorioCsv(SiteFiltros filtros, HttpServletResponse response) {
+    public void gerarRelatorioDiscadorasCsv(SiteFiltros filtros, HttpServletResponse response) {
         var sites = SiteCsvResponse.of(siteRepository.findAllByPredicate(filtros.toPredicate().build()));
-        preencheDiscadora(sites);
+        preencherDiscadora(sites);
 
-        String csv = SiteCsvResponse.ofCsv(sites);
+        var csv = SiteCsvResponse.ofCsv(sites);
         baixarCsv(csv, response);
     }
 
-    private void preencheDiscadora(List<SiteCsvResponse> sites) {
-        List<ConfiguracaoTelefoniaResponse> discadoras = callService.getDiscadoras();
+    private void preencherDiscadora(List<SiteCsvResponse> sites) {
+        var discadoras = callService.getDiscadoras();
 
         sites.forEach(site -> {
             if (Objects.nonNull(site.getDiscadoraId())) {
