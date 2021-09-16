@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -25,6 +26,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import br.com.xbrain.xbrainutils.CsvUtils;
 import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -392,5 +395,33 @@ public class SiteService {
                 .todosSitesAtivos()
                 .build()
         );
+    }
+
+    public void gerarRelatorioCsv(SiteFiltros filtros, HttpServletResponse response) {
+        var sites = SiteCsvResponse.of(siteRepository.findAllByPredicate(filtros.toPredicate().build()));
+        preencheDiscadora(sites);
+
+        String csv = SiteCsvResponse.ofCsv(sites);
+        baixarCsv(csv, response);
+    }
+
+    private void preencheDiscadora(List<SiteCsvResponse> sites) {
+        List<ConfiguracaoTelefoniaResponse> discadoras = callService.getDiscadoras();
+
+        sites.forEach(site -> {
+            if (Objects.nonNull(site.getDiscadoraId())) {
+                discadoras.forEach(discadora -> {
+                    if (Objects.equals(site.getDiscadoraId(), discadora.getId())) {
+                        site.setDiscadoraText(discadora.getNome());
+                    }
+                });
+            }
+        });
+    }
+
+    private void baixarCsv(String csv, HttpServletResponse response) {
+        if (!CsvUtils.setCsvNoHttpResponse(csv, "csv_ativo_local_proprio_discadora", response)) {
+            throw new ValidacaoException("Falha ao tentar baixar relatório.");
+        }
     }
 }
