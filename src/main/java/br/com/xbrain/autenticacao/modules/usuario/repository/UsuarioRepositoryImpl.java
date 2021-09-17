@@ -200,7 +200,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .select(usuario)
             .from(usuario)
             .innerJoin(usuario.cargo, cargo)
-            .where(cargo.codigo.eq(VENDEDOR_RECEPTIVO)
+            .where(cargo.codigo.in(VENDEDOR_RECEPTIVO, ADMINISTRADOR)
                 .and(usuario.id.in(ids))
             )
             .orderBy(usuario.nome.asc())

@@ -182,9 +182,10 @@ public class UsuarioRepositoryTest {
 
     @Test
     public void findAllVendoresReceptivosByIds_deveRetornarVendedoresReceptivos_quandoTerIdPassado() {
-        assertThat(repository.findAllVendedoresReceptivosByIds(List.of(121, 123)))
+        assertThat(repository.findAllVendedoresReceptivosByIds(List.of(100, 121, 123)))
             .extracting("id", "nome")
             .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
                 tuple(121, "VR 1"),
                 tuple(123, "VR 3")
             );
