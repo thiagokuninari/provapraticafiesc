@@ -474,4 +474,9 @@ public class UsuarioController {
     public List<UsuarioCargoResponse> buscarUsuariosSuperiores(@PathVariable Integer usuarioId) {
         return usuarioService.getSuperioresPorId(usuarioId);
     }
+
+    @GetMapping("alterar-situacao-usuario-bloqueado/{usuarioId}")
+    public void alterarSituacaoUsuarioBLoqueado(@PathVariable Integer usuarioId) {
+        deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
+    }
 }
