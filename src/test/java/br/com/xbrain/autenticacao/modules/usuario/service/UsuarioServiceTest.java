@@ -1318,6 +1318,34 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
     }
 
+    @Test
+    public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarUsuarios_seEncontrado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findAll(eq(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
+                .build())))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado())
+            .isEqualTo(umaUsuariosList());
+    }
+
+    @Test
+    public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_naoDeveRetornarUsuarios_seNaoEncontrado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findAll(eq(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
+                .build())))
+            .thenReturn(Collections.emptyList());
+
+        assertThat(usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado())
+            .isEmpty();
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()

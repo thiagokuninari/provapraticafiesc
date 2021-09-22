@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoReposit
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import helpers.TestBuilders;
 import helpers.Usuarios;
 import lombok.SneakyThrows;
 import org.junit.Assert;
@@ -956,6 +957,42 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/hierarquia-usuario-logado/ativo-local"))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarIds_seListaNaoVazia() {
+        doReturn(List.of(
+            TestBuilders.umUsuario(1, CodigoCargo.GERENTE_OPERACAO),
+            TestBuilders.umUsuario(2, CodigoCargo.SUPERVISOR_OPERACAO),
+            TestBuilders.umUsuario(3, CodigoCargo.COORDENADOR_OPERACAO)))
+            .when(usuarioService).getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
+
+        mvc.perform(get(USUARIOS_ENDPOINT + "/hierarquia-usuario-logado/ativo-local")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(List.of(1, 2, 3))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado_naoDeveRetornarIds_seListaVazia() {
+        doReturn(Collections.emptyList())
+            .when(usuarioService).getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
+
+        mvc.perform(get(USUARIOS_ENDPOINT + "/hierarquia-usuario-logado/ativo-local")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", is(Collections.emptyList())));
     }
 
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {

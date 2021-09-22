@@ -1933,6 +1933,13 @@ public class UsuarioService {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
     }
 
+    public List<Usuario> getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado() {
+        return (List<Usuario>) repository.findAll(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), this, true)
+                .build());
+    }
+
     public Set<Integer> getAllUsuariosIdsSuperiores() {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         var cargosAceitos = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
