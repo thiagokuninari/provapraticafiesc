@@ -28,6 +28,8 @@ public class UsuarioSiteService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private EquipeVendaD2dService equipeVendasService;
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public List<UsuarioNomeResponse> buscarUsuariosSitePorCargo(CodigoCargo cargo) {
@@ -170,5 +172,9 @@ public class UsuarioSiteService {
             .stream()
             .map(Usuario::getId)
             .collect(Collectors.toList());
+    }
+
+    public List<Usuario> getUsuariosDaHierarquiaDoUsuarioLogado() {
+        return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
     }
 }

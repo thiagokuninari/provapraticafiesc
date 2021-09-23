@@ -15,7 +15,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioFunilProspeccaoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -437,14 +436,6 @@ public class UsuarioController {
     @GetMapping("permitidos")
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         return usuarioService.getAllUsuariosDaHierarquiaD2dDoUserLogado();
-    }
-
-    @GetMapping("hierarquia-usuario-logado/ativo-local")
-    public List<Integer> getUsuariosIdsDaHierarquiaAtivoLocalDoUsuarioLogado() {
-        return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado()
-            .stream()
-            .map(Usuario::getId)
-            .collect(Collectors.toList());
     }
 
     @GetMapping("permitidos/select")
