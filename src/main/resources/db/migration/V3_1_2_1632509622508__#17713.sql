@@ -1,6 +1,6 @@
 -- FUNCIONALIDADE --
 --------------------
-INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (18001, 'Configurar Envio Claro Que eu Indico Fedder', 'CTR_2056', 22);
+INSERT INTO FUNCIONALIDADE (ID, NOME, ROLE, FK_APLICACAO) VALUES (18001, 'Configurar Envio Claro Que eu Indico Feeder', 'CTR_2056', 22);
 
 ----------------
 -- PERMISSÕES --
