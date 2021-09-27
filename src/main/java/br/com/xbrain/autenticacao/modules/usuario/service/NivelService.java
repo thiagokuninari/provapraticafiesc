@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.NivelPredicate;
@@ -32,13 +33,28 @@ public class NivelService {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         return nivelRepository.getAll(
-                new NivelPredicate()
-                        .isAtivo()
-                        .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
-                        .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
-                        .exibeProprioNivelSeNaoVisualizarGeral(
-                                usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
-                                usuarioAutenticado.getNivelCodigoEnum())
+            new NivelPredicate()
+                .isAtivo()
+                .exibeSomenteParaCadastro(tipoVisualizacao == NivelTipoVisualizacao.CADASTRO)
+                .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
+                .exibeProprioNivelSeNaoVisualizarGeral(
+                    usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
+                    usuarioAutenticado.getNivelCodigoEnum(), false)
+                .build());
+    }
+
+    public List<Nivel> getPermitidosParaComunicados() {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        return nivelRepository.getAll(
+            new NivelPredicate()
+                .isAtivo()
+                .exibeXbrainSomenteParaXbrain(usuarioAutenticado.isXbrain())
+                .semCodigoNivel(CodigoNivel.BACKOFFICE)
+                .exibeProprioNivelSeNaoVisualizarGeral(
+                    usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL),
+                    usuarioAutenticado.getNivelCodigoEnum(),
+                    usuarioAutenticado.haveCanalAgenteAutorizado())
                 .build());
     }
 }

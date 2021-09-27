@@ -74,12 +74,12 @@ public class OrganizacaoServiceTest {
         var filtros = OrganizacaoFiltros.builder().organizacaoId(1).build();
 
         when(organizacaoRepository.findByPredicate(eq(filtros.toPredicate())))
-                .thenReturn(List.of(umaOrganizacao(1, "MOTIVA")));
+            .thenReturn(List.of(umaOrganizacao(1, "MOTIVA")));
 
         assertThat(organizacaoService.getAllSelect(null))
-                .hasSize(1)
-                .extracting("id", "codigo", "nome")
-                .contains(tuple(1, "MOTIVA", "MOTIVA"));
+            .hasSize(1)
+            .extracting("id", "codigo", "nome")
+            .contains(tuple(1, "MOTIVA", "MOTIVA"));
     }
 
     @Test
@@ -116,14 +116,14 @@ public class OrganizacaoServiceTest {
 
     private UsuarioAutenticado umUsuarioBackoffice() {
         return UsuarioAutenticado.builder()
-                .nome("Backoffice")
-                .cargoId(110)
-                .departamentoId(1)
-                .organizacaoId(1)
-                .nivelCodigo("BACKOFFICE")
-                .cpf("097.238.645-92")
-                .email("usuario@teste.com")
-                .organizacaoCodigo("MOTIVA")
-                .build();
+            .nome("Backoffice")
+            .cargoId(110)
+            .departamentoId(1)
+            .organizacaoId(1)
+            .nivelCodigo("BACKOFFICE")
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .organizacaoCodigo("MOTIVA")
+            .build();
     }
 }

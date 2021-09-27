@@ -12,8 +12,8 @@ public enum ECanal {
     D2D_PROPRIO("D2D Próprio", Boolean.TRUE),
     ATIVO_PROPRIO("Ativo Local Próprio", Boolean.TRUE),
     ATIVO("Ativo", Boolean.FALSE),
-    ATP("Atp", Boolean.FALSE);
-
+    ATP("Atp", Boolean.FALSE),
+    VAREJO( "Varejo", Boolean.TRUE);
 
     @Getter
     private String descricao;

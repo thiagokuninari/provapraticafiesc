@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutCsv;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.LoginLogoutResponse;
+import br.com.xbrain.autenticacao.modules.usuarioacesso.dto.RelatorioLoginLogoutRequest;
 import br.com.xbrain.autenticacao.modules.usuarioacesso.filtros.RelatorioLoginLogoutCsvFiltro;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,10 @@ public class RelatorioLoginLogoutService {
         return notificacaoUsuarioAcessoService
             .getLoginsLogoutsDeHoje(getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId), pageRequest)
             .toSpringPage(pageRequest);
+    }
+
+    public List<LoginLogoutResponse> buscarAcessosEntreDatasPorUsuarios(RelatorioLoginLogoutRequest request) {
+        return notificacaoUsuarioAcessoService.buscarAcessosEntreDatasPorUsuarios(request);
     }
 
     public void getCsv(

@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public interface CallClient {
 
     String API_CONFIGURACAO_TELEFONIA = "api/configuracao-telefonia";
+    String API_DISCAGEM_TELEFONIA = "api/discagem-telefonia";
     String URL_RAMAL = "api/ramal";
     String API_CACHE_CLEAN_FERIADOS = "/api/public/cache-clean/feriados";
 
@@ -27,4 +29,18 @@ public interface CallClient {
 
     @DeleteMapping(API_CACHE_CLEAN_FERIADOS)
     void cleanCacheFeriadosTelefonia();
+
+    @PostMapping(URL_RAMAL + "/desvincular-ramais/ATIVO_PROPRIO/{siteId}/discadora/{discadoraId}")
+    void desvincularRamaisDaDiscadoraAtivoProprio(@PathVariable("siteId") Integer siteId,
+                                                  @PathVariable("discadoraId") Integer discadoraId);
+
+    @GetMapping(value = "api/public/cache-clean/ativo-proprio")
+    String cleanCacheableSiteAtivoProprio();
+
+    @GetMapping(API_DISCAGEM_TELEFONIA + "/status")
+    boolean consultarStatusUsoRamalByUsuarioAutenticado();
+
+    @PostMapping(URL_RAMAL + "/liberar-ramal")
+    void liberarRamalUsuarioAutenticado();
+
 }

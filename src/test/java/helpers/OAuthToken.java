@@ -1,5 +1,6 @@
 package helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,4 +58,6 @@ public class OAuthToken {
     private List<EquipeVendasSupervisionadasResponse> equipesSupervisionadas;
 
     private List<Integer> agentesAutorizados;
+
+    private List<SelectResponse> sites;
 }

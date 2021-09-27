@@ -25,7 +25,6 @@ spring:
 
 app-config:
   url: https://autenticacao-hom.conexaoclarobrasil.com.br
-  url-servico-email: http://172.10.10.41:8080/emails/
   url-estatico-upload: ${app-config.url-estatico}/homologacao/autenticacao
   upload-dir: ${app-config.estatico-dir}/homologacao/autenticacao
 
@@ -44,6 +43,8 @@ app-config:
       url: http://172.10.10.82:8089
     contato-crn:
       url: http://172.10.10.64:8084
+    comunicados:
+      url: http://172.10.10.53:6553
     claro-indico:
       url: http://172.10.10.55:8055
     agente-autorizado:
@@ -52,6 +53,8 @@ app-config:
       url: http://172.10.10.71:8091
     notificacao:
       url: http://172.10.10.98:8081
+    emails:
+      url: http://email-hom:8080
 
   email:
     enviar: true

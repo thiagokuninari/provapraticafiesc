@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "USUARIOS_PARA_DESLOGAR")
 public class UsuarioParaDeslogar {
 
@@ -31,8 +33,24 @@ public class UsuarioParaDeslogar {
     @Enumerated(EnumType.STRING)
     private Eboolean deslogado;
 
+    @Column(name = "BLOQUEADO")
+    @Enumerated(EnumType.STRING)
+    private Eboolean bloqueado;
+
     public UsuarioParaDeslogar atualizarParaDeslogado() {
         deslogado = Eboolean.V;
         return this;
+    }
+
+    public UsuarioParaDeslogar atualizarSituacaoBloqueado() {
+        bloqueado = Eboolean.F;
+        return this;
+    }
+
+    public static UsuarioParaDeslogar of(Integer usuarioId, Eboolean bloqueado) {
+        return UsuarioParaDeslogar.builder()
+            .id(usuarioId)
+            .bloqueado(bloqueado)
+            .build();
     }
 }

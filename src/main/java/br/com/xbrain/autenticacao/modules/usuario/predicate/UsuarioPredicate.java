@@ -3,10 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.model.QCluster;
-import br.com.xbrain.autenticacao.modules.comum.model.QGrupo;
-import br.com.xbrain.autenticacao.modules.comum.model.QRegional;
-import br.com.xbrain.autenticacao.modules.comum.model.QSubCluster;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -18,10 +15,15 @@ import com.querydsl.jpa.JPAExpressions;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
+import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
+import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -34,10 +36,22 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class UsuarioPredicate {
 
-    private BooleanBuilder builder;
+    private final BooleanBuilder builder;
 
     public UsuarioPredicate() {
         this.builder = new BooleanBuilder();
+    }
+
+    public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
+        if (!StringUtils.isEmpty(excluiIds)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(excluiIds,QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::notIn)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
     }
 
     public UsuarioPredicate comNome(String nome) {
@@ -118,9 +132,23 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCargoCodigo(CodigoCargo cargo) {
+        if (nonNull(cargo)) {
+            builder.and(usuario.cargo.codigo.eq(cargo));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comCargo(List<Integer> cargoIds) {
         if (!CollectionUtils.isEmpty(cargoIds)) {
             builder.and(usuario.cargo.id.in(cargoIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCargo(CodigoCargo cargo) {
+        if (!isEmpty(cargo)) {
+            builder.and(usuario.cargo.codigo.eq(cargo));
         }
         return this;
     }
@@ -208,11 +236,11 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                 JPAExpressions.select(cidade.id)
                     .from(cidade)
-                    .join(cidade.subCluster, QSubCluster.subCluster)
-                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                    .join(QCluster.cluster.grupo, QGrupo.grupo)
-                    .join(QGrupo.grupo.regional, QRegional.regional)
-                    .where(QRegional.regional.id.eq(regionalId))
+                    .join(cidade.subCluster, subCluster)
+                    .join(subCluster.cluster, cluster)
+                    .join(cluster.grupo, grupo)
+                    .join(grupo.regional, regional)
+                    .where(regional.id.eq(regionalId))
             ));
         }
         return this;
@@ -223,10 +251,10 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                 JPAExpressions.select(cidade.id)
                     .from(cidade)
-                    .join(cidade.subCluster, QSubCluster.subCluster)
-                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                    .join(QCluster.cluster.grupo, QGrupo.grupo)
-                    .where(QGrupo.grupo.id.eq(grupoId))
+                    .join(cidade.subCluster, subCluster)
+                    .join(subCluster.cluster, cluster)
+                    .join(cluster.grupo, grupo)
+                    .where(grupo.id.eq(grupoId))
             ));
         }
         return this;
@@ -237,9 +265,9 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                 JPAExpressions.select(cidade.id)
                     .from(cidade)
-                    .join(cidade.subCluster, QSubCluster.subCluster)
-                    .join(QSubCluster.subCluster.cluster, QCluster.cluster)
-                    .where(QCluster.cluster.id.eq(clusterId))
+                    .join(cidade.subCluster, subCluster)
+                    .join(subCluster.cluster, cluster)
+                    .where(cluster.id.eq(clusterId))
             ));
         }
         return this;
@@ -250,8 +278,8 @@ public class UsuarioPredicate {
             builder.and(usuario.cidades.any().cidade.id.in(
                 JPAExpressions.select(cidade.id)
                     .from(cidade)
-                    .join(cidade.subCluster, QSubCluster.subCluster)
-                    .where(QSubCluster.subCluster.id.eq(subClusterId))
+                    .join(cidade.subCluster, subCluster)
+                    .where(subCluster.id.eq(subClusterId))
             ));
         }
         return this;
@@ -264,10 +292,15 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCanais(Collection<ECanal> canais) {
+    public UsuarioPredicate comCanais(Set<ECanal> canais) {
         if (!isEmpty(canais)) {
             builder.and(usuario.canais.any().in(canais));
         }
+        return this;
+    }
+
+    public UsuarioPredicate daHierarquia(List<Integer> ids) {
+        builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
         return this;
     }
 
@@ -289,14 +322,75 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService) {
-        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
-        ignorarXbrain(!usuario.isXbrain());
+    public UsuarioPredicate comCanalD2d(boolean todoCanalD2d) {
+        if (todoCanalD2d) {
+            builder.and(usuario.canais.contains(ECanal.D2D_PROPRIO));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCanalAa(boolean todoCanalAa) {
+        if (todoCanalAa) {
+            builder.and(usuario.canais.contains(ECanal.AGENTE_AUTORIZADO));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCargosIds(List<Integer> cargosIds) {
+        if (!isEmpty(cargosIds)) {
+            builder.and(usuario.cargo.id.in(cargosIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, Integer clusterId, Integer grupoId,
+                                          Integer regionalId, Integer subClusterId) {
+        if (!isEmpty(cidadesIds)) {
+            comCidade(cidadesIds);
+        } else if (!isEmpty(subClusterId)) {
+            comSubCluster(subClusterId);
+        } else if (!isEmpty(clusterId)) {
+            comCluster(clusterId);
+        } else if (!isEmpty(grupoId)) {
+            comGrupo(grupoId);
+        } else if (!isEmpty(regionalId)) {
+            comRegional(regionalId);
+        }
+        return this;
+    }
+
+    public UsuarioPredicate semUsuarioId(Integer usuarioId) {
+        if (!isEmpty(usuarioId)) {
+            builder.and(usuario.id.ne(usuarioId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comNiveisIds(List<Integer> niveisIds) {
+        if (!isEmpty(niveisIds)) {
+            builder.and(usuario.cargo.nivel.id.in(niveisIds));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comUsuariosLogadosHoje(boolean comUsuariosLogadosHoje) {
+        if (comUsuariosLogadosHoje) {
+            builder.and(usuario.dataUltimoAcesso.after(LocalDate.now().atStartOfDay()));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate filtraPermitidos(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                             boolean incluirProprio) {
+        if (isEmpty(usuario)) {
+            return this;
+        }
+        ignorarFiltro(usuario);
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
                 usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true),
+                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
                 singletonList(usuario.getUsuario().getId()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()));
@@ -316,11 +410,49 @@ public class UsuarioPredicate {
         return this;
     }
 
+    private void ignorarFiltro(UsuarioAutenticado usuario) {
+        ignorarAa(!usuario.hasPermissao(AUT_VISUALIZAR_USUARIOS_AA));
+        ignorarXbrain(!usuario.isXbrain());
+    }
+
+    public UsuarioPredicate comFiltroCidadeParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                     PublicoAlvoComunicadoFiltros filtros) {
+        if (usuario.haveCanalAgenteAutorizado() && filtros.haveFiltrosDeLocalizacao()) {
+            filtros.setUsuariosFiltradosPorCidadePol(usuarioService.getIdDosUsuariosParceiros(filtros));
+            if (!filtros.getUsuariosFiltradosPorCidadePol().isEmpty()) {
+                new UsuarioComunicadosPredicate()
+                    .comFiltroCidadeParceiros(filtros, this.builder)
+                    .build();
+                return this;
+            }
+        }
+        comEstruturaDeCidade(filtros);
+        return this;
+    }
+
+    public UsuarioPredicate comEstruturaDeCidade(PublicoAlvoComunicadoFiltros filtros) {
+        return comCluster(filtros.getClusterId())
+            .comCidade(filtros.getCidadesIds())
+            .comGrupo(filtros.getGrupoId())
+            .comRegional(filtros.getRegionalId())
+            .comSubCluster(filtros.getSubClusterId());
+    }
+
     public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService) {
         this.builder.and(new UsuarioPredicate()
-            .filtraPermitidos(usuario, usuarioService)
+            .filtraPermitidos(usuario, usuarioService, true)
             .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario))
             .build());
+        return this;
+    }
+
+    public UsuarioPredicate filtraPermitidosComParceiros(UsuarioAutenticado usuario, UsuarioService usuarioService,
+                                                         PublicoAlvoComunicadoFiltros filtros) {
+        this.builder.and(new UsuarioPredicate()
+            .filtraPermitidos(usuario, usuarioService, false)
+            .ouComUsuariosIds(usuarioService.getIdDosUsuariosSubordinadosDoPol(usuario, filtros))
+            .build());
+
         return this;
     }
 
@@ -374,4 +506,5 @@ public class UsuarioPredicate {
     public BooleanBuilder build() {
         return this.builder;
     }
+
 }

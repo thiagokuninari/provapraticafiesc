@@ -1,11 +1,14 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import helpers.Usuarios;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -33,6 +36,11 @@ public class SubClusterControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @MockBean
+    private EquipeVendaD2dService equipeVendaD2dService;
+    @MockBean
+    private SiteService siteService;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {

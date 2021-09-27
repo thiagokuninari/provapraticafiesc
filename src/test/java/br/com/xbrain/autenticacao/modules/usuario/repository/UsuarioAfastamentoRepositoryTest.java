@@ -24,9 +24,9 @@ public class UsuarioAfastamentoRepositoryTest {
     @Test
     public void getUsuariosInativosComAfastamentoEmAberto_deveRetornarOsUsuarios_quandoAfastametoVencerNaDataInformada() {
         assertEquals("INATIVO_COM_AFASTAMETNO_VENCENDO@XBRAIN.COM.BR",
-                usuarioAfastamentoRepository
-                        .getUsuariosInativosComAfastamentoEmAberto(LocalDate.of(2019, 1, 1))
-                        .get(0)
-                        .getEmail());
+            usuarioAfastamentoRepository
+                .getUsuariosInativosComAfastamentoEmAberto(LocalDate.of(2019, 1, 1))
+                .get(0)
+                .getEmail());
     }
 }

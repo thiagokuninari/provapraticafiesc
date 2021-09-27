@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -91,6 +92,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
+    private ETipoCanal tipoCanal;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
@@ -101,6 +103,7 @@ public class UsuarioDto implements Serializable {
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
     private String cupomLoja;
+    private Integer siteId;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -135,8 +138,8 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setNivelId(usuario.getNivelId());
         usuarioDto.setNivelCodigo(usuario.getNivelCodigo());
         usuarioDto.setHierarquiasId(usuario.getUsuariosHierarquia().stream()
-                .map(UsuarioHierarquia::getUsuarioSuperiorId)
-                .collect(Collectors.toList()));
+            .map(UsuarioHierarquia::getUsuarioSuperiorId)
+            .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
         return usuarioDto;
@@ -160,6 +163,6 @@ public class UsuarioDto implements Serializable {
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
         return !isEmpty(usuario.getUnidadesNegociosId())
-                ? usuario.getUnidadesNegociosId().get(0) : 0;
+            ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
 }

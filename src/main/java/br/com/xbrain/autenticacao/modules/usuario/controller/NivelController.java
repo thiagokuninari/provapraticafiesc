@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "api/niveis")
 public class NivelController {
@@ -24,5 +26,10 @@ public class NivelController {
     @GetMapping(value = "/permitidos/{tipoVisualizacao}")
     public Iterable<Nivel> getPermitidos(@PathVariable NivelTipoVisualizacao tipoVisualizacao) {
         return service.getPermitidos(tipoVisualizacao);
+    }
+
+    @GetMapping("comunicados")
+    public List<Nivel> getNiveisParaComunicados() {
+        return service.getPermitidosParaComunicados();
     }
 }

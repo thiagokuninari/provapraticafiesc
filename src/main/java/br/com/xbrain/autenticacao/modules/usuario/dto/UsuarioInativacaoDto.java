@@ -39,13 +39,13 @@ public class UsuarioInativacaoDto {
     @JsonIgnore
     public boolean isFerias() {
         return codigoMotivoInativacao == CodigoMotivoInativacao.FERIAS
-                && !isEmpty(dataInicio)
-                && !isEmpty(dataFim);
+            && !isEmpty(dataInicio)
+            && !isEmpty(dataFim);
     }
 
     @JsonIgnore
-    public  boolean isAfastamento() {
+    public boolean isAfastamento() {
         return codigoMotivoInativacao == CodigoMotivoInativacao.AFASTAMENTO
-                && !isEmpty(dataInicio);
+            && !isEmpty(dataInicio);
     }
 }

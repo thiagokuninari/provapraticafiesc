@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAut
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
@@ -75,6 +76,8 @@ public class UsuarioControllerTest {
     private UsuarioAgendamentoService usuarioAgendamentoService;
     @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @MockBean
+    private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
         return new UsuarioExecutivoResponse(id, email, nome);
@@ -921,6 +924,42 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_unauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of(1, 2, 3))))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarUsuarioSituacaoPorIds(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_badRequest_seListaVazia() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of())))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo usuariosIds é obrigatório.")));
+
+        verify(usuarioService, never()).buscarUsuarioSituacaoPorIds(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuarioSituacaoPorIds_ok_seListaNaoVazia() {
+        mvc.perform(post("/api/usuarios/usuario-situacao/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .content(convertObjectToJsonBytes(new UsuarioSituacaoFiltro(List.of(1, 2, 3))))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
+    }
+
+    @Test
+    @SneakyThrows
     public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
         mvc.perform(get("/api/usuarios")
             .param("organizacaoId", "5")
@@ -982,5 +1021,26 @@ public class UsuarioControllerTest {
             .id(id)
             .situacao(ESituacao.I)
             .build();
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarSituacaoUsuarioBloqueado_deveAcessarService_seAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(deslogarUsuarioPorExcessoDeUsoService, times(1)).atualizarSituacaoUsuarioBloqueado(eq(123));
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarSituacaoUsuarioBloqueado_naoDeveAcessarService_seNaoAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(deslogarUsuarioPorExcessoDeUsoService, never()).atualizarSituacaoUsuarioBloqueado(any(Integer.class));
     }
 }

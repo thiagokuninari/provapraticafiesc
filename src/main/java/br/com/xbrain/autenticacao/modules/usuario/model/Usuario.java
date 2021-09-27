@@ -5,14 +5,12 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -36,6 +34,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 
 @Data
 @ToString(of = "id")
@@ -107,10 +107,10 @@ public class Usuario {
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "USUARIO_UNIDADE_NEGOCIO", joinColumns = {
-            @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))}, inverseJoinColumns = {
-            @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))})
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_UNIDADE_NEGOCIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_UNID_NEGOCIO"))})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<UnidadeNegocio> unidadesNegocios;
 
@@ -128,10 +128,10 @@ public class Usuario {
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "USUARIO_EMPRESA", joinColumns = {
-            @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_USUARIO"))}, inverseJoinColumns = {
-            @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_EMPRESA", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_EMPRESA_EMPRESA"))})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Empresa> empresas;
 
@@ -142,13 +142,13 @@ public class Usuario {
 
     @NotNull
     @JoinColumn(name = "FK_CARGO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_CARGO"), nullable = false)
+        foreignKey = @ForeignKey(name = "FK_USUARIO_CARGO"), nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Cargo cargo;
 
     @NotNull
     @JoinColumn(name = "FK_DEPARTAMENTO", referencedColumnName = "ID", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_USUARIO_DEPART"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_DEPART"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Departamento departamento;
 
@@ -163,7 +163,7 @@ public class Usuario {
     @NotAudited
     @JsonIgnore
     @JoinColumn(name = "FK_USUARIO_CADASTRO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_USUARIO_CADASTRO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
 
@@ -209,8 +209,12 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @Column(name = "TIPO_CANAL")
+    @Enumerated(EnumType.STRING)
+    private ETipoCanal tipoCanal;
+
     @JoinColumn(name = "FK_ORGANIZACAO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
 
@@ -270,35 +274,36 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
+        departamento.getId();
         canais.size();
         return this;
     }
 
     public List<Integer> getEmpresasId() {
         return empresas != null && Hibernate.isInitialized(empresas)
-                ? empresas
-                .stream()
-                .map(Empresa::getId)
-                .collect(Collectors.toList())
-                : null;
+            ? empresas
+            .stream()
+            .map(Empresa::getId)
+            .collect(Collectors.toList())
+            : null;
     }
 
     public void setEmpresasId(List<Integer> ids) {
         if (ids != null) {
             empresas = ids
-                    .stream()
-                    .map(Empresa::new)
-                    .collect(Collectors.toList());
+                .stream()
+                .map(Empresa::new)
+                .collect(Collectors.toList());
         }
     }
 
     public List<String> getEmpresasNome() {
         return empresas != null && Hibernate.isInitialized(empresas)
-                ? empresas
-                .stream()
-                .map(Empresa::getNome)
-                .collect(Collectors.toList())
-                : null;
+            ? empresas
+            .stream()
+            .map(Empresa::getNome)
+            .collect(Collectors.toList())
+            : null;
     }
 
     public List<Integer> getUnidadesNegociosId() {
@@ -307,19 +312,19 @@ public class Usuario {
         }
 
         return unidadesNegocios != null
-                ? unidadesNegocios
-                .stream()
-                .map(UnidadeNegocio::getId)
-                .collect(Collectors.toList())
-                : null;
+            ? unidadesNegocios
+            .stream()
+            .map(UnidadeNegocio::getId)
+            .collect(Collectors.toList())
+            : null;
     }
 
     public void setUnidadesNegociosId(List<Integer> ids) {
         if (ids != null) {
             unidadesNegocios = ids
-                    .stream()
-                    .map(UnidadeNegocio::new)
-                    .collect(Collectors.toList());
+                .stream()
+                .map(UnidadeNegocio::new)
+                .collect(Collectors.toList());
         }
     }
 
@@ -370,8 +375,19 @@ public class Usuario {
 
     public Set<Integer> getCargosSuperioresId() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getSuperiores())
-                ? cargo.getSuperiores().stream().map(Cargo::getId).collect(Collectors.toSet())
-                : null;
+            ? cargo.getSuperiores().stream().map(Cargo::getId).collect(Collectors.toSet())
+            : null;
+    }
+
+    public Set<CodigoCargo> getCodigoCargoByCanais() {
+        if (!ObjectUtils.isEmpty(canais)) {
+            if (this.canais.size() > 1) {
+                return Set.of(OPERACAO_TELEVENDAS, VENDEDOR_OPERACAO);
+            } else if (this.canais.contains(ECanal.ATIVO_PROPRIO)) {
+                return Set.of(OPERACAO_TELEVENDAS);
+            }
+        }
+        return Set.of(VENDEDOR_OPERACAO);
     }
 
     public Integer getDepartamentoId() {
@@ -435,8 +451,8 @@ public class Usuario {
 
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
-                && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)
-                .contains(cargo.getCodigo());
+            && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS)
+            .contains(cargo.getCodigo());
     }
 
     public Integer getRecuperarSenhaTentativa() {
@@ -450,17 +466,17 @@ public class Usuario {
 
     public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
-                && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
+            && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
     }
 
     public boolean isSocioPrincipal() {
         return Objects.nonNull(this.cargo)
-                && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
+            && Objects.equals(this.cargo.getCodigo(), AGENTE_AUTORIZADO_SOCIO);
     }
 
     public boolean isBackoffice() {
         return Objects.nonNull(cargo) && Objects.nonNull(cargo.getNivel())
-                && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
+            && cargo.getNivel().getCodigo().equals(CodigoNivel.BACKOFFICE);
     }
 
     public void adicionarHistorico(UsuarioHistorico historico) {
@@ -495,5 +511,57 @@ public class Usuario {
 
     public boolean hasLoginNetSales() {
         return !StringUtils.isEmpty(loginNetSales);
+    }
+
+    public void verificarPermissaoCargoSobreCanais() {
+        if (!ObjectUtils.isEmpty(canais) && canais.stream().noneMatch(cargo::hasPermissaoSobreOCanal)) {
+            throw new ValidacaoException("Usuário sem permissão para o cargo com os canais.");
+        }
+    }
+
+    public static Set<Integer> convertFrom(Set<Usuario> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public static Set<Usuario> of(List<Integer> usuarios) {
+        return usuarios.stream()
+                .map(Usuario::new)
+                .collect(Collectors.toSet());
+    }
+
+    @JsonIgnore
+    public boolean isOperadorTelevendasAtivoLocal() {
+        return isCargo(OPERACAO_TELEVENDAS)
+                && hasCanal(ECanal.ATIVO_PROPRIO);
+    }
+
+    public boolean isXbrain() {
+        return XBRAIN == getNivelCodigo();
+    }
+
+    public boolean isXbrainOuMso() {
+        return isXbrain() || isMso();
+    }
+
+    public boolean isMso() {
+        return MSO == getNivelCodigo();
+    }
+
+    @JsonIgnore
+    public boolean isCanalAtivoLocalRemovido(Set<ECanal> canaisNovos) {
+        return Optional.ofNullable(canais)
+            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
+            .map(canaisOptional ->
+                canaisOptional.contains(ECanal.ATIVO_PROPRIO)
+                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.ATIVO_PROPRIO))
+            )
+            .orElse(false);
+    }
+
+    @JsonIgnore
+    public boolean isCoordenadorOuSupervisorOperacao() {
+        return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
     }
 }

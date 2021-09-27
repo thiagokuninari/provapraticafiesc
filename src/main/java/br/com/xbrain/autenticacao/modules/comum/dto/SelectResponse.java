@@ -22,5 +22,4 @@ public class SelectResponse implements Serializable {
     public static Integer getValueInt(SelectResponse usuarioSelectResponse) {
         return (Integer) usuarioSelectResponse.value;
     }
-
 }

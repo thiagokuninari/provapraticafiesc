@@ -6,8 +6,8 @@ server:
 
 spring:
   redis:
-    #    host: 127.0.0.1
-    #    port: 6379
+#    host: 127.0.0.1
+#    port: 6379
     host: 192.168.50.1
     port: 6379
     pool:
@@ -45,6 +45,7 @@ spring:
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
       maximumPoolSize: 2
+      connectionTimeout: 10000
 
   rabbitmq:
     host: 192.168.50.1
@@ -79,8 +80,8 @@ app-config:
   email:
     enviar: true
     empresa-alias: XBRAIN
-    emails: viola@xbrain.com.br
-    emails-solicitacao-ramal: renato@xbrain.com.br
+    emails: viola@xbrain.com.br,jose@xbrain.com.br
+    emails-solicitacao-ramal: jose@xbrain.com.br
 
   multiplo-login:
     emails: colaborador@claro.com.br
@@ -92,6 +93,7 @@ app-config:
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
+    usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
@@ -114,11 +116,11 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
+    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
-    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
-    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
     cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
     sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
@@ -215,11 +217,11 @@ app-config:
 
   services:
     autenticacao:
-      #url: http://localhost:8096
-      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      # url: http://localhost:8096
+      url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
-      #url: http://localhost:8094
+      # url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
       #url: http://localhost:8099
@@ -231,10 +233,12 @@ app-config:
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
-      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      url: http://api-dev.conexaoclarobrasil.com.br/equipe-venda
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn
+    comunicados:
+      url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
     claro-indico:
       #url: http://localhost:8055
       url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
@@ -254,7 +258,7 @@ app-config:
       url: http://192.168.50.1:6595
     emails:
       #url: http://localhost:8080
-      url: http://192.168.50.1:6541
+      url: http://api-hom.conexaoclarobrasil.com.br/email
 
 flyway:
   enabled: true
@@ -282,6 +286,9 @@ zuul:
     contato-crn:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.contato-crn.url}
+    comunicados:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.comunicados.url}
     claro-indico:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.claro-indico.url}
@@ -310,6 +317,13 @@ hystrix:
           thread:
             timeoutInMilliseconds: 300000
   shareSecurityContext: true
+
+feign:
+  client:
+    config:
+      agenteAutorizadoNovoClient:
+        connectTimeout: 360000
+        readTimeout: 360000
 
 keys:
   public: |

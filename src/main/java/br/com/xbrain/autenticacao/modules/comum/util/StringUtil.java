@@ -48,7 +48,7 @@ public class StringUtil {
             }
         }
 
-        return valorFormatado.replaceAll("[;|,|\t]", "");
+        return valorFormatado.replaceAll("[\\[\\];|,|\t]", "");
     }
 
     public static String getNomeAbreviado(String nome) {
@@ -71,5 +71,14 @@ public class StringUtil {
     public static String getSenhaRandomica(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
+    }
+
+    public static String extrairNumerosELetras(String str) {
+        return removerAcentos(str).replaceAll("[\\W|_]", "");
+    }
+
+    public static boolean existeSemelhancaEntreNomes(String nomeOrigem, String nomeDestino) {
+        return extrairNumerosELetras(nomeOrigem)
+            .equalsIgnoreCase(extrairNumerosELetras(nomeDestino));
     }
 }

@@ -5,15 +5,16 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltrosHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioPermissoesResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.assertj.core.groups.Tuple;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,17 +33,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento.COMERCIAL;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -61,13 +64,12 @@ public class UsuarioServiceTestOracle {
     private UsuarioService service;
     @MockBean
     private AutenticacaoService autenticacaoService;
-
+    @MockBean
+    private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
-    @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
 
@@ -79,6 +81,11 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getVendedoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
         Assert.assertEquals(5, service.getVendedoresOperacaoDaHierarquia(227).size());
+    }
+
+    @Test
+    public void getSupervisoresOperacaoDaHierarquia_idsDosVendedores_quandoForGerenteOperacaoPelaHierarquia() {
+        Assert.assertEquals(3, service.getSupervisoresOperacaoDaHierarquia(227).size());
     }
 
     @Test
@@ -117,13 +124,81 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void findAllAutoComplete_deveRetornarExecutivosOperacao_quandoDepartamentoForComercial() {
-        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial())
+        assertThat(service.findAllExecutivosOperacaoDepartamentoComercial(null))
             .extracting("value", "text")
             .containsExactly(
                 tuple(116, "ALBERTO PEREIRA"),
                 tuple(119, "JOANA OLIVEIRA"),
                 tuple(117, "ROBERTO ALMEIDA"),
                 tuple(149, "USUARIO INFERIOR"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeNaoReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                Tuple.tuple(111, "HELPDESK"),
+                Tuple.tuple(104, "operacao_gerente_comercial"),
+                Tuple.tuple(115, "joao silveira"),
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
+                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
+                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
+                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(369, "MARIA AUGUSTA"),
+                Tuple.tuple(370, "HELIO OLIVEIRA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarSeReceberCidadesDoPol_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .subClusterId(189)
+            .grupoId(20)
+            .regionalId(3)
+            .clusterId(45)
+            .cidadesIds(List.of(5578))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                Tuple.tuple(111, "HELPDESK"),
+                Tuple.tuple(104, "operacao_gerente_comercial"),
+                Tuple.tuple(115, "joao silveira"),
+                Tuple.tuple(100, "ADMIN"),
+                Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
+                Tuple.tuple(235, "SUPERVISOR OPERACAO 3"),
+                Tuple.tuple(236, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(237, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(238, "COORDENADOR OPERACAO 3"),
+                Tuple.tuple(239, "VENDEDOR OPERACAO 2"),
+                Tuple.tuple(240, "VENDEDOR OPERACAO 3"),
+                Tuple.tuple(369, "MARIA AUGUSTA"),
+                Tuple.tuple(370, "HELIO OLIVEIRA"));
     }
 
     @Test
@@ -160,38 +235,38 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getAllForCsv_ListaComUsuariosParaExportacaoCsv_ComFiltroPorNomeUsuario() {
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado
-                        .builder()
-                        .nivelCodigo(XBRAIN.name())
-                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                        .build());
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .nivelCodigo(XBRAIN.name())
+                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                .build());
 
         assertThat(service.getAllForCsv(getFiltroUsuario("USUARIO TESTE")))
-                .hasSize(1)
-                .extracting(
-                        "nome",
-                        "email",
-                        "empresas",
-                        "unidadesNegocios",
-                        "cargo",
-                        "departamento")
-                .containsExactly(tuple(
-                        "USUARIO TESTE",
-                        "USUARIO_TESTE@GMAIL.COM",
-                        "NET.Xbrain",
-                        "Xbrain.Pessoal",
-                        "Vendedor",
-                        "Administrador"));
+            .hasSize(1)
+            .extracting(
+                "nome",
+                "email",
+                "empresas",
+                "unidadesNegocios",
+                "cargo",
+                "departamento")
+            .containsExactly(tuple(
+                "USUARIO TESTE",
+                "USUARIO_TESTE@GMAIL.COM",
+                "Xbrain.NET",
+                "Pessoal.Xbrain",
+                "Vendedor",
+                "Administrador"));
     }
 
     @Test
     public void getPermissoesPorUsuarios_permissoesComUsuario_conformeParametroUsuarioIdAndPermissao() {
         UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
         request.setPermissoes(Arrays.asList(
-                "ROLE_VDS_TABULACAO_DISCADORA",
-                "ROLE_VDS_TABULACAO_CLICKTOCALL",
-                "ROLE_VDS_TABULACAO_PERSONALIZADA",
-                "ROLE_VDS_TABULACAO_MANUAL"));
+            "ROLE_VDS_TABULACAO_DISCADORA",
+            "ROLE_VDS_TABULACAO_CLICKTOCALL",
+            "ROLE_VDS_TABULACAO_PERSONALIZADA",
+            "ROLE_VDS_TABULACAO_MANUAL"));
         request.setUsuariosId(Arrays.asList(231, 238, 245, 243));
 
         List<UsuarioPermissoesResponse> response = service.findUsuariosByPermissoes(request);
@@ -201,15 +276,15 @@ public class UsuarioServiceTestOracle {
                 Arrays.asList(
                     new UsuarioPermissoesResponse(231, Collections.emptyList()),
                     new UsuarioPermissoesResponse(238, Collections.singletonList(
-                            "ROLE_VDS_TABULACAO_DISCADORA")),
+                        "ROLE_VDS_TABULACAO_DISCADORA")),
                     new UsuarioPermissoesResponse(243, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_CLICKTOCALL",
-                            "ROLE_VDS_TABULACAO_DISCADORA",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA")),
+                        "ROLE_VDS_TABULACAO_CLICKTOCALL",
+                        "ROLE_VDS_TABULACAO_DISCADORA",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA")),
                     new UsuarioPermissoesResponse(245, Arrays.asList(
-                            "ROLE_VDS_TABULACAO_MANUAL",
-                            "ROLE_VDS_TABULACAO_PERSONALIZADA"))
-                    ));
+                        "ROLE_VDS_TABULACAO_MANUAL",
+                        "ROLE_VDS_TABULACAO_PERSONALIZADA"))
+                ));
     }
 
     @Test
@@ -231,11 +306,11 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getSubordinadosDoUsuarioPorCargo_deveRetornarUsuariosSubordinados_quandoUsuarioPossuirSubordinadosComCargoExecutivoOuHunter() {
         assertThat(service.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(115))
-                .hasSize(3)
-                .extracting("value", "text")
-                .contains(
-                        tuple(116, "ALBERTO PEREIRA"),
-                        tuple(117, "ROBERTO ALMEIDA"),
+            .hasSize(3)
+            .extracting("value", "text")
+            .contains(
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(117, "ROBERTO ALMEIDA"),
                         tuple(119, "JOANA OLIVEIRA"));
     }
 
@@ -255,14 +330,14 @@ public class UsuarioServiceTestOracle {
                         tuple(116, "ALBERTO PEREIRA", "88855511147", "ALBERTO@NET.COM",
                                 OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
                         tuple(118, "HENRIQUE ALVES", "88855511177", "HENRIQUE@NET.COM",
-                                CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
-                                "Sócio Principal"),
-                        tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
-                        tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
-                                OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
+                            CodigoNivel.AGENTE_AUTORIZADO, CodigoDepartamento.AGENTE_AUTORIZADO, AGENTE_AUTORIZADO_SOCIO,
+                            "Sócio Principal"),
+                    tuple(120, "MARIA AUGUSTA", "88855511133", "MARIA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(117, "ROBERTO ALMEIDA", "88855511199", "ROBERTO@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO, "Executivo"),
+                    tuple(119, "JOANA OLIVEIRA", "88855511166", "JOANA@NET.COM",
+                        OPERACAO, COMERCIAL, EXECUTIVO_HUNTER, "Executivo Hunter"));
     }
 
     @Test
@@ -293,15 +368,32 @@ public class UsuarioServiceTestOracle {
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {
         return UsuarioFiltrosHierarquia.builder()
-                .usuarioId(Collections.singletonList(101))
-                .codigoNivel(OPERACAO)
-                .codigoDepartamento(COMERCIAL)
-                .codigoCargo(GERENTE_OPERACAO)
-                .build();
+            .usuarioId(Collections.singletonList(101))
+            .codigoNivel(OPERACAO)
+            .codigoDepartamento(COMERCIAL)
+            .codigoCargo(GERENTE_OPERACAO)
+            .build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
         return new UsuarioAutenticado(umUsuarioComHierarquia());
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticadoCompleto() {
+        return UsuarioAutenticado
+            .builder()
+            .id(1)
+            .nome("USUARIO")
+            .email("USUARIO@TESTE.COM")
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN)
+            .nivelCodigo(XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
+            .build();
     }
 
     private UsuarioFiltros getFiltroUsuario(String nome) {

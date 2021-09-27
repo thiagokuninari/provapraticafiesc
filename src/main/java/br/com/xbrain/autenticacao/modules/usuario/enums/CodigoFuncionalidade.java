@@ -16,6 +16,8 @@ public enum CodigoFuncionalidade {
     AUT_2023("Gerenciar Cargos"),
     AUT_EMULAR_USUARIO("Emular Usuários"),
     AUT_DESLOGAR_USUARIO("Deslogar Usuários"),
+    AUT_2046("Visualizar Sites"),
+    AUT_2047("Gerenciar Sites"),
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),
     AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário"),
     AUT_2100("Visualizar relatório de login / logout"),
@@ -32,7 +34,9 @@ public enum CodigoFuncionalidade {
     VDS_3061("Visualizar Relatório Consulta de Crédito"),
     REL_10014("Relatório Consulta de Crédito"),
     FDR_GERENCIAR_LEAD("Gerenciar Lead"),
-    MLG_5018("Gerenciar Distribuição Mailing Segmentação");
+    MLG_5018("Gerenciar Distribuição Mailing Segmentação"),
+    CTR_2044("Visualizar todos os Sites"),
+    INT_7007("Resgatar tratativas para motiva");
 
     @Getter
     private String descricao;

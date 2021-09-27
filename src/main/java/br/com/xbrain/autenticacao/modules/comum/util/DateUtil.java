@@ -30,6 +30,12 @@ public class DateUtil {
         }
     }
 
+    public static void validarPeriodoMaximo(LocalDate dataInicial, LocalDate dataFinal, Integer qtdMaximaDias) {
+        if (ChronoUnit.DAYS.between(dataInicial, dataFinal) > qtdMaximaDias) {
+            throw new ValidacaoException("O período não deve ser superior a " + qtdMaximaDias + " dias.");
+        }
+    }
+
     public static String formatarDataHora(EFormatoDataHora format, LocalDateTime data) {
         var response = "";
         if (!ObjectUtils.isEmpty(data)) {
@@ -37,5 +43,17 @@ public class DateUtil {
             response = data.format(formatter);
         }
         return response;
+    }
+
+    public static void validarDataInicialPosteriorDataFinal(LocalDate dataInicial, LocalDate dataFinal) {
+        if (dataInicial.isAfter(dataFinal)) {
+            throw new ValidacaoException("Data inicial não pode ser posterior a data final.");
+        }
+    }
+
+    public static void validarDataFinalPosteriorAAtual(LocalDate data) {
+        if (data.isAfter(LocalDate.now())) {
+            throw new ValidacaoException("Data final não pode ser posterior a atual.");
+        }
     }
 }

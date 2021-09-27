@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
@@ -11,7 +12,9 @@ import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -31,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,21 +42,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -60,7 +61,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @Transactional
 @Sql(scripts = {"classpath:/tests_database_oracle.sql", "classpath:/tests_hierarquia.sql",
-    "classpath:/tests_usuario_remanejamento.sql"})
+    "classpath:/tests_usuario_remanejamento.sql", "classpath:/tests_editar_sites.sql"})
 public class UsuarioServiceIT {
 
     @Rule
@@ -109,6 +110,8 @@ public class UsuarioServiceIT {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @MockBean
     private FeederService feederService;
+    @Autowired
+    private SiteRepository siteRepository;
 
     @Before
     public void setUp() {
@@ -227,12 +230,12 @@ public class UsuarioServiceIT {
     @Test
     public void inativar_deveGerarUsuarioFerias_quandoOMotivoDaInativacaoForFerias() {
         service.inativar(UsuarioInativacaoDto
-                .builder()
-                .idUsuario(100)
-                .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
-                .dataInicio(LocalDate.of(2019, 1, 1))
-                .dataFim(LocalDate.of(2019, 2, 1))
-                .build());
+            .builder()
+            .idUsuario(100)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
+            .dataInicio(LocalDate.of(2019, 1, 1))
+            .dataFim(LocalDate.of(2019, 2, 1))
+            .build());
 
         Usuario usuario = service.findByIdCompleto(100);
         assertEquals(usuario.getSituacao(), ESituacao.I);
@@ -311,7 +314,7 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setCpf("43185104099");
         service.updateFromQueue(usuarioMqRequest);
         Usuario usuario = usuarioRepository
-                .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
+            .findTop1UsuarioByCpf("43185104099").orElseThrow(() -> new ValidacaoException("Usuário não encontrado"));
         assertThat(usuario).isNotNull();
         assertThat(usuario.getCpf()).isEqualTo("43185104099");
         assertThat(usuario.getHistoricos()).isNotNull();
@@ -337,17 +340,17 @@ public class UsuarioServiceIT {
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
         when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(245)
-                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-                .build());
+            .idUsuario(245)
+            .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+            .build());
 
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
-                .extracting("id", "nome", "email", "cpf", "situacao")
-                .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
+            .extracting("id", "nome", "email", "cpf", "situacao")
+            .containsExactly(245, "ALBERTO ALVES", "ALBERTO_AA_@GMAIL.COM", "45723327708", ESituacao.A);
         assertThat(usuarioLocalizado.getHistoricos())
-                .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
-                .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
+            .extracting("usuario.id", "motivoInativacao", "usuarioAlteracao.id", "observacao", "situacao")
+            .containsExactly(tuple(245, null, 101, "ATIVANDO O SÓCIO PRINCIPAL", ESituacao.A));
     }
 
     @Test
@@ -355,9 +358,9 @@ public class UsuarioServiceIT {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativado por não possuir CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(246)
-                .observacao("ATIVANDO UM USUÁRIO")
-                .build());
+            .idUsuario(246)
+            .observacao("ATIVANDO UM USUÁRIO")
+            .build());
     }
 
     @Test
@@ -365,11 +368,11 @@ public class UsuarioServiceIT {
         when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
-                + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
+            + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(245)
-                .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-                .build());
+            .idUsuario(245)
+            .observacao("ATIVANDO O SÓCIO PRINCIPAL")
+            .build());
     }
 
     @Test
@@ -378,9 +381,9 @@ public class UsuarioServiceIT {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
-                .idUsuario(243)
-                .observacao("Teste ativar")
-                .build());
+            .idUsuario(243)
+            .observacao("Teste ativar")
+            .build());
     }
 
     @Test
@@ -414,7 +417,7 @@ public class UsuarioServiceIT {
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoop() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
-                + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
+            + " pois o usuário mso_analistaadm_claromovel_pessoal é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComLoopNaHierarquia();
         service.hierarquiaIsValida(usuario);
 
@@ -424,7 +427,7 @@ public class UsuarioServiceIT {
     public void deveGerarExcessaoNaHierarquiaPeloProprioUsuarioFicarEmLoopCom2Niveis() {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Não é possível adicionar o usuário ADMIN como superior,"
-                + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
+            + " pois o usuário INATIVO é superior a ele em sua hierarquia.");
         Usuario usuario = umUsuarioComProximoUsuarioComoSuperior();
         service.hierarquiaIsValida(usuario);
 
@@ -522,21 +525,21 @@ public class UsuarioServiceIT {
     public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
         var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet(
-                Arrays.asList(
-                        UsuarioCidade.criar(usuario, 3237, 100),
-                        UsuarioCidade.criar(usuario, 1443, 100),
-                        UsuarioCidade.criar(usuario, 2466, 100),
-                        UsuarioCidade.criar(usuario, 3022, 100))));
+            Arrays.asList(
+                UsuarioCidade.criar(usuario, 3237, 100),
+                UsuarioCidade.criar(usuario, 1443, 100),
+                UsuarioCidade.criar(usuario, 2466, 100),
+                UsuarioCidade.criar(usuario, 3022, 100))));
         service.save(usuario);
         var usuarioComCidadesAtualizadas = service.findByIdCompleto(100);
         assertThat(usuarioComCidadesAtualizadas.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 3237),
-                        tuple(100, 1443),
-                        tuple(100, 2466),
-                        tuple(100, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 3237),
+                tuple(100, 1443),
+                tuple(100, 2466),
+                tuple(100, 3022));
 
         assertThat(usuarioComCidadesAtualizadas.getHistoricos()).isNotNull();
         assertThat(usuarioComCidadesAtualizadas.getHistoricos())
@@ -568,10 +571,10 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioAtualizado = service.findByIdCompleto(100);
         assertThat(usuarioAtualizado.getCidades())
-                .hasSize(1)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(100, 5578));
+            .hasSize(1)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(100, 5578));
 
         assertThat(usuarioAtualizado.getHistoricos()).isNotNull();
         assertThat(usuarioAtualizado.getHistoricos())
@@ -592,13 +595,13 @@ public class UsuarioServiceIT {
         service.save(usuario);
         var usuarioComNovasCidades = service.findByIdCompleto(101);
         assertThat(usuarioComNovasCidades.getCidades())
-                .hasSize(4)
-                .extracting("usuario.id", "cidade.id")
-                .containsExactlyInAnyOrder(
-                        tuple(101, 3237),
-                        tuple(101, 1443),
-                        tuple(101, 2466),
-                        tuple(101, 3022));
+            .hasSize(4)
+            .extracting("usuario.id", "cidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(101, 3237),
+                tuple(101, 1443),
+                tuple(101, 2466),
+                tuple(101, 3022));
 
         assertThat(usuarioComNovasCidades.getHistoricos()).isNotNull();
         assertThat(usuarioComNovasCidades.getHistoricos())
@@ -610,7 +613,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getSuperioresDoUsuario_deveRetornar_quandoPossuirSuperiores() {
-        assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactly(112, 113);
+        assertThat(service.getSuperioresDoUsuario(110)).hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
     }
 
     @Test
@@ -626,7 +629,7 @@ public class UsuarioServiceIT {
     @Test
     public void getSuperioresDoUsuarioPorCargo_deveRetornar_quandoPossuirSuperiores() {
         assertThat(service.getSuperioresDoUsuarioPorCargo(110, CodigoCargo.ADMINISTRADOR))
-                .hasSize(2).extracting("id").containsExactly(112, 113);
+            .hasSize(2).extracting("id").containsExactlyInAnyOrder(112, 113);
     }
 
     @Test
@@ -665,10 +668,336 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .cargosIds(List.of(20, 40)).build());
+        assertThat(usuarios).containsExactlyInAnyOrder(114, 366, 368, 246);
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(true).build());
+        assertThat(usuarios).isEqualTo(List.of(105, 239, 240, 366, 369));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalD2d(true).build());
+        assertThat(usuarios).isEqualTo(List.of(233, 234, 235, 236, 237, 238, 239, 240));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .usuariosIds(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 104, 105));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .niveisIds(List.of(4, 3)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .cidadesIds(List.of(5578)).build());
+        assertThat(usuarios).isEqualTo(List.of(100, 104, 233, 234, 235, 236, 237, 238, 239, 240, 369, 370));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .niveisIds(List.of(4, 3))
+            .usuariosIds(List.of(100, 101))
+            .cidadesIds(List.of(5578))
+            .build());
+        assertThat(usuarios).isEqualTo(List.of(100));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCargo() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .cargosIds(List.of(20, 40)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(tuple(114, "mso_analistaadm_claromovel_pessoal"),
+            tuple(366, "mso_analistaadm_claromovel_pessoal"),
+            tuple(368, "mso_analistaadm_claromovel_pessoal_dois"),
+            tuple(246, "JOAO FONSECA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(true).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+            tuple(105, "INATIVO"),
+            tuple(239, "VENDEDOR OPERACAO 2"),
+            tuple(240, "VENDEDOR OPERACAO 3"),
+            tuple(366, "mso_analistaadm_claromovel_pessoal"),
+            tuple(369, "MARIA AUGUSTA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCanalD2d() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalD2d(true).build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(tuple(233, "VENDEDOR OPERACAO 3"),
+                tuple(234, "COORDENADOR OPERACAO 2"),
+                tuple(235, "SUPERVISOR OPERACAO 3"),
+                tuple(236, "VENDEDOR OPERACAO 2"),
+                tuple(237, "VENDEDOR OPERACAO 3"),
+                tuple(238, "COORDENADOR OPERACAO 3"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdDoUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .usuariosIds(List.of(100, 101, 102, 103, 104, 105, 106)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+            tuple(100, "ADMIN"),
+            tuple(101, "HELPDESK"),
+            tuple(104, "operacao_gerente_comercial"),
+            tuple(105, "INATIVO"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .niveisIds(List.of(4, 3)).build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(101, "HELPDESK"),
+                tuple(105, "INATIVO"),
+                tuple(110, "ADMIN"),
+                tuple(111, "HELPDESK"),
+                tuple(112, "INATIVO"),
+                tuple(113, "INATIVO"),
+                tuple(118, "HENRIQUE ALVES"),
+                tuple(121, "LUIS GUILHERME"),
+                tuple(243, "VENDEDOR AA TELEVENDAS 3"),
+                tuple(245, "ALBERTO ALVES"),
+                tuple(246, "JOAO FONSECA"),
+                tuple(247, "VENDEDOR AA D2D 3"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirCidade() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .cidadesIds(List.of(5578)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+            tuple(100, "ADMIN"),
+            tuple(104, "operacao_gerente_comercial"),
+            tuple(233, "VENDEDOR OPERACAO 3"),
+            tuple(234, "COORDENADOR OPERACAO 2"),
+            tuple(235, "SUPERVISOR OPERACAO 3"),
+            tuple(236, "VENDEDOR OPERACAO 2"),
+            tuple(237, "VENDEDOR OPERACAO 3"),
+            tuple(238, "COORDENADOR OPERACAO 3"),
+            tuple(239, "VENDEDOR OPERACAO 2"),
+            tuple(240, "VENDEDOR OPERACAO 3"),
+            tuple(369, "MARIA AUGUSTA"),
+            tuple(370, "HELIO OLIVEIRA"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirAsCondicoes() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .niveisIds(List.of(4, 3))
+            .usuariosIds(List.of(100, 101))
+            .cidadesIds(List.of(5578)).build());
+        assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
+            tuple(100, "ADMIN")
+        );
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveTrazerTodos_seNaoPossuirFiltro() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .build());
+        assertThat(usuarios).hasSize(54);
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarPorAA_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        doReturn(List.of(umUsuarioAa(100), umUsuarioAa(111), umUsuarioAa(104), umUsuarioAa(115)))
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(anyInt(), any());
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .agentesAutorizadosIds(List.of(100))
+            .build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(111, "HELPDESK"),
+                tuple(115, "joao silveira"));
+    }
+
+    @Test
+    public void getIdDosUsuariosAlvoDoComunicado_deveLancarException_quandoNaoEncontrarNenhumUsuarioDoAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+                .agentesAutorizadosIds(List.of(5578)).build()))
+            .withMessage("Não foi encontrado nenhum usuário do agente autorizado");
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarPorEquipe_seRetornarUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        when(equipeVendaD2dClient.getUsuariosDaEquipe(any()))
+            .thenReturn(List.of(umUsuarioResponse(100),
+                umUsuarioResponse(111),
+                umUsuarioResponse(104),
+                umUsuarioResponse(115)));
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .equipesVendasIds(List.of(100))
+            .build());
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(111, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(115, "joao silveira"));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarComUsuariosDoPol_seNaoPossuirHierarquiaNoBanco() {
+        var user = umUsuarioAutenticado();
+        user.setId(115);
+        user.setPermissoes(List.of());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(user);
+        when(agenteAutorizadoClient.getIdsUsuariosPermitidosDoUsuario(any()))
+            .thenReturn(List.of(111, 104, 115));
+
+        assertThat(service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder().build()))
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(111, "HELPDESK")
+            );
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveFiltrarUsuarios_sePossuirIdAA() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        usuarioRepository.findAll()
+            .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
+        doReturn(umaListaUsuarioResponse(100))
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(10), any());
+
+        doReturn(umaListaUsuarioResponse(104))
+            .when(agenteAutorizadoNovoClient).getUsuariosByAaId(eq(20), any());
+
+        var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
+            .agentesAutorizadosIds(List.of(10, 20))
+            .build());
+
+        assertThat(usuarios).extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(101, "HELPDESK"),
+                tuple(104, "operacao_gerente_comercial"),
+                tuple(105, "INATIVO"));
+    }
+
+    private List<UsuarioAgenteAutorizadoResponse> umaListaUsuarioResponse(Integer id) {
+        return List.of(umUsuarioAa(id), umUsuarioAa(id + 1));
+    }
+
+    private UsuarioAgenteAutorizadoResponse umUsuarioAa(int id) {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(id)
+            .nome("nome " + id)
+            .build();
+    }
+
+    @Test
     public void getUsuariosInativosByIds_retornarUsuriosInativos_quandoForPassadoIds() {
         assertThat(service.getUsuariosInativosByIds(List.of(100, 101, 105, 370)))
-                .hasSize(2).extracting("id", "situacao")
-                .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
+            .hasSize(2).extracting("id", "situacao")
+            .contains(tuple(105, ESituacao.I), tuple(370, ESituacao.I));
     }
 
     @Test
@@ -761,7 +1090,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -782,7 +1111,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, usuarioId,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -804,7 +1133,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JOHN@GMAIL.COM", "47492951671", IMPORTADOR_CARGAS, 97, usuarioId,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -852,7 +1181,7 @@ public class UsuarioServiceIT {
                 "usuarioCadastro.id", "dataCadastro", "empresasId", "departamentoId", "nivelCodigo", "unidadesNegociosId",
                 "alterarSenha")
             .containsExactlyInAnyOrder("JOHN DOE", "JONNY@GMAIL.COM", "47492951671", GERADOR_LEADS, 96, 231,
-                LocalDateTime.of(2020,1, 29, 11, 11, 11), List.of(2, 3), 68,
+                LocalDateTime.of(2020, 1, 29, 11, 11, 11), List.of(2, 3), 68,
                 CodigoNivel.FEEDER, List.of(2), Eboolean.V);
 
         verify(notificacaoService, times(1)).enviarEmailDadosDeAcesso(any(), any());
@@ -865,13 +1194,13 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(Arrays.asList(100)).superiorNovo(113).superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .extracting("usuario.id", "usuarioSuperior.id")
-                .contains(100, 113);
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .contains(100, 113);
     }
 
     @Test
@@ -879,15 +1208,15 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOutroUsuarioAutenticado());
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(List.of(100))
-                .superiorNovo(113)
-                .superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(List.of(100))
+            .superiorNovo(113)
+            .superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .extracting("usuario.id", "usuarioSuperior.id")
-                .contains(100, 113);
+            .extracting("usuario.id", "usuarioSuperior.id")
+            .contains(100, 113);
     }
 
     @Test
@@ -895,14 +1224,14 @@ public class UsuarioServiceIT {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(null);
 
         service.vincularUsuarioParaNovaHierarquia(AlteraSuperiorRequest
-                .builder()
-                .usuarioIds(List.of(100))
-                .superiorNovo(113)
-                .superiorAntigo(110)
-                .build());
+            .builder()
+            .usuarioIds(List.of(100))
+            .superiorNovo(113)
+            .superiorAntigo(110)
+            .build());
 
         assertThat(usuarioHierarquiaRepository.findByUsuarioHierarquia(100, 113))
-                .isNull();
+            .isNull();
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {
@@ -958,13 +1287,20 @@ public class UsuarioServiceIT {
         return usuario;
     }
 
+    private SelectResponse umUsuarioResponse(int id) {
+        return SelectResponse.builder()
+            .value(id)
+            .label("usuario " + id)
+            .build();
+    }
+
     private UsuarioAutenticado umOutroUsuarioAutenticado() {
         var usuario = usuarioRepository.findOne(100);
         return UsuarioAutenticado
-                .builder()
-                .id(110)
-                .usuario(usuario)
-                .build();
+            .builder()
+            .id(110)
+            .usuario(usuario)
+            .build();
     }
 
     private Usuario umUsuarioVendedorD2d() {
@@ -1025,15 +1361,21 @@ public class UsuarioServiceIT {
             .id(1)
             .nome("USUARIO")
             .email("USUARIO@TESTE.COM")
-            .cargoCodigo(GERENTE_OPERACAO)
-            .nivelCodigo(OPERACAO.name())
+            .usuario(Usuario.builder()
+                .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.AGENTE_AUTORIZADO))
+                .build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN)
+            .nivelCodigo(XBRAIN.name())
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
             .build();
     }
 
     private UsuarioFeederMqDto umUsuarioFeeder() {
         return UsuarioFeederMqDto.builder()
             .cpf("47492951671")
-            .dataCadastro(LocalDateTime.of(2020,1, 29, 11, 11, 11))
+            .dataCadastro(LocalDateTime.of(2020, 1, 29, 11, 11, 11))
             .email("JOHN@GMAIL.COM")
             .geradorLeadsId(101)
             .telefone("998230087")
@@ -1049,8 +1391,9 @@ public class UsuarioServiceIT {
         assertThat(usuarioService.buscarUsuariosAtivosNivelOperacaoCanalAa())
             .extracting("value", "label")
             .containsExactlyInAnyOrder(
-                tuple(239,"VENDEDOR OPERACAO 2"),
-                tuple(240,"VENDEDOR OPERACAO 3")
+                tuple(369, "MARIA AUGUSTA"),
+                tuple(239, "VENDEDOR OPERACAO 2"),
+                tuple(240, "VENDEDOR OPERACAO 3")
             );
     }
 

@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -89,6 +90,8 @@ public class UsuarioGerenciaControllerTest {
     private AgenteAutorizadoClient agenteAutorizadoClient;
     @MockBean
     private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
+    @MockBean
+    private SiteService siteService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -142,14 +145,17 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
                 .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
                 .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
                 .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
                 .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
                 .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
-                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")));
+                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
+                .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
+                .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
+                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")));
     }
 
     @Test
@@ -525,17 +531,19 @@ public class UsuarioGerenciaControllerTest {
                 .getContentAsString();
 
         assertEquals(
-                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A\n"
+                        + "X-Brain. Claro Residencial;X-Brain. Claro TV;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A", csv);
+                        + "X-Brain. Residencial e Combos;X-Brain. Claro TV;A;;;;;;;;", csv);
     }
 
     @Test
     public void getCsv_CsvFormatadoCorretamente_QuandoUsuarioNaoPossuirEmpresaEUnidadeNegocio() throws Exception {
         doReturn(doisUsuariosCsvResponseSemEmpresasEUnidadesNegocios())
                 .when(usuarioService).getAllForCsv(any(UsuarioFiltros.class));
+
         String csv = mvc.perform(get(API_URI + "/csv")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -545,12 +553,12 @@ public class UsuarioGerenciaControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(
-                "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO\n"
+        assertEquals("\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
-                        + ";;A\n"
+                        + ";;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
-                        + ";;A", csv);
+                        + ";;A;;;;;;;;", csv);
     }
 
     @Test

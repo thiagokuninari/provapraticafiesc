@@ -11,7 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Optional.*;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 @Service
 public class UsuarioAfastamentoService {
@@ -22,9 +23,9 @@ public class UsuarioAfastamentoService {
     public Optional<UsuarioAfastamento> save(Usuario usuario, UsuarioInativacaoDto usuarioInativacao) {
         if (usuarioInativacao.isAfastamento()) {
             return of(repository.save(
-                    UsuarioAfastamento.of(usuario,
-                            usuarioInativacao.getDataInicio(),
-                            usuarioInativacao.getDataFim())));
+                UsuarioAfastamento.of(usuario,
+                    usuarioInativacao.getDataInicio(),
+                    usuarioInativacao.getDataFim())));
         }
         return empty();
     }

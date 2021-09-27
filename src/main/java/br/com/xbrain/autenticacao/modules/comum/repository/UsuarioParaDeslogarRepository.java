@@ -11,5 +11,5 @@ public interface UsuarioParaDeslogarRepository extends JpaRepository<UsuarioPara
 
     List<UsuarioParaDeslogar> findAllByDeslogado(Eboolean deslogado);
 
-    Optional<UsuarioParaDeslogar> findByUsuarioId(Integer usuarioId);
+    Optional<UsuarioParaDeslogar> findFirstByUsuarioIdOrderByDataCadastroDesc(Integer usuarioId);
 }
