@@ -481,7 +481,7 @@ public class UsuarioController {
     }
 
     @GetMapping("permitidos/select/por-cargos")
-    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(
+    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(
         @RequestParam List<CodigoCargo> codigosCargos) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(codigosCargos);
     }
