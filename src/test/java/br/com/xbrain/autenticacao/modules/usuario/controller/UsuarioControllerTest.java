@@ -36,6 +36,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -1001,5 +1003,30 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verify(deslogarUsuarioPorExcessoDeUsoService, never()).atualizarSituacaoUsuarioBloqueado(any(Integer.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get("/api/usuarios/permitidos/select/por-cargos")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .header("Authorization", "")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
+        mvc.perform(get("/api/usuarios/permitidos/select/por-cargos")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO)));
     }
 }

@@ -479,4 +479,10 @@ public class UsuarioController {
     public void alterarSituacaoUsuarioBLoqueado(@PathVariable Integer usuarioId) {
         deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
     }
+
+    @GetMapping("permitidos/select/por-cargos")
+    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargp(
+        @RequestParam List<CodigoCargo> codigosCargos) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(codigosCargos);
+    }
 }

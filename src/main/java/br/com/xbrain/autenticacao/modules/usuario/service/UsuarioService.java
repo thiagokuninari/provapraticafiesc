@@ -2087,4 +2087,25 @@ public class UsuarioService {
     public List<UsuarioCargoResponse> getSuperioresPorId(Integer usuarioId) {
         return repository.findSuperioresDoUsuarioId(usuarioId);
     }
+
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(List<CodigoCargo> codigosCargos) {
+        var predicate = new UsuarioPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
+            .comCodigosCargos(codigosCargos);
+
+        return StreamSupport.stream(
+            repository.findAll(predicate.build(), new Sort(ASC, "situacao", "nome")).spliterator(), false)
+            .map(usuario -> SelectResponse.of(usuario.getId(), obterNomeComSituacao(usuario.getNome(), usuario.getSituacao())))
+            .collect(Collectors.toList());
+    }
+
+    private String obterNomeComSituacao(String usuarioNome, ESituacao situacao) {
+        if (situacao == ESituacao.I) {
+            return usuarioNome.concat(" (INATIVO)");
+        }
+        if (situacao == ESituacao.R) {
+            return usuarioNome.concat(" (REALOCADO)");
+        }
+        return usuarioNome;
+    }
 }
