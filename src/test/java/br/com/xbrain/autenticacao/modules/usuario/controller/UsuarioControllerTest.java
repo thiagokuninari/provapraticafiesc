@@ -1008,7 +1008,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get("/api/usuarios/permitidos/select/por-cargos")
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-cargos")
             .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
             .header("Authorization", "")
             .contentType(MediaType.APPLICATION_JSON))
@@ -1020,7 +1020,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
-        mvc.perform(get("/api/usuarios/permitidos/select/por-cargos")
+        mvc.perform(get(USUARIOS_ENDPOINT  + "/permitidos/select/por-cargos")
             .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .contentType(MediaType.APPLICATION_JSON))
