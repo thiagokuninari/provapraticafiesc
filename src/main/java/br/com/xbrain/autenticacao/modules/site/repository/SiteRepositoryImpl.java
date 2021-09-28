@@ -64,4 +64,14 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             .where(predicate)
             .fetchFirst());
     }
+
+    @Override
+    public List<Site> findAllByPredicate(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(site)
+            .from(site)
+            .where(predicate)
+            .orderBy(site.id.asc())
+            .fetch();
+    }
 }

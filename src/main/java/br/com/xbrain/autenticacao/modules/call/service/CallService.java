@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.call.service;
 
+import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
@@ -87,5 +88,9 @@ public class CallService {
             log.warn("Erro ao tentar liberar o ramal do usuário autenticado");
             throw new IntegracaoException(ex, CallService.class.getName(), EErrors.ERRO_LIBERAR_RAMAL_USUARIO);
         }
+    }
+
+    public List<ConfiguracaoTelefoniaResponse> getDiscadoras() {
+        return callClient.getDiscadoras();
     }
 }

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.call.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
+import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -42,5 +43,8 @@ public interface CallClient {
 
     @PostMapping(URL_RAMAL + "/liberar-ramal")
     void liberarRamalUsuarioAutenticado();
+
+    @GetMapping("api/configuracao-telefonia/todas-discadoras")
+    List<ConfiguracaoTelefoniaResponse> getDiscadoras();
 
 }

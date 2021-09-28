@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.site.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
@@ -25,6 +26,7 @@ import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +51,6 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class SiteServiceTest {
@@ -576,6 +578,58 @@ public class SiteServiceTest {
         service.buscarSitesAtivosPorCoordenadorOuSupervisor(1);
 
         verify(siteRepository, times(1)).findAll(eq(predicate));
+    }
+
+    @Test
+    @SneakyThrows
+    public void gerarRelatorioCsv_deveGerarRelatorioCsv_seDadosForemCorretos() {
+        var filtros = new SiteFiltros();
+        var response = new MockHttpServletResponse();
+
+        when(siteRepository.findAllByPredicate(filtros.toPredicate().build())).thenReturn(umaListaDeReagendamentoConfiguracao());
+        when(callService.getDiscadoras()).thenReturn(umaListaConfiguracaoTelefoniaResponse());
+
+        service.gerarRelatorioDiscadorasCsv(filtros, response);
+
+        verify(siteRepository, times(1)).findAllByPredicate(eq(filtros.toPredicate().build()));
+        verify(callService, times(1)).getDiscadoras();
+    }
+
+    private Site umReagendamentoConfiguracaoResponse(Integer id) {
+        return Site.builder()
+            .id(id)
+            .nome("Razao Social")
+            .discadoraId(id)
+            .build();
+    }
+
+    private List<Site> umaListaDeReagendamentoConfiguracao() {
+        return List.of(
+            umReagendamentoConfiguracaoResponse(1),
+            umReagendamentoConfiguracaoResponse(2),
+            umReagendamentoConfiguracaoResponse(3),
+            umReagendamentoConfiguracaoResponse(4),
+            umReagendamentoConfiguracaoResponse(5),
+            umReagendamentoConfiguracaoResponse(6)
+        );
+    }
+
+    private ConfiguracaoTelefoniaResponse umaListaConfiguracaoTelefoniaResponse(Integer id, String nome) {
+        return ConfiguracaoTelefoniaResponse.builder()
+            .id(id)
+            .nome(nome)
+            .build();
+    }
+
+    private List<ConfiguracaoTelefoniaResponse> umaListaConfiguracaoTelefoniaResponse() {
+        return List.of(
+            umaListaConfiguracaoTelefoniaResponse(1, "Discadora 1"),
+            umaListaConfiguracaoTelefoniaResponse(2, "Discadora 2"),
+            umaListaConfiguracaoTelefoniaResponse(3, "Discadora 3"),
+            umaListaConfiguracaoTelefoniaResponse(4, "Discadora 4"),
+            umaListaConfiguracaoTelefoniaResponse(5, "Discadora 5"),
+            umaListaConfiguracaoTelefoniaResponse(6, "Discadora 6")
+        );
     }
 
     private Predicate umSitePredicate() {
