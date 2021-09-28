@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 public enum ETipoCanal {
     PAP("PAP"),
     PAP_PREMIUM("PAP Premium"),
+    PAP_PME("PAP PME"),
     INSIDE_SALES_PME("Inside Sales PME");
 
     @NotNull

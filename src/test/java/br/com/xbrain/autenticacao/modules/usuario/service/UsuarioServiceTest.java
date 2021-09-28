@@ -1190,6 +1190,7 @@ public class UsuarioServiceTest {
             .containsExactly(
                 tuple("PAP", "PAP"),
                 tuple("PAP_PREMIUM", "PAP PREMIUM"),
+                tuple("PAP_PME", "PAP PME"),
                 tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
             );
     }
