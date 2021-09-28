@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -101,6 +102,15 @@ public class UsuarioSiteService {
             .filter(usuarioEquipe -> isAssistenteOperacao(usuario) || validarPermissaoSobreUsuario(usuarioEquipe, usuario))
             .filter(usuarioEquipeDto -> usuarioEquipeDto.isAtivo(buscarInativos))
             .map(this::getEquipeById)
+            .collect(Collectors.toList());
+    }
+
+    public List<SelectResponse> getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(Integer siteId,
+                                                                                      Boolean buscarInativos) {
+
+        return getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, autenticacaoService.getUsuarioId(), buscarInativos)
+            .stream()
+            .map(usuario -> SelectResponse.of(usuario.getUsuarioId(), usuario.getUsuarioNome()))
             .collect(Collectors.toList());
     }
 

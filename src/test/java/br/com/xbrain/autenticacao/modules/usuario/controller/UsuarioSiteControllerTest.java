@@ -98,4 +98,27 @@ public class UsuarioSiteControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", is(Collections.emptyList())));
     }
+
+    @Test
+    @SneakyThrows
+    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/100/vendedores-hierarquia-usuario-logado")
+            .param("buscarInativo", "false"))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioSiteService, never())
+            .getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_ok_seUsuarioAutenticado() {
+        mvc.perform(get(USUARIOS_SITE_ENDPOINT + "/100/vendedores-hierarquia-usuario-logado")
+            .param("buscarInativo", "true")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioSiteService, times(1))
+            .getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(eq(100), eq(true));
+    }
 }

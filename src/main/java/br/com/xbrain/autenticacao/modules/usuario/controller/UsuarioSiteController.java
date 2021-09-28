@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioEquipeDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -55,6 +56,13 @@ public class UsuarioSiteController {
                                                                             @RequestParam(required = false, defaultValue = "true")
                                                                                     boolean buscarInativo ) {
         return usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, usuarioId, buscarInativo);
+    }
+
+    @GetMapping("{siteId}/vendedores-hierarquia-usuario-logado")
+    public List<SelectResponse> getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(@PathVariable Integer siteId,
+                                                                                      @RequestParam boolean buscarInativo) {
+
+        return usuarioSiteService.getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(siteId, buscarInativo);
     }
 
     @GetMapping("{siteId}/coordenadores")

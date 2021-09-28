@@ -7,10 +7,9 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioConfiguracaoDto;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDadosAcessoRequest;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
@@ -18,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -186,6 +186,28 @@ public class TestBuilders {
                 .nome("UM USUARIO " + codigoCargo.name())
                 .build();
 
+    }
+
+    public static UsuarioNomeResponse umUsuarioNomeResponse(Integer id, String nome, ESituacao situacao) {
+        return UsuarioNomeResponse
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(situacao)
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoAdmin(Integer id) {
+        return UsuarioAutenticado.builder()
+            .id(id)
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
+            .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
+            .nivelCodigo(CodigoNivel.XBRAIN.name())
+            .usuario(Usuario.builder()
+                .cargo(null)
+                .build())
+            .departamentoCodigo(CodigoDepartamento.ADMINISTRADOR)
+            .build();
     }
 
     public static Cargo umCargoOperacao(CodigoCargo codigoCargo) {
