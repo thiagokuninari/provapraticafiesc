@@ -3,11 +3,17 @@ package br.com.xbrain.autenticacao.modules.site.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SiteFiltros {
 
     private Integer id;
@@ -20,6 +26,7 @@ public class SiteFiltros {
     private List<Integer> cidadesIds;
     private Boolean naoPossuiDiscadora;
     private Integer discadoraId;
+    private List<Integer> ids;
 
     public SitePredicate toPredicate() {
         return new SitePredicate()
@@ -32,6 +39,7 @@ public class SiteFiltros {
             .comCoordenadores(coordenadoresIds)
             .comSupervisores(supervisoresIds)
             .comEstados(estadosIds)
-            .comCidades(cidadesIds);
+            .comCidades(cidadesIds)
+            .comIds(ids);
     }
 }
