@@ -545,8 +545,7 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     public void buscarTodos_unauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI + "/buscar/todos")
-            .param("id1", "1"))
+        mvc.perform(get(API_URI + "/buscar/todos"))
             .andExpect(status().isUnauthorized());
     }
 
@@ -554,7 +553,6 @@ public class SiteControllerTest {
     @SneakyThrows
     public void buscarTodos_forbidden_seUsuarioNaoPossuiPermissao() {
         mvc.perform(get(API_URI + "/buscar/todos")
-            .param("id1", "1")
             .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
             .andExpect(status().isForbidden());
     }
@@ -563,7 +561,6 @@ public class SiteControllerTest {
     @SneakyThrows
     public void buscarTodos_ok_seUsuarioAutenticadoEComPermissao() {
         mvc.perform(get(API_URI + "/buscar/todos")
-            .param("id1", "1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
