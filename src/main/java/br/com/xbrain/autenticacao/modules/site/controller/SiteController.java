@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,6 +24,11 @@ public class SiteController {
     public Page<SiteResponse> getSites(SiteFiltros filtros, PageRequest pageRequest) {
         return service.getAll(filtros, pageRequest)
             .map(SiteResponse::of);
+    }
+
+    @GetMapping("exportar-csv")
+    public void exportarCsv(SiteFiltros filtros, HttpServletResponse response) {
+        service.gerarRelatorioDiscadorasCsv(filtros, response);
     }
 
     @GetMapping("/estado/{estadoId}")
