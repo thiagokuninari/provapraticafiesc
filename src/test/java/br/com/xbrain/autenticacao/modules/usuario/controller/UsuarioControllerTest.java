@@ -1013,10 +1013,10 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$", hasSize(4)))
             .andExpect(jsonPath("$[0].value", is(ETipoCanal.PAP.toString())))
             .andExpect(jsonPath("$[0].label", is(ETipoCanal.PAP.getDescricao().toUpperCase())))
-            .andExpect(jsonPath("$[1].value", is(ETipoCanal.PAP_PREMIUM.toString())))
-            .andExpect(jsonPath("$[1].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
-            .andExpect(jsonPath("$[2].value", is(ETipoCanal.PAP_PME.toString())))
-            .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PME.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[1].value", is(ETipoCanal.PAP_PME.toString())))
+            .andExpect(jsonPath("$[1].label", is(ETipoCanal.PAP_PME.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[2].value", is(ETipoCanal.PAP_PREMIUM.toString())))
+            .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
             .andExpect(jsonPath("$[3].value", is(ETipoCanal.INSIDE_SALES_PME.toString())))
             .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())));
     }
