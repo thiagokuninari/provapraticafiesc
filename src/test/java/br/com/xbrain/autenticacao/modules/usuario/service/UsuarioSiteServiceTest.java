@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioSiteServiceTest {
@@ -59,11 +59,22 @@ public class UsuarioSiteServiceTest {
     }
 
     @Test
+    public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_deveRetornarProprioVendedor_seUsuarioForOPeradorVendas() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.umUsuarioAutenticado(100, CodigoCargo.OPERACAO_TELEVENDAS));
+
+        assertThat(service.getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(123, false))
+            .isEqualTo(List.of(SelectResponse.of(100, "FULANO 100")));
+        verify(usuarioRepository, never()).findById(any());
+    }
+
+    @Test
     public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_naoDeveRetornarVendedores_seNaoEncontrado() {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
-        when(autenticacaoService.getUsuarioId()).thenReturn(100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.umUsuarioAutenticado(100, CodigoCargo.ADMINISTRADOR));
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
@@ -78,7 +89,8 @@ public class UsuarioSiteServiceTest {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
-        when(autenticacaoService.getUsuarioId()).thenReturn(100);
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.umUsuarioAutenticado(10, CodigoCargo.ADMINISTRADOR));
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.umUsuarioAutenticadoAdmin(100));
         when(usuarioRepository.findById(eq(100)))

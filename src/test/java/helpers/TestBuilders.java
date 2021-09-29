@@ -197,6 +197,15 @@ public class TestBuilders {
             .build();
     }
 
+    public static UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoCargo codigoCargo) {
+        return UsuarioAutenticado.builder()
+            .id(id)
+            .nome("FULANO " + id.toString())
+            .cargoCodigo(codigoCargo)
+            .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
     public static UsuarioAutenticado umUsuarioAutenticadoAdmin(Integer id) {
         return UsuarioAutenticado.builder()
             .id(id)

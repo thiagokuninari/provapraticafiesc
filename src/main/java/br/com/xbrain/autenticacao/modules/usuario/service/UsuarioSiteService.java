@@ -108,7 +108,11 @@ public class UsuarioSiteService {
     public List<SelectResponse> getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(Integer siteId,
                                                                                       Boolean buscarInativos) {
 
-        return getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, autenticacaoService.getUsuarioId(), buscarInativos)
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        return usuarioAutenticado.isOperadorTelevendasAtivoLocal()
+            ? List.of(SelectResponse.of(usuarioAutenticado.getId(), usuarioAutenticado.getNome()))
+            : getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, usuarioAutenticado.getId(), buscarInativos)
             .stream()
             .map(usuario -> SelectResponse.of(usuario.getUsuarioId(), usuario.getUsuarioNome()))
             .collect(Collectors.toList());
