@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -1007,26 +1008,31 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
-        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-cargos")
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
             .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
             .header("Authorization", "")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(usuarioService, never()).buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(any());
+        verify(usuarioService, never()).buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(any());
     }
 
     @Test
     @SneakyThrows
-    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
-        mvc.perform(get(USUARIOS_ENDPOINT  + "/permitidos/select/por-cargos")
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
             .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .param("canal", "D2D_PROPRIO")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO)));
+            .buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(
+                eq(UsuarioFiltros.builder()
+                    .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+                    .canal(ECanal.D2D_PROPRIO)
+                    .build()));
     }
 }

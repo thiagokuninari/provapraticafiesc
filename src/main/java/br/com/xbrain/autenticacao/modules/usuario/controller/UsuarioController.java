@@ -480,9 +480,8 @@ public class UsuarioController {
         deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
     }
 
-    @GetMapping("permitidos/select/por-cargos")
-    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(
-        @RequestParam List<CodigoCargo> codigosCargos) {
-        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(codigosCargos);
+    @GetMapping("permitidos/select/por-filtros")
+    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
     }
 }

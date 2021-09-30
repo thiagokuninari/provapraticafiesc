@@ -1322,47 +1322,48 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
         var usuarioComPermissaoDeVisualizarAa = umUsuarioAutenticado(1, "AGENTE_AUTORIZADO",
             CodigoCargo.AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioComPermissaoDeVisualizarAa);
         when(usuarioRepository.findAll(any(Predicate.class), any(Sort.class))).thenReturn(umaListaUsuariosExecutivosAtivo());
 
-        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(
-            List.of(ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO)))
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltro()))
             .extracting("label", "value")
             .containsExactly(tuple("JOSÉ", 1),
                 tuple("HIGOR", 2));
 
         verify(usuarioRepository, times(1))
             .findAll(eq(new UsuarioPredicate()
+                .comCanal(ECanal.D2D_PROPRIO)
+                .comCodigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
                 .ignorarAa(true)
                 .ignorarXbrain(true)
-                .comCodigosCargos(List.of(ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO))
                 .build()), eq(new Sort(ASC, "situacao", "nome")));
     }
 
     @Test
-    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos_usuariosDaEquipeComNomeAlterado_quandoUsuarioEquipeVendas() {
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_usuariosDaEquipeComNomeAlterado_quandoUsuarioEquipeVendas() {
         var usuarioEquipeVendas = umUsuarioAutenticado(1, "OPERACAO",
             CodigoCargo.VENDEDOR_OPERACAO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioEquipeVendas);
-
         when(equipeVendaD2dService.getUsuariosPermitidos(any())).thenReturn(List.of());
         when(autenticacaoService.getUsuarioId()).thenReturn(3);
         when(usuarioRepository.getUsuariosSubordinados(any())).thenReturn(new ArrayList<>(List.of(2, 4, 5)));
         when(usuarioRepository.findAll(any(Predicate.class), any(Sort.class))).thenReturn(umaUsuariosList());
 
-        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorCargos(List.of(VENDEDOR_OPERACAO)))
+        assertThat(usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(umUsuarioFiltro()))
             .extracting("label", "value")
             .containsExactly(tuple("Caio", 1),
                 tuple("Mario (INATIVO)", 2),
                 tuple("Maria (REALOCADO)", 3));
 
         verify(usuarioRepository, times(1))
-            .findAll(eq(new UsuarioPredicate().ignorarAa(true).ignorarXbrain(true)
+            .findAll(eq(new UsuarioPredicate()
+                .comCanal(ECanal.D2D_PROPRIO)
+                .comCodigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+                .ignorarAa(true).ignorarXbrain(true)
                 .comIds(List.of(3, 2, 4, 5, 1, 1))
-                .comCodigosCargos(List.of(VENDEDOR_OPERACAO))
                 .build()), eq(new Sort(ASC, "situacao", "nome")));
     }
 
@@ -1470,6 +1471,13 @@ public class UsuarioServiceTest {
                 .builder()
                 .nome("EMPRESA UM")
                 .build()))
+            .build();
+    }
+
+    private UsuarioFiltros umUsuarioFiltro() {
+        return UsuarioFiltros.builder()
+            .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+            .canal(ECanal.D2D_PROPRIO)
             .build();
     }
 }
