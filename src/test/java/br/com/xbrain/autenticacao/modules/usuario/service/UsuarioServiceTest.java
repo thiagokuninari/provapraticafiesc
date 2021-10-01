@@ -1322,7 +1322,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
+    public void buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_usuarios_quandoUsuarioDiferenteDeAaEXbrain() {
         var usuarioComPermissaoDeVisualizarAa = umUsuarioAutenticado(1, "AGENTE_AUTORIZADO",
             CodigoCargo.AGENTE_AUTORIZADO_SOCIO, AUT_VISUALIZAR_GERAL);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioComPermissaoDeVisualizarAa);
