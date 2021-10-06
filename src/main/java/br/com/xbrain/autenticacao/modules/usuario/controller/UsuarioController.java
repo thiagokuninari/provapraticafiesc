@@ -479,4 +479,14 @@ public class UsuarioController {
     public void alterarSituacaoUsuarioBLoqueado(@PathVariable Integer usuarioId) {
         deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
     }
+
+    @GetMapping("vendedores-receptivos")
+    public List<SelectResponse> getAllVendedoresReceptivos() {
+        return usuarioService.buscarTodosVendedoresReceptivos();
+    }
+
+    @GetMapping("vendedores-receptivos/por-ids")
+    public List<UsuarioVendedorReceptivoResponse> getAllVendedoresReceptivosById(@RequestParam List<Integer> ids) {
+        return usuarioService.buscarVendedoresReceptivosPorId(ids);
+    }
 }

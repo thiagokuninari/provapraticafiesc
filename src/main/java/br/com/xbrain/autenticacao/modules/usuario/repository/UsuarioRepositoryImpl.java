@@ -188,6 +188,30 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
+    public List<Usuario> findAllVendedoresReceptivos() {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.eq(VENDEDOR_RECEPTIVO))
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.in(VENDEDOR_RECEPTIVO, ADMINISTRADOR)
+                .and(usuario.id.in(ids))
+            )
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
+    @Override
     public List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS ID"
                 + "     , U.NOME "

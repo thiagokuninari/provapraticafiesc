@@ -168,4 +168,26 @@ public class UsuarioRepositoryTest {
                 tuple(400, "USUARIO 400", A)
             );
     }
+
+    @Test
+    public void findAllVendedoresReceptivos_deveRetornarTodosVendedoresReceptivos_seHouver() {
+        assertThat(repository.findAllVendedoresReceptivos())
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(121, "VR 1"),
+                tuple(122, "VR 2"),
+                tuple(123, "VR 3")
+            );
+    }
+
+    @Test
+    public void findAllVendoresReceptivosByIds_deveRetornarVendedoresReceptivos_quandoTerIdPassado() {
+        assertThat(repository.findAllVendedoresReceptivosByIds(List.of(100, 121, 123)))
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(100, "ADMIN"),
+                tuple(121, "VR 1"),
+                tuple(123, "VR 3")
+            );
+    }
 }
