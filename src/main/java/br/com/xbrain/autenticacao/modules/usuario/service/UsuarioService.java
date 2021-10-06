@@ -2087,4 +2087,32 @@ public class UsuarioService {
     public List<UsuarioCargoResponse> getSuperioresPorId(Integer usuarioId) {
         return repository.findSuperioresDoUsuarioId(usuarioId);
     }
+
+    public List<SelectResponse> buscarTodosVendedoresReceptivos() {
+        return repository.findAllVendedoresReceptivos().stream()
+            .map(usuario -> {
+                usuario.setNome(verificarSituacao(usuario.getNome(), usuario.getSituacao()));
+                return SelectResponse.builder()
+                    .label(usuario.getNome())
+                    .value(usuario.getId())
+                    .build();
+            }).collect(Collectors.toList());
+    }
+
+    public List<UsuarioVendedorReceptivoResponse> buscarVendedoresReceptivosPorId(List<Integer> ids) {
+        return repository.findAllVendedoresReceptivosByIds(ids).stream()
+            .map(usuario -> {
+                usuario.setNome(verificarSituacao(usuario.getNome(), usuario.getSituacao()));
+                return UsuarioVendedorReceptivoResponse.of(usuario);
+            })
+            .collect(Collectors.toList());
+    }
+
+    private static String verificarSituacao(String nome, ESituacao situacao) {
+        return ESituacao.I == situacao
+            ? nome.concat(" (INATIVO)")
+            : ESituacao.R == situacao
+            ? nome.concat(" (REALOCADO)")
+            : nome;
+    }
 }

@@ -153,4 +153,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioNomeResponse> findSupervisoresDoSiteIdVinculadoAoCoordenador(Integer siteId, Predicate predicate);
 
     List<UsuarioCargoResponse> findSuperioresDoUsuarioId(Integer usuarioId);
+
+    List<Usuario> findAllVendedoresReceptivos();
+
+    List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 }
