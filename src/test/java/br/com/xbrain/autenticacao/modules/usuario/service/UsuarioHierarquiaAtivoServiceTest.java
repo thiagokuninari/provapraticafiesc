@@ -149,6 +149,22 @@ public class UsuarioHierarquiaAtivoServiceTest {
 
     }
 
+    @Test
+    public void buscarVendedoresPorSupervisores_quandoUsuarioLogadoForAssistenteOperacao() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
+        var usuarioNomeResponses = service.vendedoresDaHierarquia(umUsuarioHieraquiaFiltro(null, 110, null));
+        verify(usuarioSiteService, times(1)).getVendedoresPorCargoUsuario(
+            eq(Usuario.builder()
+                .id(108)
+                .build()),
+            eq(110));
+        assertThat(usuarioNomeResponses)
+            .extracting(UsuarioNomeResponse::getId)
+            .containsExactlyInAnyOrder(109, 115);
+
+    }
+
     private UsuarioHierarquiaFiltros umUsuarioHieraquiaFiltro(Integer coordenadorId, Integer siteId, Integer equipeId) {
         return UsuarioHierarquiaFiltros.builder()
             .coordenadorId(coordenadorId)
@@ -158,7 +174,7 @@ public class UsuarioHierarquiaAtivoServiceTest {
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoCargo codigoCargo,
-                                                         CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento) {
+                                                    CodigoNivel codigoNivel, CodigoDepartamento codigoDepartamento) {
         return UsuarioAutenticado.builder()
             .id(id)
             .cargoCodigo(codigoCargo)
