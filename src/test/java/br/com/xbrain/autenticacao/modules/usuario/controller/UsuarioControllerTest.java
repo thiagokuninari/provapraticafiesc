@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -1030,5 +1031,22 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
 
         verify(deslogarUsuarioPorExcessoDeUsoService, never()).atualizarSituacaoUsuarioBloqueado(any(Integer.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getTiposCanal_deveRetornarStatusOkEosCanais_quandoValido() {
+        mvc.perform(get("/api/usuarios/tipos-canal")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].value", is(ETipoCanal.PAP.toString())))
+            .andExpect(jsonPath("$[0].label", is(ETipoCanal.PAP.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[1].value", is(ETipoCanal.PAP_PME.toString())))
+            .andExpect(jsonPath("$[1].label", is(ETipoCanal.PAP_PME.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[2].value", is(ETipoCanal.PAP_PREMIUM.toString())))
+            .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[3].value", is(ETipoCanal.INSIDE_SALES_PME.toString())))
+            .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())));
     }
 }

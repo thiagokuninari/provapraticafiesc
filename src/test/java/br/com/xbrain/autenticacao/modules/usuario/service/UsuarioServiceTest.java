@@ -1189,6 +1189,7 @@ public class UsuarioServiceTest {
             .extracting("value", "label")
             .containsExactly(
                 tuple("PAP", "PAP"),
+                tuple("PAP_PME", "PAP PME"),
                 tuple("PAP_PREMIUM", "PAP PREMIUM"),
                 tuple("INSIDE_SALES_PME", "INSIDE SALES PME")
             );
