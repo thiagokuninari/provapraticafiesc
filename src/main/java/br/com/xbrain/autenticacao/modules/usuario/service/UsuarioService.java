@@ -7,7 +7,10 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -125,6 +128,7 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+
     @Autowired
     private UsuarioRepository repository;
     @Autowired
