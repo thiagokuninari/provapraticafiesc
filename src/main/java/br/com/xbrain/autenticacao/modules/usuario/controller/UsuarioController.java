@@ -489,4 +489,9 @@ public class UsuarioController {
     public List<UsuarioVendedorReceptivoResponse> getAllVendedoresReceptivosById(@RequestParam List<Integer> ids) {
         return usuarioService.buscarVendedoresReceptivosPorId(ids);
     }
+
+    @GetMapping("permitidos/select/por-filtros")
+    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
+    }
 }
