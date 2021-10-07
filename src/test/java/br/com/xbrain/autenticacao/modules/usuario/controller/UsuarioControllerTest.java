@@ -11,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -37,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -1048,5 +1051,35 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
             .andExpect(jsonPath("$[3].value", is(ETipoCanal.INSIDE_SALES_PME.toString())))
             .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())));
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .header("Authorization", "")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .param("canal", "D2D_PROPRIO")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(
+                eq(UsuarioFiltros.builder()
+                    .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+                    .canal(ECanal.D2D_PROPRIO)
+                    .build()));
     }
 }

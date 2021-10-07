@@ -1,8 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
