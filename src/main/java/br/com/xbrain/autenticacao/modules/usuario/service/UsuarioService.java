@@ -8,7 +8,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.*;
-import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -26,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -39,7 +39,6 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.client.MailingClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -49,9 +48,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
-import com.netflix.hystrix.exception.HystrixBadRequestException;
 import com.querydsl.core.types.Predicate;
-import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,7 +196,7 @@ public class UsuarioService {
     @Autowired
     private SiteService siteService;
     @Autowired
-    private MailingClient mailingClient;
+    private MailingService mailingService;
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
 
@@ -1232,20 +1229,8 @@ public class UsuarioService {
         repository.save(usuario);
     }
 
-    public Long countQuantidadeAgendamentosProprietariosDoUsuario(Integer usuarioId) {
-        try {
-            return mailingClient.countQuantidadeAgendamentosProprietariosDoUsuario(usuarioId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                UsuarioService.class.getName(),
-                EErrors.ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
     private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {
-        var qntAgendamentos = countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId());
+        var qntAgendamentos = mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId(), ECanal.ATIVO_PROPRIO);
         if (usuario.isOperadorTelevendasAtivoLocal() && qntAgendamentos > 0) {
             throw USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX;
         }
