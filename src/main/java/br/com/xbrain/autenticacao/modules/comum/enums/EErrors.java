@@ -119,7 +119,10 @@ public enum EErrors {
         "#023 - Erro ao tentar liberar ramal do usuário autenticado."),
     ERRO_OBTER_RELATORIO_LOGINS_LOGOUTS_ENTRE_DATAS(
         "#036 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#036 - Erro ao tentar recuperar o relatório de logins e logouts entre datas.");
+        "#036 - Erro ao tentar recuperar o relatório de logins e logouts entre datas."),
+    ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO(
+        "#037 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+            "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário.");
 
     @Getter
     @Setter

@@ -7,10 +7,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -51,7 +49,9 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import br.com.xbrain.xbrainutils.CsvUtils;
 import com.google.common.collect.Sets;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 import com.querydsl.core.types.Predicate;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1232,8 +1232,20 @@ public class UsuarioService {
         repository.save(usuario);
     }
 
+    public Long countQuantidadeAgendamentosProprietariosDoUsuario(Integer usuarioId) {
+        try {
+            return mailingClient.countQuantidadeAgendamentosProprietariosDoUsuario(usuarioId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                UsuarioService.class.getName(),
+                EErrors.ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
     private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {
-        var qntAgendamentos = mailingClient.countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId());
+        var qntAgendamentos = countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId());
         if (usuario.isOperadorTelevendasAtivoLocal() && qntAgendamentos > 0) {
             throw USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX;
         }
