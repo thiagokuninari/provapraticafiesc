@@ -125,6 +125,7 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -2125,5 +2126,25 @@ public class UsuarioService {
             : ESituacao.R == situacao
             ? nome.concat(" (REALOCADO)")
             : nome;
+    }
+
+    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
+        var predicate = filtros.toPredicate();
+        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
+
+        return StreamSupport.stream(
+            repository.findAll(predicate.build(), new Sort(ASC, "situacao", "nome")).spliterator(), false)
+            .map(usuario -> SelectResponse.of(usuario.getId(), obterNomeComSituacao(usuario.getNome(), usuario.getSituacao())))
+            .collect(Collectors.toList());
+    }
+
+    private String obterNomeComSituacao(String usuarioNome, ESituacao situacao) {
+        if (situacao == ESituacao.I) {
+            return usuarioNome.concat(" (INATIVO)");
+        }
+        if (situacao == ESituacao.R) {
+            return usuarioNome.concat(" (REALOCADO)");
+        }
+        return usuarioNome;
     }
 }
