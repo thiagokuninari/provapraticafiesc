@@ -7,7 +7,10 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -2126,25 +2129,5 @@ public class UsuarioService {
             : ESituacao.R == situacao
             ? nome.concat(" (REALOCADO)")
             : nome;
-    }
-
-    public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
-        var predicate = filtros.toPredicate();
-        predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
-
-        return StreamSupport.stream(
-            repository.findAll(predicate.build(), new Sort(ASC, "situacao", "nome")).spliterator(), false)
-            .map(usuario -> SelectResponse.of(usuario.getId(), obterNomeComSituacao(usuario.getNome(), usuario.getSituacao())))
-            .collect(Collectors.toList());
-    }
-
-    private String obterNomeComSituacao(String usuarioNome, ESituacao situacao) {
-        if (situacao == ESituacao.I) {
-            return usuarioNome.concat(" (INATIVO)");
-        }
-        if (situacao == ESituacao.R) {
-            return usuarioNome.concat(" (REALOCADO)");
-        }
-        return usuarioNome;
     }
 }
