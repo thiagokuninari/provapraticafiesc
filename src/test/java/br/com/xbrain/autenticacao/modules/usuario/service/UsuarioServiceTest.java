@@ -128,6 +128,9 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.inativar(umUsuarioInativoDto()))
             .withMessage("Não foi possível inativar usuario Ativo Local com agendamentos");
+
+        verify(mailingService, times(1))
+            .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
     @Test
@@ -160,6 +163,9 @@ public class UsuarioServiceTest {
 
         assertThatCode(() -> usuarioService.inativar(umUsuarioInativoDto()))
             .doesNotThrowAnyException();
+
+        verify(mailingService, times(1))
+            .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
     }
 
     private UsuarioInativacaoDto umUsuarioInativoDto() {
