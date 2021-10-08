@@ -131,6 +131,26 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void inativar_deveInativarUsuario_seUsuarioNaoAtivoLocal() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        when(usuarioRepository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> usuarioService.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(mailingService, never()).countQuantidadeAgendamentosProprietariosDoUsuario(any(), any());
+    }
+
+    @Test
     public void inativar_deveInativarUsuario_quandoUsuarioAtivoLocalESemAgendamento() {
         when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
             .thenReturn(Long.valueOf(0));
@@ -138,7 +158,8 @@ public class UsuarioServiceTest {
         when(motivoInativacaoService.findByCodigoMotivoInativacao(eq(CodigoMotivoInativacao.DEMISSAO)))
             .thenReturn(MotivoInativacao.builder().codigo(CodigoMotivoInativacao.DEMISSAO).build());
 
-        usuarioService.inativar(umUsuarioInativoDto());
+        assertThatCode(() -> usuarioService.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
     }
 
     private UsuarioInativacaoDto umUsuarioInativoDto() {
