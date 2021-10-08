@@ -1234,9 +1234,8 @@ public class UsuarioService {
     }
 
     private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {
-        var qntAgendamentos = mailingService
-            .countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId(), ECanal.ATIVO_PROPRIO);
-        if (usuario.isOperadorTelevendasAtivoLocal() && qntAgendamentos > 0) {
+        if (usuario.isOperadorTelevendasAtivoLocal()
+            && mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId(), ECanal.ATIVO_PROPRIO) > 0) {
             throw USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX;
         }
     }
