@@ -58,8 +58,7 @@ import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
@@ -1344,6 +1343,26 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado())
             .isEmpty();
+    }
+
+    @Test
+    public void getUsuariosPermitidosPelaEquipeDeVenda_deveBuscarPorCargosDoAtivo_seCanalForAtivoLocal() {
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
+
+        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
+
+        verify(equipeVendaD2dService, times(1))
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS)));
+    }
+
+    @Test
+    public void getUsuariosPermitidosPelaEquipeDeVenda_deveBuscarPorCargosDoD2d_seCanalForD2d() {
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.D2D_PROPRIO);
+
+        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
+
+        verify(equipeVendaD2dService, times(1))
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
     private Canal umCanal() {

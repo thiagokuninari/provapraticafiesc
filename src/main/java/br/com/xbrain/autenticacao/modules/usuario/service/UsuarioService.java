@@ -124,6 +124,9 @@ public class UsuarioService {
         = new ValidacaoException("O usuário não foi encontrado.");
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
         VENDEDOR_OPERACAO);
+    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
+        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
+
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -1740,9 +1743,13 @@ public class UsuarioService {
     }
 
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
+        var cargos = ECanal.ATIVO_PROPRIO == autenticacaoService.getUsuarioCanal()
+            ? CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL
+            : CARGOS_PARA_INTEGRACAO_D2D;
+
         return IntStream.concat(
             equipeVendaD2dService
-                .getUsuariosPermitidos(CARGOS_PARA_INTEGRACAO_D2D)
+                .getUsuariosPermitidos(cargos)
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
             IntStream.of(autenticacaoService.getUsuarioId()))
