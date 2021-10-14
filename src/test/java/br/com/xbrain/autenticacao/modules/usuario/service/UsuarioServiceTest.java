@@ -10,14 +10,12 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
-import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
-import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -28,11 +26,13 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelp
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
@@ -106,8 +106,74 @@ public class UsuarioServiceTest {
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @Mock
     private SiteService siteService;
+    @Mock
+    private MailingService mailingService;
+    @Mock
+    private MotivoInativacaoService motivoInativacaoService;
+    @Mock
+    private UsuarioFeriasService usuarioFeriasService;
+    @Mock
+    private UsuarioAfastamentoService usuarioAfastamentoService;
+    @Mock
+    private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
+
+    @Test
+    public void inativar_deveRetornarExcecao_quandoUsuarioAtivoLocalEPossuiAgendamento() {
+        when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
+            .thenReturn(Long.valueOf(1));
+        when(usuarioRepository.findComplete(eq(1))).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.inativar(umUsuarioInativoDto()))
+            .withMessage("Não foi possível inativar usuario Ativo Local com agendamentos");
+
+        verify(mailingService, times(1))
+            .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
+    }
+
+    @Test
+    public void inativar_deveInativarUsuario_seUsuarioNaoAtivoLocal() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        when(usuarioRepository.findComplete(eq(1))).thenReturn(Optional.of(usuario));
+
+        assertThatCode(() -> usuarioService.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(mailingService, never()).countQuantidadeAgendamentosProprietariosDoUsuario(any(), any());
+    }
+
+    @Test
+    public void inativar_deveInativarUsuario_quandoUsuarioAtivoLocalESemAgendamento() {
+        when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
+            .thenReturn(Long.valueOf(0));
+        when(usuarioRepository.findComplete(eq(1))).thenReturn(Optional.of(umUsuarioCompleto()));
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(eq(CodigoMotivoInativacao.DEMISSAO)))
+            .thenReturn(MotivoInativacao.builder().codigo(CodigoMotivoInativacao.DEMISSAO).build());
+
+        assertThatCode(() -> usuarioService.inativar(umUsuarioInativoDto()))
+            .doesNotThrowAnyException();
+
+        verify(mailingService, times(1))
+            .countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO));
+    }
+
+    private UsuarioInativacaoDto umUsuarioInativoDto() {
+        return UsuarioInativacaoDto.builder()
+            .idUsuario(1)
+            .codigoMotivoInativacao(CodigoMotivoInativacao.DEMISSAO)
+            .build();
+    }
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo() {
         return new UsuarioExecutivoResponse(1, "bakugo@teste.com", "BAKUGO");
@@ -1531,7 +1597,7 @@ public class UsuarioServiceTest {
     }
 
     private Usuario umUsuarioCompleto() {
-        return Usuario
+        var usuario = Usuario
             .builder()
             .id(1)
             .nome("NOME UM")
@@ -1541,6 +1607,7 @@ public class UsuarioServiceTest {
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
+                .codigo(OPERACAO_TELEVENDAS)
                 .nivel(Nivel
                     .builder()
                     .codigo(CodigoNivel.AGENTE_AUTORIZADO)
@@ -1560,6 +1627,31 @@ public class UsuarioServiceTest {
                 .nome("EMPRESA UM")
                 .build()))
             .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
     }
 
     private Usuario umVendedorReceptivo() {
