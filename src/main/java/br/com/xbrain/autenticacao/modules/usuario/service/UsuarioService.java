@@ -28,6 +28,7 @@ import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -124,6 +125,9 @@ public class UsuarioService {
         = new ValidacaoException("O usuário não foi encontrado.");
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
         VENDEDOR_OPERACAO);
+    private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
+        "Não foi possível inativar usuario Ativo Local com agendamentos"
+    );
 
     @Autowired
     private UsuarioRepository repository;
@@ -195,7 +199,8 @@ public class UsuarioService {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private SiteService siteService;
-
+    @Autowired
+    private MailingService mailingService;
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
 
@@ -1219,12 +1224,20 @@ public class UsuarioService {
     @Transactional
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
+        validarUsuarioAtivoLocalEPossuiAgendamento(usuario);
         usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
+    }
+
+    private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {
+        if (usuario.isOperadorTelevendasAtivoLocal()
+            && mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(usuario.getId(), ECanal.ATIVO_PROPRIO) > 0) {
+            throw USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX;
+        }
     }
 
     private UsuarioHistorico gerarDadosDeHistoricoDeInativacao(UsuarioInativacaoDto usuarioInativacao,
@@ -2122,7 +2135,7 @@ public class UsuarioService {
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
 
         return StreamSupport.stream(
-            repository.findAll(predicate.build(), new Sort(ASC, "situacao", "nome")).spliterator(), false)
+                repository.findAll(predicate.build(), new Sort(ASC, "situacao", "nome")).spliterator(), false)
             .map(usuario -> SelectResponse.of(usuario.getId(), obterNomeComSituacao(usuario.getNome(), usuario.getSituacao())))
             .collect(Collectors.toList());
     }
