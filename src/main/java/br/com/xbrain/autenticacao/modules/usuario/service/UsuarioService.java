@@ -128,6 +128,8 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
+        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
 
     @Autowired
     private UsuarioRepository repository;
@@ -1754,9 +1756,13 @@ public class UsuarioService {
     }
 
     public List<Integer> getUsuariosPermitidosPelaEquipeDeVenda() {
+        var cargos = ECanal.ATIVO_PROPRIO == autenticacaoService.getUsuarioCanal()
+            ? CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL
+            : CARGOS_PARA_INTEGRACAO_D2D;
+
         return IntStream.concat(
             equipeVendaD2dService
-                .getUsuariosPermitidos(CARGOS_PARA_INTEGRACAO_D2D)
+                .getUsuariosPermitidos(cargos)
                 .stream()
                 .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
             IntStream.of(autenticacaoService.getUsuarioId()))
@@ -1945,6 +1951,13 @@ public class UsuarioService {
 
     public List<SelectResponse> buscarUsuariosAtivosNivelOperacaoCanalAa() {
         return repository.findAllAtivosByNivelOperacaoCanalAa();
+    }
+
+    public List<Usuario> getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado() {
+        return (List<Usuario>) repository.findAll(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), this, true)
+                .build());
     }
 
     public Set<Integer> getAllUsuariosIdsSuperiores() {
