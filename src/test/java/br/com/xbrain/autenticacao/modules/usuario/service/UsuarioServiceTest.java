@@ -10,7 +10,10 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.*;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -1519,6 +1522,54 @@ public class UsuarioServiceTest {
                 .ignorarAa(true).ignorarXbrain(true)
                 .comIds(List.of(3, 2, 4, 5, 1, 1))
                 .build()), eq(new Sort(ASC, "situacao", "nome")));
+    }
+
+    @Test
+    public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_deveRetornarUsuarios_seEncontrado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findAll(eq(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
+                .build())))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado())
+            .isEqualTo(umaUsuariosList());
+    }
+
+    @Test
+    public void getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado_naoDeveRetornarUsuarios_seNaoEncontrado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso());
+        when(usuarioRepository.findAll(eq(
+            new UsuarioPredicate().filtraPermitidos(
+                autenticacaoService.getUsuarioAutenticado(), usuarioService, true)
+                .build())))
+            .thenReturn(Collections.emptyList());
+
+        assertThat(usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado())
+            .isEmpty();
+    }
+
+    @Test
+    public void getUsuariosPermitidosPelaEquipeDeVenda_deveBuscarPorCargosDoAtivo_seCanalForAtivoLocal() {
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
+
+        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
+
+        verify(equipeVendaD2dService, times(1))
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS)));
+    }
+
+    @Test
+    public void getUsuariosPermitidosPelaEquipeDeVenda_deveBuscarPorCargosDoD2d_seCanalForD2d() {
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.D2D_PROPRIO);
+
+        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
+
+        verify(equipeVendaD2dService, times(1))
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
     private Canal umCanal() {

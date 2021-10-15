@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -28,6 +29,8 @@ public class UsuarioSiteService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private EquipeVendaD2dService equipeVendasService;
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Transactional(readOnly = true)
     public List<UsuarioNomeResponse> buscarUsuariosSitePorCargo(CodigoCargo cargo) {
@@ -102,6 +105,19 @@ public class UsuarioSiteService {
             .collect(Collectors.toList());
     }
 
+    public List<SelectResponse> getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(Integer siteId,
+                                                                                      Boolean buscarInativos) {
+
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+
+        return usuarioAutenticado.isOperadorTelevendasAtivoLocal()
+            ? List.of(SelectResponse.of(usuarioAutenticado.getId(), usuarioAutenticado.getNome()))
+            : getVendoresDoSiteIdPorHierarquiaComEquipe(siteId, usuarioAutenticado.getId(), buscarInativos)
+            .stream()
+            .map(usuario -> SelectResponse.of(usuario.getUsuarioId(), usuario.getUsuarioNome()))
+            .collect(Collectors.toList());
+    }
+
     public Boolean validarPermissaoSobreUsuario(UsuarioEquipeDto usuarioEquipeDto, Usuario usuario) {
         validarPermissaoUsuarioAdminOuMso(usuario);
         return usuario.isXbrainOuMso()
@@ -170,5 +186,9 @@ public class UsuarioSiteService {
             .stream()
             .map(Usuario::getId)
             .collect(Collectors.toList());
+    }
+
+    public List<Usuario> getUsuariosDaHierarquiaDoUsuarioLogado() {
+        return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
     }
 }
