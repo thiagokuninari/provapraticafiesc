@@ -30,17 +30,14 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
+import static br.com.xbrain.autenticacao.modules.comum.model.QOrganizacao.organizacao;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QUnidadeNegocio.unidadeNegocio;
@@ -59,7 +56,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
-import static br.com.xbrain.autenticacao.modules.comum.model.QOrganizacao.organizacao;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -180,8 +176,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return jdbcTemplate.query(" SELECT FK_USUARIO AS usuarioId, CANAL AS canal"
-                    + " FROM USUARIO_CANAL"
-                    + " WHERE FK_USUARIO IN (:usuarioIds)",
+                + " FROM USUARIO_CANAL"
+                + " WHERE FK_USUARIO IN (:usuarioIds)",
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(Canal.class));
@@ -884,7 +880,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     .leftJoin(site.coordenadores, usuarioCoordenadores)
                     .where(
                         site.situacao.eq(A)
-                        .and(usuario.id.eq(usuarioCoordenadores.id)))
+                            .and(usuario.id.eq(usuarioCoordenadores.id)))
                     .notExists())
                 .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
                 .and(sitePredicate)
@@ -1052,10 +1048,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario, usuario)
             .where(usuario.canais.any().eq(ECanal.ATIVO_PROPRIO)
                 .and(select(site).from(site)
-                .leftJoin(site.coordenadores, usuarioCoordenadores)
-                .where(site.situacao.eq(A)
-                    .and(site.id.ne(siteId))
-                    .and(usuario.id.eq(usuarioCoordenadores.id)))
+                    .leftJoin(site.coordenadores, usuarioCoordenadores)
+                    .where(site.situacao.eq(A)
+                        .and(site.id.ne(siteId))
+                        .and(usuario.id.eq(usuarioCoordenadores.id)))
                     .notExists())
                 .and(usuario.cargo.codigo.eq(COORDENADOR_OPERACAO))
                 .and(sitePredicate)
@@ -1067,17 +1063,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> supervisoresIds,
                                                                                         Set<String> codigosCargos) {
         return jdbcTemplate.query(" SELECT UH.FK_USUARIO AS ID, "
-            + "U.NOME AS NOME, "
-            + "U.SITUACAO AS SITUACAO, "
-            + "C.CODIGO AS CODIGO_CARGO "
-            + "FROM USUARIO_HIERARQUIA UH "
-            + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-            + "JOIN CARGO C ON C.ID = U.FK_CARGO "
-            + "WHERE C.CODIGO in (:_codigosCargos) "
-            + "AND U.SITUACAO = 'A' "
-            + "GROUP BY FK_USUARIO, U.NOME, U.SITUACAO, C.CODIGO "
-            + "START WITH UH.FK_USUARIO_SUPERIOR in (:_supervisoresIds) "
-            + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR",
+                + "U.NOME AS NOME, "
+                + "U.SITUACAO AS SITUACAO, "
+                + "C.CODIGO AS CODIGO_CARGO "
+                + "FROM USUARIO_HIERARQUIA UH "
+                + "JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                + "JOIN CARGO C ON C.ID = U.FK_CARGO "
+                + "WHERE C.CODIGO in (:_codigosCargos) "
+                + "AND U.SITUACAO = 'A' "
+                + "GROUP BY FK_USUARIO, U.NOME, U.SITUACAO, C.CODIGO "
+                + "START WITH UH.FK_USUARIO_SUPERIOR in (:_supervisoresIds) "
+                + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource()
                 .addValue("_supervisoresIds", supervisoresIds)
                 .addValue("_codigosCargos", codigosCargos),
@@ -1096,7 +1092,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + "WHERE S.FK_SITE = :siteId AND SI.SITUACAO = 'A' AND "
                 + "S.FK_USUARIO IN (SELECT FK_USUARIO FROM USUARIO_HIERARQUIA UUH "
                 + "START WITH UUH.FK_USUARIO_SUPERIOR IN (:usuarioId) "
-                + "CONNECT BY NOCYCLE PRIOR UUH.FK_USUARIO = FK_USUARIO_SUPERIOR) OR UH.FK_USUARIO_SUPERIOR = (:usuarioId)) "
+                + "CONNECT BY NOCYCLE PRIOR UUH.FK_USUARIO = FK_USUARIO_SUPERIOR) OR UH.FK_USUARIO_SUPERIOR IN (:usuarioId)) "
                 + "CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource()
                 .addValue("usuarioId", usuarioId)
@@ -1128,8 +1124,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(site)
             .join(site.coordenadores, usuario)
             .where(site.situacao.eq(A)
-            .and(site.id.eq(siteId))
-            .and(usuario.situacao.eq(A)))
+                .and(site.id.eq(siteId))
+                .and(usuario.situacao.eq(A)))
             .fetch();
     }
 
