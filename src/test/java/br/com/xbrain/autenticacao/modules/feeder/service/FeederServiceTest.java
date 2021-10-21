@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -210,7 +211,7 @@ public class FeederServiceTest {
     @Test
     public void adicionarPermissaoFeederParaUsuarioNovo_deveNaoSalvarPermissaoTratarLead_quandoAaNaoForFeeder() {
         var usuarioNovo = umUsuarioMqRequest();
-        usuarioNovo.setAgenteAutorizadoFeeder(Eboolean.F);
+        usuarioNovo.setAgenteAutorizadoFeeder(ETipoFeeder.NAO_FEEDER);
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
@@ -280,7 +281,7 @@ public class FeederServiceTest {
 
     private UsuarioMqRequest umUsuarioMqRequest() {
         return UsuarioMqRequest.builder()
-            .agenteAutorizadoFeeder(Eboolean.V)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
