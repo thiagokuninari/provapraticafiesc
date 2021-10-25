@@ -10,8 +10,8 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -960,6 +960,47 @@ public class UsuarioControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "true")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "false")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(false));
     }
 
     @Test

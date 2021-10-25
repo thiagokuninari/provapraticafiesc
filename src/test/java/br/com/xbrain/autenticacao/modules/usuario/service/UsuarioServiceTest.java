@@ -1149,6 +1149,33 @@ public class UsuarioServiceTest {
             .isEqualTo(usuariosSituacao);
     }
 
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
+        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
+
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, true))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"),
+                tuple(11, "Usuario Inativo"),
+                tuple(1, "NOME UM"));
+    }
+
+    @Test
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
+        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+            eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
+            .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
+
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, false))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(10, "Usuario Ativo"),
+                tuple(1, "NOME UM"));
+    }
+
     private Usuario umUsuarioComLoginNetSales(int id) {
         return Usuario.builder()
             .id(id)
