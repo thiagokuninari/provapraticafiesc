@@ -90,6 +90,16 @@ public class CidadeService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
+    public Cidade findFirstByEstadoNomeAndCidadeNome(String uf, String cidade) {
+        return cidadeRepository
+            .findFirstByPredicate(
+                new CidadePredicate()
+                    .comNome(cidade)
+                    .comUf(uf)
+                    .build())
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
     public ClusterizacaoDto getClusterizacao(Integer id) {
         return cidadeRepository.getClusterizacao(id);
     }

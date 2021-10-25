@@ -13,8 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -61,5 +60,19 @@ public class CidadeServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.findCidadeComSiteByUfECidade("LONDRINA", "PI"))
             .withMessage("Cidade não encontrada.");
+    }
+
+    @Test
+    public void findByEstadoNomeAndCidadeNome_deveRetornarException_quandoNaoExistir() {
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.findFirstByEstadoNomeAndCidadeNome("LONDRINA", "PI"))
+            .withMessage("Cidade não encontrada.");
+    }
+
+    @Test
+    public void findByEstadoNomeAndCidadeNome_deveRetornarApenasPrimeiraCidade_quandoExistirDuasOuMais() {
+        assertThat(service.findFirstByEstadoNomeAndCidadeNome("SP", "SAO PAULO"))
+            .extracting("id", "nome")
+            .containsExactly(6578, "SAO PAULO");
     }
 }
