@@ -423,4 +423,11 @@ public class SiteService {
             throw new ValidacaoException("Falha ao tentar baixar relatório.");
         }
     }
+
+    public List<SiteResponse> buscarTodos(SiteFiltros filtros) {
+        return siteRepository.findAll(filtros.toPredicate().build())
+            .stream()
+            .map(SiteResponse::of)
+            .collect(toList());
+    }
 }

@@ -541,4 +541,27 @@ public class SiteControllerTest {
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @SneakyThrows
+    public void buscarTodos_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/buscar/todos"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarTodos_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/buscar/todos")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarTodos_ok_seUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get(API_URI + "/buscar/todos")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
 }
