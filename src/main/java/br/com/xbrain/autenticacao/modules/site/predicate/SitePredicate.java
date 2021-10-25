@@ -11,6 +11,7 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -252,6 +253,22 @@ public class SitePredicate extends PredicateBase {
     public SitePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
         Optional.ofNullable(codigoCidadeDbm)
             .map(site.cidades.any().codigoCidadeDbm::eq)
+            .ifPresent(builder::and);
+
+        return this;
+    }
+
+    public SitePredicate comIds(List<Integer> ids) {
+        Optional.ofNullable(ids)
+            .filter(idsOptional -> !ObjectUtils.isEmpty(ids))
+            .map(idsOptional ->
+                ExpressionUtils.anyOf(
+                    Lists.partition(idsOptional, QTD_MAX_NO_ORACLE)
+                        .stream()
+                        .map(site.id::in)
+                        .collect(Collectors.toList())
+                )
+            )
             .ifPresent(builder::and);
 
         return this;

@@ -146,4 +146,9 @@ public class SiteController {
     public SiteCidadeResponse buscarSiteCidadePorCodigoCidadeDbm(@PathVariable Integer codigoCidadeDbm) {
         return service.buscarSiteCidadePorCodigoCidadeDbm(codigoCidadeDbm);
     }
+
+    @GetMapping("buscar/todos")
+    public List<SiteResponse> buscarTodos(SiteFiltros filtros) {
+        return service.buscarTodos(filtros);
+    }
 }
