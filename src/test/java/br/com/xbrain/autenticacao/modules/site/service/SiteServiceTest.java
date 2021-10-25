@@ -6,8 +6,12 @@ import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -21,6 +25,8 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
@@ -593,6 +599,42 @@ public class SiteServiceTest {
 
         verify(siteRepository, times(1)).findAllByPredicate(eq(filtros.toPredicate().build()));
         verify(callService, times(1)).getDiscadoras();
+    }
+
+    @Test
+    public void buscarTodos_deveRetornarListaDeSiteResponse_seSolicitado() {
+        when(siteRepository.findAll(eq(new SitePredicate().build())))
+            .thenReturn(List.of(
+                Site
+                    .builder()
+                    .id(1)
+                    .nome("SITE NOME")
+                    .timeZone(BRT)
+                    .situacao(ESituacao.A)
+                    .coordenadores(Set.of(Usuario.builder().id(1).build()))
+                    .supervisores(Set.of(Usuario.builder().id(1).build()))
+                    .estados(Set.of(Uf.builder().id(1).build()))
+                    .cidades(Set.of(Cidade.builder().id(1).build()))
+                    .discadoraId(1)
+                    .siteNacional(Eboolean.F)
+                    .build()
+            ));
+
+        var atual = service.buscarTodos(new SiteFiltros());
+        var esperado = SiteResponse
+            .builder()
+            .id(1)
+            .nome("SITE NOME")
+            .timeZone(BRT)
+            .situacao(ESituacao.A)
+            .discadoraId(1)
+            .siteNacional(false)
+            .build();
+
+        assertThat(atual)
+            .usingElementComparatorOnFields("id", "nome", "timeZone", "situacao", "coordenadoresIds", "supervisoresIds",
+                "estadosIds", "cidadesIds", "discadoraId", "siteNacional")
+            .isEqualTo(List.of(esperado));
     }
 
     private Site umReagendamentoConfiguracaoResponse(Integer id) {
