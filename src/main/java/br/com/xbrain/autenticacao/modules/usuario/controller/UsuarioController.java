@@ -429,8 +429,11 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "organizacaoId")
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(@RequestParam Integer organizacaoId) {
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId);
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(
+        @RequestParam Integer organizacaoId,
+        @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
+
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId, buscarInativos);
     }
 
     @GetMapping("permitidos")
