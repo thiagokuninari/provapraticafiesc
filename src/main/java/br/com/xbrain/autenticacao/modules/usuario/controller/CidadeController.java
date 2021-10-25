@@ -120,6 +120,6 @@ public class CidadeController {
 
     @GetMapping("estado-cidade-ids/{uf}/{cidade}")
     public CidadeResponse buscarCidadeEstadoIds(@PathVariable String uf, @PathVariable String cidade) {
-        return CidadeResponse.of(service.findFirstByEstadoNomeAndCidadeNome(uf, cidade));
+        return CidadeResponse.of(service.findFirstByUfNomeAndCidadeNome(uf, cidade));
     }
 }

@@ -65,13 +65,13 @@ public class CidadeServiceTest {
     @Test
     public void findByEstadoNomeAndCidadeNome_deveRetornarException_quandoNaoExistir() {
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.findFirstByEstadoNomeAndCidadeNome("LONDRINA", "PI"))
+            .isThrownBy(() -> service.findFirstByUfNomeAndCidadeNome("LONDRINA", "PI"))
             .withMessage("Cidade não encontrada.");
     }
 
     @Test
     public void findByEstadoNomeAndCidadeNome_deveRetornarApenasPrimeiraCidade_quandoExistirDuasOuMais() {
-        assertThat(service.findFirstByEstadoNomeAndCidadeNome("SP", "SAO PAULO"))
+        assertThat(service.findFirstByUfNomeAndCidadeNome("SP", "SAO PAULO"))
             .extracting("id", "nome")
             .containsExactly(6578, "SAO PAULO");
     }

@@ -90,7 +90,7 @@ public class CidadeService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public Cidade findFirstByEstadoNomeAndCidadeNome(String uf, String cidade) {
+    public Cidade findFirstByUfNomeAndCidadeNome(String uf, String cidade) {
         return cidadeRepository
             .findFirstByPredicate(
                 new CidadePredicate()
