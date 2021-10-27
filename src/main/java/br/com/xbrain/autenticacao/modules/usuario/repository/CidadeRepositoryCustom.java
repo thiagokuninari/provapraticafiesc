@@ -34,4 +34,6 @@ public interface CidadeRepositoryCustom {
 
     Optional<CidadeSiteResponse> findCidadeComSite(Predicate predicate);
 
+    Optional<Cidade> findFirstByPredicate(Predicate predicate);
+
 }
