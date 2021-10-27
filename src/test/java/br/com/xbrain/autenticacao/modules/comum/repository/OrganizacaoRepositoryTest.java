@@ -38,9 +38,9 @@ public class OrganizacaoRepositoryTest {
         var predicate = new OrganizacaoPredicate().comNivel(1);
 
         assertThat(organizacaoRepository.findByPredicate(predicate.build()))
-                .hasSize(1)
-                .extracting("codigo", "nome")
-                .contains(tuple("BCC", "Brasil Center"));
+            .hasSize(1)
+            .extracting("codigo", "nome")
+            .contains(tuple("BCC", "Brasil Center"));
     }
 
     @Test
@@ -48,9 +48,9 @@ public class OrganizacaoRepositoryTest {
         var predicate = new OrganizacaoPredicate().comId(2);
 
         assertThat(organizacaoRepository.findByPredicate(predicate.build()))
-                .hasSize(1)
-                .extracting("codigo", "nome")
-                .contains(tuple("CALLINK", "Callink"));
+            .hasSize(1)
+            .extracting("codigo", "nome")
+            .contains(tuple("CALLINK", "Callink"));
     }
 
     @Test

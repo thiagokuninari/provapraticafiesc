@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "api/usuarios/gerencia")
@@ -43,8 +45,8 @@ public class UsuarioGerenciaController {
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
         return UsuarioDto.of(
-                service.findByIdComAa(id),
-                usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
+            usuario,
+            usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
     }
 
     @GetMapping
@@ -62,6 +64,13 @@ public class UsuarioGerenciaController {
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post) {
         return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
+    }
+
+    @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
+                                                                    @RequestBody UsuarioCargoSuperiorPost post,
+                                                                    @PathVariable Set<ECanal> canal) {
+        return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
     }
 
     @GetMapping(params = "email")

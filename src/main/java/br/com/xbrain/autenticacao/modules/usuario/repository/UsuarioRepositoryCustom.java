@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UsuarioRepositoryCustom {
 
@@ -34,13 +35,13 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> getUsuariosSubordinados(Integer usuarioId);
 
-    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, String codigoCargo);
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
-    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial();
+    List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(Predicate predicate);
 
     List<UsuarioAutoComplete> findAllExecutivosDosIds(List<Integer> agenteAutorizadoId);
 
@@ -68,6 +69,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> getUsuariosByNivel(CodigoNivel codigoNivel);
 
+    List<Integer> getUsuariosIdsByNivel(CodigoNivel nivel);
+
     Page<Usuario> findAll(Predicate predicate, Pageable pageable);
 
     Optional<Usuario> findComConfiguracao(Integer usuarioId);
@@ -85,7 +88,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
                                                     CodigoCargo cargo,
-                                                    ECanal canal);
+                                                    Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
@@ -115,7 +118,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 
-    List<UsuarioNomeResponse> getSupervisoresSubclusterDoUsuario(Integer usuarioId);
+    List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal);
 
     List<SelectResponse> findAllAtivosByNivelOperacaoCanalAa();
 
@@ -126,4 +129,33 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
+
+    List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveis(Predicate sitePredicate);
+
+    List<UsuarioNomeResponse> findSubordinadosAtivoProprioPorUsuarioLogadoIdECargo(Integer usuarioId, CodigoCargo cargo);
+
+    List<UsuarioNomeResponse> findSupervisoresSemSitePorCoordenadorId(Predicate sitePredicate);
+
+    List<UsuarioNomeResponse> findVendedoresPorSiteId(Integer siteId);
+
+    List<Integer> findUsuariosIdsPorSiteId(Integer siteId);
+
+    List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId);
+
+    List<UsuarioResponse> buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List<Integer> superioresIds,
+                                                                                 Set<String> codigoCargo);
+
+    List<UsuarioSituacaoResponse> findVendedoresDoSiteIdPorHierarquiaUsuarioId(List<Integer> usuarioId, Integer siteId);
+
+    List<UsuarioNomeResponse> findCoordenadoresDoSiteId(Integer siteId);
+
+    List<UsuarioNomeResponse> findSupervisoresDoSiteIdVinculadoAoCoordenador(Integer siteId, Predicate predicate);
+
+    List<UsuarioCargoResponse> findSuperioresDoUsuarioId(Integer usuarioId);
+
+    List<Usuario> findAllVendedoresReceptivos();
+
+    List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 }

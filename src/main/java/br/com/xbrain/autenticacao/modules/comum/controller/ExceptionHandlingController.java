@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.MessageException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -64,5 +65,12 @@ public class ExceptionHandlingController {
                         ? new MessageException(e.getDefaultMessage())
                         : new MessageException(e.getField(), "O campo " + e.getField() + " " + e.getDefaultMessage())
                 ).collect(Collectors.toList());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UnauthorizedUserException.class)
+    public MessageException extrairDeAcessoException(UnauthorizedUserException acessoEx) {
+        return new MessageException(acessoEx.getMessage());
     }
 }

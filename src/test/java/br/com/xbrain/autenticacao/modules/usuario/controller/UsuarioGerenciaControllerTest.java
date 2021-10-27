@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -89,6 +90,8 @@ public class UsuarioGerenciaControllerTest {
     private AgenteAutorizadoClient agenteAutorizadoClient;
     @MockBean
     private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
+    @MockBean
+    private SiteService siteService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -142,14 +145,17 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, MSO_ANALISTAADM_CLAROMOVEL_PESSOAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(7)))
+                .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
                 .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
                 .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
                 .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
                 .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
                 .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
-                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")));
+                .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
+                .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
+                .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
+                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")));
     }
 
     @Test
@@ -253,7 +259,7 @@ public class UsuarioGerenciaControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content", hasSize(2)))
                 .andExpect(jsonPath("$.content[0].nome", is("REALOCADO")));
     }
 

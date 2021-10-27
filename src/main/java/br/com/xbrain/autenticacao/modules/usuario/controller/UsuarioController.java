@@ -125,6 +125,11 @@ public class UsuarioController {
         return usuarioService.getUsuarioByNivel(nivel);
     }
 
+    @GetMapping(value = "ids", params = "nivel")
+    public List<Integer> getUsuariosIdsByNivel(@RequestParam CodigoNivel nivel) {
+        return usuarioService.getUsuariosIdsByNivel(nivel);
+    }
+
     @GetMapping(value = "/{id}/cidades")
     public List<CidadeResponse> getCidadesByUsuario(@PathVariable("id") int id) {
         return usuarioService.findCidadesByUsuario(id);
@@ -168,8 +173,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/executivos-comerciais")
-    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial() {
-        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial();
+    public List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(CodigoCargo cargo) {
+        return usuarioService.findAllExecutivosOperacaoDepartamentoComercial(cargo);
     }
 
     @PostMapping("/vincula/hierarquia")
@@ -336,6 +341,11 @@ public class UsuarioController {
         return usuarioService.getVendedoresOperacaoDaHierarquia(id);
     }
 
+    @GetMapping("{id}/supervisores-hierarquia")
+    public List<UsuarioHierarquiaResponse> getSupervisoresDaHierarquia(@PathVariable Integer id) {
+        return usuarioService.getSupervisoresOperacaoDaHierarquia(id);
+    }
+
     @GetMapping("permissoes-por-canal")
     public List<UsuarioPermissaoCanal> getPermissoesPorCanal() {
         return usuarioService.getPermissoesUsuarioAutenticadoPorCanal();
@@ -343,13 +353,18 @@ public class UsuarioController {
 
     @PostMapping("permissoes-por-usuario")
     public List<UsuarioPermissoesResponse> findUsuarioByPermissoes(
-            @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
+        @Validated @RequestBody UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return usuarioService.findUsuariosByPermissoes(usuarioPermissoesRequest);
     }
 
     @GetMapping("distribuicao/agendamentos/{agenteAutorizadoId}/disponiveis")
     public List<UsuarioAgendamentoResponse> getUsuariosDisponiveis(@PathVariable Integer agenteAutorizadoId) {
         return usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(agenteAutorizadoId);
+    }
+
+    @GetMapping("distribuicao/agendamentos/equipe-venda/{equipeVendaId}")
+    public List<UsuarioDistribuicaoResponse> getUsuariosParaDistribuicaoByEquipeVendaId(@PathVariable Integer equipeVendaId) {
+        return usuarioAgendamentoService.getUsuariosParaDistribuicaoByEquipeVendaId(equipeVendaId);
     }
 
     @GetMapping("distribuicao/agendamentos/{usuarioId}/agenteautorizado/{agenteAutorizadoId}")
@@ -414,8 +429,11 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "organizacaoId")
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(@RequestParam Integer organizacaoId) {
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId);
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(
+        @RequestParam Integer organizacaoId,
+        @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
+
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(organizacaoId, buscarInativos);
     }
 
     @GetMapping("permitidos")
@@ -447,5 +465,36 @@ public class UsuarioController {
     @PostMapping("usuario-situacao/por-ids")
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(@RequestBody @Validated UsuarioSituacaoFiltro filtro) {
         return usuarioService.buscarUsuarioSituacaoPorIds(filtro);
+    }
+
+    @GetMapping("{canal}/cargo/{codigoCargo}")
+    public List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(@PathVariable ECanal canal,
+                                                                  @PathVariable CodigoCargo codigoCargo) {
+        return usuarioService.buscarUsuariosPorCanalECargo(canal, codigoCargo);
+    }
+
+    @GetMapping("usuarios-superiores/{usuarioId}")
+    public List<UsuarioCargoResponse> buscarUsuariosSuperiores(@PathVariable Integer usuarioId) {
+        return usuarioService.getSuperioresPorId(usuarioId);
+    }
+
+    @GetMapping("alterar-situacao-usuario-bloqueado/{usuarioId}")
+    public void alterarSituacaoUsuarioBLoqueado(@PathVariable Integer usuarioId) {
+        deslogarUsuarioPorExcessoDeUsoService.atualizarSituacaoUsuarioBloqueado(usuarioId);
+    }
+
+    @GetMapping("vendedores-receptivos")
+    public List<SelectResponse> getAllVendedoresReceptivos() {
+        return usuarioService.buscarTodosVendedoresReceptivos();
+    }
+
+    @GetMapping("vendedores-receptivos/por-ids")
+    public List<UsuarioVendedorReceptivoResponse> getAllVendedoresReceptivosById(@RequestParam List<Integer> ids) {
+        return usuarioService.buscarVendedoresReceptivosPorId(ids);
+    }
+
+    @GetMapping("permitidos/select/por-filtros")
+    public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
+        return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
     }
 }

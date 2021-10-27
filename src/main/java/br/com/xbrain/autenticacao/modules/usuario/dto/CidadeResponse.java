@@ -14,8 +14,8 @@ public class CidadeResponse {
     private UfResponse uf;
     private Eboolean netUno;
 
-    public static CidadeResponse parse(Cidade request) {
-        CidadeResponse response = new CidadeResponse();
+    public static CidadeResponse of(Cidade request) {
+        var response = new CidadeResponse();
         BeanUtils.copyProperties(request, response);
         response.setUf(UfResponse.parse(request.getUf()));
         return response;

@@ -45,6 +45,7 @@ spring:
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
       maximumPoolSize: 2
+      connectionTimeout: 10000
 
   rabbitmq:
     host: 192.168.50.1
@@ -96,6 +97,7 @@ app-config:
 
   queue:
     usuario-cadastro: usuario-cadastro.queue
+    usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
@@ -118,11 +120,11 @@ app-config:
     inativar-colaborador-pol: inativar-colaborador-pol.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
+    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
+    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     usuario-remanejar-pol: usuario-remanejar-pol.queue
     usuario-remanejado-aut: usuario-remanejado-aut.queue
     usuario-remanejado-aut-failure: usuario-remanejado-aut-failure.queue
-    atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
-    atualizar-permissao-feeder-failure: permissao-feeder-aa-atualizacao-failure.queue
     cadastro-usuario-feeder: cadastro-usuario-feeder.queue
     cadastro-usuario-feeder-failure: cadastro-usuario-feeder-failure.queue
     sucesso-cadastro-usuario-feeder: sucesso-cadastro-usuario-feeder.queue
@@ -220,7 +222,7 @@ app-config:
   services:
     autenticacao:
       # url: http://localhost:8096
-      url: http://autenticacao-api-dev.conexaoclarobrasil.com.br
+      url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       # url: http://localhost:8094
@@ -235,7 +237,7 @@ app-config:
       url: http://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
-      url: http://equipe-venda-api-dev.conexaoclarobrasil.com.br
+      url: http://api-dev.conexaoclarobrasil.com.br/equipe-venda
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn

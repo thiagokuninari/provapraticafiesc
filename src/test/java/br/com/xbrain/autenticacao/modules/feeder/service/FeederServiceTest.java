@@ -70,15 +70,17 @@ public class FeederServiceTest {
         verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
 
         assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(7)
+            .hasSize(9)
             .extracting("usuario.id", "funcionalidade.id")
             .containsExactlyInAnyOrder(tuple(100, 3046),
                 tuple(102, 3046),
                 tuple(102, 15000),
                 tuple(102, 15005),
+                tuple(102, 15012),
                 tuple(10, 3046),
                 tuple(10, 15000),
-                tuple(10, 15005));
+                tuple(10, 15005),
+                tuple(10, 15012));
     }
 
     @Test
@@ -229,11 +231,12 @@ public class FeederServiceTest {
 
         verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
         assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(3)
+            .hasSize(4)
             .extracting("usuario.id", "funcionalidade.id")
             .containsExactlyInAnyOrder(tuple(1111, 3046),
                 tuple(1111, 15000),
-                tuple(1111, 15005));
+                tuple(1111, 15005),
+                tuple(1111, 15012));
     }
 
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {

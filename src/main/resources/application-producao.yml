@@ -16,7 +16,8 @@ spring:
     password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
-      maximumPoolSize: 300
+      maximumPoolSize: 200
+      minimumIdle: 15
 
   redis:
     host: 192.168.2.29

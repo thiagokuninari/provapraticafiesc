@@ -14,10 +14,10 @@ public class OrganizacaoRepositoryImpl extends CustomRepository<Organizacao> imp
     @Override
     public List<Organizacao> findByPredicate(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                .select(organizacao)
-                .from(organizacao)
-                .where(predicate)
-                .orderBy(organizacao.nome.asc())
-                .fetch();
+            .select(organizacao)
+            .from(organizacao)
+            .where(predicate)
+            .orderBy(organizacao.nome.asc())
+            .fetch();
     }
 }

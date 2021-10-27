@@ -4,11 +4,14 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAut
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
@@ -35,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -75,6 +80,8 @@ public class UsuarioControllerTest {
     private UsuarioAgendamentoService usuarioAgendamentoService;
     @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @MockBean
+    private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
         return new UsuarioExecutivoResponse(id, email, nome);
@@ -955,6 +962,76 @@ public class UsuarioControllerTest {
         verify(usuarioService, times(1)).buscarUsuarioSituacaoPorIds(eq(new UsuarioSituacaoFiltro(List.of(1, 2, 3))));
     }
 
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "true")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
+        mvc.perform(get("/api/usuarios")
+            .param("organizacaoId", "5")
+            .param("buscarInativos", "false")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(false));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllVendedoresReceptivos_deveRetornarStatusOk_quandoValido() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/vendedores-receptivos")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].label", is("VR 1")))
+            .andExpect(jsonPath("$[0].value", is(420)))
+            .andExpect(jsonPath("$[1].label", is("VR 2 (REALOCADO)")))
+            .andExpect(jsonPath("$[1].value", is(421)))
+            .andExpect(jsonPath("$[2].label", is("VR 3")))
+            .andExpect(jsonPath("$[2].value", is(422)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllVendedoresReceptivosById_deveRetornarStatusOk_quandoValido() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/vendedores-receptivos/por-ids")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("ids", "421,422"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(421)))
+            .andExpect(jsonPath("$[0].nome", is("VR 2 (REALOCADO)")))
+            .andExpect(jsonPath("$[1].id", is(422)))
+            .andExpect(jsonPath("$[1].nome", is("VR 3")));
+    }
+
     private List<UsuarioResponse> umaListaUsuariosExecutivosAtivo() {
         return List.of(
             UsuarioResponse.builder()
@@ -977,5 +1054,73 @@ public class UsuarioControllerTest {
             .id(id)
             .situacao(ESituacao.I)
             .build();
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarSituacaoUsuarioBloqueado_deveAcessarService_seAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(deslogarUsuarioPorExcessoDeUsoService, times(1)).atualizarSituacaoUsuarioBloqueado(eq(123));
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarSituacaoUsuarioBloqueado_naoDeveAcessarService_seNaoAutorizado() {
+        mvc.perform(get("/api/usuarios/alterar-situacao-usuario-bloqueado/{usuarioId}", 123)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(deslogarUsuarioPorExcessoDeUsoService, never()).atualizarSituacaoUsuarioBloqueado(any(Integer.class));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getTiposCanal_deveRetornarStatusOkEosCanais_quandoValido() {
+        mvc.perform(get("/api/usuarios/tipos-canal")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].value", is(ETipoCanal.PAP.toString())))
+            .andExpect(jsonPath("$[0].label", is(ETipoCanal.PAP.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[1].value", is(ETipoCanal.PAP_PME.toString())))
+            .andExpect(jsonPath("$[1].label", is(ETipoCanal.PAP_PME.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[2].value", is(ETipoCanal.PAP_PREMIUM.toString())))
+            .andExpect(jsonPath("$[2].label", is(ETipoCanal.PAP_PREMIUM.getDescricao().toUpperCase())))
+            .andExpect(jsonPath("$[3].value", is(ETipoCanal.INSIDE_SALES_PME.toString())))
+            .andExpect(jsonPath("$[3].label", is(ETipoCanal.INSIDE_SALES_PME.getDescricao().toUpperCase())));
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .header("Authorization", "")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(usuarioService, never()).buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros_deveRetornarOk_quandoFiltrosObrigatoriosInformados() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/permitidos/select/por-filtros")
+            .param("codigosCargos", "SUPERVISOR_OPERACAO,ASSISTENTE_OPERACAO")
+            .param("canal", "D2D_PROPRIO")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(
+                eq(UsuarioFiltros.builder()
+                    .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
+                    .canal(ECanal.D2D_PROPRIO)
+                    .build()));
     }
 }

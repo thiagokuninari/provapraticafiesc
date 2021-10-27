@@ -3,9 +3,11 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -47,6 +52,8 @@ public class CargoControllerTest {
     private MockMvc mvc;
     @MockBean
     private CargoService cargoService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void getAll_isUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -56,14 +63,23 @@ public class CargoControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsCargos_conformeNivelFiltrado() throws Exception {
-        when(cargoService.getPermitidosPorNivel(eq(1)))
+    public void getAll_deveRetornarOsCargos_conformeNivelECanaisPermitidosFiltrados() throws Exception {
+        when(cargoService.getAll(any(), any()))
+            .thenReturn(umCargoPage(1, "Administrador", 4));
+        when(cargoService
+            .getPermitidosPorNivelECanaisPermitidos(eq(7), eq(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO)), eq(true)))
             .thenReturn(List.of(Cargo.builder()
                 .codigo(CodigoCargo.OPERACAO_TECNICO)
                 .nome("OPERADOR TECNICO")
                 .build()));
 
-        mvc.perform(get(API_CARGO + "?nivelId=1")
+        var canaisParam = Stream.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO)
+            .map(ECanal::name)
+            .collect(Collectors.joining(","));
+        mvc.perform(get(API_CARGO)
+                .param("nivelId", "7")
+                .param("canais", canaisParam)
+                .param("permiteEditarCompleto", "true")
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

@@ -1,0 +1,1 @@
+delete from cargo_depart_func where fk_cargo = 6 and fk_departamento = 3 and fk_funcionalidade = 3034;
