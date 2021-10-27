@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feeder.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -11,7 +11,7 @@ public class AgenteAutorizadoPermissaoFeederDtoTest {
     @Test
     public void hasPermissaoFeeder_deveRetornarFalse_quandoAgenteAutorizadoNaoTiverPermissao() {
         var agenteAutorizadoFeederDto = AgenteAutorizadoPermissaoFeederDto.builder()
-            .feeder(Eboolean.F)
+            .feeder(ETipoFeeder.NAO_FEEDER)
             .build();
 
         assertFalse(agenteAutorizadoFeederDto.hasPermissaoFeeder());
@@ -20,7 +20,16 @@ public class AgenteAutorizadoPermissaoFeederDtoTest {
     @Test
     public void hasPermissaoFeeder_deveRetornarTrue_quandoAgenteAutorizadoTiverPermissao() {
         var agenteAutorizadoFeederDto = AgenteAutorizadoPermissaoFeederDto.builder()
-            .feeder(Eboolean.V)
+            .feeder(ETipoFeeder.RESIDENCIAL)
+            .build();
+
+        assertTrue(agenteAutorizadoFeederDto.hasPermissaoFeeder());
+    }
+
+    @Test
+    public void hasPermissaoFeeder_deveRetornarTrue_quandoAgenteAutorizadoTiverPermissaoEmpresarial() {
+        var agenteAutorizadoFeederDto = AgenteAutorizadoPermissaoFeederDto.builder()
+            .feeder(ETipoFeeder.EMPRESARIAL)
             .build();
 
         assertTrue(agenteAutorizadoFeederDto.hasPermissaoFeeder());

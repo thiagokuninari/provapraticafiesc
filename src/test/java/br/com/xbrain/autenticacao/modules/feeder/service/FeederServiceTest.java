@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
@@ -30,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -56,7 +55,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciaisConformeOCargo_quandoUsuariosNaoPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
 
         when(usuarioRepository.findComplete(102)).thenReturn(
@@ -87,7 +86,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_naoDeveDuplicarPermissoes_quandoUsuariosJaPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
 
         when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
@@ -103,7 +102,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_deveRemoverPermissaoFeeder_quandoAaTiverPermissaoParaFeeder() {
         var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setFeeder(ETipoFeeder.NAO_FEEDER);
         aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
@@ -121,7 +120,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_naoDeveRemoverPermissaoDoSocio_quandoSocioTiverOutroAaComPermissaoFeeder() {
         var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setFeeder(ETipoFeeder.NAO_FEEDER);
         aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 

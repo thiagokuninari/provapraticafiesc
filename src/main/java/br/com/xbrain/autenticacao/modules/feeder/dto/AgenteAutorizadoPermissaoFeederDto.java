@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feeder.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,11 +18,11 @@ public class AgenteAutorizadoPermissaoFeederDto {
     private Integer agenteAutorizadoId;
     private Integer usuarioProprietarioId;
     private Integer usuarioCadastroId;
-    private Eboolean feeder;
+    private ETipoFeeder feeder;
     private List<Integer> colaboradoresVendasIds;
     boolean socioDeOutroAaComPermissaoFeeder;
 
     public boolean hasPermissaoFeeder() {
-        return Objects.equals(feeder, Eboolean.V);
+        return !Objects.equals(feeder, ETipoFeeder.NAO_FEEDER);
     }
 }
