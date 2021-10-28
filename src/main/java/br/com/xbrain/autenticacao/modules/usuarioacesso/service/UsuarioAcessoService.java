@@ -30,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -121,8 +118,11 @@ public class UsuarioAcessoService {
         Collection<UsuarioAcesso> usuariosSemUltimoAcesso =
             CollectionUtils.emptyIfNull(getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
 
+        var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
+
         return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
-            .filter(u -> u.getUsuario().getEmail() != null && !u.getUsuario().getEmail().equals(emailUsuarioViabilidade))
+            .filter(u -> u.getUsuario().getEmail() != null
+                && !Arrays.asList(emailsUsuariosViabilidade).contains(u.getUsuario().getEmail()))
             .collect(Collectors.toList());
     }
 
@@ -135,7 +135,8 @@ public class UsuarioAcessoService {
 
     private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
         return usuarioAcessoRepository.findAllUltimoAcessoUsuarios().stream()
-            .filter(usuario -> usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
+            .filter(usuario -> usuario.getDataCadastro() != null
+                && usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
                 && usuario.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
             .collect(Collectors.toList());
     }
