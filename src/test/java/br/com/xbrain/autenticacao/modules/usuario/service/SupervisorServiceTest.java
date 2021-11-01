@@ -67,86 +67,95 @@ public class SupervisorServiceTest {
     private AutenticacaoService autenticacaoService;
 
     @Test
-    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
+            service.getLideresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO));
 
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
+            service.getLideresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
             .isEmpty();
     }
 
     @Test
-    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoSubCluster_seExistirem() {
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoSubCluster_seExistirem() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_LONDRINA_ID)))
+            service.getLideresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_LONDRINA_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
 
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_CHAPECO_ID)))
+            service.getLideresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_CHAPECO_ID)))
             .isEmpty();
     }
 
     @Test
-    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoCluster_seExistirem() {
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoCluster_seExistirem() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_NORTE_PARANA_ID)))
+            service.getLideresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_NORTE_PARANA_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
 
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_PASSO_FUNDO_ID)))
+            service.getLideresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_PASSO_FUNDO_ID)))
             .isEmpty();
     }
 
     @Test
-    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDoGrupo_seExistirem() {
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoGrupo_seExistirem() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(GRUPO, singletonList(GRUPO_NORTE_PARANA_ID)))
+            service.getLideresPorAreaAtuacao(GRUPO, singletonList(GRUPO_NORTE_PARANA_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
 
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(GRUPO, singletonList(GRUPO_RS_SERRA)))
+            service.getLideresPorAreaAtuacao(GRUPO, singletonList(GRUPO_RS_SERRA)))
             .isEmpty();
     }
 
     @Test
-    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExistirem() {
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExistirem() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_SUL_ID)))
+            service.getLideresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_SUL_ID)))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
-                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
 
         assertThat(
-            service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_LESTE_ID)))
+            service.getLideresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_LESTE_ID)))
             .isEmpty();
     }
 

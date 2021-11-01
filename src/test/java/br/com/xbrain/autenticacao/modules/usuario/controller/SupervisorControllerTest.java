@@ -82,7 +82,7 @@ public class SupervisorControllerTest {
 
     @Test
     public void getPorAreaAtuacao_deveRetornarOsSupervisor_conformeAreaDeAtuacaoPorParametro() throws Exception {
-        when(supervisorService.getSupervisoresPorAreaAtuacao(any(), any()))
+        when(supervisorService.getLideresPorAreaAtuacao(any(), any()))
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 

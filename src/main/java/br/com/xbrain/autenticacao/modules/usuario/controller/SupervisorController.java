@@ -26,7 +26,7 @@ public class SupervisorController {
 
     @GetMapping("/por-area-atuacao/{areaAtuacao}/{id}")
     public List<UsuarioResponse> getPorAreaAtuacao(@PathVariable AreaAtuacao areaAtuacao, @PathVariable Integer id) {
-        return service.getSupervisoresPorAreaAtuacao(areaAtuacao, Collections.singletonList(id));
+        return service.getLideresPorAreaAtuacao(areaAtuacao, Collections.singletonList(id));
     }
 
     @GetMapping("/subcluster/usuario/{id}/canal/{canal}")
