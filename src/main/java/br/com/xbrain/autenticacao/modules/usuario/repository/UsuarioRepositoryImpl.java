@@ -655,7 +655,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                            List<Integer> areasAtuacaoIds,
-                                                           CodigoCargo cargo,
+                                                           List<CodigoCargo> cargos,
                                                            Set<ECanal> canais) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
@@ -668,7 +668,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .join(subCluster.cluster, cluster)
             .join(cluster.grupo, grupo)
             .join(grupo.regional, regional)
-            .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+            .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
                 .and(usuarioCidade.usuario.canais.any().in(canais))
                 .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
             .distinct()

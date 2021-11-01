@@ -86,7 +86,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
-                                                    CodigoCargo cargo,
+                                                    List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
