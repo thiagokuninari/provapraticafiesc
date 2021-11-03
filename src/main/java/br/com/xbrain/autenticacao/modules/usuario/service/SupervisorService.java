@@ -79,6 +79,14 @@ public class SupervisorService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
+        return usuarioRepository.getUsuariosPorAreaAtuacao(
+            areaAtuacao,
+            areasAtuacaoId,
+            SUPERVISOR_OPERACAO,
+            Set.of(D2D_PROPRIO));
+    }
+
     public List<UsuarioResponse> getLideresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
             areaAtuacao,

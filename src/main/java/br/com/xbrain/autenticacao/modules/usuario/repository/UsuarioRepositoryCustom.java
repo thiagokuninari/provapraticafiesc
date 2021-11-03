@@ -86,6 +86,11 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
+                                                    CodigoCargo cargo,
+                                                    Set<ECanal> canais);
+
+    List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
+                                                    List<Integer> areasAtuacaoIds,
                                                     List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 

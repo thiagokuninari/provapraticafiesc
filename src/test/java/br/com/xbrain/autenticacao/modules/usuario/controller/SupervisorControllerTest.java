@@ -82,7 +82,7 @@ public class SupervisorControllerTest {
 
     @Test
     public void getPorAreaAtuacao_deveRetornarOsSupervisor_conformeAreaDeAtuacaoPorParametro() throws Exception {
-        when(supervisorService.getLideresPorAreaAtuacao(any(), any()))
+        when(supervisorService.getSupervisoresPorAreaAtuacao(any(), any()))
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
@@ -93,6 +93,21 @@ public class SupervisorControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
+    }
+
+    @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisor_conformeAreaDeAtuacaoPorParametro() throws Exception {
+        when(supervisorService.getLideresPorAreaAtuacao(any(), any()))
+            .thenReturn(singletonList(
+                UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
+
+        mvc.perform(get("/api/supervisor/lideres-por-area-atuacao/SUBCLUSTER/1")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
     }
 
     @Test
