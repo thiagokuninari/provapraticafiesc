@@ -83,7 +83,7 @@ public class SupervisorService {
         return usuarioRepository.getUsuariosPorAreaAtuacao(
             areaAtuacao,
             areasAtuacaoId,
-            SUPERVISOR_OPERACAO,
+            List.of(SUPERVISOR_OPERACAO),
             Set.of(D2D_PROPRIO));
     }
 
