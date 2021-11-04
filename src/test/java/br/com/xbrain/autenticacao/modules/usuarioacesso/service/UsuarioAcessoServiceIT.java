@@ -17,6 +17,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @ActiveProfiles("test")
@@ -48,7 +50,11 @@ public class UsuarioAcessoServiceIT {
 
         List<Usuario> usuarios = usuarioRepository.findBySituacaoAndIdIn(ESituacao.I, idsUsuariosParaTeste());
         Assert.assertEquals(usuarios.size(), 3L);
-        Assert.assertFalse(usuarios.stream().anyMatch(u -> u.getEmail().equals(emailUsuarioViabilidade)));
+
+        var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
+
+        Assert.assertFalse(usuarios.stream().anyMatch(
+            u -> Arrays.asList(emailsUsuariosViabilidade).contains(u.getEmail())));
 
         long usuariosHistoricoInativos = idsUsuariosParaTeste().stream()
             .map(id -> usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(id).orElse(new UsuarioHistorico()))
