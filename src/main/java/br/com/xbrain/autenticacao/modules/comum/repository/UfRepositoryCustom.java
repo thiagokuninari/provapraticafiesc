@@ -11,4 +11,5 @@ public interface UfRepositoryCustom {
 
     List<Uf> buscarEstadosNaoAtribuidosEmSitesExcetoPor(Predicate cidadePredicate, Integer siteId);
 
+    List<Uf> buscarEstadosPorRegional(Integer regionalId);
 }

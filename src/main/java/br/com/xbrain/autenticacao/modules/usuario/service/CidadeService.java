@@ -149,4 +149,9 @@ public class CidadeService {
             .map(CidadeResponse::of)
             .collect(Collectors.toList());
     }
+
+    public List<UsuarioCidadeDto> getAllByUfAndRegional(Integer uf, Integer regional) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllByUfIdRegionalId(uf, regional));
+    }
 }

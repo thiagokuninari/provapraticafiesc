@@ -36,4 +36,5 @@ public interface CidadeRepositoryCustom {
 
     Optional<Cidade> findFirstByPredicate(Predicate predicate);
 
+    List<Cidade> findAllByUfIdRegionalId(Integer ufId, Integer regionalId);
 }

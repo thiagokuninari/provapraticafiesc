@@ -7,6 +7,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.hibernate.envers.NotAudited;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +37,17 @@ public class Uf {
     @NotNull
     @Column(name = "UF")
     private String uf;
+
+    @NotAudited
+    @JsonIgnore
+    @NotEmpty
+    @JoinTable(name = "UF_REGIONAL", joinColumns = {
+        @JoinColumn(name = "FK_UF", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_UF_REGIONAL"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_REGIONAL", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_UF_REGIONAL"))})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<Regional> regionais;
 
     public Uf(Integer id) {
         this.id = id;

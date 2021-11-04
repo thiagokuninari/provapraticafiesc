@@ -48,6 +48,12 @@ public class CidadeController {
         return service.getAllByRegionalId(regionalId);
     }
 
+    @GetMapping("regional/{regionalId}/uf/{ufId}")
+    public List<UsuarioCidadeDto> getByIdUfAndIdRegional(@PathVariable("regionalId") int regionalId, 
+                                                         @PathVariable("ufId") int ufId) {
+        return service.getAllByUfAndRegional(ufId, regionalId);
+    }
+
     @GetMapping("grupo/{grupoId}")
     public List<UsuarioCidadeDto> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
         return service.getAllByGrupoId(grupoId);
