@@ -57,7 +57,7 @@ public class CidadePredicate {
 
     public CidadePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
         Optional.ofNullable(codigoCidadeDbm)
-            .map(cidade.codigoCidadeDbm::eq)
+            .map(cidade.cidadesDbm.any().codigoCidadeDbm::eq)
             .ifPresent(builder::and);
 
         return this;

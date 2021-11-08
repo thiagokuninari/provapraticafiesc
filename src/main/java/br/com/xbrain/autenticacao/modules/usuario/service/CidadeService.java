@@ -112,7 +112,7 @@ public class CidadeService {
     }
 
     public CidadeSiteResponse getCidadeByCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return cidadeRepository.findCidadeComSite(cidade.codigoCidadeDbm.eq(codigoCidadeDbm))
+        return cidadeRepository.findCidadeComSite(cidade.cidadesDbm.any().codigoCidadeDbm.eq(codigoCidadeDbm))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 

@@ -60,8 +60,8 @@ public class Cidade {
     @Column(name = "FK_CIDADE")
     private Integer fkCidade;
 
-    @Column(name = "CODIGO_CIDADE_DBM")
-    private Integer codigoCidadeDbm;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cidade", fetch = FetchType.LAZY)
+    private List<CidadeDbm> cidadesDbm;
 
     public Cidade() {
     }
