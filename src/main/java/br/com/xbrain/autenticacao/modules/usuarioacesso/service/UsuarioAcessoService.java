@@ -135,8 +135,7 @@ public class UsuarioAcessoService {
 
     private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
         return usuarioAcessoRepository.findAllUltimoAcessoUsuarios().stream()
-            .filter(usuario -> usuario.getDataCadastro() != null
-                && usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
+            .filter(usuario -> usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
                 && usuario.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
             .collect(Collectors.toList());
     }
