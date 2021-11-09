@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,11 +45,11 @@ public class UsuarioAcessoServiceIT {
 
     @Test
     public void inativar_deveInativarUsuario_quandoUsuarioEstiverAptoInativar() {
-        Integer usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM_INATIVACAO);
-        Assert.assertEquals(usuariosInativados.longValue(), 3L);
+        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM_INATIVACAO);
+        Assertions.assertThat(usuariosInativados.longValue()).isEqualTo(3L);
 
-        List<Usuario> usuarios = usuarioRepository.findBySituacaoAndIdIn(ESituacao.I, idsUsuariosParaTeste());
-        Assert.assertEquals(usuarios.size(), 3L);
+        var usuarios = usuarioRepository.findBySituacaoAndIdIn(ESituacao.I, idsUsuariosParaTeste());
+        Assertions.assertThat(usuarios.size()).isEqualTo(3);
 
         var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
 
@@ -59,7 +60,7 @@ public class UsuarioAcessoServiceIT {
             .map(id -> usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(id).orElse(new UsuarioHistorico()))
             .filter(u -> u.getSituacao() != null && u.getSituacao() == ESituacao.I)
             .count();
-        Assert.assertEquals(usuariosHistoricoInativos, 3L);
+        Assertions.assertThat(usuariosHistoricoInativos).isEqualTo(3L);
     }
 
     private List<Integer> idsUsuariosParaTeste() {

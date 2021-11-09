@@ -113,9 +113,9 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioAcesso> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
-        Collection<UsuarioAcesso> usuariosUltimoAcessoExpirado =
+        var usuariosUltimoAcessoExpirado =
             CollectionUtils.emptyIfNull(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario));
-        Collection<UsuarioAcesso> usuariosSemUltimoAcesso =
+        var usuariosSemUltimoAcesso =
             CollectionUtils.emptyIfNull(getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
 
         var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
