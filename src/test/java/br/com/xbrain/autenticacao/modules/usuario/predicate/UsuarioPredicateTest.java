@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
@@ -51,6 +53,45 @@ public class UsuarioPredicateTest {
         var expected = new BooleanBuilder(usuario.id.in(ids.subList(0, 1000)))
             .or(usuario.id.in(ids.subList(1000, 2000)))
             .or(usuario.id.in(ids.subList(2000, 2700)));
+
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void filtrarPermitidosRelatorioLoginLogout_deveRetornarPredicateComCargosCorretos_quandoCanalForD2d() {
+        var predicate = new UsuarioPredicate()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.D2D_PROPRIO)
+            .build();
+        var expected = new BooleanBuilder(usuario.cargo.codigo.in(
+            CodigoCargo.VENDEDOR_OPERACAO,
+            CodigoCargo.ASSISTENTE_OPERACAO,
+            CodigoCargo.OPERACAO_EXECUTIVO_VENDAS));
+
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void filtrarPermitidosRelatorioLoginLogout_deveRetornarPredicateComCargosCorretos_quandoCanalForAa() {
+        var predicate = new UsuarioPredicate()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.AGENTE_AUTORIZADO)
+            .build();
+        var expected = new BooleanBuilder(usuario.cargo.codigo.in(
+            CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D,
+            CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_TELEVENDAS,
+            CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D,
+            CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
+            CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_D2D,
+            CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_BACKOFFICE_TELEVENDAS));
+
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void filtrarPermitidosRelatorioLoginLogout_deveRetornarPredicateSemCargosDefinidos_quandoCanalNaoForAaOuD2d() {
+        var predicate = new UsuarioPredicate()
+            .filtrarPermitidosRelatorioLoginLogout(ECanal.ATIVO)
+            .build();
+        var expected = new BooleanBuilder();
 
         assertThat(predicate).isEqualTo(expected);
     }
