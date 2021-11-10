@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.site.model.QSite.site;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidadeDbm.cidadeDbm;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 
 public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRepositoryCustom {
@@ -53,7 +54,6 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             .select(Projections.constructor(SiteCidadeResponse.class,
                 site.id,
                 site.nome,
-                cidade.codigoCidadeDbm,
                 cidade.id,
                 cidade.nome,
                 cidade.uf.id,
@@ -61,6 +61,25 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
             ))
             .from(site)
             .innerJoin(site.cidades, cidade)
+            .where(predicate)
+            .fetchFirst());
+    }
+
+    @Override
+    public Optional<SiteCidadeResponse> findSiteCidadeDbmTop1ByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SiteCidadeResponse.class,
+                site.id,
+                site.nome,
+                cidadeDbm.codigoCidadeDbm,
+                cidadeDbm.cidade.id,
+                cidadeDbm.cidade.nome,
+                cidadeDbm.cidade.uf.id,
+                cidadeDbm.cidade.uf.uf
+            ))
+            .from(site)
+            .innerJoin(site.cidades, cidade)
+            .innerJoin(cidade.cidadesDbm, cidadeDbm)
             .where(predicate)
             .fetchFirst());
     }

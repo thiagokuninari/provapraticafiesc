@@ -252,7 +252,7 @@ public class SitePredicate extends PredicateBase {
 
     public SitePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
         Optional.ofNullable(codigoCidadeDbm)
-            .map(site.cidades.any().codigoCidadeDbm::eq)
+            .map(site.cidades.any().cidadesDbm.any().codigoCidadeDbm::eq)
             .ifPresent(builder::and);
 
         return this;

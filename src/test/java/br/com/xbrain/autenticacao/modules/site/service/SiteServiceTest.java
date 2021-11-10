@@ -553,7 +553,7 @@ public class SiteServiceTest {
         var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
             .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
+        when(siteRepository.findSiteCidadeDbmTop1ByPredicate(eq(predicate)))
             .thenReturn(Optional.empty());
 
         assertThatExceptionOfType(NotFoundException.class)
@@ -566,7 +566,7 @@ public class SiteServiceTest {
         var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
             .and(new SitePredicate().todosSitesAtivos().build());
 
-        when(siteRepository.findSiteCidadeTop1ByPredicate(eq(predicate)))
+        when(siteRepository.findSiteCidadeDbmTop1ByPredicate(eq(predicate)))
             .thenReturn(Optional.of(umSiteCidade()));
 
         assertThat(service.buscarSiteCidadePorCodigoCidadeDbm(1))
