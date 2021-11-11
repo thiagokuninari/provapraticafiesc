@@ -11,12 +11,17 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "HORARIO_ACESSO_DIA")
 public class HorarioAcessoDia {
 
-    @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(foreignKeyDefinition = "FK_DIA_HORARIO_ACESSO"))
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
     private HorarioAcesso horarioAcesso;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FK_HORARIO_ACESSO_HIST", referencedColumnName = "ID")
+    private HorarioAcesso horarioAcessoHistorico;
 
     @Column(name = "DIA_SEMANA")
     private EDiaSemana diaSemana;
