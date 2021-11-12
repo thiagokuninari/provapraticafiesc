@@ -13,8 +13,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "HORARIO_ACESSO_DIA_HIST")
-public class HorarioAcessoDiaHistorico {
+@Table(name = "DIA_ACESSO_HIST")
+public class DiaAcessoHistorico {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_HORARIO_ACESSO_HIST", referencedColumnName = "ID", nullable = false)
@@ -29,11 +29,11 @@ public class HorarioAcessoDiaHistorico {
     @Column(name = "HORARIO_FIM")
     private LocalTime horarioFim;
 
-    public static HorarioAcessoDiaHistorico criaDiaAcessoHistorico(HorarioAcessoDia request) {
-        return HorarioAcessoDiaHistorico.builder()
+    public static DiaAcessoHistorico criaDiaAcessoHistorico(DiaAcesso request) {
+        return DiaAcessoHistorico.builder()
                 .diaSemana(request.getDiaSemana())
-                .horarioInicio(request.getHorarioInicial())
-                .horarioFim(request.getHorarioFinal())
+                .horarioInicio(request.getHorarioInicio())
+                .horarioFim(request.getHorarioFim())
                 .build();
     }
 }

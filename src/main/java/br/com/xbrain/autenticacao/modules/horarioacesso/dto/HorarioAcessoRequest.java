@@ -8,5 +8,5 @@ import lombok.Data;
 public class HorarioAcessoRequest {
     private Integer id;
     private String site;
-    private List<HorarioAcessoDiaDto> diasAcesso;
+    private List<DiaAcessoResponse> diasAcesso;
 }

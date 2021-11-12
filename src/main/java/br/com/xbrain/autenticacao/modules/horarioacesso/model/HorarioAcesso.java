@@ -21,18 +21,17 @@ public class HorarioAcesso {
     @GeneratedValue(generator = "SEQ_HORARIO_ACESSO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_HORARIO_ACESSO_SITE"))
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID", nullable = false)
     private Site site;
 
     @Column(name = "DATA_ULTIMA_ALTERACAO", nullable = false)
-    private LocalDateTime dataUltimaAlteracao;
+    private LocalDateTime ultimaAlteracao;
 
     @Column(name = "USUARIO_ALTERACAO", nullable = false)
     private Usuario usuarioAlteracao;
 
     @OneToMany(mappedBy = "horario_acesso", fetch = FetchType.LAZY)
-    private List<HorarioAcessoDia> dias;
+    private List<DiaAcesso> diasAcesso;
 
 }

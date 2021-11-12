@@ -18,7 +18,7 @@ public class HorarioAcessoHistoricoResponse {
 
     private String dataAlteracao;
     private String usuarioNome;
-    private List<HorarioAcessoDiaDto> diasAcesso;
+    private List<DiaAcessoResponse> diasAcesso;
 
     public static HorarioAcessoHistoricoResponse of(HorarioAcessoHistorico request) {
         return HorarioAcessoHistoricoResponse.builder()
@@ -26,7 +26,7 @@ public class HorarioAcessoHistoricoResponse {
             .usuarioNome(request.getUsuarioAlteracao().getNome())
             .diasAcesso(request.getDiasAcesso()
                 .stream()
-                .map(HorarioAcessoDiaDto::of)
+                .map(DiaAcessoResponse::of)
                 .collect(Collectors.toList()))
             .build();
     }

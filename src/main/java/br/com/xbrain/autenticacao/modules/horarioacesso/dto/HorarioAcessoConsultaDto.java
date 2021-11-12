@@ -20,17 +20,17 @@ public class HorarioAcessoConsultaDto {
     private String siteNome;
     private String dataUltimaAlteracao;
     private String usuarioAlteracao;
-    private List<HorarioAcessoDiaDto> diasAcesso;
+    private List<DiaAcessoResponse> diasAcesso;
 
     public static HorarioAcessoConsultaDto of(HorarioAcesso request) {
         return HorarioAcessoConsultaDto.builder()
             .id(request.getId())
             .siteNome(request.getSite().getNome())
-            .dataUltimaAlteracao(request.getDataUltimaAlteracao().format(formatter))
+            .dataUltimaAlteracao(request.getUltimaAlteracao().format(formatter))
             .usuarioAlteracao(request.getUsuarioAlteracao().getNome())
-            .diasAcesso(request.getDias()
+            .diasAcesso(request.getDiasAcesso()
                 .stream()
-                .map(HorarioAcessoDiaDto::of)
+                .map(DiaAcessoResponse::of)
                 .collect(Collectors.toList()))
             .build();
     }

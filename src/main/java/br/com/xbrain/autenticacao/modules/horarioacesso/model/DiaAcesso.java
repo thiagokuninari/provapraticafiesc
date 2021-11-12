@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.EDiaSemana;
-import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoDiaDto;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.DiaAcessoResponse;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,8 +12,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "HORARIO_ACESSO_DIA")
-public class HorarioAcessoDia {
+@Table(name = "DIA_ACESSO")
+public class DiaAcesso {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
@@ -26,14 +26,14 @@ public class HorarioAcessoDia {
     @Column(name = "DIA_SEMANA")
     private EDiaSemana diaSemana;
 
-    @Column(name = "HORARIO_INICIAL")
-    private LocalTime horarioInicial;
+    @Column(name = "HORARIO_INICIO")
+    private LocalTime horarioInicio;
 
-    @Column(name = "HORARIO_FINAL")
-    private LocalTime horarioFinal;
+    @Column(name = "HORARIO_FIM")
+    private LocalTime horarioFim;
 
-    public static HorarioAcessoDia converFrom(HorarioAcessoDiaDto request) {
-        return HorarioAcessoDia.builder()
+    public static DiaAcesso converFrom(DiaAcessoResponse request) {
+        return DiaAcesso.builder()
             .diaSemana(EDiaSemana.valueOf(request.getDiaSemana()))
             .build();
     }
