@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "HORARIO_ACESSO_HISTORICO")
+@Table(name = "HORARIO_ACESSO_HIST")
 public class HorarioAcessoHistorico {
 
     @Id

@@ -21,6 +21,7 @@ public class DiaAcessoHistorico {
     private HorarioAcessoHistorico horarioAcessoHistorico;
 
     @Column(name = "DIA_SEMANA")
+    @Enumerated(EnumType.STRING)
     private EDiaSemana diaSemana;
 
     @Column(name = "HORARIO_INICIO")

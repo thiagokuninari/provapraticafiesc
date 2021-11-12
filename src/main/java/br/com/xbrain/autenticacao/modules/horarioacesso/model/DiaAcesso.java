@@ -19,11 +19,8 @@ public class DiaAcesso {
     @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
     private HorarioAcesso horarioAcesso;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FK_HORARIO_ACESSO_HIST", referencedColumnName = "ID")
-    private HorarioAcesso horarioAcessoHistorico;
-
     @Column(name = "DIA_SEMANA")
+    @Enumerated(EnumType.STRING)
     private EDiaSemana diaSemana;
 
     @Column(name = "HORARIO_INICIO")
