@@ -1,12 +1,12 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -31,7 +31,10 @@ public class HorarioAcesso {
     @Column(name = "USUARIO_ALTERACAO", nullable = false)
     private Usuario usuarioAlteracao;
 
-    @OneToMany(mappedBy = "horario_acesso", fetch = FetchType.LAZY)
-    private List<DiaAcesso> diasAcesso;
-
+    public static HorarioAcesso converFrom(HorarioAcessoRequest request) {
+        return HorarioAcesso.builder()
+            .id(request.getId())
+            .site(new Site(request.getSiteId()))
+            .build();
+    }
 }

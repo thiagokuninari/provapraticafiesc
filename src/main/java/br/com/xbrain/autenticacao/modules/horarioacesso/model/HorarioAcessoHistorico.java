@@ -1,12 +1,10 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.persistence.*;
-
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
+
+import java.time.LocalDateTime;
+import javax.persistence.*;
 
 @Data
 @Builder
@@ -25,19 +23,16 @@ public class HorarioAcessoHistorico {
     @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
     private HorarioAcesso horarioAcesso;
 
-    @Column(name = "DATA_ULTIMA_ALTERACAO", nullable = false)
-    private LocalDateTime dataUltimaAlteracao;
+    @Column(name = "ULTIMA_ALTERACAO", nullable = false)
+    private LocalDateTime ultimaAlteracao;
 
     @Column(name = "USUARIO_ALTERACAO", nullable = false)
     private Usuario usuarioAlteracao;
 
-    @OneToMany(mappedBy = "horario_acesso_historico", fetch = FetchType.LAZY)
-    private List<DiaAcessoHistorico> diasAcesso;
-
     public static HorarioAcessoHistorico criaNovoHistorico(HorarioAcesso request) {
         return HorarioAcessoHistorico.builder()
                 .horarioAcesso(request)
-                .dataUltimaAlteracao(request.getUltimaAlteracao())
+                .ultimaAlteracao(request.getUltimaAlteracao())
                 .usuarioAlteracao(request.getUsuarioAlteracao())
                 .build();
     }

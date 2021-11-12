@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.Builder;
 import lombok.Data;
@@ -28,10 +27,6 @@ public class HorarioAcessoConsultaDto {
             .siteNome(request.getSite().getNome())
             .dataUltimaAlteracao(request.getUltimaAlteracao().format(formatter))
             .usuarioAlteracao(request.getUsuarioAlteracao().getNome())
-            .diasAcesso(request.getDiasAcesso()
-                .stream()
-                .map(DiaAcessoResponse::of)
-                .collect(Collectors.toList()))
             .build();
     }
 }
