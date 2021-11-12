@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
 
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,15 @@ public class HorarioAcessoRepositoryImpl implements HorarioAcessoRepositoryCusto
                 .leftJoin(horarioAcesso.site, site)
                 .where(site.id.eq(siteId))
                 .fetchOne());
+    }
+
+    @Override
+    public List<HorarioAcesso> findAll(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(horarioAcesso)
+            .from(horarioAcesso)
+            .where(predicate)
+            .fetch();
     }
 
 }

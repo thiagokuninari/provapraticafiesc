@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcessoDia;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcessoDiaHistorico;
+
 import java.time.format.DateTimeFormatter;
 
 import lombok.Builder;
@@ -23,6 +25,14 @@ public class HorarioAcessoDiaDto {
             .diaSemana(request.getDiaSemana().getNomeCompleto())
             .horarioInicial(request.getHorarioInicial().format(formatter))
             .horarioFinal(request.getHorarioFinal().format(formatter))
+            .build();
+    }
+
+    public static HorarioAcessoDiaDto of(HorarioAcessoDiaHistorico request) {
+        return HorarioAcessoDiaDto.builder()
+            .diaSemana(request.getDiaSemana().getNomeCompleto())
+            .horarioInicial(request.getHorarioInicio().format(formatter))
+            .horarioFinal(request.getHorarioFim().format(formatter))
             .build();
     }
 }

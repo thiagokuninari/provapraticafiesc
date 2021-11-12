@@ -4,7 +4,7 @@ import java.time.LocalTime;
 
 import javax.persistence.*;
 
-import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
+import br.com.xbrain.autenticacao.modules.comum.enums.EDiaSemana;
 import lombok.*;
 
 
@@ -18,7 +18,7 @@ public class HorarioAcessoDiaHistorico {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_HORARIO_ACESSO_HIST", referencedColumnName = "ID", nullable = false)
-    private HorarioAcessoDiaHistorico horarioAcessoDiaHistorico;
+    private HorarioAcessoHistorico horarioAcessoHistorico;
 
     @Column(name = "DIA_SEMANA")
     private EDiaSemana diaSemana;

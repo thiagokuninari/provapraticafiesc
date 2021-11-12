@@ -32,14 +32,13 @@ public class HorarioAcessoHistorico {
     private Usuario usuarioAlteracao;
 
     @OneToMany(mappedBy = "horario_acesso_historico", fetch = FetchType.LAZY)
-    private List<HorarioAcessoDia> diasAcesso;
+    private List<HorarioAcessoDiaHistorico> diasAcesso;
 
     public static HorarioAcessoHistorico criaNovoHistorico(HorarioAcesso request) {
         return HorarioAcessoHistorico.builder()
                 .horarioAcesso(request)
                 .dataUltimaAlteracao(request.getDataUltimaAlteracao())
                 .usuarioAlteracao(request.getUsuarioAlteracao())
-                .diasAcesso(request.getDias())
                 .build();
     }
 }

@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.EDiaSemana;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoDiaDto;
-import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
 import lombok.*;
 
 import javax.persistence.*;
