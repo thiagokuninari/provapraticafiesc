@@ -31,7 +31,10 @@ public class DiaAcesso {
 
     public static DiaAcesso converFrom(DiaAcessoResponse request) {
         return DiaAcesso.builder()
+            .horarioAcesso(new HorarioAcesso(request.getHorarioAcessoId()))
             .diaSemana(EDiaSemana.valueOf(request.getDiaSemana()))
+            .horarioInicio(request.getHorarioInicio())
+            .horarioFim(request.getHorarioFim())
             .build();
     }
 }

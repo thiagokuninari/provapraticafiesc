@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoConsultaDto;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.predicate.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 
 public class HorarioAcessoController {
@@ -24,5 +26,10 @@ public class HorarioAcessoController {
     @PutMapping("/edita-dias-horarios")
     public void editarHorarios(HorarioAcessoRequest horarioAcesso) {
         service.editHorario(horarioAcesso);
+    }
+
+    @GetMapping("/historico/{id}")
+    public List<HorarioAcessoHistoricoResponse> getHistorico(@PathVariable("id") Integer id) {
+        return null;
     }
 }

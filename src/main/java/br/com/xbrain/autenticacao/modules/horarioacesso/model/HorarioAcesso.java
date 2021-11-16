@@ -25,16 +25,25 @@ public class HorarioAcesso {
     @JoinColumn(name = "FK_SITE", referencedColumnName = "ID", nullable = false)
     private Site site;
 
-    @Column(name = "DATA_ULTIMA_ALTERACAO", nullable = false)
-    private LocalDateTime ultimaAlteracao;
+    @Column(name = "DATA_ALTERACAO", nullable = false)
+    private LocalDateTime dataAlteracao;
 
     @Column(name = "USUARIO_ALTERACAO", nullable = false)
     private Usuario usuarioAlteracao;
+
+    public HorarioAcesso(Integer id) {
+        this.id = id;
+    }
 
     public static HorarioAcesso converFrom(HorarioAcessoRequest request) {
         return HorarioAcesso.builder()
             .id(request.getId())
             .site(new Site(request.getSiteId()))
             .build();
+    }
+
+    public void setDadosAlteracao(Usuario usuarioAlteracao) {
+        this.dataAlteracao = LocalDateTime.now();
+        this.usuarioAlteracao = usuarioAlteracao;
     }
 }

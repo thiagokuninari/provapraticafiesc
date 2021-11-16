@@ -2,37 +2,39 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcessoHistorico;
-
-import java.time.format.DateTimeFormatter;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.EFormatoDataHora.HORA;
+import java.time.LocalTime;
 
 @Data
 @Builder
 public class DiaAcessoResponse {
 
-    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(HORA.getDescricao());
-
+    private Integer horarioAcessoId;
+    private Integer horarioHistoricoId;
     private String diaSemana;
-    private String horarioInicial;
-    private String horarioFinal;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime horarioInicio;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime horarioFim;
 
     public static DiaAcessoResponse of(DiaAcesso request) {
         return DiaAcessoResponse.builder()
+            .horarioAcessoId(request.getHorarioAcesso().getId())
             .diaSemana(request.getDiaSemana().getNomeCompleto())
-            .horarioInicial(request.getHorarioInicio().format(formatter))
-            .horarioFinal(request.getHorarioFim().format(formatter))
+            .horarioInicio(request.getHorarioInicio())
+            .horarioFim(request.getHorarioFim())
             .build();
     }
 
     public static DiaAcessoResponse of(DiaAcessoHistorico request) {
         return DiaAcessoResponse.builder()
+            .horarioHistoricoId(request.getHorarioAcessoHistorico().getId())
             .diaSemana(request.getDiaSemana().getNomeCompleto())
-            .horarioInicial(request.getHorarioInicio().format(formatter))
-            .horarioFinal(request.getHorarioFim().format(formatter))
+            .horarioInicio(request.getHorarioInicio())
+            .horarioFim(request.getHorarioFim())
             .build();
     }
 }

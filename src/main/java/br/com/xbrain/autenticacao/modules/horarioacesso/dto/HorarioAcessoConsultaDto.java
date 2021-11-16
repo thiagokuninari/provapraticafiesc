@@ -1,23 +1,21 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.EFormatoDataHora.HORA;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 public class HorarioAcessoConsultaDto {
 
-    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(HORA.getDescricao());
-
     private Integer id;
     private String siteNome;
-    private String dataUltimaAlteracao;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime dataAlteracao;
     private String usuarioAlteracao;
     private List<DiaAcessoResponse> diasAcesso;
 
@@ -25,7 +23,7 @@ public class HorarioAcessoConsultaDto {
         return HorarioAcessoConsultaDto.builder()
             .id(request.getId())
             .siteNome(request.getSite().getNome())
-            .dataUltimaAlteracao(request.getUltimaAlteracao().format(formatter))
+            .dataAlteracao(request.getDataAlteracao())
             .usuarioAlteracao(request.getUsuarioAlteracao().getNome())
             .build();
     }

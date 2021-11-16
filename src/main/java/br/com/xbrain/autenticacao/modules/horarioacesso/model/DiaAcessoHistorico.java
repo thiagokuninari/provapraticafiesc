@@ -30,8 +30,9 @@ public class DiaAcessoHistorico {
     @Column(name = "HORARIO_FIM")
     private LocalTime horarioFim;
 
-    public static DiaAcessoHistorico criaDiaAcessoHistorico(DiaAcesso request) {
+    public static DiaAcessoHistorico criaDiaAcessoHistorico(DiaAcesso request, HorarioAcessoHistorico historico) {
         return DiaAcessoHistorico.builder()
+                .horarioAcessoHistorico(historico)
                 .diaSemana(request.getDiaSemana())
                 .horarioInicio(request.getHorarioInicio())
                 .horarioFim(request.getHorarioFim())

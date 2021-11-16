@@ -23,8 +23,8 @@ public class HorarioAcessoHistorico {
     @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
     private HorarioAcesso horarioAcesso;
 
-    @Column(name = "ULTIMA_ALTERACAO", nullable = false)
-    private LocalDateTime ultimaAlteracao;
+    @Column(name = "DATA_ALTERACAO", nullable = false)
+    private LocalDateTime dataAlteracao;
 
     @Column(name = "USUARIO_ALTERACAO", nullable = false)
     private Usuario usuarioAlteracao;
@@ -32,7 +32,7 @@ public class HorarioAcessoHistorico {
     public static HorarioAcessoHistorico criaNovoHistorico(HorarioAcesso request) {
         return HorarioAcessoHistorico.builder()
                 .horarioAcesso(request)
-                .ultimaAlteracao(request.getUltimaAlteracao())
+                .dataAlteracao(request.getDataAlteracao())
                 .usuarioAlteracao(request.getUsuarioAlteracao())
                 .build();
     }

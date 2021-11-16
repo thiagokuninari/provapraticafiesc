@@ -21,7 +21,7 @@ public class HorarioAcessoHistoricoResponse {
 
     public static HorarioAcessoHistoricoResponse of(HorarioAcessoHistorico request) {
         return HorarioAcessoHistoricoResponse.builder()
-            .dataAlteracao(request.getUltimaAlteracao().format(formatter))
+            .dataAlteracao(request.getDataAlteracao().format(formatter))
             .usuarioNome(request.getUsuarioAlteracao().getNome())
             .build();
     }
