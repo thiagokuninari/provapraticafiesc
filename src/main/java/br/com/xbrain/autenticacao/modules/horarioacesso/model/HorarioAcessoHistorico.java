@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -26,14 +25,18 @@ public class HorarioAcessoHistorico {
     @Column(name = "DATA_ALTERACAO", nullable = false)
     private LocalDateTime dataAlteracao;
 
-    @Column(name = "USUARIO_ALTERACAO", nullable = false)
-    private Usuario usuarioAlteracao;
+    @Column(name = "USUARIO_ALTERACAO_ID", nullable = false)
+    private Integer usuarioAlteracaoId;
+
+    @Column(name = "USUARIO_ALTERACAO_NOME", nullable = false, length = 100)
+    private String usuarioAlteracaoNome;
 
     public static HorarioAcessoHistorico criaNovoHistorico(HorarioAcesso request) {
         return HorarioAcessoHistorico.builder()
                 .horarioAcesso(request)
                 .dataAlteracao(request.getDataAlteracao())
-                .usuarioAlteracao(request.getUsuarioAlteracao())
+                .usuarioAlteracaoId(request.getUsuarioAlteracaoId())
+                .usuarioAlteracaoNome(request.getUsuarioAlteracaoNome())
                 .build();
     }
 }

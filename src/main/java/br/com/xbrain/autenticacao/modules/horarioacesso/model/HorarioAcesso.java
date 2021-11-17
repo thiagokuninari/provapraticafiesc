@@ -28,8 +28,11 @@ public class HorarioAcesso {
     @Column(name = "DATA_ALTERACAO", nullable = false)
     private LocalDateTime dataAlteracao;
 
-    @Column(name = "USUARIO_ALTERACAO", nullable = false)
-    private Usuario usuarioAlteracao;
+    @Column(name = "USUARIO_ALTERACAO_ID", nullable = false)
+    private Integer usuarioAlteracaoId;
+
+    @Column(name = "USUARIO_ALTERACAO_NOME", nullable = false, length = 100)
+    private String usuarioAlteracaoNome;
 
     public HorarioAcesso(Integer id) {
         this.id = id;
@@ -42,8 +45,9 @@ public class HorarioAcesso {
             .build();
     }
 
-    public void setDadosAlteracao(Usuario usuarioAlteracao) {
+    public void setDadosAlteracao(Usuario usuario) {
         this.dataAlteracao = LocalDateTime.now();
-        this.usuarioAlteracao = usuarioAlteracao;
+        this.usuarioAlteracaoId = usuario.getId();
+        this.usuarioAlteracaoNome = usuario.getNome();
     }
 }

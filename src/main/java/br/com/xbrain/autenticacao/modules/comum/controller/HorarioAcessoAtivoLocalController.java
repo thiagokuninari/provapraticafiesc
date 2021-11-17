@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 
 @RestController
-@RequestMapping("api/horarios-acesso")
+@RequestMapping("api/horarios-acesso-ativo-local")
 @RequiredArgsConstructor
 public class HorarioAcessoAtivoLocalController {
 

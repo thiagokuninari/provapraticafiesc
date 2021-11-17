@@ -1,18 +1,20 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoConsultaDto;
-import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoHistoricoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.predicate.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+@RestController
+@RequestMapping(value = "/api/horarios-acesso")
 public class HorarioAcessoController {
 
     @Autowired
@@ -29,7 +31,7 @@ public class HorarioAcessoController {
     }
 
     @GetMapping("/historico/{id}")
-    public List<HorarioAcessoHistoricoResponse> getHistorico(@PathVariable("id") Integer id) {
-        return null;
+    public List<HorarioAcessoConsultaDto> getHistorico(@PathVariable("id") Integer horarioAcessoId) {
+        return service.getHistorico(horarioAcessoId);
     }
 }

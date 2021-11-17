@@ -48,6 +48,13 @@ public class HorarioAcessoService {
         return horarios;
     }
 
+    public List<HorarioAcessoConsultaDto> getHistorico(Integer horarioAcessoId) {
+        return historicoRepository.findAllByHorarioAcesso(horarioAcessoId)
+                .stream()
+                .map(HorarioAcessoConsultaDto::of)
+                .collect(Collectors.toList());
+    }
+
     public void editHorario(HorarioAcessoRequest request) {
         var horario = repository.findById(request.getId())
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);

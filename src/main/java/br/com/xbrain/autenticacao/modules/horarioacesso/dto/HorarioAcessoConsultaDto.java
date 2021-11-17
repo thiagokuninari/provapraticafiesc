@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcessoHistorico;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +26,15 @@ public class HorarioAcessoConsultaDto {
             .id(request.getId())
             .siteNome(request.getSite().getNome())
             .dataAlteracao(request.getDataAlteracao())
-            .usuarioAlteracao(request.getUsuarioAlteracao().getNome())
+            .usuarioAlteracao(request.getUsuarioAlteracaoNome())
+            .build();
+    }
+
+    public static HorarioAcessoConsultaDto of(HorarioAcessoHistorico request) {
+        return HorarioAcessoConsultaDto.builder()
+            .id(request.getId())
+            .dataAlteracao(request.getDataAlteracao())
+            .usuarioAlteracao(request.getUsuarioAlteracaoNome())
             .build();
     }
 }
