@@ -7,18 +7,23 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoConsult
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcessoHistorico;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcessoHistorico;
 import br.com.xbrain.autenticacao.modules.horarioacesso.predicate.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.DiaAcessoHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.DiaAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Service
 public class HorarioAcessoService {
 
     public static final ValidacaoException HORARIO_ACESSO_NAO_ENCONTRADO =
@@ -41,30 +46,38 @@ public class HorarioAcessoService {
             .map(HorarioAcessoConsultaDto::of)
             .collect(Collectors.toList());
         horarios.forEach(h -> h.setDiasAcesso(diaAcessoRepository
-            .findByHorarioAcessoId(h.getId())
-            .stream()
-            .map(DiaAcessoResponse::of)
-            .collect(Collectors.toList())));
+            .findByHorarioAcessoId(h.getId())));
         return horarios;
     }
 
     public List<HorarioAcessoConsultaDto> getHistorico(Integer horarioAcessoId) {
-        return historicoRepository.findAllByHorarioAcesso(horarioAcessoId)
-                .stream()
-                .map(HorarioAcessoConsultaDto::of)
-                .collect(Collectors.toList());
+        var historicos = historicoRepository.findByHorarioAcessoId(horarioAcessoId)
+            .stream()
+            .map(HorarioAcessoConsultaDto::of)
+            .collect(Collectors.toList());
+        historicos.forEach(h -> h.setDiasAcessoHist(diaAcessoHistoricoRepository
+            .findByHorarioAcessoHistoricoId(h.getId())));
+        return historicos;
     }
 
-    public void editHorario(HorarioAcessoRequest request) {
-        var horario = repository.findById(request.getId())
-            .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
-        diaAcessoRepository.delete(horario.getId());
+    public HorarioAcessoConsultaDto save(HorarioAcessoRequest request) {
+        HorarioAcesso horario = new HorarioAcesso();
+
+        if (Objects.isNull(request.getId())) {
+            horario = HorarioAcesso.converFrom(request);
+        } else {
+            horario = repository.findById(request.getId())
+                .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
+            diaAcessoRepository.delete(horario.getId());
+        }
         horario.setDadosAlteracao(autenticacaoService.getUsuarioAutenticado().getUsuario());
         repository.save(horario);
 
         var historico = HorarioAcessoHistorico.criaNovoHistorico(horario);
         historicoRepository.save(historico);
         criaDiasAcesso(request.getDiasAcesso(), historico);
+    
+        return HorarioAcessoConsultaDto.of(horario);
     }
 
     private void criaDiasAcesso(List<DiaAcessoResponse> response, HorarioAcessoHistorico historico) {

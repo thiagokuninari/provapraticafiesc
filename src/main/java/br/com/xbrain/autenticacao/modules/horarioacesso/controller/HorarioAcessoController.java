@@ -5,11 +5,8 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest
 import br.com.xbrain.autenticacao.modules.horarioacesso.predicate.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,9 +22,9 @@ public class HorarioAcessoController {
         return service.getAll(filtros);
     }
 
-    @PutMapping("/edita-dias-horarios")
-    public void editarHorarios(HorarioAcessoRequest horarioAcesso) {
-        service.editHorario(horarioAcesso);
+    @PostMapping
+    public HorarioAcessoConsultaDto save(@Validated HorarioAcessoRequest horarioAcesso) {
+        return service.save(horarioAcesso);
     }
 
     @GetMapping("/historico/{id}")

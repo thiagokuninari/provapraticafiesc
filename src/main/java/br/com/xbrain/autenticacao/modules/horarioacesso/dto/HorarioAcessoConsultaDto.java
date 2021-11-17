@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcesso;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcessoHistorico;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcessoHistorico;
 
@@ -9,6 +11,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -36,5 +39,17 @@ public class HorarioAcessoConsultaDto {
             .dataAlteracao(request.getDataAlteracao())
             .usuarioAlteracao(request.getUsuarioAlteracaoNome())
             .build();
+    }
+
+    public void setDiasAcesso(List<DiaAcesso> request) {
+        this.diasAcesso = request.stream()
+            .map(DiaAcessoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public void setDiasAcessoHist(List<DiaAcessoHistorico> request) {
+        this.diasAcesso = request.stream()
+            .map(DiaAcessoResponse::of)
+            .collect(Collectors.toList());
     }
 }
