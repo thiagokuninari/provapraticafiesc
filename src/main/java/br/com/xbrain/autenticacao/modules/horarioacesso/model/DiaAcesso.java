@@ -22,7 +22,7 @@ public class DiaAcesso {
     @GeneratedValue(generator = "SEQ_DIA_ACESSO", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "FK_HORARIO_ACESSO", referencedColumnName = "ID", nullable = false)
     private HorarioAcesso horarioAcesso;
 
@@ -40,7 +40,6 @@ public class DiaAcesso {
 
     public static DiaAcesso converFrom(DiaAcessoResponse request) {
         return DiaAcesso.builder()
-            .horarioAcesso(new HorarioAcesso(request.getHorarioAcessoId()))
             .diaSemana(EDiaSemana.valueOf(request.getDiaSemana()))
             .horarioInicio(request.getHorarioInicio())
             .horarioFim(request.getHorarioFim())

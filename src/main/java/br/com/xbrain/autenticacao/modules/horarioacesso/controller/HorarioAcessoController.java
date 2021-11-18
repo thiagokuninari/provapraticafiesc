@@ -23,7 +23,7 @@ public class HorarioAcessoController {
     }
 
     @PostMapping
-    public HorarioAcessoConsultaDto save(@Validated HorarioAcessoRequest horarioAcesso) {
+    public HorarioAcessoConsultaDto save(@Validated @RequestBody HorarioAcessoRequest horarioAcesso) {
         return service.save(horarioAcesso);
     }
 

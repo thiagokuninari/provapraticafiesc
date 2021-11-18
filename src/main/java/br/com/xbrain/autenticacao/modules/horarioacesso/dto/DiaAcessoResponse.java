@@ -3,13 +3,15 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.DiaAcessoHistorico;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Data;
+
+import lombok.*;
 
 import java.time.LocalTime;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DiaAcessoResponse {
 
     private Integer horarioAcessoId;

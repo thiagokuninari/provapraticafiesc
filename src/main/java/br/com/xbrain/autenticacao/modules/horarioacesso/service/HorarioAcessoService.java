@@ -68,25 +68,26 @@ public class HorarioAcessoService {
         } else {
             horario = repository.findById(request.getId())
                 .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
-            diaAcessoRepository.delete(horario.getId());
+            diaAcessoRepository.deleteByHorarioAcessoId(horario.getId());
         }
         horario.setDadosAlteracao(autenticacaoService.getUsuarioAutenticado().getUsuario());
         repository.save(horario);
 
         var historico = HorarioAcessoHistorico.criaNovoHistorico(horario);
         historicoRepository.save(historico);
-        criaDiasAcesso(request.getDiasAcesso(), historico);
+        criaDiasAcesso(request.getDiasAcesso(), horario, historico);
     
         return HorarioAcessoConsultaDto.of(horario);
     }
 
-    private void criaDiasAcesso(List<DiaAcessoResponse> response, HorarioAcessoHistorico historico) {
+    private void criaDiasAcesso(List<DiaAcessoResponse> response, HorarioAcesso horario, HorarioAcessoHistorico historico) {
         if (!ObjectUtils.isEmpty(response)) {
             var diasAcesso = response.stream()
                 .map(DiaAcesso::converFrom)
                 .collect(Collectors.toList());
 
             diasAcesso.forEach(dia -> {
+                dia.setHorarioAcesso(horario);
                 diaAcessoRepository.save(dia);
                 diaAcessoHistoricoRepository.save(DiaAcessoHistorico
                         .criaDiaAcessoHistorico(dia, historico));
