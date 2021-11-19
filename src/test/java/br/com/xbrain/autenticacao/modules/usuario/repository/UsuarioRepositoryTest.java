@@ -1,12 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ECargo;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAutoComplete;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +22,6 @@ import java.util.Optional;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -39,15 +36,15 @@ public class UsuarioRepositoryTest {
     public void getSubclustersUsuario_deveRetornarOsSubclusters_somenteAtivosSemDuplicar() {
 
         assertThat(repository.getSubclustersUsuario(100))
-                .extracting("id", "nome")
-                .containsExactly(
-                        tuple(26600, "CHAPECÓ"),
-                        tuple(189, "LONDRINA"));
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(26600, "CHAPECÓ"),
+                tuple(189, "LONDRINA"));
 
         assertThat(repository.getSubclustersUsuario(101))
-                .extracting("id", "nome")
-                .containsExactly(
-                        tuple(164, "BRI - LINS - SP"));
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(164, "BRI - LINS - SP"));
     }
 
     @Test
@@ -110,7 +107,8 @@ public class UsuarioRepositoryTest {
                 tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
                 tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(124, "EXECUTIVOOP@TESTE.COM"));
     }
 
     @Test
@@ -137,11 +135,12 @@ public class UsuarioRepositoryTest {
     @Test
     public void findUsuariosByCodigoCargo_deveRetornarDoisUsuariosAtivos_peloCodigoDoCargo() {
         assertThat(repository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
-            .hasSize(2)
+            .hasSize(3)
             .extracting("id", "nome", "email", "situacao")
             .containsExactly(
                 tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
-                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
+                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A),
+                tuple(124, "EXECUTIVO OP", "EXECUTIVOOP@TESTE.COM", A));
     }
 
     @Test

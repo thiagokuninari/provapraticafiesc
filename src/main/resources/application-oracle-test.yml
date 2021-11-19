@@ -4,6 +4,9 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: create
+  redis:
+    host: 127.0.0.1
+    port: 6379
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
