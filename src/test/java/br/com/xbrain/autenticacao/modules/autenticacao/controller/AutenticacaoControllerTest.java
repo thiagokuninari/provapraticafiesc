@@ -131,7 +131,6 @@ public class AutenticacaoControllerTest {
         assertNull(token.getAccessToken());
     }
 
-
     @Test
     public void getAccessToken_deveIncluirOsAAsPermitidos_quandoForNivelAgenteAutorizado() throws Exception {
         when(agenteAutorizadoNovoService.getAasPermitidos(USUARIO_SOCIO_ID)).thenReturn(Arrays.asList(1, 2));
