@@ -80,27 +80,27 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.ADMIN);
 
         mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(100)))
-                .andExpect(jsonPath("$.nome", is("ADMIN")))
-                .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.login", is("100-ADMIN@XBRAIN.COM.BR")))
-                .andExpect(jsonPath("$.nivel", is("X-BRAIN")))
-                .andExpect(jsonPath("$.departamento", is("Administrador")))
-                .andExpect(jsonPath("$.cargo", is("Administrador")))
-                .andExpect(jsonPath("$.cargoCodigo", is("ADMINISTRADOR")))
-                .andExpect(jsonPath("$.departamentoCodigo", is("ADMINISTRADOR")))
-                .andExpect(jsonPath("$.nivelCodigo", is("XBRAIN")))
-                .andExpect(jsonPath("$.empresas", is(Collections.singletonList(4))))
-                .andExpect(jsonPath("$.empresasNome", is(Collections.singletonList("Xbrain"))))
-                .andExpect(jsonPath("$.empresasCodigo", is(Collections.singletonList("XBRAIN"))))
-                .andExpect(jsonPath("$.authorities", not(empty())))
-                .andExpect(jsonPath("$.aplicacoes", not(empty())))
-                .andExpect(jsonPath("$.cpf", is("38957979875")))
-                .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
-                .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())));
+            post("/oauth/check_token")
+                .param("token", token.getAccessToken()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.usuarioId", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.login", is("100-ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.nivel", is("X-BRAIN")))
+            .andExpect(jsonPath("$.departamento", is("Administrador")))
+            .andExpect(jsonPath("$.cargo", is("Administrador")))
+            .andExpect(jsonPath("$.cargoCodigo", is("ADMINISTRADOR")))
+            .andExpect(jsonPath("$.departamentoCodigo", is("ADMINISTRADOR")))
+            .andExpect(jsonPath("$.nivelCodigo", is("XBRAIN")))
+            .andExpect(jsonPath("$.empresas", is(Collections.singletonList(4))))
+            .andExpect(jsonPath("$.empresasNome", is(Collections.singletonList("Xbrain"))))
+            .andExpect(jsonPath("$.empresasCodigo", is(Collections.singletonList("XBRAIN"))))
+            .andExpect(jsonPath("$.authorities", not(empty())))
+            .andExpect(jsonPath("$.aplicacoes", not(empty())))
+            .andExpect(jsonPath("$.cpf", is("38957979875")))
+            .andExpect(jsonPath("$.agentesAutorizados", is(empty())))
+            .andExpect(jsonPath("$.equipesSupervisionadas", is(empty())));
     }
 
     @Test
@@ -139,70 +139,70 @@ public class AutenticacaoControllerTest {
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")))
-                .andExpect(jsonPath("$.agentesAutorizados", is(Arrays.asList(1, 2))));
+            post("/oauth/check_token")
+                .param("token", token.getAccessToken()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
+            .andExpect(jsonPath("$.nivelCodigo", is("AGENTE_AUTORIZADO")))
+            .andExpect(jsonPath("$.agentesAutorizados", is(Arrays.asList(1, 2))));
     }
 
     @Test
     public void getAccessToken_deveIncluirAsEmpresasDoAa_quandoForNivelAgenteAutorizado() throws Exception {
         when(agenteAutorizadoNovoService.getEmpresasPermitidas(USUARIO_SOCIO_ID))
-                .thenReturn(Arrays.asList(
-                        new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
-                        new Empresa(2, "NET", CodigoEmpresa.NET)
-                ));
+            .thenReturn(Arrays.asList(
+                new Empresa(1, "CLARO MOVEL", CodigoEmpresa.CLARO_MOVEL),
+                new Empresa(2, "NET", CodigoEmpresa.NET)
+            ));
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.empresas", is(Arrays.asList(1, 2))))
-                .andExpect(jsonPath("$.empresasNome", is(Arrays.asList("CLARO MOVEL", "NET"))))
-                .andExpect(jsonPath("$.empresasCodigo", is(Arrays.asList("CLARO_MOVEL", "NET"))));
+            post("/oauth/check_token")
+                .param("token", token.getAccessToken()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
+            .andExpect(jsonPath("$.empresas", is(Arrays.asList(1, 2))))
+            .andExpect(jsonPath("$.empresasNome", is(Arrays.asList("CLARO MOVEL", "NET"))))
+            .andExpect(jsonPath("$.empresasCodigo", is(Arrays.asList("CLARO_MOVEL", "NET"))));
     }
 
     @Test
     public void getAccessToken_deveRetornarPmeParaAa_quandoForAgenteAutorizadoPme() throws Exception {
         when(agenteAutorizadoNovoService.getEstrutura(USUARIO_SOCIO_ID))
-                .thenReturn("AA_PME");
+            .thenReturn("AA_PME");
 
         OAuthToken token = TestsHelper.getAccessTokenObject(mvc, Usuarios.SOCIO_AA);
 
         mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", token.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
-                .andExpect(jsonPath("$.estruturaAa", is("AA_PME")));
+            post("/oauth/check_token")
+                .param("token", token.getAccessToken()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.usuarioId", is(USUARIO_SOCIO_ID)))
+            .andExpect(jsonPath("$.estruturaAa", is("AA_PME")));
     }
 
     @Test
     public void getAccessToken_badRequest_quandoATokenForInvalida() throws Exception {
         mvc.perform(
-                post("/oauth/check_token")
-                        .param("token", "teste"))
-                .andExpect(status().isBadRequest());
+            post("/oauth/check_token")
+                .param("token", "teste"))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
     public void getAccessTokenClientCredentials_ok_quandoAsCredenciaisEstiveremValidas() {
         assertNotNull(TestsHelper
-                .getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1").getAccessToken());
+            .getAccessTokenClientCredentials(mvc, "parceiros-online-api:p4rc31r0s$p1").getAccessToken());
 
         assertNotNull(TestsHelper
-                .getAccessTokenClientCredentials(mvc, "vendas-api:v3nd4s4p1").getAccessToken());
+            .getAccessTokenClientCredentials(mvc, "vendas-api:v3nd4s4p1").getAccessToken());
 
         assertNotNull(TestsHelper
-                .getAccessTokenClientCredentials(mvc, "mailing-api:m41l1ng4p1").getAccessToken());
+            .getAccessTokenClientCredentials(mvc, "mailing-api:m41l1ng4p1").getAccessToken());
 
         assertNotNull(TestsHelper
-                .getAccessTokenClientCredentials(mvc, "equipe-venda-api:3qu1p3V3nD4xbr41n").getAccessToken());
+            .getAccessTokenClientCredentials(mvc, "equipe-venda-api:3qu1p3V3nD4xbr41n").getAccessToken());
     }
 
     @Test
@@ -217,7 +217,7 @@ public class AutenticacaoControllerTest {
 
         assertEquals(401, response.getStatus());
         assertTrue(response.getContentAsString().contains(
-                "Usu&aacute;rio Inativo, solicite a ativa&ccedil;&atilde;o ao seu respons&aacute;vel."));
+            "Usu&aacute;rio Inativo, solicite a ativa&ccedil;&atilde;o ao seu respons&aacute;vel."));
     }
 
     @Test
@@ -226,7 +226,7 @@ public class AutenticacaoControllerTest {
 
         assertEquals(401, response.getStatus());
         assertTrue(response.getContentAsString().contains(
-                "Agente Autorizado com aceite de contrato pendente."));
+            "Agente Autorizado com aceite de contrato pendente."));
     }
 
     // TODO foi desativado e será refeito conforme task #13110
