@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ECargo;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioAutoComplete;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import com.querydsl.core.types.Predicate;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ import java.util.Optional;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -67,6 +71,26 @@ public class UsuarioRepositoryTest {
             .containsExactly(
                 tuple(107, "EXECUTIVO 1"),
                 tuple(108, "EXECUTIVO 2"));
+    }
+
+    @Test
+    public void findAllResponsaveisDdd_deveRetornarResponsaveis_quandoFeitaRequisicao() {
+        assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
+            .hasSize(4)
+            .extracting("value", "text")
+            .containsExactly(
+                Assertions.tuple(125, "ASSISTENTE OP"),
+                Assertions.tuple(107, "EXECUTIVO 1"),
+                Assertions.tuple(108, "EXECUTIVO 2"),
+                Assertions.tuple(124, "EXECUTIVO OP")
+            );
+    }
+
+    private UsuarioPredicate getUsuarioPredicate() {
+        return new UsuarioPredicate()
+            .comDepartamento(List.of(3))
+            .comNivel(List.of(1))
+            .comCargo(List.of(2, 5));
     }
 
     @Test
