@@ -108,6 +108,11 @@ public class UsuarioController {
         return usuarioService.getVendedoresByIds(ids);
     }
 
+    @PostMapping("vendedores")
+    public List<UsuarioResponse> obterUsuarioVendedorById(@RequestBody List<Integer> ids) {
+        return usuarioService.getVendedoresByIds(ids);
+    }
+
     @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
     public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
         return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
