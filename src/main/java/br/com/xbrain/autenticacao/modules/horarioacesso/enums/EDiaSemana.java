@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.comum.enums;
+package br.com.xbrain.autenticacao.modules.horarioacesso.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

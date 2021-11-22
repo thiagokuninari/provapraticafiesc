@@ -1,14 +1,15 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
-import org.springframework.util.StringUtils;
 
 import static br.com.xbrain.autenticacao.modules.horarioacesso.model.QHorarioAcesso.horarioAcesso;
+import static java.util.Objects.nonNull;
 
 public class HorarioAcessoPredicate extends PredicateBase {
-    public HorarioAcessoPredicate comSite(String site) {
-        if (!StringUtils.isEmpty(site)) {
-            builder.and(horarioAcesso.site.nome.containsIgnoreCase(site));
+
+    public HorarioAcessoPredicate comSite(Integer siteId) {
+        if (nonNull(siteId)) {
+            builder.and(horarioAcesso.site.id.eq(siteId));
         }
         return this;
     }

@@ -5,8 +5,8 @@ import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
+import javax.persistence.*;
 
 @Data
 @Builder
@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "HORARIO_ACESSO")
 public class HorarioAcesso {
-
     @Id
     @SequenceGenerator(name = "SEQ_HORARIO_ACESSO", sequenceName = "SEQ_HORARIO_ACESSO", allocationSize = 1)
     @GeneratedValue(generator = "SEQ_HORARIO_ACESSO", strategy = GenerationType.SEQUENCE)
@@ -25,20 +24,20 @@ public class HorarioAcesso {
     @JoinColumn(name = "FK_SITE", referencedColumnName = "ID", nullable = false)
     private Site site;
 
-    @Column(name = "DATA_ALTERACAO", nullable = false)
+    @Column(name = "DATA_ALTERACAO")
     private LocalDateTime dataAlteracao;
 
-    @Column(name = "USUARIO_ALTERACAO_ID", nullable = false)
+    @Column(name = "USUARIO_ALTERACAO_ID")
     private Integer usuarioAlteracaoId;
 
-    @Column(name = "USUARIO_ALTERACAO_NOME", nullable = false, length = 100)
+    @Column(name = "USUARIO_ALTERACAO_NOME")
     private String usuarioAlteracaoNome;
 
     public HorarioAcesso(Integer id) {
         this.id = id;
     }
 
-    public static HorarioAcesso converFrom(HorarioAcessoRequest request) {
+    public static HorarioAcesso of(HorarioAcessoRequest request) {
         return HorarioAcesso.builder()
             .id(request.getId())
             .site(new Site(request.getSiteId()))

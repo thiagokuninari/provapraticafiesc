@@ -1,17 +1,19 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
-import lombok.*;
-
 import java.util.List;
+
 import javax.validation.constraints.NotNull;
+
+import lombok.*;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class HorarioAcessoRequest {
     private Integer id;
     @NotNull
     private Integer siteId;
-    private List<DiaAcessoResponse> diasAcesso;
+    @NotNull
+    private List<HorarioAtuacaoDto> horariosAtuacao;
 }

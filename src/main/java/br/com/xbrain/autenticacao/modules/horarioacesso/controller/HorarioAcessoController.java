@@ -1,34 +1,45 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
-import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoConsultaDto;
-import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
-import br.com.xbrain.autenticacao.modules.horarioacesso.predicate.HorarioAcessoFiltros;
-import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
+import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
+
 @RestController
-@RequestMapping(value = "/api/horarios-acesso")
+@RequestMapping("/api/horarios-acesso")
 public class HorarioAcessoController {
 
     @Autowired
     private HorarioAcessoService service;
 
     @GetMapping
-    public List<HorarioAcessoConsultaDto> retornaHorarios(HorarioAcessoFiltros filtros) {
-        return service.getAll(filtros);
+    public List<HorarioAcessoResponse> findAll(HorarioAcessoFiltros filtros) {
+        return service.listarHorarios(filtros);
+    }
+
+    @GetMapping("{id}")
+    public HorarioAcessoResponse getHorarioAcesso(@PathVariable Integer id) {
+        return HorarioAcessoResponse.of(service.getHorarioAcesso(id));
+    }
+
+    @GetMapping("{id}/historico")
+    public List<HorarioAcessoResponse> getHistoricos(@PathVariable("id") Integer horarioAcessoId) {
+        return service.getHistoricos(horarioAcessoId);
     }
 
     @PostMapping
-    public HorarioAcessoConsultaDto save(@Validated @RequestBody HorarioAcessoRequest horarioAcesso) {
-        return service.save(horarioAcesso);
-    }
-
-    @GetMapping("/historico/{id}")
-    public List<HorarioAcessoConsultaDto> getHistorico(@PathVariable("id") Integer horarioAcessoId) {
-        return service.getHistorico(horarioAcessoId);
+    public HorarioAcessoResponse save(@Validated @RequestBody HorarioAcessoRequest request) {
+        return HorarioAcessoResponse.of(service.save(request));
     }
 }
