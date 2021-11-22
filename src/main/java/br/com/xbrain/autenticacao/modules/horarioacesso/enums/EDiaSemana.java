@@ -8,11 +8,11 @@ import lombok.Getter;
 public enum EDiaSemana {
     
     DOMINGO(1, "DOMINGO", "Domingo"),
-    SEGUNDA(2, "SEGUNDA", "Segunda-feira"),
-    TERCA(3, "TERÇA", "Terça-feira"),
-    QUARTA(4, "QUARTA", "Quarta-feira"),
-    QUINTA(5, "QUINTA", "Quinta-feira"),
-    SEXTA(6, "SEXTA", "Sexta-feira"),
+    SEGUNDA(2, "SEGUNDA", "Segunda-Feira"),
+    TERCA(3, "TERÇA", "Terça-Feira"),
+    QUARTA(4, "QUARTA", "Quarta-Feira"),
+    QUINTA(5, "QUINTA", "Quinta-Feira"),
+    SEXTA(6, "SEXTA", "Sexta-Feira"),
     SABADO(7, "SÁBADO", "Sábado");
 
     private Integer codigo;

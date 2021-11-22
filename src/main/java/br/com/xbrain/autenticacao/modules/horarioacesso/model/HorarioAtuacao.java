@@ -46,8 +46,8 @@ public class HorarioAtuacao {
         return HorarioAtuacao.builder()
             .id(request.getId())
             .diaSemana(EDiaSemana.valueOf(request.getDiaSemana()))
-            .horarioInicio(request.getHorarioInicio())
-            .horarioFim(request.getHorarioFim())
+            .horarioInicio(LocalTime.parse(request.getHorarioInicio()))
+            .horarioFim(LocalTime.parse(request.getHorarioFim()))
             .build();
     }
 }

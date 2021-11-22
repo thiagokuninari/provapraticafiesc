@@ -86,19 +86,19 @@ public class HorarioAcessoService {
     }
 
     private void desreferenciaHorarioAtuacao(HorarioAcesso horarioAtuacao) {
-        var horariosAcesso = atuacaoRepository.findByHorarioAcessoId(horarioAtuacao.getId());
-        horariosAcesso.forEach(acesso -> acesso.setHorarioAcesso(null));
-        horariosAcesso.forEach(acesso -> atuacaoRepository.save(acesso));
+        var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAtuacao.getId());
+        horariosAtuacao.forEach(atuacao -> atuacao.setHorarioAcesso(null));
+        horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
     }
 
     private void criaHorariosAcesso(List<HorarioAtuacao> horariosAtuacao,
                                     HorarioAcesso horarioAcesso,
                                     HorarioHistorico horarioHistorico) {
         try {
-            horariosAtuacao.forEach(acesso -> {
-                acesso.setHorarioAcesso(horarioAcesso);
-                acesso.setHorarioHistorico(horarioHistorico);
-                atuacaoRepository.save(acesso);
+            horariosAtuacao.forEach(atuacao -> {
+                atuacao.setHorarioAcesso(horarioAcesso);
+                atuacao.setHorarioHistorico(horarioHistorico);
+                atuacaoRepository.save(atuacao);
             });
         } catch (Exception ex) {
             throw ex;
