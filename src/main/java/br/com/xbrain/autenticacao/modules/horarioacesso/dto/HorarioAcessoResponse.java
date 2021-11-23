@@ -1,14 +1,15 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.comum.enums.EFormatoDataHora.DATA_HORA_SEG;
 
 @Data
 @Builder
@@ -27,7 +28,8 @@ public class HorarioAcessoResponse {
         return HorarioAcessoResponse.builder()
             .horarioAcessoId(response.getId())
             .siteNome(response.getSite().getNome())
-            .dataAlteracao(dataFormatada(response.getDataAlteracao()))
+            .dataAlteracao(DateUtil.formatarDataHora(DATA_HORA_SEG,
+                response.getDataAlteracao()))
             .usuarioAlteracaoNome(response.getUsuarioAlteracaoNome())
             .build();
     }
@@ -37,7 +39,8 @@ public class HorarioAcessoResponse {
             .horarioHistoricoId(response.getId())
             .horarioAcessoId(response.getHorarioAcesso().getId())
             .siteNome(response.getHorarioAcesso().getSite().getNome())
-            .dataAlteracao(dataFormatada(response.getDataAlteracao()))
+            .dataAlteracao(DateUtil.formatarDataHora(DATA_HORA_SEG,
+                response.getDataAlteracao()))
             .usuarioAlteracaoNome(response.getUsuarioAlteracaoNome())
             .build();
     }
@@ -46,9 +49,5 @@ public class HorarioAcessoResponse {
         this.horariosAtuacao = horariosAtuacao.stream()
             .map(HorarioAtuacaoDto::of)
             .collect(Collectors.toList());
-    }
-
-    private static String dataFormatada(LocalDateTime data) {
-        return data.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 }
