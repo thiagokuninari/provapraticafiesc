@@ -109,7 +109,7 @@ public class UsuarioController {
     }
 
     @PostMapping("vendedores")
-    public List<UsuarioResponse> obterUsuarioVendedorById(@RequestBody List<Integer> ids) {
+    public List<UsuarioResponse> getUsuarioVendedorByIdPost(@RequestBody List<Integer> ids) {
         return usuarioService.getVendedoresByIds(ids);
     }
 
