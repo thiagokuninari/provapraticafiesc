@@ -24,13 +24,13 @@ public class HorarioAcessoController {
     private HorarioAcessoService service;
 
     @GetMapping
-    public List<HorarioAcessoResponse> findAll(HorarioAcessoFiltros filtros) {
-        return service.listarHorarios(filtros);
+    public List<HorarioAcessoResponse> getHorariosAcesso(HorarioAcessoFiltros filtros) {
+        return service.getHorariosAcesso(filtros);
     }
 
     @GetMapping("{id}")
     public HorarioAcessoResponse getHorarioAcesso(@PathVariable Integer id) {
-        return HorarioAcessoResponse.of(service.getHorarioAcesso(id));
+        return service.getHorarioAcesso(id);
     }
 
     @GetMapping("{id}/historico")

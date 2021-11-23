@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
 import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
@@ -58,5 +60,27 @@ public class HorarioHelpers {
                 .horarioFim(LocalTime.of(15, 0))
                 .build()
         );
+    }
+
+    public static HorarioAcessoRequest umHorarioAcessoRequest() {
+        return HorarioAcessoRequest.builder()
+            .siteId(100)
+            .horariosAtuacao(List.of(
+                HorarioAtuacaoDto.builder()
+                    .diaSemana("SEGUNDA")
+                    .horarioInicio("09:00")
+                    .horarioFim("15:00")
+                    .build(),
+                HorarioAtuacaoDto.builder()
+                    .diaSemana("QUARTA")
+                    .horarioInicio("09:00")
+                    .horarioFim("15:00")
+                    .build(),
+                HorarioAtuacaoDto.builder()
+                    .diaSemana("SEXTA")
+                    .horarioInicio("09:00")
+                    .horarioFim("15:00")
+                    .build()))
+            .build();
     }
 }

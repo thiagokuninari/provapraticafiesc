@@ -34,7 +34,7 @@ public class HorarioAcessoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    public List<HorarioAcessoResponse> listarHorarios(HorarioAcessoFiltros filtros) {
+    public List<HorarioAcessoResponse> getHorariosAcesso(HorarioAcessoFiltros filtros) {
         var horarios = repository.findAll(filtros.toPredicate().build())
             .stream()
             .map(HorarioAcessoResponse::of)
@@ -44,8 +44,13 @@ public class HorarioAcessoService {
         return horarios;
     }
 
-    public HorarioAcesso getHorarioAcesso(Integer id) {
-        return repository.findById(id).orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
+    public HorarioAcessoResponse getHorarioAcesso(Integer id) {
+        var horario = HorarioAcessoResponse.of(repository
+            .findById(id)
+            .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO));
+        horario.setHorariosAtuacao(atuacaoRepository
+            .findByHorarioAcessoId(horario.getHorarioAcessoId()));
+        return horario;
     }
 
     public List<HorarioAcessoResponse> getHistoricos(Integer horarioAcessoId) {
@@ -70,15 +75,15 @@ public class HorarioAcessoService {
         }
         horarioAcesso.setDadosAlteracao(autenticacaoService.getUsuarioAutenticado().getUsuario());
 
-        repository.save(horarioAcesso);
+        horarioAcesso = repository.save(horarioAcesso);
 
         var historico = HorarioHistorico.of(horarioAcesso);
-        historicoRepository.save(historico);
+        historico = historicoRepository.save(historico);
 
         criaHorariosAcesso(request.getHorariosAtuacao()
-            .stream()
-            .map(HorarioAtuacao::of)
-            .collect(Collectors.toList()), 
+                .stream()
+                .map(HorarioAtuacao::of)
+                .collect(Collectors.toList()),
             horarioAcesso, 
             historico);
         
@@ -91,7 +96,7 @@ public class HorarioAcessoService {
         horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
     }
 
-    private void criaHorariosAcesso(List<HorarioAtuacao> horariosAtuacao,
+    public void criaHorariosAcesso(List<HorarioAtuacao> horariosAtuacao,
                                     HorarioAcesso horarioAcesso,
                                     HorarioHistorico horarioHistorico) {
         try {

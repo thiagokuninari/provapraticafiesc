@@ -11,8 +11,7 @@ import org.springframework.data.repository.CrudRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 
 public interface HorarioAcessoRepository extends 
-    CrudRepository<HorarioAcesso, Integer>,
-    QueryDslPredicateExecutor<HorarioAcesso> {
+    CrudRepository<HorarioAcesso, Integer>, QueryDslPredicateExecutor<HorarioAcesso> {
     
     List<HorarioAcesso> findAll(Predicate predicate);
 
