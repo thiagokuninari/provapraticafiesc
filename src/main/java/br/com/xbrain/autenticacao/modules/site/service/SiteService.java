@@ -168,7 +168,7 @@ public class SiteService {
 
     public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
         var supervisoresSubordinadosIds =
-            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, CodigoCargo.SUPERVISOR_OPERACAO.name());
+            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name()));
 
         return findById(siteId)
             .getSupervisores()

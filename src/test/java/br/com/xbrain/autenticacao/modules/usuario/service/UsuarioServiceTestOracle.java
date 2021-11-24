@@ -102,15 +102,15 @@ public class UsuarioServiceTestOracle {
     @Test
     public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForGerente() {
         Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
-                SUPERVISOR_OPERACAO.name()).size());
+                Set.of(SUPERVISOR_OPERACAO.name())).size());
     }
 
     @Test
     public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForCoordenador() {
         Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
-                SUPERVISOR_OPERACAO.name()).size());
+                Set.of(SUPERVISOR_OPERACAO.name())).size());
         Assert.assertEquals(1, service.getIdsSubordinadosDaHierarquia(234,
-                SUPERVISOR_OPERACAO.name()).size());
+                Set.of(SUPERVISOR_OPERACAO.name())).size());
     }
 
     @Test

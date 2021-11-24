@@ -418,7 +418,7 @@ public class SiteServiceTest {
 
     @Test
     public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
-        when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
+        when(usuarioService.getIdsSubordinadosDaHierarquia(200, Set.of(SUPERVISOR_OPERACAO.name())))
             .thenReturn(List.of(110, 112));
         when(siteRepository.findById(100))
             .thenReturn(Optional.of(umSiteComSupervisores()));
