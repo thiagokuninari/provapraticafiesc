@@ -19,6 +19,7 @@ public class HorarioAcessoResponse {
 
     private Integer horarioAcessoId;
     private Integer horarioHistoricoId;
+    private Integer siteId;
     private String siteNome;
     private String dataAlteracao;
     private String usuarioAlteracaoNome;
@@ -27,6 +28,7 @@ public class HorarioAcessoResponse {
     public static HorarioAcessoResponse of(HorarioAcesso response) {
         return HorarioAcessoResponse.builder()
             .horarioAcessoId(response.getId())
+            .siteId(response.getSite().getId())
             .siteNome(response.getSite().getNome())
             .dataAlteracao(DateUtil.formatarDataHora(DATA_HORA_SEG,
                 response.getDataAlteracao()))
@@ -38,6 +40,7 @@ public class HorarioAcessoResponse {
         return HorarioAcessoResponse.builder()
             .horarioHistoricoId(response.getId())
             .horarioAcessoId(response.getHorarioAcesso().getId())
+            .siteId(response.getHorarioAcesso().getSite().getId())
             .siteNome(response.getHorarioAcesso().getSite().getNome())
             .dataAlteracao(DateUtil.formatarDataHora(DATA_HORA_SEG,
                 response.getDataAlteracao()))

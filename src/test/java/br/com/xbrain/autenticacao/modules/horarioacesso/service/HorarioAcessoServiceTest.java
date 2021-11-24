@@ -73,10 +73,10 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getHorariosAcesso(new HorarioAcessoFiltros()))
             .hasSize(2)
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteNome", "dataAlteracao",
+            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
                 "usuarioAlteracaoNome", "horariosAtuacao")
             .containsExactlyInAnyOrder(
-                tuple(1, null, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
+                tuple(1, null, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(1)
                         .diaSemana("Segunda-Feira")
@@ -96,7 +96,7 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build()
                 )),
-                tuple(2, null, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
+                tuple(2, null, 100, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(4)
                         .diaSemana("Segunda-Feira")
@@ -142,10 +142,10 @@ public class HorarioAcessoServiceTest {
 
         assertThat(service.getHistoricos(1))
             .hasSize(2)
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteNome", "dataAlteracao",
+            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
                 "usuarioAlteracaoNome", "horariosAtuacao")
             .containsExactlyInAnyOrder(
-                tuple(1, 1, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
+                tuple(1, 1, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(1)
                         .diaSemana("Segunda-Feira")
@@ -165,7 +165,7 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build()
                 )),
-                tuple(1, 2, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
+                tuple(1, 2, 100, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(4)
                         .diaSemana("Segunda-Feira")

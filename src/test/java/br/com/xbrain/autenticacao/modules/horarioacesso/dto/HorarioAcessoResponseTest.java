@@ -14,8 +14,9 @@ public class HorarioAcessoResponseTest {
         response.setHorariosAtuacao(umaListaHorariosAtuacao());
 
         assertThat(response)
-            .extracting("horarioAcessoId", "siteNome", "dataAlteracao", "usuarioAlteracaoNome", "horariosAtuacao")
-            .containsExactly(1, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", 
+            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome",
+                "dataAlteracao", "usuarioAlteracaoNome", "horariosAtuacao")
+            .containsExactly(1, null, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", 
                 List.of(
                     HorarioAtuacaoDto.builder()
                         .id(1)
@@ -43,9 +44,9 @@ public class HorarioAcessoResponseTest {
         response.setHorariosAtuacao(umaListaHorariosAtuacao());
 
         assertThat(response)
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteNome", "dataAlteracao",
-                "usuarioAlteracaoNome", "horariosAtuacao")
-            .containsExactly(1, 1, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", 
+            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome",
+                "dataAlteracao", "usuarioAlteracaoNome", "horariosAtuacao")
+            .containsExactly(1, 1, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", 
                 List.of(
                     HorarioAtuacaoDto.builder()
                         .id(1)
