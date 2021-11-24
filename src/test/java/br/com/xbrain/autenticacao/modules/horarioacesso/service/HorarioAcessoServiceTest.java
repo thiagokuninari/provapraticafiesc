@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
@@ -71,7 +72,9 @@ public class HorarioAcessoServiceTest {
         when(atuacaoRepository.findByHorarioAcessoId(1)).thenReturn(primeiraLista);
         when(atuacaoRepository.findByHorarioAcessoId(2)).thenReturn(segundaLista);
 
-        assertThat(service.getHorariosAcesso(new HorarioAcessoFiltros()))
+        var pageable = new PageRequest(0, 10, "horarioHistoricoId", "desc");
+
+        assertThat(service.getHorariosAcesso(pageable, new HorarioAcessoFiltros()))
             .hasSize(2)
             .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
                 "usuarioAlteracaoNome", "horariosAtuacao")
@@ -140,7 +143,9 @@ public class HorarioAcessoServiceTest {
         when(atuacaoRepository.findByHorarioHistoricoId(1)).thenReturn(primeiraListaHistorico);
         when(atuacaoRepository.findByHorarioHistoricoId(2)).thenReturn(segundaListaHistorico);
 
-        assertThat(service.getHistoricos(1))
+        var pageable = new PageRequest(0, 10, "horarioHistoricoId", "desc");
+
+        assertThat(service.getHistoricos(pageable, 1))
             .hasSize(2)
             .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
                 "usuarioAlteracaoNome", "horariosAtuacao")

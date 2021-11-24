@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuaca
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,14 +36,14 @@ public class HorarioAcessoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
 
-    public List<HorarioAcessoResponse> getHorariosAcesso(HorarioAcessoFiltros filtros) {
+    public PageImpl<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
         var horarios = repository.findAll(filtros.toPredicate().build())
             .stream()
             .map(HorarioAcessoResponse::of)
             .collect(Collectors.toList());
         horarios.forEach(horario -> horario.setHorariosAtuacao(
             atuacaoRepository.findByHorarioAcessoId(horario.getHorarioAcessoId())));
-        return horarios;
+        return new PageImpl<>(horarios, pageable, horarios.size());
     }
 
     public HorarioAcessoResponse getHorarioAcesso(Integer id) {
@@ -53,14 +55,14 @@ public class HorarioAcessoService {
         return horario;
     }
 
-    public List<HorarioAcessoResponse> getHistoricos(Integer horarioAcessoId) {
+    public PageImpl<HorarioAcessoResponse> getHistoricos(PageRequest pageable, Integer horarioAcessoId) {
         var historicos = historicoRepository.findByHorarioAcessoId(horarioAcessoId)
             .stream()
             .map(HorarioAcessoResponse::of)
             .collect(Collectors.toList());
         historicos.forEach(historico -> historico.setHorariosAtuacao(
             atuacaoRepository.findByHorarioHistoricoId(historico.getHorarioHistoricoId())));
-        return historicos;
+        return new PageImpl<>(historicos, pageable, historicos.size());
     }
 
     public HorarioAcesso save(HorarioAcessoRequest request) {
