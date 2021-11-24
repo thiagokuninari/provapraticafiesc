@@ -106,6 +106,18 @@ public class UsuarioServiceTestOracle {
     }
 
     @Test
+    public void getIdsSubordinadosDasHierarquias_idsDosVendedoresParaMultiplosCargos_quandoForGerente() {
+        Assert.assertEquals(6, service.getIdsSubordinadosDaHierarquia(227,
+            Set.of(SUPERVISOR_OPERACAO.name(),COORDENADOR_OPERACAO.name())).size());
+    }
+
+    @Test
+    public void getIdsSubordinadosDasHierarquias_idsDosVendedoresParaUnicoCargo_quandoForGerente() {
+        Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
+            Set.of(COORDENADOR_OPERACAO.name())).size());
+    }
+
+    @Test
     public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForCoordenador() {
         Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
                 Set.of(SUPERVISOR_OPERACAO.name())).size());

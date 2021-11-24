@@ -332,8 +332,8 @@ public class UsuarioController {
     }
 
     @GetMapping("{usuarioId}/subordinados/cargos/{codigoCargo}")
-    public List<Integer> getIdsDasHierarquias(@PathVariable Integer usuarioId, @PathVariable Set<String> codigosCargos) {
-        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigosCargos);
+    public List<Integer> getIdsDasHierarquias(@PathVariable Integer usuarioId, @PathVariable Set<String> codigoCargo) {
+        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigoCargo);
     }
 
     @GetMapping("{id}/vendedores-hierarquia-ids")
