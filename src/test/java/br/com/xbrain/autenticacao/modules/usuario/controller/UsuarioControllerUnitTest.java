@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDistribuicaoResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static helpers.TestsHelper.getAccessToken;
 import static org.hamcrest.Matchers.hasSize;
@@ -50,6 +53,35 @@ public class UsuarioControllerUnitTest {
     public void setup() {
         when(usuarioService.getIdDosUsuariosSubordinados(any(), anyBoolean()))
                 .thenReturn(Arrays.asList(1, 2, 3));
+
+        when(usuarioService.getIdsSubordinadosDaHierarquia(100,
+            Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name())))
+            .thenReturn(Arrays.asList(1, 2));
+
+        when(usuarioService.getIdsSubordinadosDaHierarquia(100,
+            Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name(),
+                   CodigoCargo.COORDENADOR_OPERACAO.name())))
+            .thenReturn(Arrays.asList(1, 2, 3, 4));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getIdsDasHierarquias_deveRetornarLista_quandoUnicoCargo() {
+        mvc.perform(get("/api/usuarios/100/subordinados/cargos/SUPERVISOR_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getIdsDasHierarquias_deveRetornarLista_quandoMultiplosCargos() {
+        mvc.perform(get("/api/usuarios/100/subordinados/cargos/SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(4)));
     }
 
     @Test
