@@ -67,7 +67,8 @@ public class UsuarioControllerUnitTest {
     @Test
     @SneakyThrows
     public void getIdsDasHierarquias_deveRetornarLista_quandoUnicoCargo() {
-        mvc.perform(get("/api/usuarios/100/subordinados/cargos/SUPERVISOR_OPERACAO")
+        mvc.perform(get("/api/usuarios/100/subordinados/cargos")
+                .param("codigosCargos","SUPERVISOR_OPERACAO")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -77,7 +78,8 @@ public class UsuarioControllerUnitTest {
     @Test
     @SneakyThrows
     public void getIdsDasHierarquias_deveRetornarLista_quandoMultiplosCargos() {
-        mvc.perform(get("/api/usuarios/100/subordinados/cargos/SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO")
+        mvc.perform(get("/api/usuarios/100/subordinados/cargos")
+                .param("codigosCargos","SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
