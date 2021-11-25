@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
-import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
@@ -25,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,166 +56,60 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getHorariosAcesso_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHorariosAcesso() {
-        var segundoHorario = umHorarioAcessoResponse();
-        segundoHorario.setHorarioAcessoId(2);
-        segundoHorario.setDataAlteracao("25/11/2021 08:07:10");
-        segundoHorario.getHorariosAtuacao().forEach(atuacao -> atuacao.setId(atuacao.getId() + 3));
-
-        when(repository.findAll(any(Pageable.class), any(Predicate.class)))
-            .thenReturn(new PageImpl<>(List.of(umHorarioAcessoResponse(), segundoHorario)));
+        when(repository.findAll(any(Predicate.class), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(umHorarioAcesso())));
+        when(atuacaoRepository.findByHorarioAcesso(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
         var pageable = new PageRequest(0, 10, "horarioAcessoId", "asc");
 
         assertThat(service.getHorariosAcesso(pageable, new HorarioAcessoFiltros()))
-            .hasSize(2)
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
-                "usuarioAlteracaoNome", "horariosAtuacao")
-            .containsExactlyInAnyOrder(
-                tuple(1, null, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
-                    HorarioAtuacaoDto.builder()
-                        .id(1)
-                        .diaSemana("Segunda-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(2)
-                        .diaSemana("Quarta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(3)
-                        .diaSemana("Sexta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build()
-                )),
-                tuple(2, null, 100, "SITE TESTE", "25/11/2021 08:07:10", "USUARIO TESTE", List.of(
-                    HorarioAtuacaoDto.builder()
-                        .id(4)
-                        .diaSemana("Segunda-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(5)
-                        .diaSemana("Quarta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(6)
-                        .diaSemana("Sexta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build())));
-        
-        verify(repository, times(1)).findAll(eq(pageable), eq(new HorarioAcessoFiltros().toPredicate().build()));
+            .isEqualTo(new PageImpl<>(List.of(umHorarioAcessoResponse())));
+
+        verify(repository, times(1)).findAll(any(Predicate.class), eq(pageable));
+        verify(atuacaoRepository, times(1)).findByHorarioAcesso(eq(1));
     }
 
     @Test
     public void getHistoricos_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHistoricos() {
-        var segundoHistorico = umHorarioHistoricoResponse();
-        segundoHistorico.setHorarioHistoricoId(2);
-        segundoHistorico.setDataAlteracao("24/11/2021 17:42:55");
-        segundoHistorico.getHorariosAtuacao().forEach(atuacao -> atuacao.setId(atuacao.getId() + 3));
+        when(historicoRepository.findByHorarioAcesso(anyInt(), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(umHorarioHistorico())));
+        when(atuacaoRepository.findByHorarioHistorico(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
-        when(historicoRepository.findByHorarioAcessoId(any(Pageable.class), anyInt()))
-            .thenReturn(new PageImpl<>(List.of(umHorarioHistoricoResponse(), segundoHistorico)));
-
-        var pageable = new PageRequest(0, 10, "horarioAcessoId", "asc");
+        var pageable = new PageRequest(0, 10, "horarioHistoricoId", "asc");
 
         assertThat(service.getHistoricos(pageable, 1))
-            .hasSize(2)
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteId", "siteNome", "dataAlteracao",
-                "usuarioAlteracaoNome", "horariosAtuacao")
-            .containsExactlyInAnyOrder(
-                tuple(1, 1, 100, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
-                    HorarioAtuacaoDto.builder()
-                        .id(1)
-                        .diaSemana("Segunda-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(2)
-                        .diaSemana("Quarta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(3)
-                        .diaSemana("Sexta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build()
-                )),
-                tuple(1, 2, 100, "SITE TESTE", "24/11/2021 17:42:55", "USUARIO TESTE", List.of(
-                    HorarioAtuacaoDto.builder()
-                        .id(4)
-                        .diaSemana("Segunda-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(5)
-                        .diaSemana("Quarta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build(),
-                    HorarioAtuacaoDto.builder()
-                        .id(6)
-                        .diaSemana("Sexta-Feira")
-                        .horarioInicio("09:00")
-                        .horarioFim("15:00")
-                        .build())));
-
-        verify(historicoRepository, times(1)).findByHorarioAcessoId(any(), eq(1));
+            .isEqualTo(new PageImpl<>(List.of(umHorarioHistoricoResponse())));
+        
+        verify(historicoRepository, times(1)).findByHorarioAcesso(eq(1), eq(pageable));
+        verify(atuacaoRepository, times(1)).findByHorarioHistorico(eq(1));
     }
 
     @Test
     public void getHorarioAcesso_deveRetornarHorarioAcessoResponse_aoBuscarHorarioAcesso() {
-        when(repository.findById(anyInt())).thenReturn(umHorarioAcessoResponse());
+        when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(atuacaoRepository.findByHorarioAcesso(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
-        assertThat(service.getHorarioAcesso(1))
-            .extracting("horarioAcessoId", "horarioHistoricoId", "siteNome", "dataAlteracao",
-                "usuarioAlteracaoNome", "horariosAtuacao")
-            .containsExactly(1, null, "SITE TESTE", "22/11/2021 13:53:10", "USUARIO TESTE", List.of(
-                HorarioAtuacaoDto.builder()
-                    .id(1)
-                    .diaSemana("Segunda-Feira")
-                    .horarioInicio("09:00")
-                    .horarioFim("15:00")
-                    .build(),
-                HorarioAtuacaoDto.builder()
-                    .id(2)
-                    .diaSemana("Quarta-Feira")
-                    .horarioInicio("09:00")
-                    .horarioFim("15:00")
-                    .build(),
-                HorarioAtuacaoDto.builder()
-                    .id(3)
-                    .diaSemana("Sexta-Feira")
-                    .horarioInicio("09:00")
-                    .horarioFim("15:00")
-                    .build()));
+        assertThat(service.getHorarioAcesso(1)).isEqualTo(umHorarioAcessoResponse());
 
         verify(repository, times(1)).findById(eq(1));
+        verify(atuacaoRepository, times(1)).findByHorarioAcesso(eq(1));
     }
 
     @Test
     public void getHorarioAcesso_deveRetornarException_quandoNaoEncontrarHorarioAcesso() {
         when(repository.findById(anyInt())).thenThrow(HORARIO_ACESSO_NAO_ENCONTRADO);
+
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> repository.findById(100))
             .withMessage("Horário de acesso não encontrado.");
+
         verify(repository, times(1)).findById(eq(100));
     }
 
     @Test
     public void save_deveRetornarHorarioAcesso_quandoSalvarNovoHorario() {
         var usuario = Usuario.builder().id(100).nome("USUARIO TESTE").build();
+        
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder().usuario(usuario).build());
         when(repository.save(any(HorarioAcesso.class))).thenReturn(umHorarioAcesso());
@@ -226,6 +121,7 @@ public class HorarioAcessoServiceTest {
             .doesNotThrowAnyException();
         
         var request = umHorarioAcessoRequest();
+        request.setId(null);
 
         assertThat(service.save(request))
             .extracting("id", "site", "dataAlteracao", "usuarioAlteracaoId", "usuarioAlteracaoNome")
@@ -235,10 +131,9 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void save_deveRetornarHorarioAcesso_quandoEditarHorario() {
-        when(repository.findById(anyInt())).thenReturn(umHorarioAcessoResponse());
-        
         var usuario = Usuario.builder().id(101).nome("USUARIO TESTE EDIÇÃO").build();
 
+        when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder().usuario(usuario).build());
 
@@ -251,13 +146,10 @@ public class HorarioAcessoServiceTest {
             .thenReturn(umHorarioHistorico());
 
         assertThatCode(() -> service.criaHorariosAcesso(
-                umaListaHorariosAtuacao(),
-                umHorarioAcesso(),
-                umHorarioHistorico()))
+                umaListaHorariosAtuacao(), umHorarioAcesso(), umHorarioHistorico()))
             .doesNotThrowAnyException();
         
         var request = umHorarioAcessoRequest();
-        request.setId(1);
 
         assertThat(service.save(request))
             .extracting("id", "site", "dataAlteracao", "usuarioAlteracaoId", "usuarioAlteracaoNome")
@@ -269,12 +161,10 @@ public class HorarioAcessoServiceTest {
     public void save_deveRetornarException_casoHorarioAcessoNaoEncontrado() {
         when(repository.findById(anyInt())).thenThrow(HORARIO_ACESSO_NAO_ENCONTRADO);
 
-        var request = umHorarioAcessoRequest();
-        request.setId(100);
-
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> service.save(request))
+            .isThrownBy(() -> service.save(umHorarioAcessoRequest()))
             .withMessage("Horário de acesso não encontrado.");
-        verify(repository, times(1)).findById(eq(100));
+
+        verify(repository, times(1)).findById(eq(1));
     }
 }

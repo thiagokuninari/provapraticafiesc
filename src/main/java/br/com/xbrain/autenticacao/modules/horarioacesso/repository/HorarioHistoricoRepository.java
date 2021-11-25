@@ -1,10 +1,14 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.repository;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 
-public interface HorarioHistoricoRepository extends 
-    CrudRepository<HorarioHistorico, Integer>, HorarioHistoricoRepositoryCustom {
+public interface HorarioHistoricoRepository extends PagingAndSortingRepository<HorarioHistorico, Integer>, 
+    QueryDslPredicateExecutor<HorarioHistorico> {
 
+    Page<HorarioHistorico> findByHorarioAcesso(Integer horarioAcessoId, Pageable pageable);
 }

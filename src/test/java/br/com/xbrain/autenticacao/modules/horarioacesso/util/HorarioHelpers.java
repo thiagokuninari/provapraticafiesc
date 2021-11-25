@@ -89,6 +89,7 @@ public class HorarioHelpers {
 
     public static HorarioAcessoRequest umHorarioAcessoRequest() {
         return HorarioAcessoRequest.builder()
+            .id(1)
             .siteId(100)
             .horariosAtuacao(List.of(
                 HorarioAtuacaoDto.builder()
