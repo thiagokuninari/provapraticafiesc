@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
@@ -24,9 +23,6 @@ import static java.util.Objects.isNull;
 @Service
 public class HorarioAcessoService {
 
-    public static final ValidacaoException HORARIO_ACESSO_NAO_ENCONTRADO =
-        new ValidacaoException("Horário de acesso não encontrado.");
-
     @Autowired
     private HorarioAcessoRepository repository;
     @Autowired
@@ -37,32 +33,15 @@ public class HorarioAcessoService {
     private AutenticacaoService autenticacaoService;
 
     public PageImpl<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
-        var horarios = repository.findAll(filtros.toPredicate().build())
-            .stream()
-            .map(HorarioAcessoResponse::of)
-            .collect(Collectors.toList());
-        horarios.forEach(horario -> horario.setHorariosAtuacao(
-            atuacaoRepository.findByHorarioAcessoId(horario.getHorarioAcessoId())));
-        return new PageImpl<>(horarios, pageable, horarios.size());
-    }
-
-    public HorarioAcessoResponse getHorarioAcesso(Integer id) {
-        var horario = HorarioAcessoResponse.of(repository
-            .findById(id)
-            .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO));
-        horario.setHorariosAtuacao(atuacaoRepository
-            .findByHorarioAcessoId(horario.getHorarioAcessoId()));
-        return horario;
+        return repository.findAll(pageable, filtros.toPredicate().build());
     }
 
     public PageImpl<HorarioAcessoResponse> getHistoricos(PageRequest pageable, Integer horarioAcessoId) {
-        var historicos = historicoRepository.findByHorarioAcessoId(horarioAcessoId)
-            .stream()
-            .map(HorarioAcessoResponse::of)
-            .collect(Collectors.toList());
-        historicos.forEach(historico -> historico.setHorariosAtuacao(
-            atuacaoRepository.findByHorarioHistoricoId(historico.getHorarioHistoricoId())));
-        return new PageImpl<>(historicos, pageable, historicos.size());
+        return historicoRepository.findByHorarioAcessoId(pageable, horarioAcessoId);
+    }
+
+    public HorarioAcessoResponse getHorarioAcesso(Integer id) {
+        return repository.findById(id);
     }
 
     public HorarioAcesso save(HorarioAcessoRequest request) {
@@ -71,8 +50,7 @@ public class HorarioAcessoService {
         if (isNull(request.getId())) {
             horarioAcesso = HorarioAcesso.of(request);
         } else {
-            horarioAcesso = repository.findById(request.getId())
-                .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
+            horarioAcesso = HorarioAcesso.of(repository.findById(request.getId()));
             desreferenciaHorarioAtuacao(horarioAcesso);
         }
         horarioAcesso.setDadosAlteracao(autenticacaoService.getUsuarioAutenticado().getUsuario());

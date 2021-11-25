@@ -8,5 +8,4 @@ public interface HorarioAtuacaoRepositoryCustom {
     
     List<HorarioAtuacao> findByHorarioAcessoId(Integer horarioAcessoId);
 
-    List<HorarioAtuacao> findByHorarioHistoricoId(Integer horarioHistoricoId);
 }

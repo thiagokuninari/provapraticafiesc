@@ -21,15 +21,5 @@ public class HorarioAtuacaoRepositoryImpl implements HorarioAtuacaoRepositoryCus
             .from(horarioAtuacao)
             .where(horarioAtuacao.horarioAcesso.id.eq(horarioAcessoId))
             .fetch();
-    }
-
-    @Override
-    public List<HorarioAtuacao> findByHorarioHistoricoId(Integer horarioHistoricoId) {
-        return new JPAQueryFactory(entityManager)
-            .select(horarioAtuacao)
-            .from(horarioAtuacao)
-            .where(horarioAtuacao.horarioHistorico.id.eq(horarioHistoricoId))
-            .fetch();
-    }
-    
+    }    
 }

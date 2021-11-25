@@ -13,20 +13,20 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuaca
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-
 import com.querydsl.core.types.Predicate;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static br.com.xbrain.autenticacao.modules.horarioacesso.util.HorarioHelpers.*;
 import static org.assertj.core.api.Assertions.*;
@@ -55,24 +55,15 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getHorariosAcesso_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHorariosAcesso() {
-        var primeiroHorario = umHorarioAcesso();
-        var segundoHorario = umHorarioAcesso();
-        segundoHorario.setId(2);
-        segundoHorario.setDataAlteracao(LocalDateTime.of(2021, 11, 22, 15, 37, 10));
+        var segundoHorario = umHorarioAcessoResponse();
+        segundoHorario.setHorarioAcessoId(2);
+        segundoHorario.setDataAlteracao("25/11/2021 08:07:10");
+        segundoHorario.getHorariosAtuacao().forEach(atuacao -> atuacao.setId(atuacao.getId() + 3));
 
-        when(repository.findAll(any(Predicate.class))).thenReturn(List.of(primeiroHorario, segundoHorario));
+        when(repository.findAll(any(Pageable.class), any(Predicate.class)))
+            .thenReturn(new PageImpl<>(List.of(umHorarioAcessoResponse(), segundoHorario)));
 
-        var primeiraLista = umaListaHorariosAtuacao();
-        var segundaLista = umaListaHorariosAtuacao();
-        segundaLista.forEach(atuacao -> {
-            atuacao.setId(atuacao.getId() + 3);
-            atuacao.setHorarioAcesso(segundoHorario);
-        });
-
-        when(atuacaoRepository.findByHorarioAcessoId(1)).thenReturn(primeiraLista);
-        when(atuacaoRepository.findByHorarioAcessoId(2)).thenReturn(segundaLista);
-
-        var pageable = new PageRequest(0, 10, "horarioHistoricoId", "desc");
+        var pageable = new PageRequest(0, 10, "horarioAcessoId", "asc");
 
         assertThat(service.getHorariosAcesso(pageable, new HorarioAcessoFiltros()))
             .hasSize(2)
@@ -99,7 +90,7 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build()
                 )),
-                tuple(2, null, 100, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
+                tuple(2, null, 100, "SITE TESTE", "25/11/2021 08:07:10", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(4)
                         .diaSemana("Segunda-Feira")
@@ -119,31 +110,20 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build())));
         
-        verify(repository, times(1)).findAll(eq(new HorarioAcessoFiltros().toPredicate().build()));
-        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
-        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(2));
+        verify(repository, times(1)).findAll(eq(pageable), eq(new HorarioAcessoFiltros().toPredicate().build()));
     }
 
     @Test
     public void getHistoricos_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHistoricos() {
-        var primeiroHistorico = umHorarioHistorico();
-        var segundoHistorico = umHorarioHistorico();
-        segundoHistorico.setId(2);
-        segundoHistorico.setDataAlteracao(LocalDateTime.of(2021, 11, 22, 15, 37, 10));
+        var segundoHistorico = umHorarioHistoricoResponse();
+        segundoHistorico.setHorarioHistoricoId(2);
+        segundoHistorico.setDataAlteracao("24/11/2021 17:42:55");
+        segundoHistorico.getHorariosAtuacao().forEach(atuacao -> atuacao.setId(atuacao.getId() + 3));
 
-        when(historicoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(primeiroHistorico, segundoHistorico));
+        when(historicoRepository.findByHorarioAcessoId(any(Pageable.class), anyInt()))
+            .thenReturn(new PageImpl<>(List.of(umHorarioHistoricoResponse(), segundoHistorico)));
 
-        var primeiraListaHistorico = umaListaHorariosAtuacao();
-        var segundaListaHistorico = umaListaHorariosAtuacao();
-        segundaListaHistorico.forEach(atuacao -> {
-            atuacao.setId(atuacao.getId() + 3);
-            atuacao.setHorarioHistorico(segundoHistorico);
-        });
-
-        when(atuacaoRepository.findByHorarioHistoricoId(1)).thenReturn(primeiraListaHistorico);
-        when(atuacaoRepository.findByHorarioHistoricoId(2)).thenReturn(segundaListaHistorico);
-
-        var pageable = new PageRequest(0, 10, "horarioHistoricoId", "desc");
+        var pageable = new PageRequest(0, 10, "horarioAcessoId", "asc");
 
         assertThat(service.getHistoricos(pageable, 1))
             .hasSize(2)
@@ -170,7 +150,7 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build()
                 )),
-                tuple(1, 2, 100, "SITE TESTE", "22/11/2021 15:37:10", "USUARIO TESTE", List.of(
+                tuple(1, 2, 100, "SITE TESTE", "24/11/2021 17:42:55", "USUARIO TESTE", List.of(
                     HorarioAtuacaoDto.builder()
                         .id(4)
                         .diaSemana("Segunda-Feira")
@@ -190,15 +170,12 @@ public class HorarioAcessoServiceTest {
                         .horarioFim("15:00")
                         .build())));
 
-        verify(historicoRepository, times(1)).findByHorarioAcessoId(eq(1));
-        verify(atuacaoRepository, times(1)).findByHorarioHistoricoId(eq(1));
-        verify(atuacaoRepository, times(1)).findByHorarioHistoricoId(eq(2));
+        verify(historicoRepository, times(1)).findByHorarioAcessoId(any(), eq(1));
     }
 
     @Test
     public void getHorarioAcesso_deveRetornarHorarioAcessoResponse_aoBuscarHorarioAcesso() {
-        when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao());
+        when(repository.findById(anyInt())).thenReturn(umHorarioAcessoResponse());
 
         assertThat(service.getHorarioAcesso(1))
             .extracting("horarioAcessoId", "horarioHistoricoId", "siteNome", "dataAlteracao",
@@ -224,7 +201,6 @@ public class HorarioAcessoServiceTest {
                     .build()));
 
         verify(repository, times(1)).findById(eq(1));
-        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test
@@ -259,7 +235,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void save_deveRetornarHorarioAcesso_quandoEditarHorario() {
-        when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(repository.findById(anyInt())).thenReturn(umHorarioAcessoResponse());
         
         var usuario = Usuario.builder().id(101).nome("USUARIO TESTE EDIÇÃO").build();
 

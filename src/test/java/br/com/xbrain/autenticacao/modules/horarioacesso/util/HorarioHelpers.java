@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
 import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
@@ -30,6 +31,30 @@ public class HorarioHelpers {
             .dataAlteracao(LocalDateTime.of(2021, 11, 22, 13, 53, 10))
             .usuarioAlteracaoId(100)
             .usuarioAlteracaoNome("USUARIO TESTE")
+            .build();
+    }
+
+    public static HorarioAcessoResponse umHorarioAcessoResponse() {
+        return HorarioAcessoResponse.builder()
+            .horarioAcessoId(1)
+            .horarioHistoricoId(null)
+            .siteId(100)
+            .siteNome("SITE TESTE")
+            .dataAlteracao("22/11/2021 13:53:10")
+            .usuarioAlteracaoNome("USUARIO TESTE")
+            .horariosAtuacao(umaListaHorarioAtuacaoDto())
+            .build();
+    }
+
+    public static HorarioAcessoResponse umHorarioHistoricoResponse() {
+        return HorarioAcessoResponse.builder()
+            .horarioAcessoId(1)
+            .horarioHistoricoId(1)
+            .siteId(100)
+            .siteNome("SITE TESTE")
+            .dataAlteracao("22/11/2021 13:53:10")
+            .usuarioAlteracaoNome("USUARIO TESTE")
+            .horariosAtuacao(umaListaHorarioAtuacaoDto())
             .build();
     }
 
@@ -82,5 +107,27 @@ public class HorarioHelpers {
                     .horarioFim("15:00")
                     .build()))
             .build();
+    }
+
+    public static List<HorarioAtuacaoDto> umaListaHorarioAtuacaoDto() {
+        return List.of(
+            HorarioAtuacaoDto.builder()
+                .id(1)
+                .diaSemana("Segunda-Feira")
+                .horarioInicio("09:00")
+                .horarioFim("15:00")
+                .build(),
+            HorarioAtuacaoDto.builder()
+                .id(2)
+                .diaSemana("Quarta-Feira")
+                .horarioInicio("09:00")
+                .horarioFim("15:00")
+                .build(),
+            HorarioAtuacaoDto.builder()
+                .id(3)
+                .diaSemana("Sexta-Feira")
+                .horarioInicio("09:00")
+                .horarioFim("15:00")
+                .build());
     }
 }

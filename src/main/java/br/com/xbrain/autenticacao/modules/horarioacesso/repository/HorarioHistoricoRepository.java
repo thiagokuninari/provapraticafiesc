@@ -6,5 +6,5 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 
 public interface HorarioHistoricoRepository extends 
     CrudRepository<HorarioHistorico, Integer>, HorarioHistoricoRepositoryCustom {
-    
+
 }

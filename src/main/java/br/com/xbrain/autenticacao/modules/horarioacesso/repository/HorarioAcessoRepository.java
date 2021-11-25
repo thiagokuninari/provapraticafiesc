@@ -1,19 +1,9 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.querydsl.core.types.Predicate;
-
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import org.springframework.data.repository.CrudRepository;
 
-import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
-
 public interface HorarioAcessoRepository extends 
-    CrudRepository<HorarioAcesso, Integer>, QueryDslPredicateExecutor<HorarioAcesso> {
-    
-    List<HorarioAcesso> findAll(Predicate predicate);
+    CrudRepository<HorarioAcesso, Integer>, HorarioAcessoRepositoryCustom {
 
-    Optional<HorarioAcesso> findById(Integer id);
 }

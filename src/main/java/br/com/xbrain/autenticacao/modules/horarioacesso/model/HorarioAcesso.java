@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.model;
 
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
+import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
@@ -41,6 +42,13 @@ public class HorarioAcesso {
         return HorarioAcesso.builder()
             .id(request.getId())
             .site(new Site(request.getSiteId()))
+            .build();
+    }
+
+    public static HorarioAcesso of(HorarioAcessoResponse response) {
+        return HorarioAcesso.builder()
+            .id(response.getHorarioAcessoId())
+            .site(new Site(response.getSiteId()))
             .build();
     }
 
