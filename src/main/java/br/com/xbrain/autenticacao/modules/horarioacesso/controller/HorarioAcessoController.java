@@ -4,12 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
-import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
-import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
@@ -21,14 +16,6 @@ public class HorarioAcessoController {
 
     @Autowired
     private HorarioAcessoService service;
-
-    @Autowired
-    private HorarioAtuacaoRepository atuacaoRepository;
-
-    @GetMapping("/teste/{id}")
-    public List<HorarioAtuacao> getAll(@PathVariable("id") int id) {
-        return atuacaoRepository.findByHorarioAcessoId(id);
-    }
 
     @GetMapping
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
