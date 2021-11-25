@@ -30,7 +30,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -93,7 +92,7 @@ public class UsuarioControllerUnitTest {
 
         verify(usuarioService, times(1))
             .getIdsSubordinadosDaHierarquia(100,
-                Collections.singleton("SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO"));
+                Set.of("SUPERVISOR_OPERACAO","COORDENADOR_OPERACAO"));
     }
 
     @Test
