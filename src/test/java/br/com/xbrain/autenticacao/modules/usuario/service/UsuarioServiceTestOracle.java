@@ -107,22 +107,31 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void getIdsSubordinadosDasHierarquias_idsDosVendedoresParaMultiplosCargos_quandoForGerente() {
-        Assert.assertEquals(6, service.getIdsSubordinadosDaHierarquia(227,
-            Set.of(SUPERVISOR_OPERACAO.name(),COORDENADOR_OPERACAO.name())).size());
+        assertThat(service.getIdsSubordinadosDaHierarquia(227,
+            Set.of(COORDENADOR_OPERACAO.name(),
+                   SUPERVISOR_OPERACAO.name())))
+            .isNotEmpty()
+            .hasSize(6);
     }
 
     @Test
     public void getIdsSubordinadosDasHierarquias_idsDosVendedoresParaUnicoCargo_quandoForGerente() {
-        Assert.assertEquals(3, service.getIdsSubordinadosDaHierarquia(227,
-            Set.of(COORDENADOR_OPERACAO.name())).size());
+        assertThat(service.getIdsSubordinadosDaHierarquia(227,
+            Set.of(COORDENADOR_OPERACAO.name())))
+            .isNotEmpty()
+            .hasSize(3);
     }
 
     @Test
     public void getIdsSubordinadosDaHierarquia_idsDosVendedores_quandoForCoordenador() {
-        Assert.assertEquals(2, service.getIdsSubordinadosDaHierarquia(228,
-                Set.of(SUPERVISOR_OPERACAO.name())).size());
-        Assert.assertEquals(1, service.getIdsSubordinadosDaHierarquia(234,
-                Set.of(SUPERVISOR_OPERACAO.name())).size());
+        assertThat(service.getIdsSubordinadosDaHierarquia(228,
+            Set.of(SUPERVISOR_OPERACAO.name())))
+            .isNotEmpty()
+            .hasSize(2);
+        assertThat(service.getIdsSubordinadosDaHierarquia(234,
+            Set.of(SUPERVISOR_OPERACAO.name())))
+            .isNotEmpty()
+            .hasSize(1);
     }
 
     @Test

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +74,10 @@ public class UsuarioControllerUnitTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
+
+        verify(usuarioService, times(1))
+            .getIdsSubordinadosDaHierarquia(100,
+                Collections.singleton("SUPERVISOR_OPERACAO"));
     }
 
     @Test
@@ -84,6 +89,10 @@ public class UsuarioControllerUnitTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(4)));
+
+        verify(usuarioService, times(1))
+            .getIdsSubordinadosDaHierarquia(100,
+                Collections.singleton("SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO"));
     }
 
     @Test
