@@ -58,7 +58,7 @@ public class HorarioAcessoServiceTest {
     public void getHorariosAcesso_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHorariosAcesso() {
         when(repository.findAll(any(Predicate.class), any(Pageable.class)))
             .thenReturn(new PageImpl<>(List.of(umHorarioAcesso())));
-        when(atuacaoRepository.findByHorarioAcesso(anyInt())).thenReturn(umaListaHorariosAtuacao());
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
         var pageable = new PageRequest(0, 10, "horarioAcessoId", "asc");
 
@@ -66,33 +66,33 @@ public class HorarioAcessoServiceTest {
             .isEqualTo(new PageImpl<>(List.of(umHorarioAcessoResponse())));
 
         verify(repository, times(1)).findAll(any(Predicate.class), eq(pageable));
-        verify(atuacaoRepository, times(1)).findByHorarioAcesso(eq(1));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test
     public void getHistoricos_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHistoricos() {
-        when(historicoRepository.findByHorarioAcesso(anyInt(), any(Pageable.class)))
+        when(historicoRepository.findByHorarioAcessoId(anyInt(), any(Pageable.class)))
             .thenReturn(new PageImpl<>(List.of(umHorarioHistorico())));
-        when(atuacaoRepository.findByHorarioHistorico(anyInt())).thenReturn(umaListaHorariosAtuacao());
+        when(atuacaoRepository.findByHorarioHistoricoId(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
         var pageable = new PageRequest(0, 10, "horarioHistoricoId", "asc");
 
         assertThat(service.getHistoricos(pageable, 1))
             .isEqualTo(new PageImpl<>(List.of(umHorarioHistoricoResponse())));
         
-        verify(historicoRepository, times(1)).findByHorarioAcesso(eq(1), eq(pageable));
-        verify(atuacaoRepository, times(1)).findByHorarioHistorico(eq(1));
+        verify(historicoRepository, times(1)).findByHorarioAcessoId(eq(1), eq(pageable));
+        verify(atuacaoRepository, times(1)).findByHorarioHistoricoId(eq(1));
     }
 
     @Test
     public void getHorarioAcesso_deveRetornarHorarioAcessoResponse_aoBuscarHorarioAcesso() {
         when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        when(atuacaoRepository.findByHorarioAcesso(anyInt())).thenReturn(umaListaHorariosAtuacao());
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao());
 
         assertThat(service.getHorarioAcesso(1)).isEqualTo(umHorarioAcessoResponse());
 
         verify(repository, times(1)).findById(eq(1));
-        verify(atuacaoRepository, times(1)).findByHorarioAcesso(eq(1));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test

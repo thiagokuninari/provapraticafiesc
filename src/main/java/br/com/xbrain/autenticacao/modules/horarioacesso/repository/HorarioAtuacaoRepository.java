@@ -10,7 +10,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 public interface HorarioAtuacaoRepository extends CrudRepository<HorarioAtuacao, Integer>,
     QueryDslPredicateExecutor<HorarioAtuacao> {
 
-    List<HorarioAtuacao> findByHorarioAcesso(Integer horarioAcessoId);
+    List<HorarioAtuacao> findByHorarioAcessoId(Integer horarioAcessoId);
     
-    List<HorarioAtuacao> findByHorarioHistorico(Integer horarioHistoricoId);
+    List<HorarioAtuacao> findByHorarioHistoricoId(Integer horarioHistoricoId);
 }

@@ -40,15 +40,15 @@ public class HorarioAcessoService {
         var horariosAcesso = repository.findAll(filtros.toPredicate().build(), pageable)
             .map(HorarioAcessoResponse::of);
         horariosAcesso.getContent().forEach(horario -> horario.setHorariosAtuacao(
-            atuacaoRepository.findByHorarioAcesso(horario.getHorarioAcessoId())));
+            atuacaoRepository.findByHorarioAcessoId(horario.getHorarioAcessoId())));
         return horariosAcesso;
     }
 
     public Page<HorarioAcessoResponse> getHistoricos(PageRequest pageable, Integer horarioAcessoId) {
-        var horariosHistorico = historicoRepository.findByHorarioAcesso(horarioAcessoId, pageable)
+        var horariosHistorico = historicoRepository.findByHorarioAcessoId(horarioAcessoId, pageable)
             .map(HorarioAcessoResponse::of);
         horariosHistorico.getContent().forEach(historico -> historico.setHorariosAtuacao(
-            atuacaoRepository.findByHorarioHistorico(historico.getHorarioHistoricoId())));
+            atuacaoRepository.findByHorarioHistoricoId(historico.getHorarioHistoricoId())));
         return horariosHistorico;
     }
 
@@ -56,7 +56,7 @@ public class HorarioAcessoService {
         var horarioAcesso = HorarioAcessoResponse.of(repository.findById(id)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO));
         horarioAcesso.setHorariosAtuacao(atuacaoRepository
-            .findByHorarioAcesso(horarioAcesso.getHorarioAcessoId()));
+            .findByHorarioAcessoId(horarioAcesso.getHorarioAcessoId()));
         return horarioAcesso;
     }
 
@@ -88,7 +88,7 @@ public class HorarioAcessoService {
     }
 
     private void desreferenciaHorarioAtuacao(HorarioAcesso horarioAtuacao) {
-        var horariosAtuacao = atuacaoRepository.findByHorarioAcesso(horarioAtuacao.getId());
+        var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAtuacao.getId());
         horariosAtuacao.forEach(atuacao -> atuacao.setHorarioAcesso(null));
         horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
     }

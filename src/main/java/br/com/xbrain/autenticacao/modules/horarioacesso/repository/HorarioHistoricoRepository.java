@@ -10,5 +10,5 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 public interface HorarioHistoricoRepository extends PagingAndSortingRepository<HorarioHistorico, Integer>, 
     QueryDslPredicateExecutor<HorarioHistorico> {
 
-    Page<HorarioHistorico> findByHorarioAcesso(Integer horarioAcessoId, Pageable pageable);
+    Page<HorarioHistorico> findByHorarioAcessoId(Integer horarioAcessoId, Pageable pageable);
 }
