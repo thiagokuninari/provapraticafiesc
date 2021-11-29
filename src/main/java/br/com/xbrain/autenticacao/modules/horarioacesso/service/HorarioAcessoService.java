@@ -64,7 +64,7 @@ public class HorarioAcessoService {
         HorarioAcesso horarioAcesso = new HorarioAcesso();
 
         if (isNull(request.getId())) {
-            validaSite(request.getSiteId());
+            validarSite(request.getSiteId());
             horarioAcesso = HorarioAcesso.of(request);
         } else {
             horarioAcesso = repository.findById(request.getId())
@@ -94,7 +94,7 @@ public class HorarioAcessoService {
         horariosAtuacao.forEach(atuacao -> atuacaoRepository.save(atuacao));
     }
 
-    private void validaSite(Integer siteId) {
+    private void validarSite(Integer siteId) {
         var horarios = repository.findBySiteId(siteId);
         if (!horarios.isEmpty()) {
             throw new ValidacaoException("Site já possui horário de acesso cadastrado.");
