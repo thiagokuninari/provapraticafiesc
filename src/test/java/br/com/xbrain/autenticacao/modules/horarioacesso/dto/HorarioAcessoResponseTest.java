@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.dto;
 import java.util.List;
 import org.junit.Test;
 
-import static br.com.xbrain.autenticacao.modules.horarioacesso.util.HorarioHelpers.*;
+import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HorarioAcessoResponseTest {

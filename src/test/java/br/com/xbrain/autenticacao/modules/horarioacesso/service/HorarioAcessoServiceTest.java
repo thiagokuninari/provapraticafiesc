@@ -29,7 +29,7 @@ import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static br.com.xbrain.autenticacao.modules.horarioacesso.util.HorarioHelpers.*;
+import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -166,5 +166,19 @@ public class HorarioAcessoServiceTest {
             .withMessage("Horário de acesso não encontrado.");
 
         verify(repository, times(1)).findById(eq(1));
+    }
+
+    @Test
+    public void save_deveRetornarException_casoSiteJaPossuiHorarioAcesso() {
+        when(repository.findBySiteId(anyInt())).thenReturn(List.of(umHorarioAcesso()));
+
+        var request = umHorarioAcessoRequest();
+        request.setId(null);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(request))
+            .withMessage("Site já possui horário de acesso cadastrado.");
+
+        verify(repository, times(1)).findBySiteId(eq(100));
     }
 }

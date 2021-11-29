@@ -22,7 +22,7 @@ public class HorarioAcesso {
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID", nullable = false)
+    @JoinColumn(name = "FK_SITE", referencedColumnName = "ID", nullable = false, unique = true)
     private Site site;
 
     @Column(name = "DATA_ALTERACAO")

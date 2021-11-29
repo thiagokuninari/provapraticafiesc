@@ -1,4 +1,4 @@
-package br.com.xbrain.autenticacao.modules.horarioacesso.util;
+package br.com.xbrain.autenticacao.modules.horarioacesso.helper;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,7 +13,7 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 
-public class HorarioHelpers {
+public class HorarioHelper {
     public static HorarioAcesso umHorarioAcesso() {
         return HorarioAcesso.builder()
             .id(1)
