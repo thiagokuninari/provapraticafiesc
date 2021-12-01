@@ -32,7 +32,6 @@ public class RelatorioLoginLogoutRequest {
 
     public void validarDatas() {
         validarDataInicialPosteriorDataFinal(dataInicial, dataFinal);
-        validarPeriodoMaximo(dataInicial, dataFinal, PERIODO_TRINTA_DIAS);
         validarDataFinalPosteriorAAtual(dataFinal);
     }
 }
