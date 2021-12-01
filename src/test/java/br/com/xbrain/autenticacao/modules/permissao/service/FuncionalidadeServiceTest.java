@@ -66,7 +66,7 @@ public class FuncionalidadeServiceTest {
     @Test
     public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoMsoConsultor() {
         var usuario = Usuario.builder()
-                .id(100)
+                .id(101)
                 .cargo(umCargoMsoConsultor())
                 .departamento(new Departamento(21))
                 .nome("RENATO")
@@ -79,7 +79,7 @@ public class FuncionalidadeServiceTest {
     @Test
     public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoVendedorOperacao() {
         var usuario = Usuario.builder()
-            .id(100)
+            .id(101)
             .cargo(umCargoVendedorOperacao())
             .departamento(new Departamento(3))
             .nome("RENATO")
