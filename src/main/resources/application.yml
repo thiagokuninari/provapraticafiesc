@@ -6,12 +6,12 @@ server:
 
 spring:
   redis:
-    #    host: 127.0.0.1
-    #    port: 6379
-    host: 192.168.50.1
+    host: 127.0.0.1
     port: 6379
-    #    host: 192.168.50.1
-    #    port: 6379
+    #host: 192.168.50.1
+    #port: 6379
+    #host: 192.168.50.1
+    #port: 6379
 
     pool:
       max-active: 120
@@ -220,14 +220,14 @@ app-config:
 
   services:
     autenticacao:
-#       url: http://localhost:8096
-      url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
+       url: http://localhost:8096
+#      url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       # url: http://localhost:8094
     parceiros-online:
-      url: https://parceiros-dev.conexaoclarobrasil.com.br/
-#      url: http://localhost:8099
+#      url: https://parceiros-dev.conexaoclarobrasil.com.br/
+      url: http://localhost:8099
     vendas:
       #url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
