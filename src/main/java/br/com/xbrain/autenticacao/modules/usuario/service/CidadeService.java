@@ -45,6 +45,11 @@ public class CidadeService {
                 predicateCidadesPermitidas.get()));
     }
 
+    public List<UsuarioCidadeDto> getCidadesByRegionalAndUf(Integer regionalId, Integer ufId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findByRegionalIdAndUfId(regionalId, ufId));
+    }
+
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
         return UsuarioCidadeDto.of(
             cidadeRepository.findAllBySubClusterId(
@@ -148,10 +153,5 @@ public class CidadeService {
             .stream()
             .map(CidadeResponse::of)
             .collect(Collectors.toList());
-    }
-
-    public List<UsuarioCidadeDto> getAllByUfAndRegional(Integer uf, Integer regional) {
-        return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByUfIdRegionalId(uf, regional));
     }
 }

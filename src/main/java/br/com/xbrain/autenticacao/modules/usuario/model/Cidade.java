@@ -1,10 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+
+import org.hibernate.envers.NotAudited;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
@@ -63,6 +66,12 @@ public class Cidade {
     @Column(name = "CODIGO_CIDADE_DBM")
     private Integer codigoCidadeDbm;
 
+    @JsonIgnore
+    @NotAudited
+    @JoinColumn(name = "FK_REGIONAL", referencedColumnName = "ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Regional regional;
+
     public Cidade() {
     }
 
@@ -77,12 +86,12 @@ public class Cidade {
 
     @JsonIgnore
     public Integer getRegionalId() {
-        return subCluster.getCluster().getGrupo().getRegional().getId();
+        return this.getRegional().getId();
     }
 
     @JsonIgnore
     public String getRegionalNome() {
-        return subCluster.getCluster().getGrupo().getRegional().getNome();
+        return this.getRegional().getNome();
     }
 
     @JsonIgnore

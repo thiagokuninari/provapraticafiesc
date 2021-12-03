@@ -49,9 +49,9 @@ public class CidadeController {
     }
 
     @GetMapping("regional/{regionalId}/uf/{ufId}")
-    public List<UsuarioCidadeDto> getByIdUfAndIdRegional(@PathVariable("regionalId") int regionalId, 
-                                                         @PathVariable("ufId") int ufId) {
-        return service.getAllByUfAndRegional(ufId, regionalId);
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable("regionalId") Integer regionalId, 
+                                                         @PathVariable("ufId") Integer ufId) {
+        return service.getCidadesByRegionalAndUf(regionalId, ufId);
     }
 
     @GetMapping("grupo/{grupoId}")
