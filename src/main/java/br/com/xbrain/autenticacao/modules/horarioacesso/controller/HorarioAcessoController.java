@@ -43,7 +43,7 @@ public class HorarioAcessoController {
     }
 
     @GetMapping("status/{siteId}")
-    public boolean testFluxo(@PathVariable("siteId") int siteId) {
+    public boolean getHorarioAcessoStatusByIdSite(@PathVariable("siteId") int siteId) {
         return service.getStatus(siteId);
     }
 }
