@@ -36,7 +36,8 @@ public enum CodigoFuncionalidade {
     FDR_GERENCIAR_LEAD("Gerenciar Lead"),
     MLG_5018("Gerenciar Distribuição Mailing Segmentação"),
     CTR_2044("Visualizar todos os Sites"),
-    INT_7007("Resgatar tratativas para motiva");
+    INT_7007("Resgatar tratativas para motiva"),
+    AUT_20010("Adicionar novo usuário");
 
     @Getter
     private String descricao;

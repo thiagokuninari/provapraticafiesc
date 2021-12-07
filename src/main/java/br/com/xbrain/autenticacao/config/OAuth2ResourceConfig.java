@@ -55,6 +55,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/situacoes/timer")
             .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
+            .antMatchers(HttpMethod.POST, "/api/usuarios/gerencia").hasRole(CodigoFuncionalidade.AUT_20010.name())
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())

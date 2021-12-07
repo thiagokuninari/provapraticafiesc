@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.Usuarios;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,6 +99,23 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveDarUnauthorized_quandoUsuarioNaoTiverPermissao() {
+        mvc.perform(post(API_URI)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarForbidden_quandoNaoTiverPermissaoParaGerenciaDeUsuario() {
+        mvc.perform(post(API_URI)
+            .header("Authorization", getAccessToken(mvc, HELP_DESK))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
     }
 
     @Test
