@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface HorarioAcessoRepository extends PagingAndSortingRepository<HorarioAcesso, Integer>,
@@ -12,5 +11,5 @@ public interface HorarioAcessoRepository extends PagingAndSortingRepository<Hora
 
     Optional<HorarioAcesso> findById(Integer id);
 
-    List<HorarioAcesso> findBySiteId(Integer siteId);
+    Optional<HorarioAcesso> findBySiteId(Integer siteId);
 }

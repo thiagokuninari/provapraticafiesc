@@ -36,4 +36,14 @@ public class HorarioAcessoController {
     public HorarioAcessoResponse save(@Validated @RequestBody HorarioAcessoRequest request) {
         return HorarioAcessoResponse.of(service.save(request));
     }
+
+    @GetMapping("status")
+    public boolean getHorarioAcessoStatus() {
+        return service.getStatus();
+    }
+
+    @GetMapping("status/{siteId}")
+    public boolean testFluxo(@PathVariable("siteId") int siteId) {
+        return service.getStatus(siteId);
+    }
 }

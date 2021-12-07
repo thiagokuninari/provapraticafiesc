@@ -3,14 +3,21 @@ package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
+import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +30,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +62,8 @@ public class HorarioAcessoServiceTest {
     private HorarioHistoricoRepository historicoRepository;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private SiteService siteService;
 
     @Test
     public void getHorariosAcesso_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHorariosAcesso() {
@@ -170,7 +181,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void save_deveRetornarException_casoSiteJaPossuiHorarioAcesso() {
-        when(repository.findBySiteId(anyInt())).thenReturn(List.of(umHorarioAcesso()));
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
 
         var request = umHorarioAcessoRequest();
         request.setId(null);
@@ -180,5 +191,136 @@ public class HorarioAcessoServiceTest {
             .withMessage("Site já possui horário de acesso cadastrado.");
 
         verify(repository, times(1)).findBySiteId(eq(100));
+    }
+
+    private Usuario umOperadorTelevendas() {
+        return Usuario.builder()
+            .cargo(Cargo.builder().codigo(CodigoCargo.OPERACAO_TELEVENDAS).build())
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
+    @Test
+    public void getStatus_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(siteService.getSitesPorPermissao(any(Usuario.class)))
+            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
+        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .horarioInicio(LocalTime.of(9,0))
+            .horarioFim(LocalTime.of(18,0))
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus()).isTrue();
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).findById(eq(100));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(siteService.getSitesPorPermissao(any(Usuario.class)))
+            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
+        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .horarioInicio(LocalTime.of(9,0))
+            .horarioFim(LocalTime.of(9,1))
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus()).isFalse();
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).findById(eq(100));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_deveRetornarFalse_quandoHorarioAtualNaoSeEncaixarEmNenhumDiaPermitido() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(siteService.getSitesPorPermissao(any(Usuario.class)))
+            .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
+        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .horarioAcesso(umHorarioAcesso())
+            .diaSemana(EDiaSemana.DOMINGO)
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus()).isFalse();
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).findById(eq(100));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_comParametroSiteId_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .horarioInicio(LocalTime.of(9,0))
+            .horarioFim(LocalTime.of(18,0))
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus(100)).isTrue();
+
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .horarioInicio(LocalTime.of(9,0))
+            .horarioFim(LocalTime.of(9,1))
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus(100)).isFalse();
+
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+    }
+
+    @Test
+    public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualNaoSeEncaixarEmNenhumDiaPermitido() {
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        
+        var horarioAtuacao = HorarioAtuacao.builder()
+            .horarioAcesso(umHorarioAcesso())
+            .diaSemana(EDiaSemana.DOMINGO)
+            .build();
+        when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(List.of(horarioAtuacao));
+
+        assertThat(service.getStatus(100)).isFalse();
+
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 }
