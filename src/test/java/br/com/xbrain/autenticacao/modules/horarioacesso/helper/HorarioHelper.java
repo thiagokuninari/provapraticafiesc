@@ -1,9 +1,5 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.helper;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
@@ -12,6 +8,15 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
 
 public class HorarioHelper {
     public static HorarioAcesso umHorarioAcesso() {
@@ -130,5 +135,12 @@ public class HorarioHelper {
                 .horarioInicio("09:00")
                 .horarioFim("15:00")
                 .build());
+    }
+
+    public static Usuario umOperadorTelevendas() {
+        return Usuario.builder()
+            .cargo(Cargo.builder().codigo(CodigoCargo.OPERACAO_TELEVENDAS).build())
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
     }
 }

@@ -15,9 +15,6 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuaca
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.types.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +30,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -191,13 +186,6 @@ public class HorarioAcessoServiceTest {
             .withMessage("Site já possui horário de acesso cadastrado.");
 
         verify(repository, times(1)).findBySiteId(eq(100));
-    }
-
-    private Usuario umOperadorTelevendas() {
-        return Usuario.builder()
-            .cargo(Cargo.builder().codigo(CodigoCargo.OPERACAO_TELEVENDAS).build())
-            .canais(Set.of(ECanal.ATIVO_PROPRIO))
-            .build();
     }
 
     @Test
