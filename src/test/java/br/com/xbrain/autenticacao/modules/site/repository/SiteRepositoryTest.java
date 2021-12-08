@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.site.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
@@ -139,9 +141,9 @@ public class SiteRepositoryTest {
     }
 
     @Test
-    public void findSiteCidadeDbmTop1ByPredicate_optionalVazio_seBuscarPorCidadeUfENaoHouverResultados() {
+    public void findSiteCidadeDbmTop1ByPredicate_optionalVazio_seBuscarPorCodigoCidadeDbmENaoHouverResultados() {
         var site = repository.findSiteCidadeDbmTop1ByPredicate(
-            new CidadePredicate().comCodigoCidadeDbm(1).build()
+            new CidadeDbmPredicate().comCodigoCidadeDbm(1).build()
                 .and(new SitePredicate().todosSitesAtivos().build())
         );
 
@@ -150,9 +152,9 @@ public class SiteRepositoryTest {
     }
 
     @Test
-    public void findSiteCidadeDbmTop1ByPredicate_optionalSiteCidade_seBuscarPorCidadeUfEHouverResultados() {
+    public void findSiteCidadeDbmTop1ByPredicate_optionalSiteCidade_seBuscarPorCodigoCidadeDbmEHouverResultados() {
         var site = repository.findSiteCidadeDbmTop1ByPredicate(
-            new CidadePredicate().comCodigoCidadeDbm(3).build()
+            new CidadeDbmPredicate().comCodigoCidadeDbm(3).build()
                 .and(new SitePredicate().todosSitesAtivos().build())
         );
 
@@ -161,6 +163,40 @@ public class SiteRepositoryTest {
         assertThat(site.get())
             .extracting("siteId", "siteNome", "codigoCidadeDbm", "cidadeId", "cidadeNome", "ufId", "ufNome")
             .containsExactly(100, "São Paulo", 3, 5578, "LONDRINA", 1, "PR");
+    }
+
+    @Test
+    public void findSiteDddTop1ByPredicate_optionalVazio_seBuscarPorDddENaoHouverResultados() {
+        var site = repository.findSiteDddTop1ByPredicate(
+            new CidadeDbmPredicate().comDdd(1).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
+
+        assertThat(site)
+            .isEmpty();
+    }
+
+    @Test
+    public void findSiteDddTop1ByPredicate_optionalSiteCidade_seBuscarPorDddEHouverResultados() {
+        var atual = repository.findSiteDddTop1ByPredicate(
+            new CidadeDbmPredicate().comDdd(43).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
+        var esperado = SiteCidadeResponse
+            .builder()
+            .siteId(100)
+            .siteNome("São Paulo")
+            .ddd(43)
+            .cidadeId(5578)
+            .cidadeNome("LONDRINA")
+            .ufId(1)
+            .ufNome("PR")
+            .build();
+
+        assertThat(atual)
+            .isNotEmpty();
+        assertThat(atual.get())
+            .isEqualToComparingFieldByField(esperado);
     }
 
     private Predicate umSitePredicate(ESituacao situacao, List<Integer> cidadeIds, Integer id) {
