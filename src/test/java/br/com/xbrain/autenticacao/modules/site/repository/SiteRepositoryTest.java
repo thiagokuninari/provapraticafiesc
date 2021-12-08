@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
@@ -114,54 +115,52 @@ public class SiteRepositoryTest {
 
     @Test
     public void findSiteCidadeTop1ByPredicate_optionalVazio_seBuscarPorCodigoCidadeDbmENaoHouverResultados() {
-        assertThat(repository.findSiteCidadeTop1ByPredicate(
-            new SitePredicate()
-                .comCidade("CASCAVEL")
-                .comUf("PR")
-                .todosSitesAtivos()
-                .build()))
+        var site = repository.findSiteCidadeTop1ByPredicate(
+            new CidadePredicate().comNome("CASCAVEL").comUf("PR").build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
+
+        assertThat(site)
             .isEmpty();
     }
 
     @Test
     public void findSiteCidadeTop1ByPredicate_optionalSiteCidade_seBuscarPorCodigoCidadeDbmEHouverResultados() {
         var site = repository.findSiteCidadeTop1ByPredicate(
-            new SitePredicate()
-                .comCidade("LONDRINA")
-                .comUf("PR")
-                .todosSitesAtivos()
-                .build());
+            new CidadePredicate().comNome("LONDRINA").comUf("PR").build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
 
         assertThat(site)
             .isNotEmpty();
         assertThat(site.get())
-            .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
-            .containsExactly(100, "São Paulo", 5578, "LONDRINA", 1, "PR");
+            .extracting("siteId", "siteNome", "codigoCidadeDbm", "cidadeId", "cidadeNome", "ufId", "ufNome")
+            .containsExactly(100, "São Paulo", null, 5578, "LONDRINA", 1, "PR");
     }
 
     @Test
-    public void findSiteCidadeTop1ByPredicate_optionalVazio_seBuscarPorCidadeUfENaoHouverResultados() {
-        assertThat(repository.findSiteCidadeTop1ByPredicate(
-            new SitePredicate()
-                .comCodigoCidadeDbm(1)
-                .todosSitesAtivos()
-                .build()))
+    public void findSiteCidadeDbmTop1ByPredicate_optionalVazio_seBuscarPorCidadeUfENaoHouverResultados() {
+        var site = repository.findSiteCidadeDbmTop1ByPredicate(
+            new CidadePredicate().comCodigoCidadeDbm(1).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
+
+        assertThat(site)
             .isEmpty();
     }
 
     @Test
-    public void findSiteCidadeTop1ByPredicate_optionalSiteCidade_seBuscarPorCidadeUfEHouverResultados() {
-        var site = repository.findSiteCidadeTop1ByPredicate(
-            new SitePredicate()
-                .comCodigoCidadeDbm(3)
-                .todosSitesAtivos()
-                .build());
+    public void findSiteCidadeDbmTop1ByPredicate_optionalSiteCidade_seBuscarPorCidadeUfEHouverResultados() {
+        var site = repository.findSiteCidadeDbmTop1ByPredicate(
+            new CidadePredicate().comCodigoCidadeDbm(3).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        );
 
         assertThat(site)
             .isNotEmpty();
         assertThat(site.get())
-            .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
-            .containsExactly(100, "São Paulo", 5578, "LONDRINA", 1, "PR");
+            .extracting("siteId", "siteNome", "codigoCidadeDbm", "cidadeId", "cidadeNome", "ufId", "ufNome")
+            .containsExactly(100, "São Paulo", 3, 5578, "LONDRINA", 1, "PR");
     }
 
     private Predicate umSitePredicate(ESituacao situacao, List<Integer> cidadeIds, Integer id) {

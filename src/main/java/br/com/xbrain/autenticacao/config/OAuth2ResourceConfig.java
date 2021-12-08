@@ -54,6 +54,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 CodigoFuncionalidade.MLG_5018.name())
             .antMatchers("/api/usuarios/situacoes/timer")
             .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
+            .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())
@@ -70,7 +71,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .hasRole(CodigoFuncionalidade.CTR_2034.name())
             .antMatchers("/api/usuarios/distribuicao/agendamentos/**").hasRole(CodigoFuncionalidade.MLG_5013.name())
             .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
-            .antMatchers("/api/relatorio-login-logout/entre-datas").hasRole(CodigoFuncionalidade.INT_7007.name())
+            .antMatchers("/api/relatorio-login-logout/entre-datas").authenticated()
             .antMatchers("/api/relatorio-login-logout/**").hasRole(CodigoFuncionalidade.AUT_2100.name())
             .antMatchers(HttpMethod.GET, "/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name(),
                 CodigoFuncionalidade.APPLICATION.name())

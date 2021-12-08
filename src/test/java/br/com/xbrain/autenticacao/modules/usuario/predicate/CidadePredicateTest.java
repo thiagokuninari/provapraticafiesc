@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
 
-import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidadeDbm.cidadeDbm;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CidadePredicateTest {
@@ -17,6 +17,6 @@ public class CidadePredicateTest {
     @Test
     public void comCodigoCidadeDbm_cidadePredicate_seCodigoCidadeDbmNaoNula() {
         assertThat(new CidadePredicate().comCodigoCidadeDbm(1).build())
-            .isEqualTo(new BooleanBuilder(cidade.codigoCidadeDbm.eq(1)));
+            .isEqualTo(new BooleanBuilder(cidadeDbm.codigoCidadeDbm.eq(1)));
     }
 }

@@ -177,6 +177,11 @@ public class UsuarioController {
         return usuarioService.findAllExecutivosOperacaoDepartamentoComercial(cargo);
     }
 
+    @GetMapping("responsaveis-ddd")
+    public List<UsuarioAutoComplete> findAllResponsaveisDdd(CodigoCargo cargo) {
+        return usuarioService.findAllResponsaveisDdd(cargo);
+    }
+
     @PostMapping("/vincula/hierarquia")
     public void vincularUsuariosComSuperior(@RequestParam List<Integer> idsUsuarios,
                                             @RequestParam Integer idUsuarioSuperior) {

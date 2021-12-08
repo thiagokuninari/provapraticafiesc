@@ -57,7 +57,7 @@ public class SitePredicateTest {
     @Test
     public void comCodigoCidadeDbm_sitePredicate_seCodigoCidadeDbmNaoNula() {
         assertThat(new SitePredicate().comCodigoCidadeDbm(1).build())
-            .isEqualTo(new BooleanBuilder(site.cidades.any().codigoCidadeDbm.eq(1)));
+            .isEqualTo(new BooleanBuilder(site.cidades.any().cidadesDbm.any().codigoCidadeDbm.eq(1)));
     }
 
     @Test

@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +36,15 @@ public class UsuarioRepositoryTest {
     public void getSubclustersUsuario_deveRetornarOsSubclusters_somenteAtivosSemDuplicar() {
 
         assertThat(repository.getSubclustersUsuario(100))
-                .extracting("id", "nome")
-                .containsExactly(
-                        tuple(26600, "CHAPECÓ"),
-                        tuple(189, "LONDRINA"));
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(26600, "CHAPECÓ"),
+                tuple(189, "LONDRINA"));
 
         assertThat(repository.getSubclustersUsuario(101))
-                .extracting("id", "nome")
-                .containsExactly(
-                        tuple(164, "BRI - LINS - SP"));
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(164, "BRI - LINS - SP"));
     }
 
     @Test
@@ -70,6 +71,26 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
+    public void findAllResponsaveisDdd_deveRetornarResponsaveis_quandoFeitaRequisicao() {
+        assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
+            .hasSize(4)
+            .extracting("value", "text")
+            .containsExactly(
+                Assertions.tuple(125, "ASSISTENTE OP"),
+                Assertions.tuple(107, "EXECUTIVO 1"),
+                Assertions.tuple(108, "EXECUTIVO 2"),
+                Assertions.tuple(124, "EXECUTIVO OP")
+            );
+    }
+
+    private UsuarioPredicate getUsuarioPredicate() {
+        return new UsuarioPredicate()
+            .comDepartamento(List.of(3))
+            .comNivel(List.of(1))
+            .comCargo(List.of(2, 5));
+    }
+
+    @Test
     public void findAllExecutivosDosIdsCoordenador_deveRetornarListaVazia_quandoExecutivoNaoPertencerAoCoordenador() {
         assertThat(repository.findAllExecutivosDosIdsCoordenadorGerente(List.of(100, 101, 102), 109))
             .hasSize(0)
@@ -86,7 +107,8 @@ public class UsuarioRepositoryTest {
                 tuple(110, "EXECUTIVOHUNTER1@TESTE.COM"),
                 tuple(111, "EXECUTIVOHUNTER2@TESTE.COM"),
                 tuple(117, "EXECUTIVOHUNTER1@TESTE.COM"),
-                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"));
+                tuple(118, "EXECUTIVOHUNTER2@TESTE.COM"),
+                tuple(124, "EXECUTIVOOP@TESTE.COM"));
     }
 
     @Test
@@ -113,11 +135,12 @@ public class UsuarioRepositoryTest {
     @Test
     public void findUsuariosByCodigoCargo_deveRetornarDoisUsuariosAtivos_peloCodigoDoCargo() {
         assertThat(repository.findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO))
-            .hasSize(2)
+            .hasSize(3)
             .extracting("id", "nome", "email", "situacao")
             .containsExactly(
                 tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
-                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A));
+                tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A),
+                tuple(124, "EXECUTIVO OP", "EXECUTIVOOP@TESTE.COM", A));
     }
 
     @Test

@@ -382,7 +382,7 @@ public class SiteService {
     }
 
     public SiteCidadeResponse buscarSiteCidadePorCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return siteRepository.findSiteCidadeTop1ByPredicate(new CidadePredicate().comCodigoCidadeDbm(codigoCidadeDbm).build()
+        return siteRepository.findSiteCidadeDbmTop1ByPredicate(new CidadePredicate().comCodigoCidadeDbm(codigoCidadeDbm).build()
                 .and(new SitePredicate().todosSitesAtivos().build()))
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }

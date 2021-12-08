@@ -8,6 +8,7 @@ import com.querydsl.jpa.JPAExpressions;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QCidadeDbm.cidadeDbm;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
@@ -57,7 +58,7 @@ public class CidadePredicate {
 
     public CidadePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
         Optional.ofNullable(codigoCidadeDbm)
-            .map(cidade.codigoCidadeDbm::eq)
+            .map(cidadeDbm.codigoCidadeDbm::eq)
             .ifPresent(builder::and);
 
         return this;
