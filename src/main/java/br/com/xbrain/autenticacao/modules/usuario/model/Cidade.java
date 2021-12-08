@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import org.hibernate.envers.NotAudited;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
@@ -66,8 +65,6 @@ public class Cidade {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "cidade", fetch = FetchType.LAZY)
     private List<CidadeDbm> cidadesDbm;
 
-    @JsonIgnore
-    @NotAudited
     @JoinColumn(name = "FK_REGIONAL", referencedColumnName = "ID")
     @ManyToOne(fetch = FetchType.LAZY)
     private Regional regional;

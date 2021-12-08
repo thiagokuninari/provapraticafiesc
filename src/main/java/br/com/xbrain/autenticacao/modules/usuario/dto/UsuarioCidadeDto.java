@@ -15,12 +15,8 @@ public class UsuarioCidadeDto {
 
     private Integer idCidade;
     private String nomeCidade;
-    private Integer idSubCluster;
-    private String nomeSubCluster;
-    private Integer idCluster;
-    private String nomeCluster;
-    private Integer idGrupo;
-    private String nomeGrupo;
+    private Integer idUf;
+    private String nomeUf;
     private Integer idRegional;
     private String nomeRegional;
 
@@ -28,12 +24,8 @@ public class UsuarioCidadeDto {
         UsuarioCidadeDto dto = new UsuarioCidadeDto();
         dto.setIdCidade(cidade.getId());
         dto.setNomeCidade(cidade.getNome());
-        dto.setIdSubCluster(cidade.getSubClusterId());
-        dto.setNomeSubCluster(cidade.getSubClusterNome());
-        dto.setIdCluster(cidade.getClusterId());
-        dto.setNomeCluster(cidade.getClusterNome());
-        dto.setIdGrupo(cidade.getGrupoId());
-        dto.setNomeGrupo(cidade.getGrupoNome());
+        dto.setIdUf(cidade.getUf().getId());
+        dto.setNomeUf(cidade.getUf().getNome());
         dto.setIdRegional(cidade.getRegionalId());
         dto.setNomeRegional(cidade.getRegionalNome());
         return dto;
