@@ -43,14 +43,14 @@ public class CidadeController {
         return CidadeSubClusterResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
-    @GetMapping("regional/{regionalId}")
-    public List<UsuarioCidadeDto> getByIdRegional(@PathVariable("regionalId") int regionalId) {
+    @GetMapping(params = "regionalId")
+    public List<UsuarioCidadeDto> getByIdRegional(@RequestParam Integer regionalId) {
         return service.getAllByRegionalId(regionalId);
     }
 
-    @GetMapping("regional/{regionalId}/uf/{ufId}")
-    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable("regionalId") Integer regionalId, 
-                                                         @PathVariable("ufId") Integer ufId) {
+    @GetMapping(params = {"regionalId","ufId"})
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@RequestParam Integer regionalId, 
+                                                         @RequestParam Integer ufId) {
         return service.getCidadesByRegionalAndUf(regionalId, ufId);
     }
 
