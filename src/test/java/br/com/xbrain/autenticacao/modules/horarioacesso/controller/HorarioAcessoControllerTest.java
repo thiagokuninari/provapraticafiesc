@@ -31,6 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +59,7 @@ public class HorarioAcessoControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
+    
     @MockBean
     private HorarioAcessoService service;
     @MockBean
@@ -70,6 +70,8 @@ public class HorarioAcessoControllerTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private SiteService siteService;
+    @MockBean
+    private DataHoraAtual dataHoraAtual;
 
     @Test
     public void getHorariosAcesso_unauthorized_quandoNaoPassarToken() throws Exception {
@@ -174,6 +176,7 @@ public class HorarioAcessoControllerTest {
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
@@ -196,6 +199,7 @@ public class HorarioAcessoControllerTest {
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
@@ -233,6 +237,7 @@ public class HorarioAcessoControllerTest {
     @Test
     public void getStatusComParametroSiteId_deveRetornarTrue_seHorarioAtualEstiverDentroDoPermitido() throws Exception {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
@@ -251,6 +256,7 @@ public class HorarioAcessoControllerTest {
     @Test
     public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoEstiverDentroDoPermitido() throws Exception {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
