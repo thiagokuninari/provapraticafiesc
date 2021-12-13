@@ -81,6 +81,10 @@ public class CidadeService {
         return cidadeRepository.findCidadeByUfId(idUf, new Sort("nome"));
     }
 
+    public List<Cidade> getAllCidadeByRegionalAndUf(Integer idRegional, Integer idUf) {
+        return cidadeRepository.findByRegionalIdAndUfId(idRegional, idUf);
+    }
+
     public List<Cidade> getAllBySubCluster(Integer idSubCluster) {
         return cidadeRepository.findBySubCluster(idSubCluster);
     }

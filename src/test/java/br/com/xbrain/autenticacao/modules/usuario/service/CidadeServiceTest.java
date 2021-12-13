@@ -1,7 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Regional;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +18,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+import com.querydsl.core.types.Predicate;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -27,6 +38,8 @@ public class CidadeServiceTest {
     private CidadeService service;
     @MockBean
     private AutenticacaoService autenticacaoService;
+    @MockBean
+    private CidadeRepository cidadeRepository;
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
@@ -74,5 +87,36 @@ public class CidadeServiceTest {
         assertThat(service.findFirstByUfNomeAndCidadeNome("SP", "SAO PAULO"))
             .extracting("id", "nome")
             .containsExactly(6578, "SAO PAULO");
+    }
+
+    @Test
+    public void getAllCidadeByRegionalAndUf_deveRetornarCidades_quandoExistir() {
+        when(cidadeRepository.findByRegionalIdAndUfId(anyInt(), anyInt()))
+            .thenReturn(List.of(Cidade.builder().id(100).nome("LONDRINA")
+                .uf(Uf.builder().id(20000).nome("PARANA").build())
+                .regional(Regional.builder().id(100).nome("RPS").build()).build()));
+        assertThat(service.getAllCidadeByRegionalAndUf(100, 20000))
+            .extracting("id", "nome", "uf.nome", "regional.nome")
+            .contains(tuple(100, "LONDRINA", "PARANA", "RPS"));
+    }
+
+    @Test
+    public void getAllByRegionalId_deveRetornarCidades_quandoExistir() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1).build());
+        when(cidadeRepository.findAllByRegionalId(anyInt(), any(Predicate.class)))
+            .thenReturn(List.of(
+                Cidade.builder().id(100).nome("LONDRINA")
+                    .uf(Uf.builder().id(20000).nome("PARANA").build())
+                    .regional(Regional.builder().id(100).nome("RPS").build()).build(),
+                Cidade.builder().id(101).nome("BLUMENAU")
+                    .uf(Uf.builder().id(30000).nome("SANTA CATARINA").build())
+                    .regional(Regional.builder().id(100).nome("RPS").build()).build()
+            ));
+        assertThat(service.getAllByRegionalId(100))
+            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
+            .contains(
+                tuple(100, "LONDRINA", 20000, "PARANA", 100, "RPS"),
+                tuple(101, "BLUMENAU", 30000, "SANTA CATARINA", 100, "RPS"));
     }
 }

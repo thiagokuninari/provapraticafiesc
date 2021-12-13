@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Objects.nonNull;
+
 @RestController
 @RequestMapping(value = "api/cidades")
 public class CidadeController {
@@ -18,11 +20,14 @@ public class CidadeController {
     private CidadeService service;
 
     @GetMapping()
-    public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
-        if (idUf != null) {
+    public Iterable<Cidade> get(Integer idUf, Integer idRegional, Integer idSubCluster) {
+        if (nonNull(idUf)) {
+            if (nonNull(idRegional)) {
+                return service.getAllCidadeByRegionalAndUf(idRegional, idUf);
+            }
             return service.getAllCidadeByUf(idUf);
         }
-        if (idSubCluster != null) {
+        if (nonNull(idSubCluster)) {
             return service.getAllBySubCluster(idSubCluster);
         }
         return Collections.emptyList();
@@ -43,14 +48,14 @@ public class CidadeController {
         return CidadeSubClusterResponse.parse(service.findByUfNomeAndCidadeNome(uf, cidade));
     }
 
-    @GetMapping(params = "regionalId")
-    public List<UsuarioCidadeDto> getByIdRegional(@RequestParam Integer regionalId) {
+    @GetMapping("regional/{regionalId}")
+    public List<UsuarioCidadeDto> getByIdRegional(@PathVariable Integer regionalId) {
         return service.getAllByRegionalId(regionalId);
     }
 
-    @GetMapping(params = {"regionalId","ufId"})
-    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@RequestParam Integer regionalId, 
-                                                         @RequestParam Integer ufId) {
+    @GetMapping("regional/{regionalId}/uf/{ufId}")
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
+                                                         @PathVariable Integer ufId) {
         return service.getCidadesByRegionalAndUf(regionalId, ufId);
     }
 
