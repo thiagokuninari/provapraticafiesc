@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
@@ -22,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +46,8 @@ public class HorarioAcessoService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private SiteService siteService;
+    @Autowired
+    private DataHoraAtual dataHoraAtual;
 
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
         var horariosAcesso = repository.findAll(filtros.toPredicate().build(), pageable)
@@ -134,7 +136,7 @@ public class HorarioAcessoService {
             var horarioAcesso = repository.findBySiteId(site.getId())
                 .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
             var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
-            var horarioAtual = LocalDateTime.now();
+            var horarioAtual = dataHoraAtual.getDataHora();
             var horario = horariosAtuacao.stream().filter(horarioAtuacao -> 
                 horarioAtuacao.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
                 .findAny().orElse(null);
@@ -154,7 +156,7 @@ public class HorarioAcessoService {
         var horarioAcesso = repository.findBySiteId(siteId)
             .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO);
         var horariosAtuacao = atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId());
-        var horarioAtual = LocalDateTime.now();
+        var horarioAtual = dataHoraAtual.getDataHora();
         var horario = horariosAtuacao.stream().filter(horarioAtuacao -> 
             horarioAtuacao.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
             .findAny().orElse(null);

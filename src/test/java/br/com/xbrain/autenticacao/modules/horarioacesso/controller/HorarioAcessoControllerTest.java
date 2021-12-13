@@ -178,7 +178,7 @@ public class HorarioAcessoControllerTest {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
+            .diaSemana(EDiaSemana.SEGUNDA)
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(18,0))
             .build();
@@ -201,7 +201,7 @@ public class HorarioAcessoControllerTest {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
+            .diaSemana(EDiaSemana.SEGUNDA)
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(9,1))
             .build();
@@ -222,6 +222,7 @@ public class HorarioAcessoControllerTest {
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.DOMINGO)
             .build();
@@ -239,7 +240,7 @@ public class HorarioAcessoControllerTest {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
+            .diaSemana(EDiaSemana.SEGUNDA)
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(18,0))
             .build();
@@ -258,7 +259,7 @@ public class HorarioAcessoControllerTest {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
+            .diaSemana(EDiaSemana.SEGUNDA)
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(9,1))
             .build();
@@ -275,6 +276,7 @@ public class HorarioAcessoControllerTest {
     @Test
     public void getStatusComParametroSiteId_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() throws Exception {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.DOMINGO)
             .build();
