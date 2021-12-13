@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoFiltros;
 import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
 import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAcesso;
@@ -59,6 +60,8 @@ public class HorarioAcessoServiceTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private SiteService siteService;
+    @MockBean
+    private DataHoraAtual dataHoraAtual;
 
     @Test
     public void getHorariosAcesso_deveRetornarListaDeHorarioAcessoResponse_aoBuscarHorariosAcesso() {
@@ -196,9 +199,9 @@ public class HorarioAcessoServiceTest {
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(18,0))
             .build();
@@ -221,9 +224,9 @@ public class HorarioAcessoServiceTest {
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(9,1))
             .build();
@@ -265,7 +268,7 @@ public class HorarioAcessoServiceTest {
     @Test
     public void getStatus_comParametroSiteId_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
             .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
             .horarioInicio(LocalTime.of(9,0))
@@ -282,9 +285,9 @@ public class HorarioAcessoServiceTest {
     @Test
     public void getStatus_comParametroSiteId_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
-        
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
-            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .diaSemana(EDiaSemana.valueOf(dataHoraAtual.getDataHora()))
             .horarioInicio(LocalTime.of(9,0))
             .horarioFim(LocalTime.of(9,1))
             .build();
