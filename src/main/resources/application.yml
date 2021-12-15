@@ -67,7 +67,7 @@ spring:
 app-config:
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-10-11T00:00:00.000
-    email-usuario-viabilidade: LUIZ@XBRAIN.COM.BR,INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR
+    email-usuario-viabilidade: LUIZ@XBRAIN.COM.BR,INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
 
   upload-async: true
   nome: Colaboradores
