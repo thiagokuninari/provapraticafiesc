@@ -230,8 +230,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findByRegionalIdAndUfId(Integer regionalId, Integer ufId) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
+            .selectFrom(cidade)
             .leftJoin(cidade.uf).fetchJoin()
             .leftJoin(cidade.regional, regional).fetchJoin()
             .where(cidade.regional.id.eq(regionalId).and(cidade.uf.id.eq(ufId)))

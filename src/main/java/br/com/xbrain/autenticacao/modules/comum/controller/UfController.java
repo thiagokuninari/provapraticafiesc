@@ -29,7 +29,7 @@ public class UfController {
         return ufService.findAll();
     }
 
-    @GetMapping(params = "regionalId")
+    @GetMapping("/por-regional")
     public List<SelectResponse> getAllByRegional(@RequestParam Integer regionalId) {
         return ufService.findAllByRegionalId(regionalId);
     }
