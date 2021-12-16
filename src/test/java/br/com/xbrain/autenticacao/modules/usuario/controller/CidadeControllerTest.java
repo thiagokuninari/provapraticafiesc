@@ -54,7 +54,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarCidadePorUfAndCidadeNome() throws Exception {
         mvc.perform(get("/api/cidades/uf-cidade/PR/LONDRINA")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("LONDRINA")));
@@ -116,7 +116,7 @@ public class CidadeControllerTest {
 
     @Test
     public void deveRetornarSomentePorRegionalIdGerenteComercial() throws Exception {
-        mvc.perform(get("/api/cidades/regional/3")
+        mvc.perform(get("/api/cidades/regional/1027")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -127,7 +127,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorRegionalId() throws Exception {
         mvc.perform(get("/api/cidades/regional/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -135,7 +135,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorGrupoId() throws Exception {
         mvc.perform(get("/api/cidades/grupo/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -143,7 +143,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorClusterId() throws Exception {
         mvc.perform(get("/api/cidades/cluster/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -151,7 +151,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorSubClusterId() throws Exception {
         mvc.perform(get("/api/cidades/sub-cluster/1")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

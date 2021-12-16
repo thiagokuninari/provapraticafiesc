@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.querydsl.core.types.Predicate;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -43,6 +45,9 @@ public class CidadeServiceTest {
 
     @Test
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() {
+        when(cidadeRepository.findCidadeComSite(any(Predicate.class)))
+            .thenReturn(Optional.of(CidadeSiteResponse.builder()
+                .id(5578).nome("LONDRINA").uf("PR").siteId(100).build()));
         assertThat(service.getCidadeByCodigoCidadeDbm(3))
             .extracting("id",
                 "siteId",
@@ -60,6 +65,9 @@ public class CidadeServiceTest {
 
     @Test
     public void findCidadeComSiteByUfECidade_deveRetornarCidade_quandoExistir() {
+        when(cidadeRepository.findCidadeComSite(any(Predicate.class)))
+            .thenReturn(Optional.of(CidadeSiteResponse.builder()
+                .id(5578).nome("LONDRINA").uf("PR").siteId(100).build()));
         assertThat(service.findCidadeComSiteByUfECidade("PR", "LONDRINA"))
             .extracting("id",
                 "siteId",
@@ -84,6 +92,8 @@ public class CidadeServiceTest {
 
     @Test
     public void findByEstadoNomeAndCidadeNome_deveRetornarApenasPrimeiraCidade_quandoExistirDuasOuMais() {
+        when(cidadeRepository.findFirstByPredicate(any(Predicate.class)))
+            .thenReturn(Optional.of(Cidade.builder().id(6578).nome("SAO PAULO").build()));
         assertThat(service.findFirstByUfNomeAndCidadeNome("SP", "SAO PAULO"))
             .extracting("id", "nome")
             .containsExactly(6578, "SAO PAULO");
