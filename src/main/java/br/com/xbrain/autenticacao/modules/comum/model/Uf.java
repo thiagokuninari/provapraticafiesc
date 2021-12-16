@@ -9,8 +9,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
@@ -38,7 +36,6 @@ public class Uf {
     @Column(name = "UF")
     private String uf;
 
-    @NotAudited
     @JsonIgnore
     @NotEmpty
     @JoinTable(name = "UF_REGIONAL", joinColumns = {
