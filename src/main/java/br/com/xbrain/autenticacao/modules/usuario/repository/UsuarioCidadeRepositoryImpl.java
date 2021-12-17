@@ -8,11 +8,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
-import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
-import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -33,16 +31,12 @@ public class UsuarioCidadeRepositoryImpl extends CustomRepository<UsuarioCidade>
             .select(
                 Projections.constructor(UsuarioCidadeDto.class,
                     cidade.id, cidade.nome,
-                    subCluster.id, subCluster.nome,
-                    cluster.id, cluster.nome,
-                    grupo.id, grupo.nome,
+                    uf1.id, uf1.nome,
                     regional.id, regional.nome))
             .from(usuarioCidade)
             .join(usuarioCidade.cidade, cidade)
-            .leftJoin(cidade.subCluster, subCluster)
-            .leftJoin(subCluster.cluster, cluster)
-            .leftJoin(cluster.grupo, grupo)
-            .leftJoin(grupo.regional, regional)
+            .leftJoin(cidade.uf, uf1)
+            .leftJoin(cidade.regional, regional)
             .where(usuarioCidade.usuario.id.eq(usuarioId))
             .fetch();
     }

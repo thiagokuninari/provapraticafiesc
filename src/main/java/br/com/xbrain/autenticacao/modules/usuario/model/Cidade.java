@@ -12,6 +12,7 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -83,12 +84,16 @@ public class Cidade {
 
     @JsonIgnore
     public Integer getRegionalId() {
-        return this.getRegional().getId();
+        return Objects.nonNull(this.getRegional())
+            ? this.getRegional().getId()
+            : null;
     }
 
     @JsonIgnore
     public String getRegionalNome() {
-        return this.getRegional().getNome();
+        return Objects.nonNull(this.getRegional())
+            ? this.getRegional().getNome()
+            : null;
     }
 
     @JsonIgnore
