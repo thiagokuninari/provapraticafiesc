@@ -38,7 +38,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
-            "/api/sites/permitidos"
+            "/api/sites/permitidos",
+            "/api/horarios-acesso/status/**"
         };
 
         http
@@ -78,6 +79,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
+            .antMatchers("/api/horarios-acesso/**").hasAnyRole(CodigoFuncionalidade.AUT_20009.name())
             .anyRequest().authenticated();
     }
 
