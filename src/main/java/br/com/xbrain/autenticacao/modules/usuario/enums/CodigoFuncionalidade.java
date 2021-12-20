@@ -37,7 +37,8 @@ public enum CodigoFuncionalidade {
     MLG_5018("Gerenciar Distribuição Mailing Segmentação"),
     CTR_2044("Visualizar todos os Sites"),
     INT_7007("Resgatar tratativas para motiva"),
-    AUT_20009("Gerenciar Horários de Acesso");
+    AUT_20009("Gerenciar Horários de Acesso"),
+    AUT_20010("Adicionar novo usuário");
 
     @Getter
     private String descricao;
