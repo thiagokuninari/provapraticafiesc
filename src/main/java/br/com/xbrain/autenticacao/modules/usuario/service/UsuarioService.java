@@ -42,6 +42,7 @@ import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecial
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.client.UsuarioClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
@@ -205,6 +206,8 @@ public class UsuarioService {
     private MailingService mailingService;
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
+    @Autowired
+    private UsuarioClient usuarioClient;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1181,9 +1184,11 @@ public class UsuarioService {
 
     }
 
-    public void ativar(Integer id) {
-        repository.findById(id)
+    public void ativar(Integer usuarioId, Integer aaId) {
+        repository.findById(usuarioId)
             .ifPresent(user -> {
+                usuarioClient.alterarSituacao(usuarioId, aaId);
+                usuarioClient.alterarSituacaoColaboradorVendas(usuarioId);
                 user.setSituacao(ATIVO);
                 repository.save(user);
             });
@@ -1222,9 +1227,11 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
-    public void inativar(Integer id) {
-        repository.findById(id)
+    public void inativar(Integer usuarioId, Integer aaId) {
+        repository.findById(usuarioId)
             .ifPresent(user -> {
+                usuarioClient.alterarSituacao(usuarioId, aaId);
+                usuarioClient.alterarSituacaoColaboradorVendas(usuarioId);
                 user.setSituacao(INATIVO);
                 repository.save(user);
             });

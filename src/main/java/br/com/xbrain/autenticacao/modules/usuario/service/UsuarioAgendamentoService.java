@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
@@ -21,12 +22,14 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsuarioAgendamentoService {
@@ -177,9 +180,37 @@ public class UsuarioAgendamentoService {
         return CARGOS_HIBRIDOS_PERMITIDOS.contains(codigoCargo);
     }
 
-    public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
+    private List<UsuarioAgenteAutorizadoResponse> getUsuariosAtivosAutenticacao(
+        List<UsuarioAgenteAutorizadoResponse> usuarios) {
 
-        var usuarios = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, false);
+        return usuarios.stream()
+            .map(usuario -> usuarioRepository.findById(usuario.getId()).orElse(null))
+            .filter(Objects::nonNull)
+            .filter(usuario -> usuario.getSituacao().equals(ESituacao.A))
+            .map(UsuarioAgenteAutorizadoResponse::of)
+            .collect(Collectors.toList());
+    }
+
+    public void popularEquipeVendasId(List<UsuarioAgenteAutorizadoResponse> usuarios) {
+        try {
+            usuarios.forEach(usuario -> {
+                var equipeVendasId = equipeVendasService.getByUsuario(usuario.getId()).getId();
+                if (equipeVendasId != null) {
+                    usuario.setEquipeVendaId(equipeVendasId);
+                }
+            });
+        } catch (NullPointerException ex) {
+            log.error("Equipe de vendas não encontrada.");
+        } catch (Exception ex) {
+            log.error("Ocorreu um erro ao encontrar a equipe de vendas.");
+        }
+    }
+
+    public List<UsuarioAgendamentoResponse> recuperarUsuariosDisponiveisParaDistribuicao(Integer agenteAutorizadoId) {
+        var usuariosPol = agenteAutorizadoNovoService.getUsuariosByAaId(agenteAutorizadoId, true);
+        var usuarios = getUsuariosAtivosAutenticacao(usuariosPol);
+
+        popularEquipeVendasId(usuarios);
 
         if (isUsuarioAutenticadoSupervisor()) {
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();

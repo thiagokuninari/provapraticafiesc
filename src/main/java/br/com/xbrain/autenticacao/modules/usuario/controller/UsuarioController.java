@@ -71,9 +71,10 @@ public class UsuarioController {
         usuarioService.ativarSocioPrincipal(email);
     }
 
-    @PutMapping("ativar/{id}")
-    public void ativar(@PathVariable Integer id) {
-        usuarioService.ativar(id);
+    @PutMapping("ativar/{usuarioId}/{aaId}")
+    public void ativar(@PathVariable Integer usuarioId,
+                       @PathVariable Integer aaId) {
+        usuarioService.ativar(usuarioId, aaId);
     }
 
     @PutMapping("inativar-socio")
@@ -86,9 +87,10 @@ public class UsuarioController {
         return usuarioService.getAllUsuariosIdsSuperiores();
     }
 
-    @PutMapping("inativar/{id}")
-    public void inativar(@PathVariable Integer id) {
-        usuarioService.inativar(id);
+    @PutMapping("inativar/{usuarioId}/{aaId}")
+    public void inativar(@PathVariable Integer usuarioId,
+                         @PathVariable Integer aaId) {
+        usuarioService.inativar(usuarioId, aaId);
     }
 
     @GetMapping("/autenticado/{id}")
