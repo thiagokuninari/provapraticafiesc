@@ -10,10 +10,21 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -63,7 +74,7 @@ import static com.querydsl.jpa.JPAExpressions.select;
 @Slf4j
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
-    private static final int TRINTA_DOIS_DIAS = 32;
+    private static final int SETE_DIAS = 7;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
@@ -738,13 +749,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findAllUsuariosSemDataUltimoAcesso() {
+    public List<Usuario> findAllUsuariosSemDataUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
             .from(usuario)
             .where(usuario.situacao.eq(A)
-                .and(usuario.dataUltimoAcesso.isNull()
-                    .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
+                .and(usuario.dataUltimoAcesso.isNull())
+                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
+                .and(usuario.dataCadastro.after(dataHoraInativarUsuario)))
             .fetch();
     }
 
