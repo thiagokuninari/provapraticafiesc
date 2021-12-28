@@ -28,4 +28,7 @@ public class CidadeDbm {
 
     @Column(name = "CODIGO_CIDADE_DBM")
     private Integer codigoCidadeDbm;
+
+    @Column(name = "DDD")
+    private Integer ddd;
 }

@@ -85,6 +85,25 @@ public class SiteRepositoryImpl extends CustomRepository<Site> implements SiteRe
     }
 
     @Override
+    public Optional<SiteCidadeResponse> findSiteDddTop1ByPredicate(Predicate predicate) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(SiteCidadeResponse.class,
+                site.id,
+                site.nome,
+                cidadeDbm.cidade.id,
+                cidadeDbm.cidade.nome,
+                cidadeDbm.cidade.uf.id,
+                cidadeDbm.cidade.uf.uf,
+                cidadeDbm.ddd
+            ))
+            .from(site)
+            .innerJoin(site.cidades, cidade)
+            .innerJoin(cidade.cidadesDbm, cidadeDbm)
+            .where(predicate)
+            .fetchFirst());
+    }
+
+    @Override
     public List<Site> findAllByPredicate(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(site)

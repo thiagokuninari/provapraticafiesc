@@ -5,10 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
 
-import java.util.Optional;
-
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QCidadeDbm.cidadeDbm;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
@@ -53,14 +50,6 @@ public class CidadePredicate {
         if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             dasCidadesQueOUsuarioEstaVinculado(usuarioAutenticado.getId());
         }
-        return this;
-    }
-
-    public CidadePredicate comCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        Optional.ofNullable(codigoCidadeDbm)
-            .map(cidadeDbm.codigoCidadeDbm::eq)
-            .ifPresent(builder::and);
-
         return this;
     }
 }
