@@ -542,6 +542,28 @@ public class SiteControllerTest {
             .andExpect(status().isOk());
     }
 
+    @SneakyThrows
+    public void buscarSiteCidadePorDdd_unauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(API_URI + "/ddd/43"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSiteCidadePorDdd_forbidden_seUsuarioNaoPossuiPermissao() {
+        mvc.perform(get(API_URI + "/ddd/43")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarSiteCidadePorDdd_ok_seUsuarioAutenticadoEComPermissao() {
+        mvc.perform(get(API_URI + "/ddd/43")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
+
     @Test
     @SneakyThrows
     public void buscarTodos_unauthorized_seUsuarioNaoAutenticado() {

@@ -19,5 +19,7 @@ public interface SiteRepositoryCustom {
 
     Optional<SiteCidadeResponse> findSiteCidadeDbmTop1ByPredicate(Predicate predicate);
 
+    Optional<SiteCidadeResponse> findSiteDddTop1ByPredicate(Predicate predicate);
+
     List<Site> findAllByPredicate(Predicate predicate);
 }
