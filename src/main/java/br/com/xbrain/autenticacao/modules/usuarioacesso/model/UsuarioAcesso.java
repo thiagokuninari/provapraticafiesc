@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@EqualsAndHashCode(of = "id")
 public class UsuarioAcesso {
 
     @Id
@@ -36,6 +38,13 @@ public class UsuarioAcesso {
 
     public UsuarioAcesso(LocalDateTime dataCadastro, Integer usuarioId, String usuarioEmail) {
         this.dataCadastro = dataCadastro;
+        this.usuario = Usuario.builder()
+            .id(usuarioId)
+            .email(usuarioEmail)
+            .build();
+    }
+
+    public UsuarioAcesso(Integer usuarioId, String usuarioEmail) {
         this.usuario = Usuario.builder()
             .id(usuarioId)
             .email(usuarioEmail)

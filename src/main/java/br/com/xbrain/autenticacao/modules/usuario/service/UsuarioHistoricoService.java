@@ -20,7 +20,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.EObservacaoHistor
 @Service
 public class UsuarioHistoricoService {
 
-    private static final String INATIVADO_DESCRICAO = "INATIVADO POR FALTA DE ACESSO";
     @Autowired
     private UsuarioHistoricoRepository usuarioHistoricoRepository;
     @Autowired
@@ -34,9 +33,9 @@ public class UsuarioHistoricoService {
                 .collect(Collectors.toList());
     }
 
-    public void gerarHistoricoInativacao(Usuario usuario) {
+    public void gerarHistoricoInativacao(Usuario usuario, String origem) {
         usuarioHistoricoRepository.save(UsuarioHistorico.gerarHistorico(
-                usuario.getId(), getMotivoInativacao(), INATIVADO_DESCRICAO, ESituacao.I
+                usuario.getId(), getMotivoInativacao(), origem, ESituacao.I
         ));
     }
 

@@ -39,10 +39,13 @@ public class UsuarioTimer {
 
     private static final String TIME_ZONE = "America/Sao_Paulo";
 
+    private static final String ORIGEM = "Usuário inativado pelo processo automático";
+
     @Scheduled(cron = EVERY_DAY_AT_TWO_AM)
     @Async
     public void inativarUsuariosSemAcesso() {
-        usuarioAcessoService.inativarUsuariosSemAcesso();
+        var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM);
+        log.info("Usuários inativados: {}", usuariosInativados);
     }
 
     @Scheduled(cron = EVERY_DAY_AT_FOUR_AM)

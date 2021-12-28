@@ -26,7 +26,7 @@ public class UsuarioAcessoRepositoryImpl
                 usuarioAcesso.usuario.id, usuarioAcesso.usuario.email))
             .from(usuarioAcesso)
             .innerJoin(usuarioAcesso.usuario, usuario)
-            .where(usuario.situacao.eq(ESituacao.A))
+            .where(usuario.situacao.eq(ESituacao.A).and(usuarioAcesso.dataCadastro.isNotNull()))
             .groupBy(usuarioAcesso.usuario.id, usuarioAcesso.usuario.email)
             .fetch();
     }
