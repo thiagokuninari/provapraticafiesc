@@ -1184,11 +1184,11 @@ public class UsuarioService {
 
     }
 
-    public void ativar(Integer usuarioId, Integer aaId) {
-        repository.findById(usuarioId)
+    public void ativar(Integer id) {
+        repository.findById(id)
             .ifPresent(user -> {
-                usuarioClient.alterarSituacao(usuarioId, aaId);
-                usuarioClient.alterarSituacaoColaboradorVendas(usuarioId);
+                usuarioClient.alterarSituacao(id);
+                usuarioClient.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(ATIVO);
                 repository.save(user);
             });
@@ -1227,11 +1227,11 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
-    public void inativar(Integer usuarioId, Integer aaId) {
-        repository.findById(usuarioId)
+    public void inativar(Integer id) {
+        repository.findById(id)
             .ifPresent(user -> {
-                usuarioClient.alterarSituacao(usuarioId, aaId);
-                usuarioClient.alterarSituacaoColaboradorVendas(usuarioId);
+                usuarioClient.alterarSituacao(id);
+                usuarioClient.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(INATIVO);
                 repository.save(user);
             });

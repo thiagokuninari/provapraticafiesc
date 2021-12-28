@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
     url = "${app-config.services.parceiros-online.url}"
 )
 public interface UsuarioClient {
-    @PutMapping("api/agentes-autorizados-usuario/{usuarioId}/{aaId}/alterar-situacao")
-    void alterarSituacao(@PathVariable("usuarioId") Integer usuarioId,
-                         @PathVariable("aaId") Integer aaId);
+    @PutMapping("api/agentes-autorizados-usuario/{id}/alterar-situacao")
+    void alterarSituacao(@PathVariable("id") Integer id);
 
     @PutMapping("api/colaboradores-vendas/alterar-situacao-usuario-id/{id}")
     void alterarSituacaoColaboradorVendas(@PathVariable("id") Integer id);

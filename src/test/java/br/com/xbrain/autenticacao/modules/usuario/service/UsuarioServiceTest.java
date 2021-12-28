@@ -1238,11 +1238,11 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(100))
             .thenReturn(Optional.of(usuarioInativo));
 
-        usuarioService.ativar(100, 100);
+        usuarioService.ativar(100);
 
         assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
 
-        verify(usuarioClient, times(1)).alterarSituacao(eq(100), eq(100));
+        verify(usuarioClient, times(1)).alterarSituacao(eq(100));
         verify(usuarioRepository).save(usuarioInativo);
     }
 

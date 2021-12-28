@@ -116,7 +116,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void deveSolicitarAtivacaoUsuario() {
-        mvc.perform(put("/api/usuarios/ativar/9991/999")
+        mvc.perform(put("/api/usuarios/ativar/999")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
@@ -124,7 +124,7 @@ public class UsuarioControllerTest {
     @Test
     @SneakyThrows
     public void deveSolicitarInativacaoUsuario() {
-        mvc.perform(put("/api/usuarios/inativar/9991/999")
+        mvc.perform(put("/api/usuarios/inativar/999")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
