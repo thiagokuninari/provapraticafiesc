@@ -26,6 +26,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
+    private static final List<Integer> LISTA_NOVAS_REGIONAIS = List.of(1022,1023,1024,1025,1026,1027,1028,1029,1030,1031);
 
     @Autowired
     private AutenticacaoService autenticacaoService;
@@ -39,10 +40,9 @@ public class CidadeService {
         new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
-        return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByRegionalId(
-                regionalId,
-                predicateCidadesPermitidas.get()));
+        return UsuarioCidadeDto.of(LISTA_NOVAS_REGIONAIS.contains(regionalId)
+            ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
+            : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
     }
 
     public List<UsuarioCidadeDto> getCidadesByRegionalAndUf(Integer regionalId, Integer ufId) {
