@@ -89,7 +89,7 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorSubCluster() throws Exception {
         mvc.perform(get("/api/cidades?idSubCluster=57")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
