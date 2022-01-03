@@ -200,10 +200,8 @@ public class SiteService {
             .stream()
             .findFirst()
             .ifPresent(equipeVendaDtos -> {
-                throw new ValidacaoException(String.format("Para concluir essa operação é necessário remover o supervisor(a) "
-                        + "%s da equipe de vendas %s.",
-                    usuario.getNome(),
-                    equipeVendaDtos.getDescricao()));
+                throw new ValidacaoException("Para concluir essa operação é necessário"
+                    + " inativar a equipe de vendas " + equipeVendaDtos.getDescricao() + ".");
             });
     }
 

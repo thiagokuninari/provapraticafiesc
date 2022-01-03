@@ -144,8 +144,7 @@ public class SiteServiceIT {
             List.of(EquipeVendaDto.builder().descricao("Equipe 1").build()));
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> siteService.update(requestUpdateSite()))
-            .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
-                + "Supervisor2 operacao ativo local da equipe de vendas Equipe 1.");
+            .withMessage("Para concluir essa operação é necessário inativar a equipe de vendas Equipe 1.");
     }
 
     @Test
