@@ -47,9 +47,9 @@ public class SolicitacaoRamalExpiracaoAdjusterTest {
 
         Temporal temporal = dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster());
 
-        LocalDateTime dataEsperada = LocalDateTime.of(2020, 01, 03, 14, 00);
+        LocalDateTime dataEsperada = LocalDateTime.of(2020, 01, 02, 14, 00);
         assertEquals(dataEsperada, LocalDateTime.from(temporal));
-        assertEquals(120, Duration.between(dataCadastro, dataEsperada).toHours());
+        assertEquals(96, Duration.between(dataCadastro, dataEsperada).toHours());
     }
 
     @Test
