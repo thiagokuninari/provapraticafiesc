@@ -464,8 +464,7 @@ public class SiteServiceTest {
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.inativar(12))
-            .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
-                + "UM USUARIO SUPERVISOR_OPERACAO da equipe de vendas Equipe ativo.");
+            .withMessage("Para concluir essa operação é necessário inativar a equipe de vendas Equipe ativo.");
     }
 
     @Test
