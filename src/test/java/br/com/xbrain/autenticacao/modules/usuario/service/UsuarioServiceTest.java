@@ -23,7 +23,6 @@ import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.client.UsuarioClient;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper;
@@ -121,7 +120,7 @@ public class UsuarioServiceTest {
     @Mock
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Mock
-    private UsuarioClient usuarioClient;
+    private UsuarioClientService usuarioClientService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1242,7 +1241,7 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
 
-        verify(usuarioClient, times(1)).alterarSituacao(eq(100));
+        verify(usuarioClientService, times(1)).alterarSituacao(eq(100));
         verify(usuarioRepository).save(usuarioInativo);
     }
 
