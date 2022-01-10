@@ -122,7 +122,12 @@ public enum EErrors {
         "#036 - Erro ao tentar recuperar o relatório de logins e logouts entre datas."),
     ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO(
         "#037 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário.");
+        "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário."),
+    ERRO_ALTERAR_SITUACAO_USUARIO("#038 - Desculpe, ocorreu um erro ao alterar a situação do usuário.",
+        "#038 - Erro ao alterar a situação do usuário."),
+    ERRO_ALTERAR_SITUACAO_COLABORADOR_VENDAS(
+        "#039 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.",
+        "#039 - Erro ao alterar a situação do colaborador de vendas.");
 
     @Getter
     @Setter
