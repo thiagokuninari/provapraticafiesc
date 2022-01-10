@@ -119,6 +119,8 @@ public class UsuarioServiceTest {
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Mock
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
+    @Mock
+    private UsuarioClientService usuarioClientService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1239,6 +1241,7 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
 
+        verify(usuarioClientService, times(1)).alterarSituacao(eq(100));
         verify(usuarioRepository).save(usuarioInativo);
     }
 

@@ -205,6 +205,8 @@ public class UsuarioService {
     private MailingService mailingService;
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
+    @Autowired
+    private UsuarioClientService usuarioClientService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1184,6 +1186,8 @@ public class UsuarioService {
     public void ativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
+                usuarioClientService.alterarSituacao(id);
+                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(ATIVO);
                 repository.save(user);
             });
@@ -1225,6 +1229,8 @@ public class UsuarioService {
     public void inativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
+                usuarioClientService.alterarSituacao(id);
+                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(INATIVO);
                 repository.save(user);
             });
