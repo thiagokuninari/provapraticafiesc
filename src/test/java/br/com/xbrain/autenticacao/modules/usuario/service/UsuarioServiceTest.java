@@ -125,6 +125,15 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
     @Test
+    public void alterarSituacaoSocioPrincipal_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        when(usuarioRepository.findComplete(10)).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
+        when(agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+
+        usuarioService.ativar(umUsuarioAtivacaoDto());
+        verify(usuarioClientService, times(1)).alterarSituacao(10);
+    }
+
+    @Test
     public void inativar_deveRetornarExcecao_quandoUsuarioAtivoLocalEPossuiAgendamento() {
         when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
             .thenReturn(Long.valueOf(1));
@@ -1770,5 +1779,27 @@ public class UsuarioServiceTest {
             .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
             .canal(ECanal.D2D_PROPRIO)
             .build();
+    }
+
+    private UsuarioAtivacaoDto umUsuarioAtivacaoDto() {
+        return UsuarioAtivacaoDto.builder()
+            .idUsuario(10)
+            .idUsuarioAtivacao(20)
+            .observacao("Teste")
+            .build();
+    }
+
+    private Usuario umUsuarioSocioPrincipalEAa() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        return usuario;
     }
 }
