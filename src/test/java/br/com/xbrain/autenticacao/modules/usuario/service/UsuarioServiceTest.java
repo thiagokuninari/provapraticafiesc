@@ -137,7 +137,7 @@ public class UsuarioServiceTest {
     public void ativar_NaoDeveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
         when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(outroUsuarioCompleto()));
         usuarioService.ativar(umUsuarioAtivacaoDto());
-        verify(usuarioClientService, times(0)).alterarSituacao(2);
+        verify(usuarioClientService, never()).alterarSituacao(2);
     }
 
     @Test
