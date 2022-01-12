@@ -1176,7 +1176,6 @@ public class UsuarioService {
                 dto.getObservacao(),
                 usuario));
         repository.save(usuario);
-        usuarioClientService.alterarSituacao(dto.getIdUsuario());
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
         alterarSituacaoSocioPrincipal(usuario);
     }

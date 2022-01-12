@@ -125,12 +125,19 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
     @Test
-    public void alterarSituacaoSocioPrincipal_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
-        when(usuarioRepository.findComplete(10)).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
+    public void ativar_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
         when(agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
 
         usuarioService.ativar(umUsuarioAtivacaoDto());
-        verify(usuarioClientService, times(1)).alterarSituacao(10);
+        verify(usuarioClientService, times(1)).alterarSituacao(1);
+    }
+
+    @Test
+    public void ativar_NaodeveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(outroUsuarioCompleto()));
+        usuarioService.ativar(umUsuarioAtivacaoDto());
+        verify(usuarioClientService, times(0)).alterarSituacao(2);
     }
 
     @Test
@@ -1702,6 +1709,65 @@ public class UsuarioServiceTest {
                     .builder()
                     .codigo(CodigoNivel.AGENTE_AUTORIZADO)
                     .nome("AGENTE AUTORIZADO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario outroUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
                     .build())
                 .build())
             .departamento(Departamento
