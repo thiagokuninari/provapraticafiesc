@@ -13,7 +13,4 @@ import org.springframework.web.bind.annotation.PutMapping;
 public interface UsuarioClient {
     @PutMapping("api/agentes-autorizados-usuario/{id}/alterar-situacao")
     void alterarSituacao(@PathVariable("id") Integer id);
-
-    @PutMapping("api/colaboradores-vendas/alterar-situacao-usuario-id/{id}")
-    void alterarSituacaoColaboradorVendas(@PathVariable("id") Integer id);
 }

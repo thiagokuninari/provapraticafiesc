@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioClientService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -92,6 +93,8 @@ public class UsuarioGerenciaControllerTest {
     private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
     @MockBean
     private SiteService siteService;
+    @MockBean
+    private UsuarioClientService usuarioClientService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -405,6 +408,8 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveInativarUmUsuario() throws Exception {
+        doNothing().when(usuarioClientService).alterarSituacao(anyInt());
+
         mvc.perform(post(API_URI + "/inativar")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)

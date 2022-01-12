@@ -1179,15 +1179,14 @@ public class UsuarioService {
                 dto.getObservacao(),
                 usuario));
         repository.save(usuario);
+        usuarioClientService.alterarSituacao(dto.getIdUsuario());
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
-
     }
 
     public void ativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
                 usuarioClientService.alterarSituacao(id);
-                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(ATIVO);
                 repository.save(user);
             });
@@ -1230,7 +1229,6 @@ public class UsuarioService {
         repository.findById(id)
             .ifPresent(user -> {
                 usuarioClientService.alterarSituacao(id);
-                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(INATIVO);
                 repository.save(user);
             });
@@ -1246,6 +1244,7 @@ public class UsuarioService {
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
+        usuarioClientService.alterarSituacao(usuario.getId());
     }
 
     private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {
