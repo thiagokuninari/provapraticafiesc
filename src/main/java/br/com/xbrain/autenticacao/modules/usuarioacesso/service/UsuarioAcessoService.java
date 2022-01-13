@@ -30,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -218,11 +221,7 @@ public class UsuarioAcessoService {
     }
 
     public List<PaLogadoDto> getTotalUsuariosLogadosPorPeriodoByFiltros(UsuarioLogadoRequest usuarioLogadoRequest) {
-        var usuariosIds = StreamSupport
-            .stream(usuarioRepository
-                .findAll(usuarioLogadoRequest.toUsuarioPredicate()).spliterator(), false)
-            .map(Usuario::getId)
-            .collect(Collectors.toList());
+        var usuariosIds = obterUsuariosIds(usuarioLogadoRequest);
 
         if (isEmpty(usuariosIds)) {
             usuarioLogadoRequest.getPeriodos()
@@ -231,5 +230,16 @@ public class UsuarioAcessoService {
         }
         usuarioLogadoRequest.setUsuariosIds(usuariosIds);
         return notificacaoUsuarioAcessoService.countUsuariosLogadosPorPeriodo(usuarioLogadoRequest);
+    }
+
+    public List<Integer> getUsuariosLogadosAtualPorIds(UsuarioLogadoRequest request) {
+        return notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(obterUsuariosIds(request));
+    }
+
+    private List<Integer> obterUsuariosIds(UsuarioLogadoRequest request) {
+        return StreamSupport.stream(
+            usuarioRepository.findAll(request.toUsuarioPredicate()).spliterator(), false)
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 }

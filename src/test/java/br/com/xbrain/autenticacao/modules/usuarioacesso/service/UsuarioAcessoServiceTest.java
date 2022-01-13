@@ -2,9 +2,11 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
@@ -42,6 +44,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -84,7 +87,7 @@ public class UsuarioAcessoServiceTest {
         usuarioAcessoService.registrarAcesso(100);
 
         verify(usuarioAcessoRepository, times(1))
-                .save(any(UsuarioAcesso.class));
+            .save(any(UsuarioAcesso.class));
     }
 
     @Test
@@ -185,10 +188,33 @@ public class UsuarioAcessoServiceTest {
         verify(notificacaoUsuarioAcessoService, never()).countUsuariosLogadosPorPeriodo(any());
     }
 
+    @Test
+    public void getUsuariosLogadosAtualPorIds_idsDosUsuariosLogadosDeAcordoComFiltro_quandoExistirUsuariosLogados() {
+        when(usuarioRepository.findAll(any(Predicate.class))).thenReturn(List.of(new Usuario(101), new Usuario(201)));
+        when(notificacaoUsuarioAcessoService.getUsuariosLogadosAtualPorIds(eq(List.of(101, 201)))).thenReturn(List.of(101));
+
+        var response = usuarioAcessoService.getUsuariosLogadosAtualPorIds(
+            UsuarioLogadoRequest.builder()
+                .organizacaoId(6)
+                .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
+                .build());
+
+        assertThat(response).containsExactly(101);
+
+        verify(notificacaoUsuarioAcessoService, times(1))
+            .getUsuariosLogadosAtualPorIds(eq(List.of(101, 201)));
+        verify(usuarioRepository, times(1))
+            .findAll(eq(new UsuarioPredicate()
+                .comOrganizacaoId(6)
+                .comCodigosCargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
+                .isAtivo(Eboolean.V)
+                .build()));
+    }
+
     private UsuarioAcesso umUsuarioAcesso(Integer id, Integer hora, Integer dia) {
         return UsuarioAcesso.builder()
             .id(id)
-            .dataCadastro(LocalDateTime.of(2020,01, dia, hora,00))
+            .dataCadastro(LocalDateTime.of(2020, 01, dia, hora, 00))
             .usuario(Usuario.builder().id(id).build())
             .build();
     }
