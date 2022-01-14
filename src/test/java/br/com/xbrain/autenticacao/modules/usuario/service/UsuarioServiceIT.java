@@ -110,6 +110,8 @@ public class UsuarioServiceIT {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @MockBean
     private FeederService feederService;
+    @MockBean
+    private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
 
@@ -339,6 +341,8 @@ public class UsuarioServiceIT {
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
         when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+        doNothing().when(usuarioClientService).alterarSituacao(anyInt());
+
         service.ativar(UsuarioAtivacaoDto.builder()
             .idUsuario(245)
             .observacao("ATIVANDO O SÓCIO PRINCIPAL")
