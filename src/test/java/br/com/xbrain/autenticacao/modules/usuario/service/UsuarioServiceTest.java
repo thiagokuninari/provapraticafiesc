@@ -492,6 +492,52 @@ public class UsuarioServiceTest {
             );
     }
 
+    @Test
+    public void getVendedoresByIds_deveDividirListaIds_seListaMaiorQueMil() {
+        when(usuarioRepository.findByIdIn(IntStream.rangeClosed(3000, 3999).boxed().collect(Collectors.toList())))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(usuarioService.getVendedoresByIds(IntStream.rangeClosed(0, 4000).boxed().collect(Collectors.toList())))
+            .extracting("id", "nome", "loginNetSales", "email")
+            .containsExactly(
+                tuple(1, "Caio", "H", "caio@teste.com"),
+                tuple(2, "Mario", "QQ", "mario@teste.com"),
+                tuple(3, "Maria", "LOG", "maria@teste.com")
+            );
+
+        verify(usuarioRepository, times(5))
+            .findByIdIn(any());
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(IntStream.rangeClosed(0, 999).boxed().collect(Collectors.toList())));
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(IntStream.rangeClosed(1000, 1999).boxed().collect(Collectors.toList())));
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(IntStream.rangeClosed(2000, 2999).boxed().collect(Collectors.toList())));
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(IntStream.rangeClosed(3000, 3999).boxed().collect(Collectors.toList())));
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(List.of(4000)));
+    }
+
+    @Test
+    public void getVendedoresByIds_naoDeveDividirListaIds_seListaMenorQueMil() {
+        when(usuarioRepository.findByIdIn(IntStream.rangeClosed(0, 800).boxed().collect(Collectors.toList())))
+            .thenReturn(umaUsuariosList());
+
+        assertThat(usuarioService.getVendedoresByIds(IntStream.rangeClosed(0, 800).boxed().collect(Collectors.toList())))
+            .extracting("id", "nome", "loginNetSales", "email")
+            .containsExactly(
+                tuple(1, "Caio", "H", "caio@teste.com"),
+                tuple(2, "Mario", "QQ", "mario@teste.com"),
+                tuple(3, "Maria", "LOG", "maria@teste.com")
+            );
+
+        verify(usuarioRepository, times(1))
+            .findByIdIn(any());
+        verify(usuarioRepository, times(1))
+            .findByIdIn(eq(IntStream.rangeClosed(0, 800).boxed().collect(Collectors.toList())));
+    }
+
     private List<UnidadeNegocio> umaListaUnidadesNegocio() {
         return List.of(
             umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
