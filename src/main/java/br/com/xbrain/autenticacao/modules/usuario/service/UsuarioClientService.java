@@ -25,16 +25,4 @@ public class UsuarioClientService {
             throw new IntegracaoException(ex);
         }
     }
-
-    public void alterarSituacaoColaboradorVendas(Integer id) {
-        try {
-            client.alterarSituacaoColaboradorVendas(id);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                UsuarioService.class.getName(),
-                EErrors.ERRO_ALTERAR_SITUACAO_COLABORADOR_VENDAS);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
 }
