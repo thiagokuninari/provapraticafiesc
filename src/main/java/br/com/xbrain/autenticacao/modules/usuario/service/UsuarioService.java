@@ -7,10 +7,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -1180,14 +1177,13 @@ public class UsuarioService {
                 usuario));
         repository.save(usuario);
         usuarioAfastamentoService.atualizaDataFimAfastamento(usuario.getId());
-
+        alterarSituacaoSocioPrincipal(usuario);
     }
 
     public void ativar(Integer id) {
         repository.findById(id)
             .ifPresent(user -> {
                 usuarioClientService.alterarSituacao(id);
-                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(ATIVO);
                 repository.save(user);
             });
@@ -1230,7 +1226,6 @@ public class UsuarioService {
         repository.findById(id)
             .ifPresent(user -> {
                 usuarioClientService.alterarSituacao(id);
-                usuarioClientService.alterarSituacaoColaboradorVendas(id);
                 user.setSituacao(INATIVO);
                 repository.save(user);
             });
@@ -1246,6 +1241,13 @@ public class UsuarioService {
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
         autenticacaoService.logout(usuario.getId());
         repository.save(usuario);
+        alterarSituacaoSocioPrincipal(usuario);
+    }
+
+    private void alterarSituacaoSocioPrincipal(Usuario usuario) {
+        if (usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()) {
+            usuarioClientService.alterarSituacao(usuario.getId());
+        }
     }
 
     private void validarUsuarioAtivoLocalEPossuiAgendamento(Usuario usuario) {

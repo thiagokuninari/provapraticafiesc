@@ -43,24 +43,4 @@ public class UsuarioClientServiceTest {
         assertThatExceptionOfType(IntegracaoException.class)
             .isThrownBy(() -> service.alterarSituacao(null));
     }
-
-    @Test
-    public void alterarSituacaoColaboradorVendas_deveLancarIntegracaoException_quandoApiIndisponivel() {
-        doThrow(new RetryableException("Connection refused (Connection refused) executing "
-            + "PUT http://localhost:8099/api/colaboradores-vendas/alterar-situacao-usuario-id/1", new Date()))
-            .when(client).alterarSituacaoColaboradorVendas(eq(1));
-
-        assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.alterarSituacaoColaboradorVendas(1))
-            .withMessage("#039 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.");
-    }
-
-    @Test
-    public void alterarSituacaoColaboradorVendas_deveLancarIntegracaoException_quandoBadRequest() {
-        doThrow(new HystrixBadRequestException("Id informado é nulo"))
-            .when(client).alterarSituacaoColaboradorVendas(eq(null));
-
-        assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.alterarSituacaoColaboradorVendas(null));
-    }
 }

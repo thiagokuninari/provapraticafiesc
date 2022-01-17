@@ -125,6 +125,22 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
     @Test
+    public void ativar_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
+        when(agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
+
+        usuarioService.ativar(umUsuarioAtivacaoDto());
+        verify(usuarioClientService, times(1)).alterarSituacao(1);
+    }
+
+    @Test
+    public void ativar_NaoDeveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(outroUsuarioCompleto()));
+        usuarioService.ativar(umUsuarioAtivacaoDto());
+        verify(usuarioClientService, never()).alterarSituacao(2);
+    }
+
+    @Test
     public void inativar_deveRetornarExcecao_quandoUsuarioAtivoLocalEPossuiAgendamento() {
         when(mailingService.countQuantidadeAgendamentosProprietariosDoUsuario(eq(umUsuario().getId()), eq(ECanal.ATIVO_PROPRIO)))
             .thenReturn(Long.valueOf(1));
@@ -1735,6 +1751,65 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
+    private Usuario outroUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
     private Usuario umVendedorReceptivo() {
         var usuario = umUsuarioCompleto();
         var cargo = Cargo.builder()
@@ -1770,5 +1845,27 @@ public class UsuarioServiceTest {
             .codigosCargos(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO))
             .canal(ECanal.D2D_PROPRIO)
             .build();
+    }
+
+    private UsuarioAtivacaoDto umUsuarioAtivacaoDto() {
+        return UsuarioAtivacaoDto.builder()
+            .idUsuario(10)
+            .idUsuarioAtivacao(20)
+            .observacao("Teste")
+            .build();
+    }
+
+    private Usuario umUsuarioSocioPrincipalEAa() {
+        var usuario = umUsuarioCompleto();
+        usuario.setCargo(Cargo
+            .builder()
+            .codigo(AGENTE_AUTORIZADO_SOCIO)
+            .nivel(Nivel
+                .builder()
+                .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+                .nome("AGENTE AUTORIZADO")
+                .build())
+            .build());
+        return usuario;
     }
 }
