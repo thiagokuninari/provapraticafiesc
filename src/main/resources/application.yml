@@ -134,9 +134,6 @@ app-config:
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
 
   oauth-clients:
-    pgaa-api:
-      client: pgaa-api
-      secret: pg44@p1
     autenticacao-api:
       client: autenticacao-api
       secret: 4ut3nt1c4c404p1
