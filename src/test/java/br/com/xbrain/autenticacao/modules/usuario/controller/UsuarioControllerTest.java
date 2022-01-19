@@ -115,7 +115,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void deveSolicitarUsuarioNaoRealocado() {
+    public void buscarNaoRealocadosPorCpf_deveSolicitarUsuarioNaoRealocado_quandoTiverAutorizacao() {
         mvc.perform(get("/api/usuarios/nao-realocado")
             .param("cpf", "65710871036")
             .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -125,7 +125,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void deveRetornar401_quandoNaoTiverAutorizacao() {
+    public void buscarNaoRealocadosPorCpf_deveRetornar401_quandoNaoTiverAutorizacao() {
         mvc.perform(get("/api/usuarios/nao-realocado")
             .param("cpf", "65710871036")
             .header("Authorization", getAccessToken(mvc, INATIVO))

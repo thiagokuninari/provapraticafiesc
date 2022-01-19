@@ -71,9 +71,7 @@ public class UsuarioResponse {
             usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
             usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
             usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
-            usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
             usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
-            return usuarioResponse;
         }
         return usuarioResponse;
     }

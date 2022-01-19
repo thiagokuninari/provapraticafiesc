@@ -125,7 +125,7 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
     @Test
-    public void buscarNaoRealocadoByCpf_DeveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
+    public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
         when(usuarioRepository
             .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(eq("09723864592"), eq(ESituacao.R)))
             .thenReturn(Optional.of(umUsuario()));
@@ -136,7 +136,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void buscarNaoRealocadoByCpf_DeveRetornarNull_quandoCpfNaoExistir() {
+    public void buscarNaoRealocadoByCpf_deveRetornarNull_quandoCpfNaoExistir() {
         when(usuarioRepository
             .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(anyString(), eq(ESituacao.R)))
             .thenReturn(Optional.empty());
