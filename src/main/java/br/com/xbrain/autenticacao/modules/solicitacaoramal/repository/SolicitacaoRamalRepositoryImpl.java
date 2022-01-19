@@ -48,6 +48,7 @@ public class SolicitacaoRamalRepositoryImpl
                                 solicitacaoRamal.situacao,
                                 solicitacaoRamal.quantidadeRamais,
                                 solicitacaoRamal.dataCadastro,
+                                solicitacaoRamal.dataFinalizacao,
                                 new JPAQueryFactory(entityManager)
                                         .select(usuario)
                                         .from(usuario)

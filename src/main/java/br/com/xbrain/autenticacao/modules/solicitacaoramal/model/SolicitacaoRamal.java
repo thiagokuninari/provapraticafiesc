@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -18,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,6 +81,9 @@ public class SolicitacaoRamal {
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
+    @Column(name = "DATA_FINALIZACAO", nullable = false, updatable = false)
+    private LocalDateTime dataFinalizacao;
+
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
     private Integer quantidadeRamais;
 
@@ -97,7 +102,7 @@ public class SolicitacaoRamal {
     public SolicitacaoRamal(Integer id, Integer agenteAutorizadoId, String agenteAutorizadoNome,
                             String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao,
                             Integer quantidadeRamais, LocalDateTime dataCadastro,
-                            Usuario usuario) {
+                            LocalDateTime dataFinalizacao, Usuario usuario) {
         this.id = id;
         this.agenteAutorizadoId = agenteAutorizadoId;
         this.agenteAutorizadoNome = agenteAutorizadoNome;
@@ -105,11 +110,13 @@ public class SolicitacaoRamal {
         this.situacao = situacao;
         this.quantidadeRamais = quantidadeRamais;
         this.dataCadastro = dataCadastro;
+        this.dataFinalizacao = dataFinalizacao;
         this.usuario = usuario;
     }
 
     public void atualizarDataCadastro() {
         this.dataCadastro = LocalDateTime.now();
+        calcularDataFinalizacao(this.dataCadastro);
         atualizarSituacaoParaPendente();
         atualizarEnviouEmailExpiracaoParaFalso();
     }
@@ -151,6 +158,18 @@ public class SolicitacaoRamal {
     public void retirarMascara() {
         this.telefoneTi = getOnlyNumbers(this.telefoneTi);
         this.agenteAutorizadoCnpj = getOnlyNumbers(this.agenteAutorizadoCnpj);
+    }
+
+    private void calcularDataFinalizacao(LocalDateTime dataCadastro) {
+        LocalDateTime dataFinalizacao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
+
+        long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataFinalizacao);
+
+        this.dataFinalizacao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
+    }
+
+    private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {
+        return LocalDateTime.now().until(expiracao, ChronoUnit.SECONDS);
     }
 
 }

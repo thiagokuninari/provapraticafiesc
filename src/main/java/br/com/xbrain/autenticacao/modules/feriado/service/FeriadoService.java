@@ -256,6 +256,7 @@ public class FeriadoService {
         cacheNames = FERIADOS_DATA_CACHE_NAME,
         allEntries = true)
     public void flushCacheFeriados() {
+        loadAllFeriados();
         log.info("Flush Cache Feriados");
     }
 
