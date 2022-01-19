@@ -115,6 +115,26 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    public void deveSolicitarUsuarioNaoRealocado() {
+        mvc.perform(get("/api/usuarios/nao-realocado")
+            .param("cpf", "65710871036")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void deveRetornar401_quandoNaoTiverAutorizacao() {
+        mvc.perform(get("/api/usuarios/nao-realocado")
+            .param("cpf", "65710871036")
+            .header("Authorization", getAccessToken(mvc, INATIVO))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
     public void deveSolicitarAtivacaoUsuario() {
         mvc.perform(put("/api/usuarios/ativar/999")
             .header("Authorization", getAccessToken(mvc, ADMIN)))

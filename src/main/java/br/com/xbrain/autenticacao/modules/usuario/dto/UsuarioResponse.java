@@ -63,15 +63,18 @@ public class UsuarioResponse {
 
     public static UsuarioResponse of(Usuario usuario) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
-        BeanUtils.copyProperties(usuario, usuarioResponse);
-        usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
-        usuarioResponse.setNomeNivel(usuario.getNivelNome());
-        usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
-        usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
-        usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
-        usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
-        usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
-        usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
+        if (usuario != null) {
+            BeanUtils.copyProperties(usuario, usuarioResponse);
+            usuarioResponse.setCodigoNivel(usuario.getNivelCodigo());
+            usuarioResponse.setNomeNivel(usuario.getNivelNome());
+            usuarioResponse.setCodigoCargo(usuario.getCargoCodigo());
+            usuarioResponse.setCodigoDepartamento(usuario.getDepartamentoCodigo());
+            usuarioResponse.setCodigoUnidadesNegocio(usuario.getCodigosUnidadesNegocio());
+            usuarioResponse.setCodigoEmpresas(usuario.getCodigosEmpresas());
+            usuarioResponse.setLoginNetSales(usuario.getLoginNetSales());
+            usuarioResponse.setAaId(usuario.getAgenteAutorizadoId());
+            return usuarioResponse;
+        }
         return usuarioResponse;
     }
 
