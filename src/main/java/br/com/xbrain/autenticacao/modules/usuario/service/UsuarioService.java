@@ -291,6 +291,12 @@ public class UsuarioService {
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
+    public UsuarioResponse buscarNaoRealocadoByCpf(String cpf) {
+        return UsuarioResponse.of(repository
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
+            .orElse(null));
+    }
+
     public UsuarioResponse buscarAtualByEmail(String email) {
         return UsuarioResponse.of(repository
             .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, ESituacao.R)

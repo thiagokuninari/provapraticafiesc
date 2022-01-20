@@ -125,6 +125,28 @@ public class UsuarioServiceTest {
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
     @Test
+    public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
+        when(usuarioRepository
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(eq("09723864592"), eq(ESituacao.R)))
+            .thenReturn(Optional.of(umUsuario()));
+
+        assertThat(usuarioService.buscarNaoRealocadoByCpf("097.238.645-92"))
+            .extracting(UsuarioResponse::getId, UsuarioResponse::getCpf)
+            .containsExactly(1, "097.238.645-92");
+    }
+
+    @Test
+    public void buscarNaoRealocadoByCpf_deveRetornarNull_quandoCpfNaoExistir() {
+        when(usuarioRepository
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(anyString(), eq(ESituacao.R)))
+            .thenReturn(Optional.empty());
+        assertThat(usuarioService.buscarNaoRealocadoByCpf("86271666418"))
+            .extracting(UsuarioResponse::getId, UsuarioResponse::getNome, UsuarioResponse::getCpf,
+                UsuarioResponse::getEmail, UsuarioResponse::getSituacao, UsuarioResponse::getCodigoCargo)
+            .containsExactly(null, null, null, null, null, null);
+    }
+
+    @Test
     public void ativar_deveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
         when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
         when(agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
