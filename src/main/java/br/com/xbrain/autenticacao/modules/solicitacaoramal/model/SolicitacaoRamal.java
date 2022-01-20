@@ -19,7 +19,6 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -161,15 +160,6 @@ public class SolicitacaoRamal {
     }
 
     private void calcularDataFinalizacao(LocalDateTime dataCadastro) {
-        LocalDateTime dataFinalizacao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
-
-        long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataFinalizacao);
-
-        this.dataFinalizacao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
+        this.dataFinalizacao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
-
-    private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {
-        return LocalDateTime.now().until(expiracao, ChronoUnit.SECONDS);
-    }
-
 }
