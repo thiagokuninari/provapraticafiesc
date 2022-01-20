@@ -241,6 +241,11 @@ public class UsuarioController {
         return usuarioService.buscarAtualByCpf(cpf);
     }
 
+    @GetMapping("nao-realocado")
+    public UsuarioResponse buscarNaoRealocadosPorCpf(@RequestParam String cpf) {
+        return usuarioService.buscarNaoRealocadoByCpf(cpf);
+    }
+
     @GetMapping("atual/email")
     public UsuarioResponse buscarAtualByEmail(@RequestParam String email) {
         return usuarioService.buscarAtualByEmail(email);
