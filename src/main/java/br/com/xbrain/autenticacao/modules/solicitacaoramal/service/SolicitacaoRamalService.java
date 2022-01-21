@@ -70,6 +70,8 @@ public class SolicitacaoRamalService {
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private DataHoraAtual dataHoraAtual;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
@@ -144,7 +146,7 @@ public class SolicitacaoRamalService {
         validaSalvar(request.getAgenteAutorizadoId());
 
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        solicitacaoRamal.atualizarDataCadastro(new DataHoraAtual().getDataHora());
+        solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
 
         solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(

@@ -21,7 +21,7 @@ public class SolicitacaoRamalTest {
 
     @Test
     public void atualizarDataCadastro_deveSetarDataFinalizacaoAcrescidaDe72HorasUteis() {
-        LocalDateTime dataAtual = LocalDateTime.of(2022, 01, 20,12,00,00);
+        var dataAtual = LocalDateTime.of(2022, 01, 20,12,00,00);
 
         var solicitacaoRamal = new SolicitacaoRamal();
         solicitacaoRamal.atualizarDataCadastro(dataAtual);
