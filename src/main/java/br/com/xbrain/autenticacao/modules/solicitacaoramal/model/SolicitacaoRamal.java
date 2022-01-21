@@ -113,8 +113,8 @@ public class SolicitacaoRamal {
         this.usuario = usuario;
     }
 
-    public void atualizarDataCadastro() {
-        this.dataCadastro = LocalDateTime.now();
+    public void atualizarDataCadastro(LocalDateTime dataAtual) {
+        this.dataCadastro = dataAtual;
         calcularDataFinalizacao(this.dataCadastro);
         atualizarSituacaoParaPendente();
         atualizarEnviouEmailExpiracaoParaFalso();

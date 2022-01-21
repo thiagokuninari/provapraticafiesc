@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -143,7 +144,7 @@ public class SolicitacaoRamalService {
         validaSalvar(request.getAgenteAutorizadoId());
 
         SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        solicitacaoRamal.atualizarDataCadastro();
+        solicitacaoRamal.atualizarDataCadastro(new DataHoraAtual().getDataHora());
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
 
         solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
