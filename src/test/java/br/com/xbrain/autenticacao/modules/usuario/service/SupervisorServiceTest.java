@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -27,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -260,6 +263,12 @@ public class SupervisorServiceTest {
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+        verify(usuarioRepository, times(1))
+            .getUsuariosPorNovaAreaAtuacao(
+                eq(REGIONAL),
+                eq(List.of(1027)),
+                eq(SUPERVISOR_OPERACAO),
+                eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
     @Test
@@ -273,6 +282,12 @@ public class SupervisorServiceTest {
                 tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
                 tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+        verify(usuarioRepository, times(1))
+            .getUsuariosPorNovaAreaAtuacao(
+                eq(UF),
+                eq(List.of(1)),
+                eq(SUPERVISOR_OPERACAO),
+                eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
     private Object[] umVendedorComId(int id) {
