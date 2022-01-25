@@ -91,6 +91,11 @@ public interface UsuarioRepositoryCustom {
                                                     CodigoCargo cargo,
                                                     Set<ECanal> canais);
 
+    List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
+                                                    List<Integer> areasAtuacaoIds,
+                                                    CodigoCargo cargo,
+                                                    Set<ECanal> canais);
+
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);

@@ -28,6 +28,8 @@ public class SupervisorService {
 
     private static final int COLUNA_USUARIO_ID = 0;
     private static final int COLUNA_USUARIO_NOME = 1;
+    private static final List<Integer> LISTA_NOVAS_REGIONAIS =
+        List.of(1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031);
 
     private final UsuarioRepository usuarioRepository;
 
@@ -80,11 +82,20 @@ public class SupervisorService {
     }
 
     public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
-        return usuarioRepository.getUsuariosPorAreaAtuacao(
-            areaAtuacao,
-            areasAtuacaoId,
-            SUPERVISOR_OPERACAO,
-            Set.of(D2D_PROPRIO));
+        var porRegional = AreaAtuacao.REGIONAL.equals(areaAtuacao) 
+            && LISTA_NOVAS_REGIONAIS.contains(areasAtuacaoId.get(0));
+        var porUf = AreaAtuacao.UF.equals(areaAtuacao);
+        return porRegional || porUf
+            ? usuarioRepository.getUsuariosPorNovaAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                SUPERVISOR_OPERACAO,
+                Set.of(D2D_PROPRIO))
+            : usuarioRepository.getUsuariosPorAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                SUPERVISOR_OPERACAO,
+                Set.of(D2D_PROPRIO));
     }
 
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {

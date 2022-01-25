@@ -68,8 +68,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
-    private static final List<Integer> LISTA_NOVAS_REGIONAIS =
-        List.of(1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031);
 
     @Autowired
     private EntityManager entityManager;
@@ -678,39 +676,43 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                                            List<Integer> areasAtuacaoIds,
                                                            CodigoCargo cargo,
                                                            Set<ECanal> canais) {
-        return (AreaAtuacao.REGIONAL.equals(areaAtuacao) 
-            && LISTA_NOVAS_REGIONAIS.contains(areasAtuacaoIds.get(0)))
-            || AreaAtuacao.UF.equals(areaAtuacao)
-            ? new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioResponse.class,
-                    usuarioCidade.usuario.id,
-                    usuarioCidade.usuario.nome,
-                    usuarioCidade.usuario.cargo.codigo))
-                .from(usuarioCidade)
-                .join(usuarioCidade.cidade, cidade)
-                .join(usuarioCidade.cidade.uf, uf1)
-                .join(usuarioCidade.cidade.regional, regional)
-                .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
-                    .and(usuarioCidade.usuario.canais.any().in(canais))
-                    .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
-                .distinct()
-                .fetch()
-            : new JPAQueryFactory(entityManager)
-                .select(Projections.constructor(UsuarioResponse.class,
-                    usuarioCidade.usuario.id,
-                    usuarioCidade.usuario.nome,
-                    usuarioCidade.usuario.cargo.codigo))
-                .from(usuarioCidade)
-                .join(usuarioCidade.cidade, cidade)
-                .join(cidade.subCluster, subCluster)
-                .join(subCluster.cluster, cluster)
-                .join(cluster.grupo, grupo)
-                .join(grupo.regional, regional)
-                .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
-                    .and(usuarioCidade.usuario.canais.any().in(canais))
-                    .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
-                .distinct()
-                .fetch();
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioResponse.class,
+                usuarioCidade.usuario.id,
+                usuarioCidade.usuario.nome,
+                usuarioCidade.usuario.cargo.codigo))
+            .from(usuarioCidade)
+            .join(usuarioCidade.cidade, cidade)
+            .join(cidade.subCluster, subCluster)
+            .join(subCluster.cluster, cluster)
+            .join(cluster.grupo, grupo)
+            .join(grupo.regional, regional)
+            .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+                .and(usuarioCidade.usuario.canais.any().in(canais))
+                .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
+            .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
+                                                           List<Integer> areasAtuacaoIds,
+                                                           CodigoCargo cargo,
+                                                           Set<ECanal> canais) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioResponse.class,
+                usuarioCidade.usuario.id,
+                usuarioCidade.usuario.nome,
+                usuarioCidade.usuario.cargo.codigo))
+            .from(usuarioCidade)
+            .join(usuarioCidade.cidade, cidade)
+            .join(usuarioCidade.cidade.uf, uf1)
+            .join(usuarioCidade.cidade.regional, regional)
+            .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+                .and(usuarioCidade.usuario.canais.any().in(canais))
+                .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
+            .distinct()
+            .fetch();
     }
 
     public List<SubCluster> getSubclustersUsuario(Integer usuarioId) {

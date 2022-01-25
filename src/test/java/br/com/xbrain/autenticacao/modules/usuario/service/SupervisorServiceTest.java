@@ -50,6 +50,9 @@ public class SupervisorServiceTest {
 
     private static final int REGIONAL_SUL_ID = 3;
     private static final int REGIONAL_LESTE_ID = 1;
+    private static final int REGIONAL_RPS = 1027;
+
+    private static final int UF_PARANA = 1;
 
     private static final int SUPERVISOR_LONDRINA_ID = 1;
     private static final int SUPERVISOR_ARAPONGAS_ID = 2;
@@ -244,6 +247,32 @@ public class SupervisorServiceTest {
             .containsExactly(tuple(1, "SUPERVISOR LONDRINA"),
                 tuple(2, "SUPERVISOR ARAPONGAS"),
                 tuple(5, "SUPERVISOR CURITIBA"));
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExisteremNovaRegional() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_RPS)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaUf_seExisterem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getSupervisoresPorAreaAtuacao(UF, singletonList(UF_PARANA)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
     }
 
     private Object[] umVendedorComId(int id) {
