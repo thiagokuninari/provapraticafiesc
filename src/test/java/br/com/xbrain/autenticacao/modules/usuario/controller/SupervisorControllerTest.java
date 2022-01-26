@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
 import org.junit.Test;
@@ -22,18 +21,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.REGIONAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.UF;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static helpers.TestsHelper.getAccessToken;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,9 +50,6 @@ public class SupervisorControllerTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
-
-    @MockBean
-    private UsuarioRepository usuarioRepository;
 
     @Test
     public void getAssistentesEVendedores_isUnauthorized_quandoNaoPassarAToken() throws Exception {
@@ -142,11 +134,6 @@ public class SupervisorControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
-        verify(usuarioRepository, times(1)).getUsuariosPorNovaAreaAtuacao(
-            eq(REGIONAL),
-            eq(List.of(1027)),
-            eq(SUPERVISOR_OPERACAO),
-            eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
     @Test
@@ -161,10 +148,5 @@ public class SupervisorControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[0].nome", is("SUPERVISOR 1")));
-        verify(usuarioRepository, times(1)).getUsuariosPorNovaAreaAtuacao(
-            eq(UF),
-            eq(List.of(1)),
-            eq(SUPERVISOR_OPERACAO),
-            eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 }
