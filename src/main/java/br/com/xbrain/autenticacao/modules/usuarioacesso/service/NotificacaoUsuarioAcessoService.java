@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.springframework.util.CollectionUtils.isEmpty;
+
 @Slf4j
 @Service
 public class NotificacaoUsuarioAcessoService {
@@ -118,6 +120,19 @@ public class NotificacaoUsuarioAcessoService {
             throw new IntegracaoException(ex,
                 NotificacaoUsuarioAcessoService.class.getName(),
                 EErrors.ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA);
+        }
+    }
+
+    public List<Integer> getUsuariosLogadosAtualPorIds(List<Integer> usuarioIds) {
+        try {
+            return Optional.ofNullable(usuarioIds)
+                .filter(ids -> !isEmpty(ids))
+                .map(ids -> client.getUsuariosLogadosAtualPorIds(ids))
+                .orElse(List.of());
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex,
+                NotificacaoUsuarioAcessoService.class.getName(),
+                EErrors.ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS);
         }
     }
 }

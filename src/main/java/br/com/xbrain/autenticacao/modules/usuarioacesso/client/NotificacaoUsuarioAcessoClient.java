@@ -34,4 +34,7 @@ public interface NotificacaoUsuarioAcessoClient {
 
     @PostMapping(API_USUARIOS_LOGADOS + "/por-periodo")
     List<PaLogadoDto> countUsuariosLogadosPorPeriodo(@RequestBody UsuarioLogadoRequest request);
+
+    @PostMapping(API_USUARIOS_LOGADOS + "/ids")
+    List<Integer> getUsuariosLogadosAtualPorIds(@RequestBody List<Integer> usuarioIds);
 }

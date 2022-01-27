@@ -127,7 +127,10 @@ public enum EErrors {
         "#038 - Erro ao alterar a situação do usuário."),
     ERRO_ALTERAR_SITUACAO_COLABORADOR_VENDAS(
         "#039 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.",
-        "#039 - Erro ao alterar a situação do colaborador de vendas.");
+        "#039 - Erro ao alterar a situação do colaborador de vendas."),
+    ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS(
+        "#040 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#040 - Erro ao tentar recuperar os ids dos usuarios logados.");
 
     @Getter
     @Setter
