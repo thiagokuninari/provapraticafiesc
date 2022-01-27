@@ -230,6 +230,66 @@ public class NotificacaoUsuarioAcessoServiceTest {
         verify(client, times(1)).countUsuariosLogadosPorPeriodo(any(UsuarioLogadoRequest.class));
     }
 
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveRetornarIdsRetornadoPeloClient_quandoHouverIdsPassadosNoParametro() {
+        when(client.getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)))).thenReturn(List.of(44, 1));
+
+        assertThat(service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
+            .containsExactlyInAnyOrder(44, 1);
+
+        verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
+    }
+
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveRetornarListaVaziaENaoChamarClient_quandoUsuarioIdsForVazio() {
+        assertThat(service.getUsuariosLogadosAtualPorIds(List.of()))
+            .isEmpty();
+
+        verify(client, never()).getUsuariosLogadosAtualPorIds(any());
+    }
+
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveRetornarListaVaziaENaoChamarClient_quandoUsuarioIdsForNulo() {
+        assertThat(service.getUsuariosLogadosAtualPorIds(null))
+            .isEmpty();
+
+        verify(client, never()).getUsuariosLogadosAtualPorIds(any());
+    }
+
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveRetornarListaVazia_quandoClientRetornarListaVazia() {
+        when(client.getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)))).thenReturn(List.of());
+
+        assertThat(service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
+            .isEmpty();
+
+        verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
+    }
+
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveLancarIntegracaoException_quandoApiNaoAcessivel() {
+        when(client.getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1))))
+            .thenThrow(new RetryableException("Connection refused", new Date()));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
+            .withMessage("#040 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
+    }
+
+    @Test
+    public void getUsuariosLogadosAtualPorIds_deveLancarIntegracaoException_quandoClientRetornarErro() {
+        when(client.getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1))))
+            .thenThrow(new HystrixBadRequestException("Erro"));
+
+        Assertions.assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getUsuariosLogadosAtualPorIds(List.of(14, 44, 1)))
+            .withMessage("#040 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(client, times(1)).getUsuariosLogadosAtualPorIds(eq(List.of(14, 44, 1)));
+    }
+
     private UsuarioLogadoRequest umUsuarioLogadoRequest() {
         return UsuarioLogadoRequest.builder()
             .usuariosIds(List.of(101, 102, 103))

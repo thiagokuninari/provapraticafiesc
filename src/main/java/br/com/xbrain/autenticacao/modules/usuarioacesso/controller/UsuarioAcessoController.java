@@ -53,4 +53,9 @@ public class UsuarioAcessoController {
     public List<PaLogadoDto> getTotalUsuariosLogadosPorPeriodo(@RequestBody UsuarioLogadoRequest usuarioLogadoRequest) {
         return usuarioAcessoService.getTotalUsuariosLogadosPorPeriodoByFiltros(usuarioLogadoRequest);
     }
+
+    @GetMapping("usuarios-logados")
+    public List<Integer> getUsuariosLogadosAtual(UsuarioLogadoRequest request) {
+        return usuarioAcessoService.getUsuariosLogadosAtualPorIds(request);
+    }
 }
