@@ -25,6 +25,7 @@ public class UsuarioFiltros {
     private String cpf;
     private String cnpjAa;
     private Integer regionalId;
+    private Integer ufId;
     private Integer grupoId;
     private Integer clusterId;
     private List<Integer> unidadeNegocioIds;
@@ -49,6 +50,7 @@ public class UsuarioFiltros {
             .comGrupo(grupoId)
             .comCluster(clusterId)
             .comRegional(regionalId)
+            .comUf(ufId)
             .comSubCluster(subClusterId)
             .comUnidadeNegocio(unidadeNegocioIds)
             .comOrganizacaoId(organizacaoId)
