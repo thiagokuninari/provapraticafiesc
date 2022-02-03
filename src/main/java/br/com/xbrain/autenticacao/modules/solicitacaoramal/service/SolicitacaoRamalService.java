@@ -23,6 +23,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.util.ListUtils;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -43,6 +45,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static java.util.Comparator.comparing;
 
 @Service
+@Slf4j
 public class SolicitacaoRamalService {
 
     private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
@@ -351,4 +354,16 @@ public class SolicitacaoRamalService {
         }
     }
 
+    @Transactional
+    public void calculaDataFinalizacao() {
+        var solicitacoes = solicitacaoRamalRepository.findByDataFinalizacaoIsNull();
+
+        if (!ListUtils.isEmpty(solicitacoes)) {
+            log.info("Solicitação Ramal: Iniciando calculo de datas de finalização");
+            solicitacoes.forEach(SolicitacaoRamal::calcularDataFinalizacao);
+
+            solicitacaoRamalRepository.save(solicitacoes);
+            log.info("Solicitação Ramal: Foram atualizadas {} solicitações", solicitacoes.size());
+        }
+    }
 }

@@ -80,7 +80,7 @@ public class SolicitacaoRamal {
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    @Column(name = "DATA_FINALIZACAO", nullable = false, updatable = false)
+    @Column(name = "DATA_FINALIZACAO", nullable = false)
     private LocalDateTime dataFinalizacao;
 
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
@@ -115,7 +115,7 @@ public class SolicitacaoRamal {
 
     public void atualizarDataCadastro(LocalDateTime dataAtual) {
         this.dataCadastro = dataAtual;
-        calcularDataFinalizacao(this.dataCadastro);
+        calcularDataFinalizacao();
         atualizarSituacaoParaPendente();
         atualizarEnviouEmailExpiracaoParaFalso();
     }
@@ -159,7 +159,7 @@ public class SolicitacaoRamal {
         this.agenteAutorizadoCnpj = getOnlyNumbers(this.agenteAutorizadoCnpj);
     }
 
-    private void calcularDataFinalizacao(LocalDateTime dataCadastro) {
-        this.dataFinalizacao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
+    public void calcularDataFinalizacao() {
+        this.dataFinalizacao = LocalDateTime.from(this.dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
 }
