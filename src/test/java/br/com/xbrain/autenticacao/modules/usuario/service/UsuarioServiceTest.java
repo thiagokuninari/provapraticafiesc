@@ -638,6 +638,69 @@ public class UsuarioServiceTest {
         assertThat(usuario).isEmpty();
     }
 
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorNovaRegionalId() {
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .regionalId(1027)
+            .build();
+        assertThat(usuarioService.getUsuariosAlvoDoComunicado(filtros))
+            .extracting("id", "nome", "situacao")
+            .containsExactly(tuple(1, "TESTE", ESituacao.A));
+        verify(usuarioRepository, times(1)).findAllNomesIds(eq(
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .regionalId(1027)
+                .usuarioService(usuarioService)
+                .build()));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorUfId() {
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .regionalId(1027)
+            .ufId(1)
+            .build();
+        assertThat(usuarioService.getUsuariosAlvoDoComunicado(filtros))
+            .extracting("id", "nome", "situacao")
+            .containsExactly(tuple(1, "TESTE", ESituacao.A));
+        verify(usuarioRepository, times(1)).findAllNomesIds(eq(
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .ufId(1)
+                .usuarioService(usuarioService)
+                .build()));
+    }
+
+    @Test
+    public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarCidadesIds() {
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .regionalId(1027)
+            .ufId(1)
+            .cidadesIds(List.of(5578))
+            .build();
+        assertThat(usuarioService.getUsuariosAlvoDoComunicado(filtros))
+            .extracting("id", "nome", "situacao")
+            .containsExactly(tuple(1, "TESTE", ESituacao.A));
+        verify(usuarioRepository, times(1)).findAllNomesIds(eq(
+            PublicoAlvoComunicadoFiltros.builder()
+                .todoCanalAa(false)
+                .todoCanalD2d(false)
+                .comUsuariosLogadosHoje(false)
+                .cidadesIds(List.of(5578))
+                .usuarioService(usuarioService)
+                .build()));
+    }
+
     private Usuario umUsuarioAtivo() {
         return Usuario.builder()
             .id(10)

@@ -751,6 +751,78 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerRegionalId() {
+        doReturn(List.of(
+            SelectResponse.of(1, "Teste"),
+            SelectResponse.of(2, "Brandon")))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].label", is("Teste")))
+            .andExpect(jsonPath("$[1].value", is(2)))
+            .andExpect(jsonPath("$[1].label", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .regionalId(1027)
+                .build()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerUfId() {
+        doReturn(List.of(
+            SelectResponse.of(1, "Teste"),
+            SelectResponse.of(2, "Brandon")))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].label", is("Teste")))
+            .andExpect(jsonPath("$[1].value", is(2)))
+            .andExpect(jsonPath("$[1].label", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .ufId(1)
+                .regionalId(1027)
+                .build()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerCidadesIds() {
+        doReturn(List.of(
+            SelectResponse.of(1, "Teste"),
+            SelectResponse.of(2, "Brandon")))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1&cidadesIds=5578")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].label", is("Teste")))
+            .andExpect(jsonPath("$[1].value", is(2)))
+            .andExpect(jsonPath("$[1].label", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .ufId(1)
+                .regionalId(1027)
+                .cidadesIds(List.of(5578))
+                .build()));
+    }
+
+    @Test
+    @SneakyThrows
     public void getUsuarioByIdComLoginNetSales_deveRetornarOk_seUsuarioPossuirLoginNetSales() {
         final var umUsuarioId = 227;
 
