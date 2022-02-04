@@ -753,8 +753,8 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerRegionalId() {
         doReturn(List.of(
-            SelectResponse.of(1, "Teste"),
-            SelectResponse.of(2, "Brandon")))
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
         mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027")
@@ -776,8 +776,8 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerUfId() {
         doReturn(List.of(
-            SelectResponse.of(1, "Teste"),
-            SelectResponse.of(2, "Brandon")))
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
         mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1")
@@ -800,8 +800,8 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerCidadesIds() {
         doReturn(List.of(
-            SelectResponse.of(1, "Teste"),
-            SelectResponse.of(2, "Brandon")))
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
         mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1&cidadesIds=5578")

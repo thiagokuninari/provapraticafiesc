@@ -68,6 +68,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
+    private static final List<Integer> LISTA_NOVAS_REGIONAIS =
+        List.of(1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031);
 
     @Autowired
     private EntityManager entityManager;
@@ -825,23 +827,33 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
         var temClusterId = Objects.nonNull(filtros.getClusterId());
         var temGrupoId = Objects.nonNull(filtros.getGrupoId());
+        var temUfId = Objects.nonNull(filtros.getUfId());
         var temRegionalId = Objects.nonNull(filtros.getRegionalId());
+        var temNovaRegionalId = temRegionalId
+            && LISTA_NOVAS_REGIONAIS.contains(filtros.getRegionalId());
 
-        if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temRegionalId) {
+        if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temUfId || temRegionalId) {
             query.leftJoin(usuario.cidades, usuarioCidade)
                 .leftJoin(usuarioCidade.cidade, cidade);
         }
-        if (temSubClusterId || temClusterId || temGrupoId || temRegionalId) {
+        if (temSubClusterId || temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
             query.leftJoin(cidade.subCluster, subCluster);
         }
-        if (temClusterId || temGrupoId || temRegionalId) {
+        if (temClusterId || temGrupoId || temRegionalId && !temNovaRegionalId) {
             query.leftJoin(subCluster.cluster, cluster);
         }
-        if (temGrupoId || temRegionalId) {
+        if (temGrupoId || temRegionalId && !temNovaRegionalId) {
             query.leftJoin(cluster.grupo, grupo);
         }
+        if (temUfId || temRegionalId && temNovaRegionalId) {
+            query.leftJoin(cidade.uf, uf1);
+        }
         if (temRegionalId) {
-            query.leftJoin(grupo.regional, regional);
+            if (temNovaRegionalId) {
+                query.leftJoin(cidade.regional, regional);
+            } else {
+                query.leftJoin(grupo.regional, regional);
+            }
         }
     }
 
