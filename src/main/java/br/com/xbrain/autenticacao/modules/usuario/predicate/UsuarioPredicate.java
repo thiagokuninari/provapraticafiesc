@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -12,6 +13,8 @@ import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -38,8 +41,9 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class UsuarioPredicate {
 
     private final BooleanBuilder builder;
-    private static final List<Integer> LISTA_NOVAS_REGIONAIS =
-        List.of(1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031);
+    
+    @Autowired
+    private RegionalService regionalService;
 
     public UsuarioPredicate() {
         this.builder = new BooleanBuilder();
@@ -236,7 +240,7 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comRegional(Integer regionalId) {
         if (regionalId != null) {
-            if (LISTA_NOVAS_REGIONAIS.contains(regionalId)) {
+            if (regionalService.getNovasRegionaisIds().contains(regionalId)) {
                 comNovaRegional(regionalId);
             } else {
                 builder.and(usuario.cidades.any().cidade.id.in(

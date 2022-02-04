@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -26,21 +27,21 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-    private static final List<Integer> LISTA_NOVAS_REGIONAIS = List.of(1022,1023,1024,1025,1026,1027,1028,1029,1030,1031);
-
+    
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
     private CidadeRepository cidadeRepository;
-
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private RegionalService regionalService;
 
     private Supplier<BooleanBuilder> predicateCidadesPermitidas = () ->
         new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
-        return UsuarioCidadeDto.of(LISTA_NOVAS_REGIONAIS.contains(regionalId)
+        return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
             ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
             : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
     }

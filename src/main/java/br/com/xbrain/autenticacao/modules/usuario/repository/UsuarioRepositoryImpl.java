@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -68,13 +69,13 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
-    private static final List<Integer> LISTA_NOVAS_REGIONAIS =
-        List.of(1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031);
 
     @Autowired
     private EntityManager entityManager;
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+    @Autowired
+    private RegionalService regionalService;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -830,7 +831,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var temUfId = Objects.nonNull(filtros.getUfId());
         var temRegionalId = Objects.nonNull(filtros.getRegionalId());
         var temNovaRegionalId = temRegionalId
-            && LISTA_NOVAS_REGIONAIS.contains(filtros.getRegionalId());
+            && regionalService.getNovasRegionaisIds().contains(filtros.getRegionalId());
 
         if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temUfId || temRegionalId) {
             query.leftJoin(usuario.cidades, usuarioCidade)

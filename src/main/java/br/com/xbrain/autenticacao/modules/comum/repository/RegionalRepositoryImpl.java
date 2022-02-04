@@ -44,4 +44,15 @@ public class RegionalRepositoryImpl extends CustomRepository<Regional> implement
                 .distinct()
                 .fetch();
     }
+
+    @Override
+    public List<Integer> getNovasRegionaisIds() {
+        return new JPAQueryFactory(entityManager)
+                .select(regional.id)
+                .from(regional)
+                .where(regional.nome.in(List.of(
+                    "RBS", "RCO", "RMG", "RNE", "RNO",
+                    "RPS", "RRE", "RRS", "RSC", "RSI")))
+                .fetch();
+    }
 }

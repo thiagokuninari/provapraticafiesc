@@ -13,6 +13,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -57,6 +59,11 @@ public class RegionalServiceTest {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Regional não encontrada.");
         regionalService.findById(16516);
+    }
+
+    @Test
+    public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
+        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(List.of(1027));
     }
 
     RegionalDto umClusterDto() {

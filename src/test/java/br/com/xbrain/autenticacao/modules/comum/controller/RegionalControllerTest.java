@@ -62,4 +62,14 @@ public class RegionalControllerTest {
                 .andExpect(jsonPath("$[0].nome", is("SUL")));
     }
 
+    @Test
+    public void deveRetornarIdsDeNovasRegionais() throws Exception {
+        mvc.perform(get("/api/regionais/novas-regionais-ids")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0]", is(1027)));
+    }
+
 }

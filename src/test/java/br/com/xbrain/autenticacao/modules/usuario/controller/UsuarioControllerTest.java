@@ -757,14 +757,15 @@ public class UsuarioControllerTest {
             UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
-        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027")
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
             .accept(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].value", is(1)))
-            .andExpect(jsonPath("$[0].label", is("Teste")))
-            .andExpect(jsonPath("$[1].value", is(2)))
-            .andExpect(jsonPath("$[1].label", is("Brandon")));
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
     
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
@@ -780,14 +781,16 @@ public class UsuarioControllerTest {
             UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
-        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1")
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
+            .param("ufId", "1")
             .accept(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].value", is(1)))
-            .andExpect(jsonPath("$[0].label", is("Teste")))
-            .andExpect(jsonPath("$[1].value", is(2)))
-            .andExpect(jsonPath("$[1].label", is("Brandon")));
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
     
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
@@ -804,14 +807,17 @@ public class UsuarioControllerTest {
             UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
             .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
 
-        mvc.perform(get("/api/usuarios/alvo/comunicado?regionalId=1027&ufId=1&cidadesIds=5578")
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
+            .param("ufId", "1")
+            .param("cidadesIds", "5578")
             .accept(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].value", is(1)))
-            .andExpect(jsonPath("$[0].label", is("Teste")))
-            .andExpect(jsonPath("$[1].value", is(2)))
-            .andExpect(jsonPath("$[1].label", is("Brandon")));
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
     
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
