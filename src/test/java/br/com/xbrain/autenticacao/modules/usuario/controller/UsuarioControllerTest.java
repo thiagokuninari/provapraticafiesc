@@ -296,11 +296,11 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(5)))
-            .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_3021")))
+            .andExpect(jsonPath("$", hasSize(6)))
+            .andExpect(jsonPath("$[0].permissao", is("ROLE_AUT_2031")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
-            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO")));
+            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO_PROPRIO")));
     }
 
     @Test

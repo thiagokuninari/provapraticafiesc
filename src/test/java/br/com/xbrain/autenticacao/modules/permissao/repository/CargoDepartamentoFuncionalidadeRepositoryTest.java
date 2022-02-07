@@ -32,19 +32,20 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
     @Test
     public void findFuncionalidadesDoCargoDepartamentoComCanal_funcionalidades_aoFiltrarPorDepartamentoECanal() {
         List<Funcionalidade> funcionalidades = repository
-                .findFuncionalidadesDoCargoDepartamentoComCanal(CARGO_SOCIO_ID, DEPARTAMENTO_SOCIO_ID);
+            .findFuncionalidadesDoCargoDepartamentoComCanal(CARGO_SOCIO_ID, DEPARTAMENTO_SOCIO_ID);
 
         assertThat(funcionalidades)
-                .extracting("nome")
-                .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional");
+            .extracting("nome")
+            .containsExactly(
+                "Gerenciar Pausas Agendadas",
+                "Relatório - Resumo de Mailing",
+                "Relatório - Ticket Médio Analítico",
+                "Relatório - Ticket Médio por Vendedor",
+                "Relatório - Gerenciamento Operacional");
 
         assertThat(funcionalidades.get(0).getCanais())
-                .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
+            .extracting("canal")
+            .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
     }
 
     @Test
@@ -52,15 +53,15 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
         List<Funcionalidade> funcionalidades = repository.findPermissoesEspeciaisDoUsuarioComCanal(USUARIO_SOCIO_ID);
 
         assertThat(funcionalidades)
-                .extracting("nome")
-                .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+            .extracting("nome")
+            .containsExactly(
+                "Relatório - Resumo de Mailing",
+                "Relatório - Ticket Médio Analítico",
+                "Relatório - Gerenciamento Operacional",
+                "Cadastrar venda para o vendedor D2D");
 
         assertThat(funcionalidades.get(0).getCanais())
-                .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
+            .extracting("canal")
+            .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO);
     }
 }

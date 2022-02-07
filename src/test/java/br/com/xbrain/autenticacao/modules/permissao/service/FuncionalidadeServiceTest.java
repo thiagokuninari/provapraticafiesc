@@ -41,61 +41,62 @@ public class FuncionalidadeServiceTest {
         List<SimpleGrantedAuthority> permissoes = service.getPermissoes(umUsuarioSocio());
 
         assertThat(permissoes)
-                .isNotEmpty()
-                .extracting("authority")
-                .contains("ROLE_AUT_2031");
+            .isNotEmpty()
+            .extracting("authority")
+            .contains("ROLE_AUT_2031");
     }
 
     @Test
     public void getFuncionalidadesPermitidasAoUsuarioComCanal_deveAgruparAsFuncionalidadesDoCargoEspeciaisComDistinct() {
         List<Funcionalidade> funcionalidades =
-                service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
+            service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
 
         assertThat(funcionalidades)
-                .extracting("nome")
-                .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Ticket Médio por Vendedor",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+            .extracting("nome")
+            .containsExactly(
+                "Gerenciar Pausas Agendadas",
+                "Relatório - Resumo de Mailing",
+                "Relatório - Ticket Médio Analítico",
+                "Relatório - Ticket Médio por Vendedor",
+                "Relatório - Gerenciamento Operacional",
+                "Cadastrar venda para o vendedor D2D");
     }
 
     @Test
     public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoMsoConsultor() {
         var usuario = Usuario.builder()
-                .id(100)
-                .cargo(umCargoMsoConsultor())
-                .departamento(new Departamento(21))
-                .nome("RENATO")
-                .build();
+            .id(100)
+            .cargo(umCargoMsoConsultor())
+            .departamento(new Departamento(21))
+            .nome("RENATO")
+            .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(20);
+            .hasSize(20);
     }
 
     private Cargo umCargoMsoConsultor() {
         return Cargo.builder()
-                .id(22)
-                .codigo(CodigoCargo.MSO_CONSULTOR)
-                .nivel(umNivelMso())
-                .build();
+            .id(22)
+            .codigo(CodigoCargo.MSO_CONSULTOR)
+            .nivel(umNivelMso())
+            .build();
     }
 
     private Nivel umNivelMso() {
         return Nivel.builder()
-                .id(2)
-                .codigo(CodigoNivel.MSO)
-                .build();
+            .id(2)
+            .codigo(CodigoNivel.MSO)
+            .build();
     }
 
     private Usuario umUsuarioSocio() {
         return Usuario
-                .builder()
-                .id(USUARIO_SOCIO_ID)
-                .email(SOCIO_AA)
-                .cargo(Cargo.builder().id(CARGO_SOCIO_ID).build())
-                .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
-                .build();
+            .builder()
+            .id(USUARIO_SOCIO_ID)
+            .email(SOCIO_AA)
+            .cargo(Cargo.builder().id(CARGO_SOCIO_ID).build())
+            .departamento(Departamento.builder().id(DEPARTAMENTO_SOCIO_ID).build())
+            .build();
     }
 }
