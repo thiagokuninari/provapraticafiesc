@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.comum.repository;
 
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -50,9 +51,7 @@ public class RegionalRepositoryImpl extends CustomRepository<Regional> implement
         return new JPAQueryFactory(entityManager)
                 .select(regional.id)
                 .from(regional)
-                .where(regional.nome.in(List.of(
-                    "RBS", "RCO", "RMG", "RNE", "RNO",
-                    "RPS", "RRE", "RRS", "RSC", "RSI")))
+                .where(regional.novaRegional.eq(Eboolean.V))
                 .fetch();
     }
 }
