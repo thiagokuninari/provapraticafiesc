@@ -36,7 +36,7 @@ public class RegionalController {
         return service.findById(regionalId);
     }
 
-    @GetMapping("/novas-regionais-ids")
+    @GetMapping("novas-regionais-ids")
     public List<Integer> getNovasRegionaisIds() {
         return service.getNovasRegionaisIds();
     }
