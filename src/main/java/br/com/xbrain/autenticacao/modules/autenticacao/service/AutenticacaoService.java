@@ -111,7 +111,6 @@ public class AutenticacaoService {
         return Optional.ofNullable(details.get(USUARIO_AUTENTICADO_KEY))
                 .map(usuarioAutenticadoObj -> (UsuarioAutenticado)usuarioAutenticadoObj)
                 .or(() -> usuarioRepository.findComplete(getUsuarioId())
-                    .map(Usuario::forceLoad)
                     .map(usuario -> new UsuarioAutenticado(usuario, authentication.getAuthorities()))
                     .map(usuarioAutenticado -> {
                         details.putIfAbsent(USUARIO_AUTENTICADO_KEY, usuarioAutenticado);
