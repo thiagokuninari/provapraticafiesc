@@ -36,6 +36,7 @@ public class PublicoAlvoComunicadoFiltros {
     private Integer subClusterId;
     private Integer ufId;
     private List<Integer> usuariosFiltradosPorCidadePol;
+    private List<Integer> novasRegionaisIds;
 
     private UsuarioAutenticado usuarioAutenticado;
     private UsuarioService usuarioService;

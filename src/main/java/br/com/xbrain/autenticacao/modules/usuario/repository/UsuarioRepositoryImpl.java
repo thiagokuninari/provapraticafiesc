@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
-import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -74,8 +73,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     private EntityManager entityManager;
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
-    @Autowired
-    private RegionalService regionalService;
 
     public Optional<Usuario> findByEmail(String email) {
         return Optional.ofNullable(
@@ -798,12 +795,12 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros) {
+    public List<Integer> findAllIds(PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
         var query = new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario);
 
-        montarQuery(query, filtros);
+        montarQuery(query, filtros, novasRegionaisIds);
 
         return query.where(filtros.toPredicate())
             .distinct()
@@ -811,19 +808,20 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros) {
+    public List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtros,
+                                                     List<Integer> novasRegionaisIds) {
         var query = new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario);
 
-        montarQuery(query, filtros);
+        montarQuery(query, filtros, novasRegionaisIds);
 
         return query.where(filtros.toPredicate())
             .distinct()
             .fetch();
     }
 
-    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros) {
+    private void montarQuery(JPAQuery query, PublicoAlvoComunicadoFiltros filtros, List<Integer> novasRegionaisIds) {
         var temCidadesIds = !ObjectUtils.isEmpty(filtros.getCidadesIds());
         var temSubClusterId = Objects.nonNull(filtros.getSubClusterId());
         var temClusterId = Objects.nonNull(filtros.getClusterId());
@@ -831,7 +829,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var temUfId = Objects.nonNull(filtros.getUfId());
         var temRegionalId = Objects.nonNull(filtros.getRegionalId());
         var temNovaRegionalId = temRegionalId
-            && regionalService.getNovasRegionaisIds().contains(filtros.getRegionalId());
+            && Objects.nonNull(novasRegionaisIds)
+            && novasRegionaisIds.contains(filtros.getRegionalId());
 
         if (temCidadesIds || temSubClusterId || temClusterId || temGrupoId || temUfId || temRegionalId) {
             query.leftJoin(usuario.cidades, usuarioCidade)

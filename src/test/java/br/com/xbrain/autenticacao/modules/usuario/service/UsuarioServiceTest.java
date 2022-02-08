@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
@@ -119,6 +120,8 @@ public class UsuarioServiceTest {
     private UsuarioAfastamentoService usuarioAfastamentoService;
     @Mock
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
+    @Mock
+    private RegionalService regionalService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -640,7 +643,8 @@ public class UsuarioServiceTest {
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorNovaRegionalId() {
-        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -655,12 +659,14 @@ public class UsuarioServiceTest {
                 .comUsuariosLogadosHoje(false)
                 .regionalId(1027)
                 .usuarioService(usuarioService)
-                .build()));
+                .build()),
+            eq(List.of(1027)));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarPorUfId() {
-        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -676,12 +682,14 @@ public class UsuarioServiceTest {
                 .comUsuariosLogadosHoje(false)
                 .ufId(1)
                 .usuarioService(usuarioService)
-                .build()));
+                .build()),
+            eq(List.of(1027)));
     }
 
     @Test
     public void getUsuariosAlvoDoComunicado_deveRetornarUsuarios_quandoBuscarCidadesIds() {
-        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class)))
+        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
+        when(usuarioRepository.findAllNomesIds(any(PublicoAlvoComunicadoFiltros.class), anyList()))
             .thenReturn(List.of(UsuarioNomeResponse.of(1, "TESTE", ESituacao.A)));
         var filtros = PublicoAlvoComunicadoFiltros.builder()
             .regionalId(1027)
@@ -698,7 +706,8 @@ public class UsuarioServiceTest {
                 .comUsuariosLogadosHoje(false)
                 .cidadesIds(List.of(5578))
                 .usuarioService(usuarioService)
-                .build()));
+                .build()),
+            eq(List.of(1027)));
     }
 
     private Usuario umUsuarioAtivo() {

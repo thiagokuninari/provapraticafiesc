@@ -38,6 +38,7 @@ public class UsuarioFiltros {
     private Integer organizacaoId;
     private List<Integer> excluiIds;
     private List<CodigoCargo> codigosCargos;
+    private List<Integer> novasRegionaisIds;
 
     @JsonIgnore
     public UsuarioPredicate toPredicate() {
@@ -49,7 +50,7 @@ public class UsuarioFiltros {
             .comSituacoes(situacoes)
             .comGrupo(grupoId)
             .comCluster(clusterId)
-            .comRegional(regionalId)
+            .comRegional(regionalId, novasRegionaisIds)
             .comUf(ufId)
             .comSubCluster(subClusterId)
             .comUnidadeNegocio(unidadeNegocioIds)

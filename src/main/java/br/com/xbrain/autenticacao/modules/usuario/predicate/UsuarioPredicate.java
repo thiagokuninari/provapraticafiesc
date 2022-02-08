@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
-import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -13,8 +12,6 @@ import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -41,9 +38,6 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class UsuarioPredicate {
 
     private final BooleanBuilder builder;
-    
-    @Autowired
-    private RegionalService regionalService;
 
     public UsuarioPredicate() {
         this.builder = new BooleanBuilder();
@@ -238,9 +232,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comRegional(Integer regionalId) {
+    public UsuarioPredicate comRegional(Integer regionalId, List<Integer> novasRegionaisIds) {
         if (regionalId != null) {
-            if (regionalService.getNovasRegionaisIds().contains(regionalId)) {
+            if (novasRegionaisIds.contains(regionalId)) {
                 comNovaRegional(regionalId);
             } else {
                 builder.and(usuario.cidades.any().cidade.id.in(
@@ -376,8 +370,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, Integer clusterId, Integer grupoId,
-                                          Integer regionalId, Integer subClusterId, Integer ufId) {
+    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, List<Integer> novasRegionaisIds,
+                                          Integer clusterId, Integer grupoId, Integer regionalId,
+                                          Integer subClusterId, Integer ufId) {
         if (!isEmpty(cidadesIds)) {
             comCidade(cidadesIds);
         } else if (!isEmpty(subClusterId)) {
@@ -389,7 +384,7 @@ public class UsuarioPredicate {
         } else if (!isEmpty(ufId)) {
             comUf(ufId);
         } else if (!isEmpty(regionalId)) {
-            comRegional(regionalId);
+            comRegional(regionalId, novasRegionaisIds);
         }
         return this;
     }
@@ -470,7 +465,7 @@ public class UsuarioPredicate {
             .comCidade(filtros.getCidadesIds())
             .comGrupo(filtros.getGrupoId())
             .comUf(filtros.getUfId())
-            .comRegional(filtros.getRegionalId())
+            .comRegional(filtros.getRegionalId(), filtros.getNovasRegionaisIds())
             .comSubCluster(filtros.getSubClusterId());
     }
 

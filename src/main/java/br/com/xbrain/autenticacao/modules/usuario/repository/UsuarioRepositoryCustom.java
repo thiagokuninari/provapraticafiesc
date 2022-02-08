@@ -108,9 +108,9 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findAllIds(Predicate predicate);
 
-    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate, List<Integer> novasRegionaisIds);
 
-    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
+    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro, List<Integer> novasRegionaisIds);
 
     long deleteUsuarioHierarquia(Integer usuarioId);
 
