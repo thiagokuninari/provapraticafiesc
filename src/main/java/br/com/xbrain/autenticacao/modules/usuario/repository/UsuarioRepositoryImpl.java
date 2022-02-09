@@ -166,23 +166,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> canais) {
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigosCargos) {
         return entityManager
-            .createNativeQuery(
-                " SELECT UH.FK_USUARIO "
-                    + " , U.NOME "
-                    + " , U.EMAIL_01 "
-                    + " , C.NOME AS NOME_CARGO "
-                    + " FROM USUARIO_HIERARQUIA UH"
-                    + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-                    + " JOIN CARGO C ON C.ID = U.FK_CARGO "
-                    + " WHERE C.CODIGO in (:_codigoCargo)"
-                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
-                    + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
-                    + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
-            .setParameter("_usuarioId", usuarioId)
-            .setParameter("_codigoCargo", canais)
-            .getResultList();
+                .createNativeQuery(
+                        " SELECT UH.FK_USUARIO "
+                                + " , U.NOME "
+                                + " , U.EMAIL_01 "
+                                + " , C.NOME AS NOME_CARGO "
+                                + " , C.CODIGO AS CARGO_CODIGO"
+                                + " FROM USUARIO_HIERARQUIA UH"
+                                + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                                + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                                + " WHERE C.CODIGO in (:_codigoCargo)"
+                                + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
+                                + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+                .setParameter("_usuarioId", usuarioId)
+                .setParameter("_codigoCargo", codigosCargos)
+                .getResultList();
     }
 
     public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {

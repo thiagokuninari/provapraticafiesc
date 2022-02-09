@@ -41,19 +41,20 @@ public class FuncionalidadeServiceTest {
         List<SimpleGrantedAuthority> permissoes = service.getPermissoes(umUsuarioSocio());
 
         assertThat(permissoes)
-                .isNotEmpty()
-                .extracting("authority")
-                .contains("ROLE_AUT_2031");
+            .isNotEmpty()
+            .extracting("authority")
+            .contains("ROLE_AUT_2031");
     }
 
     @Test
     public void getFuncionalidadesPermitidasAoUsuarioComCanal_deveAgruparAsFuncionalidadesDoCargoEspeciaisComDistinct() {
         List<Funcionalidade> funcionalidades =
-                service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
+            service.getFuncionalidadesPermitidasAoUsuarioComCanal(umUsuarioSocio());
 
         assertThat(funcionalidades)
             .extracting("nome")
             .containsExactly(
+                "Gerenciar Pausas Agendadas",
                 "Visualizar Tabulação Manual",
                 "Visualizar Agendamento",
                 "Relatório - Resumo de Mailing",
@@ -66,14 +67,14 @@ public class FuncionalidadeServiceTest {
     @Test
     public void getFuncionalidadesPermitidasAoUsuario_listaDeFuncionalidades_quandoUsuarioCargoMsoConsultor() {
         var usuario = Usuario.builder()
-                .id(100)
-                .cargo(umCargoMsoConsultor())
-                .departamento(new Departamento(21))
-                .nome("RENATO")
-                .build();
+            .id(100)
+            .cargo(umCargoMsoConsultor())
+            .departamento(new Departamento(21))
+            .nome("RENATO")
+            .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(49);
+            .hasSize(49);
     }
 
     @Test

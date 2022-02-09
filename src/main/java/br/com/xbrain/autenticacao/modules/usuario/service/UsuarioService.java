@@ -1676,7 +1676,7 @@ public class UsuarioService {
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
         return repository.getSubordinadosPorCargo(usuarioId,
-            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name()))
+            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name(), OPERACAO_EXECUTIVO_VENDAS.name()))
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(Collectors.toList());

@@ -32,11 +32,12 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
     @Test
     public void findFuncionalidadesDoCargoDepartamentoComCanal_funcionalidades_aoFiltrarPorDepartamentoECanal() {
         List<Funcionalidade> funcionalidades = repository
-                .findFuncionalidadesDoCargoDepartamentoComCanal(CARGO_SOCIO_ID, DEPARTAMENTO_SOCIO_ID);
+            .findFuncionalidadesDoCargoDepartamentoComCanal(CARGO_SOCIO_ID, DEPARTAMENTO_SOCIO_ID);
 
         assertThat(funcionalidades)
                 .extracting("nome")
                 .containsExactly(
+                    "Gerenciar Pausas Agendadas",
                     "Visualizar Tabulação Manual",
                     "Visualizar Agendamento",
                     "Relatório - Resumo de Mailing",
@@ -45,8 +46,8 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
                     "Relatório - Gerenciamento Operacional");
 
         assertThat(funcionalidades.get(0).getCanais())
-                .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO);
+            .extracting("canal")
+            .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
     }
 
     @Test
@@ -54,15 +55,15 @@ public class CargoDepartamentoFuncionalidadeRepositoryTest {
         List<Funcionalidade> funcionalidades = repository.findPermissoesEspeciaisDoUsuarioComCanal(USUARIO_SOCIO_ID);
 
         assertThat(funcionalidades)
-                .extracting("nome")
-                .containsExactly(
-                        "Relatório - Resumo de Mailing",
-                        "Relatório - Ticket Médio Analítico",
-                        "Relatório - Gerenciamento Operacional",
-                        "Cadastrar venda para o vendedor D2D");
+            .extracting("nome")
+            .containsExactly(
+                "Relatório - Resumo de Mailing",
+                "Relatório - Ticket Médio Analítico",
+                "Relatório - Gerenciamento Operacional",
+                "Cadastrar venda para o vendedor D2D");
 
         assertThat(funcionalidades.get(0).getCanais())
-                .extracting("canal")
-                .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
+            .extracting("canal")
+            .containsExactly(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO);
     }
 }

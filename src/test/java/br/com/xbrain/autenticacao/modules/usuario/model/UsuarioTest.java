@@ -49,6 +49,12 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isUsuarioEquipeVendas_deveRetornarTrue_quandoForExecutivoVendas() {
+        assertTrue(umUsuarioComCargo(1, CodigoCargo.OPERACAO_EXECUTIVO_VENDAS)
+            .isUsuarioEquipeVendas());
+    }
+
+    @Test
     public void permiteEditar_deveRetornarTrue_quandoForAdmin() {
         assertTrue(umUsuarioComCargo(1, CodigoCargo.GERENTE_OPERACAO)
             .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.XBRAIN, CodigoCargo.ADMINISTRADOR)));

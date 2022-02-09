@@ -451,7 +451,8 @@ public class Usuario {
 
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
-            && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS)
+            && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
+            OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
