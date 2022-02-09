@@ -1,7 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -24,10 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -37,8 +35,6 @@ public class UsuarioRepositoryTest {
 
     @Autowired
     private UsuarioRepository repository;
-    @MockBean
-    private RegionalService regionalService;
     @MockBean
     private UsuarioService usuarioService;
 
@@ -232,9 +228,8 @@ public class UsuarioRepositoryTest {
             .comUsuariosLogadosHoje(false)
             .regionalId(1027)
             .usuarioService(usuarioService)
-            .usuarioAutenticado(umUsuarioAutenticadoNivelBackoffice())
+            .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
         assertThat(repository.findAllIds(filtros, List.of(1027))).isEmpty();
     }
 
@@ -246,9 +241,8 @@ public class UsuarioRepositoryTest {
             .comUsuariosLogadosHoje(false)
             .regionalId(1027)
             .usuarioService(usuarioService)
-            .usuarioAutenticado(umUsuarioAutenticadoNivelBackoffice())
+            .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
-        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
         assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
     }
 }
