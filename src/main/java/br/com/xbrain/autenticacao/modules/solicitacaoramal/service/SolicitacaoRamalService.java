@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
@@ -355,15 +356,20 @@ public class SolicitacaoRamalService {
     }
 
     @Transactional
-    public void calculaDataFinalizacao() {
-        var solicitacoes = solicitacaoRamalRepository.findByDataFinalizacaoIsNull();
+    public void calculaDataFinalizacao(SolicitacaoRamalFiltros filtros) {
+        if (autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")) {
+            var solicitacoes = solicitacaoRamalRepository
+                .findByDataFinalizacaoIsNull(filtros.toPredicate().build());
 
-        if (!ListUtils.isEmpty(solicitacoes)) {
-            log.info("Solicitação Ramal: Iniciando calculo de datas de finalização");
-            solicitacoes.forEach(SolicitacaoRamal::calcularDataFinalizacao);
+            if (!ListUtils.isEmpty(solicitacoes)) {
+                log.info("Solicitação Ramal: Iniciando calculo de datas de finalização");
+                solicitacoes.forEach(SolicitacaoRamal::calcularDataFinalizacao);
 
-            solicitacaoRamalRepository.save(solicitacoes);
-            log.info("Solicitação Ramal: Foram atualizadas {} solicitações", solicitacoes.size());
+                solicitacaoRamalRepository.save(solicitacoes);
+                log.info("Solicitação Ramal: Foram atualizadas {} solicitações", solicitacoes.size());
+            }
+        } else {
+            throw new PermissaoException("Usuario não autorizado!");
         }
     }
 }

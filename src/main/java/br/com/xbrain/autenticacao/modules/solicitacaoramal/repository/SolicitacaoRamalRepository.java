@@ -17,6 +17,4 @@ public interface SolicitacaoRamalRepository extends JpaRepository<SolicitacaoRam
     @Query("UPDATE SolicitacaoRamal r SET r.dataEnviadoEmailExpiracao = ?1 WHERE r.id = ?2")
     void updateFlagDataEnviadoEmailExpiracao(LocalDateTime dataAtual, Integer solicitacaoId);
 
-    List<SolicitacaoRamal> findByDataFinalizacaoIsNull();
-
 }

@@ -110,4 +110,13 @@ public class SolicitacaoRamalRepositoryImpl
                         .fetchOne()
         );
     }
+
+    @Override
+    public List<SolicitacaoRamal> findByDataFinalizacaoIsNull(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                    .select(solicitacaoRamal)
+                    .from(solicitacaoRamal)
+                    .where(solicitacaoRamal.dataFinalizacao.isNull().and(predicate))
+                    .fetch();
+    }
 }

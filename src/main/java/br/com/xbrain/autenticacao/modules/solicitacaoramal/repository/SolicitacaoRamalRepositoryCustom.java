@@ -21,4 +21,5 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId);
 
+    List<SolicitacaoRamal> findByDataFinalizacaoIsNull(Predicate predicate);
 }

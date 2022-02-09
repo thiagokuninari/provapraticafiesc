@@ -451,6 +451,30 @@ public class SolicitacaoRamalControllerTest {
 
     }
 
+    @Test
+    public void calcularDataFinalizacao_deveRetornarIsOk_seTudoCerto() throws Exception {
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+            .param("dataInicialSolicitacao", "20/01/2022")
+            .param("dataFinalSolicitacao", "21/01/2022")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void calcularDataFinalizacao_deveRetornarIsOk_mesmoSemReceberDatas() throws Exception {
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void calcularDataFinalizacao_deveRetornarNaoAutorizado_seNaoHouverUsuarioAutenticado() throws Exception {
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+            .param("dataInicialSolicitacao", "20/01/2022")
+            .param("dataFinalSolicitacao", "21/01/2022"))
+            .andExpect(status().isUnauthorized());
+    }
+
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
             .id(id)

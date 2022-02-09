@@ -76,7 +76,7 @@ public class SolicitacaoRamalController {
     }
 
     @PutMapping("calcula-data-finalizacao")
-    public void calculaDataFinalizacao() {
-        solicitacaoRamalService.calculaDataFinalizacao();
+    public void calculaDataFinalizacao(SolicitacaoRamalFiltros filtros) {
+        solicitacaoRamalService.calculaDataFinalizacao(filtros);
     }
 }
