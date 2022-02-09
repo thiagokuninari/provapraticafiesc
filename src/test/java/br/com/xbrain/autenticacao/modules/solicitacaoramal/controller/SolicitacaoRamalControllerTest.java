@@ -456,14 +456,14 @@ public class SolicitacaoRamalControllerTest {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
             .param("dataInicialSolicitacao", "20/01/2022")
             .param("dataFinalSolicitacao", "21/01/2022")
-            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
 
     @Test
     public void calcularDataFinalizacao_deveRetornarIsOk_mesmoSemReceberDatas() throws Exception {
         mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
-            .header("Authorization", getAccessToken(mvc, SOCIO_AA)))
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
 
