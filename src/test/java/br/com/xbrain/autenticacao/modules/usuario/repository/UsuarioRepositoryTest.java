@@ -1,16 +1,20 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,8 +24,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -31,6 +37,10 @@ public class UsuarioRepositoryTest {
 
     @Autowired
     private UsuarioRepository repository;
+    @MockBean
+    private RegionalService regionalService;
+    @MockBean
+    private UsuarioService usuarioService;
 
     @Test
     public void getSubclustersUsuario_deveRetornarOsSubclusters_somenteAtivosSemDuplicar() {
@@ -212,5 +222,33 @@ public class UsuarioRepositoryTest {
                 tuple(121, "VR 1"),
                 tuple(123, "VR 3")
             );
+    }
+
+    @Test
+    public void findAllIds_listaVazia_quandoInformadoNovaRegional() {
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(false)
+            .todoCanalD2d(false)
+            .comUsuariosLogadosHoje(false)
+            .regionalId(1027)
+            .usuarioService(usuarioService)
+            .usuarioAutenticado(umUsuarioAutenticadoNivelBackoffice())
+            .build();
+        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
+        assertThat(repository.findAllIds(filtros, List.of(1027))).isEmpty();
+    }
+
+    @Test
+    public void findAllNomesIds_listaVazia_quandoInformadoNovaRegional() {
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(false)
+            .todoCanalD2d(false)
+            .comUsuariosLogadosHoje(false)
+            .regionalId(1027)
+            .usuarioService(usuarioService)
+            .usuarioAutenticado(umUsuarioAutenticadoNivelBackoffice())
+            .build();
+        when(regionalService.getNovasRegionaisIds()).thenReturn(List.of(1027));
+        assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
     }
 }

@@ -799,7 +799,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var query = new JPAQueryFactory(entityManager)
             .select(usuario.id)
             .from(usuario);
-
+        filtros.setNovasRegionaisIds(novasRegionaisIds);
         montarQuery(query, filtros, novasRegionaisIds);
 
         return query.where(filtros.toPredicate())
@@ -813,7 +813,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         var query = new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))
             .from(usuario);
-
+        filtros.setNovasRegionaisIds(novasRegionaisIds);
         montarQuery(query, filtros, novasRegionaisIds);
 
         return query.where(filtros.toPredicate())
