@@ -453,7 +453,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void calcularDataFinalizacao_deveRetornarIsOk_seTudoCerto() throws Exception {
-        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcular-data-finalizacao")
             .param("dataInicialSolicitacao", "20/01/2022")
             .param("dataFinalSolicitacao", "21/01/2022")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
@@ -462,14 +462,14 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void calcularDataFinalizacao_deveRetornarIsOk_mesmoSemReceberDatas() throws Exception {
-        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcular-data-finalizacao")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
     }
 
     @Test
     public void calcularDataFinalizacao_deveRetornarNaoAutorizado_seNaoHouverUsuarioAutenticado() throws Exception {
-        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcula-data-finalizacao")
+        mvc.perform(put(URL_API_SOLICITACAO_RAMAL + "/calcular-data-finalizacao")
             .param("dataInicialSolicitacao", "20/01/2022")
             .param("dataFinalSolicitacao", "21/01/2022"))
             .andExpect(status().isUnauthorized());

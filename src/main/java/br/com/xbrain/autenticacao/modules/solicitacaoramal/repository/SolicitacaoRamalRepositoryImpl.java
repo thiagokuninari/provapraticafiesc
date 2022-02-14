@@ -112,11 +112,10 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findByDataFinalizacaoIsNull(Predicate predicate) {
+    public List<SolicitacaoRamal> findAllByPredicate(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-                    .select(solicitacaoRamal)
-                    .from(solicitacaoRamal)
-                    .where(solicitacaoRamal.dataFinalizacao.isNull().and(predicate))
+                    .selectFrom(solicitacaoRamal)
+                    .where(predicate)
                     .fetch();
     }
 }

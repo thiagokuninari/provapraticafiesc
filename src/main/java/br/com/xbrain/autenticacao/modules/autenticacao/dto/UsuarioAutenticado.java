@@ -215,4 +215,10 @@ public class UsuarioAutenticado extends OAuth2Request {
         return cargoCodigo.equals(OPERACAO_TELEVENDAS)
                 && hasCanal(ECanal.ATIVO_PROPRIO);
     }
+
+    public void validarAdministrador() {
+        if (!isXbrain()) {
+            throw new PermissaoException("Usuário não autorizado!");
+        }
+    }
 }
