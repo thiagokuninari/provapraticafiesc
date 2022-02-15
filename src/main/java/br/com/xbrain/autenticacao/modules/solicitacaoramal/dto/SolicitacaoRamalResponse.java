@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +14,6 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,7 +47,7 @@ public class SolicitacaoRamalResponse {
         SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
-        response.calcularHoraDeExpiracaoDaSolicitacao(solicitacaoRamal.getDataCadastro());
+        response.dataHoraExpiracao = solicitacaoRamal.getDataFinalizacao();
         response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
             .map(ETipoImplantacao::getDescricao)
             .orElse(""));
@@ -66,17 +64,4 @@ public class SolicitacaoRamalResponse {
                 .collect(Collectors.toList())
                 : null;
     }
-
-    private void calcularHoraDeExpiracaoDaSolicitacao(LocalDateTime dataCadastro) {
-        LocalDateTime dataExpiracao = LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
-
-        long diferencaEmSegundos = getDiferencaEmSegundosDataExpiracaoEDataAtual(dataExpiracao);
-
-        this.dataHoraExpiracao = LocalDateTime.now().plusSeconds(diferencaEmSegundos);
-    }
-
-    private long getDiferencaEmSegundosDataExpiracaoEDataAtual(LocalDateTime expiracao) {
-        return LocalDateTime.now().until(expiracao, ChronoUnit.SECONDS);
-    }
-
 }

@@ -29,7 +29,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                 feriado.situacao.eq(ESituacaoFeriado.ATIVO)
                     .and(feriado.dataFeriado.between(
                         now.with(TemporalAdjusters.firstDayOfYear()),
-                        now.with(TemporalAdjusters.lastDayOfYear())))
+                        now.with(TemporalAdjusters.lastDayOfYear()).plusDays(1)))
             )
             .fetch();
     }

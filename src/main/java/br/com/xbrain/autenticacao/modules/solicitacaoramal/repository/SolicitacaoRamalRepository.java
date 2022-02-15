@@ -1,14 +1,14 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public interface SolicitacaoRamalRepository extends CrudRepository<SolicitacaoRamal, Integer>, SolicitacaoRamalRepositoryCustom {
+public interface SolicitacaoRamalRepository extends JpaRepository<SolicitacaoRamal, Integer>, SolicitacaoRamalRepositoryCustom {
 
     Optional<SolicitacaoRamal> findById(Integer id);
 
