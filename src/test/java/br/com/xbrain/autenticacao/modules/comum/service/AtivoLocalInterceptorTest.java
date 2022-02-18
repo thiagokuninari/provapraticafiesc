@@ -5,8 +5,13 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+import br.com.xbrain.autenticacao.modules.horarioacesso.enums.EDiaSemana;
+import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
+import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
+import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
+import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
@@ -36,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.horarioacesso.helper.HorarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.MSO_CONSULTOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -44,11 +50,11 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@Import({HorarioAcessoAtivoLocalService.class})
+@Import({HorarioAcessoService.class})
 public class AtivoLocalInterceptorTest {
 
     @Autowired
-    private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
+    private HorarioAcessoService horarioAcessoService;
     @MockBean
     private AutenticacaoService autenticacaoService;
     @MockBean
@@ -59,6 +65,12 @@ public class AtivoLocalInterceptorTest {
     private DataHoraAtual dataHoraAtual;
     @MockBean
     private NotificacaoApiService notificacaoApiService;
+    @MockBean
+    private HorarioAcessoRepository horarioAcessoRepository;
+    @MockBean
+    private HorarioAtuacaoRepository horarioAtuacaoRepository;
+    @MockBean
+    private HorarioHistoricoRepository horarioHistoricoRepository;
 
     private AtivoLocalInterceptor interceptor;
 
@@ -68,19 +80,21 @@ public class AtivoLocalInterceptorTest {
         when(autenticacaoService.getAccessToken()).thenReturn(getTokenFromVendedor());
         when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(false);
         when(notificacaoApiService.consultarStatusTabulacaoByUsuario(anyInt())).thenReturn(false);
+        when(horarioAcessoRepository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(siteService.findById(anyInt())).thenReturn(umSite());
         when(siteService.getSitesPorPermissao(any())).thenReturn(List.of(SelectResponse.of(1, "Curitiba")));
-        interceptor = new AtivoLocalInterceptor(horarioAcessoAtivoLocalService);
+        interceptor = new AtivoLocalInterceptor(horarioAcessoService);
     }
 
     @Test
     public void deveValidarAcesso_throwsException_quandoForaHorarioPermitido() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(horarioAtuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao(8, 18));
 
         assertThatExceptionOfType(UnauthorizedUserException.class)
                 .isThrownBy(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
                         new MockHttpServletResponse(), null, new ModelAndView()))
-                .withMessage("Fora do horário permitido.");
+                .withMessage("Usuário fora do horário permitido.");
 
         verify(callService, atLeastOnce()).consultarStatusUsoRamalByUsuarioAutenticado();
         verify(autenticacaoService, atLeastOnce()).logout(anyInt());
@@ -89,7 +103,7 @@ public class AtivoLocalInterceptorTest {
 
     @Test
     public void naoDeveValidarAcesso_notThrowsException_quandoRotaForParaLogin() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("POST", "/oauth/token"),
                 new MockHttpServletResponse(), null, new ModelAndView()))
@@ -101,7 +115,7 @@ public class AtivoLocalInterceptorTest {
 
     @Test
     public void naoDeveValidarAcesso_notThrowsException_quandoRotaForParaLiberarRamal() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("PUT", "api/usuarios/remover-ramal-configuracao"),
             new MockHttpServletResponse(), null, new ModelAndView()))
@@ -115,7 +129,7 @@ public class AtivoLocalInterceptorTest {
     public void naoDeveValidarAcesso_notThrowsException_quandoUsuarioDiferenteVendedorAtivo() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(getUsuarioAutenticadoMso());
         when(autenticacaoService.getAccessToken()).thenReturn(getTokenFromMso());
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
                 new MockHttpServletResponse(), null, new ModelAndView()))
@@ -127,7 +141,8 @@ public class AtivoLocalInterceptorTest {
 
     @Test
     public void deveValidarAcesso_notThrowsException_quandoForaHorarioPermitidoMasDentroTabulacao() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(horarioAtuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao(9, 18));
         when(notificacaoApiService.consultarStatusTabulacaoByUsuario(anyInt())).thenReturn(true);
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
@@ -139,19 +154,20 @@ public class AtivoLocalInterceptorTest {
 
     @Test
     public void deveValidarAcesso_notThrowsException_quandoForaHorarioPermitidoMasRamalEmUso() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
-        when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(true);
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(21, 5)));
+        when(horarioAtuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao(9, 22));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
                 new MockHttpServletResponse(), null, new ModelAndView()))
                 .doesNotThrowAnyException();
 
-        verify(callService, atLeastOnce()).consultarStatusUsoRamalByUsuarioAutenticado();
+        verify(horarioAcessoRepository, atLeastOnce()).findBySiteId(eq(100));
+        verify(horarioAtuacaoRepository, atLeastOnce()).findByHorarioAcessoId(eq(1));
     }
 
     @Test
     public void deveValidarAcesso_notThrowsException_quandoDentroHorarioPermitido() {
-        when(dataHoraAtual.getDataHora(any())).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 5)));
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 5)));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
                 new MockHttpServletResponse(), null, new ModelAndView()))
@@ -164,9 +180,18 @@ public class AtivoLocalInterceptorTest {
 
     private Site umSite() {
         return Site.builder()
-                .timeZone(ETimeZone.BRT)
-                .id(1)
+                .id(100)
                 .build();
+    }
+
+    private List<HorarioAtuacao> umaListaHorariosAtuacao(Integer horaInicio, Integer horaFim) {
+        return List.of(HorarioAtuacao.builder()
+            .id(1)
+            .diaSemana(EDiaSemana.valueOf(LocalDateTime.now()))
+            .horarioAcesso(umHorarioAcesso())
+            .horarioInicio(LocalTime.of(horaInicio, 0))
+            .horarioFim(LocalTime.of(horaFim, 0))
+            .build());
     }
 
     private UsuarioAutenticado getUsuarioAutenticadoMso() {
@@ -187,6 +212,7 @@ public class AtivoLocalInterceptorTest {
         return UsuarioAutenticado.builder()
                 .usuario(
                         Usuario.builder()
+                                .id(101)
                                 .canais(Set.of(ECanal.ATIVO_PROPRIO))
                                 .cargo(Cargo.builder()
                                         .codigo(OPERACAO_TELEVENDAS)

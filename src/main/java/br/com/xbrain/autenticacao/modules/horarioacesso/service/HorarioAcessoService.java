@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -15,16 +17,19 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioHistorico;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -35,6 +40,8 @@ public class HorarioAcessoService {
 
     public static final ValidacaoException HORARIO_ACESSO_NAO_ENCONTRADO =
         new ValidacaoException("Horário de acesso não encontrado.");
+    public static final UnauthorizedUserException ACESSO_FORA_HORARIO_PERMITIDO =
+        new UnauthorizedUserException("Usuário fora do horário permitido.");
 
     @Autowired
     private HorarioAcessoRepository repository;
@@ -48,6 +55,10 @@ public class HorarioAcessoService {
     private SiteService siteService;
     @Autowired
     private DataHoraAtual dataHoraAtual;
+    @Autowired
+    private CallService callService;
+    @Autowired
+    private NotificacaoApiService notificacaoApiService;
 
     public Page<HorarioAcessoResponse> getHorariosAcesso(PageRequest pageable, HorarioAcessoFiltros filtros) {
         var horariosAcesso = repository.findAll(filtros.toPredicate().build(), pageable)
@@ -109,7 +120,7 @@ public class HorarioAcessoService {
 
     private void validarSite(Integer siteId) {
         var horarios = repository.findBySiteId(siteId);
-        if (!horarios.isEmpty()) {
+        if (nonNull(horarios)) {
             throw new ValidacaoException("Site já possui horário de acesso cadastrado.");
         }
     }
@@ -169,11 +180,67 @@ public class HorarioAcessoService {
         }
     }
 
+    public void isDentroHorarioPermitido() {
+        var horarioAtual = dataHoraAtual.getDataHora();
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        Optional.ofNullable(usuarioAutenticado)
+            .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
+            .map(u -> getSiteByUsuario(u.getUsuario()))
+            .map(s -> repository.findBySiteId(s.getId())
+                .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
+            .map(h -> atuacaoRepository.findByHorarioAcessoId(h.getId()))
+            .map(ha -> ha.stream().filter(h -> 
+                h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
+            .ifPresent(horario -> {
+                var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
+                if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
+                    callService.liberarRamalUsuarioAutenticado();
+                    autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                    throw ACESSO_FORA_HORARIO_PERMITIDO;
+                }
+            });
+    }
+
+    public void isDentroHorarioPermitido(Usuario usuario) {
+        var horarioAtual = dataHoraAtual.getDataHora();
+        if (usuario.isOperadorTelevendasAtivoLocal()) {
+            Optional.ofNullable(usuario)
+                .map(u -> getSiteByUsuario(u))
+                .map(s -> repository.findBySiteId(s.getId())
+                    .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
+                .map(h -> atuacaoRepository.findByHorarioAcessoId(h.getId()))
+                .map(ha -> ha.stream().filter(h -> 
+                    h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
+                .ifPresent(horario -> {
+                    var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
+                    if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
+                        callService.liberarRamalUsuarioAutenticado();
+                        autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                        throw ACESSO_FORA_HORARIO_PERMITIDO;
+                    }
+                });
+        }
+    }
+
     private Site getSiteByUsuario(Usuario usuario) {
         return siteService.getSitesPorPermissao(usuario).stream()
             .map(SelectResponse::getValue)
             .findFirst()
             .map(value -> siteService.findById((Integer) value))
             .orElse(null);
+    }
+
+    private boolean isHorarioAtuacaoPermitido(LocalTime horaAtual, HorarioAtuacao horarioAtuacao) {
+        return horaAtual.isAfter(horarioAtuacao.getHorarioInicio())
+            && horaAtual.isBefore(horarioAtuacao.getHorarioFim());
+    }
+
+    private boolean isRamalEmUso() {
+        return callService.consultarStatusUsoRamalByUsuarioAutenticado();
+    }
+
+    private boolean isDentroTabulacao() {
+        var usuarioId = autenticacaoService.getUsuarioId();
+        return notificacaoApiService.consultarStatusTabulacaoByUsuario(usuarioId);
     }
 }

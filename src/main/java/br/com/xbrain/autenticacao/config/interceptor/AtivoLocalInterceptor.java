@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.config.interceptor;
 
-import br.com.xbrain.autenticacao.modules.comum.service.HorarioAcessoAtivoLocalService;
+import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,12 @@ public class AtivoLocalInterceptor extends HandlerInterceptorAdapter {
 
 
     @Autowired
-    private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
+    private HorarioAcessoService horarioAcessoService;
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         if (isUriAllowed(request)) {
-            horarioAcessoAtivoLocalService.validarHorarioAcessoVendedor();
+            horarioAcessoService.isDentroHorarioPermitido();
         }
     }
 

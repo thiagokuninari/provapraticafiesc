@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.controller;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
@@ -170,8 +169,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarTrue_seHorarioAtualEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
@@ -193,8 +191,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarFalse_seHorarioAtualNaoEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
@@ -216,8 +213,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().usuario(umOperadorTelevendas()).build());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
