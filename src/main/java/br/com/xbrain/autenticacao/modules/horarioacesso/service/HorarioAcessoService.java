@@ -20,9 +20,13 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.stereotype.Service;
@@ -30,18 +34,22 @@ import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
+@RequiredArgsConstructor
 public class HorarioAcessoService {
 
     public static final ValidacaoException HORARIO_ACESSO_NAO_ENCONTRADO =
         new ValidacaoException("Horário de acesso não encontrado.");
     public static final UnauthorizedUserException ACESSO_FORA_HORARIO_PERMITIDO =
         new UnauthorizedUserException("Usuário fora do horário permitido.");
+
+    private final Environment environment;
 
     @Autowired
     private HorarioAcessoRepository repository;
@@ -181,25 +189,27 @@ public class HorarioAcessoService {
     }
 
     public void isDentroHorarioPermitido() {
-        var horarioAtual = dataHoraAtual.getDataHora();
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        Optional.ofNullable(usuarioAutenticado)
-            .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
-            .map(usuario -> getSiteByUsuario(usuario.getUsuario()))
-            .map(site -> repository.findBySiteId(site.getId())
-                .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
-            .map(horarioAcesso -> atuacaoRepository
-                .findByHorarioAcessoId(horarioAcesso.getId()))
-            .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
-                h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-            .ifPresent(horario -> {
-                var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
-                if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
-                    callService.liberarRamalUsuarioAutenticado();
-                    autenticacaoService.logout(autenticacaoService.getUsuarioId());
-                    throw ACESSO_FORA_HORARIO_PERMITIDO;
-                }
-            });
+        if (isTest() || AutenticacaoService.hasAuthentication() && isOperadorTelevendasAtivoLocalByTokenStore()) {
+            var horarioAtual = dataHoraAtual.getDataHora();
+            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+            Optional.ofNullable(usuarioAutenticado)
+                .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
+                .map(usuario -> getSiteByUsuario(usuario.getUsuario()))
+                .map(site -> repository.findBySiteId(site.getId())
+                    .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
+                .map(horarioAcesso -> atuacaoRepository
+                    .findByHorarioAcessoId(horarioAcesso.getId()))
+                .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
+                    h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
+                .ifPresent(horario -> {
+                    var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
+                    if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
+                        callService.liberarRamalUsuarioAutenticado();
+                        autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                        throw ACESSO_FORA_HORARIO_PERMITIDO;
+                    }
+                });
+        }
     }
 
     public void isDentroHorarioPermitido(Usuario usuario) {
@@ -243,5 +253,18 @@ public class HorarioAcessoService {
     private boolean isDentroTabulacao() {
         var usuarioId = autenticacaoService.getUsuarioId();
         return notificacaoApiService.consultarStatusTabulacaoByUsuario(usuarioId);
+    }
+
+    private boolean isTest() {
+        return environment.acceptsProfiles("test");
+    }
+
+    public boolean isOperadorTelevendasAtivoLocalByTokenStore() {
+        return autenticacaoService.getAccessToken()
+            .filter(token -> {
+                var info = token.getAdditionalInformation();
+                return info.containsValue(CodigoCargo.OPERACAO_TELEVENDAS)
+                    && info.containsValue(Set.of(ECanal.ATIVO_PROPRIO.name()));
+            }).isPresent();
     }
 }
