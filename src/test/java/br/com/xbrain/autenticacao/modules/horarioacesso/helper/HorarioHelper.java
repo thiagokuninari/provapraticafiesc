@@ -145,19 +145,22 @@ public class HorarioHelper {
             .build();
     }
 
+    public static Usuario umOperadorTelevendas() {
+        return Usuario.builder()
+            .id(101)
+            .nome("OPERADOR TELEVENDAS")
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cargo(Cargo.builder()
+                .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
+                .build())
+            .build();
+    }
+
     public static UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
-                .usuario(
-                        Usuario.builder()
-                                .id(101)
-                                .nome("OPERADOR TELEVENDAS")
-                                .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                                .cargo(Cargo.builder()
-                                        .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
-                                        .build())
-                                .build())
-                .canais(Set.of(ECanal.ATIVO_PROPRIO))
-                .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
-                .build();
+            .usuario(umOperadorTelevendas())
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
+            .build();
     }
 }

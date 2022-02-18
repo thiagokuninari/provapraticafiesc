@@ -185,11 +185,12 @@ public class HorarioAcessoService {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
         Optional.ofNullable(usuarioAutenticado)
             .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
-            .map(u -> getSiteByUsuario(u.getUsuario()))
-            .map(s -> repository.findBySiteId(s.getId())
+            .map(usuario -> getSiteByUsuario(usuario.getUsuario()))
+            .map(site -> repository.findBySiteId(site.getId())
                 .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
-            .map(h -> atuacaoRepository.findByHorarioAcessoId(h.getId()))
-            .map(ha -> ha.stream().filter(h -> 
+            .map(horarioAcesso -> atuacaoRepository
+                .findByHorarioAcessoId(horarioAcesso.getId()))
+            .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                 h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
             .ifPresent(horario -> {
                 var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
@@ -205,11 +206,11 @@ public class HorarioAcessoService {
         var horarioAtual = dataHoraAtual.getDataHora();
         if (usuario.isOperadorTelevendasAtivoLocal()) {
             Optional.ofNullable(usuario)
-                .map(u -> getSiteByUsuario(u))
-                .map(s -> repository.findBySiteId(s.getId())
+                .map(user -> getSiteByUsuario(user))
+                .map(site -> repository.findBySiteId(site.getId())
                     .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
-                .map(h -> atuacaoRepository.findByHorarioAcessoId(h.getId()))
-                .map(ha -> ha.stream().filter(h -> 
+                .map(horarioAcesso -> atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId()))
+                .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
                 .ifPresent(horario -> {
                     var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());

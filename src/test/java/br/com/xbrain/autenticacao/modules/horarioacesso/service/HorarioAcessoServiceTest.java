@@ -76,9 +76,12 @@ public class HorarioAcessoServiceTest {
     @Before
     public void setup() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(autenticacaoService.getUsuarioId()).thenReturn(101);
         when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
+        when(siteService.getSitesPorPermissao(any(Usuario.class)))
+            .thenReturn(List.of(SelectResponse.of(101, "OPERADOR TELEVENDAS")));
         when(siteService.findById(anyInt())).thenReturn(umSite());
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(atuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao());
         when(callService.consultarStatusUsoRamalByUsuarioAutenticado()).thenReturn(false);
         when(notificacaoApiService.consultarStatusTabulacaoByUsuario(anyInt())).thenReturn(false);
@@ -319,6 +322,11 @@ public class HorarioAcessoServiceTest {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
 
         assertThatCode(() -> service.isDentroHorarioPermitido()).doesNotThrowAnyException();
+    
+        verify(dataHoraAtual, times(1)).getDataHora();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test
@@ -329,6 +337,16 @@ public class HorarioAcessoServiceTest {
         assertThatExceptionOfType(UnauthorizedUserException.class)
             .isThrownBy(() -> service.isDentroHorarioPermitido())
             .withMessage("Usuário fora do horário permitido.");
+
+        verify(dataHoraAtual, times(1)).getDataHora();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+        verify(notificacaoApiService, times(1)).consultarStatusTabulacaoByUsuario(eq(101));
+        verify(callService, times(1)).consultarStatusUsoRamalByUsuarioAutenticado();
+        verify(callService, times(1)).liberarRamalUsuarioAutenticado();
+        verify(autenticacaoService, times(2)).getUsuarioId();
+        verify(autenticacaoService, times(1)).logout(eq(101));
     }
 
     @Test
@@ -337,6 +355,11 @@ public class HorarioAcessoServiceTest {
 
         assertThatCode(() -> service.isDentroHorarioPermitido(umUsuarioAutenticado().getUsuario()))
             .doesNotThrowAnyException();
+
+        verify(dataHoraAtual, times(1)).getDataHora();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test
@@ -347,5 +370,15 @@ public class HorarioAcessoServiceTest {
         assertThatExceptionOfType(UnauthorizedUserException.class)
             .isThrownBy(() -> service.isDentroHorarioPermitido(umUsuarioAutenticado().getUsuario()))
             .withMessage("Usuário fora do horário permitido.");
+
+        verify(dataHoraAtual, times(1)).getDataHora();
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(repository, times(1)).findBySiteId(eq(100));
+        verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
+        verify(notificacaoApiService, times(1)).consultarStatusTabulacaoByUsuario(eq(101));
+        verify(callService, times(1)).consultarStatusUsoRamalByUsuarioAutenticado();
+        verify(callService, times(1)).liberarRamalUsuarioAutenticado();
+        verify(autenticacaoService, times(2)).getUsuarioId();
+        verify(autenticacaoService, times(1)).logout(eq(101));
     }
 }
