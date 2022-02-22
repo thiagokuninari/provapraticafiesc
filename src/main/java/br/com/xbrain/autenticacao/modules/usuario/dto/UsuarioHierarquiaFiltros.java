@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,8 @@ public class UsuarioHierarquiaFiltros {
     @Builder.Default
     private Boolean buscarInativo = true;
     private Integer equipeVendaId;
+
+    public Boolean apenasSiteId() {
+        return Objects.nonNull(siteId) && Objects.isNull(coordenadorId) && Objects.isNull(equipeVendaId);
+    }
 }

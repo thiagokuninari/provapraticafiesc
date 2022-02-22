@@ -4,6 +4,8 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSituacaoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -104,5 +106,113 @@ public class UsuarioSiteServiceTest {
             .isEqualTo(List.of(
                 SelectResponse.of(1, "VENDEDOR 1"),
                 SelectResponse.of(2, "VENDEDOR 2")));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivos_seUsuarioLogadoAdmin() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
+        usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
+            .thenReturn(List.of(
+                TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
+                TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A)));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivosEInativos_seUsuarioLogadoAdmin() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
+        usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
+            .thenReturn(List.of(
+                TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
+                TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I)));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivos_seUsuarioLogadoAssistenteOperacao() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.ASSISTENTE_OPERACAO);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.getSuperioresDoUsuarioPorCargo(eq(100), eq(CodigoCargo.COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(usuario));
+        when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
+            .thenReturn(List.of(
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A))));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivosEInativos_seUsuarioLogadoAssistenteOperacao() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.ASSISTENTE_OPERACAO);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.getSuperioresDoUsuarioPorCargo(eq(100), eq(CodigoCargo.COORDENADOR_OPERACAO)))
+            .thenReturn(List.of(usuario));
+        when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
+            .thenReturn(List.of(
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I))));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivos_porCargoDoUsuarioLogado() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.VAREJO_SUPERVISOR);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
+            .thenReturn(List.of(
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A))));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
+    }
+
+    @Test
+    public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivosEInativos_porCargoDoUsuarioLogado() {
+        var usuario = TestBuilders.umUsuario(100, CodigoCargo.VAREJO_SUPERVISOR);
+
+        when(usuarioRepository.findById(eq(100)))
+            .thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
+            .thenReturn(List.of(
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
+                UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I))));
+
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+            .isEqualTo(List.of(
+                UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
+                UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));
     }
 }

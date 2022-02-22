@@ -60,11 +60,17 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
     @Override
     public List<UsuarioNomeResponse> vendedoresDaHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-        var vendedores = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(usuarioHierarquiaFiltros.getSiteId(),
-            usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
-        var vendedoresFiltrados = filtrarUsuariosPorEquipes(vendedores, usuarioHierarquiaFiltros.getEquipeVendaId());
-        adicionaInativoNomeDoUsuario(vendedoresFiltrados);
-        return vendedoresFiltrados;
+
+        if (usuarioHierarquiaFiltros.apenasSiteId()) {
+            return usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
+                usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
+        } else {
+            var vendedores = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(usuarioHierarquiaFiltros.getSiteId(),
+                usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
+            var vendedoresFiltrados = filtrarUsuariosPorEquipes(vendedores, usuarioHierarquiaFiltros.getEquipeVendaId());
+            adicionaInativoNomeDoUsuario(vendedoresFiltrados);
+            return vendedoresFiltrados;
+        }
     }
 
     private List<UsuarioNomeResponse> filtrarUsuariosPorEquipes(List<UsuarioEquipeDto> usuarioNomeResponses, Integer equipeId) {
