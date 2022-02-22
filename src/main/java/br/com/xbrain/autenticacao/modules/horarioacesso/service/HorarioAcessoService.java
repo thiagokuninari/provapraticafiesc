@@ -215,20 +215,23 @@ public class HorarioAcessoService {
         }
     }
 
-    public boolean isDentroHorarioPermitido(Usuario usuario) {
+    public void isDentroHorarioPermitido(Usuario usuario) {
         var horarioAtual = dataHoraAtual.getDataHora();
         if (usuario.isOperadorTelevendasAtivoLocal()) {
-            var horario = Optional.ofNullable(usuario)
+            Optional.ofNullable(usuario)
                 .map(user -> getSiteByUsuario(user))
                 .map(site -> repository.findBySiteId(site.getId())
                     .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
                 .map(horarioAcesso -> atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId()))
                 .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .orElse(null);
-            return nonNull(horario) && isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario);
+                .filter(horario ->
+                    isNull(horario)
+                    || !isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario))
+                .ifPresent(error -> {
+                    throw ACESSO_FORA_HORARIO_PERMITIDO;
+                });
         }
-        return true;
     }
 
     private Site getSiteByUsuario(Usuario usuario) {

@@ -350,10 +350,11 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
-    public void isDentroHorarioPermitido_deveRetornarTrue_quandoUsuarioEstiverDentroDoHorario() {
+    public void isDentroHorarioPermitido_naoDeveLancarException_quandoUsuarioInformadoEstiverDentroDoHorario() {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
 
-        assertThat(service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario())).isTrue();
+        assertThatCode(() -> service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario()))
+            .doesNotThrowAnyException();
 
         verify(dataHoraAtual, times(1)).getDataHora();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -362,11 +363,13 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
-    public void isDentroHorarioPermitido_deveRetornarFalse_quandoUsuarioEstiverForaDoHorario() {
+    public void isDentroHorarioPermitido_deveLancarException_quandoUsuarioInformadoEstiverForaDoHorario() {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(8, 0)));
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(101, "OPERADOR TELEVENDAS")));
-        assertThat(service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario())).isFalse();
+        assertThatExceptionOfType(UnauthorizedUserException.class)
+            .isThrownBy(() -> service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario()))
+            .withMessage("Usuário fora do horário permitido.");
 
         verify(dataHoraAtual, times(1)).getDataHora();
         verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
@@ -376,7 +379,10 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void isDentroHorarioPermitido_deveRetornarTrue_quandoUsuarioNaoForOperadorTelevendas() {
-        assertThat(service.isDentroHorarioPermitido(umAdmin().getUsuario())).isTrue();
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
+
+        assertThatCode(() -> service.isDentroHorarioPermitido(umAdmin().getUsuario()))
+            .doesNotThrowAnyException();
 
         verify(dataHoraAtual, times(1)).getDataHora();
     }

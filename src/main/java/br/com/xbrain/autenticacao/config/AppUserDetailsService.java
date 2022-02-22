@@ -59,8 +59,6 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     private void validarUsuarioForaHorarioPermitido(Usuario usuario) {
-        if (!horarioAcessoService.isDentroHorarioPermitido(usuario)) {
-            throw new ValidacaoException("Usuário fora do horário permitido.");
-        }
+        horarioAcessoService.isDentroHorarioPermitido(usuario);
     }
 }
