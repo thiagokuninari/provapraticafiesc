@@ -120,7 +120,7 @@ public class UsuarioSiteServiceTest {
                 TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
                 TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A)));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, false))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
@@ -138,7 +138,7 @@ public class UsuarioSiteServiceTest {
                 TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
                 TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I)));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, true))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));
@@ -157,7 +157,7 @@ public class UsuarioSiteServiceTest {
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A))));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, false))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
@@ -176,7 +176,7 @@ public class UsuarioSiteServiceTest {
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I))));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, true))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));
@@ -193,7 +193,7 @@ public class UsuarioSiteServiceTest {
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.A))));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, false))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, false))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.A)));
@@ -210,7 +210,7 @@ public class UsuarioSiteServiceTest {
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A)),
                 UsuarioSituacaoResponse.of(TestBuilders.umUsuarioNomeResponse(2, "VENDEDOR 2", ESituacao.I))));
 
-        assertThat(service.getVendedoresDaHierarquiaPorSite(123, 100, true))
+        assertThat(service.getVendedoresDaHierarquiaPorSite(123, true))
             .isEqualTo(List.of(
                 UsuarioNomeResponse.of(1,"VENDEDOR 1", ESituacao.A),
                 UsuarioNomeResponse.of(2, "VENDEDOR 2", ESituacao.I)));

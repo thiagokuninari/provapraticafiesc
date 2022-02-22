@@ -193,12 +193,11 @@ public class UsuarioSiteService {
     }
 
     public List<UsuarioNomeResponse> getVendedoresDaHierarquiaPorSite(Integer siteId,
-                                                                      Integer usuarioId,
                                                                       Boolean buscarInativos) {
-        var usuario = getUsuarioById(usuarioId);
+        var usuario = autenticacaoService.getUsuarioAutenticado();
         var vendedores = usuario.isXbrainOuMso()
             ? getVendedorPorSiteId(siteId)
-            : getVendedoresPorCargoUsuario(usuario, siteId);
+            : getVendedoresPorCargoUsuario(usuario.getUsuario(), siteId);
 
         return vendedores
             .stream()

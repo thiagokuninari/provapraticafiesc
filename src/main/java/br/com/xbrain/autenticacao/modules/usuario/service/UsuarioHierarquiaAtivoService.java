@@ -62,8 +62,10 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
         var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
 
         if (usuarioHierarquiaFiltros.apenasSiteId()) {
-            return usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
-                usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
+            var vendedores = usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
+                usuarioHierarquiaFiltros.getBuscarInativo());
+            adicionaInativoNomeDoUsuario(vendedores);
+            return vendedores;
         } else {
             var vendedores = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(usuarioHierarquiaFiltros.getSiteId(),
                 usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
