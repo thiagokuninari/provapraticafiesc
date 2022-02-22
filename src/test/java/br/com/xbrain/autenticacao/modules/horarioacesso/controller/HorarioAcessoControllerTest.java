@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.model.HorarioAtuacao;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAcessoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioAtuacaoRepository;
 import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
-import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
@@ -58,7 +57,6 @@ public class HorarioAcessoControllerTest {
 
     @Autowired
     private MockMvc mvc;
-    
     @MockBean
     private HorarioAcessoService service;
     @MockBean
@@ -89,6 +87,7 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getHorariosAcesso_ok_quandoTiverPermissao() throws Exception {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umAdmin());
         mvc.perform(get(URL)
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
@@ -169,10 +168,10 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarTrue_seHorarioAtualEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(siteService.findById(anyInt())).thenReturn(umSite());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
@@ -191,10 +190,10 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarFalse_seHorarioAtualNaoEstiverDentroDoPermitido() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(siteService.findById(anyInt())).thenReturn(umSite());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()
@@ -213,10 +212,10 @@ public class HorarioAcessoControllerTest {
 
     @Test
     public void getStatus_deveRetornarFalse_seHorarioAtualNaoSeEncaixarEmNenhumDia() throws Exception {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
-        when(siteService.findById(anyInt())).thenReturn(Site.builder().id(100).build());
+        when(siteService.findById(anyInt())).thenReturn(umSite());
         when(repository.findBySiteId(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
         var horarioAtuacao = HorarioAtuacao.builder()

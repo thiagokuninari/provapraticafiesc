@@ -75,7 +75,7 @@ public class HorarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
         when(repository.findById(anyInt())).thenReturn(Optional.of(umHorarioAcesso()));
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
@@ -207,7 +207,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getStatus_deveRetornarTrue_quandoHorarioAtualEstiverDentroDoHorarioPermitido() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
@@ -221,7 +221,7 @@ public class HorarioAcessoServiceTest {
         assertThat(service.getStatus()).isTrue();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umUsuarioAutenticado().getUsuario()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -229,7 +229,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getStatus_deveRetornarFalse_quandoHorarioAtualNaoEstiverDentroDoHorarioPermitido() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
@@ -243,7 +243,7 @@ public class HorarioAcessoServiceTest {
         assertThat(service.getStatus()).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umUsuarioAutenticado().getUsuario()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -251,7 +251,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void getStatus_deveRetornarFalse_quandoHorarioAtualNaoSeEncaixarEmNenhumDiaPermitido() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umOperadorTelevendas());
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(100, "SITE TEST")));
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2021, 12, 13, 10, 0, 0));
@@ -264,7 +264,7 @@ public class HorarioAcessoServiceTest {
         assertThat(service.getStatus()).isFalse();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umUsuarioAutenticado().getUsuario()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(siteService, times(1)).findById(eq(100));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
@@ -324,7 +324,7 @@ public class HorarioAcessoServiceTest {
         assertThatCode(() -> service.isDentroHorarioPermitido()).doesNotThrowAnyException();
     
         verify(dataHoraAtual, times(1)).getDataHora();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
@@ -339,7 +339,7 @@ public class HorarioAcessoServiceTest {
             .withMessage("Usuário fora do horário permitido.");
 
         verify(dataHoraAtual, times(1)).getDataHora();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
         verify(notificacaoApiService, times(1)).consultarStatusTabulacaoByUsuario(eq(101));
@@ -350,35 +350,34 @@ public class HorarioAcessoServiceTest {
     }
 
     @Test
-    public void isDentroHorarioPermitido_naoDeveLancarException_quandoUsuarioInformadoEstiverDentroDoHorario() {
+    public void isDentroHorarioPermitido_deveRetornarTrue_quandoUsuarioEstiverDentroDoHorario() {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(10, 0)));
 
-        assertThatCode(() -> service.isDentroHorarioPermitido(umUsuarioAutenticado().getUsuario()))
-            .doesNotThrowAnyException();
+        assertThat(service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario())).isTrue();
 
         verify(dataHoraAtual, times(1)).getDataHora();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
     }
 
     @Test
-    public void isDentroHorarioPermitido_deveLancarException_quandoUsuarioInformadoEstiverForaDoHorario() {
+    public void isDentroHorarioPermitido_deveRetornarFalse_quandoUsuarioEstiverForaDoHorario() {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(8, 0)));
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(101, "OPERADOR TELEVENDAS")));
-        assertThatExceptionOfType(UnauthorizedUserException.class)
-            .isThrownBy(() -> service.isDentroHorarioPermitido(umUsuarioAutenticado().getUsuario()))
-            .withMessage("Usuário fora do horário permitido.");
+        assertThat(service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario())).isFalse();
 
         verify(dataHoraAtual, times(1)).getDataHora();
-        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas()));
+        verify(siteService, times(1)).getSitesPorPermissao(eq(umOperadorTelevendas().getUsuario()));
         verify(repository, times(1)).findBySiteId(eq(100));
         verify(atuacaoRepository, times(1)).findByHorarioAcessoId(eq(1));
-        verify(notificacaoApiService, times(1)).consultarStatusTabulacaoByUsuario(eq(101));
-        verify(callService, times(1)).consultarStatusUsoRamalByUsuarioAutenticado();
-        verify(callService, times(1)).liberarRamalUsuarioAutenticado();
-        verify(autenticacaoService, times(2)).getUsuarioId();
-        verify(autenticacaoService, times(1)).logout(eq(101));
+    }
+
+    @Test
+    public void isDentroHorarioPermitido_deveRetornarTrue_quandoUsuarioNaoForOperadorTelevendas() {
+        assertThat(service.isDentroHorarioPermitido(umAdmin().getUsuario())).isTrue();
+
+        verify(dataHoraAtual, times(1)).getDataHora();
     }
 }

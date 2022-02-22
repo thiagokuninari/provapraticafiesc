@@ -31,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -201,36 +202,33 @@ public class HorarioAcessoService {
                     .findByHorarioAcessoId(horarioAcesso.getId()))
                 .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .ifPresent(horario -> {
-                    var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
-                    if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
-                        callService.liberarRamalUsuarioAutenticado();
-                        autenticacaoService.logout(autenticacaoService.getUsuarioId());
-                        throw ACESSO_FORA_HORARIO_PERMITIDO;
-                    }
+                .filter(horario -> 
+                    isNull(horario)
+                    || !isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)
+                    && !isDentroTabulacao()
+                    && !isRamalEmUso())
+                .ifPresent(error -> {
+                    callService.liberarRamalUsuarioAutenticado();
+                    autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                    throw ACESSO_FORA_HORARIO_PERMITIDO;
                 });
         }
     }
 
-    public void isDentroHorarioPermitido(Usuario usuario) {
+    public boolean isDentroHorarioPermitido(Usuario usuario) {
         var horarioAtual = dataHoraAtual.getDataHora();
         if (usuario.isOperadorTelevendasAtivoLocal()) {
-            Optional.ofNullable(usuario)
+            var horario = Optional.ofNullable(usuario)
                 .map(user -> getSiteByUsuario(user))
                 .map(site -> repository.findBySiteId(site.getId())
                     .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
                 .map(horarioAcesso -> atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId()))
                 .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .ifPresent(horario -> {
-                    var horaAtual = LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
-                    if (!isHorarioAtuacaoPermitido(horaAtual, horario) && !isDentroTabulacao() && !isRamalEmUso()) {
-                        callService.liberarRamalUsuarioAutenticado();
-                        autenticacaoService.logout(autenticacaoService.getUsuarioId());
-                        throw ACESSO_FORA_HORARIO_PERMITIDO;
-                    }
-                });
+                .orElse(null);
+            return nonNull(horario) && isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario);
         }
+        return true;
     }
 
     private Site getSiteByUsuario(Usuario usuario) {
@@ -239,6 +237,10 @@ public class HorarioAcessoService {
             .findFirst()
             .map(value -> siteService.findById((Integer) value))
             .orElse(null);
+    }
+
+    private LocalTime getHoraAtual(LocalDateTime horarioAtual) {
+        return LocalTime.of(horarioAtual.getHour(), horarioAtual.getMinute());
     }
 
     private boolean isHorarioAtuacaoPermitido(LocalTime horaAtual, HorarioAtuacao horarioAtuacao) {

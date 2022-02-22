@@ -145,22 +145,33 @@ public class HorarioHelper {
             .build();
     }
 
-    public static Usuario umOperadorTelevendas() {
-        return Usuario.builder()
-            .id(101)
-            .nome("OPERADOR TELEVENDAS")
-            .canais(Set.of(ECanal.ATIVO_PROPRIO))
-            .cargo(Cargo.builder()
-                .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
+    public static UsuarioAutenticado umOperadorTelevendas() {
+        return UsuarioAutenticado.builder()
+            .usuario(Usuario.builder()
+                .id(101)
+                .nome("OPERADOR TELEVENDAS")
+                .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .cargo(Cargo.builder()
+                    .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
+                    .build())
                 .build())
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
             .build();
     }
 
-    public static UsuarioAutenticado umUsuarioAutenticado() {
+    public static UsuarioAutenticado umAdmin() {
         return UsuarioAutenticado.builder()
-            .usuario(umOperadorTelevendas())
-            .canais(Set.of(ECanal.ATIVO_PROPRIO))
-            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
+            .usuario(Usuario.builder()
+                .id(102)
+                .nome("ADMIN")
+                .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+                .cargo(Cargo.builder()
+                    .codigo(CodigoCargo.ADMINISTRADOR)
+                    .build())
+                .build())
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
             .build();
     }
 }
