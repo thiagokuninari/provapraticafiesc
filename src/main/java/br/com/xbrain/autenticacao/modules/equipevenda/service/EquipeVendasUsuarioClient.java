@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @FeignClient(name = "equipeVendaUsuarioClient",
-    url = "${app-config.services.equipe-venda.url}",
+    url = /*"${app-config.services.equipe-venda.url}"*/"http://localhost:8089",
     configuration = FeignSkipBadRequestsConfiguration.class)
 public interface EquipeVendasUsuarioClient {
 
@@ -18,5 +18,8 @@ public interface EquipeVendasUsuarioClient {
 
     @GetMapping(API_EQUIPE_VENDAS_USUARIO + "/all")
     List<EquipeVendaUsuarioResponse> getAll(@RequestParam Map<String, Object> filtros);
+
+    @GetMapping(API_EQUIPE_VENDAS_USUARIO + "/buscar-usuario")
+    List<EquipeVendaUsuarioResponse> buscarUsuarioPorId(@RequestParam("id") Integer id);
 
 }

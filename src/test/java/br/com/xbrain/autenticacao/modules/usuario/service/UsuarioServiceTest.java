@@ -16,7 +16,9 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -121,6 +123,8 @@ public class UsuarioServiceTest {
     private UsuarioEquipeVendaMqSender equipeVendaMqSender;
     @Mock
     private UsuarioClientService usuarioClientService;
+    @Mock
+    private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1686,6 +1690,32 @@ public class UsuarioServiceTest {
             .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
+    @Test(expected = ValidacaoException.class)
+    public void validarMudancaCargo_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
+        when(usuarioRepository.findOne(any(Predicate.class)))
+            .thenReturn(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, 3));
+        when(equipeVendasUsuarioService.buscarUsuarioPorId(anyInt()))
+            .thenReturn(listaComUsuarioResponse());
+        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo()));
+    }
+
+    @Test
+    public void validarMudancaCargo_naoRetornaNada_quandoUsuarioNaoPossuiOutraEquipe() {
+        when(usuarioRepository.findOne(any(Predicate.class)))
+            .thenReturn(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, 3));
+        when(equipeVendasUsuarioService.buscarUsuarioPorId(anyInt()))
+            .thenReturn(listaVazia());
+        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo()));
+    }
+
+    @Test
+    public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiCargoForaVerificacao() {
+        when(usuarioRepository.findOne(any(Predicate.class)))
+            .thenReturn(umUsuarioCompleto(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, 3));
+        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo()));
+        verify(equipeVendasUsuarioService, never()).buscarUsuarioPorId(any());
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()
@@ -1781,6 +1811,66 @@ public class UsuarioServiceTest {
                 .build())
             .departamento(Departamento
                 .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(int cargoId, CodigoNivel nivel, int departamentoId) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .nome("NOME UM")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(cargoId)
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .nome(nivel.name())
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .id(departamentoId)
                 .nome("DEPARTAMENTO UM")
                 .build())
             .unidadesNegocios(List.of(UnidadeNegocio
@@ -1935,5 +2025,28 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
+    }
+
+    private List<EquipeVendaUsuarioResponse> listaVazia() {
+        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
+        return lista;
+    }
+
+    private List<EquipeVendaUsuarioResponse> listaComUsuarioResponse() {
+        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
+        lista.add(criaEquipeVendaUsuarioResponse());
+        return lista;
+    }
+
+    private Usuario criaNovoUsuario(int cargoId) {
+        return Usuario.builder().id(1)
+            .cargo(new Cargo(cargoId))
+            .departamento(new Departamento(3))
+            .build();
+    }
+
+    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
+        return EquipeVendaUsuarioResponse.builder().id(1)
+            .build();
     }
 }

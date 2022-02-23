@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -204,6 +205,8 @@ public class UsuarioService {
     private CargoSuperiorRepository cargoSuperiorRepository;
     @Autowired
     private UsuarioClientService usuarioClientService;
+    @Autowired
+    private EquipeVendasUsuarioService equipeVendasUsuarioService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -450,6 +453,7 @@ public class UsuarioService {
         try {
             validar(usuario);
             validarEdicao(usuario);
+            validarMudancaCargo(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
@@ -472,6 +476,37 @@ public class UsuarioService {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId())
                 .ifPresent(usuarioOriginal -> validarVinculoComSite(usuarioOriginal, usuario));
+        }
+    }
+
+    void validarMudancaCargo(Usuario usuario) {
+        Usuario usuarioAnterior = this.findByIdCompleto(usuario.getId());
+        if (usuarioAnterior.getCargoId()
+                .equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo())
+            || usuarioAnterior.getCargoId()
+                .equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.getCodigo())
+            || usuarioAnterior.getCargoId()
+                .equals(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo())) {
+                if (!usuario.getCargoId().equals(usuarioAnterior.getCargoId()) && usuarioAnterior.getDepartamentoId().equals(3)) {
+                    if (usuarioAnterior.getCargoId().equals(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo())) {
+                        List<EquipeVendaUsuarioResponse> result = equipeVendasUsuarioService.buscarUsuarioPorId(usuario.getId());
+                        if (!result.isEmpty()) {
+                            throw new ValidacaoException("Vendedor já está cadastrado em outra equipe");
+                        }
+                    }
+                    if (usuarioAnterior.getCargoId().equals(CodigoCargoOperacao.SUPERVISOR_OPERACAO.getCodigo())) {
+                        List<EquipeVendaUsuarioResponse> result = equipeVendasUsuarioService.buscarUsuarioPorId(usuario.getId());
+                        if (!result.isEmpty()) {
+                            throw new ValidacaoException("Supervisor já está cadastrado em outra equipe");
+                        }
+                    }
+                    if (usuarioAnterior.getCargoId().equals(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo())) {
+                        List<EquipeVendaUsuarioResponse> result = equipeVendasUsuarioService.buscarUsuarioPorId(usuario.getId());
+                        if (!result.isEmpty()) {
+                            throw new ValidacaoException("Assistente já está cadastrado em outra equipe");
+                        }
+                    }
+                }
         }
     }
 

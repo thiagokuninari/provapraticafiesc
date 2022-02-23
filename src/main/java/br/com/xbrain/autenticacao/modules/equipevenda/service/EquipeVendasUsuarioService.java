@@ -18,4 +18,8 @@ public class EquipeVendasUsuarioService {
     public List<EquipeVendaUsuarioResponse> getAll(Map<String, Object> filtros) {
         return equipeVendasUsuarioClient.getAll(filtros);
     }
+
+    public List<EquipeVendaUsuarioResponse> buscarUsuarioPorId(Integer id) {
+        return equipeVendasUsuarioClient.buscarUsuarioPorId(id);
+    }
 }
