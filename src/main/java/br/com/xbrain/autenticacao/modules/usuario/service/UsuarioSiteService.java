@@ -197,7 +197,7 @@ public class UsuarioSiteService {
         var usuario = autenticacaoService.getUsuarioAutenticado();
         var vendedores = usuario.isXbrainOuMso()
             ? getVendedorPorSiteId(siteId)
-            : getVendedoresPorCargoUsuario(usuario.getUsuario(), siteId);
+            : getVendedoresPorCargoUsuario(getUsuarioById(usuario.getId()), siteId);
 
         return vendedores
             .stream()

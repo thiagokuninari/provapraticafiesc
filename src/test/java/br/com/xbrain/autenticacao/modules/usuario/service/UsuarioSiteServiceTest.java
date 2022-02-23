@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static helpers.TestBuilders.umUsuarioAutenticado;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -63,7 +64,7 @@ public class UsuarioSiteServiceTest {
     @Test
     public void getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado_deveRetornarProprioVendedor_seUsuarioForOPeradorVendas() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(TestBuilders.umUsuarioAutenticado(100, CodigoCargo.OPERACAO_TELEVENDAS));
+            .thenReturn(umUsuarioAutenticado(100, CodigoCargo.OPERACAO_TELEVENDAS));
 
         assertThat(service.getVendoresSelectDoSiteIdPorHierarquiaDoUsuarioLogado(123, false))
             .isEqualTo(List.of(SelectResponse.of(100, "FULANO 100")));
@@ -76,7 +77,7 @@ public class UsuarioSiteServiceTest {
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(TestBuilders.umUsuarioAutenticado(100, CodigoCargo.ADMINISTRADOR));
+            .thenReturn(umUsuarioAutenticado(100, CodigoCargo.ADMINISTRADOR));
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
@@ -92,7 +93,7 @@ public class UsuarioSiteServiceTest {
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(TestBuilders.umUsuarioAutenticado(10, CodigoCargo.ADMINISTRADOR));
+            .thenReturn(umUsuarioAutenticado(10, CodigoCargo.ADMINISTRADOR));
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.umUsuarioAutenticadoAdmin(100));
         when(usuarioRepository.findById(eq(100)))
@@ -113,8 +114,8 @@ public class UsuarioSiteServiceTest {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
-        when(usuarioRepository.findById(eq(100)))
-            .thenReturn(Optional.of(usuario));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.umUsuarioAutenticadoAdmin(100));
         when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
             .thenReturn(List.of(
                 TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
@@ -131,8 +132,8 @@ public class UsuarioSiteServiceTest {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ADMINISTRADOR);
         usuario.getCargo().getNivel().setCodigo(CodigoNivel.XBRAIN);
 
-        when(usuarioRepository.findById(eq(100)))
-            .thenReturn(Optional.of(usuario));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.umUsuarioAutenticadoAdmin(100));
         when(usuarioRepository.findVendedoresPorSiteId(eq(123)))
             .thenReturn(List.of(
                 TestBuilders.umUsuarioNomeResponse(1, "VENDEDOR 1", ESituacao.A),
@@ -147,7 +148,11 @@ public class UsuarioSiteServiceTest {
     @Test
     public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivos_seUsuarioLogadoAssistenteOperacao() {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ASSISTENTE_OPERACAO);
+        var usuarioAutenticado = umUsuarioAutenticado(100, CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("OPERACAO");
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.getSuperioresDoUsuarioPorCargo(eq(100), eq(CodigoCargo.COORDENADOR_OPERACAO)))
@@ -166,7 +171,11 @@ public class UsuarioSiteServiceTest {
     @Test
     public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivosEInativos_seUsuarioLogadoAssistenteOperacao() {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.ASSISTENTE_OPERACAO);
+        var usuarioAutenticado = umUsuarioAutenticado(100, CodigoCargo.ASSISTENTE_OPERACAO);
+        usuarioAutenticado.setNivelCodigo("OPERACAO");
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.getSuperioresDoUsuarioPorCargo(eq(100), eq(CodigoCargo.COORDENADOR_OPERACAO)))
@@ -185,7 +194,11 @@ public class UsuarioSiteServiceTest {
     @Test
     public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivos_porCargoDoUsuarioLogado() {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.VAREJO_SUPERVISOR);
+        var usuarioAutenticado = umUsuarioAutenticado(100, CodigoCargo.VAREJO_SUPERVISOR);
+        usuarioAutenticado.setNivelCodigo("VAREJO");
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
@@ -202,7 +215,11 @@ public class UsuarioSiteServiceTest {
     @Test
     public void getVendedoresDaHierarquiaPorSite_deveRetornarVendedoresAtivosEInativos_porCargoDoUsuarioLogado() {
         var usuario = TestBuilders.umUsuario(100, CodigoCargo.VAREJO_SUPERVISOR);
+        var usuarioAutenticado = umUsuarioAutenticado(100, CodigoCargo.VAREJO_SUPERVISOR);
+        usuarioAutenticado.setNivelCodigo("VAREJO");
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(usuarioAutenticado);
         when(usuarioRepository.findById(eq(100)))
             .thenReturn(Optional.of(usuario));
         when(usuarioRepository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(eq(List.of(100)), eq(123)))
