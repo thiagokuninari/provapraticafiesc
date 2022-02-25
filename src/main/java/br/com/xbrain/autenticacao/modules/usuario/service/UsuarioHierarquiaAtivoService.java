@@ -59,19 +59,20 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
 
     @Override
     public List<UsuarioNomeResponse> vendedoresDaHierarquia(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
-        if (usuarioHierarquiaFiltros.apenasSiteId()) {
-            var vendedores = usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
-                usuarioHierarquiaFiltros.getBuscarInativo());
-            adicionaInativoNomeDoUsuario(vendedores);
-            return vendedores;
-        } else {
-            var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-            var vendedores = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(usuarioHierarquiaFiltros.getSiteId(),
-                usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
-            var vendedoresFiltrados = filtrarUsuariosPorEquipes(vendedores, usuarioHierarquiaFiltros.getEquipeVendaId());
-            adicionaInativoNomeDoUsuario(vendedoresFiltrados);
-            return vendedoresFiltrados;
-        }
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        var vendedores = usuarioSiteService.getVendoresDoSiteIdPorHierarquiaComEquipe(usuarioHierarquiaFiltros.getSiteId(),
+            usuarioAutenticado.getId(), usuarioHierarquiaFiltros.getBuscarInativo());
+        var vendedoresFiltrados = filtrarUsuariosPorEquipes(vendedores, usuarioHierarquiaFiltros.getEquipeVendaId());
+        adicionaInativoNomeDoUsuario(vendedoresFiltrados);
+        return vendedoresFiltrados;
+    }
+
+    @Override
+    public List<UsuarioNomeResponse> vendedoresDaHierarquiaPorSite(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
+        var vendedores = usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
+            usuarioHierarquiaFiltros.getBuscarInativo());
+        adicionaInativoNomeDoUsuario(vendedores);
+        return vendedores;
     }
 
     private List<UsuarioNomeResponse> filtrarUsuariosPorEquipes(List<UsuarioEquipeDto> usuarioNomeResponses, Integer equipeId) {

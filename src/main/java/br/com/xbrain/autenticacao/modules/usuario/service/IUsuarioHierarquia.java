@@ -21,4 +21,6 @@ public interface IUsuarioHierarquia {
 
     void validarCanal(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros);
 
+    List<UsuarioNomeResponse> vendedoresDaHierarquiaPorSite(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros);
+
 }
