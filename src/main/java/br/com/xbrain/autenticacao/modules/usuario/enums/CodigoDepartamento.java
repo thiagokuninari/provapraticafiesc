@@ -1,9 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
 public enum CodigoDepartamento {
 
     AGENTE_AUTORIZADO,
-    COMERCIAL,
+    COMERCIAL(3),
     HELP_DESK,
     ADMINISTRADOR,
     VAREJO,
@@ -11,5 +17,8 @@ public enum CodigoDepartamento {
     FEEDER,
     OUVIDORIA,
     INTEGRACAO,
-    TREINAMENTO
+    TREINAMENTO;
+
+    @Getter
+    int codigo;
 }

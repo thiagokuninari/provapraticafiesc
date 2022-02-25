@@ -19,7 +19,7 @@ public class EquipeVendasUsuarioService {
         return equipeVendasUsuarioClient.getAll(filtros);
     }
 
-    public List<EquipeVendaUsuarioResponse> buscarUsuarioPorId(Integer id) {
+    public List<Integer> buscarUsuarioEquipeVendasPorId(Integer id) {
         return equipeVendasUsuarioClient.buscarUsuarioPorId(id);
     }
 }
