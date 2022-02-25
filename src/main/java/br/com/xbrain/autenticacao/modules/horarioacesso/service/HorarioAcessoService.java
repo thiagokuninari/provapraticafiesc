@@ -202,16 +202,18 @@ public class HorarioAcessoService {
                     .findByHorarioAcessoId(horarioAcesso.getId()))
                 .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .filter(horario -> 
-                    isNull(horario)
-                    || !isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)
-                    && !isDentroTabulacao()
-                    && !isRamalEmUso())
-                .ifPresent(error -> {
-                    callService.liberarRamalUsuarioAutenticado();
-                    autenticacaoService.logout(autenticacaoService.getUsuarioId());
-                    throw ACESSO_FORA_HORARIO_PERMITIDO;
-                });
+                .ifPresentOrElse(
+                    horario -> {
+                        if (!isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)
+                            && !isDentroTabulacao()
+                            && !isRamalEmUso()) {
+                            callService.liberarRamalUsuarioAutenticado();
+                            autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                            throw ACESSO_FORA_HORARIO_PERMITIDO;
+                        }
+                    }, () -> {
+                        throw ACESSO_FORA_HORARIO_PERMITIDO;
+                    });
         }
     }
 
@@ -225,12 +227,14 @@ public class HorarioAcessoService {
                 .map(horarioAcesso -> atuacaoRepository.findByHorarioAcessoId(horarioAcesso.getId()))
                 .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
                     h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .filter(horario ->
-                    isNull(horario)
-                    || !isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario))
-                .ifPresent(error -> {
-                    throw ACESSO_FORA_HORARIO_PERMITIDO;
-                });
+                .ifPresentOrElse(
+                    horario -> {
+                        if (!isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)) {
+                            throw ACESSO_FORA_HORARIO_PERMITIDO;
+                        }
+                    }, () -> {
+                        throw ACESSO_FORA_HORARIO_PERMITIDO;
+                    });
         }
     }
 
