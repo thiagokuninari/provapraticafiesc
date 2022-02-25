@@ -20,8 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.OPERACAO_ASSISTENTE;
+import static helpers.Usuarios.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -46,7 +45,6 @@ public class HierarquiaControllerTest {
 
     @Before
     public void setUp() {
-        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
     }
 
     @Test
@@ -54,6 +52,8 @@ public class HierarquiaControllerTest {
     public void getVendedoresDaHierarquiaDoSite_deveRetornarVendedores_quandoUsuarioLogadoAdmin() {
         var filtros = new UsuarioHierarquiaFiltros();
         filtros.setSiteId(5);
+
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
 
         mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
                 .param("siteId", "5")
@@ -72,6 +72,8 @@ public class HierarquiaControllerTest {
         filtros.setSiteId(5);
         filtros.setBuscarInativo(true);
 
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.ATIVO_PROPRIO);
+
         mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
                 .param("siteId", "5")
                 .header("Authorization", getAccessToken(mockMvc, OPERACAO_ASSISTENTE))
@@ -80,5 +82,23 @@ public class HierarquiaControllerTest {
             .andExpect(status().isOk());
 
         verify(usuarioHierarquiaAtivoService, times(1)).vendedoresDaHierarquiaPorSite(eq(filtros));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getVendedoresDaHierarquiaDoSite_naoDeveRetornarVendedores_quandoUsuarioLogadoNaoPossuirPermissao() {
+        var filtros = new UsuarioHierarquiaFiltros();
+        filtros.setSiteId(5);
+
+        when(autenticacaoService.getUsuarioCanal()).thenReturn(ECanal.AGENTE_AUTORIZADO);
+
+        mockMvc.perform(get(URL_API + "/vendedores-hierarquia-site")
+                .param("siteId", "5")
+                .header("Authorization", getAccessToken(mockMvc, SOCIO_AA))
+                .header("X-Usuario-Canal", "AGENTE_AUTORIZADO")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        verify(usuarioHierarquiaAtivoService, times(0)).vendedoresDaHierarquiaPorSite(eq(filtros));
     }
 }
