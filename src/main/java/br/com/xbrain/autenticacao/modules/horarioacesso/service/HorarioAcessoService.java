@@ -190,7 +190,7 @@ public class HorarioAcessoService {
     }
 
     public void isDentroHorarioPermitido() {
-        if (isTest() || AutenticacaoService.hasAuthentication() && isOperadorTelevendasAtivoLocalByTokenStore()) {
+        if ((isTest() || AutenticacaoService.hasAuthentication()) && isOperadorTelevendasAtivoLocalByTokenStore()) {
             var horarioAtual = dataHoraAtual.getDataHora();
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
             Optional.ofNullable(usuarioAutenticado)

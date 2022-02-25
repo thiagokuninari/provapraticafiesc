@@ -168,6 +168,7 @@ public class AtivoLocalInterceptorTest {
     @Test
     public void deveValidarAcesso_notThrowsException_quandoDentroHorarioPermitido() {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 5)));
+        when(horarioAtuacaoRepository.findByHorarioAcessoId(anyInt())).thenReturn(umaListaHorariosAtuacao(9, 22));
 
         assertThatCode(() -> interceptor.postHandle(new MockHttpServletRequest("GET", "/api/usuarios"),
                 new MockHttpServletResponse(), null, new ModelAndView()))
