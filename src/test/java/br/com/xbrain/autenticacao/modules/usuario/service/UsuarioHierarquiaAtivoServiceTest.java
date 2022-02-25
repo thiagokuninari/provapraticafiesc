@@ -180,7 +180,7 @@ public class UsuarioHierarquiaAtivoServiceTest {
     }
 
     @Test
-    public void vendedoresDaHierarquiaPorSite_retonarVendedoresSemEquipeEAtivos_quandoUsuarioLogadoPossuirPermissaoSobreUsuario() {
+    public void vendedoresDaHierarquiaPorSite_retonarVendedoresSemEquipeEAtivos_quandoUsuarioLogadoPossuirPermissao() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.GERENTE_OPERACAO,
             CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
         var filtro = umUsuarioHieraquiaFiltro(null, 110, null);
