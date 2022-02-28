@@ -43,10 +43,6 @@ public class HierarquiaControllerTest {
     @MockBean
     private UsuarioHierarquiaAtivoService usuarioHierarquiaAtivoService;
 
-    @Before
-    public void setUp() {
-    }
-
     @Test
     @SneakyThrows
     public void getVendedoresDaHierarquiaDoSite_deveRetornarVendedores_quandoUsuarioLogadoAdmin() {
