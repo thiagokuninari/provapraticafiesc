@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHierarquiaAtivoService;
 import lombok.SneakyThrows;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
