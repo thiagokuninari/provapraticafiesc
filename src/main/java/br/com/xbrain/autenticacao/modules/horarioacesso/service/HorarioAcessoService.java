@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.service;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
@@ -20,8 +19,6 @@ import br.com.xbrain.autenticacao.modules.horarioacesso.repository.HorarioHistor
 import br.com.xbrain.autenticacao.modules.notificacaoapi.service.NotificacaoApiService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -190,30 +186,32 @@ public class HorarioAcessoService {
     }
 
     public void isDentroHorarioPermitido() {
-        if ((isTest() || AutenticacaoService.hasAuthentication()) && isOperadorTelevendasAtivoLocalByTokenStore()) {
+        if (isTest() || AutenticacaoService.hasAuthentication()) {
             var horarioAtual = dataHoraAtual.getDataHora();
             var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-            Optional.ofNullable(usuarioAutenticado)
-                .filter(UsuarioAutenticado::isOperadorTelevendasAtivoLocal)
-                .map(usuario -> getSiteByUsuario(usuario.getUsuario()))
-                .map(site -> repository.findBySiteId(site.getId())
-                    .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
-                .map(horarioAcesso -> atuacaoRepository
-                    .findByHorarioAcessoId(horarioAcesso.getId()))
-                .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
-                    h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual))).findAny().orElse(null))
-                .ifPresentOrElse(
-                    horario -> {
-                        if (!isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)
-                            && !isDentroTabulacao()
-                            && !isRamalEmUso()) {
-                            callService.liberarRamalUsuarioAutenticado();
-                            autenticacaoService.logout(autenticacaoService.getUsuarioId());
+            if (usuarioAutenticado.isOperadorTelevendasAtivoLocal()) {
+                Optional.ofNullable(usuarioAutenticado)
+                    .map(usuario -> getSiteByUsuario(usuario.getUsuario()))
+                    .map(site -> repository.findBySiteId(site.getId())
+                        .orElseThrow(() -> HORARIO_ACESSO_NAO_ENCONTRADO))
+                    .map(horarioAcesso -> atuacaoRepository
+                        .findByHorarioAcessoId(horarioAcesso.getId()))
+                    .map(horariosAtuacao -> horariosAtuacao.stream().filter(h -> 
+                        h.getDiaSemana().equals(EDiaSemana.valueOf(horarioAtual)))
+                            .findAny().orElse(null))
+                    .ifPresentOrElse(
+                        horario -> {
+                            if (!isHorarioAtuacaoPermitido(getHoraAtual(horarioAtual), horario)
+                                && !isDentroTabulacao()
+                                && !isRamalEmUso()) {
+                                callService.liberarRamalUsuarioAutenticado();
+                                autenticacaoService.logout(autenticacaoService.getUsuarioId());
+                                throw ACESSO_FORA_HORARIO_PERMITIDO;
+                            }
+                        }, () -> {
                             throw ACESSO_FORA_HORARIO_PERMITIDO;
-                        }
-                    }, () -> {
-                        throw ACESSO_FORA_HORARIO_PERMITIDO;
-                    });
+                        });
+            }
         }
     }
 
@@ -266,14 +264,5 @@ public class HorarioAcessoService {
 
     private boolean isTest() {
         return environment.acceptsProfiles("test");
-    }
-
-    public boolean isOperadorTelevendasAtivoLocalByTokenStore() {
-        return autenticacaoService.getAccessToken()
-            .filter(token -> {
-                var info = token.getAdditionalInformation();
-                return info.containsValue(CodigoCargo.OPERACAO_TELEVENDAS)
-                    && info.containsValue(Set.of(ECanal.ATIVO_PROPRIO.name()));
-            }).isPresent();
     }
 }
