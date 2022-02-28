@@ -126,18 +126,6 @@ public class UsuarioHierarquiaAtivoServiceTest {
     }
 
     @Test
-    public void buscarVendedoresPorSupervisor_quandoUsuarioLogadoForAssistente() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO,
-            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
-        var usuarioNomeResponses = service.vendedoresDaHierarquia(umUsuarioHieraquiaFiltro(null, 110, null));
-        verify(usuarioSiteService, times(1)).getVendedoresPorCargoUsuario(any(), any());
-        assertThat(usuarioNomeResponses)
-            .extracting(UsuarioNomeResponse::getId)
-            .containsExactlyInAnyOrder(109, 115);
-
-    }
-
-    @Test
     public void buscarTodosVendedores_quandoUsuarioLogadoForAdmin_naoDeveFiltrarUsuario() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(99, CodigoCargo.ADMINISTRADOR,
             CodigoNivel.XBRAIN, CodigoDepartamento.ADMINISTRADOR));
@@ -163,6 +151,55 @@ public class UsuarioHierarquiaAtivoServiceTest {
             .extracting(UsuarioNomeResponse::getId)
             .containsExactlyInAnyOrder(109, 115);
 
+    }
+
+    @Test
+    public void vendedoresDaHierarquiaPorSite_retornarTodosOsVendedoresDoSite_quandoUsuarioLogadoXbrainOuMSO() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(99, CodigoCargo.ADMINISTRADOR,
+            CodigoNivel.XBRAIN, CodigoDepartamento.ADMINISTRADOR));
+        var usuarioNomeResponses = service.vendedoresDaHierarquiaPorSite(umUsuarioHieraquiaFiltro(null, 110, null));
+        verify(usuarioSiteService, times(0)).getVendedoresPorCargoUsuario(any(), any());
+        assertThat(usuarioNomeResponses)
+            .extracting(UsuarioNomeResponse::getId)
+            .containsExactlyInAnyOrder(109, 115);
+    }
+
+    @Test
+    public void vendedoresDaHierarquiaPorSite_retornarVendedoresPermitidosAoUsuario_quandoUsuarioLogadoForAssistenteOperacao() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(108, CodigoCargo.ASSISTENTE_OPERACAO,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
+        var usuarioNomeResponses = service.vendedoresDaHierarquiaPorSite(umUsuarioHieraquiaFiltro(null, 110, null));
+        verify(usuarioSiteService, times(1)).getVendedoresPorCargoUsuario(
+            eq(Usuario.builder()
+                .id(108)
+                .build()),
+            eq(110));
+        assertThat(usuarioNomeResponses)
+            .extracting(UsuarioNomeResponse::getId)
+            .containsExactlyInAnyOrder(109, 115);
+    }
+
+    @Test
+    public void vendedoresDaHierarquiaPorSite_retonarVendedoresSemEquipeEAtivos_quandoUsuarioLogadoPossuirPermissao() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.GERENTE_OPERACAO,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
+        var filtro = umUsuarioHieraquiaFiltro(null, 110, null);
+        filtro.setBuscarInativo(false);
+        var usuarioNomeResponses = service.vendedoresDaHierarquiaPorSite(filtro);
+        assertThat(usuarioNomeResponses)
+            .extracting(UsuarioNomeResponse::getId)
+            .containsExactlyInAnyOrder(109);
+    }
+
+    @Test
+    public void vendedoresDaHierarquiaPorSite_retonarVendedoresSemEquipe_quandoUsuarioLogadoPossuirPermissaoSobreUsuario() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado(103, CodigoCargo.GERENTE_OPERACAO,
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL));
+        var filtro = umUsuarioHieraquiaFiltro(null, 110, null);
+        var usuarioNomeResponses = service.vendedoresDaHierarquiaPorSite(filtro);
+        assertThat(usuarioNomeResponses)
+            .extracting(UsuarioNomeResponse::getId)
+            .containsExactlyInAnyOrder(109, 115);
     }
 
     private UsuarioHierarquiaFiltros umUsuarioHieraquiaFiltro(Integer coordenadorId, Integer siteId, Integer equipeId) {

@@ -35,4 +35,10 @@ public class HierarquiaController {
         canalService.usuarioHierarquia().validarCanal(usuarioHierarquiaFiltros);
         return canalService.usuarioHierarquia().vendedoresDaHierarquia(usuarioHierarquiaFiltros);
     }
+
+    @GetMapping("vendedores-hierarquia-site")
+    public List<UsuarioNomeResponse> getVendedoresDaHierarquiaDoSite(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
+        canalService.usuarioHierarquia().validarCanal(usuarioHierarquiaFiltros);
+        return canalService.usuarioHierarquia().vendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros);
+    }
 }
