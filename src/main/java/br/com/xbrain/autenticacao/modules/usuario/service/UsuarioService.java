@@ -457,7 +457,7 @@ public class UsuarioService {
         try {
             validar(usuario);
             validarEdicao(usuario);
-            validarMudancaCargo(usuario);
+            validarPromocaoCargo(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
@@ -483,7 +483,7 @@ public class UsuarioService {
         }
     }
 
-    public void validarMudancaCargo(Usuario usuario) {
+    public void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             var usuarioAnterior = repository.findById(usuario.getId()).get();
             if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
@@ -502,17 +502,11 @@ public class UsuarioService {
     }
 
     private boolean verificarUsuarioNecessitaValidacaoMudancaCargo(Usuario usuario) {
-        if (verificarDepartamento(usuario) && verificarCargo(usuario) && verificarCanal(usuario)) {
-            return true;
-        }
-        return false;
+        return verificarDepartamento(usuario) && verificarCargo(usuario) && verificarCanal(usuario);
     }
 
     private boolean verificarCargosDiferentes(Usuario usuarioAtual, Usuario usuarioAnterior) {
-        if (!usuarioAtual.getCargoId().equals(usuarioAnterior.getCargoId())) {
-            return true;
-        }
-        return false;
+        return !usuarioAtual.getCargoId().equals(usuarioAnterior.getCargoId());
     }
 
     private boolean verificarDepartamento(Usuario usuario) {
@@ -534,11 +528,7 @@ public class UsuarioService {
             .map(ECanal::getDescricao)
             .filter(listaDeCanaisUsuario::contains).collect(toList());
 
-        if (!canaisEmComum.isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return !canaisEmComum.isEmpty();
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {

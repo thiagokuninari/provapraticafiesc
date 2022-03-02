@@ -1699,7 +1699,7 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of(1));
-        usuarioService.validarMudancaCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
+        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
     }
 
     @Test
@@ -1709,7 +1709,7 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
-        usuarioService.validarMudancaCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
+        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
     }
 
     @Test
@@ -1717,7 +1717,7 @@ public class UsuarioServiceTest {
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiCargoForaVerificacao() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
-        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
@@ -1726,7 +1726,7 @@ public class UsuarioServiceTest {
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiDepartamentoForaVerificacao() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO.getCodigo(), ECanal.D2D_PROPRIO)));
-        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
@@ -1735,7 +1735,7 @@ public class UsuarioServiceTest {
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiCanalForaVerificacao() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.ATIVO_PROPRIO)));
-        usuarioService.validarMudancaCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
