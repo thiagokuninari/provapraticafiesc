@@ -382,7 +382,7 @@ public class HorarioAcessoServiceTest {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 16), LocalTime.of(8, 0)));
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(101, "OPERADOR TELEVENDAS")));
-        assertThatExceptionOfType(UnauthorizedUserException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario()))
             .withMessage("Usuário fora do horário permitido.");
 
@@ -397,7 +397,7 @@ public class HorarioAcessoServiceTest {
         when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(LocalDate.of(2022, 02, 19), LocalTime.of(8, 0)));
         when(siteService.getSitesPorPermissao(any(Usuario.class)))
             .thenReturn(List.of(SelectResponse.of(101, "OPERADOR TELEVENDAS")));
-        assertThatExceptionOfType(UnauthorizedUserException.class)
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.isDentroHorarioPermitido(umOperadorTelevendas().getUsuario()))
             .withMessage("Usuário fora do horário permitido.");
 

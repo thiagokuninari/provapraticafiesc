@@ -43,7 +43,9 @@ public class HorarioAcessoService {
 
     public static final ValidacaoException HORARIO_ACESSO_NAO_ENCONTRADO =
         new ValidacaoException("Horário de acesso não encontrado.");
-    public static final UnauthorizedUserException ACESSO_FORA_HORARIO_PERMITIDO =
+    public static final ValidacaoException ACESSO_FORA_HORARIO_PERMITIDO =
+        new ValidacaoException("Usuário fora do horário permitido.");
+    public static final UnauthorizedUserException USUARIO_FORA_HORARIO_PERMITIDO =
         new UnauthorizedUserException("Usuário fora do horário permitido.");
 
     private final Environment environment;
@@ -206,10 +208,10 @@ public class HorarioAcessoService {
                                 && !isRamalEmUso()) {
                                 callService.liberarRamalUsuarioAutenticado();
                                 autenticacaoService.logout(autenticacaoService.getUsuarioId());
-                                throw ACESSO_FORA_HORARIO_PERMITIDO;
+                                throw USUARIO_FORA_HORARIO_PERMITIDO;
                             }
                         }, () -> {
-                            throw ACESSO_FORA_HORARIO_PERMITIDO;
+                            throw USUARIO_FORA_HORARIO_PERMITIDO;
                         });
             }
         }
