@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.MessageException;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.validation.BindException;
@@ -72,5 +73,12 @@ public class ExceptionHandlingController {
     @ExceptionHandler(UnauthorizedUserException.class)
     public MessageException extrairDeAcessoException(UnauthorizedUserException acessoEx) {
         return new MessageException(acessoEx.getMessage());
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(NotImplementedException.class)
+    public List<MessageException> argumentValidatorError(NotImplementedException ex) {
+        return Arrays.asList(new MessageException(ex.getMessage()));
     }
 }

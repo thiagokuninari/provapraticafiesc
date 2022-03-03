@@ -274,7 +274,6 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
-        departamento.getId();
         canais.size();
         return this;
     }

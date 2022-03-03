@@ -67,6 +67,14 @@ public class UsuarioHierarquiaAtivoService implements IUsuarioHierarquia {
         return vendedoresFiltrados;
     }
 
+    @Override
+    public List<UsuarioNomeResponse> vendedoresDaHierarquiaPorSite(UsuarioHierarquiaFiltros usuarioHierarquiaFiltros) {
+        var vendedores = usuarioSiteService.getVendedoresDaHierarquiaPorSite(usuarioHierarquiaFiltros.getSiteId(),
+            usuarioHierarquiaFiltros.getBuscarInativo());
+        adicionaInativoNomeDoUsuario(vendedores);
+        return vendedores;
+    }
+
     private List<UsuarioNomeResponse> filtrarUsuariosPorEquipes(List<UsuarioEquipeDto> usuarioNomeResponses, Integer equipeId) {
 
         return Optional.ofNullable(equipeId)

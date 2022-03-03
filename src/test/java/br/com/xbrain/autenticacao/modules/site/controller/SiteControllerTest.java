@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
@@ -177,7 +178,7 @@ public class SiteControllerTest {
     @Test
     @SneakyThrows
     public void getAllSupervisoresByHierarquia_deveRetornarSupervisores_quandoRespeitarSiteAndUsuarioSuperiorId() {
-        when(usuarioService.getIdsSubordinadosDaHierarquia(300, CodigoCargo.SUPERVISOR_OPERACAO.name()))
+        when(usuarioService.getIdsSubordinadosDaHierarquia(300, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name())))
             .thenReturn(List.of(400, 102));
 
         mvc.perform(get(API_URI + "/{id}/supervisores/hierarquia/{usuarioSuperiorId}", 100, 300)
