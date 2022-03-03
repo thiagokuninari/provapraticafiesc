@@ -30,4 +30,6 @@ public interface FeriadoRepositoryCustom {
     boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
 
     List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno();
+
+    List<LocalDate> findAllNacional();
 }

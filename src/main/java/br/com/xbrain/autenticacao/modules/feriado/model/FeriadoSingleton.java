@@ -14,6 +14,9 @@ public class FeriadoSingleton {
     @Getter
     @Setter
     private Set<LocalDate> feriados;
+    @Getter
+    @Setter
+    private Set<LocalDate> feriadosNacionais;
 
     public static FeriadoSingleton getInstance() {
         if (ObjectUtils.isEmpty(feriadoSingleton)) {

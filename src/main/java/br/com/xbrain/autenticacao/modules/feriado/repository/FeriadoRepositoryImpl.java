@@ -106,4 +106,13 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             .orderBy(feriado.dataFeriado.year().asc(), feriado.dataFeriado.month().asc())
             .fetch();
     }
+
+    @Override
+    public List<LocalDate> findAllNacional() {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.dataFeriado)
+            .from(feriado)
+            .where(feriado.feriadoNacional.eq(Eboolean.V))
+            .fetch();
+    }
 }

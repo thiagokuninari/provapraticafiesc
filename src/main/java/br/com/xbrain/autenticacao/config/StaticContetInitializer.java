@@ -14,6 +14,6 @@ public class StaticContetInitializer {
 
     @PostConstruct
     public void init() {
-        feriadoService.loadAllFeriados();
+        feriadoService.loadFeriados();
     }
 }
