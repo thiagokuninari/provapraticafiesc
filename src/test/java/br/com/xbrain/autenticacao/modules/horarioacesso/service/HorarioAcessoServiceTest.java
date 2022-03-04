@@ -195,15 +195,13 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void save_deveRetornarException_casoSiteJaPossuiHorarioAcesso() {
-        when(repository.existsBySiteId(anyInt())).thenReturn(true);
+        when(repository.existsBySiteId(eq(100))).thenReturn(true);
         var request = umHorarioAcessoRequest();
         request.setId(null);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.save(request))
             .withMessage("Site já possui horário de acesso cadastrado.");
-
-        verify(repository, times(1)).existsBySiteId(eq(100));
     }
 
     @Test
