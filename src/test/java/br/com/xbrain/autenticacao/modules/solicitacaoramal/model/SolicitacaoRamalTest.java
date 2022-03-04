@@ -16,7 +16,7 @@ public class SolicitacaoRamalTest {
 
     @Before
     public void setUp() {
-        FeriadoSingleton.getInstance().setFeriados(Sets.newHashSet(LocalDate.of(2022, 01, 21)));
+        FeriadoSingleton.getInstance().setFeriadosNacionais(Sets.newHashSet(LocalDate.of(2022, 01, 21)));
     }
 
     @Test

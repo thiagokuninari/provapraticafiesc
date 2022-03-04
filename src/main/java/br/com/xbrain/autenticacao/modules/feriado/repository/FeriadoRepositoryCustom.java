@@ -31,5 +31,5 @@ public interface FeriadoRepositoryCustom {
 
     List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno();
 
-    List<LocalDate> findAllNacional();
+    List<LocalDate> findAllNacional(LocalDate now);
 }

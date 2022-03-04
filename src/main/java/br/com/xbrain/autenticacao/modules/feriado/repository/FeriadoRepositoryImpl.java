@@ -108,11 +108,17 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public List<LocalDate> findAllNacional() {
+    public List<LocalDate> findAllNacional(LocalDate now) {
         return new JPAQueryFactory(entityManager)
             .select(feriado.dataFeriado)
             .from(feriado)
-            .where(feriado.feriadoNacional.eq(Eboolean.V))
+            .where(
+                feriado.situacao.eq(ESituacaoFeriado.ATIVO)
+                    .and(feriado.feriadoNacional.eq(Eboolean.V))
+                    .and(feriado.dataFeriado.between(
+                        now.with(TemporalAdjusters.firstDayOfYear()),
+                        now.with(TemporalAdjusters.lastDayOfYear()).plusDays(1)))
+                    )
             .fetch();
     }
 }

@@ -94,7 +94,7 @@ public class FeriadoService {
                 .collect(Collectors.toSet()));
 
         FeriadoSingleton.getInstance()
-            .setFeriadosNacionais(new HashSet<>(repository.findAllNacional()));
+            .setFeriadosNacionais(new HashSet<>(repository.findAllNacional(LocalDate.now())));
     }
 
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
