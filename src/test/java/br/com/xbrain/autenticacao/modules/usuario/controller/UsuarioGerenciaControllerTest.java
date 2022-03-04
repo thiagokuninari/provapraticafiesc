@@ -139,7 +139,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
-    public void alterar_naoRetornaNada_quandoUsuarioPossuiDepartamentoNaoVerificado() {
+    public void alterar_deveRetornarOk_quandoUsuarioPossuiDepartamentoNaoVerificado() {
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
         mvc.perform(put(API_URI)
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
@@ -150,7 +150,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
-    public void alterar_naoRetornaNada_quandoUsuarioNaoPerteceAEquipe() {
+    public void alterar_deveRetornarOk_quandoUsuarioNaoPerteceAEquipe() {
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
         mvc.perform(put(API_URI)
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))

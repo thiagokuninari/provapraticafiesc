@@ -483,7 +483,7 @@ public class UsuarioService {
         }
     }
 
-    public void validarPromocaoCargo(Usuario usuario) {
+    void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
                 if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
@@ -511,18 +511,20 @@ public class UsuarioService {
     }
 
     private boolean verificarDepartamentoNecessitaValidacao(Usuario usuario) {
-        return usuario.getDepartamentoCodigo().equals(CodigoDepartamento.COMERCIAL);
+        return usuario.getDepartamentoCodigo() == CodigoDepartamento.COMERCIAL;
     }
 
     private boolean verificarCargoNecessitaValidacao(Usuario usuario) {
-        return usuario.getCargoId() == CodigoCargoOperacao.SUPERVISOR_OPERACAO.getCodigo()
-                || usuario.getCargoId() == CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo()
-                || usuario.getCargoId() == CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo();
+        return retornaListaCodigoCargo().stream().anyMatch(cargoCodigo -> cargoCodigo == usuario.getCargoCodigo());
+    }
+
+    private List<CodigoCargo> retornaListaCodigoCargo() {
+        return Arrays.asList(SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
     }
 
     private boolean verificarCanalNecessitaValidacao(Usuario usuario) {
-        var canais = repository.getCanaisByUsuarioIds(List.of(usuario.getId()));
-        return canais.stream().anyMatch( c -> c.getCanal().equals(ECanal.D2D_PROPRIO));
+        return repository.getCanaisByUsuarioIds(List.of(usuario.getId())).stream()
+            .anyMatch( canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {
