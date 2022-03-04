@@ -1693,49 +1693,57 @@ public class UsuarioServiceTest {
     }
 
     @Test(expected = ValidacaoException.class)
-    @SuppressWarnings("LineLength")
     public void validarMudancaCargo_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(),
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of(1));
-        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
+        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(),
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO));
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioNaoPossuiOutraEquipe() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
+            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(),
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
-        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(), CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO));
+        usuarioService.validarPromocaoCargo(umUsuarioCompleto(CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo(),
+            CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO));
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiCargoForaVerificacao() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.D2D_PROPRIO)));
-        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
+            CodigoDepartamento.COMERCIAL));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiDepartamentoForaVerificacao() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO.getCodigo(), ECanal.D2D_PROPRIO)));
-        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(),
+                OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
+            CodigoDepartamento.COMERCIAL));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void validarMudancaCargo_naoRetornaNada_quandoUsuarioPossuiCanalForaVerificacao() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(), OPERACAO, CodigoDepartamento.COMERCIAL.getCodigo(), ECanal.ATIVO_PROPRIO)));
-        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(), CodigoDepartamento.COMERCIAL.getCodigo()));
+            .thenReturn(Optional.of(umUsuarioCompleto(CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo(),
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
+        usuarioService.validarPromocaoCargo(criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
+            CodigoDepartamento.COMERCIAL));
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
     }
 
@@ -1814,7 +1822,7 @@ public class UsuarioServiceTest {
             .build();
     }
 
-    private Usuario umUsuarioCompleto(int id, CodigoNivel nivel, int codigoDepartamento, ECanal canal) {
+    private Usuario umUsuarioCompleto(int id, CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
         var usuario = Usuario
             .builder()
             .id(1)
@@ -1833,7 +1841,7 @@ public class UsuarioServiceTest {
                 .build())
             .departamento(Departamento
                 .builder()
-                .id(codigoDepartamento)
+                .codigo(departamento)
                 .nome("DEPARTAMENTO UM")
                 .build())
             .unidadesNegocios(List.of(UnidadeNegocio
@@ -2113,10 +2121,10 @@ public class UsuarioServiceTest {
         return lista;
     }
 
-    private Usuario criaNovoUsuario(int cargoId, int departamento) {
+    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
         return Usuario.builder().id(1)
             .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(departamento))
+            .departamento(new Departamento(3))
             .build();
     }
 

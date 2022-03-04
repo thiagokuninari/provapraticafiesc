@@ -485,13 +485,13 @@ public class UsuarioService {
 
     public void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
-            var usuarioAnterior = repository.findById(usuario.getId()).get();
-            if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
-                && verificarCargosDiferentes(usuario, usuarioAnterior)) {
-                verificarCadastroEmOutraEquipe(usuario);
-            }
+            repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
+                if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
+                    && verificarCargosDiferentes(usuario, usuarioAnterior)) {
+                    verificarCadastroEmOutraEquipe(usuario);
+                }
+            });
         }
-
     }
 
     private void verificarCadastroEmOutraEquipe(Usuario usuario) {
@@ -502,33 +502,27 @@ public class UsuarioService {
     }
 
     private boolean verificarUsuarioNecessitaValidacaoMudancaCargo(Usuario usuario) {
-        return verificarDepartamento(usuario) && verificarCargo(usuario) && verificarCanal(usuario);
+        return verificarCanalNecessitaValidacao(usuario)
+            && verificarCargoNecessitaValidacao(usuario) && verificarDepartamentoNecessitaValidacao(usuario);
     }
 
     private boolean verificarCargosDiferentes(Usuario usuarioAtual, Usuario usuarioAnterior) {
         return !usuarioAtual.getCargoId().equals(usuarioAnterior.getCargoId());
     }
 
-    private boolean verificarDepartamento(Usuario usuario) {
-        return usuario.getDepartamentoId() == CodigoDepartamento.COMERCIAL.getCodigo();
+    private boolean verificarDepartamentoNecessitaValidacao(Usuario usuario) {
+        return usuario.getDepartamentoCodigo().equals(CodigoDepartamento.COMERCIAL);
     }
 
-    private boolean verificarCargo(Usuario usuario) {
+    private boolean verificarCargoNecessitaValidacao(Usuario usuario) {
         return usuario.getCargoId() == CodigoCargoOperacao.SUPERVISOR_OPERACAO.getCodigo()
                 || usuario.getCargoId() == CodigoCargoOperacao.VENDEDOR_OPERACAO.getCodigo()
                 || usuario.getCargoId() == CodigoCargoOperacao.ASSISTENTE_OPERACAO.getCodigo();
     }
 
-    private boolean verificarCanal(Usuario usuario) {
-        var listaCanaisValidacao = List.of(ECanal.D2D_PROPRIO);
-
-        var listaDeCanaisUsuario = usuario.getCanais().stream()
-            .map(ECanal::getDescricao).collect(toList());
-        var canaisEmComum = listaCanaisValidacao.stream()
-            .map(ECanal::getDescricao)
-            .filter(listaDeCanaisUsuario::contains).collect(toList());
-
-        return !canaisEmComum.isEmpty();
+    private boolean verificarCanalNecessitaValidacao(Usuario usuario) {
+        var canais = repository.getCanaisByUsuarioIds(List.of(usuario.getId()));
+        return canais.stream().anyMatch( c -> c.getCanal().equals(ECanal.D2D_PROPRIO));
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {

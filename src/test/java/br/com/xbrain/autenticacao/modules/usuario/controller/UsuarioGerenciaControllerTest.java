@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -73,6 +74,7 @@ import static org.thymeleaf.util.StringUtils.concat;
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
+    private static final int ID_USUARIO_VENDEDOR = 430;
     private static final String API_URI = "/api/usuarios/gerencia";
     @Autowired
     private MockMvc mvc;
@@ -88,6 +90,8 @@ public class UsuarioGerenciaControllerTest {
     private FileService fileService;
     @MockBean
     private EquipeVendaD2dService equipeVendaD2dService;
+    @MockBean
+    private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
     @MockBean
@@ -119,6 +123,40 @@ public class UsuarioGerenciaControllerTest {
             .header("Authorization", getAccessToken(mvc, HELP_DESK))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void alterar_deveRetornarErro_quandoUsuarioPertenceEquipe() {
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
+        mvc.perform(put(API_URI)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaAtualizacao("Pedro", 430, 10, 3, "731.407.220-52"))))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message", is("Usuário já está cadastrado em outra equipe")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void alterar_naoRetornaNada_quandoUsuarioPossuiDepartamentoNaoVerificado() {
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
+        mvc.perform(put(API_URI)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaAtualizacao("Pedro", 432, 10, 6, "132.355.930-20"))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void alterar_naoRetornaNada_quandoUsuarioNaoPerteceAEquipe() {
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
+        mvc.perform(put(API_URI)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(umUsuarioParaAtualizacao("Pedro", 431, 10, 3, "122.861.350-88"))))
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -675,11 +713,30 @@ public class UsuarioGerenciaControllerTest {
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
 
+    private UsuarioDto umUsuarioParaAtualizacao(String nome, Integer id, Integer cargo, Integer departamento, String cpf) {
+        UsuarioDto usuario = new UsuarioDto();
+        usuario.setId(id);
+        usuario.setNome(nome);
+        usuario.setCargoId(cargo);
+        usuario.setDepartamentoId(departamento);
+        usuario.setCpf(cpf);
+        usuario.setUnidadesNegociosId(Arrays.asList(1));
+        usuario.setEmpresasId(singletonList(4));
+        usuario.setEmail("usuario@teste.com");
+        usuario.setTelefone("43 995565661");
+        usuario.setHierarquiasId(Arrays.asList(100));
+        usuario.setCidadesId(Arrays.asList(736, 2921, 527));
+        usuario.setLoginNetSales("MIDORIYA SHOUNEN");
+        usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
+        usuario.setSituacao(ESituacao.A);
+        return usuario;
+    }
+
     private void mockResponseAgenteAutorizado() {
         AgenteAutorizadoResponse response = AgenteAutorizadoResponse.builder()
-                .id("100")
-                .cnpj("09.489.617/0001-97")
-                .build();
+            .id("100")
+            .cnpj("09.489.617/0001-97")
+            .build();
 
         when(agenteAutorizadoNovoClient.getAaByCpnj(Matchers.anyMap()))
                 .thenReturn(response);
