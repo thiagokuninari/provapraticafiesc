@@ -132,6 +132,8 @@ public class UsuarioService {
     );
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
         SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
+    private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
+        SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
 
     @Autowired
     private UsuarioRepository repository;
@@ -483,7 +485,7 @@ public class UsuarioService {
         }
     }
 
-    void validarPromocaoCargo(Usuario usuario) {
+    private void validarPromocaoCargo(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
                 if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
@@ -515,11 +517,7 @@ public class UsuarioService {
     }
 
     private boolean verificarCargoNecessitaValidacao(Usuario usuario) {
-        return retornaListaCodigoCargo().stream().anyMatch(cargoCodigo -> cargoCodigo == usuario.getCargoCodigo());
-    }
-
-    private List<CodigoCargo> retornaListaCodigoCargo() {
-        return Arrays.asList(SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
+        return LISTA_CARGOS_VALIDACAO_PROMOCAO.stream().anyMatch(cargoCodigo -> cargoCodigo == usuario.getCargoCodigo());
     }
 
     private boolean verificarCanalNecessitaValidacao(Usuario usuario) {

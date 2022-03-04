@@ -26,12 +26,9 @@ public class EquipeVendasUsuarioService {
     public List<Integer> buscarUsuarioEquipeVendasPorId(Integer id) {
         try {
             return equipeVendasUsuarioClient.buscarUsuarioPorId(id);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                EquipeVendasUsuarioService.class.getName(),
+        } catch (HystrixBadRequestException | RetryableException ex) {
+            throw new IntegracaoException(ex, EquipeVendasUsuarioService.class.getName(),
                 EErrors.ERRO_OBTER_EQUIPE_USUARIO_SERVICE);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
         }
     }
 }

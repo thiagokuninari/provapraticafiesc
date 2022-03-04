@@ -150,7 +150,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     @SneakyThrows
-    public void alterar_deveRetornarOk_quandoUsuarioNaoPerteceAEquipe() {
+    public void alterar_deveRetornarOk_quandoUsuarioNaoPertenceAEquipe() {
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt())).thenReturn(List.of(1));
         mvc.perform(put(API_URI)
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL))

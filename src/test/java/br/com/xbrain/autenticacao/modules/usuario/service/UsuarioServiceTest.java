@@ -1512,6 +1512,73 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
+            .thenReturn(List.of(1));
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(
+                umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
+                CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .withMessage("Usuário já está cadastrado em outra equipe");
+
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
+            .thenReturn(List.of());
+        Assertions.assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
+                CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioPossuiCargoForaVerificacao() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 4,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        Assertions.assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+                CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .doesNotThrowAnyException();
+        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioPossuiDepartamentoForaVerificacao() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
+                CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+        Assertions.assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+                CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
+            .doesNotThrowAnyException();
+        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioPossuiCanalForaVerificacao() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
+                CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
+        Assertions.assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+                CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
+            .doesNotThrowAnyException();
+        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+    }
+
+    @Test
     public void buscarTodosVendedoresReceptivos_deveRetornarVendedoresReceptivoComoSelectResponse_quandoValido() {
         when(usuarioRepository.findAllVendedoresReceptivos())
             .thenReturn(List.of(umVendedorReceptivo()));
@@ -1692,72 +1759,6 @@ public class UsuarioServiceTest {
             .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
-    @Test
-    public void validarPromocaoCargo_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
-        when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
-        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
-            .thenReturn(List.of(1));
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.validarPromocaoCargo(
-                    umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
-                        CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
-                .withMessage("Usuário já está cadastrado em outra equipe");
-
-    }
-
-    @Test
-    public void validarPromocaoCargo_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
-        when(usuarioRepository.getCanaisByUsuarioIds(any()))
-            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
-        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
-            .thenReturn(List.of());
-        Assertions.assertThatCode(() -> usuarioService.validarPromocaoCargo(umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
-                CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
-            .doesNotThrowAnyException();
-    }
-
-    @Test
-    public void validarPromocaoCargo_naoDeveLancarException_quandoUsuarioPossuiCargoForaVerificacao() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 4,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
-        Assertions.assertThatCode(() -> usuarioService
-                .validarPromocaoCargo((criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
-                    CodigoDepartamento.COMERCIAL))))
-            .doesNotThrowAnyException();
-        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
-    }
-
-    @Test
-    public void validarPromocaoCargo_naoDeveLancarException_quandoUsuarioPossuiDepartamentoForaVerificacao() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
-                CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
-        Assertions.assertThatCode(() -> usuarioService
-                .validarPromocaoCargo((criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
-                    CodigoDepartamento.COMERCIAL))))
-            .doesNotThrowAnyException();
-        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
-    }
-
-    @Test
-    public void validarPromocaoCargo_naoDeveLancarException_quandoUsuarioPossuiCanalForaVerificacao() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
-                CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
-        Assertions.assertThatCode(() -> usuarioService
-                .validarPromocaoCargo((criaNovoUsuario(CodigoCargoOperacao.COORDENADOR_OPERACAO.getCodigo(),
-                    CodigoDepartamento.COMERCIAL))))
-            .doesNotThrowAnyException();
-        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
-    }
-
     private Canal umCanal() {
         return Canal
             .builder()
@@ -1838,8 +1839,8 @@ public class UsuarioServiceTest {
         var usuario = Usuario
             .builder()
             .id(1)
-            .nome("NOME UM")
             .email("email@email.com")
+            .nome("NOME UM")
             .cpf("111.111.111-11")
             .situacao(ESituacao.A)
             .loginNetSales("login123")
@@ -1859,6 +1860,7 @@ public class UsuarioServiceTest {
                 .build())
             .unidadesNegocios(List.of(UnidadeNegocio
                 .builder()
+                .id(1)
                 .nome("UNIDADE NEGÓCIO UM")
                 .build()))
             .empresas(List.of(Empresa
