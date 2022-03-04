@@ -127,7 +127,7 @@ public class HorarioAcessoService {
 
     private void validarSite(Integer siteId) {
         var horarios = repository.findBySiteId(siteId);
-        if (nonNull(horarios)) {
+        if (!horarios.isEmpty()) {
             throw new ValidacaoException("Site já possui horário de acesso cadastrado.");
         }
     }

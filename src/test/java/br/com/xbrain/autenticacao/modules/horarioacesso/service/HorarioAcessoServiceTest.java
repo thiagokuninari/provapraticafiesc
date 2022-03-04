@@ -137,7 +137,7 @@ public class HorarioAcessoServiceTest {
 
     @Test
     public void save_deveRetornarHorarioAcesso_quandoSalvarNovoHorario() {
-        when(repository.findBySiteId(anyInt())).thenReturn(null);
+        when(repository.findBySiteId(anyInt())).thenReturn(Optional.empty());
         when(repository.save(any(HorarioAcesso.class))).thenReturn(umHorarioAcesso());
         when(historicoRepository.save(any(HorarioHistorico.class)))
             .thenReturn(umHorarioHistorico());
