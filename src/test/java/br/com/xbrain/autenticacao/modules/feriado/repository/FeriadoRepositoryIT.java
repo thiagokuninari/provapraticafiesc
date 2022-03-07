@@ -93,4 +93,11 @@ public class FeriadoRepositoryIT {
                 tuple(2019, 7, 1L)
             );
     }
+
+    @Test
+    public void findAllNacional_deveRetornarTodosOsFeriadosNacionais_quandoSolicitado() {
+        assertThat(feriadoRepository.findAllNacional(LocalDate.of(2019, 2, 15)))
+            .hasSize(1)
+            .contains(LocalDate.of(2019, 7, 30));
+    }
 }

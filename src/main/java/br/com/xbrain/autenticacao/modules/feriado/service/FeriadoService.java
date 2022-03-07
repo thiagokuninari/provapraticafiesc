@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -85,12 +86,15 @@ public class FeriadoService {
         return repository.findAllByAnoAtual(dataHoraAtual.getData());
     }
 
-    public void loadAllFeriados() {
+    public void loadFeriados() {
         FeriadoSingleton.getInstance()
             .setFeriados(repository.findAllByAnoAtual(LocalDate.now())
                 .stream()
                 .map(Feriado::getDataFeriado)
                 .collect(Collectors.toSet()));
+
+        FeriadoSingleton.getInstance()
+            .setFeriadosNacionais(new HashSet<>(repository.findAllNacional(LocalDate.now())));
     }
 
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
@@ -256,7 +260,7 @@ public class FeriadoService {
         cacheNames = FERIADOS_DATA_CACHE_NAME,
         allEntries = true)
     public void flushCacheFeriados() {
-        loadAllFeriados();
+        loadFeriados();
         log.info("Flush Cache Feriados");
     }
 

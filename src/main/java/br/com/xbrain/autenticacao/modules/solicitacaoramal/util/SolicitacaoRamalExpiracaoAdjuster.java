@@ -49,6 +49,6 @@ public class SolicitacaoRamalExpiracaoAdjuster implements TemporalAdjuster {
 
     private boolean isFinalDeSemanaOuFeriado(LocalDateTime data) {
         return finalSemana.equals(data.getDayOfWeek())
-            || FeriadoSingleton.getInstance().getFeriados().contains(data.toLocalDate());
+                || FeriadoSingleton.getInstance().getFeriadosNacionais().contains(data.toLocalDate());
     }
 }

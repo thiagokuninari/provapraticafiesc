@@ -16,7 +16,7 @@ public class SolicitacaoRamalExpiracaoAdjusterTest {
 
     @Before
     public void setUp() {
-        FeriadoSingleton.getInstance().setFeriados(Sets.newHashSet(LocalDate.of(2019, 12, 25)));
+        FeriadoSingleton.getInstance().setFeriadosNacionais(Sets.newHashSet(LocalDate.of(2019, 12, 25)));
     }
 
     @Test
