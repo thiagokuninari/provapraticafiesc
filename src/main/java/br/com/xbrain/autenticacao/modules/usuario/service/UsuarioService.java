@@ -459,7 +459,7 @@ public class UsuarioService {
         try {
             validar(usuario);
             validarEdicao(usuario);
-            validarPromocaoCargo(usuario);
+            validarPromocoesCargo(usuario);
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
