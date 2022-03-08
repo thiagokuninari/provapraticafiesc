@@ -45,15 +45,9 @@ public class NotificacaoService {
         context.setVariable("email", usuario.getEmail().toLowerCase());
         context.setVariable("senha", senhaDescriptografada);
 
-        // TODO: Quando permitido, alterar novamente para Conexão Claro Brasil
-        /*emailService.enviarEmailTemplate(
-                Arrays.asList(usuario.getEmail()),
-                "Conexão Claro Brasil - Alteração de dados de acesso",
-                "reenvio-senha",
-                context);*/
         emailService.enviarEmailTemplate(
                 Arrays.asList(usuario.getEmail()),
-                "Parceiros Online - Alteração de dados de acesso",
+                "Conexão Claro Brasil - Alteração de dados de acesso",
                 "reenvio-senha",
                 context);
     }
@@ -67,7 +61,7 @@ public class NotificacaoService {
 
         emailService.enviarEmailTemplate(
                 Arrays.asList(usuario.getEmail()),
-                "Parceiros Online - Confirmação de Alterar a Senha",
+                "Conexão Claro Brasil - Confirmação de Alterar a Senha",
                 "confirmar-reset-senha",
                 context,
                 EmailPrioridade.ALTA);
@@ -81,15 +75,9 @@ public class NotificacaoService {
         context.setVariable("emailNovo", usuarioDadosAcessoRequest.getEmailNovo().toLowerCase());
         context.setVariable("emailAntigo", usuarioDadosAcessoRequest.getEmailAtual().toLowerCase());
 
-        // TODO: Quando permitido, alterar novamente para Conexão Claro Brasil
-        /*emailService.enviarEmailTemplate(
-                Arrays.asList(usuarioDadosAcessoRequest.getEmailAtual()),
-                "Conexão Claro Brasil - Alteração de dados de acesso",
-                "alteracao-email",
-                context);*/
         emailService.enviarEmailTemplate(
                 Arrays.asList(usuarioDadosAcessoRequest.getEmailAtual()),
-                "Parceiros Online - Alteração de dados de acesso",
+                "Conexão Claro Brasil - Alteração de dados de acesso",
                 "alteracao-email",
                 context);
     }
