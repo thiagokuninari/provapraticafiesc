@@ -63,6 +63,12 @@ public class FeriadoService {
     @Autowired
     private CallService callService;
 
+    public boolean consulta() {
+        return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(),
+            Eboolean.V,
+            ESituacaoFeriado.ATIVO).isPresent();
+    }
+
     public boolean consulta(String data) {
         return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(DateUtils.parseStringToLocalDate(data),
             Eboolean.V,
@@ -95,6 +101,14 @@ public class FeriadoService {
 
     public boolean isFeriadoHojeNaCidadeUf(String cidade, String uf) {
         return repository.hasFeriadoNacionalOuRegional(dataHoraAtual.getData(), cidade, uf);
+    }
+
+    public List<String> buscarUfsFeriadosEstaduaisPorData() {
+        return repository.buscarEstadosFeriadosEstaduaisPorData(dataHoraAtual.getData());
+    }
+
+    public List<FeriadoCidadeEstadoResponse> buscarFeriadosMunicipaisPorDataAtualUfs() {
+        return repository.buscarFeriadosMunicipaisPorData(dataHoraAtual.getData());
     }
 
     public Page<FeriadoResponse> obterFeriadosByFiltros(PageRequest pageRequest, FeriadoFiltros filtros) {

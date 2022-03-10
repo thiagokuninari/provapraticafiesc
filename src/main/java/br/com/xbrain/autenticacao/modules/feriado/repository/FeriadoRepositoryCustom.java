@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import com.querydsl.core.types.Predicate;
@@ -28,6 +29,10 @@ public interface FeriadoRepositoryCustom {
             cacheNames = FERIADOS_DATA_CACHE_NAME,
             unless = "#cidade == null || #uf == null")
     boolean hasFeriadoNacionalOuRegional(LocalDate data, String cidade, String uf);
+
+    List<String> buscarEstadosFeriadosEstaduaisPorData(LocalDate data);
+
+    List<FeriadoCidadeEstadoResponse> buscarFeriadosMunicipaisPorData(LocalDate data);
 
     List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno();
 }

@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -91,6 +93,22 @@ public class FeriadoRepositoryIT {
                 tuple(2018, 11, 2L),
                 tuple(2018, 12, 1L),
                 tuple(2019, 7, 1L)
+            );
+    }
+
+    @Test
+    public void buscarFeriadoNacional_deveRetornarBoolean_quandoSolicitado() {
+        assertThat(feriadoRepository.buscarEstadosFeriadosEstaduaisPorData(LocalDate.of(2019, 9, 23)))
+            .containsExactlyInAnyOrderElementsOf(List.of("SC", "PR"));
+    }
+
+    @Test
+    public void buscarFeriadoMunicipal_deveRetornarDto_quandoSolicitado() {
+        assertThat(feriadoRepository.buscarFeriadosMunicipaisPorData(LocalDate.of(2019, 9, 23)))
+            .extracting("cidade", "estado")
+            .containsExactlyInAnyOrder(
+                tuple("MARINGA", "PR"),
+                tuple("LONDRINA", "PR")
             );
     }
 }

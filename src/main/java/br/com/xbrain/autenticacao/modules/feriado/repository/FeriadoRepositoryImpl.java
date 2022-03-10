@@ -3,8 +3,10 @@ package br.com.xbrain.autenticacao.modules.feriado.repository;
 import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
 import com.querydsl.core.types.Projections;
@@ -50,6 +52,32 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                                 .or(QUf.uf1.nome.eq(uf.toUpperCase())))))
             )
             .fetchCount() > 0;
+    }
+
+    @Override
+    public List<String> buscarEstadosFeriadosEstaduaisPorData(LocalDate data) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(feriado.uf.uf)
+            .from(feriado)
+            .where(
+                feriado.dataFeriado.eq(data)
+                    .and(feriado.situacao.eq(ESituacaoFeriado.ATIVO))
+                    .and(feriado.tipoFeriado.eq(ETipoFeriado.ESTADUAL))
+            ).fetch();
+    }
+
+    @Override
+    public List<FeriadoCidadeEstadoResponse> buscarFeriadosMunicipaisPorData(LocalDate data) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(Projections.constructor(FeriadoCidadeEstadoResponse.class,
+                feriado.cidade.nome,
+                feriado.uf.uf))
+            .from(feriado)
+            .where(
+                feriado.dataFeriado.eq(data)
+                    .and(feriado.situacao.eq(ESituacaoFeriado.ATIVO))
+                    .and(feriado.tipoFeriado.eq(ETipoFeriado.MUNICIPAL))
+            ).fetch();
     }
 
     @Override
