@@ -135,4 +135,12 @@ public class EquipeVendaD2dService {
             return List.of();
         }
     }
+
+    public List<Integer> getEquipeVendasBySupervisorId(Integer supervisorId) {
+        try {
+            return equipeVendaD2dClient.getEquipeVendaBySupervisorId(supervisorId);
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex, EquipeVendaD2dService.class.getName(), EErrors.ERRO_OBTER_EQUIPE_VENDAS_USUARIO);
+        }
+    }
 }

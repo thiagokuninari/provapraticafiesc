@@ -490,14 +490,15 @@ public class UsuarioService {
             repository.findById(usuario.getId()).ifPresent(usuarioAnterior -> {
                 if (verificarUsuarioNecessitaValidacaoMudancaCargo(usuarioAnterior)
                     && verificarCargosDiferentes(usuario, usuarioAnterior)) {
-                    verificarCadastroEmOutraEquipe(usuario);
+                    verificarCadastroEmOutraEquipe(usuarioAnterior);
                 }
             });
         }
     }
 
-    private void verificarCadastroEmOutraEquipe(Usuario usuario) {
-        var result = equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(usuario.getId());
+    private void verificarCadastroEmOutraEquipe(Usuario usuarioAnterior) {
+        verificarSeUsuarioLiderEquipe(usuarioAnterior);
+        var result = equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(usuarioAnterior.getId());
         if (!result.isEmpty()) {
             throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
         }
@@ -523,6 +524,15 @@ public class UsuarioService {
     private boolean verificarCanalNecessitaValidacao(Usuario usuario) {
         return repository.getCanaisByUsuarioIds(List.of(usuario.getId())).stream()
             .anyMatch( canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
+    }
+
+    private void verificarSeUsuarioLiderEquipe(Usuario usuario) {
+        if (usuario.getCargoCodigo() == SUPERVISOR_OPERACAO) {
+            var listaDeEquipes = equipeVendaD2dService.getEquipeVendasBySupervisorId(usuario.getId());
+            if (!listaDeEquipes.isEmpty()) {
+                throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
+            }
+        }
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {

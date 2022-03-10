@@ -1528,6 +1528,23 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void save_retornaValidacaoException_quandoLiderOutraEquipe() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 10,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
+            .thenReturn(List.of(1));
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(
+                umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .withMessage("Usuário já está cadastrado em outra equipe");
+
+    }
+
+    @Test
     public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
