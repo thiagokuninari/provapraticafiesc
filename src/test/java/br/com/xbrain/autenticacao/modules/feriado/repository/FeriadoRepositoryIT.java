@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
-import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
