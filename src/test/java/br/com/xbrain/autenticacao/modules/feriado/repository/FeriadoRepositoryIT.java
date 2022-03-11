@@ -73,7 +73,7 @@ public class FeriadoRepositoryIT {
     @Test
     public void findAllDataFeriadoByCidadeId_deveRetornarDatasFeriadosNacionaisELocais_quandoCidadeTiverFeriadoRegional() {
         assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(5578))
-            .hasSize(11)
+            .hasSize(12)
             .contains(LocalDate.of(2019, 7, 30), LocalDate.of(2019, 7, 28))
             .doesNotContain(LocalDate.of(2019, 7, 29));
     }

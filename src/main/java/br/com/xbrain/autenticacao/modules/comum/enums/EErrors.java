@@ -130,7 +130,10 @@ public enum EErrors {
         "#039 - Erro ao alterar a situação do colaborador de vendas."),
     ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS(
         "#040 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#040 - Erro ao tentar recuperar os ids dos usuarios logados.");
+        "#040 - Erro ao tentar recuperar os ids dos usuarios logados."),
+    ERRO_LIMPAR_CACHE_FERIADOS_MAILING(
+        "#041 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#041 - Erro ao tentar limpar o cache de feriados no mailing-api.");
 
     @Getter
     @Setter

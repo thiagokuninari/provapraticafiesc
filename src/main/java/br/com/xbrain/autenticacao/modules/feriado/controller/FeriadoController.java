@@ -18,12 +18,12 @@ public class FeriadoController {
     private FeriadoService service;
 
     @GetMapping("/consulta")
-    public boolean consultaFeriadoNacional(@RequestParam String data) {
+    public boolean consultarFeriadoNacional(@RequestParam String data) {
         return service.consulta(data);
     }
 
     @GetMapping("feriado-nacional")
-    public boolean consultaFeriadoNacional() {
+    public boolean consultarFeriadoNacional() {
         return service.consulta();
     }
 
@@ -61,5 +61,10 @@ public class FeriadoController {
     @GetMapping("mes-ano/total-feriados")
     public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
         return service.buscarTotalDeFeriadosPorMesAno();
+    }
+
+    @GetMapping("cache/clear")
+    public void cacheClearFeriadosTeste() {
+        service.flushCacheFeriadoMailing();
     }
 }

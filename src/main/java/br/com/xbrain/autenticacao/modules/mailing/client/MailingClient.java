@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface MailingClient {
 
     String URL_MAILING = "api/tabulacao";
+    String API_CACHE_CLEAN_FERIADOS = "api/public/feriados";
 
     @GetMapping(URL_MAILING + "/count/agendamentos/proprietarios/{usuarioId}")
     Long countQuantidadeAgendamentosProprietariosDoUsuario(@PathVariable("usuarioId") Integer usuarioId,
                                                            @RequestHeader("X-Usuario-Canal") ECanal canal);
+
+    @GetMapping(API_CACHE_CLEAN_FERIADOS + "/cache-clean")
+    void flushCacheFeriados();
 }

@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.FeriadoSingleton;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.google.common.collect.Lists;
@@ -62,6 +63,8 @@ public class FeriadoService {
     private FeriadoHistoricoService historicoService;
     @Autowired
     private CallService callService;
+    @Autowired
+    private MailingService mailingService;
 
     public boolean consulta() {
         return repository.findByDataFeriadoAndFeriadoNacionalAndSituacao(dataHoraAtual.getData(),
@@ -129,6 +132,7 @@ public class FeriadoService {
         historicoService.salvarHistorico(feriado, CADASTRADO, autenticacaoService.getUsuarioAutenticado());
         flushCacheFeriados();
         flushCacheFeriadoTelefonia();
+        flushCacheFeriadoMailing();
         return FeriadoResponse.of(feriado);
     }
 
@@ -155,6 +159,7 @@ public class FeriadoService {
         historicoService.salvarHistorico(feriadoEditado, EDITADO, autenticacaoService.getUsuarioAutenticado());
         flushCacheFeriados();
         flushCacheFeriadoTelefonia();
+        flushCacheFeriadoMailing();
         return FeriadoResponse.of(feriadoEditado);
     }
 
@@ -167,6 +172,7 @@ public class FeriadoService {
         historicoService.salvarHistorico(feriadoExcluido, EXCLUIDO, autenticacaoService.getUsuarioAutenticado());
         flushCacheFeriados();
         flushCacheFeriadoTelefonia();
+        flushCacheFeriadoMailing();
     }
 
     public Feriado findById(Integer id) {
@@ -280,5 +286,9 @@ public class FeriadoService {
 
     public void flushCacheFeriadoTelefonia() {
         callService.cleanCacheFeriadosTelefonia();
+    }
+
+    public void flushCacheFeriadoMailing() {
+        mailingService.flushCacheFeriados();
     }
 }
