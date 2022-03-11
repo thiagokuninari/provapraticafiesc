@@ -464,8 +464,8 @@ public class UsuarioPredicate {
         return comCluster(filtros.getClusterId())
             .comCidade(filtros.getCidadesIds())
             .comGrupo(filtros.getGrupoId())
-            .comUf(filtros.getUfId())
             .comRegional(filtros.getRegionalId(), filtros.getNovasRegionaisIds())
+            .comUf(filtros.getUfId())
             .comSubCluster(filtros.getSubClusterId());
     }
 
