@@ -62,9 +62,4 @@ public class FeriadoController {
     public List<FeriadoMesAnoResponse> buscarTotalDeFeriadosPorMesAno() {
         return service.buscarTotalDeFeriadosPorMesAno();
     }
-
-    @GetMapping("cache/clear")
-    public void cacheClearFeriadosTeste() {
-        service.flushCacheFeriadoMailing();
-    }
 }
