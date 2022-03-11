@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class EmularUsuarioController {
     private TokenEndpoint tokenEndpoint;
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private HorarioAcessoService horarioAcessoService;
     @Value("${app-config.oauth-clients.front-apps.client}")
     private String frontAppsClient;
     @Value("${app-config.oauth-clients.front-apps.secret}")
@@ -45,14 +48,20 @@ public class EmularUsuarioController {
 
     @RequestMapping(value = "usuario", method = RequestMethod.GET)
     public ResponseEntity<OAuth2AccessToken> emularUsuario(Principal principal, Integer id) throws Exception {
+        var usuarioEmulacao = usuarioService.findByIdEmulacao(id);
         validarReemulacao();
+        validarEmulacaoOperadorTelevendas(usuarioEmulacao);
         request.setAttribute("emulacao", true);
-        return tokenEndpoint.postAccessToken(principal, getParameters(usuarioService.findByIdEmulacao(id)));
+        return tokenEndpoint.postAccessToken(principal, getParameters(usuarioEmulacao));
     }
 
     private void validarReemulacao() {
         if (request.getHeader(AutenticacaoService.HEADER_USUARIO_EMULADOR) != null) {
             throw new ValidacaoException("Já existe uma emulação em execução! Encerre a atual para iniciar uma outra.");
         }
+    }
+
+    private void validarEmulacaoOperadorTelevendas(Usuario usuario) {
+        horarioAcessoService.isDentroHorarioPermitido(usuario);
     }
 }

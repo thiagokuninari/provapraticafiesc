@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.horarioacesso.helper;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoRequest;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAcessoResponse;
 import br.com.xbrain.autenticacao.modules.horarioacesso.dto.HorarioAtuacaoDto;
@@ -22,7 +23,7 @@ public class HorarioHelper {
     public static HorarioAcesso umHorarioAcesso() {
         return HorarioAcesso.builder()
             .id(1)
-            .site(Site.builder().id(100).nome("SITE TESTE").build())
+            .site(umSite())
             .dataAlteracao(LocalDateTime.of(2021, 11, 22, 13, 53, 10))
             .usuarioAlteracaoId(100)
             .usuarioAlteracaoNome("USUARIO TESTE")
@@ -137,10 +138,40 @@ public class HorarioHelper {
                 .build());
     }
 
-    public static Usuario umOperadorTelevendas() {
-        return Usuario.builder()
-            .cargo(Cargo.builder().codigo(CodigoCargo.OPERACAO_TELEVENDAS).build())
+    public static Site umSite() {
+        return Site.builder()
+            .id(100)
+            .nome("SITE TESTE")
+            .build();
+    }
+
+    public static UsuarioAutenticado umOperadorTelevendas() {
+        return UsuarioAutenticado.builder()
+            .usuario(Usuario.builder()
+                .id(101)
+                .nome("OPERADOR TELEVENDAS")
+                .canais(Set.of(ECanal.ATIVO_PROPRIO))
+                .cargo(Cargo.builder()
+                    .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
+                    .build())
+                .build())
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cargoCodigo(CodigoCargo.OPERACAO_TELEVENDAS)
+            .build();
+    }
+
+    public static UsuarioAutenticado umAdmin() {
+        return UsuarioAutenticado.builder()
+            .usuario(Usuario.builder()
+                .id(102)
+                .nome("ADMIN")
+                .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+                .cargo(Cargo.builder()
+                    .codigo(CodigoCargo.ADMINISTRADOR)
+                    .build())
+                .build())
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
             .build();
     }
 }

@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.config;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.service.HorarioAcessoAtivoLocalService;
+import br.com.xbrain.autenticacao.modules.horarioacesso.service.HorarioAcessoService;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -26,7 +26,7 @@ public class AppUserDetailsService implements UserDetailsService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private HorarioAcessoAtivoLocalService horarioAcessoAtivoLocalService;
+    private HorarioAcessoService horarioAcessoService;
 
     @Override
     @Transactional
@@ -59,8 +59,6 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     private void validarUsuarioForaHorarioPermitido(Usuario usuario) {
-        if (!horarioAcessoAtivoLocalService.isDentroHorarioPermitido(usuario)) {
-            throw new ValidacaoException("Usuário fora do horário permitido.");
-        }
+        horarioAcessoService.isDentroHorarioPermitido(usuario);
     }
 }

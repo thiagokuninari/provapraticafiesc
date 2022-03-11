@@ -12,4 +12,6 @@ public interface HorarioAcessoRepository extends PagingAndSortingRepository<Hora
     Optional<HorarioAcesso> findById(Integer id);
 
     Optional<HorarioAcesso> findBySiteId(Integer siteId);
+
+    boolean existsBySiteId(Integer siteId);
 }
