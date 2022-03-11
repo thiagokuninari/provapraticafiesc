@@ -45,11 +45,9 @@ public class RegionalControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].nome", is("LESTE")))
-                .andExpect(jsonPath("$[1].nome", is("RPS")))
-                .andExpect(jsonPath("$[2].nome", is("SUL")))
-                .andExpect(jsonPath("$[3].nome", is("SÃO PAULO")));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("RNE")))
+                .andExpect(jsonPath("$[1].nome", is("RPS")));
     }
 
     @Test
@@ -59,7 +57,7 @@ public class RegionalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("SUL")));
+                .andExpect(jsonPath("$[0].nome", is("RPS")));
     }
 
     @Test
@@ -68,8 +66,9 @@ public class RegionalControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0]", is(1027)));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0]", is(1025)))
+                .andExpect(jsonPath("$[1]", is(1027)));
     }
 
 }
