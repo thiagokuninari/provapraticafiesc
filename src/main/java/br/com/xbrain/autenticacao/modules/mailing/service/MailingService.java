@@ -28,7 +28,7 @@ public class MailingService {
         }
     }
 
-    public void flushCacheFeriados() {
+    public void flushCacheFeriadosMailing() {
         try {
             client.cleanCacheFeriados();
         } catch (RetryableException | HystrixBadRequestException ex) {

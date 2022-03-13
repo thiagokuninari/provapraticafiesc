@@ -289,6 +289,6 @@ public class FeriadoService {
     }
 
     public void flushCacheFeriadoMailing() {
-        mailingService.flushCacheFeriados();
+        mailingService.flushCacheFeriadosMailing();
     }
 }
