@@ -30,7 +30,7 @@ public class MailingService {
 
     public void flushCacheFeriados() {
         try {
-            client.flushCacheFeriados();
+            client.cleanCacheFeriados();
         } catch (RetryableException | HystrixBadRequestException ex) {
             throw new IntegracaoException(ex, MailingService.class.getName(), EErrors.ERRO_LIMPAR_CACHE_FERIADOS_MAILING);
         }
