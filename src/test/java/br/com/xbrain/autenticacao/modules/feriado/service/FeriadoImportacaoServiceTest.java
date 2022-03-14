@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Before;
@@ -56,6 +57,8 @@ public class FeriadoImportacaoServiceTest {
     private FeriadoHistoricoService feriadoHistoricoService;
     @MockBean
     private CallService callService;
+    @MockBean
+    private MailingService mailingService;
 
     MockMultipartFile mockMultipartFile;
 

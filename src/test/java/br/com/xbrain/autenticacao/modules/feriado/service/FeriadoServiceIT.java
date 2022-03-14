@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +53,8 @@ public class FeriadoServiceIT {
     private CallService callService;
     @Autowired
     private EntityManager entityManager;
+    @MockBean
+    private MailingService mailingService;
 
     @Test
     public void obterFeriadosByFiltros_deveRetornarTodosFeriadosExcetoExcluidosEFeriadoFilhos_quandoNaoTemFiltro() {
