@@ -133,7 +133,9 @@ public class UsuarioService {
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
         SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
-        SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
+        SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
+    private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
+        SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
 
     @Autowired
     private UsuarioRepository repository;
@@ -527,12 +529,16 @@ public class UsuarioService {
     }
 
     private void verificarSeUsuarioLiderEquipe(Usuario usuario) {
-        if (usuario.getCargoCodigo() == SUPERVISOR_OPERACAO) {
+        if (verificarSeCargoLiderEquipe(usuario)) {
             var listaDeEquipes = equipeVendaD2dService.getEquipeVendasBySupervisorId(usuario.getId());
             if (!listaDeEquipes.isEmpty()) {
                 throw new ValidacaoException(EX_USUARIO_POSSUI_OUTRA_EQUIPE);
             }
         }
+    }
+
+    private boolean verificarSeCargoLiderEquipe(Usuario usuario) {
+        return LISTA_CARGOS_LIDERES_EQUIPE.stream().anyMatch(codigoCargo -> codigoCargo == usuario.getCargoCodigo());
     }
 
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {

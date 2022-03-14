@@ -1528,7 +1528,22 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_retornaValidacaoException_quandoLiderOutraEquipe() {
+    public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
+            .thenReturn(List.of());
+        Assertions.assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
+                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_retornaValidacaoException_quandoLiderEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 10,
                 OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
@@ -1545,30 +1560,50 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
+    public void save_retornaValidacaoException_quandoCoordenadorLiderEquipe() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
                 OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
-        when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
+        when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
+            .thenReturn(List.of(1));
+        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(
+                umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .withMessage("Usuário já está cadastrado em outra equipe");
+        verify(usuarioRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoCoordenadorNaoPossuirOutraEquipe() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
+                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(usuarioRepository.getCanaisByUsuarioIds(any()))
+            .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
+        when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of());
         Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
-                CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
             .doesNotThrowAnyException();
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
     public void save_naoDeveLancarException_quandoUsuarioPossuiCargoForaVerificacao() {
         when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 4,
+            .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
                 OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
         Assertions.assertThatCode(() -> usuarioService.save(
-                umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
+                umUsuarioCompleto(GERENTE_OPERACAO, 7,
                 CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
             .doesNotThrowAnyException();
-        verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(equipeVendaD2dService, never()).getEquipeVendasBySupervisorId(any());
+        verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
@@ -1581,6 +1616,7 @@ public class UsuarioServiceTest {
                 CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
@@ -1593,6 +1629,7 @@ public class UsuarioServiceTest {
                 CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService,never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
