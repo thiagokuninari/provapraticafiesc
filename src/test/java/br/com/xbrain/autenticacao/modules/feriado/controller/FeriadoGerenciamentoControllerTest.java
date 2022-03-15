@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -53,6 +54,8 @@ public class FeriadoGerenciamentoControllerTest {
     private FeriadoService service;
     @MockBean
     private CallService callService;
+    @MockBean
+    private MailingService mailingService;
     @Autowired
     private MockMvc mvc;
 

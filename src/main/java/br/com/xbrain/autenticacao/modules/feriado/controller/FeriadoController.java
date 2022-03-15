@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.feriado.controller;
 
+import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoService;
@@ -17,8 +18,23 @@ public class FeriadoController {
     private FeriadoService service;
 
     @GetMapping("/consulta")
-    public boolean consultaFeriadoNacional(@RequestParam String data) {
+    public boolean consultarFeriadoNacional(@RequestParam String data) {
         return service.consulta(data);
+    }
+
+    @GetMapping("feriado-nacional")
+    public boolean consultarFeriadoNacional() {
+        return service.consulta();
+    }
+
+    @GetMapping("feriados-estaduais")
+    public List<String> consultarFeriadoEstadualPorDataAtual() {
+        return service.buscarUfsFeriadosEstaduaisPorData();
+    }
+
+    @GetMapping("feriados-municipais")
+    public List<FeriadoCidadeEstadoResponse> consultarFeriadosMunicipais() {
+        return service.buscarFeriadosMunicipaisPorDataAtualUfs();
     }
 
     @GetMapping("/consulta/{cidadeId}")

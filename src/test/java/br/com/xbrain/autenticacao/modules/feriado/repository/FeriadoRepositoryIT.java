@@ -9,6 +9,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -72,7 +73,7 @@ public class FeriadoRepositoryIT {
     @Test
     public void findAllDataFeriadoByCidadeId_deveRetornarDatasFeriadosNacionaisELocais_quandoCidadeTiverFeriadoRegional() {
         assertThat(feriadoRepository.findAllDataFeriadoByCidadeId(5578))
-            .hasSize(11)
+            .hasSize(12)
             .contains(LocalDate.of(2019, 7, 30), LocalDate.of(2019, 7, 28))
             .doesNotContain(LocalDate.of(2019, 7, 29));
     }
@@ -99,5 +100,21 @@ public class FeriadoRepositoryIT {
         assertThat(feriadoRepository.findAllNacional(LocalDate.of(2019, 2, 15)))
             .hasSize(1)
             .contains(LocalDate.of(2019, 7, 30));
+    }
+
+    @Test
+    public void buscarFeriadoNacional_deveRetornarBoolean_quandoSolicitado() {
+        assertThat(feriadoRepository.buscarEstadosFeriadosEstaduaisPorData(LocalDate.of(2019, 9, 23)))
+            .containsExactlyInAnyOrderElementsOf(List.of("SC", "PR"));
+    }
+
+    @Test
+    public void buscarFeriadoMunicipal_deveRetornarDto_quandoSolicitado() {
+        assertThat(feriadoRepository.buscarFeriadosMunicipaisPorData(LocalDate.of(2019, 9, 23)))
+            .extracting("cidade", "estado")
+            .containsExactlyInAnyOrder(
+                tuple("MARINGA", "PR"),
+                tuple("LONDRINA", "PR")
+            );
     }
 }

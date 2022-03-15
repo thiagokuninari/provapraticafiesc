@@ -62,6 +62,7 @@ public class FeriadoImportacaoService {
         validarLinhasProcessados(linhasProcessados);
         feriadoService.flushCacheFeriados();
         feriadoService.flushCacheFeriadoTelefonia();
+        feriadoService.flushCacheFeriadoMailing();
         return linhasProcessados;
     }
 

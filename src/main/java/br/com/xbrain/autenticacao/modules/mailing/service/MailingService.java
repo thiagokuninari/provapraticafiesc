@@ -27,4 +27,12 @@ public class MailingService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public void flushCacheFeriadosMailing() {
+        try {
+            client.cleanCacheFeriados();
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex, MailingService.class.getName(), EErrors.ERRO_LIMPAR_CACHE_FERIADOS_MAILING);
+        }
+    }
 }
