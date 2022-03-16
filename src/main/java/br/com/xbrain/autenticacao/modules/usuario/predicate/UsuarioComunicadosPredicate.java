@@ -14,6 +14,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -32,6 +33,7 @@ public class UsuarioComunicadosPredicate {
         var predicate = comClusterId(filtros.getClusterId())
             .comCidadesIds(filtros.getCidadesIds())
             .comGrupoId(filtros.getGrupoId())
+            .comUfId(filtros.getUfId())
             .comRegionalId(filtros.getRegionalId())
             .comSubClusterId(filtros.getSubClusterId()).build();
 
@@ -43,6 +45,13 @@ public class UsuarioComunicadosPredicate {
     private UsuarioComunicadosPredicate comSubClusterId(Integer subClusterId) {
         if (Objects.nonNull(subClusterId)) {
             builder.and(subCluster.id.eq(subClusterId));
+        }
+        return this;
+    }
+
+    private UsuarioComunicadosPredicate comUfId(Integer ufId) {
+        if (Objects.nonNull(ufId)) {
+            builder.and(uf1.id.eq(ufId));
         }
         return this;
     }

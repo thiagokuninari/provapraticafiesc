@@ -389,7 +389,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosParceiros(PublicoAlvoComunicadoFiltros filtros) {
-        return agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros);
+        return agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(filtros);
     }
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {

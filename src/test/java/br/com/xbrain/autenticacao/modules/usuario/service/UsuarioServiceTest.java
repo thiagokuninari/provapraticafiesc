@@ -1671,6 +1671,36 @@ public class UsuarioServiceTest {
             .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaRegionalIdInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().regionalId(1027).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaUfIdInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().ufId(1).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
+    @Test
+    public void getIdDosUsuariosParceiros_deveRetornarIds_quandoExisteremParaCidadeIdsInformada() {
+        when(agenteAutorizadoNovoService.getIdsUsuariosSubordinadosByFiltros(any(PublicoAlvoComunicadoFiltros.class)))
+            .thenReturn(List.of(1, 2));
+        var filtros = PublicoAlvoComunicadoFiltros.builder().cidadesIds(List.of(5578)).build();
+        assertThat(usuarioService.getIdDosUsuariosParceiros(filtros)).isEqualTo(List.of(1, 2));
+
+        verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()

@@ -28,6 +28,9 @@ public interface AgenteAutorizadoNovoClient {
     @GetMapping(URL_AGENTE_AUTORIZADO + "/subordinados")
     Set<Integer> getIdUsuariosDoUsuario(@RequestParam Map<String, Object> requestParams);
 
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/subordinados")
+    List<Integer> getIdsUsuariosPermitidosDoUsuario(@RequestParam Map request);
+
     @GetMapping(URL_AGENTE_AUTORIZADO + "/agente-autorizado-por-cnpj")
     AgenteAutorizadoResponse getAaByCpnj(@RequestParam Map request);
 
