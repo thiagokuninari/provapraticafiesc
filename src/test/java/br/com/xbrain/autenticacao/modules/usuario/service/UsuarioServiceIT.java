@@ -1240,9 +1240,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getAllXbrainMsoAtivos_deveRetornarSomenteXBrainsAtivos_quandoExistirem() {
-        var nivelXbrain = 2;
-
-        assertThat(service.getAllXbrainMsoAtivos(nivelXbrain))
+        assertThat(service.getAllXbrainMsoAtivos(2))
             .extracting("id", "situacao")
             .containsExactly(
                 tuple(366, "A"),
@@ -1253,9 +1251,7 @@ public class UsuarioServiceIT {
 
     @Test
     public void getAllXbrainMsoAtivos_deveRetornarSomenteMsosAtivos_quandoExistirem() {
-        var nivelMso = 4;
-
-        assertThat(service.getAllXbrainMsoAtivos(nivelMso))
+        assertThat(service.getAllXbrainMsoAtivos(4))
             .extracting("id", "situacao")
             .containsExactly(
                 tuple(100, "A"),
@@ -1263,6 +1259,12 @@ public class UsuarioServiceIT {
                 tuple(121, "A"),
                 tuple(101, "A"),
                 tuple(111, "A"));
+    }
+
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarListaVazia_quandoIdNivelNaoExistirNoBanco() {
+        assertThat(service.getAllXbrainMsoAtivos(30))
+            .isEmpty();
     }
 
     private UsuarioMqRequest umUsuarioARealocar() {

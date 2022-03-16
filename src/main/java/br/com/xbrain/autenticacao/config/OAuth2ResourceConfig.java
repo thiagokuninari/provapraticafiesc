@@ -34,7 +34,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/public/disparar-timer-inativar-usuarios",
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/usuarios/gerencia/existir/usuario",
-            "/api/usuarios/gerencia/chamados/usuarios-redirecionamento/*",
             "/api/cep/**",
             "/api/usuarios/usuario-funil-prospeccao",
             "/api/sites/{id}",
