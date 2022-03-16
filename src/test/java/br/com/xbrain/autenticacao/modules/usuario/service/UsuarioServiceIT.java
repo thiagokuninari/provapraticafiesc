@@ -1238,6 +1238,33 @@ public class UsuarioServiceIT {
             .isNull();
     }
 
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarSomenteXBrainsAtivos_quandoExistirem() {
+        var nivelXbrain = 2;
+
+        assertThat(service.getAllXbrainMsoAtivos(nivelXbrain))
+            .extracting("id", "situacao")
+            .containsExactly(
+                tuple(366, "A"),
+                tuple(368, "A"),
+                tuple(114, "A"),
+                tuple(115, "A"));
+    }
+
+    @Test
+    public void getAllXbrainMsoAtivos_deveRetornarSomenteMsosAtivos_quandoExistirem() {
+        var nivelMso = 4;
+
+        assertThat(service.getAllXbrainMsoAtivos(nivelMso))
+            .extracting("id", "situacao")
+            .containsExactly(
+                tuple(100, "A"),
+                tuple(110, "A"),
+                tuple(121, "A"),
+                tuple(101, "A"),
+                tuple(111, "A"));
+    }
+
     private UsuarioMqRequest umUsuarioARealocar() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setId(104);
