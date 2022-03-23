@@ -1951,6 +1951,10 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<Integer> findIdUsuariosByCodigoCargos(List<CodigoCargo> codigoCargos) {
+        return repository.findIdUsuariosByCodigoCargos(codigoCargos);
+    }
+
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return Optional.of(Optional.of(repository.findById(usuarioId)
             .orElseThrow(() -> EX_NAO_ENCONTRADO))

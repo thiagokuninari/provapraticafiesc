@@ -5,10 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -117,6 +114,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
 
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
+
+    List<Integer> findIdUsuariosByCodigoCargos(List<CodigoCargo> codigoCargos);
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 

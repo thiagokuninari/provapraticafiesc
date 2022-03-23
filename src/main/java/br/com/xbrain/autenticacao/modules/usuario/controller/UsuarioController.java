@@ -428,6 +428,11 @@ public class UsuarioController {
         return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
     }
 
+    @GetMapping("cargos")
+    public List<Integer> findIdUsuariosByCodigoCargos(@RequestParam List<CodigoCargo> codigoCargos) {
+        return usuarioService.findIdUsuariosByCodigoCargos(codigoCargos);
+    }
+
     @GetMapping("usuario-situacao")
     public List<UsuarioSituacaoResponse> findUsuariosByIds(@RequestParam List<Integer> usuariosIds) {
         return usuarioService.findUsuariosByIds(usuariosIds);
