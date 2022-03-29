@@ -11,5 +11,6 @@ public enum CodigoDepartamento {
     FEEDER,
     OUVIDORIA,
     INTEGRACAO,
-    TREINAMENTO
+    TREINAMENTO;
+
 }

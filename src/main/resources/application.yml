@@ -6,8 +6,8 @@ server:
 
 spring:
   redis:
-    #host: 127.0.0.1
-    #port: 6379
+#    host: 127.0.0.1
+#    port: 6379
     host: 192.168.50.1
     port: 6379
 
@@ -50,7 +50,7 @@ spring:
 
   rabbitmq:
     host: 192.168.50.1
-    #host: localhost
+#    host: localhost
     port: 5671
     username: xbrain
     password: xbrain
@@ -237,7 +237,7 @@ app-config:
       url: https://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
-      url: http://api-dev.conexaoclarobrasil.com.br/equipe-venda
+      url: https://api-dev.conexaoclarobrasil.com.br/equipe-venda
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn

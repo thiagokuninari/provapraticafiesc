@@ -133,7 +133,10 @@ public enum EErrors {
         "#040 - Erro ao tentar recuperar os ids dos usuarios logados."),
     ERRO_LIMPAR_CACHE_FERIADOS_MAILING(
         "#041 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#041 - Erro ao tentar limpar o cache de feriados no mailing-api.");
+        "#041 - Erro ao tentar limpar o cache de feriados no mailing-api."),
+    ERRO_OBTER_EQUIPE_USUARIO_SERVICE(
+        "#042 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#042 - Erro ao buscar usuários cadastrados em equipes.");
 
     @Getter
     @Setter

@@ -44,4 +44,8 @@ public interface EquipeVendaD2dClient {
 
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/usuario")
     List<EquipeVendaSupervisorDto> getUsuarioComSupervisor(@RequestParam Map request);
+
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/equipe-por-supervisor/{supervisorId}")
+    List<Integer> getEquipeVendaBySupervisorId(@PathVariable("supervisorId") Integer supervisorId);
+
 }
