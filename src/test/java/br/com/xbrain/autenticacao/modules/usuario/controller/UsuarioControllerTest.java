@@ -38,8 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -763,6 +762,26 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
 
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+    }
+
+    @Test
+    @SneakyThrows
+    public void findIdUsuariosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+        var codigoCargos = List.of(ADMINISTRADOR, GERENTE_OPERACAO);
+        mvc.perform(get("/api/usuarios/cargos")
+                .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findIdUsuariosByCodigoCargos(eq(codigoCargos));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findIdUsuariosByCodigoCargos_deveRetornarUnauthorized_quandoNaoInformarToken() {
+        mvc.perform(get("/api/usuarios/cargos")
+            .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO"))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test

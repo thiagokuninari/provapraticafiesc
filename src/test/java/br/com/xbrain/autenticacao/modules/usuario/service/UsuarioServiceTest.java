@@ -348,6 +348,16 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void findIdUsuariosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+        var listaCargos = List.of(MSO_CONSULTOR, ADMINISTRADOR);
+        when(usuarioRepository.findIdUsuariosByCodigoCargos(eq(listaCargos)))
+            .thenReturn(List.of(24, 34));
+
+        assertThat(usuarioService.findIdUsuariosByCodigoCargos(listaCargos))
+            .isEqualTo(List.of(24, 34));
+    }
+
+    @Test
     public void salvarUsuarioBackoffice_deveSalvar() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice());
