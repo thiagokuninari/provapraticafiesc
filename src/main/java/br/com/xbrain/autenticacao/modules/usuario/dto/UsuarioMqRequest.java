@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -48,7 +45,7 @@ public class UsuarioMqRequest {
     private Set<ECanal> canais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
-    private Eboolean agenteAutorizadoFeeder;
+    private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
 
     public boolean isNovoCadastroSocioPrincipal() {
