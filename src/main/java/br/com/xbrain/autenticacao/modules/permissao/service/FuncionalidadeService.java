@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -92,7 +91,7 @@ public class FuncionalidadeService {
 
     private List<Funcionalidade> validarPermissaoAdmSuporte(List<Funcionalidade> funcionalidades, HttpServletRequest request) {
         var userPermissoes = autenticacaoService.getUsuarioAutenticado().getPermissoes();
-        if (Arrays.asList(environment.getActiveProfiles()).contains("producao")
+        if (List.of(environment.getActiveProfiles()).contains("producao")
             && AutenticacaoService.getUsuarioEmuladorId(request) != null
             || !userPermissoes.toString().contains(CHM_ADM_CHAMADOS.getRole())) {
             return funcionalidades.stream().filter(func -> func.getAplicacao()
