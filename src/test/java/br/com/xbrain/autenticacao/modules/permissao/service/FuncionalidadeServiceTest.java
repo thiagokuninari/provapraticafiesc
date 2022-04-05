@@ -14,9 +14,11 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -111,32 +113,55 @@ public class FuncionalidadeServiceTest {
     }
 
     @Test
-    public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoUsuarioTiverPermissaoAdmChamados() {
+    public void getAll_naoDeveRetornarFuncionalidadeAdmChamados_quandoUsuarioNaoTiverPermissaoAdmChamados() {
+        var eviromentMock = Mockito.mock(Environment.class);
+
         var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
             .id(14001)
             .nome("Administrador do suporte")
-            .role(CHM_ADM_CHAMADOS.getRole())
+            .role("CHM_ADM_CHAMADOS")
             .aplicacao(umaAplicacao())
+
             .build());
         var request = mock(HttpServletRequest.class);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoNaoAdmSuporte());
+        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
 
         assertThat(service.getAll(request)).doesNotContain(funcionalidade);
     }
 
     @Test
-    public void getAll_naoDeveRetornarFuncionalidadeAdmChamados_quandoUsuarioNaoTiverPermissaoAdmChamados() {
+    public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoUsuarioTiverPermissaoAdmChamados() {
+        var eviromentMock = Mockito.mock(Environment.class);
+
         var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
             .id(14001)
             .nome("Administrador do suporte")
-            .role(CHM_ADM_CHAMADOS.getRole())
+            .role("CHM_ADM_CHAMADOS")
+            .aplicacao(umaAplicacao())
+            .build());
+
+        var request = mock(HttpServletRequest.class);
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmSuporte());
+        when(eviromentMock.getActiveProfiles()).thenReturn(new String[]{"producao"});
+
+        assertThat(service.getAll(request)).contains(funcionalidade);
+    }
+
+    @Test
+    public void getAll_deveRetornarFuncionalidadeAdmChamados_quandoProfileAtivoNaoForProducao() {
+
+        var funcionalidade = FuncionalidadeResponse.convertFrom(Funcionalidade.builder()
+            .id(14001)
+            .nome("Administrador do suporte")
+            .role("CHM_ADM_CHAMADOS")
             .aplicacao(umaAplicacao())
             .build());
 
         var request = mock(HttpServletRequest.class);
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmSuporte());
 
-        assertThat(service.getAll(request)).doesNotContain(funcionalidade);
+        assertThat(service.getAll(request)).contains(funcionalidade);
     }
 
     private Usuario umUsuarioSocio() {

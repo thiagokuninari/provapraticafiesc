@@ -12,11 +12,13 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +43,9 @@ public class FuncionalidadeService {
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
+
+    @Autowired
+    private Environment environment;
 
     public List<Funcionalidade> getFuncionalidadesPermitidasAoUsuario(Usuario usuario) {
         return Stream.concat(
@@ -87,9 +92,10 @@ public class FuncionalidadeService {
 
     private List<Funcionalidade> validarPermissaoAdmSuporte(List<Funcionalidade> funcionalidades, HttpServletRequest request) {
         var userPermissoes = autenticacaoService.getUsuarioAutenticado().getPermissoes();
-        if (AutenticacaoService.getUsuarioEmuladorId(request) != null
+        if (Arrays.asList(environment.getActiveProfiles()).contains("producao")
+            && AutenticacaoService.getUsuarioEmuladorId(request) != null
             || !userPermissoes.toString().contains(CHM_ADM_CHAMADOS.getRole())) {
-            funcionalidades = funcionalidades.stream().filter(func -> func.getAplicacao()
+            return funcionalidades.stream().filter(func -> func.getAplicacao()
                 .getId() != CHAMADO_APPLICATION_ID).collect(toList());
         }
         return funcionalidades;
