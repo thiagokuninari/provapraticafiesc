@@ -93,6 +93,18 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
+    public List<LocalDate> findAllDataFeriadoByCidadeEUf(String cidade, String uf) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.dataFeriado)
+            .from(feriado)
+            .leftJoin(feriado.cidade, QCidade.cidade)
+            .where(feriado.feriadoNacional.eq(Eboolean.V)
+                .or(QCidade.cidade.nome.likeIgnoreCase(cidade).and(QCidade.cidade.uf.uf.likeIgnoreCase(uf))))
+            .distinct()
+            .fetch();
+    }
+
+    @Override
     public Optional<Feriado> findByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .select(feriado)

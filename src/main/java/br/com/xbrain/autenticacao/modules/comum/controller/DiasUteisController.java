@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequestCidadeUf;
 import br.com.xbrain.autenticacao.modules.comum.service.DiasUteisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -20,5 +21,10 @@ public class DiasUteisController {
     @GetMapping
     public LocalDateTime getDataComDiasUteisAdicionado(@Validated DiasUteisRequest request) {
         return diasUteisService.getDataComDiasUteisAdicionado(request);
+    }
+
+    @GetMapping("cidade-uf")
+    public LocalDateTime getDataComDiasUteisAdicionadoECidadeUf(@Validated DiasUteisRequestCidadeUf request) {
+        return diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(request);
     }
 }

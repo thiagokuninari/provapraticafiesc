@@ -59,4 +59,34 @@ public class DiasUteisControllerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @SneakyThrows
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarUnauthorized_quandoNaoTiverUsuarioAutenticado() {
+        mvc.perform(get(API_URI + "/cidade-uf"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarBadRequest_quandoFaltarCampoObrigatorio() {
+        mvc.perform(get(API_URI + "/cidade-uf")
+            .param("cidade", "LONDRINA")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarOk_quandoRequestTiverCamposObrigatorios() {
+        mvc.perform(get(API_URI + "/cidade-uf")
+            .param("cidade", "LONDRINA")
+            .param("uf", "PR")
+            .param("dataOriginal", "2020-01-25T21:34:55")
+            .param("qtdDiasUteisAdicionar", "2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
 }
