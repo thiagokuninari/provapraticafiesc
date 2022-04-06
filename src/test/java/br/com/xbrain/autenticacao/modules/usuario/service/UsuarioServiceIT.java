@@ -8,6 +8,8 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -17,9 +19,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
@@ -119,6 +119,13 @@ public class UsuarioServiceIT {
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
         when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101));
+    }
+
+    @Test
+    public void updateFromQueue_deveAddPermissoesFeeder_quandoHouver() {
+        service.updateFromQueue(umUsuarioMqRequestComFeeder());
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(any(UsuarioDto.class), eq(umUsuarioMqRequestComFeeder()));
     }
 
     @Test
@@ -728,7 +735,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .niveisIds(List.of(4, 3)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 371));
     }
 
     @Test
@@ -844,7 +851,8 @@ public class UsuarioServiceIT {
                 tuple(243, "VENDEDOR AA TELEVENDAS 3"),
                 tuple(245, "ALBERTO ALVES"),
                 tuple(246, "JOAO FONSECA"),
-                tuple(247, "VENDEDOR AA D2D 3"));
+                tuple(247, "VENDEDOR AA D2D 3"),
+                tuple(371, "GABRIEL TESTE"));
     }
 
     @Test
@@ -892,7 +900,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(54);
+        assertThat(usuarios).hasSize(55);
     }
 
     @Test
@@ -1467,6 +1475,26 @@ public class UsuarioServiceIT {
         usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
 
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
+        return UsuarioMqRequest.builder()
+            .id(371)
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("JORGE")
+            .situacao(ESituacao.A)
+            .nome("GABRIEL TESTE")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("468.299.520-00")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("mateus@hotmail.com")
+            .isCadastroSocioPrincipal(false)
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
     }
 
     public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
