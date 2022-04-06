@@ -115,7 +115,7 @@ public interface UsuarioRepositoryCustom {
 
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
 
-    List<Integer> findIdUsuariosByCodigoCargos(List<CodigoCargo> codigoCargos);
+    List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos);
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 

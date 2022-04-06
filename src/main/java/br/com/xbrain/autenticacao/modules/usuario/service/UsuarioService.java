@@ -1951,8 +1951,8 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
-    public List<Integer> findIdUsuariosByCodigoCargos(List<CodigoCargo> codigoCargos) {
-        return repository.findIdUsuariosByCodigoCargos(codigoCargos);
+    public List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos) {
+        return repository.findIdUsuariosAtivosByCodigoCargos(codigoCargos);
     }
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {

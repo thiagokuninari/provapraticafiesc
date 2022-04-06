@@ -143,8 +143,8 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findIdUsuariosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
-        assertThat(repository.findIdUsuariosByCodigoCargos(List.of(SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO)))
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+        assertThat(repository.findIdUsuariosAtivosByCodigoCargos(List.of(SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO)))
             .containsExactly(109, 114, 115, 116);
     }
 

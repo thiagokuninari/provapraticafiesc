@@ -766,19 +766,19 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void findIdUsuariosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
         var codigoCargos = List.of(ADMINISTRADOR, GERENTE_OPERACAO);
         mvc.perform(get("/api/usuarios/cargos")
                 .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO")
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk());
 
-        verify(usuarioService, times(1)).findIdUsuariosByCodigoCargos(eq(codigoCargos));
+        verify(usuarioService, times(1)).findIdUsuariosAtivosByCodigoCargos(eq(codigoCargos));
     }
 
     @Test
     @SneakyThrows
-    public void findIdUsuariosByCodigoCargos_deveRetornarUnauthorized_quandoNaoInformarToken() {
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarUnauthorized_quandoNaoInformarToken() {
         mvc.perform(get("/api/usuarios/cargos")
             .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO"))
             .andExpect(status().isUnauthorized());
