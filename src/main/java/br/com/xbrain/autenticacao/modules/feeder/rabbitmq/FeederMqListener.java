@@ -32,5 +32,14 @@ public class FeederMqListener {
             log.error("Erro ao processar fila de mensagem de alterar a situação de usuário Feeder.", ex);
         }
     }
+
+    @RabbitListener(queues = "${app-config.queue.limpar-cpf-e-alterar-email-feeder}")
+    public void limparCpfEAlterarEmailFeeder(Integer usuarioId) {
+        try {
+            service.limparCpfEAlterarEmailUsuarioFeeder(usuarioId);
+        } catch (Exception ex) {
+            log.error("Erro ao processar fila de mensagem de limpar cpf e alterar o e-mail de usuário Feeder.", ex);
+        }
+    }
 }
 

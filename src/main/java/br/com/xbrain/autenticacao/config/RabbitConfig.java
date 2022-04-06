@@ -115,6 +115,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-inativacao-por-aa}")
     private String usuarioInativacaoPorAaMq;
 
+    @Value("${app-config.queue.limpar-cpf-e-alterar-email-feeder}")
+    private String usuarioLimparCpfEAlterarEmailUsuarioFeederMq;
+
+    @Value("${app-config.queue.limpar-cpf-e-alterar-email-feeder-failure}")
+    private String usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq;
+
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
@@ -257,6 +263,16 @@ public class RabbitConfig {
     @Bean
     Queue usuarioRemanejadoAutFailure() {
         return new Queue(usuarioRemanejadoAutFailure, false);
+    }
+
+    @Bean
+    Queue usuarioLimparCpfEAlterarEmailUsuarioFeederMq() {
+        return new Queue(usuarioLimparCpfEAlterarEmailUsuarioFeederMq, false);
+    }
+
+    @Bean
+    Queue usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq() {
+        return new Queue(usuarioLimparCpfEAlterarEmailUsuarioFeederFailureMq, false);
     }
 
     @Bean
