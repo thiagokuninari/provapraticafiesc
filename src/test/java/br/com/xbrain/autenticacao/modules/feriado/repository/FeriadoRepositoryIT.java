@@ -125,4 +125,12 @@ public class FeriadoRepositoryIT {
             .contains(LocalDate.of(2019, 7, 28))
             .doesNotContain(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 4, 6));
     }
+
+    @Test
+    public void findAllDataFeriadoByCidadeUf_deveRetornarDatasFeriadosNacionaisELocais_quandoCidadeTiverFeriadoRegional() {
+        assertThat(feriadoRepository.findAllDataFeriadoByCidadeEUf("MARINGA", "PR"))
+            .hasSize(2)
+            .contains(LocalDate.of(2019, 7, 29), LocalDate.of(2019, 9, 23))
+            .doesNotContain(LocalDate.of(2019, 9, 30));
+    }
 }
