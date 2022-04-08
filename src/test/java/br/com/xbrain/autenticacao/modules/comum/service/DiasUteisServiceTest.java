@@ -62,31 +62,31 @@ public class DiasUteisServiceTest {
         when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of());
 
         assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(2)))
-            .isEqualTo(LocalDateTime.of(2022, 3, 23, 10, 0, 0));
+            .isEqualTo(LocalDateTime.of(2022, 4, 20, 10, 0, 0));
     }
 
     @Test
     public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarDataCorreto_quandoTiverFinalSemanaNoPeriodo() {
         when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of());
 
-        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(7)))
-            .isEqualTo(LocalDateTime.of(2022, 3, 30, 10, 0, 0));
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(5)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 25, 10, 0, 0));
     }
 
     @Test
     public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarDataCorreto_quandoTiverFeriadoEFinalSemanaNoPeriodo() {
-        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of());
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of(LocalDate.of(2022, 4, 21)));
 
-        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(20)))
-            .isEqualTo(LocalDateTime.of(2022, 4, 18, 10, 0, 0));
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(6)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 27, 10, 0, 0));
     }
 
     @Test
     public void getDataComDiasUteisAdicionadoComCidadeUf_deveRetornarDataCorreto_quandoTiverFeriadoNoPeriodo() {
-        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of(LocalDate.of(2022, 3, 21)));
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of(LocalDate.of(2022, 4, 21)));
 
-        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(1)))
-            .isEqualTo(LocalDateTime.of(2022, 3, 23, 10, 0, 0));
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(3)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 22, 10, 0, 0));
     }
 
     private DiasUteisRequest umDiasUteisRequest(Integer qtdDiasUteis) {
@@ -101,7 +101,7 @@ public class DiasUteisServiceTest {
         return DiasUteisRequestCidadeUf.builder()
             .cidade("Londrina")
             .uf("PR")
-            .dataOriginal(LocalDateTime.of(2022, 3, 21, 10, 0, 0))
+            .dataOriginal(LocalDateTime.of(2022, 4, 18, 10, 0, 0))
             .qtdDiasUteisAdicionar(qtdDiasUteis)
             .build();
     }
