@@ -240,7 +240,7 @@ public class FeederServiceTest {
     }
 
     @Test
-    public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfEAlterarEmail_quandoUsuarioFeederExcluido() {
+    public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfAlterarEmailEGerarHistorico_quandoUsuarioFeederExcluido() {
         var usuarioSemCpf = umUsuarioFeeder(100).get();
         usuarioSemCpf.setCpf(null);
         usuarioSemCpf.setEmail("INATIVO_THIAGOTESTE@XBRAIN.COM.BR");
@@ -250,6 +250,7 @@ public class FeederServiceTest {
         service.limparCpfEAlterarEmailUsuarioFeeder(100);
 
         verify(usuarioRepository, times(1)).save(eq(usuarioSemCpf));
+        verify(usuarioHistoricoService, times(1)).save(eq(umUsuarioHistorico()));
     }
 
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
@@ -306,6 +307,14 @@ public class FeederServiceTest {
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .build();
+    }
+
+    private UsuarioHistorico umUsuarioHistorico() {
+        return UsuarioHistorico.builder()
+            .usuario(new Usuario(100))
+            .observacao("Usuário excluído. CPF e Email alterados automaticamente")
+            .situacao(ESituacao.I)
             .build();
     }
 }

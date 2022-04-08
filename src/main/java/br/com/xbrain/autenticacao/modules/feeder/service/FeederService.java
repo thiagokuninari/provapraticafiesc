@@ -76,6 +76,8 @@ public class FeederService {
         var usuario = findUsuarioById(usuarioId);
         usuario.setCpf(null);
         usuario.setEmail(EMAIL_INATIVO.concat(usuario.getEmail()));
+        gerarHistoricoUsuarioExcluidoFeeder(usuarioId);
+
         usuarioRepository.save(usuario);
     }
 
@@ -120,6 +122,13 @@ public class FeederService {
                         ? OBSERVACAO_FEEDER
                         : OBSERVACAO_NAO_FEEDER,
                     ESituacao.A));
+        }
+    }
+
+    private void gerarHistoricoUsuarioExcluidoFeeder(Integer usuarioId) {
+        if (Objects.nonNull(usuarioId)) {
+            usuarioHistoricoService.save(
+                UsuarioHistorico.gerarHistorico(usuarioId, null, ALTERACAO_CPF_E_EMAIL_FEEDER, ESituacao.I));
         }
     }
 

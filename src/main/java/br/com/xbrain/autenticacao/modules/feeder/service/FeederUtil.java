@@ -14,6 +14,7 @@ public class FeederUtil {
         "AGENTE AUTORIZADO COM PERMISSÃO DE FEEDER.";
     public static final String OBSERVACAO_NAO_FEEDER =
         "AGENTE AUTORIZADO SEM PERMISSÃO DE FEEDER.";
+    public static final String ALTERACAO_CPF_E_EMAIL_FEEDER = "Usuário excluído do Feeder. CPF e Email alterados automaticamente";
     public static final List<Integer> FUNCIONALIDADES_FEEDER_PARA_AA = List.of(15000, 15005, 15012, 3046);
     public static List<CodigoCargo> CARGOS_BACKOFFICE = List.of(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS,
         AGENTE_AUTORIZADO_BACKOFFICE_D2D, AGENTE_AUTORIZADO_BACKOFFICE_TEMP, AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS_RECEPTIVO);
