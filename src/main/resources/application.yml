@@ -6,8 +6,8 @@ server:
 
 spring:
   redis:
-#    host: 127.0.0.1
-#    port: 6379
+    #    host: 127.0.0.1
+    #    port: 6379
     host: 192.168.50.1
     port: 6379
 
@@ -30,6 +30,7 @@ spring:
             mode: none
       hibernate:
         dialect: br.com.xbrain.autenticacao.config.database.CustomOracle10gDialect
+        format_sql: 'true'
         hbm2ddl:
           import_files:
             database/estrutura.sql,
@@ -50,7 +51,7 @@ spring:
 
   rabbitmq:
     host: 192.168.50.1
-#    host: localhost
+    #    host: localhost
     port: 5671
     username: xbrain
     password: xbrain
@@ -221,7 +222,7 @@ app-config:
 
   services:
     autenticacao:
-       #url: http://localhost:8096
+      #url: http://localhost:8096
       url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br

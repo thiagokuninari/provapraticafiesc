@@ -8,9 +8,11 @@ import java.util.Optional;
 public interface UsuarioHistoricoRepositoryCustom {
 
     Optional<UsuarioHistorico> getUltimoHistoricoPorUsuario(Integer usuarioId);
-    
+
     List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId);
 
     List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
+
+    String findMotivoInativacao(Integer usuarioId);
 
 }

@@ -114,8 +114,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public Optional<Usuario> findComplete(Integer id) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
+                .selectFrom(usuario)
                 .join(usuario.cargo, cargo).fetchJoin()
                 .join(cargo.nivel).fetchJoin()
                 .leftJoin(usuario.canais).fetchJoin()
@@ -168,22 +167,22 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @SuppressWarnings("unchecked")
     public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigosCargos) {
         return entityManager
-                .createNativeQuery(
-                        " SELECT UH.FK_USUARIO "
-                                + " , U.NOME "
-                                + " , U.EMAIL_01 "
-                                + " , C.NOME AS NOME_CARGO "
-                                + " , C.CODIGO AS CARGO_CODIGO"
-                                + " FROM USUARIO_HIERARQUIA UH"
-                                + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
-                                + " JOIN CARGO C ON C.ID = U.FK_CARGO "
-                                + " WHERE C.CODIGO in (:_codigoCargo)"
-                                + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
-                                + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
-                                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
-                .setParameter("_usuarioId", usuarioId)
-                .setParameter("_codigoCargo", codigosCargos)
-                .getResultList();
+            .createNativeQuery(
+                " SELECT UH.FK_USUARIO "
+                    + " , U.NOME "
+                    + " , U.EMAIL_01 "
+                    + " , C.NOME AS NOME_CARGO "
+                    + " , C.CODIGO AS CARGO_CODIGO"
+                    + " FROM USUARIO_HIERARQUIA UH"
+                    + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                    + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                    + " WHERE C.CODIGO in (:_codigoCargo)"
+                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
+                    + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                    + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+            .setParameter("_usuarioId", usuarioId)
+            .setParameter("_codigoCargo", codigosCargos)
+            .getResultList();
     }
 
     public List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds) {
@@ -429,10 +428,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.cargo, cargo).fetchJoin()
             .leftJoin(usuario.departamento, departamento).fetchJoin()
             .where(usuario.id.in(
-                select(usuarioHierarquia.usuarioSuperior.id)
-                    .from(usuarioHierarquia)
-                    .where(usuarioHierarquia.usuario.id.eq(usuarioId))
-            )
+                    select(usuarioHierarquia.usuarioSuperior.id)
+                        .from(usuarioHierarquia)
+                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                )
                 .and(usuario.cargo.codigo.in(COORDENADOR_OPERACAO, GERENTE_OPERACAO))
                 .and(usuario.departamento.codigo.eq(COMERCIAL))
                 .and(usuario.situacao.eq(A)))

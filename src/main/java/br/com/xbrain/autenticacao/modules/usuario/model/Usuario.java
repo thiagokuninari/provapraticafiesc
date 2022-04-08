@@ -199,6 +199,7 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
+    @OrderBy("id DESC")
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UsuarioHistorico> historicos;
 

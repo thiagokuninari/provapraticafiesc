@@ -83,7 +83,7 @@ public class UsuarioGerenciaController {
         return service.saveUsuarioConfiguracao(dto);
     }
 
-    @PostMapping("/inativar")
+    @PutMapping("/inativar")
     public void inativar(@Validated @RequestBody UsuarioInativacaoDto dto) {
         service.inativar(dto);
     }
