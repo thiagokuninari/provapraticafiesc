@@ -13,6 +13,6 @@ public interface UsuarioHistoricoRepositoryCustom {
 
     List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioid);
 
-    String findMotivoInativacao(Integer usuarioId);
+    Optional<String> findMotivoInativacao(Integer usuarioId);
 
 }

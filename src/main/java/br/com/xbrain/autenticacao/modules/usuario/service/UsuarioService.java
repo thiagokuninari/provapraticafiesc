@@ -1269,13 +1269,13 @@ public class UsuarioService {
     private void validarAtivacao(Usuario usuario) {
         var isUsuarioXbrainOuMSO = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
-        var usuarioInativoPorMuitasSimulacoes =
-            usuarioHistoricoService
-                .findMotivoInativacao(usuario.getId())
-                .equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES");
+        var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
+            .findMotivoInativacao(usuario.getId())
+            .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
+            .orElse(false);
 
-        System.out.println("Motivo da inativação: " + usuarioHistoricoService.findMotivoInativacao(usuario.getId()));
-        System.out.println(usuarioInativoPorMuitasSimulacoes);
+        System.out.println("Optional de motivo: " + usuarioHistoricoService.findMotivoInativacao(usuario.getId()));
+        System.out.println("usuarioInativoPorMuitasSimulacoes: " + usuarioInativoPorMuitasSimulacoes);
 
         if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");

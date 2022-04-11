@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,10 +16,13 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHistorico
 public class UsuarioHistoricoRepositoryImpl
     extends CustomRepository<UsuarioHistorico> implements UsuarioHistoricoRepositoryCustom {
 
+    @Autowired
+    private JPAQueryFactory jpaQueryFactory;
+
     @Override
     public Optional<UsuarioHistorico> getUltimoHistoricoPorUsuario(Integer usuarioId) {
         return Optional.ofNullable(
-            new JPAQueryFactory(entityManager)
+            jpaQueryFactory
                 .select(usuarioHistorico)
                 .from(usuarioHistorico)
                 .where(usuarioHistorico.usuario.id.eq(usuarioId))
@@ -28,7 +32,7 @@ public class UsuarioHistoricoRepositoryImpl
 
     @Override
     public List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId) {
-        return new JPAQueryFactory(entityManager)
+        return jpaQueryFactory
             .selectFrom(usuarioHistorico)
             .leftJoin(usuarioHistorico.motivoInativacao).fetchJoin()
             .leftJoin(usuarioHistorico.usuarioAlteracao).fetchJoin()
@@ -38,7 +42,7 @@ public class UsuarioHistoricoRepositoryImpl
     }
 
     public List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioId) {
-        return new JPAQueryFactory(entityManager)
+        return jpaQueryFactory
             .select(usuarioHistorico)
             .from(usuarioHistorico)
             .innerJoin(usuarioHistorico.motivoInativacao, motivoInativacao).fetchJoin()
@@ -48,20 +52,16 @@ public class UsuarioHistoricoRepositoryImpl
     }
 
     @Override
-    public String findMotivoInativacao(Integer usuarioId) {
-        // TODO concertar a Query
-        return new JPAQueryFactory(entityManager)
-            .select(motivoInativacao.descricao)
+    public Optional<String> findMotivoInativacao(Integer usuarioId) {
+        return Optional.ofNullable(jpaQueryFactory
+            .select(usuarioHistorico.motivoInativacao.descricao)
             .from(usuarioHistorico)
-            .leftJoin(usuario)
-            .on(usuarioHistorico.usuario.id.eq(usuario.id))
-            .leftJoin(usuarioHistorico.motivoInativacao, motivoInativacao)
-            .on(usuarioHistorico.motivoInativacao.id.eq(motivoInativacao.id))
-            .where(usuario.id.eq(usuarioId))
-            .where(usuarioHistorico.situacao.eq(ESituacao.I))
-            .where(motivoInativacao.descricao.isNotEmpty())
+            .where(
+                usuarioHistorico.usuario.id.eq(usuarioId)
+                    .and(usuarioHistorico.situacao.eq(ESituacao.I))
+                    .and(usuarioHistorico.motivoInativacao.descricao.isNotEmpty())
+            )
             .orderBy(usuarioHistorico.dataCadastro.desc())
-            .fetch()
-            .get(0);
+            .fetchFirst());
     }
 }

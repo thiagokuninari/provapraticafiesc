@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -45,7 +46,7 @@ public class UsuarioHistoricoService {
                 .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
     }
 
-    public String findMotivoInativacao(Integer usuarioId) {
+    public Optional<String> findMotivoInativacao(Integer usuarioId) {
         return usuarioHistoricoRepository.findMotivoInativacao(usuarioId);
     }
 
