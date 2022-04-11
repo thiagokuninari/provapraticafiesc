@@ -120,8 +120,9 @@ public class UsuarioService {
     );
     public static final String OPERACAO = "Operação";
     public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
-    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Erro ao ativar usuário. "
-        + "Usuários inativados por realizar muitas simulações só podem ser reativados por usuários XBrain ou MSO.";
+    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Não foi possível ativar usuário. "
+        + "O usuário foi inativado por realizar muitas simulações, por favor entre em contato com algum usuário XBrain "
+        + "para que ele possa reativar o usuário.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -1273,9 +1274,6 @@ public class UsuarioService {
             .findMotivoInativacao(usuario.getId())
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
-
-        System.out.println("Optional de motivo: " + usuarioHistoricoService.findMotivoInativacao(usuario.getId()));
-        System.out.println("usuarioInativoPorMuitasSimulacoes: " + usuarioInativoPorMuitasSimulacoes);
 
         if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");

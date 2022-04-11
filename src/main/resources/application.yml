@@ -30,7 +30,6 @@ spring:
             mode: none
       hibernate:
         dialect: br.com.xbrain.autenticacao.config.database.CustomOracle10gDialect
-        format_sql: 'true'
         hbm2ddl:
           import_files:
             database/estrutura.sql,
@@ -41,13 +40,12 @@ spring:
             database/feriados.sql
 
   datasource:
-#    url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
-    url: jdbc:oracle:thin:@//192.168.50.2:1521/HMLG
+    url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
     username: AUTENTICACAO
     password: 4ut3nt1c4c40
     driverClassName: oracle.jdbc.OracleDriver
     hikari:
-      maximumPoolSize: 200
+      maximumPoolSize: 2
       connectionTimeout: 10000
 
   rabbitmq:
