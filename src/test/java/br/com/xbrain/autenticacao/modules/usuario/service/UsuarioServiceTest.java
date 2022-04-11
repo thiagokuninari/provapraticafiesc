@@ -155,12 +155,15 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(umUsuarioSocioPrincipalEAa()));
         when(agenteAutorizadoNovoService.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
 
+        // TODO: Consertar o teste
         usuarioService.ativar(umUsuarioAtivacaoDto());
         verify(usuarioClientService, times(1)).alterarSituacao(1);
     }
 
     @Test
     public void ativar_NaoDeveAlterarSituacaoUsuario_quandoOMesmoForSocioPrincialEAa() {
+        // TODO: Consertar o teste
+
         when(usuarioRepository.findComplete(anyInt())).thenReturn(Optional.of(outroUsuarioCompleto()));
         usuarioService.ativar(umUsuarioAtivacaoDto());
         verify(usuarioClientService, never()).alterarSituacao(2);

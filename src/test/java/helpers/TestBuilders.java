@@ -211,6 +211,7 @@ public class TestBuilders {
             .id(id)
             .cargoCodigo(CodigoCargo.ADMINISTRADOR)
             .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
+            .nivel("XBRAIN")
             .nivelCodigo(CodigoNivel.XBRAIN.name())
             .usuario(Usuario.builder()
                 .cargo(null)

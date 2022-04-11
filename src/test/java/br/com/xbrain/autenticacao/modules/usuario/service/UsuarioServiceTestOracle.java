@@ -282,6 +282,7 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void getPermissoesPorUsuarios_permissoesComUsuario_conformeParametroUsuarioIdAndPermissao() {
+        // TODO: Verificar o teste
         UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
         request.setPermissoes(Arrays.asList(
             "ROLE_VDS_TABULACAO_DISCADORA",
@@ -310,6 +311,7 @@ public class UsuarioServiceTestOracle {
 
     @Test
     public void getPermissoesPorUsuarios_permissoesComUsuario_naoDeveLancarErroAoReceberMuitosIds() {
+        // TODO: Verificar o teste
         UsuarioPermissoesRequest request = new UsuarioPermissoesRequest();
         request.setPermissoes(Arrays.asList(
             "ROLE_VDS_TABULACAO_DISCADORA",

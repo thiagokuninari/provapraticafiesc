@@ -16,13 +16,10 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHistorico
 public class UsuarioHistoricoRepositoryImpl
     extends CustomRepository<UsuarioHistorico> implements UsuarioHistoricoRepositoryCustom {
 
-    @Autowired
-    private JPAQueryFactory jpaQueryFactory;
-
     @Override
     public Optional<UsuarioHistorico> getUltimoHistoricoPorUsuario(Integer usuarioId) {
         return Optional.ofNullable(
-            jpaQueryFactory
+            new JPAQueryFactory(entityManager)
                 .select(usuarioHistorico)
                 .from(usuarioHistorico)
                 .where(usuarioHistorico.usuario.id.eq(usuarioId))
@@ -32,7 +29,7 @@ public class UsuarioHistoricoRepositoryImpl
 
     @Override
     public List<UsuarioHistorico> getHistoricoDoUsuario(Integer usuarioId) {
-        return jpaQueryFactory
+        return new JPAQueryFactory(entityManager)
             .selectFrom(usuarioHistorico)
             .leftJoin(usuarioHistorico.motivoInativacao).fetchJoin()
             .leftJoin(usuarioHistorico.usuarioAlteracao).fetchJoin()
@@ -42,7 +39,7 @@ public class UsuarioHistoricoRepositoryImpl
     }
 
     public List<UsuarioHistorico> findAllCompleteByUsuarioId(Integer usuarioId) {
-        return jpaQueryFactory
+        return new JPAQueryFactory(entityManager)
             .select(usuarioHistorico)
             .from(usuarioHistorico)
             .innerJoin(usuarioHistorico.motivoInativacao, motivoInativacao).fetchJoin()
@@ -53,7 +50,7 @@ public class UsuarioHistoricoRepositoryImpl
 
     @Override
     public Optional<String> findMotivoInativacao(Integer usuarioId) {
-        return Optional.ofNullable(jpaQueryFactory
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .select(usuarioHistorico.motivoInativacao.descricao)
             .from(usuarioHistorico)
             .where(
