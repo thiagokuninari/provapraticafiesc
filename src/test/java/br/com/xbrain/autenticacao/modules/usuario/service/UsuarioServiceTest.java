@@ -164,7 +164,7 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .when(usuarioHistoricoService)
-            .findMotivoInativacao(1);
+            .findMotivoInativacaoByUsuarioId(1);
 
         doReturn(Optional.of(umUsuarioSocioPrincipalEAa()))
             .when(usuarioRepository)
@@ -205,7 +205,7 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .when(usuarioHistoricoService)
-            .findMotivoInativacao(anyInt());
+            .findMotivoInativacaoByUsuarioId(anyInt());
 
         usuarioService.ativar(umUsuarioAtivacaoDto());
 
@@ -228,7 +228,7 @@ public class UsuarioServiceTest {
 
         doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .when(usuarioHistoricoService)
-            .findMotivoInativacao(anyInt());
+            .findMotivoInativacaoByUsuarioId(anyInt());
 
         usuarioService.ativar(umUsuarioAtivacaoDto());
 

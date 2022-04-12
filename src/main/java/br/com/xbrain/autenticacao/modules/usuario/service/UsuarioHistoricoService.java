@@ -46,8 +46,8 @@ public class UsuarioHistoricoService {
                 .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
     }
 
-    public Optional<String> findMotivoInativacao(Integer usuarioId) {
-        return usuarioHistoricoRepository.findMotivoInativacao(usuarioId);
+    public Optional<String> findMotivoInativacaoByUsuarioId(Integer usuarioId) {
+        return usuarioHistoricoRepository.findMotivoInativacaoByUsuarioId(usuarioId);
     }
 
     private MotivoInativacao getMotivoInativacao() {

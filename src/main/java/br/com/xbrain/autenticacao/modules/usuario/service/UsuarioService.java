@@ -1272,7 +1272,7 @@ public class UsuarioService {
         var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
         var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
-            .findMotivoInativacao(usuario.getId())
+            .findMotivoInativacaoByUsuarioId(usuario.getId())
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
 

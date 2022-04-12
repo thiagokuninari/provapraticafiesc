@@ -48,7 +48,7 @@ public class UsuarioHistoricoRepositoryImpl
     }
 
     @Override
-    public Optional<String> findMotivoInativacao(Integer usuarioId) {
+    public Optional<String> findMotivoInativacaoByUsuarioId(Integer usuarioId) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .select(usuarioHistorico.motivoInativacao.descricao)
             .from(usuarioHistorico)
