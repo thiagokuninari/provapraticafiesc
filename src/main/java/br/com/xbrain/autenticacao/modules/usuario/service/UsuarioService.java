@@ -7,7 +7,10 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -57,7 +60,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.NumberUtils;
@@ -71,7 +73,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -342,7 +343,7 @@ public class UsuarioService {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
-            c.setCpf(repository.findCPFById(c.getId()));
+            c.setCpf(repository.findCpfById(c.getId()));
         });
     }
 
@@ -1268,7 +1269,7 @@ public class UsuarioService {
     }
 
     private void validarAtivacao(Usuario usuario) {
-        var isUsuarioXbrainOuMSO = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
+        var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
             || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
         var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
             .findMotivoInativacao(usuario.getId())
@@ -1283,7 +1284,7 @@ public class UsuarioService {
         } else if (!usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()
             && !encontrouAgenteAutorizadoByUsuarioId(usuario.getId())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
-        } else if (!isUsuarioXbrainOuMSO && usuarioInativoPorMuitasSimulacoes) {
+        } else if (!isUsuarioAdmin && usuarioInativoPorMuitasSimulacoes) {
             throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
         }
 
@@ -1795,8 +1796,8 @@ public class UsuarioService {
     }
 
     void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream().filter(
-                usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
+        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream()
+            .filter(usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
             .map(UsuarioCsvResponse::getId)
             .collect(toList());
 
