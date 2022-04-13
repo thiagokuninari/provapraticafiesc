@@ -58,4 +58,6 @@ public interface AgenteAutorizadoNovoClient {
     List<AgenteAutorizadoUsuarioDto> getAgenteAutorizadosUsuarioDtosByUsuarioIds(
         @RequestBody UsuarioRequest request);
 
+    @GetMapping(URL_AGENTE_AUTORIZADO + "/carteira/{usuarioId}/agentes-autorizados")
+    List<AgenteAutorizadoResponse> findAgenteAutorizadoByUsuarioId(@PathVariable("usuarioId") Integer usuarioId) ;
 }

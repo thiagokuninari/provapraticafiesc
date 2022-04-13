@@ -7,7 +7,10 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -28,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -103,6 +107,8 @@ public class UsuarioService {
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
+    private static final String MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO =
+        "Não é possível remover o canal Agente Autorizado, pois o usuário possui vínculo com o(s) AA(s): %s.";
     private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE  =
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE  =
@@ -483,7 +489,17 @@ public class UsuarioService {
     private void validarEdicao(Usuario usuario) {
         if (!usuario.isNovoCadastro()) {
             repository.findById(usuario.getId())
-                .ifPresent(usuarioOriginal -> validarVinculoComSite(usuarioOriginal, usuario));
+                .ifPresent(usuarioOriginal -> {
+                    validarVinculoComSite(usuarioOriginal, usuario);
+                    validarVinculoComAa(usuarioOriginal);
+                });
+        }
+    }
+
+    private void validarVinculoComAa(Usuario usuarioOriginal) {
+        var aaIds = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
+        if (!isEmpty(aaIds)) {
+            throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aaIds)));
         }
     }
 
@@ -568,6 +584,13 @@ public class UsuarioService {
         return sites
             .stream()
             .map(Site::getNome)
+            .collect(Collectors.joining(", "));
+    }
+
+    private String obterDadosAa(List<AgenteAutorizadoResponse> agenteAutorizadoResponses) {
+        return agenteAutorizadoResponses
+            .stream()
+            .map(aas -> aas.getRazaoSocial() + " " + aas.getCnpj())
             .collect(Collectors.joining(", "));
     }
 

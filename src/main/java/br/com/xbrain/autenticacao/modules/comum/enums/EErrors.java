@@ -136,7 +136,10 @@ public enum EErrors {
         "#041 - Erro ao tentar limpar o cache de feriados no mailing-api."),
     ERRO_OBTER_EQUIPE_USUARIO_SERVICE(
         "#042 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#042 - Erro ao buscar usuários cadastrados em equipes.");
+        "#042 - Erro ao buscar usuários cadastrados em equipes."),
+    ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
+        "#043 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#043 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario.");
 
     @Getter
     @Setter
