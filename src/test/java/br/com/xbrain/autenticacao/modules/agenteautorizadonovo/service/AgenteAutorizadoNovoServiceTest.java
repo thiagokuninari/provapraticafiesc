@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 import br.com.xbrain.autenticacao.config.feign.FeignBadResponseWrapper;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,8 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.agenteautorizadonovo.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -56,5 +56,44 @@ public class AgenteAutorizadoNovoServiceTest {
         assertThat(service.buscarTodosUsuariosDosAas(List.of(1), false))
             .extracting("id")
             .containsExactly(1);
+    }
+
+    @Test
+    public void findAgenteAutorizadoByUsuarioId_integracaoException_seApiIndisponivel() {
+        when(client.findAgenteAutorizadoByUsuarioId(eq(1)))
+            .thenThrow(new RetryableException("Connection refused (Connection refused) executing "
+                + "GET http://localhost:8300/api/carteira/{1}/agentes-autorizados", new Date()));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.findAgenteAutorizadoByUsuarioId(1))
+            .withMessage("#043 - Desculpe, ocorreu um erro interno. Contate a administrador.");
+    }
+
+    @Test
+    public void findAgenteAutorizadoByUsuarioId_integracaoException_seIdUsuarioNaoInformado() {
+        when(client.findAgenteAutorizadoByUsuarioId(eq(null)))
+            .thenThrow(new FeignBadResponseWrapper(400, null,
+                "[{\"message\":\"O campo usuarioId é obrigatório.\",\"field\":usuarioId]"));
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.findAgenteAutorizadoByUsuarioId(null));
+    }
+
+    @Test
+    public void findAgenteAutorizadoByUsuarioId_retornaListaAgentesAutorizadosDoUsuario() {
+        when(client.findAgenteAutorizadoByUsuarioId(eq(1)))
+            .thenReturn(List.of(umAgenteAutorizadoResponse()));
+
+        assertThat(service.findAgenteAutorizadoByUsuarioId(1))
+            .extracting("id", "razaoSocial", "cnpj")
+            .containsExactly(tuple("10", "AA TESTE", "78.620.184/0001-80"));
+    }
+
+    private AgenteAutorizadoResponse umAgenteAutorizadoResponse() {
+        return AgenteAutorizadoResponse.builder()
+            .id("10")
+            .razaoSocial("AA TESTE")
+            .cnpj("78.620.184/0001-80")
+            .build();
     }
 }

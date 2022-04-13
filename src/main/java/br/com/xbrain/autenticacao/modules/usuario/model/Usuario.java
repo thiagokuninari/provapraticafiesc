@@ -564,4 +564,10 @@ public class Usuario {
     public boolean isCoordenadorOuSupervisorOperacao() {
         return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
     }
+
+    @JsonIgnore
+    public boolean isNivelOperacao() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo().equals(CodigoNivel.OPERACAO);
+    }
 }

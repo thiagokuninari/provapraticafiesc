@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.outroUsuarioCompleto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -64,19 +66,19 @@ public class UsuarioTest {
     @Test
     public void permiteEditar_deveRetornarFalse_quandoOUsuarioEditadoForOMesmoDoAutenticado() {
         assertFalse(umUsuarioComCargo(1, CodigoCargo.GERENTE_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.GERENTE_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.GERENTE_OPERACAO)));
     }
 
     @Test
     public void permiteEditar_deveRetornarFalse_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertFalse(umUsuarioComCargo(1, CodigoCargo.SUPERVISOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     @Test
@@ -148,6 +150,12 @@ public class UsuarioTest {
     @Test
     public void isCanalAtivoLocalRemovido_deveRetornarTrue_seCanaisPossuirAtivoProprioMasCanaisNovosNao() {
         assertThat(umUsuario(null, null, Set.of(ECanal.ATIVO_PROPRIO)).isCanalAtivoLocalRemovido(Set.of(ECanal.D2D_PROPRIO)))
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarTrue_seUsuarioPossuirNivelOperacao() {
+        assertThat(outroUsuarioCompleto().isNivelOperacao())
             .isTrue();
     }
 
