@@ -568,6 +568,6 @@ public class Usuario {
     @JsonIgnore
     public boolean isNivelOperacao() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
-            && cargo.getNivel().getCodigo().equals(CodigoNivel.OPERACAO);
+            && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
 }

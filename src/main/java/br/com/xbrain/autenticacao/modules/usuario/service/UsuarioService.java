@@ -497,9 +497,9 @@ public class UsuarioService {
     }
 
     private void validarVinculoComAa(Usuario usuarioOriginal) {
-        var aaIds = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
-        if (usuarioOriginal.isNivelOperacao() && !isEmpty(aaIds)) {
-            throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aaIds)));
+        var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
+        if (usuarioOriginal.isNivelOperacao() && !isEmpty(aas)) {
+            throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
         }
     }
 
