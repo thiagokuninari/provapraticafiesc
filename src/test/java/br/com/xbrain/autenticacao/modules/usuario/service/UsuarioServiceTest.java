@@ -22,6 +22,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuari
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
@@ -1441,6 +1442,41 @@ public class UsuarioServiceTest {
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
 
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+   public void save_deveDispararValidacaoException_seUsuarioOperacaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+                CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)));
+        when(agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(eq(1)))
+            .thenReturn(List.of(AgenteAutorizadoResponse
+                .builder()
+                .id("1")
+                .razaoSocial("TESTE AA")
+                .cnpj("00.000.0000/0001-00")
+                .build()));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+                CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)))
+            .withMessage("Não é possível remover o canal Agente Autorizado, "
+                + "pois o usuário possui vínculo com o(s) AA(s): TESTE AA 00.000.0000/0001-00.");
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void save_naoDeveDispararValidacaoException_seUsuarioOperacaoNaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
+        when(usuarioRepository.findById(eq(1)))
+            .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.AGENTE_AUTORIZADO)));
+        when(agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(eq(1)))
+            .thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.save(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)))
+            .doesNotThrowAnyException();
     }
 
     @Test

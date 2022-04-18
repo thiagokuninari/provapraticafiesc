@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -9,8 +10,10 @@ import org.junit.Test;
 
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.outroUsuarioCompleto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -155,7 +158,19 @@ public class UsuarioTest {
 
     @Test
     public void isNivelOperacao_deveRetornarTrue_seUsuarioPossuirNivelOperacao() {
-        assertThat(outroUsuarioCompleto().isNivelOperacao())
+        assertThat(usuarioAtivo(VENDEDOR_OPERACAO, OPERACAO).isNivelOperacao())
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarFalse_seUsuarioNaoPossuirNivelOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarTrue_seUsuarioNaoPossuirCargoEForNivelOperacao() {
+        assertThat(usuarioAtivo(null, OPERACAO).isNivelOperacao())
             .isTrue();
     }
 
@@ -188,6 +203,27 @@ public class UsuarioTest {
             .builder()
             .loginNetSales(loginNetSales)
             .build();
+    }
+
+    private static Usuario usuarioAtivo(CodigoCargo codigoCargo, CodigoNivel nivel) {
+        var usuarioAtivo = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .situacao(ESituacao.A)
+                    .build())
+                .build());
+        return usuarioAtivo.build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {
