@@ -157,6 +157,34 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarFalse_seNaoPossuirCanais() {
+        assertThat(new Usuario()
+            .isCanalAgenteAutorizadoRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarFalse_seCanaisNaoPossuiAgenteAutorizado() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.D2D_PROPRIO))
+            .isCanalAgenteAutorizadoRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarTrue_seCanaisPossuirAgenteAutorizadoMasCanaisNovosForNull() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.AGENTE_AUTORIZADO))
+            .isCanalAgenteAutorizadoRemovido(null))
+            .isTrue();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarTrue_seCanaisPossuirAgenteAutorizadoMasCanaisNovosNao() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.AGENTE_AUTORIZADO))
+            .isCanalAgenteAutorizadoRemovido(Set.of(ECanal.D2D_PROPRIO)))
+            .isTrue();
+    }
+
+    @Test
     public void isNivelOperacao_deveRetornarTrue_seUsuarioPossuirNivelOperacao() {
         assertThat(usuarioAtivo(VENDEDOR_OPERACAO, OPERACAO).isNivelOperacao())
             .isTrue();

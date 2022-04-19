@@ -561,6 +561,17 @@ public class Usuario {
     }
 
     @JsonIgnore
+    public boolean isCanalAgenteAutorizadoRemovido(Set<ECanal> canaisNovos) {
+        return Optional.ofNullable(canais)
+            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
+            .map(canaisOptional ->
+                canaisOptional.contains(ECanal.AGENTE_AUTORIZADO)
+                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.AGENTE_AUTORIZADO))
+            )
+            .orElse(false);
+    }
+
+    @JsonIgnore
     public boolean isCoordenadorOuSupervisorOperacao() {
         return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
     }

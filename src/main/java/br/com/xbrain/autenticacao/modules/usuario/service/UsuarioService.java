@@ -491,15 +491,17 @@ public class UsuarioService {
             repository.findById(usuario.getId())
                 .ifPresent(usuarioOriginal -> {
                     validarVinculoComSite(usuarioOriginal, usuario);
-                    validarVinculoComAa(usuarioOriginal);
+                    validarVinculoComAa(usuarioOriginal, usuario);
                 });
         }
     }
 
-    private void validarVinculoComAa(Usuario usuarioOriginal) {
-        var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
-        if (usuarioOriginal.isNivelOperacao() && !isEmpty(aas)) {
-            throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
+    private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
+        if (usuarioOriginal.isNivelOperacao() && usuarioOriginal.isCanalAgenteAutorizadoRemovido(usuarioAlterado.getCanais())) {
+            var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
+            if (!isEmpty(aas)) {
+                throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
+            }
         }
     }
 

@@ -1467,16 +1467,17 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void save_naoDeveDispararValidacaoException_seUsuarioOperacaoNaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
-        when(usuarioRepository.findById(eq(1)))
-            .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO, CodigoDepartamento.COMERCIAL,
-                ECanal.AGENTE_AUTORIZADO)));
-        when(agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(eq(1)))
-            .thenReturn(List.of());
+    public void save_naoDeveDispararValidacaoException_seUsuarioDadosAlteradosNaoForCanalAgenteAutorizado() {
+        var usuarioCompleto = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO);
 
-        assertThatCode(() -> usuarioService.save(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
-            CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)))
-            .doesNotThrowAnyException();
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuarioCompleto));
+
+        usuarioCompleto.setNome("AA Teste Dois");
+
+        assertThatCode(() -> usuarioService.save(usuarioCompleto)).doesNotThrowAnyException();
+
+        verifyNoMoreInteractions(agenteAutorizadoNovoService);
     }
 
     @Test
