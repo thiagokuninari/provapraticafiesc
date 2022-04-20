@@ -138,8 +138,8 @@ public enum EErrors {
         "#042 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#042 - Erro ao buscar usuários cadastrados em equipes."),
     ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
-        "#043 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#043 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario.");
+        "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario.");
 
     @Getter
     @Setter
