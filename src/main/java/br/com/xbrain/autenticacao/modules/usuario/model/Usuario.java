@@ -551,24 +551,21 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isCanalAtivoLocalRemovido(Set<ECanal> canaisNovos) {
-        return Optional.ofNullable(canais)
-            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
-            .map(canaisOptional ->
-                canaisOptional.contains(ECanal.ATIVO_PROPRIO)
-                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.ATIVO_PROPRIO))
-            )
-            .orElse(false);
+        return isCanalRemovido(ECanal.ATIVO_PROPRIO, canaisNovos);
     }
 
     @JsonIgnore
     public boolean isCanalAgenteAutorizadoRemovido(Set<ECanal> canaisNovos) {
-        return Optional.ofNullable(canais)
-            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
-            .map(canaisOptional ->
-                canaisOptional.contains(ECanal.AGENTE_AUTORIZADO)
-                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.AGENTE_AUTORIZADO))
-            )
-            .orElse(false);
+        return isCanalRemovido(ECanal.AGENTE_AUTORIZADO, canaisNovos);
+    }
+
+    private boolean isCanalRemovido(ECanal canalValidado, Set<ECanal> canaisNovos) {
+        if (canalValidado == null || ObjectUtils.isEmpty(canais)) {
+            return false;
+        }
+
+        return canais.contains(canalValidado)
+            && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(canalValidado));
     }
 
     @JsonIgnore
