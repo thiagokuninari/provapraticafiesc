@@ -62,7 +62,9 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .selectFrom(cidade)
             .leftJoin(cidade.uf)
             .leftJoin(cidade.regional, regional)
-            .where(regional.id.eq(regionalId).and(predicate))
+            .where(regional.id.eq(regionalId)
+                .and(cidade.subCluster.isNotNull())
+                .and(predicate))
             .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
@@ -229,7 +231,9 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .selectFrom(cidade)
             .leftJoin(cidade.uf)
             .leftJoin(cidade.regional, regional)
-            .where(cidade.regional.id.eq(regionalId).and(cidade.uf.id.eq(ufId)))
+            .where(cidade.regional.id.eq(regionalId)
+                .and(cidade.uf.id.eq(ufId))
+                .and(cidade.subCluster.isNotNull()))
             .orderBy(cidade.nome.asc())
             .fetch();
     }
