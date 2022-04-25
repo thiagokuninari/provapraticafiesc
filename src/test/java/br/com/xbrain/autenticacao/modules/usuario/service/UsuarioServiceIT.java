@@ -125,7 +125,7 @@ public class UsuarioServiceIT {
     public void updateFromQueue_deveRemoverPermissoesFeeder_quandoHouverIndevidamente() {
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
-            .removerFeederCasoCargoNaoDevaPossuir(eq(umUsuarioMqRequestComFeeder()));
+            .removerPermissoesEspeciais(List.of(371));
     }
 
     @Test
