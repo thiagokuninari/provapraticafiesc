@@ -81,6 +81,19 @@ public class FeederService {
         }
     }
 
+    public void removerFeederCasoCargoNaoDevaPossuir(UsuarioMqRequest usuarioMqRequest) {
+        var usuario = usuarioRepository.findById(usuarioMqRequest.getId())
+            .orElseThrow(() -> new ValidacaoException("Usuário não encontrado."));
+        var permissoes = getPermissoesEspeciaisDoColobarodaorConformeCargo(usuario,
+            usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo());
+
+        if (permissoes.isEmpty()
+            && usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
+            || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
+            permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER, List.of(usuario.getId()));
+        }
+    }
+
     private void gerarHistorico(Usuario usuario, SituacaoAlteracaoUsuarioFeederDto dto) {
         usuarioHistoricoService.save(
             UsuarioHistorico.builder()

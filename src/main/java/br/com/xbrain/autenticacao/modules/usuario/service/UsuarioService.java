@@ -986,6 +986,7 @@ public class UsuarioService {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto));
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                feederService.removerFeederCasoCargoNaoDevaPossuir(usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));
