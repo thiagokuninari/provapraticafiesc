@@ -53,6 +53,13 @@ public class FeederServiceTest {
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
+    public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
+        service.removerPermissoesEspeciais(List.of(1));
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(eq(List.of(15000, 15005, 15012, 3046)), eq(List.of(1)));
+    }
+
+    @Test
     public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciaisConformeOCargo_quandoUsuariosNaoPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
         aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);

@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -122,7 +123,17 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void updateFromQueue_deveRemoverPermissoesFeeder_quandoHouverIndevidamente() {
+    public void updateFromQueue_NaodeveRemoverPermissoesFeeder_quandoAaNaoForFeeder() {
+        var usuario = umUsuarioMqRequestComFeeder();
+        usuario.setAgenteAutorizadoFeeder(ETipoFeeder.NAO_FEEDER);
+
+        service.updateFromQueue(usuario);
+        verify(feederService, never())
+            .removerPermissoesEspeciais(List.of(371));
+    }
+
+    @Test
+    public void updateFromQueue_deveRemoverPermissoesFeeder_quandoHouverIndevidamenteEAaForFeeder() {
         service.updateFromQueue(umUsuarioMqRequestComFeeder());
         verify(feederService, times(1))
             .removerPermissoesEspeciais(List.of(371));
@@ -1488,6 +1499,7 @@ public class UsuarioServiceIT {
         return UsuarioMqRequest.builder()
             .id(371)
             .agenteAutorizadoId(10)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .usuarioCadastroId(100)
             .usuarioCadastroNome("JORGE")
             .situacao(ESituacao.A)

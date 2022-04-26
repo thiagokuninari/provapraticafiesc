@@ -985,7 +985,7 @@ public class UsuarioService {
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto));
-                feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()));
+                removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
@@ -995,6 +995,13 @@ public class UsuarioService {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
             log.error("erro ao atualizar usuário da fila.", ex);
+        }
+    }
+
+    private void removerPermissoesFeeder(UsuarioMqRequest usuarioMqRequest) {
+        if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
+            || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
+            feederService.removerPermissoesEspeciais(List.of(usuarioMqRequest.getId()));
         }
     }
 
