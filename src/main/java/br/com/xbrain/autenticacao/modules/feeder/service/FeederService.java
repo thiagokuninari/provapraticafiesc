@@ -127,7 +127,7 @@ public class FeederService {
         }
     }
 
-    private void removerPermissoesEspeciais(List<Integer> usuarios) {
+    public void removerPermissoesEspeciais(List<Integer> usuarios) {
         permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_AA, usuarios);
     }
 
