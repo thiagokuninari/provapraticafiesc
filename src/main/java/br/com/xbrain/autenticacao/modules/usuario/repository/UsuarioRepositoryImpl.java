@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -862,6 +859,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .innerJoin(usuario.cargo, cargo)
             .where(cargo.codigo.eq(codigoCargo)
+                .and(usuario.situacao.eq(A)))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.in(codigoCargos)
                 .and(usuario.situacao.eq(A)))
             .fetch();
     }

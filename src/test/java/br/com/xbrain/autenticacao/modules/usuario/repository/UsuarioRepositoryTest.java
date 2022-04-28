@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -138,6 +140,12 @@ public class UsuarioRepositoryTest {
                 tuple(107, "EXECUTIVO 1", "EXECUTIVO1@TESTE.COM", A),
                 tuple(108, "EXECUTIVO 2", "EXECUTIVO2@TESTE.COM", A),
                 tuple(124, "EXECUTIVO OP", "EXECUTIVOOP@TESTE.COM", A));
+    }
+
+    @Test
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+        assertThat(repository.findIdUsuariosAtivosByCodigoCargos(List.of(SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO)))
+            .containsExactly(109, 114, 115, 116);
     }
 
     @Test
