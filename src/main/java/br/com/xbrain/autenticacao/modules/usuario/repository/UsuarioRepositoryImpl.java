@@ -7,14 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
-import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.QUsuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.Expression;
@@ -59,6 +52,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartament
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -521,7 +515,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(usuario)
             .from(usuario)
-            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(usuario.cargo, cargo).fetchJoin()
+            .leftJoin(cargo.nivel, nivel).fetchJoin()
+            .leftJoin(usuario.departamento, departamento).fetchJoin()
+            .leftJoin(usuario.configuracao, configuracao).fetchJoin()
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio).fetchJoin()
             .where(cargo.nivel.codigo.eq(codigoNivel))
             .orderBy(usuario.nome.asc())
             .fetch();
