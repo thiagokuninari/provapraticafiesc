@@ -35,7 +35,7 @@ spring:
 app-config:
   timer-usuario:
     data-hora-inativar-usuario-a-partir-de: 2021-05-30T00:00:00.000
-    email-usuario-viabilidade: LUIZ@XBRAIN.COM.BR,INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
+    email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
 
   url: https://autenticacao.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/producao/autenticacao
@@ -73,7 +73,7 @@ app-config:
     enviar: true
     empresa-alias: XBRAIN
     emails:
-    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, alison@xbrain.com.br, henrique@xbrain.com.br
+    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, alison@xbrain.com.br
 
 logging:
   level:
