@@ -246,6 +246,20 @@ public class FeederServiceTest {
                 tuple(1111, 15012));
     }
 
+    @Test
+    public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfAlterarEmailEGerarHistorico_quandoUsuarioFeederExcluido() {
+        var usuarioSemCpf = umUsuarioFeeder(100).get();
+        usuarioSemCpf.setCpf(null);
+        usuarioSemCpf.setEmail("INATIVO_THIAGOTESTE@XBRAIN.COM.BR");
+
+        when(usuarioRepository.findComplete(eq(100))).thenReturn(umUsuarioFeeder( 100));
+
+        service.limparCpfEAlterarEmailUsuarioFeeder(100);
+
+        verify(usuarioRepository, times(1)).save(eq(usuarioSemCpf));
+        verify(usuarioHistoricoService, times(1)).save(eq(umUsuarioHistorico()));
+    }
+
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
         return AgenteAutorizadoPermissaoFeederDto.builder()
             .colaboradoresVendasIds(Lists.newArrayList(100, 102))
@@ -277,6 +291,15 @@ public class FeederServiceTest {
                 .build());
     }
 
+    private Optional<Usuario> umUsuarioFeeder(Integer id) {
+        return Optional.of(
+            Usuario.builder()
+                .id(id)
+                .email("THIAGOTESTE@XBRAIN.COM.BR")
+                .cpf("25248663865")
+                .build());
+    }
+
     private UsuarioDto umUsuarioDto() {
         return UsuarioDto.builder()
             .id(1111)
@@ -291,6 +314,14 @@ public class FeederServiceTest {
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .build();
+    }
+
+    private UsuarioHistorico umUsuarioHistorico() {
+        return UsuarioHistorico.builder()
+            .usuario(new Usuario(100))
+            .observacao("Usuário excluído. CPF e Email alterados automaticamente")
+            .situacao(ESituacao.I)
             .build();
     }
 }

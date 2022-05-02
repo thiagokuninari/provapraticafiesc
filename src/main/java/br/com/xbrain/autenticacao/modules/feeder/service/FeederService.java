@@ -34,6 +34,7 @@ public class FeederService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Usuario não encontrado.");
     private static final ValidacaoException EX_USUARIO_NAO_FEEDER =
         new ValidacaoException("Usuário não Feeder.");
+    private static final String EMAIL_INATIVO = "INATIVO_";
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
@@ -67,6 +68,16 @@ public class FeederService {
         validarSeUsuarioFeeder(usuario);
         usuario.setSituacao(dto.getSituacaoAlterada());
         gerarHistorico(usuario, dto);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void limparCpfEAlterarEmailUsuarioFeeder(Integer usuarioId) {
+        var usuario = findUsuarioById(usuarioId);
+        usuario.setCpf(null);
+        usuario.setEmail(EMAIL_INATIVO.concat(usuario.getEmail()));
+        gerarHistoricoUsuarioExcluidoFeeder(usuarioId);
+
         usuarioRepository.save(usuario);
     }
 
@@ -111,6 +122,13 @@ public class FeederService {
                         ? OBSERVACAO_FEEDER
                         : OBSERVACAO_NAO_FEEDER,
                     ESituacao.A));
+        }
+    }
+
+    private void gerarHistoricoUsuarioExcluidoFeeder(Integer usuarioId) {
+        if (Objects.nonNull(usuarioId)) {
+            usuarioHistoricoService.save(
+                UsuarioHistorico.gerarHistorico(usuarioId, null, ALTERACAO_CPF_E_EMAIL_FEEDER, ESituacao.I));
         }
     }
 
