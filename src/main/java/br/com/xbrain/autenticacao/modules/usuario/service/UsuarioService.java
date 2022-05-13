@@ -106,9 +106,9 @@ public class UsuarioService {
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO =
         "Não é possível remover o canal Agente Autorizado, pois o usuário possui vínculo com o(s) AA(s): %s.";
-    private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE  =
+    private static final String MSG_ERRO_AO_ALTERAR_CARGO_SITE =
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
-    private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE  =
+    private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
         "Usuário já está cadastrado em outra equipe";
     private static final List<CodigoCargo> cargosOperadoresBackoffice
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
@@ -121,6 +121,9 @@ public class UsuarioService {
     );
     public static final String OPERACAO = "Operação";
     public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
+    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Não foi possível ativar usuário. "
+        + "O usuário foi inativado por realizar muitas simulações, por favor entre em contato com algum usuário XBrain "
+        + "para que ele possa reativar o usuário.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -228,10 +231,10 @@ public class UsuarioService {
     @Transactional
     public Usuario findByIdCompleto(int id) {
         return repository.findOne(
-            new UsuarioPredicate()
-                .ignorarAa(true)
-                .comId(id)
-                .build())
+                new UsuarioPredicate()
+                    .ignorarAa(true)
+                    .comId(id)
+                    .build())
             .forceLoad();
     }
 
@@ -246,9 +249,9 @@ public class UsuarioService {
 
     public Usuario findByIdComAa(int id) {
         return repository.findOne(
-            new UsuarioPredicate()
-                .comId(id)
-                .build())
+                new UsuarioPredicate()
+                    .comId(id)
+                    .build())
             .forceLoad();
     }
 
@@ -340,6 +343,7 @@ public class UsuarioService {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
+            c.setCpf(repository.findCpfById(c.getId()));
         });
     }
 
@@ -384,9 +388,9 @@ public class UsuarioService {
         }
 
         return Stream.of(
-            agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
-            repository.getUsuariosSubordinados(usuario.getId())
-        ).flatMap(Collection::stream)
+                agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
+                repository.getUsuariosSubordinados(usuario.getId())
+            ).flatMap(Collection::stream)
             .distinct()
             .collect(toList());
     }
@@ -540,7 +544,7 @@ public class UsuarioService {
 
     private boolean verificarCanalNecessitaValidacao(Usuario usuario) {
         return repository.getCanaisByUsuarioIds(List.of(usuario.getId())).stream()
-            .anyMatch( canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
+            .anyMatch(canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
     }
 
     private void verificarSeUsuarioLiderEquipe(Usuario usuario) {
@@ -1293,6 +1297,13 @@ public class UsuarioService {
     }
 
     private void validarAtivacao(Usuario usuario) {
+        var isUsuarioAdmin = autenticacaoService.getUsuarioAutenticado().getNivel().equals("XBRAIN")
+            || autenticacaoService.getUsuarioAutenticado().getNivel().equals("MSO");
+        var usuarioInativoPorMuitasSimulacoes = usuarioHistoricoService
+            .findMotivoInativacaoByUsuarioId(usuario.getId())
+            .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
+            .orElse(false);
+
         if (isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
@@ -1301,7 +1312,10 @@ public class UsuarioService {
         } else if (!usuario.isSocioPrincipal() && usuario.isAgenteAutorizado()
             && !encontrouAgenteAutorizadoByUsuarioId(usuario.getId())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO);
+        } else if (!isUsuarioAdmin && usuarioInativoPorMuitasSimulacoes) {
+            throw new ValidacaoException(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
         }
+
         repository.save(usuario);
     }
 
@@ -1617,11 +1631,11 @@ public class UsuarioService {
         List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
             .findFuncionalidadesPorCargoEDepartamento(predicate.build());
         return Stream.concat(
-            funcionalidades
-                .stream()
-                .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
-            permissaoEspecialRepository
-                .findPorUsuario(usuario.getId()).stream())
+                funcionalidades
+                    .stream()
+                    .map(CargoDepartamentoFuncionalidade::getFuncionalidade),
+                permissaoEspecialRepository
+                    .findPorUsuario(usuario.getId()).stream())
             .distinct()
             .map(FuncionalidadeResponse::convertFrom)
             .collect(toList());
@@ -1773,7 +1787,7 @@ public class UsuarioService {
 
     public List<UsuarioHierarquiaResponse> getVendedoresOperacaoDaHierarquia(Integer usuarioId) {
         return repository.getSubordinadosPorCargo(usuarioId,
-            Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name(), OPERACAO_EXECUTIVO_VENDAS.name()))
+                Set.of(VENDEDOR_OPERACAO.name(), OPERACAO_TELEVENDAS.name(), OPERACAO_EXECUTIVO_VENDAS.name()))
             .stream()
             .map(this::criarUsuarioHierarquiaVendedoresResponse)
             .collect(toList());
@@ -1781,9 +1795,9 @@ public class UsuarioService {
 
     public List<UsuarioHierarquiaResponse> getSupervisoresOperacaoDaHierarquia(Integer usuarioId) {
         return repository.getSubordinadosPorCargo(usuarioId, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name()))
-                .stream()
-                .map(this::criarUsuarioHierarquiaVendedoresResponse)
-                .collect(toList());
+            .stream()
+            .map(this::criarUsuarioHierarquiaVendedoresResponse)
+            .collect(toList());
     }
 
     public List<Integer> getIdsVendedoresOperacaoDaHierarquia(Integer usuarioId) {
@@ -1810,27 +1824,27 @@ public class UsuarioService {
     }
 
     void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream().filter(
-            usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
+        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream()
+            .filter(usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
             .map(UsuarioCsvResponse::getId)
             .collect(toList());
 
         if (!usuarioIds.isEmpty()) {
 
-            var map = partition(usuarioIds,QTD_MAX_IN_NO_ORACLE).parallelStream()
+            var map = partition(usuarioIds, QTD_MAX_IN_NO_ORACLE).parallelStream()
                 .map(parte -> repository.getCanaisByUsuarioIds(parte))
                 .flatMap(Collection::parallelStream)
                 .collect(Collectors.groupingBy(Canal::getUsuarioId));
 
             usuarioCsvResponses.forEach(
                 usuarioCsvResponse -> usuarioCsvResponse.setCanais(
-                    map.getOrDefault(usuarioCsvResponse.getId(),null))
+                    map.getOrDefault(usuarioCsvResponse.getId(), null))
             );
         }
     }
 
     void preencherUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        UsuarioRequest usuarioRequest =  UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
+        UsuarioRequest usuarioRequest = UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
             usuarioCsvResponse -> AGENTE_AUTORIZADO.equals(usuarioCsvResponse.getNivel())
         ).map(UsuarioCsvResponse::getId).collect(toList()));
 
@@ -1879,11 +1893,11 @@ public class UsuarioService {
             : CARGOS_PARA_INTEGRACAO_D2D;
 
         return IntStream.concat(
-            equipeVendaD2dService
-                .getUsuariosPermitidos(cargos)
-                .stream()
-                .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
-            IntStream.of(autenticacaoService.getUsuarioId()))
+                equipeVendaD2dService
+                    .getUsuariosPermitidos(cargos)
+                    .stream()
+                    .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
+                IntStream.of(autenticacaoService.getUsuarioId()))
             .boxed()
             .collect(toList());
     }
@@ -2054,9 +2068,9 @@ public class UsuarioService {
 
     public UsuarioComLoginNetSalesResponse getUsuarioByIdComLoginNetSales(Integer usuarioId) {
         return Optional.of(Optional.of(repository.findById(usuarioId)
-            .orElseThrow(() -> EX_NAO_ENCONTRADO))
-            .filter(Usuario::isAtivo)
-            .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
+                    .orElseThrow(() -> EX_NAO_ENCONTRADO))
+                .filter(Usuario::isAtivo)
+                .orElseThrow(() -> COLABORADOR_NAO_ATIVO))
             .map(UsuarioComLoginNetSalesResponse::of)
             .filter(UsuarioComLoginNetSalesResponse::hasLoginNetSales)
             .orElseThrow(() -> USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX);
@@ -2078,7 +2092,7 @@ public class UsuarioService {
     public List<Usuario> getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado() {
         return (List<Usuario>) repository.findAll(
             new UsuarioPredicate().filtraPermitidos(
-                autenticacaoService.getUsuarioAutenticado(), this, true)
+                    autenticacaoService.getUsuarioAutenticado(), this, true)
                 .build());
     }
 
@@ -2131,7 +2145,7 @@ public class UsuarioService {
             .comSituacoes(List.of(ESituacao.A));
 
         return StreamSupport.stream(
-            repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
+                repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
             .collect(toList());
     }

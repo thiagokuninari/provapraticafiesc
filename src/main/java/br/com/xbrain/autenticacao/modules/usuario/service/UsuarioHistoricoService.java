@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.DEMISSAO;
@@ -27,15 +28,15 @@ public class UsuarioHistoricoService {
 
     public List<UsuarioHistoricoDto> getHistoricoDoUsuario(Integer usuarioId) {
         return usuarioHistoricoRepository
-                .getHistoricoDoUsuario(usuarioId)
-                .stream()
-                .map(UsuarioHistoricoDto::of)
-                .collect(Collectors.toList());
+            .getHistoricoDoUsuario(usuarioId)
+            .stream()
+            .map(UsuarioHistoricoDto::of)
+            .collect(Collectors.toList());
     }
 
     public void gerarHistoricoInativacao(Usuario usuario, String origem) {
         usuarioHistoricoRepository.save(UsuarioHistorico.gerarHistorico(
-                usuario.getId(), getMotivoInativacao(), origem, ESituacao.I
+            usuario.getId(), getMotivoInativacao(), origem, ESituacao.I
         ));
     }
 
@@ -43,6 +44,10 @@ public class UsuarioHistoricoService {
         usuarioHistoricoRepository.save(UsuarioHistorico
             .gerarHistorico(usuarioId, motivoInativacaoService
                 .findByCodigoMotivoInativacao(DEMISSAO), INATIVACAO_AA.getObservacao(), ESituacao.I));
+    }
+
+    public Optional<String> findMotivoInativacaoByUsuarioId(Integer usuarioId) {
+        return usuarioHistoricoRepository.findMotivoInativacaoByUsuarioId(usuarioId);
     }
 
     private MotivoInativacao getMotivoInativacao() {

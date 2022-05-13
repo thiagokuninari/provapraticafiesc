@@ -25,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import helpers.TestBuilders;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -368,10 +369,16 @@ public class UsuarioServiceIT {
         when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
         doNothing().when(usuarioClientService).alterarSituacao(anyInt());
 
-        service.ativar(UsuarioAtivacaoDto.builder()
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        service.ativar(UsuarioAtivacaoDto
+            .builder()
             .idUsuario(245)
             .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-            .build());
+            .build()
+        );
 
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
@@ -384,6 +391,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoUsuarioNaoPossuirCpf() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativado por não possuir CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -394,7 +405,14 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
-        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(false)
+            .when(agenteAutorizadoNovoClient)
+            .existeAaAtivoBySocioEmail(anyString());
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
             + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
@@ -406,7 +424,14 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
-        when(agenteAutorizadoNovoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(false)
+            .when(agenteAutorizadoNovoClient)
+            .existeAaAtivoByUsuarioId(anyInt());
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -417,6 +442,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUmUsuario_quandoNaoForAgenteAutorizado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.I);
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
         usuarioAtivacaoDto.setIdUsuario(244);

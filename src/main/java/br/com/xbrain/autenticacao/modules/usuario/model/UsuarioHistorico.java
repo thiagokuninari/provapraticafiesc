@@ -39,14 +39,14 @@ public class UsuarioHistorico {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_MOTIVO_INATIV", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_MOT_INATIV"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_MOT_INATIV"))
     private MotivoInativacao motivoInativacao;
 
     @NotNull
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "FK_USUARIO_ALTERACAO", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_ALTERACAO"))
+        foreignKey = @ForeignKey(name = "FK_USUARIO_HIST_ALTERACAO"))
     private Usuario usuarioAlteracao;
 
     @NotNull
@@ -128,8 +128,7 @@ public class UsuarioHistorico {
     }
 
     public String getSituacaoComMotivo() {
-        return situacao.getDescricao().toUpperCase()
-            + (!ObjectUtils.isEmpty(motivoInativacao)
+        return situacao.getDescricao().toUpperCase() + (!ObjectUtils.isEmpty(motivoInativacao)
             ? " / " + motivoInativacao.getDescricao()
             : "");
     }
