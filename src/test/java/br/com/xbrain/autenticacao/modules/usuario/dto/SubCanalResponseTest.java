@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import org.junit.Test;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubCanais;
@@ -16,7 +17,7 @@ public class SubCanalResponseTest {
         var response = SubCanalResponse.of(umSubCanal());
 
         assertThat(response).isEqualTo(
-            new SubCanalResponse(1, "PAP", "PAP", ESituacao.A));
+            new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 
     @Test
@@ -26,7 +27,7 @@ public class SubCanalResponseTest {
         assertThat(response).hasSize(2)
             .extracting("id", "codigo", "nome", "situacao")
             .containsExactly(
-                tuple(1, "PAP", "PAP", ESituacao.A),
-                tuple(2, "PAP_PME", "PAP PME", ESituacao.A));
+                tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A),
+                tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
     }
 }

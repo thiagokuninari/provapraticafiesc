@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ public class SubCanal {
     private Integer id;
 
     @Column(name = "CODIGO", nullable = false)
-    private String codigo;
+    private ETipoCanal codigo;
 
     @Column(name = "NOME", nullable = false)
     private String nome;

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,7 @@ public class SubCanalServiceTest {
 
         assertThat(service.getAll())
             .hasSize(1)
-            .containsExactly(new SubCanalResponse(1, "PAP", "PAP", ESituacao.A));
+            .containsExactly(new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 
     @Test
@@ -47,7 +48,7 @@ public class SubCanalServiceTest {
         when(repository.findById(anyInt())).thenReturn(Optional.of(umSubCanal()));
 
         assertThat(service.getSubCanalById(1))
-            .isEqualTo(new SubCanalResponse(1, "PAP", "PAP", ESituacao.A));
+            .isEqualTo(new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 
     @Test

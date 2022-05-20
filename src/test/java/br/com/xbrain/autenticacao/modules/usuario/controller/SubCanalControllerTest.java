@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,8 +44,8 @@ public class SubCanalControllerTest {
     @Test
     public void getAllSubCanais_deveRetornarOsSubCanais_quandoSolicitado() throws Exception {
         when(subCanalService.getAll()).thenReturn(List.of(
-            new SubCanalResponse(1, "PAP", "PAP", ESituacao.A),
-            new SubCanalResponse(2, "PAP_PME", "PAP PME", ESituacao.A)));
+            new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A),
+            new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
         
         mvc.perform(get(API_URI)
             .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +65,7 @@ public class SubCanalControllerTest {
     @Test
     public void getAllSubCanalById_deveRetornarSubCanal_quandoExistir() throws Exception {
         when(subCanalService.getSubCanalById(anyInt())).thenReturn(
-            new SubCanalResponse(2, "PAP_PME", "PAP PME", ESituacao.A));
+            new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
         
         mvc.perform(get(API_URI + "/2")
             .contentType(MediaType.APPLICATION_JSON)
