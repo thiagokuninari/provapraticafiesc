@@ -1,0 +1,32 @@
+package br.com.xbrain.autenticacao.modules.usuario.dto;
+
+import org.junit.Test;
+
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umaListaSubCanais;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
+public class SubCanalResponseTest {
+    
+    @Test
+    public void of_deveRetornarResponse_quandoSolicitado() {
+        var response = SubCanalResponse.of(umSubCanal());
+
+        assertThat(response).isEqualTo(
+            new SubCanalResponse(1, "PAP", "PAP", ESituacao.A));
+    }
+
+    @Test
+    public void of_deveRetornarListaResponse_quandoSolicitado() {
+        var response = SubCanalResponse.of(umaListaSubCanais());
+
+        assertThat(response).hasSize(2)
+            .extracting("id", "codigo", "nome", "situacao")
+            .containsExactly(
+                tuple(1, "PAP", "PAP", ESituacao.A),
+                tuple(2, "PAP_PME", "PAP PME", ESituacao.A));
+    }
+}
