@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import lombok.*;
 
@@ -21,12 +22,22 @@ public class SubCanal {
     private Integer id;
 
     @Column(name = "CODIGO", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ETipoCanal codigo;
 
     @Column(name = "NOME", nullable = false)
     private String nome;
 
-    @Column(name = "SITUACAO")
+    @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    public static SubCanal of(SubCanalResponse response) {
+        return SubCanal.builder()
+            .id(response.getId())
+            .codigo(response.getCodigo())
+            .nome(response.getNome())
+            .situacao(response.getSituacao())
+            .build();
+    }
 }

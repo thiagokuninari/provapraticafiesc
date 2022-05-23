@@ -13,8 +13,11 @@ import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeServic
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
+
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
@@ -51,6 +54,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     private EquipeVendaD2dService equipeVendaD2dService;
     @Autowired
     private SiteService siteService;
+    @Autowired
+    private SubCanalService subCanalService;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
@@ -220,6 +225,23 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                 return ObjectUtils.isEmpty(usuario.getCanais()) ? Sets.newHashSet() : usuario.getCanaisString();
             default:
                 return Sets.newHashSet(ECanal.AGENTE_AUTORIZADO.name());
+        }
+    }
+
+    public Set<SubCanal> getSubCanais(Usuario usuario) {
+        switch (usuario.getNivelCodigo()) {
+            case XBRAIN:
+            case MSO:
+                return subCanalService.getAll()
+                    .stream()
+                    .map(SubCanal::of)
+                    .collect(Collectors.toSet());
+            case OPERACAO:
+                return ObjectUtils.isEmpty(usuario.getSubCanais())
+                    ? Sets.newHashSet()
+                    : usuario.getSubCanais();
+            default:
+                return Sets.newHashSet();
         }
     }
 

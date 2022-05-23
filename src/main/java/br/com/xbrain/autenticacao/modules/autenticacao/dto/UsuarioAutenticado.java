@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -13,6 +14,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
@@ -52,6 +54,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
+    private Set<SubCanal> subCanais;
     private Integer siteId;
 
     public UsuarioAutenticado(OAuth2Request other) {
@@ -77,6 +80,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
+        this.subCanais = usuario.getSubCanais();
         getOrganizacao(usuario);
     }
 
@@ -101,6 +105,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
+        this.subCanais = usuario.getSubCanais();
         getOrganizacao(usuario);
     }
 
@@ -110,6 +115,10 @@ public class UsuarioAutenticado extends OAuth2Request {
                 this.organizacaoId = organizacao.getId();
                 this.organizacaoCodigo = organizacao.getCodigo();
             });
+    }
+
+    public List<SubCanal> getSubCanais() {
+        return this.subCanais.stream().collect(Collectors.toList());
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {
@@ -125,6 +134,10 @@ public class UsuarioAutenticado extends OAuth2Request {
 
     public boolean hasCanal(ECanal canal) {
         return Objects.nonNull(this.canais) && this.canais.stream().anyMatch(c -> Objects.equals(c, canal));
+    }
+
+    public boolean hasSubCanal(SubCanal subCanal) {
+        return Objects.nonNull(this.subCanais) && this.subCanais.stream().anyMatch(s -> Objects.equals(s, subCanal));
     }
 
     public boolean isXbrain() {

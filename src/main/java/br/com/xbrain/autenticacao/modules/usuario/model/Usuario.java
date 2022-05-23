@@ -209,6 +209,16 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
+    @NotAudited
+    @JsonIgnore
+    @JoinTable(name = "USUARIO_SUBCANAL", joinColumns = {
+        @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_USUARIO"))}, inverseJoinColumns = {
+        @JoinColumn(name = "FK_SUBCANAL", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_SUBCANAL"))})
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<SubCanal> subCanais;
+
     @Column(name = "TIPO_CANAL")
     @Enumerated(EnumType.STRING)
     private ETipoCanal tipoCanal;
