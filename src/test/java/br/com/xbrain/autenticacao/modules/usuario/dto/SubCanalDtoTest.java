@@ -10,7 +10,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class SubCanalResponseTest {
+public class SubCanalDtoTest {
     
     @Test
     public void of_deveRetornarResponse_quandoSolicitado() {
