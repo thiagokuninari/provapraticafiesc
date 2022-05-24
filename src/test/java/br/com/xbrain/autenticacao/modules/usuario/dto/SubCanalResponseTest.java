@@ -14,15 +14,15 @@ public class SubCanalResponseTest {
     
     @Test
     public void of_deveRetornarResponse_quandoSolicitado() {
-        var response = SubCanalResponse.of(umSubCanal());
+        var response = SubCanalDto.of(umSubCanal());
 
         assertThat(response).isEqualTo(
-            new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A));
+            new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 
     @Test
     public void of_deveRetornarListaResponse_quandoSolicitado() {
-        var response = SubCanalResponse.of(umaListaSubCanais());
+        var response = SubCanalDto.of(umaListaSubCanais());
 
         assertThat(response).hasSize(2)
             .extracting("id", "codigo", "nome", "situacao")

@@ -11,7 +11,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasSe
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -228,7 +228,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
-    public Set<SubCanalResponse> getSubCanais(Usuario usuario) {
+    public Set<SubCanalDto> getSubCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
@@ -238,7 +238,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
                     ? Sets.newHashSet()
                     : usuario.getSubCanais()
                     .stream()
-                    .map(SubCanalResponse::of)
+                    .map(SubCanalDto::of)
                     .collect(Collectors.toSet());
             default:
                 return Sets.newHashSet();

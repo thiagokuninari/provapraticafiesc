@@ -1,6 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,12 +18,12 @@ public class SubCanalController {
     private SubCanalService service;
 
     @GetMapping
-    public List<SubCanalResponse> getAllSubCanais() {
+    public List<SubCanalDto> getAllSubCanais() {
         return service.getAll();
     }
 
     @GetMapping("{id}")
-    public SubCanalResponse getSubCanalById(@PathVariable int id) {
+    public SubCanalDto getSubCanalById(@PathVariable int id) {
         return service.getSubCanalById(id);
     }
 }
