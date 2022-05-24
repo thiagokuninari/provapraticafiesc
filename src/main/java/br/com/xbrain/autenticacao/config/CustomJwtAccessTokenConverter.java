@@ -11,13 +11,12 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasSe
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
-
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.JwtAccessTokenConverterConfigurer;
@@ -154,6 +153,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("nivelId", usuario.getNivelId());
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
         token.getAdditionalInformation().put("canais", getCanais(usuario));
+        token.getAdditionalInformation().put("subCanais", getSubCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
@@ -228,18 +228,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
-    public Set<SubCanal> getSubCanais(Usuario usuario) {
+    public Set<SubCanalResponse> getSubCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return subCanalService.getAll()
-                    .stream()
-                    .map(SubCanal::of)
-                    .collect(Collectors.toSet());
+                return Sets.newHashSet(subCanalService.getAll());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getSubCanais())
                     ? Sets.newHashSet()
-                    : usuario.getSubCanais();
+                    : usuario.getSubCanais()
+                    .stream()
+                    .map(SubCanalResponse::of)
+                    .collect(Collectors.toSet());
             default:
                 return Sets.newHashSet();
         }

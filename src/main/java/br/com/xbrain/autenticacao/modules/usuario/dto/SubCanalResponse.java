@@ -6,13 +6,14 @@ import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubCanalResponse {
+public class SubCanalResponse implements Serializable {
     
     private Integer id;
     private ETipoCanal codigo;
