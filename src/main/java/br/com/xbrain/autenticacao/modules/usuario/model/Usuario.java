@@ -474,11 +474,6 @@ public class Usuario {
         return canais.stream().map(Enum::toString).collect(Collectors.toSet());
     }
 
-    @JsonIgnore
-    public Set<String> getSubCanaisString() {
-        return subCanais.stream().map(SubCanal::getCodigo).map(ETipoCanal::toString).collect(Collectors.toSet());
-    }
-
     public boolean isAgenteAutorizado() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo().equals(CodigoNivel.AGENTE_AUTORIZADO);
