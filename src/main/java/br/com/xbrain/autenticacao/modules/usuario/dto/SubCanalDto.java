@@ -13,21 +13,21 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubCanalResponse implements Serializable {
+public class SubCanalDto implements Serializable {
     
     private Integer id;
     private ETipoCanal codigo;
     private String nome;
     private ESituacao situacao;
 
-    public static List<SubCanalResponse> of(List<SubCanal> subcanais) {
+    public static List<SubCanalDto> of(List<SubCanal> subcanais) {
         return subcanais.stream()
-            .map(subcanal -> SubCanalResponse.of(subcanal))
+            .map(subcanal -> SubCanalDto.of(subcanal))
             .collect(Collectors.toList());
     }
 
-    public static SubCanalResponse of(SubCanal subcanal) {
-        var response = new SubCanalResponse();
+    public static SubCanalDto of(SubCanal subcanal) {
+        var response = new SubCanalDto();
         BeanUtils.copyProperties(subcanal, response);
         return response;
     }

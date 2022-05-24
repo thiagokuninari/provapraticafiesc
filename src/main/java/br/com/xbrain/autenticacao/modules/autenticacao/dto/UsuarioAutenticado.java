@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.config.CustomJwtAccessTokenConverter;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -54,7 +55,7 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
-    private Set<SubCanal> subCanais;
+    private Set<SubCanalDto> subCanais;
     private Integer siteId;
 
     public UsuarioAutenticado(OAuth2Request other) {
@@ -80,7 +81,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanais = usuario.getSubCanais();
+        this.subCanais = usuario.getSubCanais().stream().map(SubCanalDto::of).collect(Collectors.toSet());
         getOrganizacao(usuario);
     }
 
@@ -105,7 +106,7 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanais = usuario.getSubCanais();
+        this.subCanais = usuario.getSubCanais().stream().map(SubCanalDto::of).collect(Collectors.toSet());
         getOrganizacao(usuario);
     }
 
@@ -117,7 +118,7 @@ public class UsuarioAutenticado extends OAuth2Request {
             });
     }
 
-    public List<SubCanal> getSubCanais() {
+    public List<SubCanalDto> getSubCanais() {
         return this.subCanais.stream().collect(Collectors.toList());
     }
 

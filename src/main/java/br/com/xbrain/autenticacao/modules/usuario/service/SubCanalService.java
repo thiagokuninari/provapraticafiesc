@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,12 @@ public class SubCanalService {
     @Autowired
     private SubCanalRepository repository;
 
-    public List<SubCanalResponse> getAll() {
-        return SubCanalResponse.of(repository.findAll());
+    public List<SubCanalDto> getAll() {
+        return SubCanalDto.of(repository.findAll());
     }
 
-    public SubCanalResponse getSubCanalById(Integer id) {
-        return SubCanalResponse.of(repository.findById(id)
+    public SubCanalDto getSubCanalById(Integer id) {
+        return SubCanalDto.of(repository.findById(id)
             .orElseThrow(() -> SUBCANAL_NAO_ENCONTRADO));
     }
 }
