@@ -73,7 +73,7 @@ app-config:
     enviar: true
     empresa-alias: XBRAIN
     emails:
-    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, alison@xbrain.com.br
+    emails-solicitacao-ramal: suporte@conexaoclarobrasil.com.br, catia@xbrain.com.br, aneoliveira@xbrain.com.br
 
 logging:
   level:
