@@ -12,12 +12,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static helpers.TestsHelper.getAccessToken;
+import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -31,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Sql(scripts = {"classpath:/tests_database.sql"})
 public class SubCanalControllerTest {
     private static final String API_URI = "/api/sub-canais";
 
@@ -46,6 +50,7 @@ public class SubCanalControllerTest {
             new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
 
         mvc.perform(get(API_URI)
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
@@ -65,6 +70,7 @@ public class SubCanalControllerTest {
             new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
 
         mvc.perform(get(API_URI + "/2")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(2)))
