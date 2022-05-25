@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class SubCanalControllerTest {
     private static final String API_URI = "/api/sub-canais";
-    
+
     @Autowired
     private MockMvc mvc;
     @MockBean
@@ -46,10 +44,9 @@ public class SubCanalControllerTest {
         when(subCanalService.getAll()).thenReturn(List.of(
             new SubCanalResponse(1, ETipoCanal.PAP, "PAP", ESituacao.A),
             new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
-        
+
         mvc.perform(get(API_URI)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL)))
+            .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].id", is(1)))
@@ -66,10 +63,9 @@ public class SubCanalControllerTest {
     public void getAllSubCanalById_deveRetornarSubCanal_quandoExistir() throws Exception {
         when(subCanalService.getSubCanalById(anyInt())).thenReturn(
             new SubCanalResponse(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
-        
+
         mvc.perform(get(API_URI + "/2")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL)))
+            .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(2)))
             .andExpect(jsonPath("$.codigo", is("PAP_PME")))
