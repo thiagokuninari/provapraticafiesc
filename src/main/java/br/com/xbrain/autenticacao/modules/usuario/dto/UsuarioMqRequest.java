@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,6 +44,7 @@ public class UsuarioMqRequest {
     private String usuarioCadastroNome;
     private String exception;
     private Set<ECanal> canais;
+    private Set<SubCanal> subCanais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;

@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubCanalDto implements Serializable {
+
+    private static final long serialVersionUID = 1823163552545794339L;
     
     private Integer id;
     private ETipoCanal codigo;
@@ -30,5 +32,14 @@ public class SubCanalDto implements Serializable {
         var response = new SubCanalDto();
         BeanUtils.copyProperties(subcanal, response);
         return response;
+    }
+
+    public static SubCanal convertFrom(SubCanalDto dto) {
+        return SubCanal.builder()
+                .id(dto.getId())
+                .codigo(dto.getCodigo())
+                .nome(dto.getNome())
+                .situacao(dto.getSituacao())
+                .build();
     }
 }

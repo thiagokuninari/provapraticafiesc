@@ -211,6 +211,7 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
+    @NotEmpty
     @JoinTable(name = "USUARIO_SUBCANAL", joinColumns = {
         @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_USUARIO"))}, inverseJoinColumns = {
@@ -335,6 +336,33 @@ public class Usuario {
                 .map(UnidadeNegocio::new)
                 .collect(Collectors.toList());
         }
+    }
+
+    public Set<Integer> getSubCanaisId() {
+        return subCanais != null && Hibernate.isInitialized(subCanais)
+            ? subCanais
+            .stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet())
+            : null;
+    }
+
+    public void setSubCanaisId(Set<Integer> ids) {
+        if (ids != null) {
+            subCanais = ids
+                .stream()
+                .map(SubCanal::new)
+                .collect(Collectors.toSet());
+        }
+    }
+
+    public Set<String> getSubCanaisNome() {
+        return subCanais != null && Hibernate.isInitialized(subCanais)
+            ? subCanais
+            .stream()
+            .map(SubCanal::getNome)
+            .collect(Collectors.toSet())
+            : null;
     }
 
     public Set<UsuarioCidade> getCidades() {

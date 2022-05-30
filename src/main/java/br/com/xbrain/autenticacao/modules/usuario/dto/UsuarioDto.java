@@ -6,11 +6,11 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -92,7 +92,8 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
-    private ETipoCanal tipoCanal;
+    @NotEmpty
+    private Set<Integer> subCanaisId = Sets.newHashSet();
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
@@ -122,6 +123,7 @@ public class UsuarioDto implements Serializable {
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         }
+        usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
         return usuario;
     }
 
@@ -142,6 +144,7 @@ public class UsuarioDto implements Serializable {
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
         return usuarioDto;
     }
 

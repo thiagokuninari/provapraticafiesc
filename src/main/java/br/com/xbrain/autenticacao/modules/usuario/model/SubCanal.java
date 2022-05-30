@@ -30,4 +30,8 @@ public class SubCanal {
     @Column(name = "SITUACAO", nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    public SubCanal(Integer id) {
+        this.id = id;
+    }
 }
