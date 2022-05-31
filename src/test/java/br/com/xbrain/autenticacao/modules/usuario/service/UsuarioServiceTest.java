@@ -319,6 +319,32 @@ public class UsuarioServiceTest {
             .withMessage("Usuário sem permissão para o cargo com os canais.");
     }
 
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 5, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1), new SubCanal(2)));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
         return UsuarioAgenteAutorizadoResponse.builder()
             .id(id)
