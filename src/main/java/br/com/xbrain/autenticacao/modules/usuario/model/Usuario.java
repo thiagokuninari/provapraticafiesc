@@ -211,7 +211,6 @@ public class Usuario {
 
     @NotAudited
     @JsonIgnore
-    @NotEmpty
     @JoinTable(name = "USUARIO_SUBCANAL", joinColumns = {
         @JoinColumn(name = "FK_USUARIO", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_USUARIO_SUBCANAL_USUARIO"))}, inverseJoinColumns = {

@@ -10,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -92,8 +91,7 @@ public class UsuarioDto implements Serializable {
     private List<Integer> cidadesId;
     private Integer recuperarSenhaTentativa = 0;
     private Set<ECanal> canais;
-    @NotEmpty
-    private Set<Integer> subCanaisId = Sets.newHashSet();
+    private Set<Integer> subCanaisId;
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
