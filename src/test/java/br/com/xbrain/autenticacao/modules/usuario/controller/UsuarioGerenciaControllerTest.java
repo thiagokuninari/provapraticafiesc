@@ -233,6 +233,16 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void getAll_deveRetornarUsuarios_quandoFiltroForComSubCanal() throws Exception {
+        mvc.perform(get(API_URI + "?subCanalId=1")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)))
+            .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")));
+    }
+
+    @Test
     public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
         mvc.perform(post(API_URI + "/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
