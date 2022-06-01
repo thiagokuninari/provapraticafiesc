@@ -237,9 +237,11 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "?subCanalId=1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(1)))
+            .andExpect(jsonPath("$.content", hasSize(2)))
             .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
-            .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")));
+            .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")));
     }
 
     @Test
@@ -256,6 +258,21 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
                 .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
+    }
+
+    @Test
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanalAndSubCanal() throws Exception {
+        mvc.perform(post(API_URI + "/cargo-superior/4/D2D_PROPRIO/1")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                        UsuarioCargoSuperiorPost
+                                .builder()
+                                .cidadeIds(List.of(1, 5578))
+                                .build())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
