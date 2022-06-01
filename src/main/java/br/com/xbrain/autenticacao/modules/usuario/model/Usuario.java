@@ -294,7 +294,7 @@ public class Usuario {
             .stream()
             .map(Empresa::getId)
             .collect(Collectors.toList())
-            : null;
+            : List.of();
     }
 
     public void setEmpresasId(List<Integer> ids) {
@@ -312,7 +312,7 @@ public class Usuario {
             .stream()
             .map(Empresa::getNome)
             .collect(Collectors.toList())
-            : null;
+            : List.of();
     }
 
     public List<Integer> getUnidadesNegociosId() {
@@ -325,7 +325,7 @@ public class Usuario {
             .stream()
             .map(UnidadeNegocio::getId)
             .collect(Collectors.toList())
-            : null;
+            : List.of();
     }
 
     public void setUnidadesNegociosId(List<Integer> ids) {
@@ -343,7 +343,7 @@ public class Usuario {
             .stream()
             .map(SubCanal::getId)
             .collect(Collectors.toSet())
-            : null;
+            : Set.of();
     }
 
     public void setSubCanaisId(Set<Integer> ids) {
@@ -361,7 +361,7 @@ public class Usuario {
             .stream()
             .map(SubCanal::getNome)
             .collect(Collectors.toSet())
-            : null;
+            : Set.of();
     }
 
     public Set<UsuarioCidade> getCidades() {
@@ -614,5 +614,12 @@ public class Usuario {
     public boolean isNivelOperacao() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
+    }
+
+    @JsonIgnore
+    public boolean isCoordenadorOuDiretorOuGerenteOperacao() {
+        return cargo.getCodigo() == COORDENADOR_OPERACAO
+            || cargo.getCodigo() == DIRETOR_OPERACAO
+            || cargo.getCodigo() == GERENTE_OPERACAO;
     }
 }

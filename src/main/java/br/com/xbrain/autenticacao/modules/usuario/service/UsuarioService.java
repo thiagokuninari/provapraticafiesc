@@ -136,6 +136,9 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+    private static ValidacaoException MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL = new ValidacaoException(
+        "Não é permitido cadastrar mais de um sub-canal para este cargo."
+    );
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
         SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
@@ -829,9 +832,19 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
+        validarCargoAndSubCanais(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
+    }
+
+    private void validarCargoAndSubCanais(Usuario usuario) {
+        if (usuario.hasCanal(ECanal.D2D_PROPRIO)
+            && !usuario.isCoordenadorOuDiretorOuGerenteOperacao()
+            && !isEmpty(usuario.getSubCanais())
+            && usuario.getSubCanais().size() > 1) {
+            throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+        }
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -1429,14 +1442,15 @@ public class UsuarioService {
                 .build());
     }
 
-    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
-                                                                           Set<ECanal> canais) {
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanalAndSubCanal(Integer cargoId, List<Integer> cidadesId,
+                                                                           Set<ECanal> canais, Set<Integer> subCanais) {
         var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .comCanais(canais)
+                .comSubCanais(subCanais)
                 .build());
         return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }

@@ -293,6 +293,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comCanais(Set<ECanal> canais) {
+        if (!isEmpty(canais)) {
+            builder.and(usuario.canais.any().in(canais));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comSubCanal(Integer subCanalId) {
         if (nonNull(subCanalId)) {
             builder.and(usuario.subCanais.any().eq(
@@ -303,9 +310,12 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCanais(Set<ECanal> canais) {
-        if (!isEmpty(canais)) {
-            builder.and(usuario.canais.any().in(canais));
+    public UsuarioPredicate comSubCanais(Set<Integer> subCanais) {
+        if (!isEmpty(subCanais)) {
+            builder.and(usuario.subCanais.any().in(
+                JPAExpressions.selectFrom(subCanal)
+                    .where(subCanal.id.in(subCanais))
+            ));
         }
         return this;
     }

@@ -55,7 +55,6 @@ public class UsuarioAutenticado extends OAuth2Request {
     private Integer organizacaoId;
     private String organizacaoCodigo;
     private Set<ECanal> canais;
-    private Set<String> subCanaisNome;
     private Set<SubCanalDto> subCanais;
     private Integer siteId;
 
@@ -82,7 +81,6 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanaisNome = usuario.getSubCanaisNome();
         this.subCanais = usuario.getSubCanais().stream()
             .map(SubCanalDto::of)
             .collect(Collectors.toSet());
@@ -110,7 +108,9 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanaisNome = usuario.getSubCanaisNome();
+        this.subCanais = usuario.getSubCanais().stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
         getOrganizacao(usuario);
     }
 

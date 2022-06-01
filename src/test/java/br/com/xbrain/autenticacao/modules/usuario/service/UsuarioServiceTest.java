@@ -334,7 +334,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
-        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 5, OPERACAO,
+        var usuario = umUsuarioCompleto(DIRETOR_OPERACAO, 5, OPERACAO,
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuario.setSubCanais(Set.of(new SubCanal(1), new SubCanal(2)));
 
@@ -343,6 +343,19 @@ public class UsuarioServiceTest {
         usuario.setNome("Usuario Teste");
 
         assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoSupervisor() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1), new SubCanal(2)));
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Não é permitido cadastrar mais de um sub-canal para este cargo.");
     }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
