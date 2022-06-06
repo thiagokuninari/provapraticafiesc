@@ -136,6 +136,9 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+    private static ValidacaoException USUARIO_D2D_NAO_POSSUI_SUBCANAIS = new ValidacaoException(
+        "Usuário não possui sub-canais, deve ser cadastrado no mínimo um."
+    );
     private static ValidacaoException MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL = new ValidacaoException(
         "Não é permitido cadastrar mais de um sub-canal para este cargo."
     );
@@ -145,6 +148,8 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
+    private static List<CodigoCargo> CARGOS_COM_MAIS_SUBCANAIS = List.of(
+        COORDENADOR_OPERACAO, DIRETOR_OPERACAO, GERENTE_OPERACAO);
 
     @Autowired
     private UsuarioRepository repository;
@@ -832,18 +837,23 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
-        validarCargoAndSubCanais(usuario);
+        if (usuario.hasCanal(ECanal.D2D_PROPRIO)) {
+            validarSubCanais(usuario);
+        }
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
     }
 
-    private void validarCargoAndSubCanais(Usuario usuario) {
-        if (usuario.hasCanal(ECanal.D2D_PROPRIO)
-            && !usuario.isCoordenadorOuDiretorOuGerenteOperacao()
-            && !isEmpty(usuario.getSubCanais())
-            && usuario.getSubCanais().size() > 1) {
-            throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+    private void validarSubCanais(Usuario usuario) {
+        var cargo = cargoService.findById(usuario.getCargoId());
+        if (!isEmpty(usuario.getSubCanais())) {
+            if (usuario.getSubCanais().size() > 1
+                && !CARGOS_COM_MAIS_SUBCANAIS.contains(cargo.getCodigo())) {
+                throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+            }
+        } else {
+            throw USUARIO_D2D_NAO_POSSUI_SUBCANAIS;
         }
     }
 
@@ -1442,8 +1452,20 @@ public class UsuarioService {
                 .build());
     }
 
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanal(Integer cargoId, List<Integer> cidadesId,
+                                                                           Set<ECanal> canais) {
+        var usuariosCargoSuperior = repository.getUsuariosFilter(
+            new UsuarioPredicate()
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
+                .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                .comCidade(cidadesId)
+                .comCanais(canais)
+                .build());
+        return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
+    }
+
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanalAndSubCanal(Integer cargoId, List<Integer> cidadesId,
-                                                                           Set<ECanal> canais, Set<Integer> subCanais) {
+                                                                                    Set<ECanal> canais, Set<Integer> subCanais) {
         var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)

@@ -114,6 +114,7 @@ public class UsuarioDto implements Serializable {
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
+        usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
             usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));

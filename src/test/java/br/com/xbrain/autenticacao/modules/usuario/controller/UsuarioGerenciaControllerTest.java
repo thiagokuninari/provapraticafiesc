@@ -237,11 +237,13 @@ public class UsuarioGerenciaControllerTest {
         mvc.perform(get(API_URI + "?subCanalId=1")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", hasSize(2)))
+            .andExpect(jsonPath("$.content", hasSize(3)))
             .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
             .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
             .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
-            .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")));
+            .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
+            .andExpect(jsonPath("$.content[2].nome", is("INATIVO")))
+            .andExpect(jsonPath("$.content[2].email", is("INATIVO@XBRAIN.COM.BR")));
     }
 
     @Test
@@ -273,6 +275,21 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
+    }
+
+    @Test
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanal() throws Exception {
+        mvc.perform(post(API_URI + "/cargo-superior/7/ATIVO_PROPRIO")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                        UsuarioCargoSuperiorPost
+                                .builder()
+                                .cidadeIds(List.of(1, 5578))
+                                .build())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$.[0].nome", is("INATIVO")));
     }
 
     @Test
@@ -595,6 +612,15 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$.id", is(104)))
                 .andExpect(jsonPath("$.nome", is("operacao_gerente_comercial")))
                 .andExpect(jsonPath("$.email", is("operacao_gerente_comercial@net.com.br")));
+    }
+
+    @Test
+    public void deveRetornarOSuperiorDoUsuario401() throws Exception {
+        mvc.perform(get(API_URI + "/401/supervisor")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(105)));
     }
 
     @Test

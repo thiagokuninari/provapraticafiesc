@@ -66,12 +66,12 @@ public class UsuarioGerenciaController {
         return UsuarioHierarquiaResponse.convertTo(service.getUsuariosCargoSuperior(cargoId, post.getCidadeIds()));
     }
 
-    @PostMapping(value = "/cargo-superior/{cargoId}/{canal}/{subCanal}")
+    @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
                                                                     @PathVariable Set<ECanal> canal,
-                                                                    @PathVariable Set<Integer> subCanal) {
-        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post.getCidadeIds(), canal, subCanal);
+                                                                    @RequestParam(required = false) Set<Integer> subCanais) {
+        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post.getCidadeIds(), canal, subCanais);
     }
 
     @GetMapping(params = "email")

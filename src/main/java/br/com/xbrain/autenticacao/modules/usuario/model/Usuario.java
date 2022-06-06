@@ -294,7 +294,7 @@ public class Usuario {
             .stream()
             .map(Empresa::getId)
             .collect(Collectors.toList())
-            : List.of();
+            : null;
     }
 
     public void setEmpresasId(List<Integer> ids) {
@@ -312,7 +312,7 @@ public class Usuario {
             .stream()
             .map(Empresa::getNome)
             .collect(Collectors.toList())
-            : List.of();
+            : null;
     }
 
     public List<Integer> getUnidadesNegociosId() {
@@ -325,7 +325,7 @@ public class Usuario {
             .stream()
             .map(UnidadeNegocio::getId)
             .collect(Collectors.toList())
-            : List.of();
+            : null;
     }
 
     public void setUnidadesNegociosId(List<Integer> ids) {
@@ -338,7 +338,7 @@ public class Usuario {
     }
 
     public Set<Integer> getSubCanaisId() {
-        return subCanais != null && Hibernate.isInitialized(subCanais)
+        return subCanais != null
             ? subCanais
             .stream()
             .map(SubCanal::getId)
@@ -353,15 +353,6 @@ public class Usuario {
                 .map(SubCanal::new)
                 .collect(Collectors.toSet());
         }
-    }
-
-    public Set<String> getSubCanaisNome() {
-        return subCanais != null && Hibernate.isInitialized(subCanais)
-            ? subCanais
-            .stream()
-            .map(SubCanal::getNome)
-            .collect(Collectors.toSet())
-            : Set.of();
     }
 
     public Set<UsuarioCidade> getCidades() {
@@ -614,12 +605,5 @@ public class Usuario {
     public boolean isNivelOperacao() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
-    }
-
-    @JsonIgnore
-    public boolean isCoordenadorOuDiretorOuGerenteOperacao() {
-        return cargo.getCodigo() == COORDENADOR_OPERACAO
-            || cargo.getCodigo() == DIRETOR_OPERACAO
-            || cargo.getCodigo() == GERENTE_OPERACAO;
     }
 }

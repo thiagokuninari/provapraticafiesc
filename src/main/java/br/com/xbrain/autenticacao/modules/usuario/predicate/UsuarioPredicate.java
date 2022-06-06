@@ -27,7 +27,6 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subClus
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QSubCanal.subCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static java.util.Collections.singletonList;
@@ -302,20 +301,14 @@ public class UsuarioPredicate {
 
     public UsuarioPredicate comSubCanal(Integer subCanalId) {
         if (nonNull(subCanalId)) {
-            builder.and(usuario.subCanais.any().eq(
-                JPAExpressions.selectFrom(subCanal)
-                    .where(subCanal.id.eq(subCanalId))
-            ));
+            builder.and(usuario.subCanais.any().id.eq(subCanalId));
         }
         return this;
     }
 
     public UsuarioPredicate comSubCanais(Set<Integer> subCanais) {
         if (!isEmpty(subCanais)) {
-            builder.and(usuario.subCanais.any().in(
-                JPAExpressions.selectFrom(subCanal)
-                    .where(subCanal.id.in(subCanais))
-            ));
+            builder.and(usuario.subCanais.any().id.in(subCanais));
         }
         return this;
     }
