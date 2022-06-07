@@ -264,8 +264,9 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanalAndSubCanal() throws Exception {
-        mvc.perform(post(API_URI + "/cargo-superior/4/D2D_PROPRIO/1")
+        mvc.perform(post(API_URI + "/cargo-superior/4/D2D_PROPRIO")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("subCanaisId", "1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(
                         UsuarioCargoSuperiorPost
@@ -275,21 +276,6 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
-    }
-
-    @Test
-    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanal() throws Exception {
-        mvc.perform(post(API_URI + "/cargo-superior/7/ATIVO_PROPRIO")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(convertObjectToJsonBytes(
-                        UsuarioCargoSuperiorPost
-                                .builder()
-                                .cidadeIds(List.of(1, 5578))
-                                .build())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$.[0].nome", is("INATIVO")));
     }
 
     @Test
@@ -758,6 +744,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 
@@ -782,6 +769,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
         usuario.setSituacao(ESituacao.A);
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 
