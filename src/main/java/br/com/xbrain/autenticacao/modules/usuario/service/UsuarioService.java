@@ -110,7 +110,7 @@ public class UsuarioService {
         "Não é possível alterar o cargo, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String EX_USUARIO_POSSUI_OUTRA_EQUIPE =
         "Usuário já está cadastrado em outra equipe";
-    private static final List<CodigoCargo> cargosOperadoresBackoffice
+    private static final List<CodigoCargo> CARGOS_OPERADORES_BACKOFFICE
         = List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO);
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
@@ -119,11 +119,11 @@ public class UsuarioService {
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
-    public static final String OPERACAO = "Operação";
-    public static final String AGENTE_AUTORIZADO = "Agente Autorizado";
-    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Não foi possível ativar usuário. "
-        + "O usuário foi inativado por realizar muitas simulações, por favor entre em contato com algum usuário XBrain "
-        + "para que ele possa reativar o usuário.";
+    private static final String OPERACAO = "Operação";
+    private static final String AGENTE_AUTORIZADO = "Agente Autorizado";
+    private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
+        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é "
+            + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -2122,7 +2122,7 @@ public class UsuarioService {
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
                                                                               boolean buscarInativos) {
 
-        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
+        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))
