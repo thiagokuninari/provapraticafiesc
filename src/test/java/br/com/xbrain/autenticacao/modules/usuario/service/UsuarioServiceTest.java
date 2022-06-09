@@ -310,7 +310,8 @@ public class UsuarioServiceTest {
     public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
-                .id(22)
+                .id(6)
+                .codigo(DIRETOR_OPERACAO)
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
@@ -326,7 +327,7 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
-        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 10, OPERACAO,
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuario.setSubCanais(Set.of(new SubCanal(1)));
 

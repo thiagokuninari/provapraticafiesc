@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SubCanalService {
@@ -17,6 +19,9 @@ public class SubCanalService {
     @Autowired
     private SubCanalRepository repository;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     public List<SubCanalDto> getAll() {
         return SubCanalDto.of(repository.findAll());
     }
@@ -24,5 +29,12 @@ public class SubCanalService {
     public SubCanalDto getSubCanalById(Integer id) {
         return SubCanalDto.of(repository.findById(id)
             .orElseThrow(() -> SUBCANAL_NAO_ENCONTRADO));
+    }
+
+    public Set<SubCanalDto> getSubCanalByUsuarioId(Integer usuarioId) {
+        return usuarioService.verificarSubCanalValidacao(usuarioId)
+            .stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
     }
 }

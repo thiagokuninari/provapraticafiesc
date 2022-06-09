@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
@@ -183,6 +184,15 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(Canal.class));
+    }
+
+    public Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds) {
+        return Sets.newHashSet(jdbcTemplate.query(" SELECT * FROM SUB_CANAL"
+                + " WHERE ID IN (SELECT FK_SUBCANAL" 
+                + " FROM USUARIO_SUBCANAL WHERE FK_USUARIO IN (:usuarioIds))",
+            new MapSqlParameterSource()
+                .addValue("usuarioIds", usuarioIds),
+            new BeanPropertyRowMapper<>(SubCanal.class)));
     }
 
     @Override
