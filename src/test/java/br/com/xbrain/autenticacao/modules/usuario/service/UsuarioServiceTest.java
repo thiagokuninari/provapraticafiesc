@@ -128,6 +128,8 @@ public class UsuarioServiceTest {
     private UsuarioClientService usuarioClientService;
     @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Mock
+    private CargoService cargoService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -308,15 +310,78 @@ public class UsuarioServiceTest {
     public void save_validacaoException_quandoUsuarioNaoTiverPermissaoSobreOCanalParaOCargo() {
         var usuario = Usuario.builder()
             .cargo(Cargo.builder()
-                .id(22)
+                .id(6)
+                .codigo(DIRETOR_OPERACAO)
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(new SubCanal(1)))
             .build();
+
+        when(cargoService.findById(anyInt())).thenReturn(usuario.getCargo());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário sem permissão para o cargo com os canais.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 10, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
+        var usuario = umUsuarioCompleto(DIRETOR_OPERACAO, 5, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
+            Set.of(new SubCanal(1), new SubCanal(2)));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().codigo(DIRETOR_OPERACAO).build());
+
+        usuario.setNome("Usuario Teste");
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoSupervisor() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
+            Set.of(new SubCanal(1), new SubCanal(2)));
+
+        usuario.setNome("Usuario Teste");
+
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Não é permitido cadastrar mais de um sub-canal para este cargo.");
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanais() {
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+
+        usuario.setNome("Usuario Teste");
+
+        when(cargoService.findById(anyInt()))
+            .thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canais, deve ser cadastrado no mínimo um.");
     }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
@@ -506,6 +571,7 @@ public class UsuarioServiceTest {
                 .canais(Set.of(ECanal.ATIVO_PROPRIO, ECanal.AGENTE_AUTORIZADO))
                 .build())
             .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanais(Set.of(new SubCanal(1)))
             .build();
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -1628,16 +1694,18 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_retornaValidacaoException_quandoUsuarioAtivoOutraEquipe() {
-        when(usuarioRepository.findById(any()))
-            .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        var usuario = umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(new SubCanal(1)));
+        when(usuarioRepository.findById(any())).thenReturn(Optional.of(usuario));
         when(usuarioRepository.getCanaisByUsuarioIds(any())).thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of(1));
+        var usuarioCadastro = umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
+            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuarioCadastro.setSubCanais(Set.of(new SubCanal(1)));
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.save(
-                umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+            .isThrownBy(() -> usuarioService.save(usuarioCadastro))
             .withMessage("Usuário já está cadastrado em outra equipe");
 
     }
@@ -1646,14 +1714,16 @@ public class UsuarioServiceTest {
     public void save_naoDeveLancarException_quandoUsuarioNaoPossuiOutraEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+                OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
+                    ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
     }
 
@@ -1661,7 +1731,8 @@ public class UsuarioServiceTest {
     public void save_retornaValidacaoException_quandoLiderEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+                OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -1669,7 +1740,8 @@ public class UsuarioServiceTest {
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
+                    Set.of(new SubCanal(1)))))
             .withMessage("Usuário já está cadastrado em outra equipe");
 
     }
@@ -1678,7 +1750,8 @@ public class UsuarioServiceTest {
     public void save_retornaValidacaoException_quandoCoordenadorLiderEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+                OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
@@ -1686,7 +1759,8 @@ public class UsuarioServiceTest {
         Assertions.assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
+                    Set.of(new SubCanal(1)))))
             .withMessage("Usuário já está cadastrado em outra equipe");
         verify(usuarioRepository, never()).saveAndFlush(any());
     }
@@ -1695,14 +1769,16 @@ public class UsuarioServiceTest {
     public void save_naoDeveLancarException_quandoCoordenadorNaoPossuirOutraEquipe() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(COORDENADOR_OPERACAO, 10,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+                OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         when(usuarioRepository.getCanaisByUsuarioIds(any()))
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
-                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
+                    Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
@@ -1711,10 +1787,12 @@ public class UsuarioServiceTest {
     public void save_naoDeveLancarException_quandoUsuarioPossuiCargoForaVerificacao() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
-                OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+                OPERACAO, CodigoDepartamento.COMERCIAL,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
+                    CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
+                    ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
         verify(equipeVendaD2dService, never()).getEquipeVendasBySupervisorId(any());
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
@@ -1725,10 +1803,12 @@ public class UsuarioServiceTest {
     public void save_naoDeveLancarException_quandoUsuarioPossuiDepartamentoForaVerificacao() {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
-                CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+                CodigoDepartamento.AGENTE_AUTORIZADO,
+                ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
-                    CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
+                    CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO,
+                    ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
@@ -2036,6 +2116,69 @@ public class UsuarioServiceTest {
                 .builder()
                 .nome("EMPRESA UM")
                 .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(canal)
+            )
+        );
+
+        return usuario;
+    }
+
+    private Usuario umUsuarioCompleto(CodigoCargo codigoCargo, Integer idCargo,
+                                      CodigoNivel nivel, CodigoDepartamento departamento,
+                                      ECanal canal, Set<SubCanal> subCanais) {
+        var usuario = Usuario
+            .builder()
+            .id(1)
+            .email("email@email.com")
+            .nome("NOME UM")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .id(idCargo)
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .codigo(departamento)
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .id(1)
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .subCanais(subCanais)
             .build();
 
         usuario.setCidades(

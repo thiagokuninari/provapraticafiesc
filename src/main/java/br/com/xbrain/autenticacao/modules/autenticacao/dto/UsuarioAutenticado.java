@@ -81,7 +81,9 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanais = usuario.getSubCanais().stream().map(SubCanalDto::of).collect(Collectors.toSet());
+        this.subCanais = usuario.getSubCanais().stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
         getOrganizacao(usuario);
     }
 
@@ -106,7 +108,9 @@ public class UsuarioAutenticado extends OAuth2Request {
         this.departamentoCodigo = usuario.getDepartamentoCodigo();
         this.cargoCodigo = usuario.getCargoCodigo();
         this.canais = usuario.getCanais();
-        this.subCanais = usuario.getSubCanais().stream().map(SubCanalDto::of).collect(Collectors.toSet());
+        this.subCanais = usuario.getSubCanais().stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
         getOrganizacao(usuario);
     }
 
@@ -116,10 +120,6 @@ public class UsuarioAutenticado extends OAuth2Request {
                 this.organizacaoId = organizacao.getId();
                 this.organizacaoCodigo = organizacao.getCodigo();
             });
-    }
-
-    public List<SubCanalDto> getSubCanais() {
-        return this.subCanais.stream().collect(Collectors.toList());
     }
 
     public boolean hasPermissao(CodigoFuncionalidade codigoFuncionalidade) {

@@ -337,6 +337,24 @@ public class Usuario {
         }
     }
 
+    public Set<Integer> getSubCanaisId() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
+    public void setSubCanaisId(Set<Integer> ids) {
+        if (ids != null) {
+            subCanais = ids
+                .stream()
+                .map(SubCanal::new)
+                .collect(Collectors.toSet());
+        }
+    }
+
     public Set<UsuarioCidade> getCidades() {
         return Collections.unmodifiableSet(this.cidades);
     }

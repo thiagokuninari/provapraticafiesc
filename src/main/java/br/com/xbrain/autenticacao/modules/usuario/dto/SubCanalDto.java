@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubCanalDto implements Serializable {
-    
+
     private Integer id;
     private ETipoCanal codigo;
     private String nome;

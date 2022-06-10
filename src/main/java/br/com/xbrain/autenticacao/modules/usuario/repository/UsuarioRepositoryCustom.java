@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.OrderSpecifier;
@@ -130,6 +131,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
+
+    Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds);
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 

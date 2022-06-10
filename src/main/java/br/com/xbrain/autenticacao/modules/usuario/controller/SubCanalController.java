@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "api/sub-canais")
@@ -25,5 +26,10 @@ public class SubCanalController {
     @GetMapping("{id}")
     public SubCanalDto getSubCanalById(@PathVariable int id) {
         return service.getSubCanalById(id);
+    }
+
+    @GetMapping("usuario-subcanal/{usuarioId}")
+    public Set<SubCanalDto> getByUsuarioId(@PathVariable Integer usuarioId) {
+        return service.getSubCanalByUsuarioId(usuarioId);
     }
 }

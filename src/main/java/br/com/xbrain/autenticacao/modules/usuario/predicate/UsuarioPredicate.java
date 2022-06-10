@@ -299,6 +299,20 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comSubCanal(Integer subCanalId) {
+        if (nonNull(subCanalId)) {
+            builder.and(usuario.subCanais.any().id.eq(subCanalId));
+        }
+        return this;
+    }
+
+    public UsuarioPredicate comSubCanais(Set<Integer> subCanais) {
+        if (!isEmpty(subCanais)) {
+            builder.and(usuario.subCanais.any().id.in(subCanais));
+        }
+        return this;
+    }
+
     public UsuarioPredicate daHierarquia(List<Integer> ids) {
         builder.and(usuario.usuariosHierarquia.any().usuarioSuperior.id.in(ids));
         return this;

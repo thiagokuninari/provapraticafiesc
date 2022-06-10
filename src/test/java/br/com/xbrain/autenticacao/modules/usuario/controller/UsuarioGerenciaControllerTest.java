@@ -17,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioClientService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
@@ -100,6 +101,8 @@ public class UsuarioGerenciaControllerTest {
     private SiteService siteService;
     @MockBean
     private UsuarioClientService usuarioClientService;
+    @SpyBean
+    private CargoService cargoService;
 
     @Test
     public void getAll_deveRetornarUnauthorized_quandoNaoInformarAToken() throws Exception {
@@ -233,6 +236,22 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
+    public void getAll_deveRetornarUsuarios_quandoFiltroForComSubCanal() throws Exception {
+        mvc.perform(get(API_URI + "?subCanalId=1")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(4)))
+            .andExpect(jsonPath("$.content[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$.content[0].email", is("ADMIN@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$.content[1].email", is("HELPDESK@XBRAIN.COM.BR")))
+            .andExpect(jsonPath("$.content[2].nome", is("operacao_gerente_comercial")))
+            .andExpect(jsonPath("$.content[2].email", is("operacao_gerente_comercial@net.com.br")))
+            .andExpect(jsonPath("$.content[3].nome", is("INATIVO")))
+            .andExpect(jsonPath("$.content[3].email", is("INATIVO@XBRAIN.COM.BR")));
+    }
+
+    @Test
     public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperior() throws Exception {
         mvc.perform(post(API_URI + "/cargo-superior/4")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
@@ -240,12 +259,28 @@ public class UsuarioGerenciaControllerTest {
                 .content(convertObjectToJsonBytes(
                         UsuarioCargoSuperiorPost
                                 .builder()
-                                .cidadeIds(List.of(1, 5578))
+                                .cidadeIds(List.of(5578))
                                 .build())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$.[0].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
                 .andExpect(jsonPath("$.[1].nome", is("operacao_gerente_comercial")));
+    }
+
+    @Test
+    public void getUsuariosCargoSuperior_deveRetornarTodos_porCargoSuperiorAndCanalAndSubCanal() throws Exception {
+        mvc.perform(post(API_URI + "/cargo-superior/4/D2D_PROPRIO")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("subCanaisId", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(
+                        UsuarioCargoSuperiorPost
+                                .builder()
+                                .cidadeIds(List.of(1, 5578))
+                                .build())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$.[0].nome", is("operacao_gerente_comercial")));
     }
 
     @Test
@@ -370,7 +405,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void deveSalvarSemFoto() throws Exception {
-        UsuarioDto usuario = umUsuario("JOAO");
+        UsuarioDto usuario = umUsuario("JOAO"); // deve setar o codigo do cargo
         mvc.perform(MockMvcRequestBuilders
                 .fileUpload(API_URI)
                 .file(umUsuario(usuario))
@@ -694,7 +729,7 @@ public class UsuarioGerenciaControllerTest {
     private UsuarioDto umUsuario(String nome) {
         UsuarioDto usuario = new UsuarioDto();
         usuario.setNome(nome);
-        usuario.setCargoId(3);
+        usuario.setCargoId(2);
         usuario.setDepartamentoId(1);
         usuario.setCpf("097.238.645-92");
         usuario.setUnidadesNegociosId(Arrays.asList(1));
@@ -705,6 +740,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO));
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 
@@ -728,7 +764,9 @@ public class UsuarioGerenciaControllerTest {
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
         usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         usuario.setSituacao(ESituacao.A);
+        usuario.setSubCanaisId(Sets.newHashSet(1));
         return usuario;
     }
 

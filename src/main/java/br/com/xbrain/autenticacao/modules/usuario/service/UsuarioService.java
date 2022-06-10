@@ -136,12 +136,23 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
+    private static ValidacaoException USUARIO_D2D_NAO_POSSUI_SUBCANAIS = new ValidacaoException(
+        "Usuário não possui sub-canais, deve ser cadastrado no mínimo um."
+    );
+    private static ValidacaoException MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL = new ValidacaoException(
+        "Não é permitido cadastrar mais de um sub-canal para este cargo."
+    );
+    private static ValidacaoException USUARIO_SEM_SUBCANAL_HIERARQUIA = new ValidacaoException(
+        "Usuário não possui sub-canal em comum com usuários da hierarquia."
+    );
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
         SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
+    private static List<CodigoCargo> CARGOS_COM_MAIS_SUBCANAIS = List.of(
+        COORDENADOR_OPERACAO, DIRETOR_OPERACAO, GERENTE_OPERACAO);
 
     @Autowired
     private UsuarioRepository repository;
@@ -547,6 +558,18 @@ public class UsuarioService {
             .anyMatch(canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
     }
 
+    private boolean verificarSubCanalValidacao(Usuario usuario) {
+        return repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()).stream()
+            .map(SubCanal::getId)
+            .filter(usuario.getSubCanaisId()::contains)
+            .collect(Collectors.toSet())
+            .isEmpty();
+    }
+
+    public Set<SubCanal> verificarSubCanalValidacao(Integer usuarioId) {
+        return repository.getSubCanaisByUsuarioIds(List.of(usuarioId));
+    }
+
     private void verificarSeUsuarioLiderEquipe(Usuario usuario) {
         if (verificarSeCargoLiderEquipe(usuario)) {
             var listaDeEquipes = equipeVendaD2dService.getEquipeVendasBySupervisorId(usuario.getId());
@@ -829,9 +852,35 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
+        if (usuario.hasCanal(ECanal.D2D_PROPRIO)) {
+            var cargo = cargoService.findById(usuario.getCargoId());
+            validarSubCanais(usuario, cargo);
+            validarHierarquiaSubCanais(usuario, cargo);
+        }
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
+    }
+
+    private void validarSubCanais(Usuario usuario, Cargo cargo) {
+        if (!isEmpty(usuario.getSubCanais())) {
+            if (usuario.getSubCanais().size() > 1
+                && !CARGOS_COM_MAIS_SUBCANAIS.contains(cargo.getCodigo())) {
+                throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
+            }
+        } else {
+            throw USUARIO_D2D_NAO_POSSUI_SUBCANAIS;
+        }
+    }
+
+    private void validarHierarquiaSubCanais(Usuario usuario, Cargo cargo) {
+        if (!isEmpty(cargo) && !cargo.getCodigo().equals(DIRETOR_OPERACAO)
+            || !isEmpty(usuario.getHierarquiasId())) {
+            var naoPossuiSubCanalEmComum = verificarSubCanalValidacao(usuario);
+            if (naoPossuiSubCanalEmComum) {
+                throw USUARIO_SEM_SUBCANAL_HIERARQUIA;
+            }
+        }
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
@@ -1437,6 +1486,19 @@ public class UsuarioService {
                 .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
                 .comCidade(cidadesId)
                 .comCanais(canais)
+                .build());
+        return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
+    }
+
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanalAndSubCanal(Integer cargoId, List<Integer> cidadesId,
+                                                                                    Set<ECanal> canais, Set<Integer> subCanais) {
+        var usuariosCargoSuperior = repository.getUsuariosFilter(
+            new UsuarioPredicate()
+                .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
+                .comCargos(cargoService.findById(cargoId).getCargosSuperioresId())
+                .comCidade(cidadesId)
+                .comCanais(canais)
+                .comSubCanais(subCanais)
                 .build());
         return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }
