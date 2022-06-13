@@ -61,6 +61,7 @@ public class FuncionalidadeServiceTest {
                 "Relatório - Ticket Médio Analítico",
                 "Relatório - Ticket Médio por Vendedor",
                 "Relatório - Gerenciamento Operacional",
+                "Visualizar Pré Venda Loja Futuro",
                 "Cadastrar venda para o vendedor D2D");
     }
 
@@ -74,7 +75,7 @@ public class FuncionalidadeServiceTest {
             .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(51);
+                .hasSize(52);
     }
 
     @Test
