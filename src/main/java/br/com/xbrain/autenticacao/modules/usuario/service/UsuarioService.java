@@ -136,13 +136,13 @@ public class UsuarioService {
     private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
-    private static ValidacaoException USUARIO_D2D_NAO_POSSUI_SUBCANAIS = new ValidacaoException(
+    private static ValidacaoException MSG_ERRO_USUARIO_NAO_POSSUI_SUBCANAIS = new ValidacaoException(
         "Usuário não possui sub-canais, deve ser cadastrado no mínimo um."
     );
     private static ValidacaoException MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL = new ValidacaoException(
         "Não é permitido cadastrar mais de um sub-canal para este cargo."
     );
-    private static ValidacaoException USUARIO_SEM_SUBCANAL_HIERARQUIA = new ValidacaoException(
+    private static ValidacaoException MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA = new ValidacaoException(
         "Usuário não possui sub-canal em comum com usuários da hierarquia."
     );
     private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
@@ -852,33 +852,41 @@ public class UsuarioService {
     private void validar(Usuario usuario) {
         validarCpfExistente(usuario);
         validarEmailExistente(usuario);
-        if (usuario.hasCanal(ECanal.D2D_PROPRIO)) {
-            var cargo = cargoService.findById(usuario.getCargoId());
-            validarSubCanais(usuario, cargo);
-            validarHierarquiaSubCanais(usuario, cargo);
-        }
+        validarCanalD2dProprioESubCanais(usuario);
         usuario.verificarPermissaoCargoSobreCanais();
         usuario.removerCaracteresDoCpf();
         usuario.tratarEmails();
     }
 
-    private void validarSubCanais(Usuario usuario, Cargo cargo) {
+    private void validarCanalD2dProprioESubCanais(Usuario usuario) {
+        if (usuario.hasCanal(ECanal.D2D_PROPRIO)) {
+            Optional.ofNullable(cargoService.findById(usuario.getCargoId()))
+                .ifPresent(cargo -> {
+                    validarSubCanaisUsuario(usuario, cargo);
+                    validarSubCanaisHierarquia(usuario, cargo);
+                });
+        }
+    }
+
+    private void validarSubCanaisUsuario(Usuario usuario, Cargo cargo) {
         if (!isEmpty(usuario.getSubCanais())) {
             if (usuario.getSubCanais().size() > 1
                 && !CARGOS_COM_MAIS_SUBCANAIS.contains(cargo.getCodigo())) {
                 throw MSG_ERRO_USUARIO_CARGO_SOMENTE_UM_SUBCANAL;
             }
         } else {
-            throw USUARIO_D2D_NAO_POSSUI_SUBCANAIS;
+            throw MSG_ERRO_USUARIO_NAO_POSSUI_SUBCANAIS;
         }
     }
 
-    private void validarHierarquiaSubCanais(Usuario usuario, Cargo cargo) {
-        if (!isEmpty(cargo) && !cargo.getCodigo().equals(DIRETOR_OPERACAO)
-            || !isEmpty(usuario.getHierarquiasId())) {
-            var naoPossuiSubCanalEmComum = verificarSubCanalValidacao(usuario);
-            if (naoPossuiSubCanalEmComum) {
-                throw USUARIO_SEM_SUBCANAL_HIERARQUIA;
+    private void validarSubCanaisHierarquia(Usuario usuario, Cargo cargo) {
+        var isCargoDiretor = cargo.getCodigo().equals(DIRETOR_OPERACAO);
+        var hasHierarquia = !isEmpty(usuario.getHierarquiasId());
+
+        if (!isCargoDiretor && hasHierarquia) {
+            var naoPossuiSubCanalHierarquia = verificarSubCanalValidacao(usuario);            
+            if (naoPossuiSubCanalHierarquia) {
+                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
             }
         }
     }
