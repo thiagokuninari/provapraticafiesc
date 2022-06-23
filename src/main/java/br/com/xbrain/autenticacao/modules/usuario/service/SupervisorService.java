@@ -36,11 +36,15 @@ public class SupervisorService {
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
 
-    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
-        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
+    public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId,
+                                                                                 Integer equipeId,
+                                                                                 Integer subCanalId) {
+        var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId,
+            getVendedoresDoSupervisor(supervisorId, subCanalId));
 
         return Stream.concat(
-            getCargosDescendentesDoSupervisor(supervisorId, getCanalBySupervisorId(supervisorId)).stream(),
+            getCargosDescendentesDoSupervisor(supervisorId,
+                getCanalBySupervisorId(supervisorId), subCanalId).stream(),
             vendedoresDoSupervisor.stream())
             .sorted(Comparator.comparing(UsuarioResponse::getNome))
             .collect(Collectors.toList());
@@ -63,22 +67,27 @@ public class SupervisorService {
         return equipeVendaD2dService.filtrarUsuariosQuePodemAderirAEquipe(vendedoresDoSupervisor, equipeId);
     }
 
-    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId, ECanal canal) {
+    private List<UsuarioResponse> getCargosDescendentesDoSupervisor(Integer supervisorId,
+                                                                    ECanal canal,
+                                                                    Integer subCanalId) {
         return usuarioRepository.getUsuariosDaMesmaCidadeDoUsuarioId(
             supervisorId,
             List.of(ASSISTENTE_OPERACAO, OPERACAO_ANALISTA, OPERACAO_CONSULTOR),
-            canal);
+            canal,
+            subCanalId);
     }
 
-    private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
+    private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId, Integer subCanalId) {
         return usuarioRepository
                 .getSubordinadosPorCargo(supervisorId,
-                    Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()))
+                    Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()),
+                    subCanalId)
                 .stream()
                 .map(row -> new UsuarioResponse(
                     ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
                     (String) row[COLUNA_USUARIO_NOME],
-                    valueOf((String) row[COLUNA_CARGO_CODIGO])))
+                    valueOf((String) row[COLUNA_CARGO_CODIGO]),
+                    usuarioRepository.getSubCanaisByUsuarioIds(List.of(((BigDecimal) row[COLUNA_USUARIO_ID]).intValue()))))
                 .collect(Collectors.toList());
     }
 
