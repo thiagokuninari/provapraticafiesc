@@ -1,9 +1,11 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
 import org.junit.Test;
@@ -69,8 +71,12 @@ public class SupervisorControllerTest {
     @Test
     public void getAssistentesEVendedores_deveRetornarOsAssistentesEVendedores_doSupervisorPassado() throws Exception {
         when(supervisorService.getCargosDescendentesEVendedoresD2dDoSupervisor(any(), any(), any()))
-                .thenReturn(singletonList(
-                        UsuarioResponse.builder().id(1).nome("VENDEDOR 1").subCanais(Set.of(1)).build()));
+            .thenReturn(singletonList(
+                UsuarioResponse.builder()
+                    .id(1)
+                    .nome("VENDEDOR 1")
+                    .subCanais(Set.of(SubCanalDto.of(new SubCanal(1))))
+                    .build()));
 
         mvc.perform(get("/api/supervisor/assistentes-vendedores/1")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
@@ -80,7 +86,7 @@ public class SupervisorControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")))
-                .andExpect(jsonPath("$[0].subCanais[0]", is(1)));
+                .andExpect(jsonPath("$[0].subCanais[0].id", is(1)));
     }
 
     @Test
