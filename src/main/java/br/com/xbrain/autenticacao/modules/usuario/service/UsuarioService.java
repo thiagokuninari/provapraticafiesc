@@ -343,7 +343,7 @@ public class UsuarioService {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
-            c.setCpf(repository.findCpfById(c.getId()));
+            c.setTiposFeeder(Sets.newHashSet(repository.findTiposFeederById(c.getId())));
         });
     }
 

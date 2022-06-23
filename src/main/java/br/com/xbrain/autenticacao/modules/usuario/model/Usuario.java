@@ -1,10 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -242,6 +239,13 @@ public class Usuario {
     @Transient
     private String senhaDescriptografada;
 
+    @NotAudited
+    @CollectionTable(name = "USUARIO_TIPO_FEEDER", joinColumns = @JoinColumn(name = "FK_USUARIO"))
+    @Column(name = "TIPO_FEEDER_MSO")
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private Set<ETipoFeederMso> tiposFeeder;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -462,6 +466,11 @@ public class Usuario {
     @JsonIgnore
     public Set<String> getCanaisString() {
         return canais.stream().map(Enum::toString).collect(Collectors.toSet());
+    }
+
+    @JsonIgnore
+    public Set<String> getTipoFeedersString() {
+        return tiposFeeder.stream().map(Enum::toString).collect(Collectors.toSet());
     }
 
     public boolean isAgenteAutorizado() {

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
@@ -89,6 +90,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     @Query("SELECT x.empresas FROM Usuario x WHERE x.id = :id")
     List<Empresa> findEmpresasById(@Param("id") Integer id);
+
+    @Query(value = "SELECT x.tipo_feeder_mso FROM usuario_tipo_feeder x WHERE x.fk_usuario = :id", nativeQuery = true)
+    List<ETipoFeederMso> findTiposFeederById(@Param("id") Integer id);
 
     @Query("SELECT x.cpf FROM Usuario x WHERE x.id = :id")
     String findCpfById(@Param("id") Integer id);

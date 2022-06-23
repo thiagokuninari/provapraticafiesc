@@ -152,6 +152,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacao(usuario));
         token.getAdditionalInformation().put("organizacaoId", getOrganizacaoId(usuario));
+        token.getAdditionalInformation().put("feeders", getTiposFeeder(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -191,6 +192,13 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
 
     private Integer getOrganizacaoId(Usuario usuario) {
         return Objects.nonNull(usuario.getOrganizacao()) ? usuario.getOrganizacao().getId() : null;
+    }
+
+    public static Set<String> getTiposFeeder(Usuario usuario) {
+        if (usuario.getNivelCodigo() == CodigoNivel.MSO) {
+            return ObjectUtils.isEmpty(usuario.getTiposFeeder()) ? Sets.newHashSet() : usuario.getTipoFeedersString();
+        }
+        return Sets.newHashSet();
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {

@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -29,6 +30,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Builder
 @AllArgsConstructor
 public class UsuarioDto implements Serializable {
+
+    private static final Integer ID_NIVEL_MSO = 2;
 
     private Integer id;
     @NotNull
@@ -104,6 +108,7 @@ public class UsuarioDto implements Serializable {
     private String urlLojaProspectNextel;
     private String cupomLoja;
     private Integer siteId;
+    private Set<ETipoFeederMso> tiposFeeder;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -121,6 +126,9 @@ public class UsuarioDto implements Serializable {
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
+        }
+        if (!Objects.equals(ID_NIVEL_MSO, usuarioDto.getNivelId())) {
+            usuario.setTiposFeeder(Set.of());
         }
         return usuario;
     }
