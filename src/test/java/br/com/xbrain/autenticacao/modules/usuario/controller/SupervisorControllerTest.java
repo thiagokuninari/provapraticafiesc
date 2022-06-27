@@ -1,11 +1,9 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.SupervisorService;
 import helpers.Usuarios;
 import org.junit.Test;
@@ -23,7 +21,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 import static helpers.TestsHelper.getAccessToken;
 import static java.util.Collections.singletonList;
@@ -75,7 +72,6 @@ public class SupervisorControllerTest {
                 UsuarioResponse.builder()
                     .id(1)
                     .nome("VENDEDOR 1")
-                    .subCanais(Set.of(SubCanalDto.of(new SubCanal(1))))
                     .build()));
 
         mvc.perform(get("/api/supervisor/assistentes-vendedores/1")
@@ -85,8 +81,7 @@ public class SupervisorControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")))
-                .andExpect(jsonPath("$[0].subCanais[0].id", is(1)));
+                .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
     }
 
     @Test

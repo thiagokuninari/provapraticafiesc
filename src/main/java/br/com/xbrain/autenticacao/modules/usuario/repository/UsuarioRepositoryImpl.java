@@ -717,8 +717,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                                                                      List<CodigoCargo> cargos,
                                                                      ECanal canal,
                                                                      Integer subCanalId) {
-        var usuarios = new JPAQueryFactory(entityManager)
-            .select(usuarioCidade.usuario)
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.cargo.codigo))
             .from(usuarioCidade)
             .join(usuarioCidade.usuario, usuario)
             .where(usuario.cargo.codigo.in(cargos)
@@ -731,9 +734,6 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(usuario.situacao.eq(A)))
             .distinct()
             .fetch();
-        return usuarios.stream().map(u ->
-            new UsuarioResponse(u.getId(), u.getNome(), u.getCargoCodigo(), u.getSubCanais()))
-            .collect(Collectors.toList());
     }
 
     @Override

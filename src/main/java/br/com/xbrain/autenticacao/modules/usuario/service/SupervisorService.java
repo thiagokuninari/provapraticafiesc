@@ -86,8 +86,7 @@ public class SupervisorService {
                 .map(row -> new UsuarioResponse(
                     ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
                     (String) row[COLUNA_USUARIO_NOME],
-                    valueOf((String) row[COLUNA_CARGO_CODIGO]),
-                    usuarioRepository.getSubCanaisByUsuarioIds(List.of(((BigDecimal) row[COLUNA_USUARIO_ID]).intValue()))))
+                    valueOf((String) row[COLUNA_CARGO_CODIGO])))
                 .collect(Collectors.toList());
     }
 
