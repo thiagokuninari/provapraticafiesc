@@ -279,6 +279,7 @@ public class Usuario {
         unidadesNegocios.size();
         departamento.getId();
         canais.size();
+        Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
         return this;
     }
 

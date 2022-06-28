@@ -997,6 +997,7 @@ public class UsuarioService {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
@@ -1013,6 +1014,7 @@ public class UsuarioService {
                 save(UsuarioDto.convertFrom(usuarioDto));
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));

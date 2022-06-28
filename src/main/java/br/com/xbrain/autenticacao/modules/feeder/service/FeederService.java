@@ -22,10 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 
 @Service
@@ -90,6 +93,27 @@ public class FeederService {
                 .orElse(List.of());
             salvarPermissoesEspeciais(permissoesFeeder);
         }
+    }
+
+    public void adicionarPermissaoFeederParaUsuarioNovoMso(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
+        var permissoesTiposFeeder = usuarioRepository.findById(usuario.getId())
+            .map(usuarioNovo -> getPermissoesEspeciaisDoUsuario(usuario.getId(), usuarioMqRequest.getId(),
+                getPermissoesTipoFeederMso(usuarioMqRequest)))
+            .orElse(List.of());
+
+        salvarPermissoesEspeciais(permissoesTiposFeeder);
+    }
+
+    private ArrayList<Integer> getPermissoesTipoFeederMso(UsuarioMqRequest usuarioMqRequest) {
+        var listaFuncionalidades = new ArrayList<Integer>();
+
+        if (usuarioMqRequest.getMsoTiposFeeder().contains(RESIDENCIAL)) {
+            listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL);
+        }
+        if (usuarioMqRequest.getMsoTiposFeeder().contains(EMPRESARIAL)) {
+            listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL);
+        }
+        return listaFuncionalidades;
     }
 
     private void gerarHistorico(Usuario usuario, SituacaoAlteracaoUsuarioFeederDto dto) {
