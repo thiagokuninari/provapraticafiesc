@@ -20,7 +20,7 @@ public class SupervisorController {
 
     @GetMapping("/assistentes-vendedores/{id}")
     public List<UsuarioResponse> getCargosDescendentesEVendedores(@PathVariable Integer id,
-                                                           @RequestParam Integer subCanalId,
+                                                           @RequestParam(required = false) Integer subCanalId,
                                                            @RequestParam(required = false) Integer equipeId) {
         return service.getCargosDescendentesEVendedoresD2dDoSupervisor(id, equipeId, subCanalId);
     }

@@ -76,6 +76,24 @@ public class SupervisorControllerTest {
 
         mvc.perform(get("/api/supervisor/assistentes-vendedores/1")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
+    }
+
+    @Test
+    public void getAssistentesEVendedores_deveRetornarOsAssistentesEVendedores_doSubCanalIdPassado() throws Exception {
+        when(supervisorService.getCargosDescendentesEVendedoresD2dDoSupervisor(any(), any(), any()))
+            .thenReturn(singletonList(
+                UsuarioResponse.builder()
+                    .id(1)
+                    .nome("VENDEDOR 1")
+                    .build()));
+
+        mvc.perform(get("/api/supervisor/assistentes-vendedores/1")
+                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .param("subCanalId", "1")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
