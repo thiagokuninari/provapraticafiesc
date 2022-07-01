@@ -1,9 +1,12 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.*;
@@ -23,6 +26,23 @@ public class UsuarioDtoTest {
         assertThat(UsuarioDto.convertFrom(umUsuarioDtoOuvidoria()))
             .extracting("nome", "cpf", "tiposFeeder")
             .containsExactly("OUVIDORIA NAO FEEDER", "286.250.583-88", Set.of());
+    }
+
+    @Test
+    public void convertFrom_deveRetornarNivelId_quandoPassadoNoDto() {
+        assertThat(UsuarioDto.convertFrom(umUsuarioDtoMso()))
+            .extracting("nome", "cpf", "tiposFeeder", "nivelId")
+            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), 2);
+    }
+
+    @Test
+    public void convertFrom_naoDeveRetornarNivelId_quandoNaoPassadoNoDto() {
+        var usuarioSemNivelId = umUsuarioDtoMso();
+        usuarioSemNivelId.setNivelId(null);
+
+        assertThat(UsuarioDto.convertFrom(usuarioSemNivelId))
+            .extracting("nome", "cpf", "tiposFeeder", "nivelId")
+            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(), null);
     }
 
     @Test
@@ -59,6 +79,23 @@ public class UsuarioDtoTest {
             .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), null);
     }
 
+    @Test
+    public void of_deveRetornarUsuarioCadastroId_quandoPassado() {
+        assertThat(UsuarioDto.of(umUsuarioMso()))
+            .extracting("nome", "cpf", "tiposFeeder", "usuarioCadastroId")
+            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), 101112);
+    }
+
+    @Test
+    public void of_naoDeveRetornarUsuarioCadastroId_quandoNulo() {
+        var usuarioComUsuarioCadastroNulo = umUsuarioMso();
+        usuarioComUsuarioCadastroNulo.setUsuarioCadastro(null);
+
+        assertThat(UsuarioDto.of(usuarioComUsuarioCadastroNulo))
+            .extracting("nome", "cpf", "tiposFeeder", "usuarioCadastroId")
+            .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), null);
+    }
+
     private static UsuarioDto umUsuarioDtoMso() {
         return UsuarioDto.builder()
             .nome("MSO FEEDER")
@@ -78,6 +115,31 @@ public class UsuarioDtoTest {
             .organizacaoId(1)
             .usuarioCadastroId(1)
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
+    private static Usuario umUsuarioMso() {
+        return Usuario.builder()
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .usuarioCadastro(umUsuarioCadastro())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(Cargo
+                .builder()
+                .quantidadeSuperior(50)
+                .nivel(Nivel
+                    .builder()
+                    .id(2)
+                    .build())
+                .build())
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
+    private static Usuario umUsuarioCadastro() {
+        return Usuario.builder()
+            .id(101112)
+            .nome("COLABORADOR SUPORTE")
             .build();
     }
 }

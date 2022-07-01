@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto.ID_NIVEL_MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.MSO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
@@ -449,6 +450,10 @@ public class Usuario {
         return usuarioCadastro != null && !usuarioCadastro.isEmpty();
     }
 
+    public boolean hasUsuarioCadastroNulo() {
+        return usuarioCadastro == null;
+    }
+
     public boolean hasConfiguracao() {
         return configuracao != null;
     }
@@ -557,6 +562,10 @@ public class Usuario {
 
     public boolean isMso() {
         return MSO == getNivelCodigo();
+    }
+
+    public boolean isIdNivelMso() {
+        return ID_NIVEL_MSO.equals(getNivelId());
     }
 
     @JsonIgnore

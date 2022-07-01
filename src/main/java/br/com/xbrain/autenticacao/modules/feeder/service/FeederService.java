@@ -95,25 +95,44 @@ public class FeederService {
         }
     }
 
-    public void adicionarPermissaoFeederParaUsuarioNovoMso(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
+    public void adicionarPermissaoFeederParaUsuarioNovoMso(Usuario usuario) {
         var permissoesTiposFeeder = usuarioRepository.findById(usuario.getId())
-            .map(usuarioNovo -> getPermissoesEspeciaisDoUsuario(usuario.getId(), usuarioMqRequest.getId(),
-                getPermissoesTipoFeederMso(usuarioMqRequest)))
+            .map(usuarioNovo -> getPermissoesEspeciaisDoUsuario(usuario.getId(),
+                usuario.getUsuarioCadastro().getId(), getPermissoesTiposFeederMso(usuario)))
             .orElse(List.of());
 
         salvarPermissoesEspeciais(permissoesTiposFeeder);
     }
 
-    private ArrayList<Integer> getPermissoesTipoFeederMso(UsuarioMqRequest usuarioMqRequest) {
+    private List<Integer> getPermissoesTiposFeederMso(Usuario usuario) {
         var listaFuncionalidades = new ArrayList<Integer>();
 
-        if (usuarioMqRequest.getMsoTiposFeeder().contains(RESIDENCIAL)) {
-            listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL);
+        if (Objects.nonNull(usuario.getTiposFeeder())) {
+            if (usuario.getTiposFeeder().contains(RESIDENCIAL)) {
+                listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL);
+            }
+            if (usuario.getTiposFeeder().contains(EMPRESARIAL)) {
+                listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL);
+            }
         }
-        if (usuarioMqRequest.getMsoTiposFeeder().contains(EMPRESARIAL)) {
-            listaFuncionalidades.addAll(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL);
+        return listaFuncionalidades.stream().distinct().collect(Collectors.toList());
+    }
+
+    public void removerPermissaoFeederUsuarioAtualizadoMso(Usuario usuario) {
+        if (!usuario.isNovoCadastro() && usuario.isIdNivelMso()) {
+            removerPermissaoFeederMsoEmpresarial(usuario);
+            removerPermissaoFeederMsoResidencial(usuario);
         }
-        return listaFuncionalidades;
+    }
+
+    private void removerPermissaoFeederMsoResidencial(Usuario usuario) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL,
+            List.of(usuario.getId()));
+    }
+
+    private void removerPermissaoFeederMsoEmpresarial(Usuario usuario) {
+        permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL,
+            List.of(usuario.getId()));
     }
 
     private void gerarHistorico(Usuario usuario, SituacaoAlteracaoUsuarioFeederDto dto) {

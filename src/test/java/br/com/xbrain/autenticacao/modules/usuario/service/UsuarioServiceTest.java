@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -60,6 +61,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -128,6 +131,8 @@ public class UsuarioServiceTest {
     private UsuarioClientService usuarioClientService;
     @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Mock
+    private FeederService feederService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1550,6 +1555,7 @@ public class UsuarioServiceTest {
             CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO);
 
         when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuarioCompleto));
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(UsuarioAutenticado.builder().id(101112).build());
 
         usuarioCompleto.setNome("AA Teste Dois");
 
@@ -1593,6 +1599,8 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)));
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of());
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
 
         assertThatCode(() -> usuarioService.save(UsuarioHelper.umUsuario(1, umCargo(2, CodigoCargo.SUPERVISOR_OPERACAO), Set.of(), 1)))
             .doesNotThrowAnyException();
@@ -1607,6 +1615,9 @@ public class UsuarioServiceTest {
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
 
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
+
         assertThatCode(() -> usuarioService
             .save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)))
             .doesNotThrowAnyException();
@@ -1620,6 +1631,9 @@ public class UsuarioServiceTest {
 
         when(siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(eq(1)))
             .thenReturn(List.of(umSite(1, "SITE UM"), umSite(2, "SITE DOIS")));
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
 
         assertThatCode(() -> usuarioService
             .save(UsuarioHelper.umUsuario(1, umCargo(1, CodigoCargo.COORDENADOR_OPERACAO), Set.of(ECanal.ATIVO_PROPRIO), 1)))
@@ -1651,6 +1665,8 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1700,6 +1716,8 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of());
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
                     CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1712,6 +1730,8 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
                 OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO)))
@@ -1726,6 +1746,8 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO)))
@@ -1739,12 +1761,42 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
         Assertions.assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void save_deveAtualizarUsuarioCadastroId_quandoUsuarioPossuiUsuarioCadastroNulo() {
+        var usuarioComUsuarioCadastroNulo = umUsuarioMso();
+        usuarioComUsuarioCadastroNulo.setUsuarioCadastro(null);
+
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(usuarioComUsuarioCadastroNulo));
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
+
+        Assertions.assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));
+    }
+
+    @Test
+    public void save_naoDeveAtualizarUsuarioCadastroId_quandoUsuarioJaPossuirUsuarioCadastro() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso()));
+
+        Assertions.assertThatCode(() -> usuarioService.save(umUsuarioMso()))
+            .doesNotThrowAnyException();
+
+        verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));
     }
 
     @Test
@@ -2374,6 +2426,34 @@ public class UsuarioServiceTest {
 
     private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
         return EquipeVendaUsuarioResponse.builder().id(1)
+            .build();
+    }
+
+    private static Usuario umUsuarioMso() {
+        return Usuario.builder()
+            .id(150016)
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .email("MSO.FEEDER@MSO.COM.BR")
+            .usuarioCadastro(umUsuarioCadastro())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(Cargo
+                .builder()
+                .quantidadeSuperior(50)
+                .nivel(Nivel
+                    .builder()
+                    .id(2)
+                    .build())
+                .build())
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private static Usuario umUsuarioCadastro() {
+        return Usuario.builder()
+            .id(101112)
+            .nome("COLABORADOR SUPORTE")
             .build();
     }
 }

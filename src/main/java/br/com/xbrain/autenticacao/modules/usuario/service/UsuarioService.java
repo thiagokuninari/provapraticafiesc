@@ -472,10 +472,15 @@ public class UsuarioService {
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
+            atualizarUsuarioCadastroNulo(usuario);
+            feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
             repository.saveAndFlush(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
+            if (usuario.isIdNivelMso()) {
+                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
+            }
 
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
@@ -484,6 +489,12 @@ public class UsuarioService {
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
+        }
+    }
+
+    private void atualizarUsuarioCadastroNulo(Usuario usuario) {
+        if (usuario.hasUsuarioCadastroNulo()) {
+            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioAutenticado().getId()));
         }
     }
 
@@ -997,7 +1008,6 @@ public class UsuarioService {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-            feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
@@ -1014,7 +1024,6 @@ public class UsuarioService {
                 save(UsuarioDto.convertFrom(usuarioDto));
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
-                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             } else {
                 saveUsuarioAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto));

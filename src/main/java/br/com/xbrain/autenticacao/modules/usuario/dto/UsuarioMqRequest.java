@@ -45,7 +45,6 @@ public class UsuarioMqRequest {
     private Set<ECanal> canais;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
-    private Set<ETipoFeederMso> msoTiposFeeder;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
 

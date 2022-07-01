@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -26,10 +28,14 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -247,6 +253,159 @@ public class FeederServiceTest {
     }
 
     @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesEmpresarial_quandoUsuarioMsoComTiposFeederEmpresarial() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso(Set.of(EMPRESARIAL))));
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
+            .thenReturn(Optional.empty());
+
+        service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(EMPRESARIAL)));
+
+        verify(usuarioRepository, times(1))
+            .findById(eq(150016));
+        verify(permissaoEspecialRepository, times(1))
+            .save(permissaoEspecialCaptor.capture());
+        verify(permissaoEspecialRepository, times(3))
+            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(3)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(150016, 15000),
+                tuple(150016, 15007),
+                tuple(150016, 15012)
+            );
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesResidencial_quandoUsuarioMsoComTiposFeederResidencial() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso(Set.of(RESIDENCIAL))));
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
+            .thenReturn(Optional.empty());
+
+        service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(RESIDENCIAL)));
+
+        verify(usuarioRepository, times(1))
+            .findById(eq(150016));
+        verify(permissaoEspecialRepository, times(1))
+            .save(permissaoEspecialCaptor.capture());
+        verify(permissaoEspecialRepository, times(14))
+            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(14)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(150016, 15000),
+                tuple(150016, 15001),
+                tuple(150016, 15002),
+                tuple(150016, 15003),
+                tuple(150016, 15006),
+                tuple(150016, 15007),
+                tuple(150016, 15008),
+                tuple(150016, 15009),
+                tuple(150016, 15010),
+                tuple(150016, 15011),
+                tuple(150016, 15012),
+                tuple(150016, 15013),
+                tuple(150016, 15014),
+                tuple(150016, 20007)
+            );
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void adicionarPermissaoFeederParaUsuarioNovoMso_deveSalvarPermissoesResidencialEEmpresarial_quandoUsuarioMsoComTiposFeederResidencialEEmpresarial() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso(Set.of(RESIDENCIAL, EMPRESARIAL))));
+        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
+            .thenReturn(Optional.empty());
+
+        service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of(RESIDENCIAL, EMPRESARIAL)));
+
+        verify(usuarioRepository, times(1))
+            .findById(eq(150016));
+        verify(permissaoEspecialRepository, times(1))
+            .save(permissaoEspecialCaptor.capture());
+        verify(permissaoEspecialRepository, times(14))
+            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(eq(150016), anyInt());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(14)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(150016, 15000),
+                tuple(150016, 15001),
+                tuple(150016, 15002),
+                tuple(150016, 15003),
+                tuple(150016, 15006),
+                tuple(150016, 15007),
+                tuple(150016, 15008),
+                tuple(150016, 15009),
+                tuple(150016, 15010),
+                tuple(150016, 15011),
+                tuple(150016, 15012),
+                tuple(150016, 15013),
+                tuple(150016, 15014),
+                tuple(150016, 20007)
+            );
+    }
+
+    @Test
+    public void adicionarPermissaoFeederParaUsuarioNovoMso_naoDeveSalvarPermissoes_quandoUsuarioMsoComTiposFeederVazio() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso(Set.of())));
+
+        service.adicionarPermissaoFeederParaUsuarioNovoMso(umUsuarioMso(Set.of()));
+
+        verify(usuarioRepository, times(1))
+            .findById(eq(150016));
+        verify(permissaoEspecialRepository, never())
+            .save(anyList());
+        verify(permissaoEspecialRepository, never())
+            .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void removerPermissaoFeederUsuarioAtualizadoMso_deveRemoverPermissoesResidencialEEmpresarial_quandoAtualizarUsuarioMso() {
+        service.removerPermissaoFeederUsuarioAtualizadoMso(umUsuarioMso(Set.of(EMPRESARIAL, RESIDENCIAL)));
+
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL, List.of(150016));
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL, List.of(150016));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void removerPermissaoFeederUsuarioAtualizadoMso_naoDeveRemoverPermissoesResidencialEEmpresarial_quandoAtualizarUsuarioNaoMso() {
+        service.removerPermissaoFeederUsuarioAtualizadoMso(umUsuarioOuvidoria());
+
+        verify(permissaoEspecialRepository, never())
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL, List.of(150017));
+        verify(permissaoEspecialRepository, never())
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL, List.of(150017));
+    }
+
+    @Test
+    public void removerPermissaoFeederUsuarioAtualizadoMso_naoDeveRemoverPermissoesResidencialEEmpresarial_quandoUsuarioNovo() {
+        var umUsuarioNovo = umUsuarioMso(Set.of(EMPRESARIAL, RESIDENCIAL));
+        umUsuarioNovo.setId(null);
+
+        service.removerPermissaoFeederUsuarioAtualizadoMso(umUsuarioNovo);
+
+        verify(permissaoEspecialRepository, never())
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_RESIDENCIAL, List.of());
+        verify(permissaoEspecialRepository, never())
+            .deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_MSO_EMPRESARIAL, List.of());
+    }
+
+    @Test
     public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfAlterarEmailEGerarHistorico_quandoUsuarioFeederExcluido() {
         var usuarioSemCpf = umUsuarioFeeder(100).get();
         usuarioSemCpf.setCpf(null);
@@ -322,6 +481,55 @@ public class FeederServiceTest {
             .usuario(new Usuario(100))
             .observacao("Usuário excluído. CPF e Email alterados automaticamente")
             .situacao(ESituacao.I)
+            .build();
+    }
+
+    private static Usuario umUsuarioMso(Set<ETipoFeederMso> tiposFeeder) {
+        return Usuario.builder()
+            .id(150016)
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .email("MSO.FEEDER@MSO.COM.BR")
+            .usuarioCadastro(umUsuarioCadastro())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(Cargo
+                .builder()
+                .quantidadeSuperior(50)
+                .nivel(Nivel
+                    .builder()
+                    .id(2)
+                    .build())
+                .build())
+            .tiposFeeder(tiposFeeder)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private static Usuario umUsuarioOuvidoria() {
+        return Usuario.builder()
+            .id(150017)
+            .nome("OUVIDORIA NAO FEEDER")
+            .cpf("876.466.334-53")
+            .email("OUVIDORIA.NAOFEEDER@OUVIDORIA.COM.BR")
+            .usuarioCadastro(umUsuarioCadastro())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(Cargo
+                .builder()
+                .quantidadeSuperior(50)
+                .nivel(Nivel
+                    .builder()
+                    .id(15)
+                    .build())
+                .build())
+            .tiposFeeder(Set.of())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private static Usuario umUsuarioCadastro() {
+        return Usuario.builder()
+            .id(101112)
+            .nome("COLABORADOR SUPORTE")
             .build();
     }
 }
