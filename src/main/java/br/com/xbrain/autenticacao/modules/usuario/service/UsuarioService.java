@@ -76,6 +76,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -98,8 +99,8 @@ public class UsuarioService {
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
-    private static final ESituacao ATIVO = ESituacao.A;
-    private static final ESituacao INATIVO = ESituacao.I;
+    private static final ESituacao ATIVO = A;
+    private static final ESituacao INATIVO = I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
@@ -284,7 +285,7 @@ public class UsuarioService {
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
         if (Boolean.TRUE.equals(buscarAtivo)) {
-            return repository.findByEmailAndSituacao(email, ESituacao.A)
+            return repository.findByEmailAndSituacao(email, A)
                 .map(UsuarioResponse::of);
         }
 
@@ -294,7 +295,7 @@ public class UsuarioService {
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf, Boolean buscarAtivo) {
         if (Boolean.TRUE.equals(buscarAtivo)) {
-            return repository.findTop1UsuarioByCpfAndSituacao(getOnlyNumbers(cpf), ESituacao.A)
+            return repository.findTop1UsuarioByCpfAndSituacao(getOnlyNumbers(cpf), A)
                 .map(UsuarioResponse::of);
         }
 
@@ -304,19 +305,19 @@ public class UsuarioService {
 
     public UsuarioResponse buscarAtualByCpf(String cpf) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
     public UsuarioResponse buscarNaoRealocadoByCpf(String cpf) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), R)
             .orElse(null));
     }
 
     public UsuarioResponse buscarAtualByEmail(String email) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, ESituacao.R)
+            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
@@ -703,13 +704,13 @@ public class UsuarioService {
 
     public void salvarUsuarioRealocado(Usuario usuario) {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        usuarioARealocar.setSituacao(ESituacao.R);
+        usuarioARealocar.setSituacao(R);
         repository.save(usuarioARealocar);
     }
 
     private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
         return usuario.isNovoCadastro()
-            ? ESituacao.A
+            ? A
             : repository.findById(usuario.getId()).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION).getSituacao();
     }
 
@@ -807,7 +808,7 @@ public class UsuarioService {
     }
 
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
-        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
+        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), R)
             .ifPresent(usuario -> {
                 if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
@@ -817,7 +818,7 @@ public class UsuarioService {
     }
 
     private void validarEmailCadastrado(String email, Integer usuarioId) {
-        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
+        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, R)
             .ifPresent(usuario -> {
                 if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
@@ -978,7 +979,7 @@ public class UsuarioService {
         usuario.setSenhaDescriptografada(senhaDescriptografada);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
-        usuario.setSituacao(ESituacao.A);
+        usuario.setSituacao(A);
         if (!usuario.hasUsuarioCadastro()) {
             usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
         }
@@ -1042,7 +1043,7 @@ public class UsuarioService {
 
     private void inativarUsuario(Usuario usuario) {
         if (usuario.isAtivo()) {
-            usuario.setSituacao(ESituacao.I);
+            usuario.setSituacao(I);
             repository.save(usuario);
             usuarioHistoricoService.gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId());
             autenticacaoService.logout(usuario.getId());
@@ -1073,7 +1074,7 @@ public class UsuarioService {
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
-        usuarioRemanejado.setSituacao(ESituacao.R);
+        usuarioRemanejado.setSituacao(R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
@@ -1083,13 +1084,13 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
         validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
-        usuario.setSituacao(ESituacao.A);
+        usuario.setSituacao(A);
         usuario.setId(null);
         return usuario;
     }
 
     public void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
-        if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)) {
+        if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), R)) {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
         }
@@ -1252,7 +1253,7 @@ public class UsuarioService {
     private void validarCpfExistente(Usuario usuario) {
         usuario.removerCaracteresDoCpf();
         repository
-            .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
+            .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), R)
             .ifPresent(u -> {
                 if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
@@ -1263,7 +1264,7 @@ public class UsuarioService {
 
     private void validarEmailExistente(Usuario usuario) {
         repository
-            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), R)
             .ifPresent(u -> {
                 if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
@@ -1275,7 +1276,7 @@ public class UsuarioService {
     @Transactional
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
-        usuario.setSituacao(ESituacao.A);
+        usuario.setSituacao(A);
         validarAtivacao(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
@@ -1352,7 +1353,7 @@ public class UsuarioService {
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         validarUsuarioAtivoLocalEPossuiAgendamento(usuario);
-        usuario.setSituacao(ESituacao.I);
+        usuario.setSituacao(I);
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
@@ -1468,7 +1469,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
-        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
+        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(A, idsUsuarios);
         return usuarios.stream()
             .map(UsuarioResponse::of)
             .collect(toList());
@@ -1483,7 +1484,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
-        var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
+        var usuarios = repository.findBySituacaoAndIdIn(I, usuariosInativosIds);
 
         return usuarios.stream()
             .map(UsuarioResponse::of)
@@ -2142,7 +2143,7 @@ public class UsuarioService {
 
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
             .comCodigoCargo(codigoCargo)
-            .comSituacoes(List.of(ESituacao.A));
+            .comSituacoes(List.of(A));
 
         return StreamSupport.stream(
                 repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
@@ -2275,9 +2276,9 @@ public class UsuarioService {
     }
 
     private static String verificarSituacao(String nome, ESituacao situacao) {
-        return ESituacao.I == situacao
+        return I == situacao
             ? nome.concat(" (INATIVO)")
-            : ESituacao.R == situacao
+            : R == situacao
             ? nome.concat(" (REALOCADO)")
             : nome;
     }
@@ -2293,12 +2294,57 @@ public class UsuarioService {
     }
 
     private String obterNomeComSituacao(String usuarioNome, ESituacao situacao) {
-        if (situacao == ESituacao.I) {
+        if (situacao == I) {
             return usuarioNome.concat(" (INATIVO)");
         }
-        if (situacao == ESituacao.R) {
+        if (situacao == R) {
             return usuarioNome.concat(" (REALOCADO)");
         }
         return usuarioNome;
     }
+
+    @Transactional
+    public List<UsuarioResponse> findByEmails(List<String> emails, Boolean buscarAtivo) {
+        if (Boolean.TRUE.equals(buscarAtivo)) {
+            return repository.findByEmailsAndSituacao(
+                    new UsuarioPredicate()
+                        .comUsuariosEmail(emails)
+                        .build(), A)
+                .stream()
+                .map(UsuarioResponse::of)
+                .collect(toList());
+        }
+
+        return repository.findByEmails(
+                new UsuarioPredicate()
+                    .comUsuariosEmail(emails)
+                    .build()
+            )
+            .stream()
+            .map(UsuarioResponse::of)
+            .collect(toList());
+    }
+
+    @Transactional
+    public List<UsuarioResponse> findByCpfs(List<String> cpfs, Boolean buscarAtivo) {
+        if (Boolean.TRUE.equals(buscarAtivo)) {
+            return repository.findByCpfsAndSituacao(
+                    new UsuarioPredicate()
+                        .comUsuariosCpfs(cpfs)
+                        .build(), A)
+                .stream()
+                .map(UsuarioResponse::of)
+                .collect(toList());
+        }
+
+        return repository.findByCpfs(
+                new UsuarioPredicate()
+                    .comUsuariosCpfs(cpfs)
+                    .build()
+            )
+            .stream()
+            .map(UsuarioResponse::of)
+            .collect(toList());
+    }
+
 }

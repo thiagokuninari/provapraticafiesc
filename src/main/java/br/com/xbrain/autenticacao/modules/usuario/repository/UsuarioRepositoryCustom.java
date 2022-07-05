@@ -159,4 +159,12 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findAllVendedoresReceptivos();
 
     List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
+
+    List<Usuario> findByEmailsAndSituacao(Predicate predicate, ESituacao situacao);
+
+    List<Usuario> findByEmails(Predicate predicate);
+
+    List<Usuario> findByCpfsAndSituacao(Predicate predicate, ESituacao situacao);
+
+    List<Usuario> findByCpfs(Predicate predicate);
 }

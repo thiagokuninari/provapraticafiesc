@@ -37,6 +37,7 @@ spring:
             database/cidades.sql,
             database/motivo-inativacao.sql,
             database/feriados.sql
+        format_sql: true
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
@@ -245,8 +246,8 @@ app-config:
     comunicados:
       url: http://api-dev.conexaoclarobrasil.com.br/comunicados/
     claro-indico:
-      #url: http://localhost:8055
-      url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
+      url: http://localhost:8055
+#      url: http://api-dev.conexaoclarobrasil.com.br/claro-indico/
     agente-autorizado:
       #url: http://localhost:8300
       url: https://api-dev.conexaoclarobrasil.com.br/parceiros/agente-autorizado

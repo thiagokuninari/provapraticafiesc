@@ -1185,4 +1185,38 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
+    @Override
+    public List<Usuario> findByEmailsAndSituacao(Predicate predicate, ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(usuario.situacao.eq(situacao)
+                .and(predicate))
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByEmails(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(predicate)
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByCpfsAndSituacao(Predicate predicate, ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(usuario.situacao.eq(situacao)
+                .and(predicate))
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByCpfs(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(predicate)
+            .fetch();
+    }
+
 }

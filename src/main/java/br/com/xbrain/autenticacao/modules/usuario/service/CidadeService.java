@@ -139,6 +139,17 @@ public class CidadeService {
         return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::of).orElse(null);
     }
 
+    public List<CidadeResponse> findCidadesByCodigosIbge(List<String> codigosIbge) {
+        return cidadeRepository.findCidadesByCodigosIbge(
+                new CidadePredicate()
+                    .comCodigosIbge(codigosIbge)
+                    .build()
+            )
+            .stream()
+            .map(CidadeResponse::of)
+            .collect(Collectors.toList());
+    }
+
     public Cidade findById(Integer id) {
         return cidadeRepository.findOne(id);
     }

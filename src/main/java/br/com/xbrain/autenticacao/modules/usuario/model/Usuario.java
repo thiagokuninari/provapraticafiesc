@@ -205,7 +205,7 @@ public class Usuario {
     @NotAudited
     @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
     @Column(name = "CANAL", nullable = false, length = 20)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 

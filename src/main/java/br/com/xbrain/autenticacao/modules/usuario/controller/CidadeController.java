@@ -118,6 +118,11 @@ public class CidadeController {
         return service.findCidadeByCodigoIbge(codigoIbge);
     }
 
+    @GetMapping("codigo-ibge")
+    public List<CidadeResponse> findCidadesByCodigosIbge(@RequestParam List<String> codigosIbge) {
+        return service.findCidadesByCodigosIbge(codigosIbge);
+    }
+
     @GetMapping("estado-cidade-ids/{uf}/{cidade}")
     public CidadeResponse buscarCidadeEstadoIds(@PathVariable String uf, @PathVariable String cidade) {
         return CidadeResponse.of(service.findFirstByUfNomeAndCidadeNome(uf, cidade));

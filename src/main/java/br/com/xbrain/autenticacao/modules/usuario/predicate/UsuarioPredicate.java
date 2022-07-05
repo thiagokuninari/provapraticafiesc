@@ -68,6 +68,32 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comUsuariosEmail(List<String> emails) {
+        if (!isEmpty(emails)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(emails, QTD_MAX_IN_NO_ORACLE)
+                    .parallelStream()
+                    .map(usuario.email::in)
+                    .collect(Collectors.toList()))
+            );
+        }
+
+        return this;
+    }
+
+    public UsuarioPredicate comUsuariosCpfs(List<String> cpfs) {
+        if (!isEmpty(cpfs)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(cpfs, QTD_MAX_IN_NO_ORACLE)
+                    .parallelStream()
+                    .map(usuario.cpf::in)
+                    .collect(Collectors.toList()))
+            );
+        }
+
+        return this;
+    }
+
     public UsuarioPredicate comSituacoes(Collection<ESituacao> situacoes) {
         if (!isEmpty(situacoes)) {
             builder.and(usuario.situacao.in(situacoes));
