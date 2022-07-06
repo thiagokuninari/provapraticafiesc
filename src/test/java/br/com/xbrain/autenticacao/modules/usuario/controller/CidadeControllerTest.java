@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import helpers.Usuarios;
@@ -18,6 +20,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
@@ -45,8 +49,8 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorUf() throws Exception {
         mvc.perform(get("/api/cidades?idUf=1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(8)));
     }
@@ -54,8 +58,8 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarCidadePorUfAndCidadeNome() throws Exception {
         mvc.perform(get("/api/cidades/uf-cidade/PR/LONDRINA")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nome", is("LONDRINA")));
     }
@@ -63,8 +67,8 @@ public class CidadeControllerTest {
     @Test
     public void buscarCidadeUfIds_deveRetornarOsIdsDaCidadeEUf() throws Exception {
         mvc.perform(get("/api/cidades/uf-cidade-ids/PR/ARAPONGAS")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.cidadeId", is(3237)))
             .andExpect(jsonPath("$.ufId", is(1)));
@@ -78,12 +82,12 @@ public class CidadeControllerTest {
 
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idCidade", is(5578)))
-                .andExpect(jsonPath("$.idSubcluster", is(189)))
-                .andExpect(jsonPath("$.idUf", is(1)))
-                .andExpect(jsonPath("$.nomeCidade", is("LONDRINA")))
-                .andExpect(jsonPath("$.nomeUf", is("PARANA")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.idCidade", is(5578)))
+            .andExpect(jsonPath("$.idSubcluster", is(189)))
+            .andExpect(jsonPath("$.idUf", is(1)))
+            .andExpect(jsonPath("$.nomeCidade", is("LONDRINA")))
+            .andExpect(jsonPath("$.nomeUf", is("PARANA")));
     }
 
     @Test
@@ -91,13 +95,13 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades?idSubCluster=57")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("JACARAU")))
-                .andExpect(jsonPath("$[0].subCluster.nome", is("JOÃO PESSOA")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("LESTE")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].nome", is("JACARAU")))
+            .andExpect(jsonPath("$[0].subCluster.nome", is("JOÃO PESSOA")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("PARAÍBA")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORDESTE")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("LESTE")));
     }
 
     @Test
@@ -105,13 +109,13 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades?idSubCluster=189")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
-                .andExpect(jsonPath("$[0].subCluster.nome", is("LONDRINA")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("NORTE DO PARANÁ")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORTE DO PARANÁ")))
-                .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("SUL")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
+            .andExpect(jsonPath("$[0].subCluster.nome", is("LONDRINA")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.nome", is("NORTE DO PARANÁ")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.grupo.nome", is("NORTE DO PARANÁ")))
+            .andExpect(jsonPath("$[0].subCluster.cluster.grupo.regional.nome", is("SUL")));
     }
 
     @Test
@@ -119,9 +123,9 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/regional/3")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nomeCidade", is("LONDRINA")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].nomeCidade", is("LONDRINA")));
     }
 
     @Test
@@ -129,7 +133,7 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/regional/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -137,7 +141,7 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/grupo/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -145,7 +149,7 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/cluster/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -153,7 +157,7 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/sub-cluster/1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -161,17 +165,17 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/5578/clusterizacao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cidadeId", is(5578)))
-                .andExpect(jsonPath("$.cidadeNome", is("LONDRINA")))
-                .andExpect(jsonPath("$.subclusterId", is(189)))
-                .andExpect(jsonPath("$.subclusterNome", is("LONDRINA")))
-                .andExpect(jsonPath("$.clusterId", is(45)))
-                .andExpect(jsonPath("$.clusterNome", is("NORTE DO PARANÁ")))
-                .andExpect(jsonPath("$.grupoId", is(20)))
-                .andExpect(jsonPath("$.grupoNome", is("NORTE DO PARANÁ")))
-                .andExpect(jsonPath("$.regionalId", is(3)))
-                .andExpect(jsonPath("$.regionalNome", is("SUL")));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.cidadeId", is(5578)))
+            .andExpect(jsonPath("$.cidadeNome", is("LONDRINA")))
+            .andExpect(jsonPath("$.subclusterId", is(189)))
+            .andExpect(jsonPath("$.subclusterNome", is("LONDRINA")))
+            .andExpect(jsonPath("$.clusterId", is(45)))
+            .andExpect(jsonPath("$.clusterNome", is("NORTE DO PARANÁ")))
+            .andExpect(jsonPath("$.grupoId", is(20)))
+            .andExpect(jsonPath("$.grupoNome", is("NORTE DO PARANÁ")))
+            .andExpect(jsonPath("$.regionalId", is(3)))
+            .andExpect(jsonPath("$.regionalNome", is("SUL")));
     }
 
     @Test
@@ -179,19 +183,19 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/net-uno")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id", is(4498)))
-                .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
-                .andExpect(jsonPath("$[0].netUno", is("V")))
-                .andExpect(jsonPath("$", hasSize(1)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(4498)))
+            .andExpect(jsonPath("$[0].nome", is("CHAPECO")))
+            .andExpect(jsonPath("$[0].netUno", is("V")))
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
     public void buscarCidadesPorEstados_deveRetornarAsCidadesDeCadaEstado() throws Exception {
         mvc.perform(get("/api/cidades/por-estados")
-            .param("estadosIds", "1", "2")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .param("estadosIds", "1", "2")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(13)))
             .andExpect(jsonPath("$[0].value", is(3237)))
@@ -204,8 +208,8 @@ public class CidadeControllerTest {
     public void getCidadeByCodigoCidadeDbm_deveRetornarCidade_quandoExistirCidadeComCodigoCidadeDbm() throws Exception {
         doReturn(umaCidadeComSite()).when(cidadeService).getCidadeByCodigoCidadeDbm(any());
         mvc.perform(get("/api/cidades/cidade-dbm/1")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(5578)));
     }
@@ -213,9 +217,9 @@ public class CidadeControllerTest {
     @Test
     public void getAllCidadeByUfs_deveRetornarTodasAsCidadesDoEstados_quandoExistir() throws Exception {
         mvc.perform(get("/api/cidades")
-            .param("ufIds", "1,2")
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .param("ufIds", "1,2")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(13)))
             .andExpect(jsonPath("$[0].cidade", is("ARAPONGAS")));
@@ -224,8 +228,8 @@ public class CidadeControllerTest {
     @Test
     public void findCidadeByCodigoIbge_deveRetornarCidade_quandoEncontrarPorCodigoIbge() throws Exception {
         mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 4101507)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(3237)))
             .andExpect(jsonPath("$.nome", is("ARAPONGAS")))
@@ -235,10 +239,32 @@ public class CidadeControllerTest {
     @Test
     public void findCidadeByCodigoIbge_deveRetornar200ComResponseBodyVazio_quandoNaoEncontrarPorCodigoIbge() throws Exception {
         mvc.perform(get("/api/cidades/codigo-ibge/{codigoIbge}", 123456)
-            .header("Authorization", getAccessToken(mvc, ADMIN))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @Test
+    public void findCidadesByCodigosIbge_deveRetornarListaDeCidades_quandoEncontrarPorCodigosIbge() throws Exception {
+        doReturn(umaListaCidadeResponse())
+            .when(cidadeService)
+            .findCidadesByCodigosIbge(List.of("4113700", "3527108"));
+
+        mvc.perform(get("/api/cidades/codigos-ibge")
+                .param("codigosIbge", "4113700, 3527108")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(5578)))
+            .andExpect(jsonPath("$[0].nome", is("LONDRINA")))
+            .andExpect(jsonPath("$[0].codigoIbge", is("4113700")))
+            .andExpect(jsonPath("$[0].uf.nome", is("PR")))
+            .andExpect(jsonPath("$[1].id", is(5579)))
+            .andExpect(jsonPath("$[1].nome", is("LINS")))
+            .andExpect(jsonPath("$[1].codigoIbge", is("3527108")))
+            .andExpect(jsonPath("$[1].uf.nome", is("SP")));
     }
 
     private Cidade umaCidade() {
@@ -257,5 +283,36 @@ public class CidadeControllerTest {
             .siteId(189)
             .uf("pr")
             .build();
+    }
+
+    private List<CidadeResponse> umaListaCidadeResponse() {
+        return List.of(
+            CidadeResponse
+                .builder()
+                .id(5578)
+                .nome("LONDRINA")
+                .codigoIbge("4113700")
+                .uf(
+                    UfResponse
+                        .builder()
+                        .id(2)
+                        .nome("PR")
+                        .build()
+                )
+                .build(),
+            CidadeResponse
+                .builder()
+                .id(5579)
+                .nome("LINS")
+                .codigoIbge("3527108")
+                .uf(
+                    UfResponse
+                        .builder()
+                        .id(1)
+                        .nome("SP")
+                        .build()
+                )
+                .build()
+        );
     }
 }

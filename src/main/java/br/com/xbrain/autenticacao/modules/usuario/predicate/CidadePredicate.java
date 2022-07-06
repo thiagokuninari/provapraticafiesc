@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
+
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ExpressionUtils;
@@ -11,13 +13,12 @@ import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
-import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class CidadePredicate {
 
+    private final QCidade cidade = QCidade.cidade;
     private final BooleanBuilder builder;
 
     public CidadePredicate() {
@@ -60,7 +61,7 @@ public class CidadePredicate {
     }
 
     public CidadePredicate comCodigosIbge(List<String> codigosIbge) {
-        if (!isEmpty(codigosIbge)) {
+        if (!codigosIbge.isEmpty()) {
             builder.and(ExpressionUtils.anyOf(
                 Lists.partition(codigosIbge, QTD_MAX_IN_NO_ORACLE)
                     .parallelStream()

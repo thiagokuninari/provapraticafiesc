@@ -231,7 +231,7 @@ public class UsuarioController {
     }
 
     @GetMapping(params = "emails")
-    public List<UsuarioResponse> getUsuariosByEmail(@RequestParam List<String> emails,
+    public List<UsuarioResponse> getUsuariosByEmails(@RequestParam List<String> emails,
                                                     @RequestParam(required = false) Boolean buscarAtivo) {
         return usuarioService.findByEmails(emails, buscarAtivo);
     }
