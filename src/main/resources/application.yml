@@ -37,7 +37,7 @@ spring:
             database/cidades.sql,
             database/motivo-inativacao.sql,
             database/feriados.sql
-        format_sql: true
+        format_sql: false
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
