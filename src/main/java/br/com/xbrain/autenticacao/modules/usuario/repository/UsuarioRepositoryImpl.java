@@ -169,11 +169,36 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                     + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                     + " WHERE C.CODIGO in (:_codigoCargo)"
-                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
+                    + " GROUP BY UH.FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
                     + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                     + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
             .setParameter("_usuarioId", usuarioId)
             .setParameter("_codigoCargo", codigosCargos)
+            .getResultList();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigosCargos, Integer subCanalId) {
+        return entityManager
+            .createNativeQuery(
+                " SELECT UH.FK_USUARIO "
+                    + " , U.NOME "
+                    + " , U.EMAIL_01 "
+                    + " , C.NOME AS NOME_CARGO "
+                    + " , C.CODIGO AS CARGO_CODIGO"
+                    + " FROM USUARIO_HIERARQUIA UH"
+                    + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
+                    + " JOIN CARGO C ON C.ID = U.FK_CARGO "
+                    + " JOIN USUARIO_SUBCANAL US ON U.ID = US.FK_USUARIO "
+                    + " WHERE C.CODIGO in (:_codigoCargo)"
+                    + " AND US.FK_SUBCANAL = :_subCanalId"
+                    + " GROUP BY UH.FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
+                    + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
+                    + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
+            .setParameter("_usuarioId", usuarioId)
+            .setParameter("_codigoCargo", codigosCargos)
+            .setParameter("_subCanalId", subCanalId)
             .getResultList();
     }
 
@@ -189,7 +214,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return Sets.newHashSet(jdbcTemplate.query(" SELECT * FROM SUB_CANAL"
                 + " WHERE ID IN (SELECT FK_SUBCANAL" 
-                + " FROM USUARIO_SUBCANAL WHERE FK_USUARIO IN (:usuarioIds))",
+                + " FROM USUARIO_SUBCANAL WHERE FK_USUARIO IN (:usuarioIds))"
+                + " ORDER BY ID ASC",
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(SubCanal.class)));
@@ -681,6 +707,30 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     select(usuarioCidade.cidade.id)
                         .from(usuarioCidade)
                         .where(usuarioCidade.usuario.id.eq(usuarioId))))
+                .and(usuario.situacao.eq(A)))
+            .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
+                                                                     List<CodigoCargo> cargos,
+                                                                     ECanal canal,
+                                                                     Integer subCanalId) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(UsuarioResponse.class,
+                usuario.id,
+                usuario.nome,
+                usuario.cargo.codigo))
+            .from(usuarioCidade)
+            .join(usuarioCidade.usuario, usuario)
+            .where(usuario.cargo.codigo.in(cargos)
+                .and(usuario.canais.contains(canal))
+                .and(usuario.cidades.any().cidade.id.in(
+                    select(usuarioCidade.cidade.id)
+                        .from(usuarioCidade)
+                        .where(usuarioCidade.usuario.id.eq(usuarioId))))
+                .and(usuario.subCanais.any().id.eq(subCanalId))
                 .and(usuario.situacao.eq(A)))
             .distinct()
             .fetch();

@@ -566,7 +566,7 @@ public class UsuarioService {
             .isEmpty();
     }
 
-    public Set<SubCanal> verificarSubCanalValidacao(Integer usuarioId) {
+    public Set<SubCanal> buscarSubCanaisPorUsuarioId(Integer usuarioId) {
         return repository.getSubCanaisByUsuarioIds(List.of(usuarioId));
     }
 

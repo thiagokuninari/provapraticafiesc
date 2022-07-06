@@ -35,6 +35,8 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo, Integer subCanalId);
+
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
@@ -84,6 +86,11 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                               List<CodigoCargo> cargos,
                                                               ECanal canal);
+
+    List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
+                                                              List<CodigoCargo> cargos,
+                                                              ECanal canal,
+                                                              Integer subCanalId);
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,

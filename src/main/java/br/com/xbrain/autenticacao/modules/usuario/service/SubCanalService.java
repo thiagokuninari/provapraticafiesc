@@ -32,7 +32,7 @@ public class SubCanalService {
     }
 
     public Set<SubCanalDto> getSubCanalByUsuarioId(Integer usuarioId) {
-        return usuarioService.verificarSubCanalValidacao(usuarioId)
+        return usuarioService.buscarSubCanaisPorUsuarioId(usuarioId)
             .stream()
             .map(SubCanalDto::of)
             .collect(Collectors.toSet());
