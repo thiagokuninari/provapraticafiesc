@@ -1,15 +1,13 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsuarioDtoTest {
@@ -94,52 +92,5 @@ public class UsuarioDtoTest {
         assertThat(UsuarioDto.of(usuarioComUsuarioCadastroNulo))
             .extracting("nome", "cpf", "tiposFeeder", "usuarioCadastroId")
             .containsExactly("MSO FEEDER", "873.616.099-70", Set.of(EMPRESARIAL, RESIDENCIAL), null);
-    }
-
-    private static UsuarioDto umUsuarioDtoMso() {
-        return UsuarioDto.builder()
-            .nome("MSO FEEDER")
-            .cpf("873.616.099-70")
-            .nivelId(2)
-            .organizacaoId(1)
-            .usuarioCadastroId(1)
-            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
-            .build();
-    }
-
-    private static UsuarioDto umUsuarioDtoOuvidoria() {
-        return UsuarioDto.builder()
-            .nome("OUVIDORIA NAO FEEDER")
-            .cpf("286.250.583-88")
-            .nivelId(15)
-            .organizacaoId(1)
-            .usuarioCadastroId(1)
-            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
-            .build();
-    }
-
-    private static Usuario umUsuarioMso() {
-        return Usuario.builder()
-            .nome("MSO FEEDER")
-            .cpf("873.616.099-70")
-            .usuarioCadastro(umUsuarioCadastro())
-            .usuariosHierarquia(new HashSet<>())
-            .cargo(Cargo
-                .builder()
-                .quantidadeSuperior(50)
-                .nivel(Nivel
-                    .builder()
-                    .id(2)
-                    .build())
-                .build())
-            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
-            .build();
-    }
-
-    private static Usuario umUsuarioCadastro() {
-        return Usuario.builder()
-            .id(101112)
-            .nome("COLABORADOR SUPORTE")
-            .build();
     }
 }

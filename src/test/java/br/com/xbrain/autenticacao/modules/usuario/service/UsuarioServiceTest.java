@@ -61,8 +61,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -70,6 +68,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -2426,34 +2425,6 @@ public class UsuarioServiceTest {
 
     private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
         return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
-    }
-
-    private static Usuario umUsuarioMso() {
-        return Usuario.builder()
-            .id(150016)
-            .nome("MSO FEEDER")
-            .cpf("873.616.099-70")
-            .email("MSO.FEEDER@MSO.COM.BR")
-            .usuarioCadastro(umUsuarioCadastro())
-            .usuariosHierarquia(new HashSet<>())
-            .cargo(Cargo
-                .builder()
-                .quantidadeSuperior(50)
-                .nivel(Nivel
-                    .builder()
-                    .id(2)
-                    .build())
-                .build())
-            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
-            .situacao(ESituacao.A)
-            .build();
-    }
-
-    private static Usuario umUsuarioCadastro() {
-        return Usuario.builder()
-            .id(101112)
-            .nome("COLABORADOR SUPORTE")
             .build();
     }
 }

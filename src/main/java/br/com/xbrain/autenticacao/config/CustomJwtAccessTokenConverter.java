@@ -195,7 +195,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
     }
 
     public static Set<String> getTiposFeeder(Usuario usuario) {
-        if (usuario.getNivelCodigo() == CodigoNivel.MSO) {
+        if (CodigoNivel.MSO == usuario.getNivelCodigo()) {
             return ObjectUtils.isEmpty(usuario.getTiposFeeder()) ? Sets.newHashSet() : usuario.getTipoFeedersString();
         }
         return Sets.newHashSet();
