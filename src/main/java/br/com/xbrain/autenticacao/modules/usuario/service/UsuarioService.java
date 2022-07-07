@@ -494,7 +494,8 @@ public class UsuarioService {
 
     private void atualizarUsuarioCadastroNulo(Usuario usuario) {
         if (usuario.hasUsuarioCadastroNulo()) {
-            usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioAutenticado().getId()));
+            autenticacaoService.getUsuarioAutenticadoId()
+                .ifPresent(usuarioCadastroId -> usuario.setUsuarioCadastro(new Usuario(usuarioCadastroId)));
         }
     }
 

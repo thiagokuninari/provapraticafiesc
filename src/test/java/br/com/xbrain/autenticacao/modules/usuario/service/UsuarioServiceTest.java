@@ -1777,13 +1777,13 @@ public class UsuarioServiceTest {
 
         when(usuarioRepository.findById(eq(150016)))
             .thenReturn(Optional.of(usuarioComUsuarioCadastroNulo));
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().id(101112).build());
+        when(autenticacaoService.getUsuarioAutenticadoId())
+            .thenReturn(Optional.of(101112));
 
         Assertions.assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
             .doesNotThrowAnyException();
 
-        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(autenticacaoService, times(1)).getUsuarioAutenticadoId();
         verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));
     }
 
