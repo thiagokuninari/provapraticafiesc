@@ -51,8 +51,8 @@ public class ConsultaCepService {
     }
 
     private String removerAcentuacao(String texto) {
-        String normalizer = Normalizer.normalize(texto, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        var normalizer = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        var pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(normalizer).replaceAll("");
     }
 

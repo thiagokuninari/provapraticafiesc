@@ -113,13 +113,6 @@ public class CepControllerTest {
 
     }
 
-    private ConsultaCepResponse umaConsultaCep() {
-        ConsultaCepResponse consulta = new ConsultaCepResponse();
-        consulta.setCidade("LONDRINA");
-        consulta.setUf("PR");
-        return consulta;
-    }
-
     private ConsultaCepResponse umaConsultaCep(String cep, String nomeCompleto, String bairro, String cidade, String uf) {
         return ConsultaCepResponse
             .builder()
