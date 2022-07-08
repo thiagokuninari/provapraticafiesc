@@ -238,7 +238,9 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     public List<Cidade> findCidadesByCodigosIbge(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .selectFrom(cidade)
-            .where(predicate)
+            .where(cidade.fkCidade.isNull()
+                .and(predicate)
+            )
             .fetch();
     }
 }
