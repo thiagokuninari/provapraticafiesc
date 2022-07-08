@@ -2311,6 +2311,7 @@ public class UsuarioService {
                         .comUsuariosEmail(emails)
                         .build(), A)
                 .stream()
+                .map(Usuario::forceLoadCanais)
                 .map(UsuarioResponse::of)
                 .collect(toList());
         }
@@ -2321,6 +2322,7 @@ public class UsuarioService {
                     .build()
             )
             .stream()
+            .map(Usuario::forceLoadCanais)
             .map(UsuarioResponse::of)
             .collect(toList());
     }
@@ -2333,6 +2335,7 @@ public class UsuarioService {
                         .comUsuariosCpfs(cpfs)
                         .build(), A)
                 .stream()
+                .map(Usuario::forceLoadCanais)
                 .map(UsuarioResponse::of)
                 .collect(toList());
         }
@@ -2343,6 +2346,7 @@ public class UsuarioService {
                     .build()
             )
             .stream()
+            .map(Usuario::forceLoadCanais)
             .map(UsuarioResponse::of)
             .collect(toList());
     }

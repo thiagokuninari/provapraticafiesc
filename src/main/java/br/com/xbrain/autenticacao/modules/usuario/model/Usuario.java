@@ -203,9 +203,9 @@ public class Usuario {
     private List<UsuarioHistorico> historicos;
 
     @NotAudited
-    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
+    @ElementCollection
     @Column(name = "CANAL", nullable = false, length = 20)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
@@ -274,6 +274,11 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
+        canais.size();
+        return this;
+    }
+
+    public Usuario forceLoadCanais() {
         canais.size();
         return this;
     }
