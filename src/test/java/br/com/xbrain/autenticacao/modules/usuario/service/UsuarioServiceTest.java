@@ -1928,6 +1928,83 @@ public class UsuarioServiceTest {
             .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
+    @Test
+    public void getUsuariosOperacaoCanalAa_deveRetornarListaUsuariosCanalOpEnivelAa() {
+        var codigoNivel = OPERACAO;
+        when(usuarioRepository.getUsuariosOperacaoCanalAa(eq(codigoNivel)))
+            .thenReturn(List.of(outroUsuarioNivelOpCanalAa()));
+
+        assertThat(usuarioService.getUsuariosOperacaoCanalAa(codigoNivel))
+            .containsExactly(outroUsuarioNivelOpCanalAaResponse());
+    }
+
+    private Usuario outroUsuarioNivelOpCanalAa() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .codigo(CodigoUnidadeNegocio.CLARO_RESIDENCIAL)
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .codigo(CodigoEmpresa.CLARO_TV)
+                .build()))
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .build();
+        return usuario;
+    }
+
+    private UsuarioResponse outroUsuarioNivelOpCanalAaResponse() {
+        var usuarioResponse = UsuarioResponse
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .rg(null)
+            .telefone(null)
+            .telefone02(null)
+            .telefone03(null)
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .dataCadastro(null)
+            .codigoNivel(OPERACAO)
+            .nomeNivel("OPERACAO")
+            .codigoDepartamento(null)
+            .codigoCargo(EXECUTIVO_HUNTER)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .permissoes(null)
+            .nascimento(null)
+            .aaId(null)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO))
+            .tipoCanal(null)
+            .codigoUnidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .codigoEmpresas(List.of(CodigoEmpresa.CLARO_TV))
+            .build();
+
+        return usuarioResponse;
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()

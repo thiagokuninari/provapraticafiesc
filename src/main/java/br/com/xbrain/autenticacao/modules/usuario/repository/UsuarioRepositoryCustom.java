@@ -159,4 +159,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findAllVendedoresReceptivos();
 
     List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
+
+    List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel nivel);
 }
