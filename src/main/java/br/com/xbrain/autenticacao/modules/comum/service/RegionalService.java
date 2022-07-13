@@ -8,13 +8,11 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.predicate.RegionalPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.RegionalRepository;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto.of;
 import static br.com.xbrain.autenticacao.modules.comum.util.StreamUtils.distinctByKey;
@@ -27,9 +25,6 @@ public class RegionalService {
 
     @Autowired
     private AutenticacaoService autenticacaoService;
-
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
 
     public List<Regional> getAll() {
         UsuarioAutenticado usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
@@ -51,9 +46,7 @@ public class RegionalService {
     }
 
     public List<RegionalDto> getAtivosParaComunicados() {
-        return Stream.concat(
-            getAll().stream().map(RegionalDto::of),
-            agenteAutorizadoService.getRegionais().stream())
+        return getAll().stream().map(RegionalDto::of)
             .filter(distinctByKey(RegionalDto::getId))
             .collect(Collectors.toList());
     }
