@@ -42,6 +42,10 @@ spring:
     host: 172.10.10.40
     port: 6379
 
+  datasource:
+    hikari:
+      maximumPoolSize: 10
+
   rabbitmq:
     host: 172.10.10.30
     port: 5672
