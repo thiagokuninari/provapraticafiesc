@@ -61,6 +61,7 @@ public class FuncionalidadeServiceTest {
                 "Relatório - Ticket Médio Analítico",
                 "Relatório - Ticket Médio por Vendedor",
                 "Relatório - Gerenciamento Operacional",
+                "Visualizar Relatório Consulta de Endereço",
                 "Cadastrar venda para o vendedor D2D");
     }
 
