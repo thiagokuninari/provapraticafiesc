@@ -1185,4 +1185,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .fetch();
     }
 
+    @Override
+    public List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel codigoNivel) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo).fetchJoin()
+            .leftJoin(cargo.nivel, nivel).fetchJoin()
+            .leftJoin(usuario.departamento, departamento).fetchJoin()
+            .leftJoin(usuario.configuracao, configuracao).fetchJoin()
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio).fetchJoin()
+            .where(cargo.nivel.codigo.eq(codigoNivel).and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+            .orderBy(usuario.nome.asc())
+            .fetch();
+    }
+
 }

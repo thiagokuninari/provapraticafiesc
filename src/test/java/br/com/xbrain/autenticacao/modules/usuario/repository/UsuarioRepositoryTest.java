@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
@@ -217,5 +218,11 @@ public class UsuarioRepositoryTest {
                 tuple(121, "VR 1"),
                 tuple(123, "VR 3")
             );
+    }
+
+    @Test
+    public void getUsuariosOperacaoCanalAa_deveRetornarUsuariosOpNivelAa() {
+        assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
+            .hasSize(3);
     }
 }

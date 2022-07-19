@@ -2301,4 +2301,9 @@ public class UsuarioService {
         }
         return usuarioNome;
     }
+
+    public List<UsuarioResponse> getUsuariosOperacaoCanalAa(CodigoNivel codigoNivel) {
+        return repository.getUsuariosOperacaoCanalAa(codigoNivel).stream()
+            .map(UsuarioResponse::of).collect(toList());
+    }
 }
