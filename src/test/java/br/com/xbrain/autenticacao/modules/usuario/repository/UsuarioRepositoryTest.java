@@ -162,6 +162,22 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoId_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoId(95))
+            .hasSize(2)
+            .extracting("id", "nome", "email")
+            .containsExactly(
+                tuple(110, "HUNTER 1", "EXECUTIVOHUNTER1@TESTE.COM"),
+                tuple(111, "HUNTER 2", "EXECUTIVOHUNTER2@TESTE.COM"));
+    }
+
+    @Test
+    public void findUsuariosAtivosOperacaoComercialByCargoId_deveRetornarListaVazia_quandoNaoEncontrarCargo() {
+        assertThat(repository.findUsuariosAtivosOperacaoComercialByCargoId(1000))
+            .isEmpty();
+    }
+
+    @Test
     public void findAllAtivosByNivelOperacaoCanalAa_doisUsuarios_quandoAtivoECanalAgenteAutorizado() {
         assertThat(repository.findAllAtivosByNivelOperacaoCanalAa())
             .hasSize(2);

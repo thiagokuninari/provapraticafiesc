@@ -959,10 +959,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.departamento, departamento)
             .leftJoin(usuario.cargo, cargo)
             .leftJoin(cargo.nivel, nivel)
-            .where(usuario.situacao.eq(A)
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
                 .and(departamento.codigo.eq(COMERCIAL))
                 .and(nivel.codigo.eq(OPERACAO))
-                .and(cargo.id.eq(cargoId)))
+                .and(cargo.id.eq(cargoId))
+                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.id.asc())
             .fetch();
     }

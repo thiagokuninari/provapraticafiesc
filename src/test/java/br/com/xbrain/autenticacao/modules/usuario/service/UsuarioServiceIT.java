@@ -746,7 +746,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .todoCanalAa(true).build());
-        assertThat(usuarios).isEqualTo(List.of(105, 239, 240, 366, 369));
+        assertThat(usuarios).isEqualTo(List.of(105, 116, 117, 149, 239, 240, 366, 369, 998, 1000));
     }
 
     @Test
@@ -836,10 +836,15 @@ public class UsuarioServiceIT {
             .todoCanalAa(true).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
             tuple(105, "INATIVO"),
+            tuple(116, "ALBERTO PEREIRA"),
+            tuple(117, "ROBERTO ALMEIDA"),
+            tuple(149, "USUARIO INFERIOR"),
             tuple(239, "VENDEDOR OPERACAO 2"),
             tuple(240, "VENDEDOR OPERACAO 3"),
             tuple(366, "mso_analistaadm_claromovel_pessoal"),
-            tuple(369, "MARIA AUGUSTA"));
+            tuple(369, "MARIA AUGUSTA"),
+            tuple(998, "USUARIO REMANEJAR"),
+            tuple(1000, "USUARIO REMANEJAR"));
     }
 
     @Test
@@ -1452,7 +1457,12 @@ public class UsuarioServiceIT {
             .containsExactlyInAnyOrder(
                 tuple(369, "MARIA AUGUSTA"),
                 tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3")
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(149, "USUARIO INFERIOR"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(998, "USUARIO REMANEJAR"),
+                tuple(1000, "USUARIO REMANEJAR")
             );
     }
 
