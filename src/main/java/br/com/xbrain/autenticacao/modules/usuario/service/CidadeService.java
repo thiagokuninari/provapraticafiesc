@@ -149,4 +149,9 @@ public class CidadeService {
             .map(CidadeResponse::of)
             .collect(Collectors.toList());
     }
+
+    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
+        return cidadeRepository.findCodigoIbgeRegionalByCidade(cidadesId);
+    }
+
 }

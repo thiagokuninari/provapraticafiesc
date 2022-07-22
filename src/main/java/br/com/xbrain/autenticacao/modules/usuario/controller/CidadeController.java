@@ -122,4 +122,10 @@ public class CidadeController {
     public CidadeResponse buscarCidadeEstadoIds(@PathVariable String uf, @PathVariable String cidade) {
         return CidadeResponse.of(service.findFirstByUfNomeAndCidadeNome(uf, cidade));
     }
+
+    @GetMapping("codigo-ibge/regional")
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeId(@RequestParam(name = "cidadesId")
+                                                                                 List<Integer> cidadesId) {
+        return service.getCodigoIbgeRegionalByCidade(cidadesId);
+    }
 }
