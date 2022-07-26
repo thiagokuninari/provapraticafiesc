@@ -33,7 +33,10 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -79,6 +82,11 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioServiceTest {
+
+    private static final String INATIVADO_POR_REALIZAR_MUITAS_SIMULACOES = "INATIVADO POR REALIZAR MUITAS SIMULAÇÕES";
+    private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
+        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é "
+            + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -130,10 +138,6 @@ public class UsuarioServiceTest {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
-
-    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Não foi possível ativar usuário. "
-        + "O usuário foi inativado por realizar muitas simulações, por favor entre em contato com algum usuário XBrain "
-        + "para que ele possa reativar o usuário.";
 
     @Test
     public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
@@ -216,23 +220,24 @@ public class UsuarioServiceTest {
             .containsExactly(ESituacao.A, 120, OPERACAO_TELEVENDAS);
     }
 
-    @Test(expected = ValidacaoException.class)
-    public void ativarUsuarioOperadorTelevendas_naoDeveAlterarSituacaoUsuario_quandoUsuarioAtivacaoNaoForUsuarioXBrainOuMSO() {
+    @Test
+    public void ativar_deveLancarException_quandoUsuarioAtivacaoNaoForUsuarioXBrainOuMSO() {
         doReturn(Optional.of(umUsuarioCompleto(ESituacao.I, OPERACAO_TELEVENDAS, 120,
             OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)))
             .when(usuarioRepository)
             .findComplete(anyInt());
 
-        doReturn(TestBuilders.umUsuarioAutenticado(1, DIRETOR_OPERACAO, "Operação"))
+        doReturn(TestBuilders.umUsuarioAutenticado(1, VENDEDOR_OPERACAO, "OPERACAO"))
             .when(autenticacaoService)
             .getUsuarioAutenticado();
 
-        doReturn(Optional.of("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
+        doReturn(Optional.of(INATIVADO_POR_REALIZAR_MUITAS_SIMULACOES))
             .when(usuarioHistoricoService)
             .findMotivoInativacaoByUsuarioId(anyInt());
 
-        usuarioService.ativar(umUsuarioAtivacaoDto());
-
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.ativar(umUsuarioAtivacaoDto()))
+            .withMessage(MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES);
     }
 
     @Test
