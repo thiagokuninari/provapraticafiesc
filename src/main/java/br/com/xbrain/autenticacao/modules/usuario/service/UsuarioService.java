@@ -122,7 +122,7 @@ public class UsuarioService {
     private static final String OPERACAO = "Operação";
     private static final String AGENTE_AUTORIZADO = "Agente Autorizado";
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
-        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é "
+        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION

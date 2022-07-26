@@ -85,7 +85,7 @@ public class UsuarioServiceTest {
 
     private static final String INATIVADO_POR_REALIZAR_MUITAS_SIMULACOES = "INATIVADO POR REALIZAR MUITAS SIMULAÇÕES";
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
-        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é "
+        "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
 
     @InjectMocks
