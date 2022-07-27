@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -33,7 +34,10 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -60,13 +64,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
 import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.umSite;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanalDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -215,7 +223,7 @@ public class UsuarioServiceTest {
         assertThat(umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
             OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO))
             .extracting("situacao", "cargo.id", "cargo.codigo")
-            .containsExactly(ESituacao.A, 120, OPERACAO_TELEVENDAS);
+            .containsExactly(A, 120, OPERACAO_TELEVENDAS);
     }
 
     @Test(expected = ValidacaoException.class)
@@ -436,10 +444,10 @@ public class UsuarioServiceTest {
 
     @Test
     public void buscarExecutivosPorSituacao_deveRetornarOsExecutivos() {
-        when(usuarioRepository.findAllExecutivosBySituacao(eq(ESituacao.A)))
+        when(usuarioRepository.findAllExecutivosBySituacao(eq(A)))
             .thenReturn(List.of(umUsuarioExecutivo()));
 
-        assertThat(usuarioService.buscarExecutivosPorSituacao(ESituacao.A))
+        assertThat(usuarioService.buscarExecutivosPorSituacao(A))
             .hasSize(1)
             .extracting("id", "nome")
             .containsExactly(
@@ -478,9 +486,9 @@ public class UsuarioServiceTest {
             .extracting("id", "nome", "email", "codigoNivel", "codigoCargo", "codigoDepartamento", "situacao")
             .containsExactly(
                 tuple(1, "JOSÉ", "JOSE@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
-                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, ESituacao.A),
+                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, A),
                 tuple(2, "HIGOR", "HIGOR@HOTMAIL.COM", CodigoNivel.AGENTE_AUTORIZADO,
-                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, ESituacao.A));
+                    CodigoCargo.EXECUTIVO, CodigoDepartamento.AGENTE_AUTORIZADO, A));
 
         verify(usuarioRepository, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
     }
@@ -585,7 +593,7 @@ public class UsuarioServiceTest {
                 .id(1)
                 .nome("JOSÉ")
                 .email("JOSE@HOTMAIL.COM")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .departamento(Departamento.builder()
                     .id(1)
                     .codigo(CodigoDepartamento.AGENTE_AUTORIZADO)
@@ -603,7 +611,7 @@ public class UsuarioServiceTest {
                 .id(2)
                 .nome("HIGOR")
                 .email("HIGOR@HOTMAIL.COM")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .departamento(Departamento.builder()
                     .id(1)
                     .codigo(CodigoDepartamento.AGENTE_AUTORIZADO)
@@ -624,13 +632,13 @@ public class UsuarioServiceTest {
     public void findUsuariosByIds_deveRetonarUsuarios_quandoForPassadoIdsDosUsuarios() {
         when(usuarioRepository.findUsuariosByIds(any()))
             .thenReturn(List.of(
-                umUsuarioSituacaoResponse(1, "JONATHAN", ESituacao.A),
+                umUsuarioSituacaoResponse(1, "JONATHAN", A),
                 umUsuarioSituacaoResponse(2, "FLAVIA", ESituacao.I)));
 
         assertThat(usuarioService.findUsuariosByIds(List.of(1, 2)))
             .extracting("id", "nome", "situacao")
             .containsExactlyInAnyOrder(
-                tuple(1, "JONATHAN", ESituacao.A),
+                tuple(1, "JONATHAN", A),
                 tuple(2, "FLAVIA", ESituacao.I));
     }
 
@@ -784,7 +792,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByCpfAa("31114231827", null);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -804,7 +812,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByCpfAa("98471883007", true);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -832,7 +840,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByEmailAa("usuarioativo@email.com", null);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -852,7 +860,7 @@ public class UsuarioServiceTest {
         var usuario = usuarioService.findByEmailAa("usuarioativo@email.com", true);
 
         assertThat(usuario).isPresent().get().extracting("id", "cpf", "nome", "situacao", "email")
-            .containsExactly(10, "98471883007", "Usuario Ativo", ESituacao.A, "usuarioativo@email.com");
+            .containsExactly(10, "98471883007", "Usuario Ativo", A, "usuarioativo@email.com");
     }
 
     @Test
@@ -878,7 +886,7 @@ public class UsuarioServiceTest {
             .id(10)
             .cpf("98471883007")
             .nome("Usuario Ativo")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .email("usuarioativo@email.com")
             .build();
     }
@@ -922,7 +930,7 @@ public class UsuarioServiceTest {
                 .nome("Caio")
                 .loginNetSales("H")
                 .email("caio@teste.com")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .build(),
             Usuario.builder()
                 .id(2)
@@ -993,7 +1001,7 @@ public class UsuarioServiceTest {
                 .nome("RENATO")
                 .telefone("43 3322-0000")
                 .email("RENATO@GMAIL.COM")
-                .situacao(ESituacao.A)
+                .situacao(A)
                 .codigoUnidadesNegocio(List.of(
                     CodigoUnidadeNegocio.CLARO_RESIDENCIAL,
                     CodigoUnidadeNegocio.RESIDENCIAL_COMBOS))
@@ -1018,17 +1026,17 @@ public class UsuarioServiceTest {
         when(usuarioRepository
             .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(eq(List.of(1)), eq(Set.of(ASSISTENTE_OPERACAO.name()))))
             .thenReturn(List.of(
-                umUsuarioResponse(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
-                umUsuarioResponse(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
-                umUsuarioResponse(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO)));
+                umUsuarioResponse(1, "NOME 1", A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(2, "NOME 2", A, ASSISTENTE_OPERACAO),
+                umUsuarioResponse(3, "NOME 3", A, ASSISTENTE_OPERACAO)));
 
         assertThat(usuarioService
             .buscarSubordinadosAtivosPorSuperioresIdsECodigosCargos(List.of(1), Set.of(ASSISTENTE_OPERACAO.name())))
             .extracting("id", "nome", "situacao", "codigoCargo")
             .containsExactlyInAnyOrder(
-                tuple(1, "NOME 1", ESituacao.A, ASSISTENTE_OPERACAO),
-                tuple(2, "NOME 2", ESituacao.A, ASSISTENTE_OPERACAO),
-                tuple(3, "NOME 3", ESituacao.A, ASSISTENTE_OPERACAO));
+                tuple(1, "NOME 1", A, ASSISTENTE_OPERACAO),
+                tuple(2, "NOME 2", A, ASSISTENTE_OPERACAO),
+                tuple(3, "NOME 3", A, ASSISTENTE_OPERACAO));
     }
 
     private UsuarioHierarquia umUsuarioHierarquia() {
@@ -1045,12 +1053,12 @@ public class UsuarioServiceTest {
             .id(100)
             .telefone("43 3322-0000")
             .cpf("097.238.645-92")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .cargo(umCargoSupervisorOperacao())
             .departamento(umDepartamentoComercial())
             .nome("RENATO")
             .email("RENATO@GMAIL.COM")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .unidadesNegocios(List.of(
                 umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
                 umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)))
@@ -1064,7 +1072,7 @@ public class UsuarioServiceTest {
             .codigo(CodigoCargo.SUPERVISOR_OPERACAO)
             .nivel(umNivelOperacao())
             .nome(CodigoCargo.SUPERVISOR_OPERACAO.name())
-            .situacao(ESituacao.A)
+            .situacao(A)
             .build();
     }
 
@@ -1088,7 +1096,7 @@ public class UsuarioServiceTest {
         return UnidadeNegocio.builder()
             .codigo(codigoUnidadeNegocio)
             .nome(codigoUnidadeNegocio.name())
-            .situacao(ESituacao.A)
+            .situacao(A)
             .build();
     }
 
@@ -1372,7 +1380,7 @@ public class UsuarioServiceTest {
     @Test
     public void buscarUsuarioSituacaoPorIds_listaDeUsuarioSituacao_seSolicitado() {
         var usuariosSituacao = List.of(
-            UsuarioSituacaoResponse.builder().id(1).nome("NOME 1").situacao(ESituacao.A).build(),
+            UsuarioSituacaoResponse.builder().id(1).nome("NOME 1").situacao(A).build(),
             UsuarioSituacaoResponse.builder().id(2).nome("NOME 2").situacao(ESituacao.I).build(),
             UsuarioSituacaoResponse.builder().id(3).nome("NOME 3").situacao(ESituacao.R).build()
         );
@@ -1421,7 +1429,7 @@ public class UsuarioServiceTest {
                 .nivel(Nivel.builder().codigo(CodigoNivel.ATIVO_LOCAL_PROPRIO).build())
                 .build())
             .cpf("123.456.887-91")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .build();
     }
 
@@ -1441,7 +1449,7 @@ public class UsuarioServiceTest {
                 .nivel(Nivel.builder().codigo(CodigoNivel.XBRAIN).build())
                 .build())
             .cpf("123.456.887-91")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .build();
     }
 
@@ -1472,7 +1480,7 @@ public class UsuarioServiceTest {
 
         usuarioService.ativar(100);
 
-        assertThat(usuarioInativo.getSituacao()).isEqualTo(ESituacao.A);
+        assertThat(usuarioInativo.getSituacao()).isEqualTo(A);
 
         verify(usuarioClientService, times(1)).alterarSituacao(eq(100));
         verify(usuarioRepository).save(usuarioInativo);
@@ -2008,6 +2016,26 @@ public class UsuarioServiceTest {
             .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO)));
     }
 
+    @Test
+    public void findByUsuarioId_deveRetornarUsuarioSubCanalNivelResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanal()));
+
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findByUsuarioId(1))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, List.of(umSubCanalDto(1, PAP, "PAP")));
+    }
+
+    @Test
+    public void findByUsuarioId_deveLancarNotFoundException_seUsuarioNaoExistir() {
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> usuarioService.findByUsuarioId(1))
+            .withMessage("O usuário 1 não foi encontrado.");
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()
@@ -2045,7 +2073,7 @@ public class UsuarioServiceTest {
             .departamento("departamento")
             .unidadesNegocios("unidadeNegocio")
             .empresas("empresa")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
             .loginNetSales("loginNetSales")
             .nivel("Operação")
@@ -2068,7 +2096,7 @@ public class UsuarioServiceTest {
             .departamento("departamento")
             .unidadesNegocios("unidadeNegocio")
             .empresas("empresa")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
             .loginNetSales("loginNetSales")
             .nivel("Agente Autorizado")
@@ -2091,7 +2119,7 @@ public class UsuarioServiceTest {
             .email("email@email.com")
             .nome("NOME UM")
             .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
@@ -2153,7 +2181,7 @@ public class UsuarioServiceTest {
             .email("email@email.com")
             .nome("NOME UM")
             .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
@@ -2207,7 +2235,7 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    private Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo,
+    public Usuario umUsuarioCompleto(ESituacao situacao, CodigoCargo codigoCargo, Integer idCargo,
                                       CodigoNivel nivel, CodigoDepartamento departamento, ECanal canal) {
         var usuario = Usuario
             .builder()
@@ -2275,7 +2303,7 @@ public class UsuarioServiceTest {
             .nome("NOME UM")
             .email("email@email.com")
             .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
@@ -2333,7 +2361,7 @@ public class UsuarioServiceTest {
             .nome("NOME UM")
             .email("email@email.com")
             .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
@@ -2392,7 +2420,7 @@ public class UsuarioServiceTest {
             .nome("NOME DOIS")
             .email("email@email.com")
             .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
+            .situacao(A)
             .loginNetSales("login123")
             .cargo(Cargo
                 .builder()
@@ -2400,7 +2428,7 @@ public class UsuarioServiceTest {
                 .nivel(Nivel
                     .builder()
                     .codigo(OPERACAO)
-                    .situacao(ESituacao.A)
+                    .situacao(A)
                     .nome("OPERACAO")
                     .build())
                 .build())

@@ -522,4 +522,9 @@ public class UsuarioController {
     public List<SelectResponse> buscarSelectUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {
         return usuarioService.buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(filtros);
     }
+
+    @GetMapping("{usuarioId}/subcanal/nivel")
+    public UsuarioSubCanalNivelResponse findByUsuarioId(@PathVariable Integer usuarioId) {
+        return usuarioService.findByUsuarioId(usuarioId);
+    }
 }

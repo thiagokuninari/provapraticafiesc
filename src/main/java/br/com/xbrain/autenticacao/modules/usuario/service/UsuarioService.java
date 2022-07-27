@@ -884,7 +884,7 @@ public class UsuarioService {
         var hasHierarquia = !isEmpty(usuario.getHierarquiasId());
 
         if (!isCargoDiretor && hasHierarquia) {
-            var naoPossuiSubCanalHierarquia = verificarSubCanalValidacao(usuario);            
+            var naoPossuiSubCanalHierarquia = verificarSubCanalValidacao(usuario);
             if (naoPossuiSubCanalHierarquia) {
                 throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
             }
@@ -2370,5 +2370,12 @@ public class UsuarioService {
             return usuarioNome.concat(" (REALOCADO)");
         }
         return usuarioNome;
+    }
+
+    public UsuarioSubCanalNivelResponse findByUsuarioId(Integer usuarioId) {
+
+        return UsuarioSubCanalNivelResponse.of(
+            repository.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("O usuário " + usuarioId + " não foi encontrado.")));
     }
 }
