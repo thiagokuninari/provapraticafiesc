@@ -2027,6 +2027,8 @@ public class UsuarioServiceTest {
         assertThat(usuarioService.findByUsuarioId(1))
             .extracting("id", "nome", "nivel", "subCanais")
             .containsExactly(1, "NOME UM", OPERACAO, List.of(umSubCanalDto(1, PAP, "PAP")));
+
+        verify(usuarioRepository, times(1)).findById(1);
     }
 
     @Test
@@ -2034,6 +2036,8 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(NotFoundException.class)
             .isThrownBy(() -> usuarioService.findByUsuarioId(1))
             .withMessage("O usuário 1 não foi encontrado.");
+
+        verify(usuarioRepository, times(1)).findById(1);
     }
 
     private Canal umCanal() {

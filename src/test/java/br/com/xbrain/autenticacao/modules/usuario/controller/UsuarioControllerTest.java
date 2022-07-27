@@ -1192,6 +1192,8 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$.subCanais[0].codigo", is("PAP")))
             .andExpect(jsonPath("$.subCanais[0].nome", is("PAP")))
             .andExpect(jsonPath("$.subCanais[0].situacao", is("A")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(100));
     }
 
     @Test
@@ -1201,5 +1203,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$[0].message", is("O usuário " + 500 + " não foi encontrado.")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(500));
     }
 }
