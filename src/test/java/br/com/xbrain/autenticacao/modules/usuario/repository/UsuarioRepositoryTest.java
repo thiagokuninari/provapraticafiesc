@@ -54,6 +54,21 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
+    public void getUfsUsuario_deveRetornarOsEstados_somenteAtivosSemDuplicar() {
+
+        assertThat(repository.getUfsUsuario(100))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "PARANA"),
+                tuple(22, "SANTA CATARINA"));
+
+        assertThat(repository.getUfsUsuario(101))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(2, "SAO PAULO"));
+    }
+
+    @Test
     public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
         assertThat(repository.findAllUsuariosSemDataUltimoAcesso())
             .extracting("id", "email")

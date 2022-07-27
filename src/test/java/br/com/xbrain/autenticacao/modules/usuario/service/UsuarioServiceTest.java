@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
@@ -257,6 +258,20 @@ public class UsuarioServiceTest {
             .containsExactly(
                 tuple(1, "TESTE1"),
                 tuple(2, "TESTE2"));
+    }
+
+    @Test
+    public void getUfsUsuario_deveConverterORetornoEmSelectResponse_conformeListaDeEstados() {
+        when(usuarioRepository.getUfsUsuario(anyInt()))
+            .thenReturn(List.of(
+                Uf.builder().id(1).uf("PR").build(),
+                Uf.builder().id(22).uf("SC").build()));
+
+        assertThat(usuarioService.getUfUsuario(1))
+            .extracting("value", "label")
+            .containsExactly(
+                tuple(1, "PR"),
+                tuple(22, "SC"));
     }
 
     @Test

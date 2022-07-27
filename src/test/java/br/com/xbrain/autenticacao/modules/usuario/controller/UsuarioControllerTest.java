@@ -468,7 +468,17 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].value", is(189)))
             .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
+    }
 
+    @Test
+    public void getUfsUsuario_deveRetornarOsEstados_conformeUsuarioIdInformado() throws Exception {
+        mvc.perform(get("/api/usuarios/100/ufs")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].label", is("PR")));
     }
 
     @Test

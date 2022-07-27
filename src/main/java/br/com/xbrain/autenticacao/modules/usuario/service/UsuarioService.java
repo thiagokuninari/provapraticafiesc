@@ -1814,6 +1814,14 @@ public class UsuarioService {
             .collect(Collectors.toList());
     }
 
+    public List<SelectResponse> getUfUsuario(Integer usuarioId) {
+        return repository
+            .getUfsUsuario(usuarioId)
+            .stream()
+            .map(u -> SelectResponse.of(u.getId(), u.getUf()))
+            .collect(Collectors.toList());
+    }
+
     public List<UsuarioPermissoesResponse> findUsuariosByPermissoes(UsuarioPermissoesRequest usuarioPermissoesRequest) {
         return repository.getUsuariosIdAndPermissoes(usuarioPermissoesRequest.getUsuariosId(),
             usuarioPermissoesRequest.getPermissoesWithoutPrefixRole());

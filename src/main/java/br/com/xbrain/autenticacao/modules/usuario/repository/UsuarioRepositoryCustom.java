@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -97,6 +98,8 @@ public interface UsuarioRepositoryCustom {
                                                     Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
+
+    List<Uf> getUfsUsuario(Integer usuarioId);
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 

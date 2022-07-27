@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
@@ -724,6 +725,19 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .where(usuarioCidade.usuario.id.eq(usuarioId)
                 .and(usuarioCidade.dataBaixa.isNull()))
             .orderBy(subCluster.nome.asc())
+            .distinct()
+            .fetch();
+    }
+
+    public List<Uf> getUfsUsuario(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .select(uf1)
+            .from(usuarioCidade)
+            .innerJoin(usuarioCidade.cidade, cidade)
+            .innerJoin(cidade.uf, uf1)
+            .where(usuarioCidade.usuario.id.eq(usuarioId)
+                .and(usuarioCidade.dataBaixa.isNull()))
+            .orderBy(uf1.nome.asc())
             .distinct()
             .fetch();
     }
