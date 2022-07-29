@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class SubCanalDto implements Serializable {
 
-    private static final long serialVersionUID = 1823163552545794339L;
+    public static final long serialVersionUID = 1823163552545794339L;
 
     private Integer id;
     private ETipoCanal codigo;
