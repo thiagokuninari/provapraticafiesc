@@ -15,15 +15,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class SubCanalDto implements Serializable {
 
+    private static final long serialVersionUID = 1823163552545794339L;
+
     private Integer id;
     private ETipoCanal codigo;
     private String nome;
     private ESituacao situacao;
 
     public static List<SubCanalDto> of(List<SubCanal> subcanais) {
-        return subcanais.stream()
-            .map(subcanal -> SubCanalDto.of(subcanal))
-            .collect(Collectors.toList());
+        return subcanais.stream().map(SubCanalDto::of).collect(Collectors.toList());
     }
 
     public static SubCanalDto of(SubCanal subcanal) {
