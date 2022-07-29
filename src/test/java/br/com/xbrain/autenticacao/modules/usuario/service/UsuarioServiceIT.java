@@ -1524,6 +1524,13 @@ public class UsuarioServiceIT {
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
     }
 
+    @Test
+    public void saveFromQueue_salvarEEnviarParaFilaClienteLojaFuturoSalvoComSucesso_quandoCargoClienteLojaFuturo() {
+        usuarioService.saveFromQueue(umUsuarioMqRequestClienteLojaFuturo());
+
+        verify(sender).sendSuccessLojaFuturo(any(UsuarioDto.class));
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
         return UsuarioMqRequest.builder()
             .id(371)
@@ -1558,6 +1565,22 @@ public class UsuarioServiceIT {
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .email("renato@hotmail.com")
             .isCadastroSocioPrincipal(true)
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestClienteLojaFuturo() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("USUARIO LOJA FUTURO AA TEST")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CLIENTE_LOJA_FUTURO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("clientelojafuturo@test.com")
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();

@@ -17,7 +17,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -54,8 +53,6 @@ public class UsuarioDto implements Serializable {
     private String telefone02;
     private String telefone03;
     private Long imei;
-    @CPF
-    @NotNull
     @Size(max = 14)
     private String cpf;
     @Size(max = 25)

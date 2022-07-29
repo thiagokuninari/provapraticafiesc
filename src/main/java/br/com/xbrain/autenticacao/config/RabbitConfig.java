@@ -22,6 +22,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-socio-principal-success}")
     private String usuarioCadastroSocioPrincipalSuccessMq;
 
+    @Value("${app-config.queue.usuario-cadastro-loja-futuro-success}")
+    private String usuarioCadastroLojaFuturoSuccessMq;
+
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessMq;
 
@@ -153,6 +156,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroSocioPrincipalSuccessMq() {
         return new Queue(usuarioCadastroSocioPrincipalSuccessMq, false);
+    }
+
+    @Bean
+    Queue usuarioCadastroLojaFuturoSuccessMq() {
+        return new Queue(usuarioCadastroLojaFuturoSuccessMq, false);
     }
 
     @Bean
@@ -331,6 +339,12 @@ public class RabbitConfig {
     public Binding usuarioCadastroSocioPrincipalSuccessBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroSocioPrincipalSuccessMq()).to(exchange)
             .with(usuarioCadastroSocioPrincipalSuccessMq);
+    }
+
+    @Bean
+    public Binding usuarioCadastroLojaFuturoSuccessBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroLojaFuturoSuccessMq()).to(exchange)
+            .with(usuarioCadastroLojaFuturoSuccessMq);
     }
 
     @Bean

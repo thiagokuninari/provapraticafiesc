@@ -993,6 +993,8 @@ public class UsuarioService {
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
+            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioDto.getCargoCodigo())) {
+                enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
             } else {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
@@ -1186,6 +1188,10 @@ public class UsuarioService {
         usuarioMqSender.sendSuccessSocioPrincipal(usuarioDto);
     }
 
+    private void enviarParaFilaDeLojaFuturoSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessLojaFuturo(usuarioDto);
+    }
+
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -1250,6 +1256,10 @@ public class UsuarioService {
     }
 
     private void validarCpfExistente(Usuario usuario) {
+        if (CLIENTE_LOJA_FUTURO.equals(usuario.getCargoCodigo())) {
+            return;
+        }
+
         usuario.removerCaracteresDoCpf();
         repository
             .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
