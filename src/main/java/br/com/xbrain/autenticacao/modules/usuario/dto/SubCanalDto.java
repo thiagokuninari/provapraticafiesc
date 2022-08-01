@@ -7,7 +7,8 @@ import lombok.*;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -15,15 +16,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class SubCanalDto implements Serializable {
 
-    public static final long serialVersionUID = 1823163552545794339L;
+    private static final long serialVersionUID = 1823163552545794339L;
 
     private Integer id;
     private ETipoCanal codigo;
     private String nome;
     private ESituacao situacao;
 
-    public static List<SubCanalDto> of(List<SubCanal> subcanais) {
-        return subcanais.stream().map(SubCanalDto::of).collect(Collectors.toList());
+    public static Set<SubCanalDto> of(Collection<SubCanal> subcanais) {
+        return subcanais.stream().map(SubCanalDto::of).collect(Collectors.toSet());
     }
 
     public static SubCanalDto of(SubCanal subcanal) {
