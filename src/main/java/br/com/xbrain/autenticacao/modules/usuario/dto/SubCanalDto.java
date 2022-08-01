@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,9 +13,7 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubCanalDto implements Serializable {
-
-    private static final long serialVersionUID = 1823163552545794339L;
+public class SubCanalDto {
 
     private Integer id;
     private ETipoCanal codigo;

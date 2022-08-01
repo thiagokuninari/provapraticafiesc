@@ -228,15 +228,18 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
-    public Set<SubCanalDto> getSubCanais(Usuario usuario) {
+    public Set<Integer> getSubCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return Sets.newHashSet(subCanalService.getAll());
+                return subCanalService.getAll()
+                    .stream()
+                    .map(SubCanalDto::getId)
+                    .collect(Collectors.toSet());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getSubCanais())
                     ? Sets.newHashSet()
-                    : SubCanalDto.of(usuario.getSubCanais());
+                    : usuario.getSubCanaisId();
             default:
                 return Sets.newHashSet();
         }

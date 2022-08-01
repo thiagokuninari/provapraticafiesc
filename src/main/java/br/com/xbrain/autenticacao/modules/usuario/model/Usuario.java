@@ -315,6 +315,15 @@ public class Usuario {
             : null;
     }
 
+    public Set<Integer> getSubCanaisId() {
+        return subCanais != null
+            ? subCanais
+            .stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet())
+            : Set.of();
+    }
+
     public List<Integer> getUnidadesNegociosId() {
         if (!Hibernate.isInitialized(unidadesNegocios)) {
             Hibernate.initialize(unidadesNegocios);
