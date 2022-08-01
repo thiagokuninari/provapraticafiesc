@@ -6,7 +6,8 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SubCanalService {
@@ -17,8 +18,8 @@ public class SubCanalService {
     @Autowired
     private SubCanalRepository repository;
 
-    public Set<SubCanalDto> getAll() {
-        return SubCanalDto.of(repository.findAll());
+    public List<SubCanalDto> getAll() {
+        return repository.findAll().stream().map(SubCanalDto::of).collect(Collectors.toList());
     }
 
     public SubCanalDto getSubCanalById(Integer id) {

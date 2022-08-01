@@ -232,7 +232,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return subCanalService.getAll();
+                return Sets.newHashSet(subCanalService.getAll());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getSubCanais())
                     ? Sets.newHashSet()
