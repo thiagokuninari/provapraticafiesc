@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.OPERACAO_GERENTE_COMERCIAL;
@@ -43,10 +43,10 @@ public class SubCanalControllerTest {
 
     @Test
     public void getAllSubCanais_deveRetornarOsSubCanais_quandoSolicitado() throws Exception {
-        when(subCanalService.getAll()).thenReturn(List.of(
+        when(subCanalService.getAll()).thenReturn(Set.of(
             new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A),
             new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A)));
-        
+
         mvc.perform(get(API_URI)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL)))
@@ -66,7 +66,7 @@ public class SubCanalControllerTest {
     public void getAllSubCanalById_deveRetornarSubCanal_quandoExistir() throws Exception {
         when(subCanalService.getSubCanalById(anyInt())).thenReturn(
             new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
-        
+
         mvc.perform(get(API_URI + "/2")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE_COMERCIAL)))
