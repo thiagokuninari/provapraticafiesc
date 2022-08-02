@@ -21,7 +21,10 @@ public class SubCanalDto {
     private ESituacao situacao;
 
     public static Set<SubCanalDto> of(Collection<SubCanal> subcanais) {
-        return subcanais.stream().map(SubCanalDto::of).collect(Collectors.toSet());
+        return subcanais
+            .stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
     }
 
     public static SubCanalDto of(SubCanal subcanal) {
