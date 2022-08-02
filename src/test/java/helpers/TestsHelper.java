@@ -19,21 +19,21 @@ public class TestsHelper {
 
     public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) throws Exception {
         return mvc
-                .perform(
-                        post("/oauth/token")
-                                .header("Authorization", "Basic "
-                                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
-                                .param("username", usuario)
-                                .param("password", "123456")
-                                .param("grant_type", "password"))
-                .andReturn().getResponse();
+            .perform(
+                post("/oauth/token")
+                    .header("Authorization", "Basic "
+                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
+                    .param("username", usuario)
+                    .param("password", "123456")
+                    .param("grant_type", "password"))
+            .andReturn().getResponse();
     }
 
     public static OAuthToken getAccessTokenObject(MockMvc mvc, String usuario) {
         try {
-            MockHttpServletResponse response = getTokenResponse(mvc, usuario);
+            var response = getTokenResponse(mvc, usuario);
             return new ObjectMapper()
-                    .readValue(response.getContentAsByteArray(), OAuthToken.class);
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
 
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -43,23 +43,23 @@ public class TestsHelper {
 
     @SneakyThrows
     public static byte[] convertObjectToJsonBytes(Object object) {
-        ObjectMapper mapper = new ObjectMapper();
+        var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsBytes(object);
     }
 
     public static OAuthToken getAccessTokenClientCredentials(MockMvc mvc, String app) {
         try {
-            MockHttpServletResponse response = mvc
-                    .perform(
-                            post("/oauth/token")
-                                    .header("Authorization", "Basic "
-                                            + new String(Base64Utils.encode((app).getBytes())))
-                                    .param("grant_type", "client_credentials"))
-                    .andReturn().getResponse();
+            var response = mvc
+                .perform(
+                    post("/oauth/token")
+                        .header("Authorization", "Basic "
+                            + new String(Base64Utils.encode((app).getBytes())))
+                        .param("grant_type", "client_credentials"))
+                .andReturn().getResponse();
 
             return new ObjectMapper()
-                    .readValue(response.getContentAsByteArray(), OAuthToken.class);
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
 
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -69,7 +69,7 @@ public class TestsHelper {
 
     @SneakyThrows
     public static String convertObjectToJsonString(Object object) {
-        ObjectMapper mapper = new ObjectMapper();
+        var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsString(object);
     }

@@ -240,6 +240,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(CodigoIbgeRegionalResponse.class,
                 cidade.id,
+                cidade.nome,
                 cidade.codigoIbge,
                 regional.id,
                 regional.nome

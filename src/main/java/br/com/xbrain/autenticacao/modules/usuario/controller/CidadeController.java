@@ -124,7 +124,8 @@ public class CidadeController {
     }
 
     @GetMapping("codigo-ibge/regional")
-    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeId(@RequestParam(name = "cidadesId") List<Integer> cidadesId) {
+    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(@RequestParam(name = "cidadesId")
+                                                                               List<Integer> cidadesId) {
         return service.getCodigoIbgeRegionalByCidade(cidadesId);
     }
 }
