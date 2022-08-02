@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +22,22 @@ public class CidadeRepositoryTest {
     private CidadeRepository cidadeRepository;
 
     @Test
-    public void findCodigoIbgeRegionalByCidade_deveRetornarVazio_quandoInformarListaVaziaDeCidadesId() {
-        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(List.of()))
-            .isEmpty();
-    }
-
-    @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarVazio_quandoInformarListaComCidadeIdNaoExistente() {
-        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(List.of(123123, 213213)))
+        var predicate = new CidadePredicate()
+            .comCidadeId(List.of(123123, 213213))
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
             .isEmpty();
     }
 
     @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadeId() {
-        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(List.of(3426, 5578)))
+        var predicate = new CidadePredicate()
+            .comCidadeId(List.of(3426, 5578))
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
             .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome")
             .containsExactlyInAnyOrder(
                 tuple(3426, "MARINGA", "4115200", 3, "SUL"),

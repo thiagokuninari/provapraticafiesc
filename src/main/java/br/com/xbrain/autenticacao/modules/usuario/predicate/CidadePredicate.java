@@ -2,13 +2,21 @@ package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class CidadePredicate {
 
     private QCidade cidade = QCidade.cidade;
@@ -38,17 +46,29 @@ public class CidadePredicate {
 
     private CidadePredicate dasCidadesQueOUsuarioEstaVinculado(Integer usuarioId) {
         builder.and(cidade.id.in(
-                JPAExpressions.select(cidade.id)
-                        .from(usuario)
-                        .leftJoin(usuario.cidades, usuarioCidade)
-                        .leftJoin(usuarioCidade.cidade, cidade)
-                        .where(usuarioCidade.dataBaixa.isNull().and(usuario.id.eq(usuarioId)))));
+            JPAExpressions.select(cidade.id)
+                .from(usuario)
+                .leftJoin(usuario.cidades, usuarioCidade)
+                .leftJoin(usuarioCidade.cidade, cidade)
+                .where(usuarioCidade.dataBaixa.isNull().and(usuario.id.eq(usuarioId)))));
         return this;
     }
 
     public CidadePredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
         if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             dasCidadesQueOUsuarioEstaVinculado(usuarioAutenticado.getId());
+        }
+        return this;
+    }
+
+    public CidadePredicate comCidadeId(List<Integer> cidadesId) {
+        if (!isEmpty(cidadesId)) {
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(cidadesId, QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(ids -> cidade.id.in(ids))
+                        .collect(Collectors.toList())));
         }
         return this;
     }

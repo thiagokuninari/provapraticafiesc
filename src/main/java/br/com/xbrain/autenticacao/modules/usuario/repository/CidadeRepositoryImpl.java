@@ -236,7 +236,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(CodigoIbgeRegionalResponse.class,
                 cidade.id,
@@ -246,7 +246,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 regional.nome
             ))
             .from(cidade)
-            .where(cidade.id.in(cidadesId))
+            .where(predicate)
             .innerJoin(cidade.subCluster, subCluster)
             .innerJoin(subCluster.cluster, cluster)
             .innerJoin(cluster.grupo, grupo)
