@@ -993,7 +993,7 @@ public class UsuarioService {
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
-            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioDto.getCargoCodigo())) {
+            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
                 enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
             } else {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
@@ -1256,7 +1256,7 @@ public class UsuarioService {
     }
 
     private void validarCpfExistente(Usuario usuario) {
-        if (CLIENTE_LOJA_FUTURO.equals(usuario.getCargoCodigo())) {
+        if (usuario.getCpf() == null) {
             return;
         }
 

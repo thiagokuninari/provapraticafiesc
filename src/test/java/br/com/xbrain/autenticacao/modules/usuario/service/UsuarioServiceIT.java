@@ -1577,10 +1577,11 @@ public class UsuarioServiceIT {
             .usuarioCadastroNome("RENATO")
             .nome("USUARIO LOJA FUTURO AA TEST")
             .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
-            .cargo(CLIENTE_LOJA_FUTURO)
+            .cargo(CodigoCargo.CLIENTE_LOJA_FUTURO)
             .nivel(CodigoNivel.AGENTE_AUTORIZADO)
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .email("clientelojafuturo@test.com")
+            .isCadastroSocioPrincipal(false)
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();
