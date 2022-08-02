@@ -315,11 +315,11 @@ public class Usuario {
             : null;
     }
 
-    public Set<Integer> getSubCanaisId() {
+    public Set<ETipoCanal> getSubCanaisCodigo() {
         return subCanais != null
             ? subCanais
             .stream()
-            .map(SubCanal::getId)
+            .map(SubCanal::getCodigo)
             .collect(Collectors.toSet())
             : Set.of();
     }
