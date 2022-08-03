@@ -278,7 +278,7 @@ public class CidadeControllerTest {
             .getContentLength();
 
         assertThat(response).isEqualTo(0);
-        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(List.of());
+        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of()));
     }
 
     @Test
@@ -294,7 +294,7 @@ public class CidadeControllerTest {
             .getContentLength();
 
         assertThat(response).isEqualTo(0);
-        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(List.of(123123));
+        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of(123123)));
     }
 
     @Test
@@ -317,7 +317,7 @@ public class CidadeControllerTest {
             .andExpect(jsonPath("$[1].regionalId", is(3)))
             .andExpect(jsonPath("$[1].regionalNome", is("SUL")));
 
-        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(List.of(3426, 5578));
+        verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of(3426, 5578)));
     }
 
     private Cidade umaCidade() {

@@ -67,7 +67,7 @@ public class CidadePredicate {
                 ExpressionUtils.anyOf(
                     Lists.partition(cidadesId, QTD_MAX_IN_NO_ORACLE)
                         .stream()
-                        .map(ids -> cidade.id.in(ids))
+                        .map(cidade.id::in)
                         .collect(Collectors.toList())));
         }
         return this;
