@@ -7,6 +7,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
@@ -23,6 +24,9 @@ import java.util.Map;
 
 @Service
 public class AgenteAutorizadoService {
+
+    private static final ValidacaoException EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
+        new ValidacaoException("Não foi possível atualizar o e-mail do sócio no POL.");
 
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -155,5 +159,21 @@ public class AgenteAutorizadoService {
 
     public boolean isUsuarioComCanalAa() {
         return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
+    }
+
+    public void atualizarEmailSocioPrincipalInativo(String emailInativo, Integer idSocioPrincipal) {
+        try {
+            agenteAutorizadoClient.atualizarEmailSocioPrincipalInativo(emailInativo, idSocioPrincipal);
+        } catch (Exception ex) {
+            throw EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL;
+        }
+    }
+
+    public void atualizarEmailSocioInativo(String emailAtual) {
+        try {
+            agenteAutorizadoClient.atualizarEmailSocioInativo(emailAtual);
+        } catch (Exception ex) {
+            throw EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL;
+        }
     }
 }

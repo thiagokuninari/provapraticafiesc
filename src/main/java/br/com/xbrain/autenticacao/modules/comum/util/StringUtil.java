@@ -16,6 +16,10 @@ import java.util.Random;
 public class StringUtil {
 
     private static final int RADIX = 36;
+    private static final String ARROBA = "@";
+    private static final Integer INDEX_ZERO = 0;
+    private static final Integer INDEX_UM = 1;
+    private static final String INATIVO_ARROBA = ".INATIVO@";
 
     public static String getDataAtualEmail() {
         return LocalDate.now().format(DateTimeFormatter
@@ -68,7 +72,7 @@ public class StringUtil {
         return firstName + "" + lastName;
     }
 
-    public static String getSenhaRandomica(int size) {
+    public static String getRandomPassword(int size) {
         String tag = Long.toString(Math.abs(new Random().nextLong()), RADIX);
         return tag.substring(0, size);
     }
@@ -80,5 +84,10 @@ public class StringUtil {
     public static boolean existeSemelhancaEntreNomes(String nomeOrigem, String nomeDestino) {
         return extrairNumerosELetras(nomeOrigem)
             .equalsIgnoreCase(extrairNumerosELetras(nomeDestino));
+    }
+
+    public static String atualizarEmailInativo(String email) {
+        var emailSplit = email.split(ARROBA);
+        return emailSplit[INDEX_ZERO].concat(INATIVO_ARROBA).concat(emailSplit[INDEX_UM]);
     }
 }

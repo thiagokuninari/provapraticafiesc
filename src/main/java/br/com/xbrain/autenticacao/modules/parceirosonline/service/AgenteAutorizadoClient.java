@@ -23,6 +23,7 @@ public interface AgenteAutorizadoClient {
     String API_COLABORADOR_VENDAS = "api/colaboradores-vendas";
     String API_USUARIO_AGENTE_AUTORIZADO = "api/usuarios-agente-autorizado";
     String API_AGENTE_AUTORIZADO_USUARIO = "api/agentes-autorizados-usuario";
+    String API_SOCIO = "api/socio";
 
     // todo mover para colaborador-vendas-api quando finalizado
     @GetMapping(API_USUARIO_AGENTE_AUTORIZADO + "/usuarios-com-d2d/{agenteAutorizadoId}")
@@ -63,4 +64,14 @@ public interface AgenteAutorizadoClient {
 
     @GetMapping("api/cidades/comunicados")
     List<UsuarioCidadeDto> getCidades(@RequestParam("subclusterId") Integer subclusterId);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar/socio-principal")
+    void inativarAntigoSocioPrincipal(@RequestParam("email") String email);
+
+    @PutMapping(API_AGENTE_AUTORIZADOS_USUARIO + "/inativar-email/{idSocioPrincipal}")
+    void atualizarEmailSocioPrincipalInativo(@RequestParam("emailInativo") String emailInativo,
+                                             @PathVariable("idSocioPrincipal") Integer idSocioPrincipal);
+
+    @PutMapping(API_SOCIO + "/inativar-email")
+    void atualizarEmailSocioInativo(@RequestParam("emailAtual") String emailAtual);
 }
