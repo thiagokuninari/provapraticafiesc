@@ -40,7 +40,7 @@ public class CidadeServiceIT {
     public void getCodigoIbgeRegionalByCidade_deveRetornarListaVazia_quandoInformarListaComCidadeIdNaoExistente() {
         assertThat(service.getCodigoIbgeRegionalByCidade(List.of(123123, 213213)))
             .hasSize(0);
-        assertThat(service.getCodigoIbgeRegionalByCidade(List.of()))
+        assertThat(service.getCodigoIbgeRegionalByCidade(List.of(123123, 213213)))
             .isEqualTo(new ArrayList<CodigoIbgeRegionalResponse>());
     }
 
