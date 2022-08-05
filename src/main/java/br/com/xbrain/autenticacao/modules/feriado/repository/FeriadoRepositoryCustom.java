@@ -18,6 +18,8 @@ public interface FeriadoRepositoryCustom {
 
     List<LocalDate> findAllDataFeriadoByCidadeId(Integer cidadeId);
 
+    List<LocalDate> findAllDataFeriadoByCidadeEUf(String cidade, String uf);
+
     Optional<Feriado> findByPredicate(Predicate predicate);
 
     void exluirByFeriadoIds(List<Integer> feriadoIds);
