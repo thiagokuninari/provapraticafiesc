@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
@@ -229,18 +228,15 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         }
     }
 
-    public Set<ETipoCanal> getSubCanais(Usuario usuario) {
+    public Set<SubCanalDto> getSubCanais(Usuario usuario) {
         switch (usuario.getNivelCodigo()) {
             case XBRAIN:
             case MSO:
-                return subCanalService.getAll()
-                    .stream()
-                    .map(SubCanalDto::getCodigo)
-                    .collect(Collectors.toSet());
+                return Sets.newHashSet(subCanalService.getAll());
             case OPERACAO:
                 return ObjectUtils.isEmpty(usuario.getSubCanais())
                     ? Sets.newHashSet()
-                    : usuario.getSubCanaisCodigo();
+                    : SubCanalDto.of(usuario.getSubCanais());
             default:
                 return Sets.newHashSet();
         }
