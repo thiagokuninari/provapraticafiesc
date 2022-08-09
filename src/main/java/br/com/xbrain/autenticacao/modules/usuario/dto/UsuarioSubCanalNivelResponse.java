@@ -5,7 +5,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -15,7 +15,7 @@ public class UsuarioSubCanalNivelResponse {
     private Integer id;
     private String nome;
     private CodigoNivel nivel;
-    private List<SubCanalDto> subCanais;
+    private Set<SubCanalDto> subCanais;
 
     public static UsuarioSubCanalNivelResponse of(Usuario usuario) {
         var subCanais = usuario.getSubCanais()

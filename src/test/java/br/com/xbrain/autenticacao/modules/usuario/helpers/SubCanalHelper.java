@@ -4,14 +4,14 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 
-import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 
 public class SubCanalHelper {
 
-    public static List<SubCanal> umaListaSubCanais() {
-        return List.of(umSubCanal(), doisSubCanal());
+    public static Set<SubCanal> umSetSubCanais() {
+        return Set.of(umSubCanal(), doisSubCanal());
     }
 
     public static SubCanal umSubCanal() {
