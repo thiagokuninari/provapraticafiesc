@@ -54,6 +54,18 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comIdsUsuariosEquipeVendas(List<Integer> idsUsuarios) {
+        if (!StringUtils.isEmpty(idsUsuarios)) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(idsUsuarios,QTD_MAX_IN_NO_ORACLE)
+                    .stream()
+                    .map(usuario.id::in)
+                    .collect(Collectors.toList())
+            ));
+        }
+        return this;
+    }
+
     public UsuarioPredicate comNome(String nome) {
         if (!StringUtils.isEmpty(nome)) {
             builder.and(usuario.nome.likeIgnoreCase("%" + nome + "%"));

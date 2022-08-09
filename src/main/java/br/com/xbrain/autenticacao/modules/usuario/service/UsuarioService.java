@@ -1468,10 +1468,16 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
-        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
-        return usuarios.stream()
+        return partition(idsUsuarios, QTD_MAX_IN_NO_ORACLE).stream()
+            .map(ids -> repository.findBySituacaoAndIdIn(ESituacao.A, ids))
+            .flatMap(List::stream)
             .map(UsuarioResponse::of)
             .collect(toList());
+
+//        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
+//        return usuarios.stream()
+//            .map(UsuarioResponse::of)
+//            .collect(toList());
     }
 
     public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(Collection<Integer> idsUsuarios) {
