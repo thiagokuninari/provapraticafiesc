@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.DiasUteisRequestCidadeUf;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,38 @@ public class DiasUteisServiceTest {
             .isEqualTo(LocalDateTime.of(2020, 8, 11, 10, 0, 0));
     }
 
+    @Test
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarDataCorreto_quandoNaoTiverFeriadoEFinalSemanaNoPeriodo() {
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of());
+
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(2)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 20, 10, 0, 0));
+    }
+
+    @Test
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarDataCorreto_quandoTiverFinalSemanaNoPeriodo() {
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of());
+
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(5)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 25, 10, 0, 0));
+    }
+
+    @Test
+    public void getDataComDiasUteisAdicionadoECidadeUf_deveRetornarDataCorreto_quandoTiverFeriadoEFinalSemanaNoPeriodo() {
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of(LocalDate.of(2022, 4, 21)));
+
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(6)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 27, 10, 0, 0));
+    }
+
+    @Test
+    public void getDataComDiasUteisAdicionadoComCidadeUf_deveRetornarDataCorreto_quandoTiverFeriadoNoPeriodo() {
+        when(feriadoRepository.findAllDataFeriadoByCidadeEUf(any(), any())).thenReturn(List.of(LocalDate.of(2022, 4, 21)));
+
+        assertThat(diasUteisService.getDataComDiasUteisAdicionadoECidadeUf(umDiasUteisRequestComCidadeEUf(3)))
+            .isEqualTo(LocalDateTime.of(2022, 4, 22, 10, 0, 0));
+    }
+
     private DiasUteisRequest umDiasUteisRequest(Integer qtdDiasUteis) {
         return DiasUteisRequest.builder()
             .cidadeId(5578)
@@ -63,4 +96,14 @@ public class DiasUteisServiceTest {
             .qtdDiasUteisAdicionar(qtdDiasUteis)
             .build();
     }
+
+    private DiasUteisRequestCidadeUf umDiasUteisRequestComCidadeEUf(Integer qtdDiasUteis) {
+        return DiasUteisRequestCidadeUf.builder()
+            .cidade("Londrina")
+            .uf("PR")
+            .dataOriginal(LocalDateTime.of(2022, 4, 18, 10, 0, 0))
+            .qtdDiasUteisAdicionar(qtdDiasUteis)
+            .build();
+    }
 }
+
