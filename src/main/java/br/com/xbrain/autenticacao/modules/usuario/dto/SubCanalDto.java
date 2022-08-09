@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

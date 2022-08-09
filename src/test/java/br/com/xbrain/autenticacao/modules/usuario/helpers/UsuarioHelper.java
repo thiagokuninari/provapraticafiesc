@@ -13,8 +13,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 
 public class UsuarioHelper {
 
@@ -71,6 +75,16 @@ public class UsuarioHelper {
             .email("email@email.com")
             .usuariosHierarquia(new HashSet<>())
             .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario umUsuario() {
+        return Usuario
+            .builder()
+            .id(100)
+            .nome("NED STARK")
+            .cargo(umCargo())
+            .subCanais(Set.of(umSubCanal()))
             .build();
     }
 
@@ -152,5 +166,26 @@ public class UsuarioHelper {
         );
 
         return usuario;
+    }
+
+    public static Cargo umCargo() {
+        return Cargo
+            .builder()
+            .id(50)
+            .codigo(ADMINISTRADOR)
+            .nome("ADMINISTRADOR")
+            .situacao(A)
+            .nivel(umNivelXbrain())
+            .build();
+    }
+
+    public static Nivel umNivelXbrain() {
+        return Nivel
+            .builder()
+            .id(4)
+            .codigo(XBRAIN)
+            .nome("X-BRAIN")
+            .situacao(A)
+            .build();
     }
 }

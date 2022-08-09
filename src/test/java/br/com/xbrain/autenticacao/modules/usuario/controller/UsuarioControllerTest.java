@@ -1178,4 +1178,32 @@ public class UsuarioControllerTest {
                     .canal(ECanal.D2D_PROPRIO)
                     .build()));
     }
+
+    @Test
+    @SneakyThrows
+    public void findByUsuarioId_deveRetornarOk_quandoUsuarioExistir() {
+        mvc.perform(get("/api/usuarios/{usuarioId}/subcanal/nivel", 100)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(100)))
+            .andExpect(jsonPath("$.nome", is("ADMIN")))
+            .andExpect(jsonPath("$.nivel", is("XBRAIN")))
+            .andExpect(jsonPath("$.subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$.subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$.subCanais[0].nome", is("PAP")))
+            .andExpect(jsonPath("$.subCanais[0].situacao", is("A")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(100));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findByUsuarioId_deveRetornarNotFound_quandoUsuarioNaoExistir() {
+        mvc.perform(get("/api/usuarios/{usuarioId}/subcanal/nivel", 500)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$[0].message", is("O usuário " + 500 + " não foi encontrado.")));
+
+        verify(usuarioService, times(1)).findByUsuarioId(eq(500));
+    }
 }
