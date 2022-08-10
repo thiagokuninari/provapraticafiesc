@@ -161,4 +161,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 
     List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel nivel);
+
+    List<Usuario> findBySituacaoAndIdsIn(ESituacao situacao, Predicate predicate);
 }
