@@ -1594,10 +1594,10 @@ public class UsuarioService {
     }
 
     public void atualizarEmailSocioInativo(Integer idSocioPrincipal) {
-        var emailAtual = findOneById(idSocioPrincipal).getEmail();
+        var socio = findOneById(idSocioPrincipal);
+        var emailAtual = socio.getEmail();
         var emailInativo = atualizarEmailInativo(emailAtual);
 
-        var socio = findOneById(idSocioPrincipal);
         socio.setEmail(emailInativo);
         repository.save(socio);
 

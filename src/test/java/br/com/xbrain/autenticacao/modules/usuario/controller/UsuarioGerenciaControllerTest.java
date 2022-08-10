@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
@@ -75,6 +76,12 @@ public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
     private static final int ID_USUARIO_VENDEDOR = 430;
+    public static final String CPF_JA_CADASTRADO = "CPF já cadastrado.";
+    public static final String EMAIL_JA_CADASTRADO = "Email já cadastrado.";
+    public static final String SOCIO_NAO_INATIVADO_NO_POL = "Não foi possível inativar o sócio no Parceiros Online.";
+    public static final String EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
+        "Não foi possível atualizar o e-mail do sócio no Parceiros Online.";
+    public static final String USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
     private static final String API_URI = "/api/usuarios/gerencia";
     @Autowired
     private MockMvc mvc;
@@ -642,7 +649,7 @@ public class UsuarioGerenciaControllerTest {
             .param("email", "HELPDESK@XBRAIN.COM.BR"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "Email já cadastrado.")));
+                EMAIL_JA_CADASTRADO)));
     }
 
     @Test
@@ -654,7 +661,151 @@ public class UsuarioGerenciaControllerTest {
             .param("email", "JOHN@GMAIL.COM"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "CPF já cadastrado.")));
+                CPF_JA_CADASTRADO)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void validarCpfEmailSocio_deveRetornarValidacaoException_quandoCpfJaCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "99898798782")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                CPF_JA_CADASTRADO)));
+
+        verify(usuarioService, times(1))
+            .validarSeUsuarioCpfEmailNaoCadastrados(eq("99898798782"), eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void validarCpfEmailSocio_deveRetornarValidacaoException_quandoEmailJaCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "21285356209")
+                .param("email", "HELPDESK@XBRAIN.COM.BR"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                EMAIL_JA_CADASTRADO)));
+
+        verify(usuarioService, times(1))
+            .validarSeUsuarioCpfEmailNaoCadastrados(eq("21285356209"), eq("HELPDESK@XBRAIN.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void validarCpfEmailSocio_deveRetornarOk_quandoCpfNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .validarSeUsuarioCpfEmailNaoCadastrados(eq("42675562700"), eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void validarCpfEmailSocio_deveRetornarOk_quandoEmailNaoCadastrado() {
+        mvc.perform(get(API_URI + "/existir/usuario/cpf-email")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("cpf", "42675562700")
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1))
+            .validarSeUsuarioCpfEmailNaoCadastrados(eq("42675562700"), eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void inativarAntigoSocioPrincipal_deveRetornarValidacaoException_quandoPolNaoInativarSocio() {
+        doThrow(new ValidacaoException(SOCIO_NAO_INATIVADO_NO_POL))
+            .when(usuarioService)
+            .inativarAntigoSocioPrincipal("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR");
+
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                SOCIO_NAO_INATIVADO_NO_POL)));
+
+        verify(usuarioService, times(1)).inativarAntigoSocioPrincipal(eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void inativarAntigoSocioPrincipal_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar/socio-principal")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .param("email", "NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).inativarAntigoSocioPrincipal(eq("NOVOSOCIO.PRINCIPAL@EMPRESA.COM.BR"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void limparCpfAntigoSocioPrincipal_deveRetornarValidacaoException_quandoUsuarioNaoCadastrado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 23)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                USUARIO_NAO_ENCONTRADO)));
+
+        verify(usuarioService, times(1)).limparCpfAntigoSocioPrincipal(eq(23));
+    }
+
+    @Test
+    @SneakyThrows
+    public void limparCpfAntigoSocioPrincipal_deveRetornarOk_quandoUsuarioCadastrado() {
+        mvc.perform(put(API_URI + "/limpar-cpf/socio-principal/{id}", 300)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).limparCpfAntigoSocioPrincipal(eq(300));
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoUsuarioNaoCadastrado() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 23)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                USUARIO_NAO_ENCONTRADO)));
+
+        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(23));
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmaildoUsuarioNaoAtualizadoNoPol() {
+        doThrow(new ValidacaoException(EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL))
+            .when(usuarioService)
+            .atualizarEmailSocioInativo(eq(300));
+
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL)));
+
+        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(300));
+    }
+
+    @Test
+    @SneakyThrows
+    public void atualizarEmailSocioInativo_deveRetornarOk_quandoTudoOk() {
+        mvc.perform(put(API_URI + "/inativar-email/{idSocioPrincipal}", 300)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).atualizarEmailSocioInativo(eq(300));
     }
 
     private UsuarioDadosAcessoRequest umRequestDadosAcessoEmail() {

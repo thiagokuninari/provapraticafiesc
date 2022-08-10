@@ -150,7 +150,7 @@ public class UsuarioGerenciaController {
         service.validarSeUsuarioCpfEmailNaoCadastrados(cpf, email);
     }
 
-    @PutMapping("/inativar/socio-principal")
+    @PutMapping("inativar/socio-principal")
     public void inativarAntigoSocioPrincipal(@RequestParam String email) {
         service.inativarAntigoSocioPrincipal(email);
     }
@@ -160,7 +160,7 @@ public class UsuarioGerenciaController {
         service.limparCpfAntigoSocioPrincipal(id);
     }
 
-    @PutMapping("/inativar-email/{idSocioPrincipal}")
+    @PutMapping("inativar-email/{idSocioPrincipal}")
     public void atualizarEmailSocioInativo(@PathVariable Integer idSocioPrincipal) {
         service.atualizarEmailSocioInativo(idSocioPrincipal);
     }
