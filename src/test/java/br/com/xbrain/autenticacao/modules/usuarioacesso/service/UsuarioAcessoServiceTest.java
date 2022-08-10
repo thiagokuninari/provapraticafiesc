@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -34,17 +35,12 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.helper.DeslogarUsuarioPorExcessoDeUsoHelper.umUsuarioComSituacao;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.tuple;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -68,18 +64,8 @@ public class UsuarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(usuarioAcessoRepository.findAllUltimoAcessoUsuarios())
-            .thenReturn(List.of(
-                new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(45), 102, "RENATO@XBRAIN.COM.BR"),
-                new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(33), 103, "MARIA@XBRAIN.COM.BR"),
-                new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(33), 104, "JOANA@XBRAIN.COM.BR"),
-                new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(45), 105, null),
-                new UsuarioAcesso(
-                    LocalDateTime.now().minusDays(10), 106, "CARLOS@XBRAIN.COM.BR")));
+        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(any()))
+            .thenReturn(List.of(102, 103, 104, 105, 106));
     }
 
     @Test
@@ -92,11 +78,13 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
+        doReturn(umUsuarioComSituacao(ESituacao.A)).when(usuarioRepository).findById(anyInt());
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(3)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(3)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
-        verify(inativarColaboradorMqSender, times(3)).sendSuccess(anyString());
+        verify(usuarioRepository, times(5)).save(any(Usuario.class));
+        verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
+        verify(inativarColaboradorMqSender, times(5)).sendSuccess(anyString());
     }
 
     @Test

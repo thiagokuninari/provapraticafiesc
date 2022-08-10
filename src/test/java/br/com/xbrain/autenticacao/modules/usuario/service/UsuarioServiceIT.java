@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
@@ -48,6 +49,7 @@ import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -1524,6 +1526,19 @@ public class UsuarioServiceIT {
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
     }
 
+    @Test
+    public void updateFromQueue_seUsuarioInativo_deveAtivarEPreencheerCampoDataReativacao() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        var usuario = umUsuarioMqRequest();
+        service.updateFromQueue(usuario);
+
+        var usuarioAtualizado = usuarioRepository.findById(usuario.getId()).orElseThrow(
+            () -> new NotFoundException("Usuário não encontrado"));
+        assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
+        assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
         return UsuarioMqRequest.builder()
             .id(371)
@@ -1571,5 +1586,13 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.A);
         return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioMqRequest() {
+        return UsuarioMqRequest.builder()
+            .id(150)
+            .situacao(ESituacao.A)
+            .nome("Macaulay")
+            .build();
     }
 }

@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CsvUtils;
@@ -28,12 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -49,8 +48,7 @@ public class UsuarioAcessoService {
         + "usuários que estão a mais de 32 dias sem efetuar login.";
     private static final String MSG_ERRO_AO_DELETAR_REGISTROS = "Ocorreu um erro desconhecido ao tentar deletar "
         + " os registros antigos da tabela usuário acesso.";
-
-    private static final int TRINTA_E_DOIS_DIAS = 32;
+    private static final NotFoundException EX_USUARIO_NAO_ENCONTRADO = new NotFoundException("Usuário não encontrado!");
 
     @Autowired
     private UsuarioAcessoRepository usuarioAcessoRepository;
@@ -90,13 +88,17 @@ public class UsuarioAcessoService {
     public Integer inativarUsuariosSemAcesso(String origem) {
         int usuariosInativados = 0;
         try {
-            var usuarios = buscarUsuariosParaInativar(LocalDateTime.parse(dataHoraInativarUsuario));
-            usuarios.forEach(usuarioAcesso -> {
-                Usuario usuario = usuarioAcesso.getUsuario();
-                usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
-                usuarioHistoricoService.gerarHistoricoInativacao(usuario, origem);
-                inativarColaboradorPol(usuario);
-            });
+            var usuarios = buscarUsuariosParaInativar(LocalDateTime.parse(dataHoraInativarUsuario))
+                .stream()
+                .peek(usuario -> {
+                    usuario.setDataReativacao(null);
+                    usuarioRepository.save(usuario);
+                    usuarioRepository.atualizarParaSituacaoInativo(usuario.getId());
+                    usuarioHistoricoService.gerarHistoricoInativacao(usuario, origem);
+                    inativarColaboradorPol(usuario);
+                })
+                .collect(Collectors.toList());
+
             usuariosInativados = usuarios.size();
         } catch (Exception ex) {
             log.warn(MSG_ERRO_AO_INATIVAR_USUARIO, ex);
@@ -115,36 +117,33 @@ public class UsuarioAcessoService {
         return 0;
     }
 
-    private List<UsuarioAcesso> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
+    private List<Usuario> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
         var usuariosUltimoAcessoExpirado =
             CollectionUtils.emptyIfNull(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario));
         var usuariosSemUltimoAcesso =
             CollectionUtils.emptyIfNull(getUsuariosSemUltimoAcesso(dataHoraInativarUsuario));
-
         var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
 
         return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
-            .filter(u -> u.getUsuario().getEmail() != null
-                && !Arrays.asList(emailsUsuariosViabilidade).contains(u.getUsuario().getEmail()))
+            .map(usuarioId -> {
+                var usuario = usuarioRepository.findById(usuarioId).orElseThrow(() -> EX_USUARIO_NAO_ENCONTRADO);
+                return usuario;
+            })
+            .filter(usuario -> usuario.getEmail() != null
+                && !Arrays.asList(emailsUsuariosViabilidade).contains(usuario.getEmail()))
             .collect(Collectors.toList());
     }
 
-    private List<UsuarioAcesso> getUsuariosSemUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
-        return usuarioRepository.findAllUsuariosSemDataUltimoAcesso(dataHoraInativarUsuario)
-            .stream()
-            .map(UsuarioAcesso::of)
-            .collect(Collectors.toList());
+    private List<Integer> getUsuariosSemUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioRepository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias(dataHoraInativarUsuario);
     }
 
-    private List<UsuarioAcesso> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
-        return usuarioAcessoRepository.findAllUltimoAcessoUsuarios().stream()
-            .filter(usuario -> usuario.getDataCadastro().toLocalDate().isAfter(dataHoraInativarUsuario.toLocalDate())
-                && usuario.getDataCadastro().toLocalDate().isBefore(LocalDate.now().minusDays(TRINTA_E_DOIS_DIAS)))
-            .collect(Collectors.toList());
+    private List<Integer> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario) {
+        return usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(dataHoraInativarUsuario);
     }
 
     private void inativarColaboradorPol(Usuario usuario) {
-        if (Objects.nonNull(usuario.getEmail())) {
+        if (usuario.getEmail() != null) {
             inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
         } else {
             log.warn("Usuário " + usuario.getId() + " não possui um email cadastrado.");

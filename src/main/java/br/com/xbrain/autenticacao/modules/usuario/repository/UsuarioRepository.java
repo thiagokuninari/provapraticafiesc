@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
-        QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
+    QueryDslPredicateExecutor<Usuario>, UsuarioRepositoryCustom {
 
     Optional<Usuario> findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(String email, ESituacao situacao);
 
@@ -48,6 +48,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     List<Usuario> findBySituacaoAndIdIn(ESituacao situacao, List<Integer> ids);
 
+    List<Usuario> findByDataReativacaoNotNull();
+
     List<Usuario> findByIdIn(Collection<Integer> ids);
 
     List<Usuario> findAllByCargoAndDepartamento(Cargo cargoId, Departamento departamentoId);
@@ -60,7 +62,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
 
     @Modifying
     @Query("update Usuario u set u.senha = ?1, alterarSenha = ?2, recuperarSenhaHash = null, "
-            + "recuperarSenhaTentativa = 0 where u.id = ?3")
+        + "recuperarSenhaTentativa = 0 where u.id = ?3")
     void updateSenha(String senha, Eboolean alterarSenha, Integer usuarioId);
 
     @Modifying
@@ -82,6 +84,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Modifying
     @Query("update Usuario u set u.cargo = ?1 where u.id = ?2")
     void updateCargo(Cargo cargo, Integer usuarioId);
+
+    @Modifying
+    @Query("update Usuario u set u.dataReativacao = ?1 where u.id = ?2")
+    void updateDataReativacao(LocalDateTime dataReativacao, Integer usuarioId);
 
     @Modifying
     @Query("update Usuario u set u.situacao = ?1 where u.id = ?2")

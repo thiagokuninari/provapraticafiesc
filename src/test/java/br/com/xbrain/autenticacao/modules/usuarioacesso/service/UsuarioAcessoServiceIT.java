@@ -43,12 +43,15 @@ public class UsuarioAcessoServiceIT {
     private String emailUsuarioViabilidade;
 
     @Test
-    public void inativar_deveInativarUsuario_quandoUsuarioEstiverAptoInativar() {
+    public void inativarUsuariosSemAcesso_deveInativarUsuario_quandoUsuarioEstiver32DiasSemLogarESemPrazoCarencia() {
         var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM_INATIVACAO);
         Assertions.assertThat(usuariosInativados.longValue()).isEqualTo(4L);
 
         var usuarios = usuarioRepository.findBySituacaoAndIdIn(ESituacao.I, idsUsuariosParaTeste());
-        Assertions.assertThat(usuarios.size()).isEqualTo(4);
+        Assertions.assertThat(usuarios.size()).isEqualTo(2);
+
+        var usuariosComDataReativacaoNull = usuarioRepository.findByDataReativacaoNotNull();
+        Assertions.assertThat(usuariosComDataReativacaoNull.size()).isEqualTo(2);
 
         var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
 
@@ -59,7 +62,7 @@ public class UsuarioAcessoServiceIT {
             .map(id -> usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(id).orElse(new UsuarioHistorico()))
             .filter(u -> u.getSituacao() != null && u.getSituacao() == ESituacao.I)
             .count();
-        Assertions.assertThat(usuariosHistoricoInativos).isEqualTo(4L);
+        Assertions.assertThat(usuariosHistoricoInativos).isEqualTo(2L);
     }
 
     private List<Integer> idsUsuariosParaTeste() {

@@ -51,13 +51,11 @@ public class UsuarioRepositoryTest {
     }
 
     @Test
-    public void findAllUsuariosSemDataUltimoAcesso_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivo() {
-        assertThat(repository.findAllUsuariosSemDataUltimoAcesso(LocalDateTime.now().minusMonths(2)))
-            .extracting("id", "email")
-            .containsExactlyInAnyOrder(
-                tuple(100, "ADMIN@XBRAIN.COM.BR"),
-                tuple(103, "CARLOS@HOTMAIL.COM"),
-                tuple(104, "MARIA@HOTMAIL.COM"));
+    @SuppressWarnings("LineLength")
+    public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
+        assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias(LocalDateTime.now().minusMonths(2)))
+            .extracting("value")
+            .containsExactlyInAnyOrder(100, 104);
     }
 
     @Test
@@ -218,6 +216,14 @@ public class UsuarioRepositoryTest {
                 tuple(121, "VR 1"),
                 tuple(123, "VR 3")
             );
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
+        Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(LocalDateTime.now().minusMonths(2)))
+            .extracting("value")
+            .containsExactlyInAnyOrder(114, 115, 116);
     }
 
     @Test

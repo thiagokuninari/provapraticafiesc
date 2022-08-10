@@ -115,7 +115,6 @@ public class UsuarioService {
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
-
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
@@ -1011,6 +1010,7 @@ public class UsuarioService {
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto));
+                configurarDataReativacao(usuarioMqRequest);
                 removerPermissoesFeeder(usuarioMqRequest);
                 feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
@@ -1275,6 +1275,7 @@ public class UsuarioService {
     @Transactional
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
+        usuario.setDataReativacao(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
         usuario.adicionarHistorico(
@@ -2306,4 +2307,11 @@ public class UsuarioService {
         return repository.getUsuariosOperacaoCanalAa(codigoNivel).stream()
             .map(UsuarioResponse::of).collect(toList());
     }
+
+    private void configurarDataReativacao(UsuarioMqRequest usuarioMqRequest) {
+        if (usuarioMqRequest.getSituacao() == ESituacao.A) {
+            repository.updateDataReativacao(LocalDateTime.now(), usuarioMqRequest.getId());
+        }
+    }
+
 }
