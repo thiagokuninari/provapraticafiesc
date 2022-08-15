@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.util;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.importacaousuario.util.EmailUtil;
 import br.com.xbrain.xbrainutils.MoneyUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -12,6 +13,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Random;
+
+import static br.com.xbrain.autenticacao.modules.comum.enums.EErrors.ERRO_VALIDAR_EMAIL_CADASTRADO;
 
 public class StringUtil {
 
@@ -87,6 +90,9 @@ public class StringUtil {
     }
 
     public static String atualizarEmailInativo(String email) {
+        if (!EmailUtil.validarEmail(email)) {
+            throw new ValidacaoException(ERRO_VALIDAR_EMAIL_CADASTRADO.getDescricao());
+        }
         var emailSplit = email.split(ARROBA);
         return emailSplit[INDEX_ZERO].concat(INATIVO_ARROBA).concat(emailSplit[INDEX_UM]);
     }

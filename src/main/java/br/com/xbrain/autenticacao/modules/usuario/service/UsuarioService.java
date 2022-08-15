@@ -142,8 +142,6 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
-    private static final ValidacaoException SOCIO_NAO_INATIVADO_NO_POL =
-        new ValidacaoException("Não foi possível inativar o sócio no Parceiros Online.");
 
     @Autowired
     private UsuarioRepository repository;
@@ -1601,8 +1599,7 @@ public class UsuarioService {
         socio.setEmail(emailInativo);
         repository.save(socio);
 
-        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailInativo, idSocioPrincipal);
-        agenteAutorizadoService.atualizarEmailSocioInativo(emailAtual);
+        agenteAutorizadoService.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
@@ -1805,11 +1802,7 @@ public class UsuarioService {
 
     public void inativarAntigoSocioPrincipal(String email) {
         inativarSocioPrincipal(email);
-        try {
-            agenteAutorizadoClient.inativarAntigoSocioPrincipal(email);
-        } catch (Exception ex) {
-            throw SOCIO_NAO_INATIVADO_NO_POL;
-        }
+        agenteAutorizadoService.inativarAntigoSocioPrincipal(email);
     }
 
     public void inativarColaboradores(String cnpj) {

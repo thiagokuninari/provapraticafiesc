@@ -139,7 +139,10 @@ public enum EErrors {
         "#042 - Erro ao buscar usuários cadastrados em equipes."),
     ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
         "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-        "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario.");
+        "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
+    ERRO_VALIDAR_EMAIL_CADASTRADO(
+        "#045 - O e-mail cadastrado para o usuário está inválido.",
+            "#045 - O e-mail cadastrado para o usuário está inválido ou vazio.");
 
     @Getter
     @Setter

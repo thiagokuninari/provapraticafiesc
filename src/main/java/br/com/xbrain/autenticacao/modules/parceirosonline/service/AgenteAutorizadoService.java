@@ -28,6 +28,9 @@ public class AgenteAutorizadoService {
     private static final ValidacaoException EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
         new ValidacaoException("Não foi possível atualizar o e-mail do sócio no POL.");
 
+    private static final ValidacaoException SOCIO_NAO_INATIVADO_NO_POL =
+        new ValidacaoException("Não foi possível inativar o sócio no Parceiros Online.");
+
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
@@ -161,19 +164,19 @@ public class AgenteAutorizadoService {
         return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
     }
 
-    public void atualizarEmailSocioPrincipalInativo(String emailInativo, Integer idSocioPrincipal) {
+    public void atualizarEmailSocioPrincipalInativo(String emailAtual, String emailInativo, Integer idSocioPrincipal) {
         try {
-            agenteAutorizadoClient.atualizarEmailSocioPrincipalInativo(emailInativo, idSocioPrincipal);
+            agenteAutorizadoClient.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
         } catch (Exception ex) {
             throw EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL;
         }
     }
 
-    public void atualizarEmailSocioInativo(String emailAtual) {
+    public void inativarAntigoSocioPrincipal(String email) {
         try {
-            agenteAutorizadoClient.atualizarEmailSocioInativo(emailAtual);
+            agenteAutorizadoClient.inativarAntigoSocioPrincipal(email);
         } catch (Exception ex) {
-            throw EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL;
+            throw SOCIO_NAO_INATIVADO_NO_POL;
         }
     }
 }
