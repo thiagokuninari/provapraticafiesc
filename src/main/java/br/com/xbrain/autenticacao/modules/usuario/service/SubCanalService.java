@@ -23,7 +23,10 @@ public class SubCanalService {
     private UsuarioService usuarioService;
 
     public List<SubCanalDto> getAll() {
-        return SubCanalDto.of(repository.findAll());
+        return repository.findAll()
+            .stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toList());
     }
 
     public SubCanalDto getSubCanalById(Integer id) {

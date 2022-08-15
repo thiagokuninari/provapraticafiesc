@@ -2026,7 +2026,7 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioService.findByUsuarioId(1))
             .extracting("id", "nome", "nivel", "subCanais")
-            .containsExactly(1, "NOME UM", OPERACAO, List.of(umSubCanalDto(1, PAP, "PAP")));
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(1, PAP, "PAP")));
 
         verify(usuarioRepository, times(1)).findById(eq(1));
     }

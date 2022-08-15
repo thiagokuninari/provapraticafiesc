@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import org.junit.Test;
 
-import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP;
@@ -18,6 +18,6 @@ public class UsuarioSubCanalNivelResponseTest {
 
         assertThat(UsuarioSubCanalNivelResponse.of(usuario))
             .extracting("id", "nome", "nivel", "subCanais")
-            .containsExactly(100, "NED STARK", XBRAIN, List.of(umSubCanalDto(1, PAP, "PAP")));
+            .containsExactly(100, "NED STARK", XBRAIN, Set.of(umSubCanalDto(1, PAP, "PAP")));
     }
 }

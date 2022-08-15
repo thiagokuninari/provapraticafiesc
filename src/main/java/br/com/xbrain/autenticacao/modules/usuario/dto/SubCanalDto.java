@@ -3,11 +3,15 @@ package br.com.xbrain.autenticacao.modules.usuario.dto;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Builder
@@ -21,10 +25,11 @@ public class SubCanalDto implements Serializable {
     private String nome;
     private ESituacao situacao;
 
-    public static List<SubCanalDto> of(List<SubCanal> subcanais) {
-        return subcanais.stream()
-            .map(subcanal -> SubCanalDto.of(subcanal))
-            .collect(Collectors.toList());
+    public static Set<SubCanalDto> of(Collection<SubCanal> subcanais) {
+        return subcanais
+            .stream()
+            .map(SubCanalDto::of)
+            .collect(Collectors.toSet());
     }
 
     public static SubCanalDto of(SubCanal subcanal) {
