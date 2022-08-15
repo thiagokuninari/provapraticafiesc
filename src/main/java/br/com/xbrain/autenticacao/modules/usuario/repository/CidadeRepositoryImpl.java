@@ -57,14 +57,13 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
-    public List<Cidade> findAllByNovaRegionalId(Integer regionalId, Predicate predicate) {
+    public List<Cidade> findAllByNovaRegionalId(Integer regionalId) {
         return new JPAQueryFactory(entityManager)
             .selectFrom(cidade)
             .leftJoin(cidade.uf)
             .leftJoin(cidade.regional, regional)
             .where(regional.id.eq(regionalId)
-                .and(cidade.subCluster.isNotNull())
-                .and(predicate))
+                .and(cidade.subCluster.isNotNull()))
             .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();

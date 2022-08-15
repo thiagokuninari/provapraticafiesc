@@ -134,7 +134,7 @@ public class CidadeServiceTest {
     public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
+        when(cidadeRepository.findAllByNovaRegionalId(anyInt()))
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())

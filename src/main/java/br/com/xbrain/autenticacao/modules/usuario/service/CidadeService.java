@@ -42,7 +42,7 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
-            ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
+            ? cidadeRepository.findAllByNovaRegionalId(regionalId)
             : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
     }
 
