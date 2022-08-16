@@ -60,7 +60,7 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public void processaPermissoesEspeciaisCoordenadoresGerentes() {
+    public void processaPermissoesEspeciaisGerentesCoordenadores() {
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         var filtro = UsuarioFiltros.builder()
             .codigosCargos(List.of(AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_COORDENADOR))

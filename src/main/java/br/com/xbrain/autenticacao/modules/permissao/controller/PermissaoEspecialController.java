@@ -24,4 +24,9 @@ public class PermissaoEspecialController {
                                      @PathVariable("funcionalidadeId") Integer funcionalidadeId) {
         return service.remover(usuarioId, funcionalidadeId);
     }
+
+    @PostMapping("processa-permissoes-gerentes-coordenadores")
+    public void processaPermissoesEspeciaisGerentesCoordenadores(){
+        service.processaPermissoesEspeciaisGerentesCoordenadores();
+    }
 }
