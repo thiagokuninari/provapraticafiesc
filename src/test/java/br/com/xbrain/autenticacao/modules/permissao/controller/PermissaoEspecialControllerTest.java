@@ -67,17 +67,25 @@ public class PermissaoEspecialControllerTest {
         mvc.perform(put("/api/permissoes-especiais/remover/101/26")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dataBaixa", notNullValue()))
-                .andExpect(jsonPath("$.usuarioBaixa", notNullValue()));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.dataBaixa", notNullValue()))
+            .andExpect(jsonPath("$.usuarioBaixa", notNullValue()));
     }
 
     @SuppressWarnings("LineLength")
     @Test
     public void processaPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoNaoPassarAToken() throws Exception {
-        mvc.perform(get(URL)
+        mvc.perform(post(URL + "processa-permissoes-gerentes-coordenadores")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void processaPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_quandoSolicitar() throws Exception {
+        mvc.perform(post(URL + "/processa-permissoes-gerentes-coordenadores")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 
     private PermissaoEspecialRequest novasPermissoes() {
