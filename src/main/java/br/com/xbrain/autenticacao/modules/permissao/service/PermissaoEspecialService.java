@@ -61,7 +61,7 @@ public class PermissaoEspecialService {
     }
 
     public void processaPermissoesEspeciaisGerentesCoordenadores() {
-        var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
         var filtro = UsuarioFiltros.builder()
             .codigosCargos(List.of(AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_COORDENADOR))
             .departamentoId(DEPARTAMENTO_ID)
@@ -80,7 +80,7 @@ public class PermissaoEspecialService {
                         .funcionalidade(Funcionalidade.builder().id(id).build())
                         .usuario(new Usuario(ids.getId()))
                         .dataCadastro(localDateTime)
-                        .usuarioCadastro(usuarioLogado)
+                        .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
                         .build())
                     .collect(Collectors.toList()));
         });

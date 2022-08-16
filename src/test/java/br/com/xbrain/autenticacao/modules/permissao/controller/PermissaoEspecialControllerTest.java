@@ -72,6 +72,14 @@ public class PermissaoEspecialControllerTest {
                 .andExpect(jsonPath("$.usuarioBaixa", notNullValue()));
     }
 
+    @SuppressWarnings("LineLength")
+    @Test
+    public void processaPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoNaoPassarAToken() throws Exception {
+        mvc.perform(get(URL)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
     private PermissaoEspecialRequest novasPermissoes() {
         PermissaoEspecialRequest res = new PermissaoEspecialRequest();
         res.setUsuarioId(1);
