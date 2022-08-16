@@ -142,7 +142,14 @@ public enum EErrors {
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
     ERRO_VALIDAR_EMAIL_CADASTRADO(
         "#045 - O e-mail cadastrado para o usuário está inválido.",
-            "#045 - O e-mail cadastrado para o usuário está inválido ou vazio.");
+            "#045 - O e-mail cadastrado para o usuário está inválido ou vazio."),
+    ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL(
+        "#046 - Não foi possível atualizar o e-mail do sócio no POL.",
+        "#046 - Não foi possível atualizar o e-mail do sócio no POL."),
+    ERRO_SOCIO_NAO_INATIVADO_NO_POL(
+        "#047 - Não foi possível inativar o sócio no Parceiros Online.",
+        "#047 - Não foi possível inativar o sócio no Parceiros Online."
+    );
 
     @Getter
     @Setter

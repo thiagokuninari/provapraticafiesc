@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
-import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
@@ -24,12 +23,6 @@ import java.util.Map;
 
 @Service
 public class AgenteAutorizadoService {
-
-    private static final ValidacaoException EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL =
-        new ValidacaoException("Não foi possível atualizar o e-mail do sócio no POL.");
-
-    private static final ValidacaoException SOCIO_NAO_INATIVADO_NO_POL =
-        new ValidacaoException("Não foi possível inativar o sócio no Parceiros Online.");
 
     @Autowired
     private AgenteAutorizadoClient agenteAutorizadoClient;
@@ -167,16 +160,24 @@ public class AgenteAutorizadoService {
     public void atualizarEmailSocioPrincipalInativo(String emailAtual, String emailInativo, Integer idSocioPrincipal) {
         try {
             agenteAutorizadoClient.atualizarEmailSocioPrincipalInativo(emailAtual, emailInativo, idSocioPrincipal);
-        } catch (Exception ex) {
-            throw EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL;
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 
     public void inativarAntigoSocioPrincipal(String email) {
         try {
             agenteAutorizadoClient.inativarAntigoSocioPrincipal(email);
-        } catch (Exception ex) {
-            throw SOCIO_NAO_INATIVADO_NO_POL;
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
         }
     }
 }

@@ -8,7 +8,9 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
@@ -1998,7 +2000,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void inativarAntigoSocioPrincipal_deveRetornarValidacaoException_quandoSocioNaoInativadoNoPol() {
+    public void inativarAntigoSocioPrincipal_deveRetornarIntegracaoException_quandoSocioNaoInativadoNoPol() {
         var umSocioPrincipalInativado = umSocioPrincipal();
         umSocioPrincipalInativado.setSituacao(ESituacao.I);
 
@@ -2008,14 +2010,14 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(eq(23)))
             .thenReturn(Optional.of(umSocioPrincipal()));
 
-        doThrow(new ValidacaoException(SOCIO_NAO_INATIVADO_NO_POL))
+        doThrow(new IntegracaoException(EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL.getDescricao()))
             .when(agenteAutorizadoService)
             .inativarAntigoSocioPrincipal(eq("NOVOSOCIO@EMPRESA.COM.BR"));
 
         assertThatCode(() -> usuarioService
             .inativarAntigoSocioPrincipal("NOVOSOCIO@EMPRESA.COM.BR"))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage(SOCIO_NAO_INATIVADO_NO_POL);
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage(EErrors.ERRO_SOCIO_NAO_INATIVADO_NO_POL.getDescricao());
 
         verify(usuarioRepository, times(1)).findByEmail(eq("NOVOSOCIO@EMPRESA.COM.BR"));
         verify(usuarioRepository, times(1)).findById(eq(23));
@@ -2149,21 +2151,21 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void atualizarEmailSocioInativo_deveRetornarValidacaoException_quandoEmailSocioPrincipalNaoAtualizadoNoPol() {
+    public void atualizarEmailSocioInativo_deveRetornarIntegracaoException_quandoEmailSocioPrincipalNaoAtualizadoNoPol() {
         var umSocioPrincipalComEmailAtualizado = umSocioPrincipal();
         umSocioPrincipalComEmailAtualizado.setEmail("NOVOSOCIO.INATIVO@EMPRESA.COM.BR");
 
         when(usuarioRepository.findById(eq(23))).thenReturn(Optional.of(umSocioPrincipal()));
         when(usuarioRepository.save(eq(umSocioPrincipalComEmailAtualizado))).thenReturn(umSocioPrincipalComEmailAtualizado);
 
-        doThrow(new ValidacaoException(EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL))
+        doThrow(new IntegracaoException(EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL.getDescricao()))
             .when(agenteAutorizadoService)
             .atualizarEmailSocioPrincipalInativo(eq("NOVOSOCIO@EMPRESA.COM.BR"), eq("NOVOSOCIO.INATIVO@EMPRESA.COM.BR"), eq(23));
 
         assertThatCode(() -> usuarioService
             .atualizarEmailSocioInativo(23))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage(EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL);
+            .isInstanceOf(IntegracaoException.class)
+            .hasMessage(EErrors.ERRO_EMAIL_SOCIO_NAO_ATUALIZADO_NO_POL.getDescricao());
 
         verify(usuarioRepository, times(1))
             .findById(eq(23));
