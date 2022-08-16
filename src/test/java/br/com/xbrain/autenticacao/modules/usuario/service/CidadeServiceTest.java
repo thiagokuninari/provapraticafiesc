@@ -101,7 +101,7 @@ public class CidadeServiceTest {
 
     @Test
     public void getAllCidadeByRegionalAndUf_deveRetornarCidades_quandoExistir() {
-        when(cidadeRepository.findByRegionalIdAndUfId(anyInt(), anyInt()))
+        when(cidadeRepository.findAllByRegionalIdAndUfId(anyInt(), anyInt(), any(Predicate.class)))
             .thenReturn(List.of(Cidade.builder().id(5578).nome("LONDRINA")
                 .uf(Uf.builder().id(1).nome("PARANA").build())
                 .regional(Regional.builder().id(1027).nome("RPS").build()).build()));
@@ -134,7 +134,7 @@ public class CidadeServiceTest {
     public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt()))
+        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())

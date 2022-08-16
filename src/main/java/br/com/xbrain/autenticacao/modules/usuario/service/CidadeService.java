@@ -42,13 +42,23 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
         return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
-            ? cidadeRepository.findAllByNovaRegionalId(regionalId)
+            ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
             : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
     }
 
-    public List<UsuarioCidadeDto> getCidadesByRegionalAndUf(Integer regionalId, Integer ufId) {
+    public List<UsuarioCidadeDto> getAllByRegionalIdAndUfId(Integer regionalId, Integer ufId) {
         return UsuarioCidadeDto.of(
-            cidadeRepository.findByRegionalIdAndUfId(regionalId, ufId));
+            cidadeRepository.findAllByRegionalIdAndUfId(regionalId, ufId, predicateCidadesPermitidas.get()));
+    }
+
+    public List<UsuarioCidadeDto> getCidadesByRegionalReprocessamento(Integer regionalId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllByNovaRegionalId(regionalId, new CidadePredicate().build()));
+    }
+
+    public List<UsuarioCidadeDto> getCidadesByRegionalAndUfReprocessamento(Integer regionalId, Integer ufId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllByRegionalIdAndUfId(regionalId, ufId, new CidadePredicate().build()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
@@ -83,7 +93,7 @@ public class CidadeService {
     }
 
     public List<Cidade> getAllCidadeByRegionalAndUf(Integer idRegional, Integer idUf) {
-        return cidadeRepository.findByRegionalIdAndUfId(idRegional, idUf);
+        return cidadeRepository.findAllByRegionalIdAndUfId(idRegional, idUf, new CidadePredicate().build());
     }
 
     public List<Cidade> getAllBySubCluster(Integer idSubCluster) {

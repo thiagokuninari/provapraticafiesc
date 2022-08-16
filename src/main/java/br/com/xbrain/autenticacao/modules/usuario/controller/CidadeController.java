@@ -56,7 +56,7 @@ public class CidadeController {
     @GetMapping("regional/{regionalId}/uf/{ufId}")
     public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
                                                          @PathVariable Integer ufId) {
-        return service.getCidadesByRegionalAndUf(regionalId, ufId);
+        return service.getAllByRegionalIdAndUfId(regionalId, ufId);
     }
 
     @GetMapping("grupo/{grupoId}")
@@ -107,6 +107,17 @@ public class CidadeController {
     @GetMapping("por-estados")
     public List<SelectResponse> buscarCidadesPorEstados(@RequestParam List<Integer> estadosIds) {
         return service.buscarCidadesPorEstadosIds(estadosIds);
+    }
+
+    @GetMapping("reprocessamento-regional")
+    public List<UsuarioCidadeDto> buscarCidadesPorRegionalParaReprocessamento(@RequestParam Integer regionalId) {
+        return service.getCidadesByRegionalReprocessamento(regionalId);
+    }
+
+    @GetMapping("reprocessamento-uf")
+    public List<UsuarioCidadeDto> buscarCidadesPorRegionalAndUfParaReprocessamento(@RequestParam Integer regionalId,
+                                                                                   @RequestParam Integer ufId) {
+        return service.getCidadesByRegionalAndUfReprocessamento(regionalId, ufId);
     }
 
     @GetMapping("cidade-dbm/{codigoCidadeDbm}")

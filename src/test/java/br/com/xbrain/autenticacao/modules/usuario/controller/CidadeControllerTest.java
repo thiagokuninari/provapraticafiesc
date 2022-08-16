@@ -232,6 +232,25 @@ public class CidadeControllerTest {
             .andExpect(jsonPath("$").doesNotExist());
     }
 
+    @Test
+    public void getCidadesByRegionalReprocessamento_deveRetornar200() throws Exception {
+        mvc.perform(get("/api/cidades/reprocessamento-regional")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("regionalId", "1027")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getCidadesByRegionalAndUfReprocessamento_deveRetornar200() throws Exception {
+        mvc.perform(get("/api/cidades/reprocessamento-uf")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .param("regionalId", "1027")
+            .param("ufId", "1")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
     private Cidade umaCidade() {
         return Cidade.builder()
             .id(5578)

@@ -16,7 +16,7 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> findAllByRegionalId(Integer regionalId, Predicate predicate);
 
-    List<Cidade> findAllByNovaRegionalId(Integer regionalId);
+    List<Cidade> findAllByNovaRegionalId(Integer regionalId, Predicate predicate);
 
     List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate);
 
@@ -38,5 +38,5 @@ public interface CidadeRepositoryCustom {
 
     Optional<Cidade> findFirstByPredicate(Predicate predicate);
 
-    List<Cidade> findByRegionalIdAndUfId(Integer regionalId, Integer ufId);
+    List<Cidade> findAllByRegionalIdAndUfId(Integer regionalId, Integer ufId, Predicate predicate);
 }
