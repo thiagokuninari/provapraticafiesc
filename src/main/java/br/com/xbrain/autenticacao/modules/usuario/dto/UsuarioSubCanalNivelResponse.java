@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -18,15 +17,12 @@ public class UsuarioSubCanalNivelResponse {
     private Set<SubCanalDto> subCanais;
 
     public static UsuarioSubCanalNivelResponse of(Usuario usuario) {
-        var subCanais = usuario.getSubCanais()
-            .stream()
-            .collect(Collectors.toList());
 
         return UsuarioSubCanalNivelResponse.builder()
             .id(usuario.getId())
             .nome(usuario.getNome())
             .nivel(usuario.getNivelCodigo())
-            .subCanais(SubCanalDto.of(subCanais))
+            .subCanais(SubCanalDto.of(usuario.getSubCanais()))
             .build();
     }
 }
