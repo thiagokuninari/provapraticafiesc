@@ -26,7 +26,7 @@ public class PermissaoEspecialController {
     }
 
     @PostMapping("processa-permissoes-gerentes-coordenadores")
-    public void processaPermissoesEspeciaisGerentesCoordenadores(){
+    public void processaPermissoesEspeciaisGerentesCoordenadores() {
         service.processaPermissoesEspeciaisGerentesCoordenadores();
     }
 }
