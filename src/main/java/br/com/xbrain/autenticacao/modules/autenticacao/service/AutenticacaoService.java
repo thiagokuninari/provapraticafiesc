@@ -185,15 +185,18 @@ public class AutenticacaoService {
     }
 
     public boolean somenteUmLoginPorUsuario(String login) {
-        return !isUsuarioGeradorLeads(login)
+        return !isUsuarioPermitidoMultiplosAcessos(login)
             && emailsPermitidosComMultiplosLogins
                 .stream()
                 .noneMatch(loginPermitido -> loginPermitido.equalsIgnoreCase(login.split(Pattern.quote("-"))[1]));
     }
 
-    private boolean isUsuarioGeradorLeads(String login) {
+    private boolean isUsuarioPermitidoMultiplosAcessos(String login) {
         return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
-            .map(usuario -> usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS))
+            .map(usuario ->
+                usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS)
+                ? Boolean.TRUE
+                : usuario.getCargoCodigo().equals(CodigoCargo.CLIENTE_LOJA_FUTURO))
             .orElse(Boolean.FALSE);
     }
 
