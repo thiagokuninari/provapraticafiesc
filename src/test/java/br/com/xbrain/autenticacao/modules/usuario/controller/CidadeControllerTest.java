@@ -238,7 +238,11 @@ public class CidadeControllerTest {
             .header("Authorization", getAccessToken(mvc, ADMIN))
             .param("regionalId", "1027")
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].nomeCidade", is("ARAPONGAS")))
+            .andExpect(jsonPath("$[1].nomeCidade", is("CHAPECO")))
+            .andExpect(jsonPath("$[2].nomeCidade", is("LONDRINA")));
     }
 
     @Test
@@ -248,7 +252,10 @@ public class CidadeControllerTest {
             .param("regionalId", "1027")
             .param("ufId", "1")
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].nomeCidade", is("ARAPONGAS")))
+            .andExpect(jsonPath("$[1].nomeCidade", is("LONDRINA")));
     }
 
     private Cidade umaCidade() {
