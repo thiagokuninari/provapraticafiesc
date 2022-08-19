@@ -575,4 +575,9 @@ public class Usuario {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
+
+    public boolean isGeradorLeadsOuClienteLojaFuturo() {
+        return getCargoCodigo().equals(GERADOR_LEADS)
+            || getCargoCodigo().equals(CLIENTE_LOJA_FUTURO);
+    }
 }

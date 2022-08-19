@@ -10,10 +10,8 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -199,6 +197,18 @@ public class UsuarioTest {
     @Test
     public void isNivelOperacao_deveRetornarTrue_seUsuarioNaoPossuirCargoEForNivelOperacao() {
         assertThat(usuarioAtivo(null, OPERACAO).isNivelOperacao())
+            .isTrue();
+    }
+
+    @Test
+    public void isGeradorLeadsOuClienteLojaFuturo_deveRetornarTrue_seUsuarioGeradorLeadsOuLojaFuturo() {
+        assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_VENDEDOR_D2D).isGeradorLeadsOuClienteLojaFuturo())
+            .isFalse();
+
+        assertThat(umUsuarioComCargo(CodigoCargo.GERADOR_LEADS).isGeradorLeadsOuClienteLojaFuturo())
+            .isTrue();
+
+        assertThat(umUsuarioComCargo(CLIENTE_LOJA_FUTURO).isGeradorLeadsOuClienteLojaFuturo())
             .isTrue();
     }
 

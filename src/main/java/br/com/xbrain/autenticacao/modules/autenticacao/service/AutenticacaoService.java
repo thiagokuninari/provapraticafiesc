@@ -193,10 +193,7 @@ public class AutenticacaoService {
 
     private boolean isUsuarioPermitidoMultiplosAcessos(String login) {
         return usuarioRepository.findComplete(Integer.valueOf(login.split(Pattern.quote("-"))[0]))
-            .map(usuario ->
-                usuario.getCargoCodigo().equals(CodigoCargo.GERADOR_LEADS)
-                ? Boolean.TRUE
-                : usuario.getCargoCodigo().equals(CodigoCargo.CLIENTE_LOJA_FUTURO))
+            .map(Usuario::isGeradorLeadsOuClienteLojaFuturo)
             .orElse(Boolean.FALSE);
     }
 
