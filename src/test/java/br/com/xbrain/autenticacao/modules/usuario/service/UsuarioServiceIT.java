@@ -1574,13 +1574,6 @@ public class UsuarioServiceIT {
             .build();
     }
 
-    public UsuarioLojaFuturoMqRequest umUsuarioLojaFuturoMqRequestExistente() {
-        return UsuarioLojaFuturoMqRequest.builder()
-            .id(1)
-            .email("LUISFLORIDO@XBRAIN2.COM.BR")
-            .build();
-    }
-
     public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
         return UsuarioMqRequest.builder()
             .agenteAutorizadoId(10)
