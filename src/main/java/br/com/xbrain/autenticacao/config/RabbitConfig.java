@@ -34,6 +34,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-atualizacao}")
     private String usuarioAtualizacaoMq;
 
+    @Value("${app-config.queue.usuario-atualizacao-lojafuturo}")
+    private String usuarioLojaFuturoAtualizacaoMq;
+
     @Value("${app-config.queue.usuario-atualizacao-failure}")
     private String usuarioAtualizacaoFailureMq;
 
@@ -186,6 +189,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAtualizacaoMq() {
         return new Queue(usuarioAtualizacaoMq, false);
+    }
+
+    @Bean
+    Queue usuarioLojaFuturoAtualizacaoMq() {
+        return new Queue(usuarioLojaFuturoAtualizacaoMq, false);
     }
 
     @Bean
@@ -371,6 +379,11 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAtualizcaoBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAtualizacaoMq()).to(exchange).with(usuarioAtualizacaoMq);
+    }
+
+    @Bean
+    public Binding usuarioLojaFuturoAtualizcaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLojaFuturoAtualizacaoMq()).to(exchange).with(usuarioLojaFuturoAtualizacaoMq);
     }
 
     @Bean
