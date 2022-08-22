@@ -148,6 +148,15 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void updateUsuarioLojaFuturoFromQueue_deveAtualizarEmail_quandoSolicitado() {
+        doReturn(umUsuarioClienteLojaFuturo()).when(service).findComplete(1);
+        service.updateUsuarioLojaFuturoFromQueue(umUsuarioLojaFuturoMqRequest());
+
+        assertThat(service.findComplete(1)).extracting(Usuario::getEmail)
+            .isEqualTo("UMNOVOEMAILLOJAFUTURO@TEST.COM");
+    }
+
+    @Test
     public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setCpf("2292929292929292929229292929");
@@ -1334,6 +1343,12 @@ public class UsuarioServiceIT {
         return usuario;
     }
 
+    private Usuario umUsuarioClienteLojaFuturo() {
+        var usuario = usuarioRepository.findOne(227);
+        usuario.setCargo(cargoRepository.findByCodigo(CLIENTE_LOJA_FUTURO));
+        return usuario;
+    }
+
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.SUPERVISOR_OPERACAO));
@@ -1549,6 +1564,20 @@ public class UsuarioServiceIT {
             .isCadastroSocioPrincipal(false)
             .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
+    }
+
+    public UsuarioLojaFuturoMqRequest umUsuarioLojaFuturoMqRequest() {
+        return UsuarioLojaFuturoMqRequest.builder()
+            .id(1)
+            .email("UMNOVOEMAILLOJAFUTURO@TEST.COM")
+            .build();
+    }
+
+    public UsuarioLojaFuturoMqRequest umUsuarioLojaFuturoMqRequestExistente() {
+        return UsuarioLojaFuturoMqRequest.builder()
+            .id(1)
+            .email("LUISFLORIDO@XBRAIN2.COM.BR")
             .build();
     }
 
