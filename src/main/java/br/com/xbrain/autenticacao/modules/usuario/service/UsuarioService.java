@@ -1029,10 +1029,9 @@ public class UsuarioService {
     @Transactional
     public void updateUsuarioLojaFuturoFromQueue(UsuarioLojaFuturoMqRequest usuarioLojaFuturoMqRequest) {
         try {
-            validarEmailExistente(usuarioLojaFuturoMqRequest.getId(), usuarioLojaFuturoMqRequest.getEmail());
+            validarEmailCadastrado(usuarioLojaFuturoMqRequest.getEmail(), usuarioLojaFuturoMqRequest.getId());
             var usuario = findComplete(usuarioLojaFuturoMqRequest.getId());
             usuario.setEmail(usuarioLojaFuturoMqRequest.getEmail());
-            repository.save(usuario);
         } catch (Exception ex) {
             log.error("erro ao atualizar usuário da fila.", ex);
         }
@@ -1289,17 +1288,6 @@ public class UsuarioService {
             .ifPresent(u -> {
                 if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
-                    throw new ValidacaoException("Email já cadastrado.");
-                }
-            });
-    }
-
-    private void validarEmailExistente(Integer usuarioId, String emailNovo) {
-        repository
-            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(emailNovo, ESituacao.R)
-            .ifPresent(u -> {
-                if (isEmpty(usuarioId)
-                    || !usuarioId.equals(u.getId())) {
                     throw new ValidacaoException("Email já cadastrado.");
                 }
             });

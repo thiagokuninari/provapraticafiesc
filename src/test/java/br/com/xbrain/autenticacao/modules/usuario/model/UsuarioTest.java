@@ -201,7 +201,7 @@ public class UsuarioTest {
     }
 
     @Test
-    public void isGeradorLeadsOuClienteLojaFuturo_deveRetornarTrue_seUsuarioGeradorLeadsOuLojaFuturo() {
+    public void isGeradorLeadsOuClienteLojaFuturo_deveRetornarBoolean_seUsuarioGeradorLeadsOuLojaFuturo() {
         assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_VENDEDOR_D2D).isGeradorLeadsOuClienteLojaFuturo())
             .isFalse();
 

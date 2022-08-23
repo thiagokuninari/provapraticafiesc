@@ -382,7 +382,7 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding usuarioLojaFuturoAtualizcaoBinding(TopicExchange exchange) {
+    public Binding usuarioLojaFuturoAtualizacaoBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioLojaFuturoAtualizacaoMq()).to(exchange).with(usuarioLojaFuturoAtualizacaoMq);
     }
 

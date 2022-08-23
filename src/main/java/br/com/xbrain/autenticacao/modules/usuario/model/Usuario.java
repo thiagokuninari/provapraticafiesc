@@ -577,7 +577,7 @@ public class Usuario {
     }
 
     public boolean isGeradorLeadsOuClienteLojaFuturo() {
-        return getCargoCodigo().equals(GERADOR_LEADS)
-            || getCargoCodigo().equals(CLIENTE_LOJA_FUTURO);
+        return getCargoCodigo() == GERADOR_LEADS
+            || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
     }
 }
