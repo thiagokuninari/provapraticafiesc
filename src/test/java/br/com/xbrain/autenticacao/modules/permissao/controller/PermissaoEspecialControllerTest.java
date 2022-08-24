@@ -74,15 +74,15 @@ public class PermissaoEspecialControllerTest {
 
     @SuppressWarnings("LineLength")
     @Test
-    public void processaPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoNaoPassarAToken() throws Exception {
-        mvc.perform(post(URL + "processa-permissoes-gerentes-coordenadores")
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoNaoPassarAToken() throws Exception {
+        mvc.perform(post(URL + "processar-permissoes-gerentes-coordenadores")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void processaPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_quandoSolicitar() throws Exception {
-        mvc.perform(post(URL + "/processa-permissoes-gerentes-coordenadores")
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_quandoSolicitar() throws Exception {
+        mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());

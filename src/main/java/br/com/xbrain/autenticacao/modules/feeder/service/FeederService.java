@@ -1,11 +1,13 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
+import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -35,6 +37,9 @@ public class FeederService {
     private static final ValidacaoException EX_USUARIO_NAO_FEEDER =
         new ValidacaoException("Usuário não Feeder.");
     private static final String EMAIL_INATIVO = "INATIVO_";
+    private static final Integer DESCARTAR_LEAD = 15012;
+    private static final Integer AGENDAR_LEAD = 15005;
+    private static final Integer VISUALIZAR_LEAD = 15000;
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
@@ -42,6 +47,8 @@ public class FeederService {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
 
     @Transactional
     public void atualizarPermissaoFeeder(AgenteAutorizadoPermissaoFeederDto agenteAutorizadoPermissaoFeederDto) {
@@ -202,5 +209,25 @@ public class FeederService {
 
     private boolean isBackOffice(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
+    }
+
+    public void salvarPermissoesEspeciaisCoordenadoresGestores(List<Integer> usuariosIds, int usuarioLogado) {
+        var localDateTime = LocalDateTime.now();
+        var request = new PermissaoEspecialRequest();
+        request.setFuncionalidadesIds(List.of(DESCARTAR_LEAD, AGENDAR_LEAD, VISUALIZAR_LEAD));
+        usuariosIds.forEach(ids -> {
+                permissaoEspecialRepository.save(
+                    request.getFuncionalidadesIds()
+                        .stream()
+                        .map(id -> PermissaoEspecial
+                            .builder()
+                            .funcionalidade(Funcionalidade.builder().id(id).build())
+                            .usuario(new Usuario(ids))
+                            .dataCadastro(localDateTime)
+                            .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
+                            .build())
+                        .collect(Collectors.toList()));
+            }
+        );
     }
 }

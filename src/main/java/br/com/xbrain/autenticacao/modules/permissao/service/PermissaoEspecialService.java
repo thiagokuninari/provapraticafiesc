@@ -1,13 +1,18 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,8 +28,6 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENT
 public class PermissaoEspecialService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Permissão Especial não encontrada.");
-    private static final Integer DESCARTAR_LEAD = 15012;
-    private static final Integer AGENDAR_LEAD = 15005;
     private static final Integer DEPARTAMENTO_ID = 40;
 
     @Autowired
@@ -33,9 +36,15 @@ public class PermissaoEspecialService {
     private AutenticacaoService autenticacaoService;
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private FeederService feederService;
+    @Autowired
+    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public void save(PermissaoEspecialRequest request) {
-        Usuario usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
 
         repository.save(
             request.getFuncionalidadesIds()
@@ -60,29 +69,36 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public void processaPermissoesEspeciaisGerentesCoordenadores() {
-        var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
+    public void processarPermissoesEspeciaisGerentesCoordenadores() {
+        if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
+            var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
+            var usuariosFeeder = buscaGerentesCoordenadoresFeeder();
+            feederService.salvarPermissoesEspeciaisCoordenadoresGestores(usuariosFeeder, usuarioLogado);
+        }
+    }
+
+    private List<Integer> buscaGerentesCoordenadoresFeeder() {
         var filtro = UsuarioFiltros.builder()
             .codigosCargos(List.of(AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_COORDENADOR))
             .departamentoId(DEPARTAMENTO_ID)
+            .situacoes(List.of(ESituacao.A))
             .build();
         var usuarioIds = usuarioService.getAllByPredicate(filtro);
-        var request = new PermissaoEspecialRequest();
-        var localDateTime = LocalDateTime.now();
+        var ids = usuarioIds
+            .stream()
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
+        return agenteAutorizadoNovoService.buscarAasFeederPorUsuario(ids);
+    }
 
-        request.setFuncionalidadesIds(List.of(DESCARTAR_LEAD, AGENDAR_LEAD));
-        usuarioIds.forEach(ids -> {
-            repository.save(
-                request.getFuncionalidadesIds()
-                    .stream()
-                    .map(id -> PermissaoEspecial
-                        .builder()
-                        .funcionalidade(Funcionalidade.builder().id(id).build())
-                        .usuario(new Usuario(ids.getId()))
-                        .dataCadastro(localDateTime)
-                        .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
-                        .build())
-                    .collect(Collectors.toList()));
-        });
+    private List<Integer> filtraAasCargos(List<Integer> aasIds) {
+        var usuarioPredicate = new UsuarioPredicate()
+            .comCargo(List.of(45, 47))
+            .comIds(aasIds);
+
+        var usuarioList = usuarioRepository.getUsuariosFilter(usuarioPredicate.build());
+        return usuarioList.stream()
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 }

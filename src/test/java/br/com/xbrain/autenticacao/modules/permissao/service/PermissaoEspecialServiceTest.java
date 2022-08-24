@@ -39,7 +39,7 @@ public class PermissaoEspecialServiceTest {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuario());
         when(usuarioService.getAllByPredicate(umFiltro())).thenReturn(umaListaUsuario());
 
-        service.processaPermissoesEspeciaisGerentesCoordenadores();
+        service.processarPermissoesEspeciaisGerentesCoordenadores();
 
         verify(autenticacaoService, times(1)).getUsuarioAutenticado();
         verify(usuarioService, times(1)).getAllByPredicate(umFiltro());
