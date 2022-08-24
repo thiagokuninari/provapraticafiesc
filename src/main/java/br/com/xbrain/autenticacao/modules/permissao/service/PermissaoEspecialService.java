@@ -11,8 +11,6 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,8 +38,6 @@ public class PermissaoEspecialService {
     private FeederService feederService;
     @Autowired
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
@@ -89,16 +85,5 @@ public class PermissaoEspecialService {
             .map(Usuario::getId)
             .collect(Collectors.toList());
         return agenteAutorizadoNovoService.buscarAasFeederPorUsuario(ids);
-    }
-
-    private List<Integer> filtraAasCargos(List<Integer> aasIds) {
-        var usuarioPredicate = new UsuarioPredicate()
-            .comCargo(List.of(45, 47))
-            .comIds(aasIds);
-
-        var usuarioList = usuarioRepository.getUsuariosFilter(usuarioPredicate.build());
-        return usuarioList.stream()
-            .map(Usuario::getId)
-            .collect(Collectors.toList());
     }
 }
