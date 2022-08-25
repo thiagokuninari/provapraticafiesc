@@ -3,8 +3,9 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.model;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ENivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,23 +18,23 @@ public class OrganizacaoEmpresaTest {
 
     @Test
     public void of_deveRetornarObjetoCorreto_quandoRecebeOrganizacaoEmpresa() {
-        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, NivelEmpresa.builder().id(1).build(),
+        assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build(),
             List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas())))
-            .extracting("razaoSocial", "cnpj", "nivelEmpresa", "modalidadesEmpresa", "situacao")
-            .containsExactly("Organizacao 1", "08112392000192", umNivelEmpresa(), List.of(umaModalidadeEmpresaPap(),
+            .extracting("razaoSocial", "cnpj", "nivel", "modalidadesEmpresa", "situacao")
+            .containsExactly("Organizacao 1", "08112392000192", umNivel(), List.of(umaModalidadeEmpresaPap(),
                 umaModalidadeEmpresaTelevendas()), ESituacaoOrganizacaoEmpresa.A);
     }
 
     @Test
-    public void getNivelEmpresaIdNome_deveRetornarVazio_quandoNivelEmpresaNull() {
-        assertThat(umaOrganizacaoEmpresa().getNivelEmpresaIdNome()).isEmpty();
+    public void getNivelIdNome_deveRetornarVazio_quandoNivelNull() {
+        assertThat(umaOrganizacaoEmpresa().getNivelIdNome()).isEmpty();
     }
 
     @Test
-    public void getNivelEmpresaIdNome_deveRetornarIdENome_quandoNivelEmpresaNotNull() {
-        assertThat(umaOutraOrganizacaoEmpresa().getNivelEmpresaIdNome())
+    public void getNivelIdNome_deveRetornarIdENome_quandoNivelNotNull() {
+        assertThat(umaOutraOrganizacaoEmpresa().getNivelIdNome())
             .isPresent()
-            .hasValue(SelectResponse.of(1, ENivelEmpresa.VAREJO.name()));
+            .hasValue(SelectResponse.of(1, CodigoNivel.VAREJO.name()));
     }
 
     @Test
@@ -72,7 +73,7 @@ public class OrganizacaoEmpresaTest {
         return OrganizacaoEmpresaRequest.builder()
             .razaoSocial("Organizacao 1")
             .cnpj("08112392000192")
-            .nivelEmpresaId(1)
+            .nivelId(1)
             .modalidadesEmpresaIds(List.of(1, 2))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -83,7 +84,7 @@ public class OrganizacaoEmpresaTest {
             .razaoSocial("Organizacao 1")
             .cnpj("08112392000192")
             .modalidadesEmpresa(null)
-            .nivelEmpresa(null)
+            .nivel(null)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
     }
@@ -92,9 +93,9 @@ public class OrganizacaoEmpresaTest {
         return OrganizacaoEmpresa.builder()
             .razaoSocial("Organizacao 1")
             .cnpj("08112392000192")
-            .nivelEmpresa(NivelEmpresa.builder()
+            .nivel(Nivel.builder()
                 .id(1)
-                .nivelEmpresa(ENivelEmpresa.VAREJO)
+                .codigo(CodigoNivel.VAREJO)
                 .build())
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
@@ -115,10 +116,10 @@ public class OrganizacaoEmpresaTest {
         return modalidadeEmpresa;
     }
 
-    public static NivelEmpresa umNivelEmpresa() {
-        var nivelEmpresa = new NivelEmpresa();
-        nivelEmpresa.setId(1);
-        nivelEmpresa.setNivelEmpresa(null);
-        return nivelEmpresa;
+    public static Nivel umNivel() {
+        var nivel = new Nivel();
+        nivel.setId(1);
+        nivel.setCodigo(null);
+        return nivel;
     }
 }

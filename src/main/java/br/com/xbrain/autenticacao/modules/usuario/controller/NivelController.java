@@ -32,4 +32,9 @@ public class NivelController {
     public List<Nivel> getNiveisParaComunicados() {
         return service.getPermitidosParaComunicados();
     }
+
+    @GetMapping("organizacao")
+    public List<Nivel> getNivelParaOrganizacao() {
+        return service.getPermitidosParaOrganizacao();
+    }
 }

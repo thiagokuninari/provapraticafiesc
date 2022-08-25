@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
 import org.springframework.util.CollectionUtils;
@@ -14,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 
 @Data
 @Entity
@@ -35,10 +38,10 @@ public class OrganizacaoEmpresa {
     @Column(name = "CNPJ", nullable = false)
     private String cnpj;
 
-    @JoinColumn(name = "FK_NIVEL_EMPRESA", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "FK_NIVEL_ORGANIZACAO_EMPRESA"))
+    @JoinColumn(name = "FK_NIVEL", referencedColumnName = "ID",
+        foreignKey = @ForeignKey(name = "FK_NIVEL_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
-    private NivelEmpresa nivelEmpresa;
+    private Nivel nivel;
 
     @ManyToMany
     @JoinTable(name = "ORGANIZACAO_MODALIDADE_EMPRESA", joinColumns = {
@@ -60,12 +63,12 @@ public class OrganizacaoEmpresa {
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuarioCadastro;
 
-    public static OrganizacaoEmpresa of(OrganizacaoEmpresaRequest request, Integer usuarioId, NivelEmpresa nivelEmpresa,
+    public static OrganizacaoEmpresa of(OrganizacaoEmpresaRequest request, Integer usuarioId, Nivel nivel,
                                         List<ModalidadeEmpresa> modalidadesEmpresa) {
         return OrganizacaoEmpresa.builder()
             .razaoSocial(request.getRazaoSocial())
             .cnpj(request.getCnpjSemMascara())
-            .nivelEmpresa(nivelEmpresa)
+            .nivel(nivel)
             .modalidadesEmpresa(modalidadesEmpresa)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.now())
@@ -73,11 +76,11 @@ public class OrganizacaoEmpresa {
             .build();
     }
 
-    public void of(OrganizacaoEmpresaRequest request, List<ModalidadeEmpresa> modalidades, NivelEmpresa nivel) {
+    public void of(OrganizacaoEmpresaRequest request, List<ModalidadeEmpresa> modalidades, Nivel nivel) {
         this.cnpj = request.getCnpjSemMascara();
         this.razaoSocial = request.getRazaoSocial();
         this.modalidadesEmpresa = modalidades;
-        this.nivelEmpresa = nivel;
+        this.nivel = nivel;
     }
 
     public void inativar() {
@@ -88,9 +91,9 @@ public class OrganizacaoEmpresa {
         situacao = ESituacaoOrganizacaoEmpresa.A;
     }
 
-    public Optional<SelectResponse> getNivelEmpresaIdNome() {
-        return Optional.ofNullable(nivelEmpresa)
-            .map(nivel -> new SelectResponse(nivel.getId(), nivel.getNivelEmpresa().name()));
+    public Optional<SelectResponse> getNivelIdNome() {
+        return Optional.ofNullable(nivel)
+            .map(nivel -> new SelectResponse(nivel.getId(), nivel.getCodigo().name()));
     }
 
     public List<SelectResponse> getModalidadesEmpresaIdNome() {
@@ -109,5 +112,9 @@ public class OrganizacaoEmpresa {
 
     public String formataCnpj() {
         return CnpjUtil.formataCnpj(cnpj);
+    }
+
+    public OrganizacaoEmpresa(Integer id) {
+        this.id = id;
     }
 }

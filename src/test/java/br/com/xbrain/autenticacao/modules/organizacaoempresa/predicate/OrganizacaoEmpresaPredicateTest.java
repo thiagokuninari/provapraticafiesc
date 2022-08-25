@@ -84,20 +84,20 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comNivelEmpresa_organizacaoEmpresaPredicate_quandoNivelEmpresaNull() {
+    public void comNivel_organizacaoEmpresaPredicate_quandoNivelNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comNivelEmpresa(null)
+            .comNivel(null)
             .build();
         var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 
     @Test
-    public void comNivelEmpresa_organizacaoEmpresaPredicate_quandoNivelEmpresaNaoNull() {
+    public void comNivel_organizacaoEmpresaPredicate_quandoNiveNaoNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comNivelEmpresa(1)
+            .comNivel(1)
             .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.nivelEmpresa.id.eq(1));
+        var expected = new BooleanBuilder(organizacaoEmpresa.nivel.id.eq(1));
         assertThat(predicate).isEqualTo(expected);
     }
 

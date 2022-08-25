@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -217,6 +218,11 @@ public class Usuario {
         foreignKey = @ForeignKey(name = "FK_USUARIO_ORGANIZACAO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizacao organizacao;
+
+    @JoinColumn(name = "FK_ORGANIZACAO_EMPRESA", referencedColumnName = "ID",
+        foreignKey = @ForeignKey(name = "FK_USUARIO_ORG_EMPRESA"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    private OrganizacaoEmpresa organizacaoEmpresa;
 
     @Column(name = "URL_LOJA_BASE", length = 200)
     private String urlLojaBase;
@@ -580,5 +586,17 @@ public class Usuario {
     public boolean isNivelOperacao() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
+    }
+
+    @JsonIgnore
+    public boolean isNivelVarejo() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo() == CodigoNivel.VAREJO;
+    }
+
+    @JsonIgnore
+    public boolean isNivelReceptivo() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo() == CodigoNivel.RECEPTIVO;
     }
 }

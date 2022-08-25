@@ -57,4 +57,8 @@ public class NivelService {
                     usuarioAutenticado.haveCanalAgenteAutorizado())
                 .build());
     }
+
+    public List<Nivel> getPermitidosParaOrganizacao() {
+        return nivelRepository.findByCodigoIn(List.of(CodigoNivel.VAREJO, CodigoNivel.RECEPTIVO));
+    }
 }

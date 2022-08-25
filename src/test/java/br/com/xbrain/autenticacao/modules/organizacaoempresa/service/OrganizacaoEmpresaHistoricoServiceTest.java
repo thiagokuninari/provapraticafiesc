@@ -4,12 +4,12 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ENivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.NivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.junit.Test;
@@ -65,8 +65,8 @@ public class OrganizacaoEmpresaHistoricoServiceTest {
             .razaoSocial("THIAGO TESTE")
             .cnpj("08112392000192")
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
-            .nivelEmpresa(NivelEmpresa.builder()
-                .nivelEmpresa(ENivelEmpresa.RECEPTIVO)
+            .nivel(Nivel.builder()
+                .codigo(CodigoNivel.RECEPTIVO)
                 .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.of(2022, 1, 5, 9, 10, 10))

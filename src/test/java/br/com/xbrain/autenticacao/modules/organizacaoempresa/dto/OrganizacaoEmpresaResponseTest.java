@@ -2,11 +2,11 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ENivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.NivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class OrganizacaoEmpresaResponseTest {
     @Test
     public void of_deveRetornarOrganizacaoEmpresaResponse_seSolicitado() {
         assertThat(OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa()))
-            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivelEmpresa", "situacao")
+            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
             .containsExactly(1, "Organizacao 1", "19.427.182/0001-00",
                 List.of(new SelectResponse(2, "TELEVENDAS"), new SelectResponse(1, "PAP")),
                 new SelectResponse(1, "VAREJO"), ESituacaoOrganizacaoEmpresa.A);
@@ -31,9 +31,9 @@ public class OrganizacaoEmpresaResponseTest {
             .razaoSocial("Organizacao 1")
             .cnpj("19427182000100")
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaTelevendas(), umaModalidadeEmpresaPap()))
-            .nivelEmpresa(NivelEmpresa.builder()
+            .nivel(Nivel.builder()
                 .id(1)
-                .nivelEmpresa(ENivelEmpresa.VAREJO)
+                .codigo(CodigoNivel.VAREJO)
                 .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
