@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
@@ -148,7 +149,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void save_deveRetornarOrganizacaoEmpresa_quandoForSalvo() {
-        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(umNivel()));
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
@@ -232,7 +233,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void update_deveSalvarEGerarHistorico_quandoForChamado() {
-        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(umNivel()));
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresa(1,
@@ -243,7 +244,7 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(service.findById(1))
             .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
             .containsExactlyInAnyOrder(1, "Organizacao 1", "08112392000192", List.of(umaModalidadeEmpresaTelevendas(),
-                    umaModalidadeEmpresaPap()), umNivel(), ESituacaoOrganizacaoEmpresa.A);
+                    umaModalidadeEmpresaPap()), OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
@@ -340,12 +341,5 @@ public class OrganizacaoEmpresaServiceTest {
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(umUsuario())
             .build();
-    }
-
-    public static Nivel umNivel() {
-        var nivel = new Nivel();
-        nivel.setId(1);
-        nivel.setCodigo(null);
-        return nivel;
     }
 }

@@ -87,4 +87,11 @@ public class OrganizacaoEmpresaHelper {
                 new SelectResponse(organizacaoEmpresa().getId(), organizacaoEmpresa().getNivel().getNome()))
             .collect(Collectors.toList());
     }
+
+    public static Nivel umNivel() {
+        return Nivel.builder()
+            .id(1)
+            .codigo(null)
+            .build();
+    }
 }
