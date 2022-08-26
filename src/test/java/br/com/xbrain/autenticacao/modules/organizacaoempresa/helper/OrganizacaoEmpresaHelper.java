@@ -2,9 +2,9 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.helper;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -64,20 +64,12 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
-    public static List<OrganizacaoEmpresa> umaListaOrganizacaoEmpresa() {
-        return List.of(OrganizacaoEmpresa.builder()
+    public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
+        return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
-                .nivel(Nivel.builder()
-                    .id(1)
-                    .codigo(CodigoNivel.VAREJO)
-                    .build())
                 .build(),
-            OrganizacaoEmpresa.builder()
+            OrganizacaoEmpresaResponse.builder()
                 .id(2)
-                .nivel(Nivel.builder()
-                    .id(1)
-                    .codigo(CodigoNivel.VAREJO)
-                    .build())
                 .build());
     }
 

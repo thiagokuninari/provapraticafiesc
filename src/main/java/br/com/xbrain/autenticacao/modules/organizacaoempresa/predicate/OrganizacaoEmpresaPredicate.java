@@ -41,7 +41,7 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
     }
 
     public OrganizacaoEmpresaPredicate comNivel(Integer nivelId) {
-        if (nonNull(nivelId)) {
+        if (nivelId != null) {
             builder.and(organizacaoEmpresa.nivel.id.eq(nivelId));
         }
         return this;
