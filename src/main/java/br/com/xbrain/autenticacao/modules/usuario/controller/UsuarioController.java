@@ -213,6 +213,11 @@ public class UsuarioController {
         return usuarioService.getUsuariosByIds(ids);
     }
 
+    @PostMapping("ativos")
+    public List<Integer> getUsuariosAtivosByIds(@RequestBody List<Integer> ids) {
+        return usuarioService.getUsuariosAtivosByIds(ids);
+    }
+
     @GetMapping("todas-situacoes")
     public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(@RequestParam Set<Integer> ids) {
         return usuarioService.getUsuariosByIdsTodasSituacoes(ids);

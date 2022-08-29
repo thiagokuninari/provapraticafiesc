@@ -1475,6 +1475,11 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    public List<Integer> getUsuariosAtivosByIds(List<Integer> idsUsuarios) {
+        return repository.findAllIdsBySituacaoAndIdsIn(ESituacao.A,
+            new UsuarioPredicate().comUsuariosIds(idsUsuarios).build());
+    }
+
     public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(Collection<Integer> idsUsuarios) {
         return partition(List.copyOf(idsUsuarios), QTD_MAX_IN_NO_ORACLE).stream()
             .map(repository::findByIdIn)

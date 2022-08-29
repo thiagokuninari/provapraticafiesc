@@ -225,4 +225,13 @@ public class UsuarioRepositoryTest {
         assertThat(repository.getUsuariosOperacaoCanalAa(CodigoNivel.OPERACAO))
             .hasSize(3);
     }
+
+    @Test
+    public void findAllIdsBySituacaoAndIdsIn_deveRetornarListaIdsAtivos_quandoSolicitado() {
+        var listaIds = List.of(100, 101, 102, 103, 104, 110, 111, 112, 113, 114, 115);
+        var predicate = new UsuarioPredicate().comUsuariosIds(listaIds).build();
+        assertThat(repository.findAllIdsBySituacaoAndIdsIn(A, predicate))
+            .hasSize(8)
+            .isEqualTo(List.of(100, 101, 103, 104, 110, 111, 114, 115));
+    }
 }
