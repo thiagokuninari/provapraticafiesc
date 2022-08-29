@@ -264,14 +264,14 @@ public class UsuarioServiceTest {
     public void getUfsUsuario_deveConverterORetornoEmSelectResponse_conformeListaDeEstados() {
         when(usuarioRepository.getUfsUsuario(anyInt()))
             .thenReturn(List.of(
-                Uf.builder().id(1).uf("PR").build(),
-                Uf.builder().id(22).uf("SC").build()));
+                Uf.builder().id(1).nome("PARANA").build(),
+                Uf.builder().id(22).nome("SANTA CATARINA").build()));
 
         assertThat(usuarioService.getUfUsuario(1))
             .extracting("value", "label")
             .containsExactly(
-                tuple(1, "PR"),
-                tuple(22, "SC"));
+                tuple(1, "PARANA"),
+                tuple(22, "SANTA CATARINA"));
     }
 
     @Test

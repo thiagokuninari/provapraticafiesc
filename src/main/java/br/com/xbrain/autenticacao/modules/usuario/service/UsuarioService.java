@@ -1818,7 +1818,7 @@ public class UsuarioService {
         return repository
             .getUfsUsuario(usuarioId)
             .stream()
-            .map(uf -> SelectResponse.of(uf.getId(), uf.getUf()))
+            .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
             .collect(Collectors.toList());
     }
 
