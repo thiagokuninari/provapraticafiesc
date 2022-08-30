@@ -83,7 +83,7 @@ public class CargoServiceIT {
                 tuple(58, "Vendedor Televendas - Agente Autorizado"),
                 tuple(83, "Vendedor* - Agente Autorizado"),
                 tuple(98, "Executivo de Vendas - Operação"),
-                tuple(202, "Analista Loja Futuro - Agente Autorizado"),
+                tuple(202, "Assistente Loja Futuro - Agente Autorizado"),
                 tuple(201, "Cliente Loja Futuro - Agente Autorizado")
             );
     }
