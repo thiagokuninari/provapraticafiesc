@@ -125,6 +125,11 @@ public class UsuarioController {
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
+    @GetMapping("/{ids}")
+    public List<UsuarioResponse> getUsuariosById(@PathVariable("ids") List<Integer> ids) {
+        return usuarioService.getUsuariosByIdsTodasSituacoes(ids);
+    }
+
     @RequestMapping(params = "nivel", method = RequestMethod.GET)
     public List<UsuarioResponse> getUsuarioByNivel(@RequestParam CodigoNivel nivel) {
         return usuarioService.getUsuarioByNivel(nivel);
