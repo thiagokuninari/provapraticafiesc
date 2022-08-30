@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.*;
@@ -91,9 +92,9 @@ public class OrganizacaoEmpresa {
         situacao = ESituacaoOrganizacaoEmpresa.A;
     }
 
-    public Optional<Nivel> getNivelIdNome() {
+    public Optional<NivelResponse> getNivelIdNome() {
         return Optional.ofNullable(nivel)
-            .map(nivel -> new Nivel(nivel.getId(), nivel.getCodigo().name()));
+            .map(nivel -> new NivelResponse(nivel.getId(), nivel.getCodigo().name()));
     }
 
     public List<SelectResponse> getModalidadesEmpresaIdNome() {

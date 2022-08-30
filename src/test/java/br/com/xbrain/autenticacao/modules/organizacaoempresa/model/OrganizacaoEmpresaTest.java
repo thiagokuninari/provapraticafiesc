@@ -36,7 +36,7 @@ public class OrganizacaoEmpresaTest {
     public void getNivelIdNome_deveRetornarIdENome_quandoNivelNotNull() {
         assertThat(umaOutraOrganizacaoEmpresa().getNivelIdNome())
             .isPresent()
-            .isEqualTo(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+            .isEqualTo(Optional.of(OrganizacaoEmpresaHelper.umNivelResponse()));
     }
 
     @Test

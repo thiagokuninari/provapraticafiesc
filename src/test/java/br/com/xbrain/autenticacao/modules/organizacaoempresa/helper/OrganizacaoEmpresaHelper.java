@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -83,7 +84,14 @@ public class OrganizacaoEmpresaHelper {
     public static Nivel umNivel() {
         return Nivel.builder()
             .id(1)
-            .codigo(null)
+            .nome("VAREJO")
+            .build();
+    }
+
+    public static NivelResponse umNivelResponse() {
+        return NivelResponse.builder()
+            .id(1)
+            .nome("VAREJO")
             .build();
     }
 }

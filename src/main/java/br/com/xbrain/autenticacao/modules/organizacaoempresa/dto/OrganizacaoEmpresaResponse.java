@@ -3,7 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class OrganizacaoEmpresaResponse {
     private Integer id;
     private String razaoSocial;
     private String cnpj;
-    private Nivel nivel;
+    private NivelResponse nivel;
     private List<SelectResponse> modalidadesEmpresa;
     private ESituacaoOrganizacaoEmpresa situacao;
 

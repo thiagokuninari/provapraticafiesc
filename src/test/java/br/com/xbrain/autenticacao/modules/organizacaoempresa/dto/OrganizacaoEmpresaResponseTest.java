@@ -22,7 +22,7 @@ public class OrganizacaoEmpresaResponseTest {
             .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
             .containsExactly(1, "Organizacao 1", "19.427.182/0001-00",
                 List.of(new SelectResponse(2, "TELEVENDAS"), new SelectResponse(1, "PAP")),
-                OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
+                OrganizacaoEmpresaHelper.umNivelResponse(), ESituacaoOrganizacaoEmpresa.A);
     }
 
     private static OrganizacaoEmpresa umaOrganizacaoEmpresa() {
