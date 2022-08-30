@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.dto;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -21,7 +22,7 @@ public class OrganizacaoEmpresaResponseTest {
             .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
             .containsExactly(1, "Organizacao 1", "19.427.182/0001-00",
                 List.of(new SelectResponse(2, "TELEVENDAS"), new SelectResponse(1, "PAP")),
-                new SelectResponse(1, "VAREJO"), ESituacaoOrganizacaoEmpresa.A);
+                OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
     }
 
     private static OrganizacaoEmpresa umaOrganizacaoEmpresa() {

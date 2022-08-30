@@ -91,9 +91,9 @@ public class OrganizacaoEmpresa {
         situacao = ESituacaoOrganizacaoEmpresa.A;
     }
 
-    public Optional<SelectResponse> getNivelIdNome() {
+    public Optional<Nivel> getNivelIdNome() {
         return Optional.ofNullable(nivel)
-            .map(nivel -> new SelectResponse(nivel.getId(), nivel.getCodigo().name()));
+            .map(nivel -> new Nivel(nivel.getId(), nivel.getCodigo().name()));
     }
 
     public List<SelectResponse> getModalidadesEmpresaIdNome() {

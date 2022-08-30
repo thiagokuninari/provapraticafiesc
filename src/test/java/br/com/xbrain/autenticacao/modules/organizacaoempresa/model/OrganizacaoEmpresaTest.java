@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -35,7 +36,7 @@ public class OrganizacaoEmpresaTest {
     public void getNivelIdNome_deveRetornarIdENome_quandoNivelNotNull() {
         assertThat(umaOutraOrganizacaoEmpresa().getNivelIdNome())
             .isPresent()
-            .hasValue(SelectResponse.of(1, CodigoNivel.VAREJO.name()));
+            .isEqualTo(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
     }
 
     @Test
