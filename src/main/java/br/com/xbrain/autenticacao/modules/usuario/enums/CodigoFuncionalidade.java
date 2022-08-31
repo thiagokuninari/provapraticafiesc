@@ -39,7 +39,8 @@ public enum CodigoFuncionalidade {
     CTR_2044("Visualizar todos os Sites"),
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
-    AUT_20010("Adicionar novo usuário");
+    AUT_20010("Adicionar novo usuário"),
+    VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO("Gerenciar Organizaçoes Varejo e Receptivo");
 
     @Getter
     private String descricao;

@@ -29,6 +29,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,9 +66,11 @@ import static com.querydsl.jpa.JPAExpressions.select;
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
     private static final int SETE_DIAS = 7;
+    private static final int TRES_DIAS = 3;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
+    private static final int TRINTA_E_DOIS_DIAS = 32;
 
     @Autowired
     private EntityManager entityManager;
@@ -744,14 +747,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findAllUsuariosSemDataUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
+    @SuppressWarnings("LineLength")
+    public List<Integer> findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias(LocalDateTime dataHoraInativarUsuario) {
         return new JPAQueryFactory(entityManager)
-            .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
+            .select(usuario.id)
             .from(usuario)
             .where(usuario.situacao.eq(A)
                 .and(usuario.dataUltimoAcesso.isNull())
                 .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
-                .and(usuario.dataCadastro.after(dataHoraInativarUsuario)))
+                .and(usuario.dataCadastro.after(dataHoraInativarUsuario))
+                .and(usuario.dataReativacao.before(LocalDate.now().minusDays(TRES_DIAS).atStartOfDay())
+                    .or(usuario.dataReativacao.isNull())))
             .fetch();
     }
 
@@ -959,10 +965,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.departamento, departamento)
             .leftJoin(usuario.cargo, cargo)
             .leftJoin(cargo.nivel, nivel)
-            .where(usuario.situacao.eq(A)
+            .where(usuario.situacao.eq(A).and(nivel.id.eq(ID_NIVEL_OPERACAO))
                 .and(departamento.codigo.eq(COMERCIAL))
                 .and(nivel.codigo.eq(OPERACAO))
-                .and(cargo.id.eq(cargoId)))
+                .and(cargo.id.eq(cargoId))
+                .and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
             .orderBy(usuario.id.asc())
             .fetch();
     }
@@ -1182,6 +1189,34 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     .join(site.supervisores, usuarioSite)
                     .where(site.id.eq(siteId)
                         .and(site.situacao.eq(A))))))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(LocalDateTime dataHoraInativarUsuario) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario.id)
+            .from(usuario)
+            .where(usuario.dataUltimoAcesso.after(dataHoraInativarUsuario)
+                .and(usuario.dataUltimoAcesso.before(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS)))
+                .and(usuario.dataReativacao.before(LocalDate.now().atStartOfDay().minusDays(TRES_DIAS))
+                    .or(usuario.dataReativacao.isNull()))
+            )
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel codigoNivel) {
+        return new JPAQueryFactory(entityManager)
+            .select(usuario)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo).fetchJoin()
+            .leftJoin(cargo.nivel, nivel).fetchJoin()
+            .leftJoin(usuario.departamento, departamento).fetchJoin()
+            .leftJoin(usuario.configuracao, configuracao).fetchJoin()
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio).fetchJoin()
+            .where(cargo.nivel.codigo.eq(codigoNivel).and(usuario.canais.any().eq(ECanal.AGENTE_AUTORIZADO)))
+            .orderBy(usuario.nome.asc())
             .fetch();
     }
 

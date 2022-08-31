@@ -10,6 +10,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
@@ -487,7 +488,7 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(12)))
+            .andExpect(jsonPath("$", hasSize(13)))
             .andExpect(jsonPath("$[0].permissao", is("ROLE_AUT_2031")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
@@ -1178,4 +1179,25 @@ public class UsuarioControllerTest {
                     .canal(ECanal.D2D_PROPRIO)
                     .build()));
     }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosOperacaoCanalAa_deveRetornarOk_seUsuarioAutenticado() {
+        var codigoNivel = CodigoNivel.OPERACAO;
+        mvc.perform(get(USUARIOS_ENDPOINT + "/nivel/canal")
+                .param("codigoNivel", "OPERACAO")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).getUsuariosOperacaoCanalAa(eq(codigoNivel));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosOperacaoCanalAa_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/nivel/canal")
+                .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO"))
+            .andExpect(status().isUnauthorized());
+    }
+
 }

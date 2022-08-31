@@ -8,6 +8,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
@@ -48,6 +49,7 @@ import java.util.*;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
@@ -761,7 +763,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .todoCanalAa(true).build());
-        assertThat(usuarios).isEqualTo(List.of(105, 239, 240, 366, 369));
+        assertThat(usuarios).isEqualTo(List.of(105, 116, 117, 149, 239, 240, 366, 369, 998, 1000));
     }
 
     @Test
@@ -851,10 +853,15 @@ public class UsuarioServiceIT {
             .todoCanalAa(true).build());
         assertThat(usuarios).extracting("id", "nome").containsExactlyInAnyOrder(
             tuple(105, "INATIVO"),
+            tuple(116, "ALBERTO PEREIRA"),
+            tuple(117, "ROBERTO ALMEIDA"),
+            tuple(149, "USUARIO INFERIOR"),
             tuple(239, "VENDEDOR OPERACAO 2"),
             tuple(240, "VENDEDOR OPERACAO 3"),
             tuple(366, "mso_analistaadm_claromovel_pessoal"),
-            tuple(369, "MARIA AUGUSTA"));
+            tuple(369, "MARIA AUGUSTA"),
+            tuple(998, "USUARIO REMANEJAR"),
+            tuple(1000, "USUARIO REMANEJAR"));
     }
 
     @Test
@@ -1467,7 +1474,12 @@ public class UsuarioServiceIT {
             .containsExactlyInAnyOrder(
                 tuple(369, "MARIA AUGUSTA"),
                 tuple(239, "VENDEDOR OPERACAO 2"),
-                tuple(240, "VENDEDOR OPERACAO 3")
+                tuple(240, "VENDEDOR OPERACAO 3"),
+                tuple(116, "ALBERTO PEREIRA"),
+                tuple(149, "USUARIO INFERIOR"),
+                tuple(117, "ROBERTO ALMEIDA"),
+                tuple(998, "USUARIO REMANEJAR"),
+                tuple(1000, "USUARIO REMANEJAR")
             );
     }
 
@@ -1539,6 +1551,19 @@ public class UsuarioServiceIT {
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
     }
 
+    @Test
+    public void updateFromQueue_seUsuarioInativo_deveAtivarEPreencheerCampoDataReativacao() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+
+        var usuario = umUsuarioMqRequest();
+        service.updateFromQueue(usuario);
+
+        var usuarioAtualizado = usuarioRepository.findById(usuario.getId()).orElseThrow(
+            () -> new NotFoundException("Usuário não encontrado"));
+        assertThat(usuarioAtualizado.getSituacao()).isEqualTo(A);
+        assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
         return UsuarioMqRequest.builder()
             .id(371)
@@ -1586,5 +1611,13 @@ public class UsuarioServiceIT {
         usuarioMqRequest.setDepartamento(CodigoDepartamento.HELP_DESK);
         usuarioMqRequest.setSituacao(ESituacao.A);
         return usuarioMqRequest;
+    }
+
+    private UsuarioMqRequest umUsuarioMqRequest() {
+        return UsuarioMqRequest.builder()
+            .id(150)
+            .situacao(ESituacao.A)
+            .nome("Macaulay")
+            .build();
     }
 }

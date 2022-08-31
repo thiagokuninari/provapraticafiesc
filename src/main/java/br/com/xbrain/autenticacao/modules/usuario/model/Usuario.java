@@ -240,6 +240,9 @@ public class Usuario {
     @Transient
     private String senhaDescriptografada;
 
+    @Column(name = "DATA_REATIVACAO")
+    private LocalDateTime dataReativacao;
+
     @NotAudited
     @CollectionTable(name = "USUARIO_TIPO_FEEDER", joinColumns = @JoinColumn(name = "FK_USUARIO"))
     @Column(name = "TIPO_FEEDER_MSO")
@@ -536,20 +539,20 @@ public class Usuario {
 
     public static Set<Integer> convertFrom(Set<Usuario> usuarios) {
         return usuarios.stream()
-                .map(Usuario::getId)
-                .collect(Collectors.toSet());
+            .map(Usuario::getId)
+            .collect(Collectors.toSet());
     }
 
     public static Set<Usuario> of(List<Integer> usuarios) {
         return usuarios.stream()
-                .map(Usuario::new)
-                .collect(Collectors.toSet());
+            .map(Usuario::new)
+            .collect(Collectors.toSet());
     }
 
     @JsonIgnore
     public boolean isOperadorTelevendasAtivoLocal() {
         return isCargo(OPERACAO_TELEVENDAS)
-                && hasCanal(ECanal.ATIVO_PROPRIO);
+            && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 
     public boolean isXbrain() {

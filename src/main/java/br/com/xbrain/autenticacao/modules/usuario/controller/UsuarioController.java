@@ -140,6 +140,11 @@ public class UsuarioController {
         return usuarioService.findCidadesByUsuario(id);
     }
 
+    @GetMapping("nivel/canal")
+    public List<UsuarioResponse> getUsuariosOperacaoCanalAa(@RequestParam CodigoNivel codigoNivel) {
+        return usuarioService.getUsuariosOperacaoCanalAa(codigoNivel);
+    }
+
     @GetMapping(value = "/{id}/subclusters")
     public List<SelectResponse> getSubclustersUsuario(@PathVariable("id") int usuarioId) {
         return usuarioService.getSubclusterUsuario(usuarioId);
