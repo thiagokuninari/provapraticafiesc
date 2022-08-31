@@ -1,43 +1,36 @@
 package br.com.xbrain.autenticacao.modules.permissao.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
 
 @Service
 public class PermissaoEspecialService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Permissão Especial não encontrada.");
-    private static final Integer DEPARTAMENTO_ID = 40;
 
     @Autowired
     private PermissaoEspecialRepository repository;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
     private FeederService feederService;
     @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
+    private AgenteAutorizadoService agenteAutorizadoService;
 
     public void save(PermissaoEspecialRequest request) {
         var usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
@@ -65,25 +58,15 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public void processarPermissoesEspeciaisGerentesCoordenadores() {
+    public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaId) {
         if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
             var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
-            var usuariosFeeder = buscaGerentesCoordenadoresFeeder();
-            feederService.salvarPermissoesEspeciaisCoordenadoresGestores(usuariosFeeder, usuarioLogado);
-        }
-    }
+            var usuariosIds = Objects.nonNull(aaId)
+                ? aaId
+                : agenteAutorizadoService.getAaFeederPorCargo(List.of(
+                CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
 
-    private List<Integer> buscaGerentesCoordenadoresFeeder() {
-        var filtro = UsuarioFiltros.builder()
-            .codigosCargos(List.of(AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_COORDENADOR))
-            .departamentoId(DEPARTAMENTO_ID)
-            .situacoes(List.of(ESituacao.A))
-            .build();
-        var usuarioIds = usuarioService.getAllByPredicate(filtro);
-        var ids = usuarioIds
-            .stream()
-            .map(Usuario::getId)
-            .collect(Collectors.toList());
-        return agenteAutorizadoNovoService.buscarAasFeederPorUsuario(ids);
+            feederService.salvarPermissoesEspeciaisCoordenadoresGestores(usuariosIds, usuarioLogado);
+        }
     }
 }

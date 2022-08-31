@@ -216,17 +216,19 @@ public class FeederService {
         var request = new PermissaoEspecialRequest();
         request.setFuncionalidadesIds(List.of(DESCARTAR_LEAD, AGENDAR_LEAD, VISUALIZAR_LEAD));
         usuariosIds.forEach(ids -> {
-                permissaoEspecialRepository.save(
-                    request.getFuncionalidadesIds()
-                        .stream()
-                        .map(id -> PermissaoEspecial
-                            .builder()
-                            .funcionalidade(Funcionalidade.builder().id(id).build())
-                            .usuario(new Usuario(ids))
-                            .dataCadastro(localDateTime)
-                            .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
-                            .build())
-                        .collect(Collectors.toList()));
+                if (null != ids && usuarioRepository.exists(ids)) {
+                    permissaoEspecialRepository.save(
+                        request.getFuncionalidadesIds()
+                            .stream()
+                            .map(id -> PermissaoEspecial
+                                .builder()
+                                .funcionalidade(Funcionalidade.builder().id(id).build())
+                                .usuario(new Usuario(ids))
+                                .dataCadastro(localDateTime)
+                                .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
+                                .build())
+                            .collect(Collectors.toList()));
+                }
             }
         );
     }

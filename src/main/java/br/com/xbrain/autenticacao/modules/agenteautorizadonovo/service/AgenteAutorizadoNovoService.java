@@ -207,16 +207,4 @@ public class AgenteAutorizadoNovoService {
             throw new IntegracaoException(ex);
         }
     }
-
-    public List<Integer> buscarAasFeederPorUsuario(List<Integer> ids) {
-        try {
-            return client.buscarAasFeederPorUsuario(ids);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_BUSCAR_TODOS_AA_POR_FILTRO);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
 }

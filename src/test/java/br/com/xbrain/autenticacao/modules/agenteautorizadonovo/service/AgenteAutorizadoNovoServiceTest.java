@@ -17,7 +17,7 @@ import java.util.List;
 import static br.com.xbrain.autenticacao.modules.agenteautorizadonovo.helper.UsuarioDtoVendasHelper.umUsuarioDtoVendas;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AgenteAutorizadoNovoServiceTest {
@@ -95,27 +95,5 @@ public class AgenteAutorizadoNovoServiceTest {
             .razaoSocial("AA TESTE")
             .cnpj("78.620.184/0001-80")
             .build();
-    }
-
-    @Test
-    public void buscarAasFeedePorUsuario_deveRetornarListaDeUsuariosFitrados_seSolicitado() {
-        when(client.buscarAasFeederPorUsuario((umaListaIds()))).thenReturn(List.of(1, 2));
-        client.buscarAasFeederPorUsuario(umaListaIds());
-        verify(client, times(1)).buscarAasFeederPorUsuario(umaListaIds());
-    }
-
-    @Test
-    public void buscarAasFeedePorUsuario_integracaoException_seApiIndisponivel() {
-        when(client.buscarAasFeederPorUsuario(umaListaIds()))
-            .thenThrow(new RetryableException("Connection refused (Connection refused) executing "
-                + "GET http://localhost:8300/api/colaboradores/agentes-autorizados/id-usuario", new Date()));
-
-        assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.buscarAasFeederPorUsuario(umaListaIds()))
-            .withMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
-    }
-
-    private List<Integer> umaListaIds() {
-        return List.of(1, 2);
     }
 }

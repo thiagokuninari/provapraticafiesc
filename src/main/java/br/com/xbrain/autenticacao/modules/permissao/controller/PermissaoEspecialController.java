@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "api/permissoes-especiais")
 public class PermissaoEspecialController {
@@ -26,7 +28,7 @@ public class PermissaoEspecialController {
     }
 
     @PostMapping("processar-permissoes-gerentes-coordenadores")
-    public void processarPermissoesEspeciaisGerentesCoordenadores() {
-        service.processarPermissoesEspeciaisGerentesCoordenadores();
+    public void processarPermissoesEspeciaisGerentesCoordenadores(@RequestParam(required = false) List<Integer> aaId) {
+        service.processarPermissoesEspeciaisGerentesCoordenadores(aaId);
     }
 }

@@ -140,9 +140,9 @@ public enum EErrors {
     ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
         "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
-     ERRO_BUSCAR_TODOS_AA_POR_FILTRO(
+     ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
         "#045 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-            "#045 - Ocorreu um erro ao buscar todos os agentes autorizados por filtro.");
+            "#045 - Ocorreu um erro ao buscar agentes autorizados por cargo.");
 
 
     @Getter
