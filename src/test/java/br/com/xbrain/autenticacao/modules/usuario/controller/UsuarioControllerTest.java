@@ -45,7 +45,6 @@ import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -1204,14 +1203,13 @@ public class UsuarioControllerTest {
     public void getUsuariosAtivosByIds_deveRetornarListaIdsAtivos_quandoSolicitado() throws Exception {
         var listaIds = List.of(101, 104, 105);
 
-        var result = mvc.perform(post(USUARIOS_ENDPOINT + "/ativos")
+        mvc.perform(post(USUARIOS_ENDPOINT + "/ativos")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonString(listaIds)))
             .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-
-        assertEquals(result, "[101,104]");
+            .andExpect(jsonPath("$[0]", is(101)))
+            .andExpect(jsonPath("$[1]", is(104)));
     }
 
     @Test

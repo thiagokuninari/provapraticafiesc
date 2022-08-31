@@ -1525,7 +1525,7 @@ public class UsuarioServiceIT {
     }
 
     @Test
-    public void getUsuariosAtivosByIds_retornarUsuriosAtivos_quandoForPassadoIds() {
+    public void getUsuariosAtivosByIds_retornarUsuariosAtivos_quandoForPassadoIds() {
         assertThat(service.getUsuariosAtivosByIds(List.of(100, 101, 104, 105, 366, 367, 368, 369, 370, 371)))
             .hasSize(7)
             .isEqualTo(List.of(100, 101, 104, 366, 368, 369, 371));
