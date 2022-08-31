@@ -170,8 +170,8 @@ public class AutenticacaoService {
         return (Integer) token.getAdditionalInformation().get("usuarioId");
     }
 
-    public void forcarLogoutGeradorLeads(Usuario usuario) {
-        if (usuario.isCargo(CodigoCargo.GERADOR_LEADS)) {
+    public void forcarLogoutGeradorLeadsEClienteLojaFuturo(Usuario usuario) {
+        if (usuario.isCargo(CodigoCargo.GERADOR_LEADS) || usuario.isCargo(CodigoCargo.CLIENTE_LOJA_FUTURO)) {
             tokenStore
                 .findTokensByClientIdAndUserName(
                     AuthServerConfig.APP_CLIENT,
