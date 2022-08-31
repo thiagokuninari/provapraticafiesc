@@ -33,7 +33,7 @@ public class AgenteAutorizadoServiceTest {
     }
 
     @Test
-    public void getUsuariosAaFeederPorCargo_integracaoException_seApiIndisponivel() {
+    public void getAaFeederPorCargo_deveLancarIntegracaoException_seApiIndisponivel() {
         when(client.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos()))
             .thenThrow(new RetryableException("Connection refused (Connection refused) executing "
                 + "GET http://localhost:8300/api/colaboradores-vendas/cargos", new Date()));
