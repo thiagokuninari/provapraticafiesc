@@ -158,9 +158,9 @@ public class AgenteAutorizadoService {
         return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
     }
 
-    public List<Integer> getAaFeederPorCargo(List<CodigoCargo> cargos) {
+    public List<Integer> getUsuariosAaFeederPorCargo(List<Integer> aaIds, List<CodigoCargo> cargos) {
         try {
-            return agenteAutorizadoClient.getAaFeederPorCargo(cargos);
+            return agenteAutorizadoClient.getUsuariosAaFeederPorCargo(aaIds, cargos);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),

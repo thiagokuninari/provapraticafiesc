@@ -26,20 +26,20 @@ public class AgenteAutorizadoServiceTest {
     private AgenteAutorizadoClient client;
 
     @Test
-    public void buscarAasFeedePorUsuario_deveRetornarListaDeUsuariosFitrados_seSolicitado() {
-        when(client.getAaFeederPorCargo((umaListaCargos()))).thenReturn(List.of(1, 2));
-        client.getAaFeederPorCargo(umaListaCargos());
-        verify(client, times(1)).getAaFeederPorCargo(umaListaCargos());
+    public void getUsuariosAaFeederPorCargo_deveRetornarListaDeUsuariosIdsFitrados_seSolicitado() {
+        when(client.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos())).thenReturn(List.of(1, 2));
+        client.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos());
+        verify(client, times(1)).getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos());
     }
 
     @Test
-    public void buscarAasFeedePorUsuario_integracaoException_seApiIndisponivel() {
-        when(client.getAaFeederPorCargo(umaListaCargos()))
+    public void getUsuariosAaFeederPorCargo_integracaoException_seApiIndisponivel() {
+        when(client.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos()))
             .thenThrow(new RetryableException("Connection refused (Connection refused) executing "
                 + "GET http://localhost:8300/api/colaboradores-vendas/cargos", new Date()));
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.getAaFeederPorCargo(umaListaCargos()))
+            .isThrownBy(() -> service.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos()))
             .withMessage("#045 - Desculpe, ocorreu um erro interno. Contate a administrador.");
     }
 
@@ -47,5 +47,9 @@ public class AgenteAutorizadoServiceTest {
         return List.of(
             CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
             CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR);
+    }
+
+    private List<Integer> umaListaAaIds() {
+        return List.of(1, 2);
     }
 }

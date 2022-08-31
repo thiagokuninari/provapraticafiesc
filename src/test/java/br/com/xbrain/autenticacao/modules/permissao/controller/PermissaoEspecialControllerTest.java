@@ -84,24 +84,48 @@ public class PermissaoEspecialControllerTest {
 
     @Test
     @SneakyThrows
-    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoNaoPassarAToken() {
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
         mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
 
-        verify(agenteAutorizadoClient, times(0)).getAaFeederPorCargo(anyList());
+        verify(agenteAutorizadoClient, times(0)).getUsuariosAaFeederPorCargo(anyList(), anyList());
     }
 
     @Test
     @SneakyThrows
-    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_quandoSolicitar() {
-        when(agenteAutorizadoClient.getAaFeederPorCargo(umaListaCargos())).thenReturn(List.of(1, 2));
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_seListaIdsVazia() {
+        when(agenteAutorizadoClient.getUsuariosAaFeederPorCargo(umaListaAaIdsVazia(),
+            umaListaCargos())).thenReturn(List.of(1, 2));
         mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(agenteAutorizadoClient, times(1)).getAaFeederPorCargo(anyList());
+        verify(agenteAutorizadoClient, times(1)).getUsuariosAaFeederPorCargo(anyList(), anyList());
+    }
+
+    @Test
+    @SneakyThrows
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_seListaIdsPreenchida() {
+        when(agenteAutorizadoClient.getUsuariosAaFeederPorCargo(umaListaAaIds(), umaListaCargos())).thenReturn(List.of(1, 2));
+        mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(agenteAutorizadoClient, times(1)).getUsuariosAaFeederPorCargo(null, umaListaCargos());
+    }
+
+    @Test
+    @SneakyThrows
+    public void processarPermissoesEspeciaisGerentesCoordenadores_deveRetornarOk_quandoUsuarioNaoForAdmin() {
+        mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verify(agenteAutorizadoClient, never()).getUsuariosAaFeederPorCargo(anyList(), anyList());
     }
 
     private PermissaoEspecialRequest novasPermissoes() {
@@ -115,5 +139,13 @@ public class PermissaoEspecialControllerTest {
         return List.of(
             CodigoCargo.AGENTE_AUTORIZADO_GERENTE,
             CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR);
+    }
+
+    private List<Integer> umaListaAaIdsVazia() {
+        return List.of();
+    }
+
+    private List<Integer> umaListaAaIds() {
+        return List.of(1, 2);
     }
 }

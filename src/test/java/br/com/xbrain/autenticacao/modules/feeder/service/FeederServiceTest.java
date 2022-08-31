@@ -4,8 +4,11 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
+import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
@@ -28,8 +31,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -51,6 +56,8 @@ public class FeederServiceTest {
     private ArgumentCaptor<UsuarioHistorico> usuarioHistoricoCaptor;
     @Captor
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
+    @Mock
+    private DataHoraAtual dataHoraAtual;
 
     @Test
     public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
@@ -252,12 +259,58 @@ public class FeederServiceTest {
         usuarioSemCpf.setCpf(null);
         usuarioSemCpf.setEmail("INATIVO_THIAGOTESTE@XBRAIN.COM.BR");
 
-        when(usuarioRepository.findComplete(eq(100))).thenReturn(umUsuarioFeeder( 100));
+        when(usuarioRepository.findComplete(eq(100))).thenReturn(umUsuarioFeeder(100));
 
         service.limparCpfEAlterarEmailUsuarioFeeder(100);
 
         verify(usuarioRepository, times(1)).save(eq(usuarioSemCpf));
         verify(usuarioHistoricoService, times(1)).save(eq(umUsuarioHistorico()));
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoes() {
+
+        when(usuarioRepository.exists(1)).thenReturn(true);
+
+        service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
+
+        verify(usuarioRepository, atLeastOnce()).exists(anyInt());
+        verify(permissaoEspecialRepository, atLeastOnce()).save(umaPermissaoEspecialRequest());
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoes_seUsuarioNaoExistir() {
+
+        when(usuarioRepository.exists(1)).thenReturn(false);
+
+        service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
+
+        verify(usuarioRepository, times(1)).exists(anyInt());
+        verify(permissaoEspecialRepository, never()).save(umaPermissaoEspecialRequest());
+    }
+
+    private List<PermissaoEspecial> umaPermissaoEspecialRequest() {
+        var localDateTime = dataHoraAtual.getDataHora();
+        var request = new PermissaoEspecialRequest();
+        request.setFuncionalidadesIds(FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
+        return request.getFuncionalidadesIds()
+            .stream()
+            .map(id -> PermissaoEspecial
+                .builder()
+                .funcionalidade(Funcionalidade.builder().id(id).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build())
+            .collect(Collectors.toList());
+    }
+
+    private List<Integer> umaListaUsuariosIds() {
+        return List.of(1);
+    }
+
+    private int umUsuarioLogadoId() {
+        return 1;
     }
 
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {

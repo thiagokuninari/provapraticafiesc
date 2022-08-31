@@ -60,7 +60,4 @@ public interface AgenteAutorizadoNovoClient {
 
     @GetMapping(URL_AGENTE_AUTORIZADO + "/carteira/{usuarioId}/agentes-autorizados")
     List<AgenteAutorizadoResponse> findAgenteAutorizadoByUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
-
-    @GetMapping(URL_AGENTE_AUTORIZADO + "/colaboradores/agentes-autorizados/id-usuario")
-    List<Integer> buscarAasFeederPorUsuario(@RequestParam("ids") List<Integer> ids);
 }

@@ -57,15 +57,13 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaId) {
-        if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
-            var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
-            var usuariosIds = aaId != null
-                ? aaId
-                : agenteAutorizadoService.getAaFeederPorCargo(List.of(
-                CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
+    public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaIds) {
+        autenticacaoService.getUsuarioAutenticado().validarAdministrador();
+        var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
+        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+            CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
 
-            feederService.salvarPermissoesEspeciaisCoordenadoresGestores(usuariosIds, usuarioLogado);
-        }
+        feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
+
     }
 }

@@ -69,5 +69,6 @@ public interface AgenteAutorizadoClient {
     List<UsuarioCidadeDto> getCidades(@RequestParam("subclusterId") Integer subclusterId);
 
     @GetMapping(API_COLABORADOR_VENDAS + "/cargos")
-    List<Integer> getAaFeederPorCargo(@RequestParam("cargos") List<CodigoCargo> cargos);
+    List<Integer> getUsuariosAaFeederPorCargo(@RequestParam("aaIds") List<Integer> aaIds,
+                                              @RequestParam("cargos") List<CodigoCargo> cargos);
 }
