@@ -215,15 +215,15 @@ public class FeederService {
         var localDateTime = LocalDateTime.now();
         var request = new PermissaoEspecialRequest();
         request.setFuncionalidadesIds(List.of(DESCARTAR_LEAD, AGENDAR_LEAD, VISUALIZAR_LEAD));
-        usuariosIds.forEach(ids -> {
-                if (null != ids && usuarioRepository.exists(ids)) {
+        usuariosIds.forEach(usuarioId -> {
+                if (null != usuarioId && usuarioRepository.exists(usuarioId)) {
                     permissaoEspecialRepository.save(
                         request.getFuncionalidadesIds()
                             .stream()
                             .map(id -> PermissaoEspecial
                                 .builder()
                                 .funcionalidade(Funcionalidade.builder().id(id).build())
-                                .usuario(new Usuario(ids))
+                                .usuario(new Usuario(usuarioId))
                                 .dataCadastro(localDateTime)
                                 .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
                                 .build())

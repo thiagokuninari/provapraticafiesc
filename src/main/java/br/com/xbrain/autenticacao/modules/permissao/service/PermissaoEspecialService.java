@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,7 +60,7 @@ public class PermissaoEspecialService {
     public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaId) {
         if (autenticacaoService.getUsuarioAutenticado().isXbrain()) {
             var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
-            var usuariosIds = Objects.nonNull(aaId)
+            var usuariosIds = aaId != null
                 ? aaId
                 : agenteAutorizadoService.getAaFeederPorCargo(List.of(
                 CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
