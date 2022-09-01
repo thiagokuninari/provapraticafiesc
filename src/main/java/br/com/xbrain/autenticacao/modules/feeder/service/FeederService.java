@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
-import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -210,12 +209,10 @@ public class FeederService {
 
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
         var localDateTime = dataHoraAtual.getDataHora();
-        var request = new PermissaoEspecialRequest();
-        request.setFuncionalidadesIds(FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
         usuariosIds.forEach(usuarioId -> {
             if (usuarioId != null && usuarioRepository.exists(usuarioId)) {
                 permissaoEspecialRepository.save(
-                    request.getFuncionalidadesIds()
+                    FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
                         .stream()
                         .map(id -> PermissaoEspecial
                             .builder()
