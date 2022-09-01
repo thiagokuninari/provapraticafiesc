@@ -97,6 +97,7 @@ public class OrganizacaoEmpresaTest {
             .cnpj("08112392000192")
             .nivel(Nivel.builder()
                 .id(1)
+                .nome("VAREJO")
                 .codigo(CodigoNivel.VAREJO)
                 .build())
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))

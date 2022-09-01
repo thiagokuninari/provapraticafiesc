@@ -94,7 +94,7 @@ public class OrganizacaoEmpresa {
 
     public Optional<NivelResponse> getNivelIdNome() {
         return Optional.ofNullable(nivel)
-            .map(nivel -> new NivelResponse(nivel.getId(), nivel.getCodigo().name()));
+            .map(nivel -> new NivelResponse(nivel.getId(), nivel.getNome(), nivel.getCodigo().name()));
     }
 
     public List<SelectResponse> getModalidadesEmpresaIdNome() {

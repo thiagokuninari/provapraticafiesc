@@ -34,6 +34,7 @@ public class OrganizacaoEmpresaResponseTest {
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaTelevendas(), umaModalidadeEmpresaPap()))
             .nivel(Nivel.builder()
                 .id(1)
+                .nome("VAREJO")
                 .codigo(CodigoNivel.VAREJO)
                 .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)

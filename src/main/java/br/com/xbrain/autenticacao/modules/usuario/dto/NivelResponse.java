@@ -15,11 +15,14 @@ public class NivelResponse {
 
     private Integer id;
     private String nome;
+    private String codigo;
 
     public static NivelResponse of(Nivel nivel) {
         var nivelResponse = new NivelResponse();
         if (nivel != null) {
             BeanUtils.copyProperties(nivel, nivelResponse);
+            nivelResponse.setNome(nivel.getNome().toUpperCase());
+            nivelResponse.setCodigo(nivel.getCodigo().name());
         }
         return nivelResponse;
     }

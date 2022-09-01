@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
+import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.NivelService;
@@ -34,7 +35,7 @@ public class NivelController {
     }
 
     @GetMapping("organizacao")
-    public List<Nivel> getNivelParaOrganizacao() {
+    public List<NivelResponse> getNivelParaOrganizacao() {
         return service.getPermitidosParaOrganizacao();
     }
 }
