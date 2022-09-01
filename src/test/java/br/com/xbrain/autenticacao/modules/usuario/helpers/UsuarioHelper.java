@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -13,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 
@@ -152,5 +155,55 @@ public class UsuarioHelper {
         );
 
         return usuario;
+    }
+
+    public static UsuarioDto umUsuarioDtoMso() {
+        return UsuarioDto.builder()
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .nivelId(2)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioDtoOuvidoria() {
+        return UsuarioDto.builder()
+            .nome("OUVIDORIA NAO FEEDER")
+            .cpf("286.250.583-88")
+            .nivelId(15)
+            .organizacaoId(1)
+            .usuarioCadastroId(1)
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .build();
+    }
+
+    public static Usuario umUsuarioMso() {
+        return Usuario.builder()
+            .id(150016)
+            .nome("MSO FEEDER")
+            .cpf("873.616.099-70")
+            .email("MSO.FEEDER@MSO.COM.BR")
+            .usuarioCadastro(umUsuarioCadastro())
+            .usuariosHierarquia(new HashSet<>())
+            .cargo(Cargo
+                .builder()
+                .quantidadeSuperior(50)
+                .nivel(Nivel
+                    .builder()
+                    .id(2)
+                    .build())
+                .build())
+            .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario umUsuarioCadastro() {
+        return Usuario.builder()
+            .id(101112)
+            .nome("COLABORADOR SUPORTE")
+            .build();
     }
 }

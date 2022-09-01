@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static com.google.common.io.ByteStreams.toByteArray;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
@@ -206,15 +208,25 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(10)))
                 .andExpect(jsonPath("$.content[0].nome", is("Supervisor Operação")))
+                .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
+                .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[2].nome", is("Assistente Operação")))
+                .andExpect(jsonPath("$.content[2].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[3].nome", is("Vendedor Operação")))
+                .andExpect(jsonPath("$.content[3].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[4].nome", is("Agente Autorizado Aprovação MSO Novos Cadastros")))
+                .andExpect(jsonPath("$.content[4].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[5].nome", is("Operacao Supervisor NET")))
+                .andExpect(jsonPath("$.content[5].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[6].nome", is("Mso Analista Adm Claro Pessoal")))
+                .andExpect(jsonPath("$.content[6].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())))
                 .andExpect(jsonPath("$.content[7].nome", is("Operacao Supervisor")))
+                .andExpect(jsonPath("$.content[7].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[8].nome", is("Operacao Gerente")))
-                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")));
+                .andExpect(jsonPath("$.content[8].tiposFeeder", empty()))
+                .andExpect(jsonPath("$.content[9].nome", is("Operacao Vendedor")))
+                .andExpect(jsonPath("$.content[9].tiposFeeder", empty()));
     }
 
     @Test
@@ -225,11 +237,14 @@ public class UsuarioGerenciaControllerTest {
                 .andExpect(jsonPath("$.content", hasSize(3)))
                 .andExpect(jsonPath("$.content[0].nome", is("HELPDESK")))
                 .andExpect(jsonPath("$.content[0].email", is("HELPDESK@XBRAIN.COM.BR")))
+                .andExpect(jsonPath("$.content[0].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[1].nome", is("operacao_gerente_comercial")))
                 .andExpect(jsonPath("$.content[1].email", is("operacao_gerente_comercial@net.com.br")))
+                .andExpect(jsonPath("$.content[1].tiposFeeder", empty()))
                 .andExpect(jsonPath("$.content[2].nome", is("Mso Analista Adm Claro Pessoal")))
                 .andExpect(jsonPath("$.content[2].email",
-                    is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")));
+                    is("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")))
+                .andExpect(jsonPath("$.content[2].tiposFeeder", containsInAnyOrder(EMPRESARIAL.name(), RESIDENCIAL.name())));
     }
 
     @Test

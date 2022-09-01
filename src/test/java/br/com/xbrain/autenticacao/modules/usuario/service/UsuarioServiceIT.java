@@ -550,6 +550,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesAdicionadas_quandoAdicionarNovasCidadesEManterACidadeExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(371).build());
+
         var usuario = service.findByIdCompleto(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 1443, 100));
@@ -583,6 +586,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesAdicionadasERemovidas_quandoAdicionarNovasCidadesERemoverACidadeExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(371).build());
+
         var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet(
             Arrays.asList(
@@ -611,6 +617,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesRemovidas_quandoRemoverAsCidadesExistentes() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(371).build());
+
         var usuario = service.findByIdCompleto(100);
         usuario.setCidades(Sets.newHashSet());
         service.save(usuario);
@@ -626,6 +635,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesNaoAlteradas_quandoAdicionarUmaCidadeJaExistente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(371).build());
+
         var usuario = service.findByIdCompleto(100);
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 5578, 100));
         service.save(usuario);
@@ -646,6 +658,9 @@ public class UsuarioServiceIT {
 
     @Test
     public void save_cidadesAdicionadas_quandoAdicionarCidadesAUmUsuarioSemCidades() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(371).build());
+
         var usuario = service.findByIdCompleto(101);
         assertThat(usuario.getCidades()).isEmpty();
         usuario.adicionarCidade(UsuarioCidade.criar(usuario, 3237, 100));

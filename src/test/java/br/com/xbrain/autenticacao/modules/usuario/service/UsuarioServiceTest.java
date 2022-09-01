@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioReposit
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
@@ -70,6 +71,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -136,6 +138,8 @@ public class UsuarioServiceTest {
     private UsuarioClientService usuarioClientService;
     @Mock
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Mock
+    private FeederService feederService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1750,6 +1754,34 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void save_deveAtualizarUsuarioCadastroId_quandoUsuarioPossuiUsuarioCadastroNulo() {
+        var usuarioComUsuarioCadastroNulo = umUsuarioMso();
+        usuarioComUsuarioCadastroNulo.setUsuarioCadastro(null);
+
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(usuarioComUsuarioCadastroNulo));
+        when(autenticacaoService.getUsuarioAutenticadoId())
+            .thenReturn(Optional.of(101112));
+
+        Assertions.assertThatCode(() -> usuarioService.save(usuarioComUsuarioCadastroNulo))
+            .doesNotThrowAnyException();
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticadoId();
+        verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));
+    }
+
+    @Test
+    public void save_naoDeveAtualizarUsuarioCadastroId_quandoUsuarioJaPossuirUsuarioCadastro() {
+        when(usuarioRepository.findById(eq(150016)))
+            .thenReturn(Optional.of(umUsuarioMso()));
+
+        Assertions.assertThatCode(() -> usuarioService.save(umUsuarioMso()))
+            .doesNotThrowAnyException();
+
+        verify(usuarioRepository, times(1)).saveAndFlush(eq(umUsuarioMso()));
     }
 
     @Test

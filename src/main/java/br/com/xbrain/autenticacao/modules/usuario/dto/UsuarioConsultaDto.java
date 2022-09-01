@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -22,6 +23,7 @@ public class UsuarioConsultaDto {
     private String nivelNome;
     private String cargoNome;
     private String departamentoNome;
+    private Set<String> tiposFeeder;
 
     public UsuarioConsultaDto() {
     }

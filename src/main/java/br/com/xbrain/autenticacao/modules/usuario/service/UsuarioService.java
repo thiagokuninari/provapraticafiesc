@@ -342,7 +342,7 @@ public class UsuarioService {
         usuarios.forEach(c -> {
             c.setEmpresas(repository.findEmpresasById(c.getId()));
             c.setUnidadesNegocios(repository.findUnidadesNegociosById(c.getId()));
-            c.setCpf(repository.findCpfById(c.getId()));
+            c.setTiposFeeder(Sets.newHashSet(repository.findTiposFeederById(c.getId())));
         });
     }
 
@@ -471,10 +471,15 @@ public class UsuarioService {
             var situacaoAnterior = recuperarSituacaoAnterior(usuario);
             tratarCadastroUsuario(usuario);
             var enviarEmail = usuario.isNovoCadastro();
+            atualizarUsuarioCadastroNulo(usuario);
+            feederService.removerPermissaoFeederUsuarioAtualizadoMso(usuario);
             repository.saveAndFlush(usuario);
             configurarCadastro(usuario);
             gerarHistoricoAlteracaoCadastro(usuario, situacaoAnterior);
             enviarEmailDadosAcesso(usuario, enviarEmail);
+            if (usuario.isIdNivelMso()) {
+                feederService.adicionarPermissaoFeederParaUsuarioNovoMso(usuario);
+            }
 
             return UsuarioDto.of(usuario);
         } catch (PersistenceException ex) {
@@ -483,6 +488,13 @@ public class UsuarioService {
         } catch (Exception ex) {
             log.error("Erro ao salvar Usuário.", ex);
             throw ex;
+        }
+    }
+
+    private void atualizarUsuarioCadastroNulo(Usuario usuario) {
+        if (usuario.hasUsuarioCadastroNulo()) {
+            autenticacaoService.getUsuarioAutenticadoId()
+                .ifPresent(usuarioCadastroId -> usuario.setUsuarioCadastro(new Usuario(usuarioCadastroId)));
         }
     }
 

@@ -1,16 +1,14 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,9 +25,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -39,6 +35,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Builder
 @AllArgsConstructor
 public class UsuarioDto implements Serializable {
+
+    public static final Integer ID_NIVEL_MSO = 2;
 
     private Integer id;
     @NotNull
@@ -104,6 +102,7 @@ public class UsuarioDto implements Serializable {
     private String urlLojaProspectNextel;
     private String cupomLoja;
     private Integer siteId;
+    private Set<ETipoFeederMso> tiposFeeder;
 
     public UsuarioDto(Integer id) {
         this.id = id;
@@ -121,6 +120,12 @@ public class UsuarioDto implements Serializable {
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
+        }
+        if (Objects.nonNull(usuarioDto.getNivelId())) {
+            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
+        }
+        if (!Objects.equals(ID_NIVEL_MSO, usuarioDto.getNivelId())) {
+            usuario.setTiposFeeder(Set.of());
         }
         return usuario;
     }
@@ -142,6 +147,9 @@ public class UsuarioDto implements Serializable {
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
+        if (Objects.nonNull(usuario.getUsuarioCadastro())) {
+            usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
+        }
         return usuarioDto;
     }
 
