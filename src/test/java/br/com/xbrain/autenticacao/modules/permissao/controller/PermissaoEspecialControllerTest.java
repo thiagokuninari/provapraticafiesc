@@ -98,11 +98,12 @@ public class PermissaoEspecialControllerTest {
         when(agenteAutorizadoClient.getUsuariosAaFeederPorCargo(umaListaAaIdsVazia(),
             umaListaCargos())).thenReturn(List.of(1, 2));
         mvc.perform(post(URL + "/processar-permissoes-gerentes-coordenadores")
+                .param("aaIds", "")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        verify(agenteAutorizadoClient, times(1)).getUsuariosAaFeederPorCargo(anyList(), anyList());
+        verify(agenteAutorizadoClient, times(1)).getUsuariosAaFeederPorCargo(umaListaAaIdsVazia(), umaListaCargos());
     }
 
     @Test
