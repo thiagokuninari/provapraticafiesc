@@ -57,10 +57,10 @@ public class PermissaoEspecialService {
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
-    public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> aaIds) {
+    public void processarPermissoesEspeciaisGerentesCoordenadores(List<Integer> usuarioIds) {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
-        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
+        var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(usuarioIds, List.of(
             CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
 
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
