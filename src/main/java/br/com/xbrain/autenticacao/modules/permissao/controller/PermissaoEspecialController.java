@@ -28,7 +28,7 @@ public class PermissaoEspecialController {
     }
 
     @PostMapping("processar-permissoes-gerentes-coordenadores")
-    public void processarPermissoesEspeciaisGerentesCoordenadores(@RequestParam(required = false) List<Integer> usuarioIds) {
-        service.processarPermissoesEspeciaisGerentesCoordenadores(usuarioIds);
+    public void processarPermissoesEspeciaisGerentesCoordenadores(@RequestParam(required = false) List<Integer> aaIds) {
+        service.processarPermissoesEspeciaisGerentesCoordenadores(aaIds);
     }
 }
