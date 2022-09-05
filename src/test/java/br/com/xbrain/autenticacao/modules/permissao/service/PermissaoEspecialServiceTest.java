@@ -36,12 +36,10 @@ public class PermissaoEspecialServiceTest {
     @Test
     public void processarPermissoesEspeciaisGerentesCoordenadores_deveProcessarPermissoes_seIdNull() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(anyList(), anyList())).thenReturn(List.of(1, 2));
 
         service.processarPermissoesEspeciaisGerentesCoordenadores(null);
 
         verify(autenticacaoService, times(2)).getUsuarioAutenticado();
-        verify(agenteAutorizadoService, times(1)).getUsuariosAaFeederPorCargo(null, umaListaCodigoCargo());
         verify(feederService, times(1)).salvarPermissoesEspeciaisCoordenadoresGerentes(eq(List.of()), eq(1));
     }
 
