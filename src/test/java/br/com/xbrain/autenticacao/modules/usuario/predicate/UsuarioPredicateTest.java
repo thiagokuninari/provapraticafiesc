@@ -43,7 +43,7 @@ public class UsuarioPredicateTest {
     }
 
     @Test
-    public void comIds_deveParticionarOsIns_quandoTamanhoDaListaDeIdsForMaiorQueMaximoOracle() {
+    public void comIds_deveParticionarOsIds_quandoTamanhoDaListaDeIdsForMaiorQueMaximoOracle() {
         var ids = generateRandomIntList(new Random(789), 2700);
 
         var predicate = new UsuarioPredicate()

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -148,5 +149,15 @@ public class CidadeService {
             .stream()
             .map(CidadeResponse::of)
             .collect(Collectors.toList());
+    }
+
+    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
+        if (!cidadesId.isEmpty()) {
+            var predicate = new CidadePredicate()
+                .comCidadeId(cidadesId)
+                .build();
+            return cidadeRepository.findCodigoIbgeRegionalByCidade(predicate);
+        }
+        return new ArrayList<CodigoIbgeRegionalResponse>();
     }
 }
