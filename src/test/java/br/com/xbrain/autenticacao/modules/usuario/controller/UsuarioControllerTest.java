@@ -1206,4 +1206,42 @@ public class UsuarioControllerTest {
 
         verify(usuarioService, times(1)).findByUsuarioId(eq(500));
     }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosById_deveRetornarListaDeUsuarioResponse_quandoUsuariosCadastrados() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/buscar-todos")
+                .param("ids", "100")
+                .param("ids", "101")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(100)))
+            .andExpect(jsonPath("$[0].nome", is("ADMIN")))
+            .andExpect(jsonPath("$[0].codigoNivel", is("XBRAIN")))
+            .andExpect(jsonPath("$[0].subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$[0].subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$[0].subCanais[0].nome", is("PAP")))
+            .andExpect(jsonPath("$[1].id", is(101)))
+            .andExpect(jsonPath("$[1].nome", is("HELPDESK")))
+            .andExpect(jsonPath("$[1].codigoNivel", is("XBRAIN")))
+            .andExpect(jsonPath("$[1].subCanais[0].id", is(1)))
+            .andExpect(jsonPath("$[1].subCanais[0].codigo", is("PAP")))
+            .andExpect(jsonPath("$[1].subCanais[0].nome", is("PAP")));
+
+        verify(usuarioService, times(1)).getUsuariosByIdsTodasSituacoes(List.of(100, 101));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getUsuariosById_deveRetornarListaVaziaDeUsuarioResponse_quandoUsuariosNaoCadastrados() {
+        mvc.perform(get(USUARIOS_ENDPOINT + "/buscar-todos")
+                .param("ids", "1")
+                .param("ids", "2")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(usuarioService, times(1)).getUsuariosByIdsTodasSituacoes(List.of(1, 2));
+    }
 }

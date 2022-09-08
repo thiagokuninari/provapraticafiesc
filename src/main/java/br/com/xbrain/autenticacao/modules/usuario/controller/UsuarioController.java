@@ -125,8 +125,8 @@ public class UsuarioController {
                 .map(FuncionalidadeResponse::getRole).collect(Collectors.toList()));
     }
 
-    @GetMapping("/{ids}")
-    public List<UsuarioResponse> getUsuariosById(@PathVariable("ids") List<Integer> ids) {
+    @GetMapping("/buscar-todos")
+    public List<UsuarioResponse> getUsuariosById(@RequestParam("ids") List<Integer> ids) {
         return usuarioService.getUsuariosByIdsTodasSituacoes(ids);
     }
 
