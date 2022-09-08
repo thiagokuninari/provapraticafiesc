@@ -22,6 +22,5 @@ public enum CodigoDepartamento {
     PROCESSOS_COMERCIAL,
     PROJETOS,
     SUPORTE_COMERCIAL,
-    TRADE_MARKETING,
-    COBRANCA
+    TRADE_MARKETING
 }

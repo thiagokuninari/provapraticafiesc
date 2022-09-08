@@ -21,7 +21,7 @@ public class DepartamentoController {
         return service.getPermitidosPorNivel(nivelId);
     }
 
-    @GetMapping("cargo-id")
+    @GetMapping("cargoId")
     public List<Departamento> getByCargoId(Integer cargoId) {
         return service.getPermitidosPorCargo(cargoId);
     }
