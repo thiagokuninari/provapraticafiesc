@@ -42,7 +42,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryImplTest {
     @Test
     public void findAllDepartamentos_deveRetornarEmpty_quandoNaoHouverDepartamentosVinculadosAoCargo() {
         var filtros = new CargoDepartamentoFuncionalidadeFiltros();
-        filtros.setCargoId(201);
+        filtros.setCargoId(9999);
 
         assertThat(
             repository.findAllDepartamentos(filtros.toPredicate()))
