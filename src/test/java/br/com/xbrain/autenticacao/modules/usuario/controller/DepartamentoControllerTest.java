@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.service.DepartamentoService;
+import helpers.DepartamentoHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,4 +63,23 @@ public class DepartamentoControllerTest {
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("Departamento")));
     }
+
+    @Test
+    public void getByCargoId_deveRetornarListaDeDepartamentos_filtrandoPorCargo() throws Exception {
+
+        when(departamentoService
+            .getPermitidosPorCargo(eq(200)))
+            .thenReturn(DepartamentoHelper.umaListaDepartamentos());
+
+        mvc.perform(get("/api/departamentos/cargo-id?cargoId=200")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Departamento 1")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Departamento 2")));
+    }
+
 }

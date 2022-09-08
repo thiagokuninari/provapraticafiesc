@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.infra.JoinDescriptor;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidadeCanal.funcionalidadeCanal;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -80,5 +82,14 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
                         .and(cargoDepartamentoFuncionalidade.departamento.id.eq(departamentoId)))
                 .orderBy(funcionalidade.id.asc())
                 .fetch();
+    }
+
+    @Override
+    public List<Departamento> findAllDepartamentos(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(departamento)
+            .from(cargoDepartamentoFuncionalidade)
+            .where(predicate)
+            .fetch();
     }
 }
