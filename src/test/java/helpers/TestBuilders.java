@@ -206,11 +206,22 @@ public class TestBuilders {
             .build();
     }
 
+    public static UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoCargo codigoCargo, String nivel) {
+        return UsuarioAutenticado.builder()
+            .id(id)
+            .nome("FULANO " + id.toString())
+            .cargoCodigo(codigoCargo)
+            .nivel(nivel)
+            .canais(Set.of(ECanal.D2D_PROPRIO, ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
     public static UsuarioAutenticado umUsuarioAutenticadoAdmin(Integer id) {
         return UsuarioAutenticado.builder()
             .id(id)
             .cargoCodigo(CodigoCargo.ADMINISTRADOR)
             .canais(Collections.singleton(ECanal.ATIVO_PROPRIO))
+            .nivel("XBRAIN")
             .nivelCodigo(CodigoNivel.XBRAIN.name())
             .usuario(Usuario.builder()
                 .cargo(null)

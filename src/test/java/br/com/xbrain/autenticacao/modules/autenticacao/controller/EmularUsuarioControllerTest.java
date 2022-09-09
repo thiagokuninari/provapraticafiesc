@@ -1,11 +1,14 @@
 package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -13,10 +16,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.HELP_DESK;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +37,9 @@ public class EmularUsuarioControllerTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @MockBean
+    private DataHoraAtual dataHoraAtual;
 
     @Test
     public void deveSolicitarAutenticacao() throws Exception {
@@ -71,6 +80,19 @@ public class EmularUsuarioControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                         "Já existe uma emulação em execução! Encerre a atual para iniciar uma outra."
+                )));
+    }
+
+    @Test
+    public void deveNaoPermitirEmularUmUsuarioQuandoEstiverForaDoHorarioPermitido() throws Exception {
+        when(dataHoraAtual.getDataHora()).thenReturn(LocalDateTime.of(2022, 03, 02, 14, 30));
+
+        mvc.perform(get("/api/emular/usuario?id=402")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
+                        "Usuário fora do horário permitido."
                 )));
     }
 }

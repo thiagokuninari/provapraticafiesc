@@ -90,6 +90,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     @Query("SELECT x.empresas FROM Usuario x WHERE x.id = :id")
     List<Empresa> findEmpresasById(@Param("id") Integer id);
 
+    @Query("SELECT x.cpf FROM Usuario x WHERE x.id = :id")
+    String findCpfById(@Param("id") Integer id);
+
     @Query("SELECT x.unidadesNegocios FROM Usuario x WHERE x.id = :id")
     List<UnidadeNegocio> findUnidadesNegociosById(@Param("id") Integer id);
 

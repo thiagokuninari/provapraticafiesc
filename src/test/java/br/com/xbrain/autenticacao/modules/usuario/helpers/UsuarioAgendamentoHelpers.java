@@ -1,5 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoPermitidoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
@@ -15,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UsuarioAgendamentoHelpers {
@@ -39,34 +42,102 @@ public class UsuarioAgendamentoHelpers {
                         .build());
     }
 
+    public static UsuarioAgenteAutorizadoResponse umUsuarioAaResponse() {
+        return UsuarioAgenteAutorizadoResponse.builder()
+            .id(9999)
+            .equipeVendaId(999)
+            .nome("Kakarotto")
+            .email("emailTeste@email.com")
+            .agenteAutorizadoId(999)
+            .build();
+    }
+
+    public static Optional<Usuario> umUsuarioId9991() {
+        return Optional.ofNullable(Usuario.builder()
+            .id(9991)
+            .nome("USUARIO 1 DO AA 999")
+            .cargo(umCargoVendedorTelevendas())
+            .situacao(ESituacao.A)
+            .build());
+    }
+
+    public static Optional<Usuario> umUsuarioId9992() {
+        return Optional.ofNullable(Usuario.builder()
+            .id(9992)
+            .nome("USUARIO 2 DO AA 999")
+            .cargo(umCargoVendedorTelevendas())
+            .situacao(ESituacao.A)
+            .build());
+    }
+
+    public static Optional<Usuario> umUsuarioId9993() {
+        return Optional.ofNullable(Usuario.builder()
+            .id(9993)
+            .nome("USUARIO 3 DO AA 999")
+            .cargo(umCargoVendedorTelevendas())
+            .situacao(ESituacao.A)
+            .build());
+    }
+
+    public static Optional<Usuario> umUsuarioId9994() {
+        return Optional.ofNullable(Usuario.builder()
+            .id(9994)
+            .nome("USUARIO 4 DO AA 999")
+            .cargo(umCargoVendedorTelevendas())
+            .situacao(ESituacao.A)
+            .build());
+    }
+
+    public static Optional<Usuario> umUsuarioId9995() {
+        return Optional.ofNullable(Usuario.builder()
+            .id(9995)
+            .nome("USUARIO 5 DO AA 999")
+            .cargo(umCargoVendedorTelevendas())
+            .situacao(ESituacao.A)
+            .build());
+    }
+
     public static List<Usuario> usuariosDoAgenteAutorizado999() {
         return List.of(
                 Usuario.builder()
                         .id(9991)
                         .nome("USUARIO 1 DO AA 999")
                         .cargo(umCargoVendedorTelevendas())
+                        .situacao(ESituacao.A)
                         .build(),
                 Usuario.builder()
                         .id(9992)
                         .nome("USUARIO 2 DO AA 999")
                         .cargo(umCargoVendedorD2d())
+                        .situacao(ESituacao.I)
                         .build(),
                 Usuario.builder()
                         .id(9993)
                         .nome("USUARIO 3 DO AA 999")
                         .cargo(umCargoSocioPrincipal())
+                        .situacao(ESituacao.I)
                         .build(),
                 Usuario.builder()
                         .id(9994)
                         .nome("USUARIO 4 DO AA 999")
                         .cargo(umCargoSocioPrincipal())
+                        .situacao(ESituacao.I)
                         .build(),
                 Usuario.builder()
                         .id(9995)
                         .nome("USUARIO 5 DO AA 999")
+                        .situacao(ESituacao.I)
                         .cargo(umCargoSupervisor())
                         .build()
         );
+    }
+
+    public static EquipeVendaDto umaEquipeVendasDto() {
+        return EquipeVendaDto.builder()
+            .id(999)
+            .descricao("Descrição")
+            .canalVenda("D2D")
+            .build();
     }
 
     public static List<Usuario> usuariosDoAgenteAutorizado1300() {

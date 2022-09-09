@@ -274,7 +274,6 @@ public class Usuario {
         cargo.getId();
         unidadesNegocios.size();
         departamento.getId();
-        departamento.getId();
         canais.size();
         return this;
     }
@@ -451,7 +450,8 @@ public class Usuario {
 
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
-            && List.of(VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS)
+            && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
+            OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -551,17 +551,31 @@ public class Usuario {
 
     @JsonIgnore
     public boolean isCanalAtivoLocalRemovido(Set<ECanal> canaisNovos) {
-        return Optional.ofNullable(canais)
-            .filter(canaisOptional -> !ObjectUtils.isEmpty(canaisOptional))
-            .map(canaisOptional ->
-                canaisOptional.contains(ECanal.ATIVO_PROPRIO)
-                    && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(ECanal.ATIVO_PROPRIO))
-            )
-            .orElse(false);
+        return isCanalRemovido(ECanal.ATIVO_PROPRIO, canaisNovos);
+    }
+
+    @JsonIgnore
+    public boolean isCanalAgenteAutorizadoRemovido(Set<ECanal> canaisNovos) {
+        return isCanalRemovido(ECanal.AGENTE_AUTORIZADO, canaisNovos);
+    }
+
+    private boolean isCanalRemovido(ECanal canalValidado, Set<ECanal> canaisNovos) {
+        if (canalValidado == null || ObjectUtils.isEmpty(canais)) {
+            return false;
+        }
+
+        return canais.contains(canalValidado)
+            && (ObjectUtils.isEmpty(canaisNovos) || !canaisNovos.contains(canalValidado));
     }
 
     @JsonIgnore
     public boolean isCoordenadorOuSupervisorOperacao() {
         return cargo.getCodigo() == COORDENADOR_OPERACAO || cargo.getCodigo() == SUPERVISOR_OPERACAO;
+    }
+
+    @JsonIgnore
+    public boolean isNivelOperacao() {
+        return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
+            && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
 }

@@ -15,7 +15,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Sql(scripts = {"classpath:/tests_usuario_acesso.sql"})
+@Sql(scripts = {"classpath:/tests_usuario_acesso.sql", "classpath:/tests_usuario_inativacao.sql"})
 @Transactional
 public class UsuarioAcessoRepositoryTest {
 
@@ -32,13 +32,14 @@ public class UsuarioAcessoRepositoryTest {
                 tuple(303, "ALBERTO@XBRAIN.COM.BR"),
                 tuple(304, "MARIA@XBRAIN.COM.BR"),
                 tuple(305, "EDUARDA@XBRAIN.COM.BR"),
-                tuple(306, "ERICA@XBRAIN.COM.BR"));
+                tuple(306, "ERICA@XBRAIN.COM.BR"),
+                tuple(307, "LUCAS@XBRAIN.COM.BR"));
     }
 
     @Test
     public void deletarHistoricoUsuarioAcesso_removerHistoricos_quandoDataCadastroDoRegistroUltrapassarDoisMeses() {
-        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(19);
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(20);
         usuarioAcessoRepository.deletarHistoricoUsuarioAcesso();
-        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(15);
+        assertThat(usuarioAcessoRepository.countUsuarioAcesso()).isEqualTo(16);
     }
 }

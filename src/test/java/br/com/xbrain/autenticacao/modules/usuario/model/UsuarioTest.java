@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -9,6 +10,10 @@ import org.junit.Test;
 
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -49,6 +54,12 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isUsuarioEquipeVendas_deveRetornarTrue_quandoForExecutivoVendas() {
+        assertTrue(umUsuarioComCargo(1, CodigoCargo.OPERACAO_EXECUTIVO_VENDAS)
+            .isUsuarioEquipeVendas());
+    }
+
+    @Test
     public void permiteEditar_deveRetornarTrue_quandoForAdmin() {
         assertTrue(umUsuarioComCargo(1, CodigoCargo.GERENTE_OPERACAO)
             .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.XBRAIN, CodigoCargo.ADMINISTRADOR)));
@@ -58,19 +69,19 @@ public class UsuarioTest {
     @Test
     public void permiteEditar_deveRetornarFalse_quandoOUsuarioEditadoForOMesmoDoAutenticado() {
         assertFalse(umUsuarioComCargo(1, CodigoCargo.GERENTE_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.GERENTE_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.GERENTE_OPERACAO)));
     }
 
     @Test
     public void permiteEditar_deveRetornarFalse_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertFalse(umUsuarioComCargo(1, CodigoCargo.SUPERVISOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     @Test
     public void permiteEditar_deveRetornarTrue_quandoOUsuarioAutenticadoEhDaEquipeDeVendasEOEditadoNaoForVendedor() {
         assertTrue(umUsuarioComCargo(1, CodigoCargo.VENDEDOR_OPERACAO)
-            .permiteEditar(umUsuarioAutenticado(1, CodigoNivel.OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
+            .permiteEditar(umUsuarioAutenticado(1, OPERACAO, CodigoCargo.SUPERVISOR_OPERACAO)));
     }
 
     @Test
@@ -145,6 +156,52 @@ public class UsuarioTest {
             .isTrue();
     }
 
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarFalse_seNaoPossuirCanais() {
+        assertThat(new Usuario()
+            .isCanalAgenteAutorizadoRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarFalse_seCanaisNaoPossuiAgenteAutorizado() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.D2D_PROPRIO))
+            .isCanalAgenteAutorizadoRemovido(Set.of()))
+            .isFalse();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarTrue_seCanaisPossuirAgenteAutorizadoMasCanaisNovosForNull() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.AGENTE_AUTORIZADO))
+            .isCanalAgenteAutorizadoRemovido(null))
+            .isTrue();
+    }
+
+    @Test
+    public void isCanalAgenteAutorizadoRemovido_deveRetornarTrue_seCanaisPossuirAgenteAutorizadoMasCanaisNovosNao() {
+        assertThat(umUsuario(null, null, Set.of(ECanal.AGENTE_AUTORIZADO))
+            .isCanalAgenteAutorizadoRemovido(Set.of(ECanal.D2D_PROPRIO)))
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarTrue_seUsuarioPossuirNivelOperacao() {
+        assertThat(usuarioAtivo(VENDEDOR_OPERACAO, OPERACAO).isNivelOperacao())
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarFalse_seUsuarioNaoPossuirNivelOperacao() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isNivelOperacao_deveRetornarTrue_seUsuarioNaoPossuirCargoEForNivelOperacao() {
+        assertThat(usuarioAtivo(null, OPERACAO).isNivelOperacao())
+            .isTrue();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()
@@ -174,6 +231,27 @@ public class UsuarioTest {
             .builder()
             .loginNetSales(loginNetSales)
             .build();
+    }
+
+    private static Usuario usuarioAtivo(CodigoCargo codigoCargo, CodigoNivel nivel) {
+        var usuarioAtivo = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(codigoCargo)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(nivel)
+                    .situacao(ESituacao.A)
+                    .build())
+                .build());
+        return usuarioAtivo.build();
     }
 
     private UsuarioAutenticado umUsuarioAutenticado(Integer id, CodigoNivel codigoNivel, CodigoCargo codigoCargo) {

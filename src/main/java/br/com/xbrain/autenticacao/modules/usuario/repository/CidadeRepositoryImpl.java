@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.infra.CustomRepository;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CodigoIbgeRegionalResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -238,6 +239,25 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
                 .and(cidade.subCluster.isNotNull())
                 .and(predicate))
             .orderBy(cidade.nome.asc())
+            .fetch();
+    }
+
+    @Override
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(Projections.constructor(CodigoIbgeRegionalResponse.class,
+                cidade.id,
+                cidade.nome,
+                cidade.codigoIbge,
+                regional.id,
+                regional.nome
+            ))
+            .from(cidade)
+            .where(predicate)
+            .innerJoin(cidade.subCluster, subCluster)
+            .innerJoin(subCluster.cluster, cluster)
+            .innerJoin(cluster.grupo, grupo)
+            .innerJoin(grupo.regional, regional)
             .fetch();
     }
 }

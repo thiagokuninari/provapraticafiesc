@@ -122,7 +122,24 @@ public enum EErrors {
         "#036 - Erro ao tentar recuperar o relatório de logins e logouts entre datas."),
     ERRO_OBTER_QUANTIDADE_AGENDAMENTOS_USUARIO(
         "#037 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-        "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário.");
+        "#037 - Erro ao tentar recuperar a quantidade de agendamentos proprietários do usuário."),
+    ERRO_ALTERAR_SITUACAO_USUARIO("#038 - Desculpe, ocorreu um erro ao alterar a situação do usuário.",
+        "#038 - Erro ao alterar a situação do usuário."),
+    ERRO_ALTERAR_SITUACAO_COLABORADOR_VENDAS(
+        "#039 - Desculpe, ocorreu um erro ao alterar a situação do colaborador de vendas.",
+        "#039 - Erro ao alterar a situação do colaborador de vendas."),
+    ERRO_OBTER_USUARIOS_LOGADOS_POR_IDS(
+        "#040 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#040 - Erro ao tentar recuperar os ids dos usuarios logados."),
+    ERRO_LIMPAR_CACHE_FERIADOS_MAILING(
+        "#041 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#041 - Erro ao tentar limpar o cache de feriados no mailing-api."),
+    ERRO_OBTER_EQUIPE_USUARIO_SERVICE(
+        "#042 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#042 - Erro ao buscar usuários cadastrados em equipes."),
+    ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
+        "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario.");
 
     @Getter
     @Setter

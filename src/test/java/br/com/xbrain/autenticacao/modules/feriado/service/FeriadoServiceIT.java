@@ -14,6 +14,7 @@ import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +53,8 @@ public class FeriadoServiceIT {
     private CallService callService;
     @Autowired
     private EntityManager entityManager;
+    @MockBean
+    private MailingService mailingService;
 
     @Test
     public void obterFeriadosByFiltros_deveRetornarTodosFeriadosExcetoExcluidosEFeriadoFilhos_quandoNaoTemFiltro() {
@@ -63,7 +66,7 @@ public class FeriadoServiceIT {
                 ETipoFeriado.NACIONAL, null, null, null, null));
 
         assertThat(feriadoService.obterFeriadosByFiltros(umPageRequest(1), new FeriadoFiltros()))
-            .hasSize(4)
+            .hasSize(7)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId", "estadoNome",
                 "cidadeId", "cidadeNome")
             .contains(
@@ -104,7 +107,7 @@ public class FeriadoServiceIT {
             .build();
 
         assertThat(feriadoService.obterFeriadosByFiltros(umPageRequest(0), filtrosComData))
-            .hasSize(4)
+            .hasSize(7)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId", "estadoNome",
                 "cidadeId", "cidadeNome")
             .contains(
@@ -128,7 +131,7 @@ public class FeriadoServiceIT {
         assertThat(feriadoService.obterFeriadosByFiltros(umPageRequest(0), filtrosMaringa))
             .hasSize(10);
         assertThat(feriadoService.obterFeriadosByFiltros(umPageRequest(1), filtrosMaringa))
-            .hasSize(1)
+            .hasSize(3)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId", "estadoNome",
                 "cidadeId", "cidadeNome")
             .contains(tuple(102, "Feriado de Maringá do Luis", LocalDate.of(2019, 7, 29),
@@ -164,7 +167,7 @@ public class FeriadoServiceIT {
             .build();
 
         assertThat(feriadoService.obterFeriadosByFiltros(umPageRequest(0), filtrosMunicipal))
-            .hasSize(3)
+            .hasSize(5)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "estadoId", "estadoNome",
                 "cidadeId", "cidadeNome")
             .contains(
@@ -223,7 +226,7 @@ public class FeriadoServiceIT {
     @Test
     public void salvarFeriado_deveSalvarFeriadoNacional_quandoRequestCorreto() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.salvarFeriado(umFeriadoNacionalRequest(null)))
@@ -233,14 +236,14 @@ public class FeriadoServiceIT {
                 null, null, Eboolean.V);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("CADASTRADO MANUAL"), any());
     }
 
     @Test
     public void salvarFeriado_deveSalvarFeriadoMunicipal_quandoRequestCorreto() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.salvarFeriado(umFeriadoMunicipalRequest()))
@@ -250,14 +253,14 @@ public class FeriadoServiceIT {
                 8, 1765, Eboolean.F);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("CADASTRADO MANUAL"), any());
     }
 
     @Test
     public void salvarFeriado_deveSalvarFeriadoEstadualEOsFeriadosFilhosDele_quandoRequestCorreto() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         var feriadoEstadual = feriadoService.salvarFeriado(umFeriadoEstadualRequest(1, null));
@@ -269,7 +272,7 @@ public class FeriadoServiceIT {
                 1, null, Eboolean.F);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(26);
+            .hasSize(29);
         assertThat(feriadoRepository.findAll(
             new FeriadoPredicate()
                 .comFeriadoPaiId(feriadoEstadual.getId())
@@ -300,7 +303,7 @@ public class FeriadoServiceIT {
     @Test
     public void salvarFeriadoImportado_deveSalvarFeriado_quandoFeriadoNacional() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.NACIONAL, null, null)))
@@ -310,14 +313,14 @@ public class FeriadoServiceIT {
                 null, null, Eboolean.V);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("IMPORTADO"), any());
     }
 
     @Test
     public void salvarFeriadoImportado_deveSalvarFeriado_quandoFeriadoMunicipal() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.MUNICIPAL, 8, 1765)))
@@ -327,14 +330,14 @@ public class FeriadoServiceIT {
                 8, 1765, Eboolean.F);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("IMPORTADO"), any());
     }
 
     @Test
     public void salvarFeriadoImportado_deveSalvarFeriadoEFeriadoFilhos_quandoFeriadoEstadual() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         var feriadoEstadual = feriadoService.salvarFeriadoImportado(umaFeriadoImportacao(ETipoFeriado.ESTADUAL, 22, null));
@@ -346,7 +349,7 @@ public class FeriadoServiceIT {
                 22, null, Eboolean.F);
 
         assertThat(feriadoRepository.findAll())
-            .hasSize(20);
+            .hasSize(23);
         assertThat(feriadoRepository.findAll(
             new FeriadoPredicate()
                 .comFeriadoPaiId(feriadoEstadual.getId())
@@ -402,7 +405,7 @@ public class FeriadoServiceIT {
     @Test
     public void editarFeriado_deveEditarFeriadoNacional_quandoRequestCorreto() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.editarFeriado(umFeriadoNacionalRequest(100)))
@@ -413,7 +416,7 @@ public class FeriadoServiceIT {
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
     }
 
     @Test
@@ -427,7 +430,7 @@ public class FeriadoServiceIT {
             .tipoFeriado(ETipoFeriado.MUNICIPAL)
             .build();
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.editarFeriado(editacaoRequest))
@@ -438,13 +441,13 @@ public class FeriadoServiceIT {
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
     }
 
     @Test
     public void editarFeriado_deveEditarFeriadoEstadualEFeriadoFilhos_quandoEstadoIdNaoForAlterado() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         assertThat(feriadoService.editarFeriado(umFeriadoEstadualRequest(22, 104)))
@@ -456,7 +459,7 @@ public class FeriadoServiceIT {
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         assertThat(feriadoRepository.findAll(new FeriadoPredicate().comFeriadoPaiId(104).build()))
             .hasSize(2)
             .extracting("id", "nome", "dataFeriado", "tipoFeriado", "uf.id",
@@ -471,7 +474,7 @@ public class FeriadoServiceIT {
     @Test
     public void editarFeriado_deveEditarFeriadoEstadualExluirFeriadoFilhosESalvarNovos_quandoEstadoIdForAlterado() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         when(autenticacaoService.getUsuarioId()).thenReturn(1111);
 
         var feriadoEditado = feriadoService.editarFeriado(umFeriadoEstadualRequest(19, 104));
@@ -485,7 +488,7 @@ public class FeriadoServiceIT {
 
         verify(feriadoHistoricoService, times(1)).salvarHistorico(any(), eq("EDITADO"), any());
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
         assertThat(feriadoRepository.findAll(new FeriadoPredicate().comFeriadoPaiId(104).build()))
             .hasSize(3)
             .extracting("nome", "dataFeriado", "tipoFeriado", "uf.id",

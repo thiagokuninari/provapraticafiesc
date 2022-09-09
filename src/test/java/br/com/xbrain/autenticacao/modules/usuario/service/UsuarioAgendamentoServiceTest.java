@@ -30,8 +30,7 @@ import java.util.Map;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -60,11 +59,12 @@ public class UsuarioAgendamentoServiceTest {
 
     @Before
     public void setup() {
+        when(usuarioRepository.findById(eq(9991))).thenReturn(umUsuarioId9991());
         when(agenteAutorizadoService.getUsuariosByAaIdCanalDoUsuario(eq(1300), any()))
                 .thenReturn(usuariosMesmoSegmentoAgenteAutorizado1300());
         when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(1300), eq(false)))
                 .thenReturn(todosUsuariosDoAgenteAutorizado1300());
-        when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(999), eq(false)))
+        when(agenteAutorizadoNovoService.getUsuariosByAaId(eq(999), anyBoolean()))
                 .thenReturn(todosUsuariosDoAgenteAutorizado999());
         when(usuarioService.findPermissoesByUsuario(eq(Usuario.builder().id(133).build())))
                 .thenReturn(umaPermissaoDeVendaResponse());
@@ -165,6 +165,7 @@ public class UsuarioAgendamentoServiceTest {
                 .thenReturn(umaPermissaoResponseVazia());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
+        when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
 
         var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
 
@@ -180,6 +181,7 @@ public class UsuarioAgendamentoServiceTest {
                 .thenReturn(umaPermissaoDeVendaResponse());
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoSupervisor());
         when(equipeVendasService.getEquipesPorSupervisor(eq(102))).thenReturn(List.of(umaEquipeDeVendas()));
+        when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
 
         var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
 
@@ -192,6 +194,11 @@ public class UsuarioAgendamentoServiceTest {
     @Test
     public void recuperarUsuariosDisponiveisParaDistribuicao_deveRetornarTodosUsuariosDoAA_sePossuirVisualizacaoGeral() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCargoCoordenadorComercial());
+        when(equipeVendasService.getByUsuario(eq(9991))).thenReturn(umaEquipeVendasDto());
+        when(usuarioRepository.findById(eq(9992))).thenReturn(umUsuarioId9992());
+        when(usuarioRepository.findById(eq(9993))).thenReturn(umUsuarioId9993());
+        when(usuarioRepository.findById(eq(9994))).thenReturn(umUsuarioId9994());
+        when(usuarioRepository.findById(eq(9995))).thenReturn(umUsuarioId9995());
 
         var response = usuarioAgendamentoService.recuperarUsuariosDisponiveisParaDistribuicao(999);
 

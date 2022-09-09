@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.*;
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -53,9 +53,16 @@ public class FeederServiceTest {
     private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
+    public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
+        service.removerPermissoesEspeciais(List.of(1));
+        verify(permissaoEspecialRepository, times(1))
+            .deletarPermissaoEspecialBy(eq(List.of(15000, 15005, 15012, 3046)), eq(List.of(1)));
+    }
+
+    @Test
     public void atualizarPermissaoFeeder_deveSalvarPermissoesEspeciaisConformeOCargo_quandoUsuariosNaoPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
 
         when(usuarioRepository.findComplete(102)).thenReturn(
@@ -86,7 +93,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_naoDeveDuplicarPermissoes_quandoUsuariosJaPossuiremAsPermissoes() {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaComPermissaoFeeder.setFeeder(Eboolean.V);
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
 
         when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
@@ -102,7 +109,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_deveRemoverPermissaoFeeder_quandoAaTiverPermissaoParaFeeder() {
         var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setFeeder(ETipoFeeder.NAO_FEEDER);
         aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
@@ -120,7 +127,7 @@ public class FeederServiceTest {
     @Test
     public void atualizarPermissaoFeeder_naoDeveRemoverPermissaoDoSocio_quandoSocioTiverOutroAaComPermissaoFeeder() {
         var aaSemPermissaoFeeder = umAgenteAutorizadoFeederDto();
-        aaSemPermissaoFeeder.setFeeder(Eboolean.F);
+        aaSemPermissaoFeeder.setFeeder(ETipoFeeder.NAO_FEEDER);
         aaSemPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
         when(usuarioRepository.exists(anyInt())).thenReturn(true);
 
@@ -210,7 +217,7 @@ public class FeederServiceTest {
     @Test
     public void adicionarPermissaoFeederParaUsuarioNovo_deveNaoSalvarPermissaoTratarLead_quandoAaNaoForFeeder() {
         var usuarioNovo = umUsuarioMqRequest();
-        usuarioNovo.setAgenteAutorizadoFeeder(Eboolean.F);
+        usuarioNovo.setAgenteAutorizadoFeeder(ETipoFeeder.NAO_FEEDER);
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
@@ -237,6 +244,20 @@ public class FeederServiceTest {
                 tuple(1111, 15000),
                 tuple(1111, 15005),
                 tuple(1111, 15012));
+    }
+
+    @Test
+    public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfAlterarEmailEGerarHistorico_quandoUsuarioFeederExcluido() {
+        var usuarioSemCpf = umUsuarioFeeder(100).get();
+        usuarioSemCpf.setCpf(null);
+        usuarioSemCpf.setEmail("INATIVO_THIAGOTESTE@XBRAIN.COM.BR");
+
+        when(usuarioRepository.findComplete(eq(100))).thenReturn(umUsuarioFeeder( 100));
+
+        service.limparCpfEAlterarEmailUsuarioFeeder(100);
+
+        verify(usuarioRepository, times(1)).save(eq(usuarioSemCpf));
+        verify(usuarioHistoricoService, times(1)).save(eq(umUsuarioHistorico()));
     }
 
     private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoFeederDto() {
@@ -270,6 +291,15 @@ public class FeederServiceTest {
                 .build());
     }
 
+    private Optional<Usuario> umUsuarioFeeder(Integer id) {
+        return Optional.of(
+            Usuario.builder()
+                .id(id)
+                .email("THIAGOTESTE@XBRAIN.COM.BR")
+                .cpf("25248663865")
+                .build());
+    }
+
     private UsuarioDto umUsuarioDto() {
         return UsuarioDto.builder()
             .id(1111)
@@ -280,10 +310,18 @@ public class FeederServiceTest {
 
     private UsuarioMqRequest umUsuarioMqRequest() {
         return UsuarioMqRequest.builder()
-            .agenteAutorizadoFeeder(Eboolean.V)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
             .agenteAutorizadoId(111)
             .usuarioCadastroId(2222)
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D)
+            .build();
+    }
+
+    private UsuarioHistorico umUsuarioHistorico() {
+        return UsuarioHistorico.builder()
+            .usuario(new Usuario(100))
+            .observacao("Usuário excluído. CPF e Email alterados automaticamente")
+            .situacao(ESituacao.I)
             .build();
     }
 }

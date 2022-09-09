@@ -21,6 +21,7 @@ public enum CodigoFuncionalidade {
     AUT_GER_PERMISSAO_CARGO_DEPARTAMENTO("Gerenciar Permissões por Cargo e Departamento"),
     AUT_GER_PERMISSAO_ESPECIAL_USUARIO("Gerenciar Permissões Especiais por Usuário"),
     AUT_2100("Visualizar relatório de login / logout"),
+    AUT_INATIVAR_USUARIOS_SEM_ACESSO("Inativar Usuários Sem Acesso"),
     CRN_ABRIR_CHAMADO("Abrir chamado CRN"),
     CRN_GERENCIAR_CHAMADO("Gerenciar chamado CRN"),
     CHM_ABRIR_CHAMADO("Abrir chamado"),
@@ -36,7 +37,9 @@ public enum CodigoFuncionalidade {
     FDR_GERENCIAR_LEAD("Gerenciar Lead"),
     MLG_5018("Gerenciar Distribuição Mailing Segmentação"),
     CTR_2044("Visualizar todos os Sites"),
-    INT_7007("Resgatar tratativas para motiva");
+    INT_7007("Resgatar tratativas para motiva"),
+    AUT_20009("Gerenciar Horários de Acesso"),
+    AUT_20010("Adicionar novo usuário");
 
     @Getter
     private String descricao;

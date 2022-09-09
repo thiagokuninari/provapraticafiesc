@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
 import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
@@ -28,6 +29,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -418,7 +420,7 @@ public class SiteServiceTest {
 
     @Test
     public void getAllSupervisoresByHierarquia_listaSupervisores_quandoForDoSiteIdESubordinadoDoUsuarioSuperiorIdInformado() {
-        when(usuarioService.getIdsSubordinadosDaHierarquia(200, SUPERVISOR_OPERACAO.name()))
+        when(usuarioService.getIdsSubordinadosDaHierarquia(200, Set.of(SUPERVISOR_OPERACAO.name())))
             .thenReturn(List.of(110, 112));
         when(siteRepository.findById(100))
             .thenReturn(Optional.of(umSiteComSupervisores()));
@@ -462,8 +464,7 @@ public class SiteServiceTest {
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.inativar(12))
-            .withMessage("Para concluir essa operação é necessário remover o supervisor(a) "
-                + "UM USUARIO SUPERVISOR_OPERACAO da equipe de vendas Equipe ativo.");
+            .withMessage("Para concluir essa operação é necessário inativar a equipe de vendas Equipe ativo.");
     }
 
     @Test
@@ -550,7 +551,7 @@ public class SiteServiceTest {
 
     @Test
     public void buscarSiteCidadePorCodigoCidadeDbm_notFoundException_seNaoHouverResultados() {
-        var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
+        var predicate = new CidadeDbmPredicate().comCodigoCidadeDbm(1).build()
             .and(new SitePredicate().todosSitesAtivos().build());
 
         when(siteRepository.findSiteCidadeDbmTop1ByPredicate(eq(predicate)))
@@ -563,7 +564,7 @@ public class SiteServiceTest {
 
     @Test
     public void buscarSiteCidadePorCodigoCidadeDbm_siteCidadeResponse_seNaoHouverResultados() {
-        var predicate = new CidadePredicate().comCodigoCidadeDbm(1).build()
+        var predicate = new CidadeDbmPredicate().comCodigoCidadeDbm(1).build()
             .and(new SitePredicate().todosSitesAtivos().build());
 
         when(siteRepository.findSiteCidadeDbmTop1ByPredicate(eq(predicate)))
@@ -572,6 +573,42 @@ public class SiteServiceTest {
         assertThat(service.buscarSiteCidadePorCodigoCidadeDbm(1))
             .extracting("siteId", "siteNome", "cidadeId", "cidadeNome", "ufId", "ufNome")
             .containsExactly(1, "SITE 1", 1, "LONDRINA", 1, "PR");
+    }
+
+    @Test
+    public void buscarSiteCidadePorDdd_notFoundException_seNaoHouverResultados() {
+        var predicate = new CidadeDbmPredicate().comDdd(1).build()
+            .and(new SitePredicate().todosSitesAtivos().build());
+
+        when(siteRepository.findSiteDddTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.buscarSiteCidadePorDdd(1))
+            .withMessage("Site não encontrado.");
+    }
+
+    @Test
+    public void buscarSiteCidadePorDdd_siteCidadeResponse_seNaoHouverResultados() {
+        var predicate = new CidadeDbmPredicate().comDdd(1).build()
+            .and(new SitePredicate().todosSitesAtivos().build());
+
+        when(siteRepository.findSiteDddTop1ByPredicate(eq(predicate)))
+            .thenReturn(Optional.of(umSiteCidade()));
+
+        var atual = service.buscarSiteCidadePorDdd(1);
+        var esperado = SiteCidadeResponse
+            .builder()
+            .siteId(1)
+            .siteNome("SITE 1")
+            .codigoCidadeDbm(1)
+            .cidadeId(1)
+            .cidadeNome("LONDRINA")
+            .ufId(1)
+            .ufNome("PR")
+            .build();
+        assertThat(atual)
+            .isEqualToComparingFieldByField(esperado);
     }
 
     @Test

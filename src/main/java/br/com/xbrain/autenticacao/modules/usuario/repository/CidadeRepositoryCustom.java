@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CodigoIbgeRegionalResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 
@@ -39,4 +40,6 @@ public interface CidadeRepositoryCustom {
     Optional<Cidade> findFirstByPredicate(Predicate predicate);
 
     List<Cidade> findAllByRegionalIdAndUfId(Integer regionalId, Integer ufId, Predicate predicate);
+
+    List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(Predicate predicate);
 }

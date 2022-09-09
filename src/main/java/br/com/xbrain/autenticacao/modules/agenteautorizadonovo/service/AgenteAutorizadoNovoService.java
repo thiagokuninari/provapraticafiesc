@@ -210,4 +210,16 @@ public class AgenteAutorizadoNovoService {
             throw new IntegracaoException(ex);
         }
     }
+
+    public List<AgenteAutorizadoResponse> findAgenteAutorizadoByUsuarioId(Integer usuarioId) {
+        try {
+            return client.findAgenteAutorizadoByUsuarioId(usuarioId);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoNovoService.class.getName(),
+                EErrors.ERRO_BUSCAR_TODOS_AAS_DO_USUARIO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
 }

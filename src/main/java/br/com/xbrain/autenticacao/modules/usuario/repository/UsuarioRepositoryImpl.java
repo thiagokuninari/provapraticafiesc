@@ -7,14 +7,15 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
-import com.querydsl.core.types.*;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -53,6 +54,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartament
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -65,7 +67,7 @@ import static com.querydsl.jpa.JPAExpressions.select;
 @Slf4j
 public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements UsuarioRepositoryCustom {
 
-    private static final int TRINTA_DOIS_DIAS = 32;
+    private static final int SETE_DIAS = 7;
     private static final Integer CARGO_SUPERVISOR_ID = 10;
     private static final int ID_NIVEL_OPERACAO = 1;
     private static final String CONCATENA_STRINGS = "wm_concat({0})";
@@ -105,8 +107,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     public Optional<Usuario> findComplete(Integer id) {
         return Optional.ofNullable(
             new JPAQueryFactory(entityManager)
-                .select(usuario)
-                .from(usuario)
+                .selectFrom(usuario)
                 .join(usuario.cargo, cargo).fetchJoin()
                 .join(cargo.nivel).fetchJoin()
                 .leftJoin(usuario.canais).fetchJoin()
@@ -157,22 +158,23 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> canais) {
+    public List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigosCargos) {
         return entityManager
             .createNativeQuery(
                 " SELECT UH.FK_USUARIO "
                     + " , U.NOME "
                     + " , U.EMAIL_01 "
                     + " , C.NOME AS NOME_CARGO "
+                    + " , C.CODIGO AS CARGO_CODIGO"
                     + " FROM USUARIO_HIERARQUIA UH"
                     + " JOIN USUARIO U ON U.ID = UH.FK_USUARIO "
                     + " JOIN CARGO C ON C.ID = U.FK_CARGO "
                     + " WHERE C.CODIGO in (:_codigoCargo)"
-                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME"
+                    + " GROUP BY FK_USUARIO, U.NOME, U.EMAIL_01, C.NOME, C.CODIGO"
                     + " START WITH UH.FK_USUARIO_SUPERIOR = :_usuarioId "
                     + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR")
             .setParameter("_usuarioId", usuarioId)
-            .setParameter("_codigoCargo", canais)
+            .setParameter("_codigoCargo", codigosCargos)
             .getResultList();
     }
 
@@ -419,10 +421,10 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .leftJoin(usuario.cargo, cargo).fetchJoin()
             .leftJoin(usuario.departamento, departamento).fetchJoin()
             .where(usuario.id.in(
-                select(usuarioHierarquia.usuarioSuperior.id)
-                    .from(usuarioHierarquia)
-                    .where(usuarioHierarquia.usuario.id.eq(usuarioId))
-            )
+                    select(usuarioHierarquia.usuarioSuperior.id)
+                        .from(usuarioHierarquia)
+                        .where(usuarioHierarquia.usuario.id.eq(usuarioId))
+                )
                 .and(usuario.cargo.codigo.in(COORDENADOR_OPERACAO, GERENTE_OPERACAO))
                 .and(usuario.departamento.codigo.eq(COMERCIAL))
                 .and(usuario.situacao.eq(A)))
@@ -514,7 +516,11 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
         return new JPAQueryFactory(entityManager)
             .select(usuario)
             .from(usuario)
-            .innerJoin(usuario.cargo, cargo)
+            .innerJoin(usuario.cargo, cargo).fetchJoin()
+            .leftJoin(cargo.nivel, nivel).fetchJoin()
+            .leftJoin(usuario.departamento, departamento).fetchJoin()
+            .leftJoin(usuario.configuracao, configuracao).fetchJoin()
+            .leftJoin(usuario.unidadesNegocios, unidadeNegocio).fetchJoin()
             .where(cargo.nivel.codigo.eq(codigoNivel))
             .orderBy(usuario.nome.asc())
             .fetch();
@@ -675,7 +681,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                            List<Integer> areasAtuacaoIds,
-                                                           CodigoCargo cargo,
+                                                           List<CodigoCargo> cargos,
                                                            Set<ECanal> canais) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
@@ -688,7 +694,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .join(subCluster.cluster, cluster)
             .join(cluster.grupo, grupo)
             .join(grupo.regional, regional)
-            .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+            .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
                 .and(usuarioCidade.usuario.canais.any().in(canais))
                 .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
             .distinct()
@@ -698,7 +704,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     @Override
     public List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
                                                            List<Integer> areasAtuacaoIds,
-                                                           CodigoCargo cargo,
+                                                           List<CodigoCargo> cargos,
                                                            Set<ECanal> canais) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioResponse.class,
@@ -709,7 +715,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .join(usuarioCidade.cidade, cidade)
             .join(usuarioCidade.cidade.uf, uf1)
             .join(usuarioCidade.cidade.regional, regional)
-            .where(usuarioCidade.usuario.cargo.codigo.eq(cargo)
+            .where(usuarioCidade.usuario.cargo.codigo.in(cargos)
                 .and(usuarioCidade.usuario.canais.any().in(canais))
                 .and(areaAtuacao.getPredicate().apply(areasAtuacaoIds)))
             .distinct()
@@ -774,13 +780,14 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Usuario> findAllUsuariosSemDataUltimoAcesso() {
+    public List<Usuario> findAllUsuariosSemDataUltimoAcesso(LocalDateTime dataHoraInativarUsuario) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(Usuario.class, usuario.id, usuario.email))
             .from(usuario)
             .where(usuario.situacao.eq(A)
-                .and(usuario.dataUltimoAcesso.isNull()
-                    .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(TRINTA_DOIS_DIAS)))))
+                .and(usuario.dataUltimoAcesso.isNull())
+                .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
+                .and(usuario.dataCadastro.after(dataHoraInativarUsuario)))
             .fetch();
     }
 
@@ -897,6 +904,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .innerJoin(usuario.cargo, cargo)
             .where(cargo.codigo.eq(codigoCargo)
+                .and(usuario.situacao.eq(A)))
+            .fetch();
+    }
+
+    @Override
+    public List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(usuario.id)
+            .from(usuario)
+            .innerJoin(usuario.cargo, cargo)
+            .where(cargo.codigo.in(codigoCargos)
                 .and(usuario.situacao.eq(A)))
             .fetch();
     }

@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacaoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
 import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import com.google.common.io.ByteStreams;
 import lombok.SneakyThrows;
 import org.junit.Before;
@@ -56,6 +57,8 @@ public class FeriadoImportacaoServiceTest {
     private FeriadoHistoricoService feriadoHistoricoService;
     @MockBean
     private CallService callService;
+    @MockBean
+    private MailingService mailingService;
 
     MockMultipartFile mockMultipartFile;
 
@@ -113,11 +116,11 @@ public class FeriadoImportacaoServiceTest {
     @Test
     public void importarFeriadoArquivo_deveSalvarFeriados_quandoDadosCorretos() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
 
         importacaoService.importarFeriadoArquivo(mockMultipartFile, umFeriadoImportacaoRequest());
         assertThat(feriadoRepository.findAll())
-            .hasSize(23);
+            .hasSize(26);
     }
 
     @Test
@@ -204,7 +207,7 @@ public class FeriadoImportacaoServiceTest {
     @Test
     public void importarFeriado_deveRetornarFeriadoSalvoNoBanco_quandoDadosSaoCorretos() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         var linha = umaLinha(6);
         assertThat(importacaoService.importarFeriado(linha, 2019))
             .extracting("tipoFeriado", "motivoNaoImportacao", "nome", "dataFeriado", "estadoId",
@@ -212,13 +215,13 @@ public class FeriadoImportacaoServiceTest {
             .containsExactlyInAnyOrder(ETipoFeriado.MUNICIPAL, List.of(), "FERIADO NOVO DE LONDRINA",
                 LocalDate.of(2019, 9, 20), 1, 5578, Eboolean.V);
         assertThat(feriadoRepository.findAll())
-            .hasSize(18);
+            .hasSize(21);
     }
 
     @Test
     public void importarFeriado_deveSalvarFeriadoEFeriadoFilhos_quandoFeriadoImportadoEEstadual() {
         assertThat(feriadoRepository.findAll())
-            .hasSize(17);
+            .hasSize(20);
         var linha = umaLinha(4);
         var feriadoImportado = importacaoService.importarFeriado(linha, 2019);
 
@@ -228,7 +231,7 @@ public class FeriadoImportacaoServiceTest {
             .containsExactlyInAnyOrder(ETipoFeriado.ESTADUAL, List.of(), "FERIADO ESTADUAL DA VIOLA",
                 LocalDate.of(2019, 3, 22), 22, null, Eboolean.V);
         assertThat(feriadoRepository.findAll())
-            .hasSize(20);
+            .hasSize(23);
         assertThat(feriadoRepository.findAll(
             new FeriadoPredicate()
                 .comFeriadoPaiId(feriadoImportado.getId())

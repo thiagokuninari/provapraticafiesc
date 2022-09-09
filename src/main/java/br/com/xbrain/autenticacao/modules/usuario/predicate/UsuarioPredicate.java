@@ -502,7 +502,8 @@ public class UsuarioPredicate {
             case D2D_PROPRIO:
                 builder.and(usuario.cargo.codigo.in(
                     CodigoCargo.VENDEDOR_OPERACAO,
-                    CodigoCargo.ASSISTENTE_OPERACAO
+                    CodigoCargo.ASSISTENTE_OPERACAO,
+                    CodigoCargo.OPERACAO_EXECUTIVO_VENDAS
                 ));
                 break;
             default:

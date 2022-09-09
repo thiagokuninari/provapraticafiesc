@@ -173,7 +173,7 @@ public class UsuarioSiteService {
 
     public List<UsuarioSituacaoResponse> getVendedoresPorCargoUsuario(Usuario usuario, Integer siteId) {
         return isAssistenteOperacao(usuario)
-            ? repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(getCoordenadoresIdsDoUsuariod(usuario.getId()), siteId)
+            ? repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(getCoordenadoresIdsDoUsuarioId(usuario.getId()), siteId)
             : repository.findVendedoresDoSiteIdPorHierarquiaUsuarioId(List.of(usuario.getId()), siteId);
     }
 
@@ -181,7 +181,7 @@ public class UsuarioSiteService {
         return usuario.getCargo().getCodigo().equals(CodigoCargo.ASSISTENTE_OPERACAO);
     }
 
-    private List<Integer> getCoordenadoresIdsDoUsuariod(Integer usuarioId) {
+    private List<Integer> getCoordenadoresIdsDoUsuarioId(Integer usuarioId) {
         return repository.getSuperioresDoUsuarioPorCargo(usuarioId, CodigoCargo.COORDENADOR_OPERACAO)
             .stream()
             .map(Usuario::getId)
@@ -190,5 +190,20 @@ public class UsuarioSiteService {
 
     public List<Usuario> getUsuariosDaHierarquiaDoUsuarioLogado() {
         return usuarioService.getUsuariosDaHierarquiaAtivoLocalDoUsuarioLogado();
+    }
+
+    public List<UsuarioNomeResponse> getVendedoresDaHierarquiaPorSite(Integer siteId,
+                                                                      Boolean buscarInativos) {
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        var vendedores = usuario.isXbrainOuMso()
+            ? getVendedorPorSiteId(siteId)
+            : getVendedoresPorCargoUsuario(getUsuarioById(usuario.getId()), siteId);
+
+        return vendedores
+            .stream()
+            .map(UsuarioEquipeDto::of)
+            .filter(usuarioEquipeDto -> usuarioEquipeDto.isAtivo(buscarInativos))
+            .map(UsuarioNomeResponse::of)
+            .collect(Collectors.toList());
     }
 }

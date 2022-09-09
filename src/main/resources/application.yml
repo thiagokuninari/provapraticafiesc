@@ -7,11 +7,8 @@ server:
 spring:
   redis:
     #    host: 127.0.0.1
-    #    port: 6379
     host: 192.168.50.1
     port: 6379
-    #    host: 192.168.50.1
-    #    port: 6379
 
     pool:
       max-active: 120
@@ -52,7 +49,7 @@ spring:
 
   rabbitmq:
     host: 192.168.50.1
-    #host: localhost
+    #    host: localhost
     port: 5671
     username: xbrain
     password: xbrain
@@ -68,6 +65,9 @@ spring:
     encoding: UTF-8
 
 app-config:
+  timer-usuario:
+    data-hora-inativar-usuario-a-partir-de: 2021-10-11T00:00:00.000
+    email-usuario-viabilidade: INTEGRACAOMOTIVA@XBRAIN.COM.BR,INTEGRACAODDCOM@XBRAIN.COM.BR,INTEGRACAOCREDITCASH@XBRAIN.COM.BR
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
@@ -131,6 +131,8 @@ app-config:
     alterar-situacao-usuario-feeder: alterar-situacao-usuario-feeder.queue
     alterar-situacao-usuario-feeder-failure: alterar-situacao-usuario-feeder-failure.queue
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
+    limpar-cpf-e-alterar-email-feeder: limpar-cpf-e-alterar-email-feeder.queue
+    limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -220,23 +222,23 @@ app-config:
 
   services:
     autenticacao:
-#       url: http://localhost:8096
+      #url: http://localhost:8096
       url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
       url: http://call-api-dev.conexaoclarobrasil.com.br
       # url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
-#      url: http://localhost:8099
+      #url: http://localhost:8099
     vendas:
       #url: http://localhost:8097
       url: https://vendas-api-dev.conexaoclarobrasil.com.br/
     mailing:
       #url: http://localhost:8095
-      url: http://mailing-api-dev.conexaoclarobrasil.com.br/
+      url: https://mailing-api-dev.conexaoclarobrasil.com.br/
     equipe-venda:
       #url: http://localhost:8089
-      url: http://api-dev.conexaoclarobrasil.com.br/equipe-venda
+      url: https://api-dev.conexaoclarobrasil.com.br/equipe-venda
     contato-crn:
       #url: http://localhost:8084
       url: http://api-dev.conexaoclarobrasil.com.br/contato-crn

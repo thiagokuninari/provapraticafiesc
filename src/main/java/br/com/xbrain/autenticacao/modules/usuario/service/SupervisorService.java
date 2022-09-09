@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dServ
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,8 @@ public class SupervisorService {
 
     private static final int COLUNA_USUARIO_ID = 0;
     private static final int COLUNA_USUARIO_NOME = 1;
-    
+    private static final int COLUNA_CARGO_CODIGO = 4;
+
     private final UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -73,12 +75,13 @@ public class SupervisorService {
 
     private List<UsuarioResponse> getVendedoresDoSupervisor(Integer supervisorId) {
         return usuarioRepository
-                .getSubordinadosPorCargo(supervisorId, Set.of(VENDEDOR_OPERACAO.name()))
+                .getSubordinadosPorCargo(supervisorId,
+                    Set.of(CodigoCargo.VENDEDOR_OPERACAO.name(), CodigoCargo.OPERACAO_EXECUTIVO_VENDAS.name()))
                 .stream()
                 .map(row -> new UsuarioResponse(
-                        ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
-                        (String) row[COLUNA_USUARIO_NOME],
-                        VENDEDOR_OPERACAO))
+                    ((BigDecimal) row[COLUNA_USUARIO_ID]).intValue(),
+                    (String) row[COLUNA_USUARIO_NOME],
+                    valueOf((String) row[COLUNA_CARGO_CODIGO])))
                 .collect(Collectors.toList());
     }
 
@@ -90,12 +93,29 @@ public class SupervisorService {
             ? usuarioRepository.getUsuariosPorNovaAreaAtuacao(
                 areaAtuacao,
                 areasAtuacaoId,
-                SUPERVISOR_OPERACAO,
+                List.of(SUPERVISOR_OPERACAO),
                 Set.of(D2D_PROPRIO))
             : usuarioRepository.getUsuariosPorAreaAtuacao(
                 areaAtuacao,
                 areasAtuacaoId,
-                SUPERVISOR_OPERACAO,
+                List.of(SUPERVISOR_OPERACAO),
+                Set.of(D2D_PROPRIO));
+    }
+
+    public List<UsuarioResponse> getLideresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
+        var porRegional = AreaAtuacao.REGIONAL.equals(areaAtuacao) 
+            && regionalService.getNovasRegionaisIds().contains(areasAtuacaoId.get(0));
+        var porUf = AreaAtuacao.UF.equals(areaAtuacao);
+        return porRegional || porUf
+            ? usuarioRepository.getUsuariosPorNovaAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO),
+                Set.of(D2D_PROPRIO))
+            : usuarioRepository.getUsuariosPorAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO),
                 Set.of(D2D_PROPRIO));
     }
 

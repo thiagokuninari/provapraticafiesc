@@ -108,6 +108,11 @@ public class UsuarioController {
         return usuarioService.getVendedoresByIds(ids);
     }
 
+    @PostMapping("vendedores")
+    public List<UsuarioResponse> getUsuarioVendedorByIdPost(@RequestBody List<Integer> ids) {
+        return usuarioService.getVendedoresByIds(ids);
+    }
+
     @GetMapping("ativos/operacao-comercial/cargo/{cargoId}")
     public List<UsuarioResponse> buscarColaboradoresAtivosOperacaoComericialPorCargo(@PathVariable Integer cargoId) {
         return usuarioService.buscarColaboradoresAtivosOperacaoComericialPorCargo(cargoId);
@@ -241,6 +246,11 @@ public class UsuarioController {
         return usuarioService.buscarAtualByCpf(cpf);
     }
 
+    @GetMapping("nao-realocado")
+    public UsuarioResponse buscarNaoRealocadosPorCpf(@RequestParam String cpf) {
+        return usuarioService.buscarNaoRealocadoByCpf(cpf);
+    }
+
     @GetMapping("atual/email")
     public UsuarioResponse buscarAtualByEmail(@RequestParam String email) {
         return usuarioService.buscarAtualByEmail(email);
@@ -338,7 +348,12 @@ public class UsuarioController {
 
     @GetMapping("{usuarioId}/subordinados/cargo/{codigoCargo}")
     public List<Integer> getIdsDaHierarquia(@PathVariable Integer usuarioId, @PathVariable String codigoCargo) {
-        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigoCargo);
+        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, Set.of(codigoCargo));
+    }
+
+    @GetMapping("{usuarioId}/subordinados/cargos")
+    public List<Integer> getIdsDasHierarquias(@PathVariable Integer usuarioId, @RequestParam Set<String> codigosCargos) {
+        return usuarioService.getIdsSubordinadosDaHierarquia(usuarioId, codigosCargos);
     }
 
     @GetMapping("{id}/vendedores-hierarquia-ids")
@@ -416,6 +431,11 @@ public class UsuarioController {
     @GetMapping("/cargo/{codigoCargo}")
     public List<UsuarioResponse> findUsuariosByCodigoCargo(@PathVariable CodigoCargo codigoCargo) {
         return usuarioService.findUsuariosByCodigoCargo(codigoCargo);
+    }
+
+    @GetMapping("cargos")
+    public List<Integer> findIdUsuariosAtivosByCodigoCargos(@RequestParam List<CodigoCargo> codigoCargos) {
+        return usuarioService.findIdUsuariosAtivosByCodigoCargos(codigoCargos);
     }
 
     @GetMapping("usuario-situacao")

@@ -38,8 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederFiltrosHelper.umVendedoresFeederFiltros;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ASSISTENTE_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
@@ -114,6 +113,42 @@ public class UsuarioControllerTest {
     }
 
     @Test
+    @SneakyThrows
+    public void buscarNaoRealocadosPorCpf_deveSolicitarUsuarioNaoRealocado_quandoTiverAutorizacao() {
+        mvc.perform(get("/api/usuarios/nao-realocado")
+            .param("cpf", "65710871036")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void buscarNaoRealocadosPorCpf_deveRetornar401_quandoNaoTiverAutorizacao() {
+        mvc.perform(get("/api/usuarios/nao-realocado")
+            .param("cpf", "65710871036")
+            .header("Authorization", getAccessToken(mvc, INATIVO))
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void deveSolicitarAtivacaoUsuario() {
+        mvc.perform(put("/api/usuarios/ativar/999")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    public void deveSolicitarInativacaoUsuario() {
+        mvc.perform(put("/api/usuarios/inativar/999")
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     public void deveSolicitarAutenticacao() throws Exception {
         mvc.perform(get("/api/usuarios")
             .accept(MediaType.APPLICATION_JSON))
@@ -183,7 +218,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$.id", is(100)))
             .andExpect(jsonPath("$.nome", is("ADMIN")))
             .andExpect(jsonPath("$.email", is("ADMIN@XBRAIN.COM.BR")))
-            .andExpect(jsonPath("$.permissoes[0]", is("ROLE_AUT_ATUALIZAR_SENHA_REENVIAR_EMAIL")));
+            .andExpect(jsonPath("$.permissoes[1]", is("ROLE_AUT_ATUALIZAR_SENHA_REENVIAR_EMAIL")));
     }
 
     @Test
@@ -452,11 +487,11 @@ public class UsuarioControllerTest {
             .header("Authorization", getAccessToken(mvc, SOCIO_AA))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(10)))
-            .andExpect(jsonPath("$[0].permissao", is("ROLE_VDS_TABULACAO_MANUAL")))
+            .andExpect(jsonPath("$", hasSize(12)))
+            .andExpect(jsonPath("$[0].permissao", is("ROLE_AUT_2031")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
-            .andExpect(jsonPath("$[0].canais[1]", is("D2D_PROPRIO")));
+            .andExpect(jsonPath("$[0].canais[1]", is("ATIVO_PROPRIO")));
     }
 
     @Test
@@ -737,6 +772,26 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].email", is("RENATO@GMAIL.COM")));
 
         verify(usuarioService, times(1)).findUsuariosByCodigoCargo(CodigoCargo.EXECUTIVO);
+    }
+
+    @Test
+    @SneakyThrows
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarListaIdUsuariosAtivos_pelosCodigosDosCargos() {
+        var codigoCargos = List.of(ADMINISTRADOR, GERENTE_OPERACAO);
+        mvc.perform(get("/api/usuarios/cargos")
+                .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO")
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk());
+
+        verify(usuarioService, times(1)).findIdUsuariosAtivosByCodigoCargos(eq(codigoCargos));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findIdUsuariosAtivosByCodigoCargos_deveRetornarUnauthorized_quandoNaoInformarToken() {
+        mvc.perform(get("/api/usuarios/cargos")
+            .param("codigoCargos", "ADMINISTRADOR, GERENTE_OPERACAO"))
+            .andExpect(status().isUnauthorized());
     }
 
     @Test

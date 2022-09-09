@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -24,6 +25,7 @@ import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import helpers.TestBuilders;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -110,6 +112,8 @@ public class UsuarioServiceIT {
     private UsuarioFeederCadastroSucessoMqSender usuarioFeederCadastroSucessoMqSender;
     @MockBean
     private FeederService feederService;
+    @MockBean
+    private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
 
@@ -117,6 +121,30 @@ public class UsuarioServiceIT {
     public void setUp() {
         when(autenticacaoService.getUsuarioId()).thenReturn(101);
         when(autenticacaoService.getUsuarioAutenticadoId()).thenReturn(Optional.of(101));
+    }
+
+    @Test
+    public void updateFromQueue_NaodeveRemoverPermissoesFeeder_quandoAaNaoForFeeder() {
+        var usuario = umUsuarioMqRequestComFeeder();
+        usuario.setAgenteAutorizadoFeeder(ETipoFeeder.NAO_FEEDER);
+
+        service.updateFromQueue(usuario);
+        verify(feederService, never())
+            .removerPermissoesEspeciais(List.of(371));
+    }
+
+    @Test
+    public void updateFromQueue_deveRemoverPermissoesFeeder_quandoHouverIndevidamenteEAaForFeeder() {
+        service.updateFromQueue(umUsuarioMqRequestComFeeder());
+        verify(feederService, times(1))
+            .removerPermissoesEspeciais(List.of(371));
+    }
+
+    @Test
+    public void updateFromQueue_deveAddPermissoesFeeder_quandoHouver() {
+        service.updateFromQueue(umUsuarioMqRequestComFeeder());
+        verify(feederService, times(1))
+            .adicionarPermissaoFeederParaUsuarioNovo(any(UsuarioDto.class), eq(umUsuarioMqRequestComFeeder()));
     }
 
     @Test
@@ -339,10 +367,18 @@ public class UsuarioServiceIT {
     @Test
     public void ativar_deveAtivarUsuario_quandoAaNaoEstiverInativoOuDescredenciadoEEmailDoSocioSerIgualAoVinculadoNoAa() {
         when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(true);
-        service.ativar(UsuarioAtivacaoDto.builder()
+        doNothing().when(usuarioClientService).alterarSituacao(anyInt());
+
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        service.ativar(UsuarioAtivacaoDto
+            .builder()
             .idUsuario(245)
             .observacao("ATIVANDO O SÓCIO PRINCIPAL")
-            .build());
+            .build()
+        );
 
         Usuario usuarioLocalizado = usuarioRepository.findById(245).get();
         assertThat(usuarioLocalizado)
@@ -355,6 +391,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoUsuarioNaoPossuirCpf() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("O usuário não pode ser ativado por não possuir CPF.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -365,7 +405,14 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoAtivarUmSocioQuandoAaEstaInativoOuDescredenciadoOuComEmailDivergente() {
-        when(agenteAutorizadoNovoClient.existeAaAtivoBySocioEmail(anyString())).thenReturn(false);
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(false)
+            .when(agenteAutorizadoNovoClient)
+            .existeAaAtivoBySocioEmail(anyString());
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado."
             + " Ou email do sócio está divergente do que está inserido no agente autorizado.");
@@ -377,7 +424,14 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveRetornarException_quandoOAaDoUsuarioEstiverInativoOuDescredenciado() {
-        when(agenteAutorizadoNovoClient.existeAaAtivoByUsuarioId(anyInt())).thenReturn(false);
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
+        doReturn(false)
+            .when(agenteAutorizadoNovoClient)
+            .existeAaAtivoByUsuarioId(anyInt());
+
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Erro ao ativar, o agente autorizado está inativo ou descredenciado.");
         service.ativar(UsuarioAtivacaoDto.builder()
@@ -388,6 +442,10 @@ public class UsuarioServiceIT {
 
     @Test
     public void ativar_deveAtivarUmUsuario_quandoNaoForAgenteAutorizado() {
+        doReturn(TestBuilders.umUsuarioAutenticadoAdmin(1))
+            .when(autenticacaoService)
+            .getUsuarioAutenticado();
+
         assertEquals(usuarioRepository.findById(244).orElse(null).getSituacao(), ESituacao.I);
         UsuarioAtivacaoDto usuarioAtivacaoDto = new UsuarioAtivacaoDto();
         usuarioAtivacaoDto.setIdUsuario(244);
@@ -724,7 +782,7 @@ public class UsuarioServiceIT {
 
         var usuarios = service.getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .niveisIds(List.of(4, 3)).build());
-        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247));
+        assertThat(usuarios).isEqualTo(List.of(100, 101, 105, 110, 111, 112, 113, 118, 121, 243, 245, 246, 247, 371));
     }
 
     @Test
@@ -840,7 +898,8 @@ public class UsuarioServiceIT {
                 tuple(243, "VENDEDOR AA TELEVENDAS 3"),
                 tuple(245, "ALBERTO ALVES"),
                 tuple(246, "JOAO FONSECA"),
-                tuple(247, "VENDEDOR AA D2D 3"));
+                tuple(247, "VENDEDOR AA D2D 3"),
+                tuple(371, "GABRIEL TESTE"));
     }
 
     @Test
@@ -888,7 +947,7 @@ public class UsuarioServiceIT {
             .forEach(user -> service.atualizarDataUltimoAcesso(user.getId()));
         var usuarios = service.getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros.builder()
             .build());
-        assertThat(usuarios).hasSize(54);
+        assertThat(usuarios).hasSize(55);
     }
 
     @Test
@@ -1463,6 +1522,27 @@ public class UsuarioServiceIT {
         usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
 
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
+        return UsuarioMqRequest.builder()
+            .id(371)
+            .agenteAutorizadoId(10)
+            .agenteAutorizadoFeeder(ETipoFeeder.RESIDENCIAL)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("JORGE")
+            .situacao(ESituacao.A)
+            .nome("GABRIEL TESTE")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(AGENTE_AUTORIZADO_BACKOFFICE_TELEVENDAS)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("468.299.520-00")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("mateus@hotmail.com")
+            .isCadastroSocioPrincipal(false)
+            .unidadesNegocio(List.of(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
     }
 
     public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {

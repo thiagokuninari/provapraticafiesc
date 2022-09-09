@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
@@ -19,6 +16,7 @@ import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -89,12 +87,12 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
-                                                    CodigoCargo cargo,
+                                                    List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
     List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
-                                                    CodigoCargo cargo,
+                                                    List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
@@ -103,7 +101,7 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
-    List<Usuario> findAllUsuariosSemDataUltimoAcesso();
+    List<Usuario> findAllUsuariosSemDataUltimoAcesso(LocalDateTime dataHoraInativarUsuario);
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
@@ -124,6 +122,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> findUsuariosAtivosOperacaoComercialByCargoId(Integer cargoId);
 
     List<Usuario> findUsuariosByCodigoCargo(CodigoCargo codigoCargo);
+
+    List<Integer> findIdUsuariosAtivosByCodigoCargos(List<CodigoCargo> codigoCargos);
 
     List<Integer> buscarIdsUsuariosPorCargosIds(List<Integer> cargosIds);
 

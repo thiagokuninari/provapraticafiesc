@@ -75,4 +75,8 @@ public class SolicitacaoRamalController {
         return ETipoImplantacao.values();
     }
 
+    @PutMapping("calcular-data-finalizacao")
+    public void calcularDataFinalizacao(SolicitacaoRamalFiltros filtros) {
+        solicitacaoRamalService.calcularDataFinalizacao(filtros);
+    }
 }

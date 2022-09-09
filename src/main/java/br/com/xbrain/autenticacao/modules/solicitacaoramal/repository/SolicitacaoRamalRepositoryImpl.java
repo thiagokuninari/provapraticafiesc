@@ -48,6 +48,7 @@ public class SolicitacaoRamalRepositoryImpl
                                 solicitacaoRamal.situacao,
                                 solicitacaoRamal.quantidadeRamais,
                                 solicitacaoRamal.dataCadastro,
+                                solicitacaoRamal.dataFinalizacao,
                                 new JPAQueryFactory(entityManager)
                                         .select(usuario)
                                         .from(usuario)
@@ -108,5 +109,13 @@ public class SolicitacaoRamalRepositoryImpl
                         .where(solicitacaoRamal.id.eq(solicitacaoId))
                         .fetchOne()
         );
+    }
+
+    @Override
+    public List<SolicitacaoRamal> findAllByPredicate(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+                    .selectFrom(solicitacaoRamal)
+                    .where(predicate)
+                    .fetch();
     }
 }

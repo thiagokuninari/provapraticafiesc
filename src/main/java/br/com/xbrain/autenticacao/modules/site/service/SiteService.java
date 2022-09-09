@@ -21,6 +21,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
@@ -168,7 +169,7 @@ public class SiteService {
 
     public List<SiteSupervisorResponse> getAllSupervisoresByHierarquia(Integer siteId, Integer usuarioSuperiorId) {
         var supervisoresSubordinadosIds =
-            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, CodigoCargo.SUPERVISOR_OPERACAO.name());
+            usuarioService.getIdsSubordinadosDaHierarquia(usuarioSuperiorId, Set.of(CodigoCargo.SUPERVISOR_OPERACAO.name()));
 
         return findById(siteId)
             .getSupervisores()
@@ -199,10 +200,8 @@ public class SiteService {
             .stream()
             .findFirst()
             .ifPresent(equipeVendaDtos -> {
-                throw new ValidacaoException(String.format("Para concluir essa operação é necessário remover o supervisor(a) "
-                        + "%s da equipe de vendas %s.",
-                    usuario.getNome(),
-                    equipeVendaDtos.getDescricao()));
+                throw new ValidacaoException("Para concluir essa operação é necessário"
+                    + " inativar a equipe de vendas " + equipeVendaDtos.getDescricao() + ".");
             });
     }
 
@@ -382,9 +381,17 @@ public class SiteService {
     }
 
     public SiteCidadeResponse buscarSiteCidadePorCodigoCidadeDbm(Integer codigoCidadeDbm) {
-        return siteRepository.findSiteCidadeDbmTop1ByPredicate(new CidadePredicate().comCodigoCidadeDbm(codigoCidadeDbm).build()
-                .and(new SitePredicate().todosSitesAtivos().build()))
-            .orElseThrow(() -> EX_NAO_ENCONTRADO);
+        return siteRepository.findSiteCidadeDbmTop1ByPredicate(
+            new CidadeDbmPredicate().comCodigoCidadeDbm(codigoCidadeDbm).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        ).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public SiteCidadeResponse buscarSiteCidadePorDdd(Integer ddd) {
+        return siteRepository.findSiteDddTop1ByPredicate(
+            new CidadeDbmPredicate().comDdd(ddd).build()
+                .and(new SitePredicate().todosSitesAtivos().build())
+        ).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public List<Site> buscarSitesAtivosPorCoordenadorOuSupervisor(Integer usuarioId) {

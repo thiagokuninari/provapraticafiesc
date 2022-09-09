@@ -1,15 +1,20 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
+import com.google.common.collect.Sets;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 
 public class UsuarioHelper {
 
@@ -28,6 +33,32 @@ public class UsuarioHelper {
                     .codigo(codigoNivel)
                     .build())
                 .build())
+            .build();
+    }
+
+    public static Usuario umUsuario(Integer id, Cargo cargo, Set<ECanal> canais, String cpf) {
+        return Usuario
+            .builder()
+            .id(id)
+            .cargo(cargo)
+            .canais(canais)
+            .cpf(cpf)
+            .email("email@email.com")
+            .usuariosHierarquia(new HashSet<>())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario umUsuario(Integer id, Cargo cargo, Set<ECanal> canais, Integer departamentoId) {
+        return Usuario
+            .builder()
+            .departamento(new Departamento(departamentoId))
+            .id(id)
+            .cargo(cargo)
+            .canais(canais)
+            .email("email@email.com")
+            .usuariosHierarquia(new HashSet<>())
+            .situacao(ESituacao.A)
             .build();
     }
 
@@ -50,5 +81,76 @@ public class UsuarioHelper {
             .nome(nome)
             .situacao(situacao)
             .build();
+    }
+
+    public static Usuario tresUsuario(Integer id, Cargo cargo, Set<ECanal> canais) {
+        return Usuario
+            .builder()
+            .id(id)
+            .cargo(cargo)
+            .canais(canais)
+            .email("email@email.com")
+            .usuariosHierarquia(new HashSet<>())
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario outroUsuarioCompleto() {
+        var usuario = Usuario
+            .builder()
+            .id(2)
+            .nome("NOME DOIS")
+            .email("email@email.com")
+            .cpf("111.111.111-11")
+            .situacao(ESituacao.A)
+            .loginNetSales("login123")
+            .cargo(Cargo
+                .builder()
+                .codigo(EXECUTIVO_HUNTER)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .departamento(Departamento
+                .builder()
+                .nome("DEPARTAMENTO UM")
+                .build())
+            .unidadesNegocios(List.of(UnidadeNegocio
+                .builder()
+                .nome("UNIDADE NEGÓCIO UM")
+                .build()))
+            .empresas(List.of(Empresa
+                .builder()
+                .nome("EMPRESA UM")
+                .build()))
+            .build();
+
+        usuario.setCidades(
+            Sets.newHashSet(
+                List.of(UsuarioCidade.criar(
+                    usuario,
+                    3237,
+                    100
+                ))
+            )
+        );
+        usuario.setUsuariosHierarquia(
+            Sets.newHashSet(
+                UsuarioHierarquia.criar(
+                    usuario,
+                    65,
+                    100)
+            )
+        );
+        usuario.setCanais(
+            Sets.newHashSet(
+                List.of(ECanal.ATIVO_PROPRIO)
+            )
+        );
+
+        return usuario;
     }
 }

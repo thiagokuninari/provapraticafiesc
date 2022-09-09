@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -79,6 +80,9 @@ public class SolicitacaoRamal {
     @Column(name = "DATA_CADASTRO", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
+    @Column(name = "DATA_FINALIZACAO", nullable = false)
+    private LocalDateTime dataFinalizacao;
+
     @Column(name = "QUANTIDADE_RAMAIS", nullable = false)
     private Integer quantidadeRamais;
 
@@ -97,7 +101,7 @@ public class SolicitacaoRamal {
     public SolicitacaoRamal(Integer id, Integer agenteAutorizadoId, String agenteAutorizadoNome,
                             String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao,
                             Integer quantidadeRamais, LocalDateTime dataCadastro,
-                            Usuario usuario) {
+                            LocalDateTime dataFinalizacao, Usuario usuario) {
         this.id = id;
         this.agenteAutorizadoId = agenteAutorizadoId;
         this.agenteAutorizadoNome = agenteAutorizadoNome;
@@ -105,11 +109,13 @@ public class SolicitacaoRamal {
         this.situacao = situacao;
         this.quantidadeRamais = quantidadeRamais;
         this.dataCadastro = dataCadastro;
+        this.dataFinalizacao = dataFinalizacao;
         this.usuario = usuario;
     }
 
-    public void atualizarDataCadastro() {
-        this.dataCadastro = LocalDateTime.now();
+    public void atualizarDataCadastro(LocalDateTime dataAtual) {
+        this.dataCadastro = dataAtual;
+        calcularDataFinalizacao();
         atualizarSituacaoParaPendente();
         atualizarEnviouEmailExpiracaoParaFalso();
     }
@@ -153,4 +159,7 @@ public class SolicitacaoRamal {
         this.agenteAutorizadoCnpj = getOnlyNumbers(this.agenteAutorizadoCnpj);
     }
 
+    public void calcularDataFinalizacao() {
+        this.dataFinalizacao = LocalDateTime.from(this.dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
+    }
 }

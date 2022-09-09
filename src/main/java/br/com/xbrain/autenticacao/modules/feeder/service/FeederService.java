@@ -1,7 +1,7 @@
 package br.com.xbrain.autenticacao.modules.feeder.service;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
@@ -34,6 +34,7 @@ public class FeederService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Usuario não encontrado.");
     private static final ValidacaoException EX_USUARIO_NAO_FEEDER =
         new ValidacaoException("Usuário não Feeder.");
+    private static final String EMAIL_INATIVO = "INATIVO_";
 
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
@@ -70,8 +71,19 @@ public class FeederService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void limparCpfEAlterarEmailUsuarioFeeder(Integer usuarioId) {
+        var usuario = findUsuarioById(usuarioId);
+        usuario.setCpf(null);
+        usuario.setEmail(EMAIL_INATIVO.concat(usuario.getEmail()));
+        gerarHistoricoUsuarioExcluidoFeeder(usuarioId);
+
+        usuarioRepository.save(usuario);
+    }
+
     public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
-        if (Objects.equals(usuarioMqRequest.getAgenteAutorizadoFeeder(), Eboolean.V)) {
+        if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
+            || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
                     usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
@@ -113,6 +125,13 @@ public class FeederService {
         }
     }
 
+    private void gerarHistoricoUsuarioExcluidoFeeder(Integer usuarioId) {
+        if (Objects.nonNull(usuarioId)) {
+            usuarioHistoricoService.save(
+                UsuarioHistorico.gerarHistorico(usuarioId, null, ALTERACAO_CPF_E_EMAIL_FEEDER, ESituacao.I));
+        }
+    }
+
     private List<Integer> getUsuariosIds(List<PermissaoEspecial> permissoes) {
         return permissoes.stream()
             .map(PermissaoEspecial::getUsuario)
@@ -126,7 +145,7 @@ public class FeederService {
         }
     }
 
-    private void removerPermissoesEspeciais(List<Integer> usuarios) {
+    public void removerPermissoesEspeciais(List<Integer> usuarios) {
         permissaoEspecialRepository.deletarPermissaoEspecialBy(FUNCIONALIDADES_FEEDER_PARA_AA, usuarios);
     }
 

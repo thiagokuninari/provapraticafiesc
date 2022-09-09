@@ -159,7 +159,7 @@ public class SupervisorServiceTest {
     @Test
     public void getCargosDescendentesEVendedoresD2dDoSupervisor_vendedoresEAssistentesDoSubcluster_quandoExistirem() {
 
-        doReturn(singletonList(new Object[]{new BigDecimal(1), "VENDEDOR"}))
+        doReturn(singletonList(umVendedorComId(1, VENDEDOR_OPERACAO.name())))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
@@ -169,14 +169,14 @@ public class SupervisorServiceTest {
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
-                tuple("VENDEDOR", VENDEDOR_OPERACAO));
+                tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         assertThat(
             service.getCargosDescendentesEVendedoresD2dDoSupervisor(SUPERVISOR_ARAPONGAS_ID, null))
             .extracting("nome", "codigoCargo")
             .containsExactly(
                 tuple("ASSISTENTE ARAPONGAS", ASSISTENTE_OPERACAO),
-                tuple("VENDEDOR", VENDEDOR_OPERACAO));
+                tuple("VENDEDOR1", VENDEDOR_OPERACAO));
 
         doReturn(emptyList())
             .when(usuarioRepository).getSubordinadosPorCargo(eq(SUPERVISOR_SEM_CIDADE_ID), anySet());
@@ -189,7 +189,8 @@ public class SupervisorServiceTest {
     @Test
     public void getCargosDescendentesEVendedoresD2dDoSupervisor_deveFiltrarVendedores_quandoExistirem() {
 
-        doReturn(List.of(umVendedorComId(1), umVendedorComId(2), umVendedorComId(3)))
+        doReturn(List.of(umVendedorComId(1, VENDEDOR_OPERACAO.name()), umVendedorComId(2, OPERACAO_EXECUTIVO_VENDAS.name()),
+            umVendedorComId(3, VENDEDOR_OPERACAO.name())))
             .when(usuarioRepository).getSubordinadosPorCargo(anyInt(), anySet());
         when(equipeVendasClient.filtrarUsuariosComEquipeByUsuarioIdInOuNaEquipe(anyList(), any()))
             .thenReturn(List.of(1, 2));
@@ -200,7 +201,7 @@ public class SupervisorServiceTest {
             .containsExactly(
                 tuple(8, "ASSISTENTE LONDRINA", ASSISTENTE_OPERACAO),
                 tuple(1, "VENDEDOR1", VENDEDOR_OPERACAO),
-                tuple(2, "VENDEDOR2", VENDEDOR_OPERACAO));
+                tuple(2, "VENDEDOR2", OPERACAO_EXECUTIVO_VENDAS));
     }
 
     @Test
@@ -253,6 +254,99 @@ public class SupervisorServiceTest {
     }
 
     @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDaCidade_seExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getLideresPorAreaAtuacao(CIDADE, singletonList(LONDRINA_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO));
+
+        assertThat(
+            service.getLideresPorAreaAtuacao(CIDADE, singletonList(CHAPECO_ID)))
+            .isEmpty();
+    }
+
+    @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoSubCluster_seExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getLideresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_LONDRINA_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
+
+        assertThat(
+            service.getLideresPorAreaAtuacao(SUBCLUSTER, singletonList(SUBCLUSTER_CHAPECO_ID)))
+            .isEmpty();
+    }
+
+    @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoCluster_seExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getLideresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_NORTE_PARANA_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
+
+        assertThat(
+            service.getLideresPorAreaAtuacao(CLUSTER, singletonList(CLUSTER_PASSO_FUNDO_ID)))
+            .isEmpty();
+    }
+
+    @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDoGrupo_seExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getLideresPorAreaAtuacao(GRUPO, singletonList(GRUPO_NORTE_PARANA_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
+
+        assertThat(
+            service.getLideresPorAreaAtuacao(GRUPO, singletonList(GRUPO_RS_SERRA)))
+            .isEmpty();
+    }
+
+    @Test
+    public void getLideresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExistirem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getLideresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_SUL_ID)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO),
+                tuple("COORDENADOR LONDRINA", COORDENADOR_OPERACAO),
+                tuple("COORDENADOR ARAPONGAS", COORDENADOR_OPERACAO));
+
+        assertThat(
+            service.getLideresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_LESTE_ID)))
+            .isEmpty();
+    }
+
+    @Test
     public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExisteremNovaRegional() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
@@ -267,7 +361,7 @@ public class SupervisorServiceTest {
             .getUsuariosPorNovaAreaAtuacao(
                 eq(REGIONAL),
                 eq(List.of(1027)),
-                eq(SUPERVISOR_OPERACAO),
+                eq(List.of(SUPERVISOR_OPERACAO)),
                 eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
@@ -286,11 +380,11 @@ public class SupervisorServiceTest {
             .getUsuariosPorNovaAreaAtuacao(
                 eq(UF),
                 eq(List.of(1)),
-                eq(SUPERVISOR_OPERACAO),
+                eq(List.of(SUPERVISOR_OPERACAO)),
                 eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
-    private Object[] umVendedorComId(int id) {
-        return new Object[]{new BigDecimal(id), "VENDEDOR" + id};
+    private Object[] umVendedorComId(int id, String cargoCodigo) {
+        return new Object[]{new BigDecimal(id), "VENDEDOR" + id, "EMAIL@GMAIL.COM", "VENDEDOR", cargoCodigo};
     }
 }

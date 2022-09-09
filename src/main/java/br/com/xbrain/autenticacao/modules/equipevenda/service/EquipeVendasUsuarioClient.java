@@ -19,4 +19,7 @@ public interface EquipeVendasUsuarioClient {
     @GetMapping(API_EQUIPE_VENDAS_USUARIO + "/all")
     List<EquipeVendaUsuarioResponse> getAll(@RequestParam Map<String, Object> filtros);
 
+    @GetMapping(API_EQUIPE_VENDAS_USUARIO + "/buscar-usuario")
+    List<Integer> buscarUsuarioPorId(@RequestParam("id") Integer id);
+
 }

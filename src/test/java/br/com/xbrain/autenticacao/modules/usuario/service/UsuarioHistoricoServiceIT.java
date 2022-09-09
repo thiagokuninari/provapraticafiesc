@@ -45,7 +45,7 @@ public class UsuarioHistoricoServiceIT {
     @Test
     public void gerarHistoricoInativacao_deveGerarHistorico_quandoUsuarioForInativadoPeloSistema() {
         assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
-        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799));
+        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799), "Teste de histórico");
         refresh();
 
         List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
@@ -54,7 +54,7 @@ public class UsuarioHistoricoServiceIT {
         assertThat(usuarioHistoricos.get(0))
                 .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
                 .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
-                        "INATIVADO POR FALTA DE ACESSO", 799);
+                        "Teste de histórico", 799);
     }
 
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {
