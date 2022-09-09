@@ -15,8 +15,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -47,11 +49,28 @@ public class PermissaoEspecialServiceTest {
     public void processarPermissoesEspeciaisGerentesCoordenadores_deveProcessarPermissoes_sePassarIdPorParametro() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
         when(agenteAutorizadoService.getUsuariosAaFeederPorCargo(anyList(), anyList())).thenReturn(List.of(1, 2));
+        when(repository.findPorUsuariosIdsEFuncionalidades(List.of(1, 2), FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER))
+            .thenReturn(List.of(1, 2));
+
         service.processarPermissoesEspeciaisGerentesCoordenadores(List.of(1));
 
         verify(autenticacaoService, times(2)).getUsuarioAutenticado();
         verify(agenteAutorizadoService, times(1)).getUsuariosAaFeederPorCargo(List.of(1), umaListaCodigoCargo());
+        verify(repository, times(1)).findPorUsuariosIdsEFuncionalidades(List.of(1, 2),
+            FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
         verify(feederService, times(1)).salvarPermissoesEspeciaisCoordenadoresGerentes(eq(List.of(1, 2)), eq(1));
+    }
+
+    @Test
+    public void verificarFuncionalidades_deveRetornarUsuarioQueNaoContemAsFuncionalidades() {
+        when(repository.findPorUsuariosIdsEFuncionalidades(List.of(1, 2, 3, 4, 5),
+            FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER)).thenReturn(List.of(5));
+
+        assertThat(service.verificarFuncionalidades(List.of(1, 2, 3, 4, 5), FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER))
+            .isEqualTo(List.of(5));
+
+        verify(repository, times(1)).findPorUsuariosIdsEFuncionalidades(List.of(1, 2, 3, 4, 5),
+            FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

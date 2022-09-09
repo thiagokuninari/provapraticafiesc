@@ -9,6 +9,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.permissao.model.QFuncionalidade.funcionalidade;
 import static br.com.xbrain.autenticacao.modules.permissao.model.QPermissaoEspecial.permissaoEspecial;
+import static com.querydsl.jpa.JPAExpressions.select;
 
 public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoEspecial>
         implements PermissaoEspecialRepositoryCustom {
@@ -33,5 +34,18 @@ public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoE
             .where(permissaoEspecial.funcionalidade.id.in(funcionalidadeIds)
                 .and(permissaoEspecial.usuario.id.in(usuarioIds)))
             .execute();
+    }
+
+    @Override
+    public List<Integer> findPorUsuariosIdsEFuncionalidades(List<Integer> usuariosIds, List<Integer> funcionalidadeIds) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(permissaoEspecial.usuario.id)
+            .from(permissaoEspecial)
+            .where(permissaoEspecial.usuario.id.in(usuariosIds)
+                .and(permissaoEspecial.usuario.id.notIn(
+                    select(permissaoEspecial.usuario.id)
+                    .from(permissaoEspecial)
+                    .where(funcionalidade.id.in(funcionalidadeIds)))))
+            .fetch();
     }
 }

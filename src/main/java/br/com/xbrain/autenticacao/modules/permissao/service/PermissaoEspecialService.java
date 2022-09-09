@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER;
 
 @Service
 public class PermissaoEspecialService {
@@ -61,9 +64,16 @@ public class PermissaoEspecialService {
         autenticacaoService.getUsuarioAutenticado().validarAdministrador();
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado().getId();
         var usuariosIds = agenteAutorizadoService.getUsuariosAaFeederPorCargo(aaIds, List.of(
-            CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR));
+                CodigoCargo.AGENTE_AUTORIZADO_GERENTE, CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR))
+            .stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+        var usuariosFiltrados = verificarFuncionalidades(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
 
-        feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
+        feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosFiltrados, usuarioLogado);
+    }
 
+    public List<Integer> verificarFuncionalidades(List<Integer> usuariosIds, List<Integer> funcionalidades) {
+        return repository.findPorUsuariosIdsEFuncionalidades(usuariosIds, funcionalidades);
     }
 }

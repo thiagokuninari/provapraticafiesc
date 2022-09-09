@@ -10,4 +10,6 @@ public interface PermissaoEspecialRepositoryCustom {
 
     void deletarPermissaoEspecialBy(List<Integer> funcionalidadeIds, List<Integer> usuarioIds);
 
+    List<Integer> findPorUsuariosIdsEFuncionalidades(List<Integer> usuariosIds, List<Integer> funcionalidadeIds);
+
 }
