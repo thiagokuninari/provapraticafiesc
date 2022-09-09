@@ -24,7 +24,6 @@ import java.util.List;
 
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
@@ -243,10 +242,11 @@ public class CidadeControllerTest {
             .param("regionalId", "1027")
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$", hasSize(4)))
             .andExpect(jsonPath("$[0].nomeCidade", is("ARAPONGAS")))
             .andExpect(jsonPath("$[1].nomeCidade", is("CHAPECO")))
-            .andExpect(jsonPath("$[2].nomeCidade", is("LONDRINA")));
+            .andExpect(jsonPath("$[2].nomeCidade", is("LONDRINA")))
+            .andExpect(jsonPath("$[3].nomeCidade", is("MARINGA")));
     }
 
     @Test
@@ -257,9 +257,10 @@ public class CidadeControllerTest {
             .param("ufId", "1")
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$", hasSize(3)))
             .andExpect(jsonPath("$[0].nomeCidade", is("ARAPONGAS")))
-            .andExpect(jsonPath("$[1].nomeCidade", is("LONDRINA")));
+            .andExpect(jsonPath("$[1].nomeCidade", is("LONDRINA")))
+            .andExpect(jsonPath("$[2].nomeCidade", is("MARINGA")));
     }
 
     @SneakyThrows
@@ -285,31 +286,25 @@ public class CidadeControllerTest {
     @Test
     @SneakyThrows
     public void getCodigoIbgeRegionalByCidade_deveRetornarZero_quandoInformarListaVaziaDeCidadesId() {
-        var response = mvc.perform(get("/api/cidades/codigo-ibge/regional?cidadesId=")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/api/cidades/codigo-ibge/regional?cidadesId=")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentLength();
+            .andExpect(jsonPath("$", hasSize(0)));
 
-        assertThat(response).isEqualTo(0);
         verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of()));
     }
 
     @Test
     @SneakyThrows
     public void getCodigoIbgeRegionalByCidade_deveRetornarZero_quandoInformarListaComCidadeIdNaoExistente() {
-        var response = mvc.perform(get("/api/cidades/codigo-ibge/regional")
-                .param("cidadesId", "123123")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/api/cidades/codigo-ibge/regional")
+            .param("cidadesId", "123123")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentLength();
+            .andExpect(jsonPath("$", hasSize(0)));
 
-        assertThat(response).isEqualTo(0);
         verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of(123123)));
     }
 
@@ -317,21 +312,21 @@ public class CidadeControllerTest {
     @SneakyThrows
     public void getCodigoIbgeRegionalByCidade_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadesId() {
         mvc.perform(get("/api/cidades/codigo-ibge/regional")
-                .param("cidadesId", "3426, 5578")
-                .header("Authorization", getAccessToken(mvc, ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
+            .param("cidadesId", "3426, 5578")
+            .header("Authorization", getAccessToken(mvc, ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].cidadeId", is(3426)))
             .andExpect(jsonPath("$[0].cidadeNome", is("MARINGA")))
             .andExpect(jsonPath("$[0].codigoIbge", is("4115200")))
-            .andExpect(jsonPath("$[0].regionalId", is(3)))
-            .andExpect(jsonPath("$[0].regionalNome", is("SUL")))
+            .andExpect(jsonPath("$[0].regionalId", is(1027)))
+            .andExpect(jsonPath("$[0].regionalNome", is("RPS")))
             .andExpect(jsonPath("$[1].cidadeId", is(5578)))
             .andExpect(jsonPath("$[1].cidadeNome", is("LONDRINA")))
             .andExpect(jsonPath("$[1].codigoIbge", is("4113700")))
-            .andExpect(jsonPath("$[1].regionalId", is(3)))
-            .andExpect(jsonPath("$[1].regionalNome", is("SUL")));
+            .andExpect(jsonPath("$[1].regionalId", is(1027)))
+            .andExpect(jsonPath("$[1].regionalNome", is("RPS")));
 
         verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of(3426, 5578)));
     }

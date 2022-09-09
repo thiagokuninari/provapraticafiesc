@@ -254,10 +254,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             ))
             .from(cidade)
             .where(predicate)
-            .innerJoin(cidade.subCluster, subCluster)
-            .innerJoin(subCluster.cluster, cluster)
-            .innerJoin(cluster.grupo, grupo)
-            .innerJoin(grupo.regional, regional)
+            .innerJoin(cidade.regional, regional)
             .fetch();
     }
 }

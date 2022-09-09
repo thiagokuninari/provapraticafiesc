@@ -51,8 +51,8 @@ public class CidadeServiceIT {
         assertThat(service.getCodigoIbgeRegionalByCidade(List.of(5578, 3426, 4498)))
             .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome")
             .containsExactlyInAnyOrder(
-                tuple(5578, "LONDRINA", "4113700", 3, "SUL"),
-                tuple(3426, "MARINGA", "4115200", 3, "SUL"),
-                tuple(4498, "CHAPECO", "4204202", 3, "SUL"));
+                tuple(5578, "LONDRINA", "4113700", 1027, "RPS"),
+                tuple(3426, "MARINGA", "4115200", 1027, "RPS"),
+                tuple(4498, "CHAPECO", "4204202", 1027, "RPS"));
     }
 }
