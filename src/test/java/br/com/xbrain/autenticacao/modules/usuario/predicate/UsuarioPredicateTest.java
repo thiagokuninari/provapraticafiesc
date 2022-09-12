@@ -115,7 +115,7 @@ public class UsuarioPredicateTest {
     }
 
     @Test
-    public void comOrganizacaoEmpresaId_usuarioPredicate_quandoIdNaoNull() {
+    public void comOrganizacaoEmpresaId_deveRetornarUsuarioPredicate_quandoIdNaoNull() {
         var predicate = new UsuarioPredicate()
             .comOrganizacaoEmpresaId(1)
             .build();
