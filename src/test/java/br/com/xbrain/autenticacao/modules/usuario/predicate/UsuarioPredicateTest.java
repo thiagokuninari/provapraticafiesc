@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate.OrganizacaoEmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
@@ -11,7 +10,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.assertj.core.api.Assertions.assertThat;
 
