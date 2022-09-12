@@ -118,6 +118,13 @@ public class UsuarioPredicate {
         return this;
     }
 
+    public UsuarioPredicate comOrganizacaoEmpresaId(Integer organizacaoEmpresaId) {
+        if (nonNull(organizacaoEmpresaId)) {
+            builder.and(usuario.organizacaoEmpresa.id.eq(organizacaoEmpresaId));
+        }
+        return this;
+    }
+
     public UsuarioPredicate ignorarAa(Boolean ignorar) {
         if (ignorar) {
             builder.and(usuario.cargo.nivel.codigo.notIn(CodigoNivel.AGENTE_AUTORIZADO));

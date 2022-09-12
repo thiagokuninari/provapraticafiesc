@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate.OrganizacaoEmpresaPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.querydsl.core.BooleanBuilder;
@@ -10,6 +11,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.model.QOrganizacaoEmpresa.organizacaoEmpresa;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -101,5 +103,23 @@ public class UsuarioPredicateTest {
             .map(i -> random.nextInt())
             .boxed()
             .collect(Collectors.toList());
+    }
+
+    @Test
+    public void comOrganizacaoEmpresaId_deveIgnorarTodosOsRegistros_quandoIdForNull() {
+        var predicate = new UsuarioPredicate()
+            .comOrganizacaoEmpresaId(null)
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comOrganizacaoEmpresaId_usuarioPredicate_quandoIdNaoNull() {
+        var predicate = new UsuarioPredicate()
+            .comOrganizacaoEmpresaId(1)
+            .build();
+        var expected = new BooleanBuilder(usuario.organizacaoEmpresa.id.eq(1));
+        assertThat(predicate).isEqualTo(expected);
     }
 }
