@@ -7,7 +7,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
-import br.com.xbrain.autenticacao.modules.permissao.dto.PermissaoEspecialRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -268,13 +267,27 @@ public class FeederServiceTest {
     }
 
     @Test
-    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoes() {
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoes_seUsuarioNaoPossuirAsFuncs() {
 
         when(usuarioRepository.exists(1)).thenReturn(true);
-
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of());
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, atLeastOnce()).exists(anyInt());
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
+        verify(permissaoEspecialRepository, atLeastOnce()).save(umaPermissaoEspecialRequestComUmaFunc());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoesAindaNaoAtribuidas_seUsuarioPossuirApenasUmaFunc() {
+
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000));
+        service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
+
+        verify(usuarioRepository, atLeastOnce()).exists(anyInt());
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
         verify(permissaoEspecialRepository, atLeastOnce()).save(umaPermissaoEspecialRequest());
     }
 
@@ -282,19 +295,48 @@ public class FeederServiceTest {
     public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveNaoSalvarPermissoes_seUsuarioNaoExistir() {
 
         when(usuarioRepository.exists(1)).thenReturn(false);
-
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000, 15005, 15012));
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, times(1)).exists(anyInt());
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
         verify(permissaoEspecialRepository, never()).save(umaPermissaoEspecialRequest());
+    }
+
+    @Test
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveNaoSalvarPermissoes_seUsuarioJaPossuirAsFuncionalidades() {
+
+        when(usuarioRepository.exists(1)).thenReturn(true);
+        when(permissaoEspecialRepository.findByUsuario(1)).thenReturn(List.of(15000, 15005, 15012));
+        service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
+
+        verify(usuarioRepository, times(1)).exists(anyInt());
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
+        verify(permissaoEspecialRepository, never()).save(umaPermissaoEspecialRequest());
+    }
+
+    private List<PermissaoEspecial> umaPermissaoEspecialRequestComUmaFunc() {
+        var localDateTime = dataHoraAtual.getDataHora();
+        var listaFunc = List.of(15000);
+        return FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
+            .stream()
+            .filter(func -> !listaFunc.contains(func))
+            .map(id -> PermissaoEspecial
+                .builder()
+                .funcionalidade(Funcionalidade.builder().id(id).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build())
+            .collect(Collectors.toList());
     }
 
     private List<PermissaoEspecial> umaPermissaoEspecialRequest() {
         var localDateTime = dataHoraAtual.getDataHora();
-        var request = new PermissaoEspecialRequest();
-        request.setFuncionalidadesIds(FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
-        return request.getFuncionalidadesIds()
+        var listaFunc = List.of();
+        return FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
             .stream()
+            .filter(func -> !listaFunc.contains(func))
             .map(id -> PermissaoEspecial
                 .builder()
                 .funcionalidade(Funcionalidade.builder().id(id).build())

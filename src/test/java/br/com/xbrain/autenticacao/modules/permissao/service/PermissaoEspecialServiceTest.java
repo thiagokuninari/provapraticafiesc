@@ -15,7 +15,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.comum.util.NumberUtil.getIntsRangeList;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
 import static org.mockito.Mockito.*;
@@ -65,9 +64,5 @@ public class PermissaoEspecialServiceTest {
 
     private List<CodigoCargo> umaListaCodigoCargo() {
         return List.of(AGENTE_AUTORIZADO_GERENTE, AGENTE_AUTORIZADO_COORDENADOR);
-    }
-
-    private List<Integer> umaListaInteiros(int inicio, int fim) {
-        return (getIntsRangeList(inicio, fim));
     }
 }
