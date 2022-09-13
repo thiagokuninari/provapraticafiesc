@@ -88,6 +88,7 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
     public List<Departamento> findAllDepartamentos(Predicate predicate) {
         return new JPAQueryFactory(entityManager)
             .select(departamento)
+            .distinct()
             .from(cargoDepartamentoFuncionalidade)
             .where(predicate)
             .fetch();
