@@ -279,11 +279,11 @@ public class OrganizacaoEmpresaControllerTest {
 
     @Test
     @SneakyThrows
-    public void findByNivel_deveRetornarListaOrganizacoesEmpresaIdsPorNivelId_quandoSolicitado() {
+    public void findAllAtivosByNivelId_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelIdquandoSolicitado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAdminAutenticado());
 
-        when(organizacaoEmpresaService.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+        when(organizacaoEmpresaService.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
         mockMvc.perform(get(API_URI + "/nivel")
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
                 .param("nivelId", "100")

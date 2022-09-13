@@ -43,7 +43,6 @@ public class  OrganizacaoEmpresaService {
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-
     @Autowired
     private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
 
@@ -152,8 +151,8 @@ public class  OrganizacaoEmpresaService {
         return modalidades;
     }
 
-    public List<OrganizacaoEmpresaResponse> findAllByNivelId(Integer nivelId) {
-        return organizacaoEmpresaRepository.findAllByNivelId(nivelId)
+    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
+        return organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
             .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
     }
 }
