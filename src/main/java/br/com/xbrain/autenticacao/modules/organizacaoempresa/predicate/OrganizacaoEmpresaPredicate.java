@@ -67,9 +67,4 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
         return Optional.ofNullable(lista)
             .filter(Predicate.not(super::isEmpty));
     }
-
-    public OrganizacaoEmpresaPredicate isAtivo() {
-        builder.and(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.A));
-        return this;
-    }
 }
