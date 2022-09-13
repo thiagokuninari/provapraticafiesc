@@ -279,7 +279,7 @@ public class FeederServiceTest {
     }
 
     @Test
-    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveSalvarPermissoes_seUsuarioNaoExistir() {
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes_deveNaoSalvarPermissoes_seUsuarioNaoExistir() {
 
         when(usuarioRepository.exists(1)).thenReturn(false);
 

@@ -210,9 +210,12 @@ public class FeederService {
     public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
         var localDateTime = dataHoraAtual.getDataHora();
         usuariosIds.forEach(usuarioId -> {
+            var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
+            if (usuarioRepository.exists(usuarioId)) {
                 permissaoEspecialRepository.save(
                     FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
                         .stream()
+                        .filter(func -> !listaFunc.contains(func))
                         .map(id -> PermissaoEspecial
                             .builder()
                             .funcionalidade(Funcionalidade.builder().id(id).build())
@@ -221,6 +224,7 @@ public class FeederService {
                             .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
                             .build())
                         .collect(Collectors.toList()));
+            }
             }
         );
     }

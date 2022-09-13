@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER;
-
 @Service
 public class PermissaoEspecialService {
 
@@ -68,12 +66,7 @@ public class PermissaoEspecialService {
             .stream()
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        var usuariosFiltrados = verificarFuncionalidades(usuariosIds, FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER);
 
-        feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosFiltrados, usuarioLogado);
-    }
-
-    public List<Integer> verificarFuncionalidades(List<Integer> usuariosIds, List<Integer> funcionalidades) {
-        return repository.findPorUsuariosIdsEFuncionalidades(usuariosIds, funcionalidades);
+        feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
     }
 }
