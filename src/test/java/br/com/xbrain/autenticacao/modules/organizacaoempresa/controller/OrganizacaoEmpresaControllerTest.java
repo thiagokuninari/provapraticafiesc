@@ -279,7 +279,7 @@ public class OrganizacaoEmpresaControllerTest {
 
     @Test
     @SneakyThrows
-    public void findAllAtivosByNivelId_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelIdquandoSolicitado() {
+    public void findAllAtivosByNivelId_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAdminAutenticado());
 
