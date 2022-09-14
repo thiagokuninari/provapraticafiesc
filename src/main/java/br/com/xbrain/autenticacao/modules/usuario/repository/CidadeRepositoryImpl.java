@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.ClusterizacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CodigoIbgeRegionalResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -235,17 +236,21 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .fetchFirst());
     }
 
-    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
+    public List<CodigoIbgeRegionalResponse> findCodigoIbgeRegionalByCidadeNomeAndUf(CidadesUfsRequest cidadesUfs) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(CodigoIbgeRegionalResponse.class,
                 cidade.id,
                 cidade.nome,
                 cidade.codigoIbge,
                 regional.id,
-                regional.nome
+                regional.nome,
+                cidade.uf.id,
+                cidade.uf.nome,
+                cidade.uf.uf
             ))
             .from(cidade)
-            .where(cidade.id.in(cidadesId))
+            .where(cidade.nome.in(cidadesUfs.getCidades())
+                .and(cidade.uf.uf.in(cidadesUfs.getUfs())))
             .innerJoin(cidade.subCluster, subCluster)
             .innerJoin(subCluster.cluster, cluster)
             .innerJoin(cluster.grupo, grupo)

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -123,8 +124,8 @@ public class CidadeService {
 
     public List<UsuarioCidadeDto> getAtivosParaComunicados(Integer subclusterId) {
         return Stream.concat(
-            agenteAutorizadoService.getCidades(subclusterId).stream(),
-            getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
+                agenteAutorizadoService.getCidades(subclusterId).stream(),
+                getAllBySubCluster(subclusterId).stream().map(UsuarioCidadeDto::of))
             .filter(distinctByKey(UsuarioCidadeDto::getIdCidade))
             .collect(Collectors.toList());
     }
@@ -136,7 +137,9 @@ public class CidadeService {
     }
 
     public CidadeResponse findCidadeByCodigoIbge(String codigoIbge) {
-        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge).map(CidadeResponse::of).orElse(null);
+        return cidadeRepository.findCidadeByCodigoIbge(codigoIbge)
+            .map(CidadeResponse::of)
+            .orElse(null);
     }
 
     public Cidade findById(Integer id) {
@@ -150,8 +153,10 @@ public class CidadeService {
             .collect(Collectors.toList());
     }
 
-    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
-        return cidadeRepository.findCodigoIbgeRegionalByCidade(cidadesId);
+    public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidadeNomeAndUf(CidadesUfsRequest cidadesUfs) {
+        if (!cidadesUfs.getCidades().isEmpty() && !cidadesUfs.getUfs().isEmpty()) {
+            return cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(cidadesUfs);
+        }
+        return new ArrayList<>();
     }
-
 }

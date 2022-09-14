@@ -16,4 +16,7 @@ public class CodigoIbgeRegionalResponse {
     private String codigoIbge;
     private Integer regionalId;
     private String regionalNome;
+    private Integer ufId;
+    private String uf;
+    private String ufSigla;
 }

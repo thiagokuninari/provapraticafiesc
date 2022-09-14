@@ -17,24 +17,39 @@ public class TestsHelper {
         return "Bearer " + getAccessTokenObject(mvc, usuario).getAccessToken();
     }
 
-    public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) throws Exception {
+    @SneakyThrows
+    public static MockHttpServletResponse getTokenResponse(MockMvc mvc, String usuario) {
         return mvc
-                .perform(
-                        post("/oauth/token")
-                                .header("Authorization", "Basic "
-                                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
-                                .param("username", usuario)
-                                .param("password", "123456")
-                                .param("grant_type", "password"))
-                .andReturn().getResponse();
+            .perform(
+                post("/oauth/token")
+                    .header("Authorization", "Basic "
+                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
+                    .param("username", usuario)
+                    .param("password", "123456")
+                    .param("grant_type", "password"))
+            .andReturn().getResponse();
     }
 
     public static OAuthToken getAccessTokenObject(MockMvc mvc, String usuario) {
         try {
-            MockHttpServletResponse response = getTokenResponse(mvc, usuario);
+            var response = getTokenResponse(mvc, usuario);
             return new ObjectMapper()
-                    .readValue(response.getContentAsByteArray(), OAuthToken.class);
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return new OAuthToken();
+        }
+    }
 
+    public static String getAccessTokenComSenhaInvalida(MockMvc mvc, String usuario) {
+        return "Bearer " + getAccessTokenObjectComSenhaInvalida(mvc, usuario).getAccessToken();
+    }
+
+    public static OAuthToken getAccessTokenObjectComSenhaInvalida(MockMvc mvc, String usuario) {
+        try {
+            var response = getTokenResponseComSenhaInvalida(mvc, usuario);
+            return new ObjectMapper()
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
         } catch (Exception exception) {
             exception.printStackTrace();
             return new OAuthToken();
@@ -42,8 +57,21 @@ public class TestsHelper {
     }
 
     @SneakyThrows
+    public static MockHttpServletResponse getTokenResponseComSenhaInvalida(MockMvc mvc, String usuario) {
+        return mvc
+            .perform(
+                post("/oauth/token")
+                    .header("Authorization", "Basic "
+                        + new String(Base64Utils.encode(("xbrain-app-client:xbrain").getBytes())))
+                    .param("username", usuario)
+                    .param("password", "000000")
+                    .param("grant_type", "password"))
+            .andReturn().getResponse();
+    }
+
+    @SneakyThrows
     public static byte[] convertObjectToJsonBytes(Object object) {
-        ObjectMapper mapper = new ObjectMapper();
+        var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsBytes(object);
     }
@@ -51,15 +79,15 @@ public class TestsHelper {
     public static OAuthToken getAccessTokenClientCredentials(MockMvc mvc, String app) {
         try {
             MockHttpServletResponse response = mvc
-                    .perform(
-                            post("/oauth/token")
-                                    .header("Authorization", "Basic "
-                                            + new String(Base64Utils.encode((app).getBytes())))
-                                    .param("grant_type", "client_credentials"))
-                    .andReturn().getResponse();
+                .perform(
+                    post("/oauth/token")
+                        .header("Authorization", "Basic "
+                            + new String(Base64Utils.encode((app).getBytes())))
+                        .param("grant_type", "client_credentials"))
+                .andReturn().getResponse();
 
             return new ObjectMapper()
-                    .readValue(response.getContentAsByteArray(), OAuthToken.class);
+                .readValue(response.getContentAsByteArray(), OAuthToken.class);
 
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -69,7 +97,7 @@ public class TestsHelper {
 
     @SneakyThrows
     public static String convertObjectToJsonString(Object object) {
-        ObjectMapper mapper = new ObjectMapper();
+        var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.writeValueAsString(object);
     }

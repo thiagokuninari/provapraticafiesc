@@ -29,7 +29,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/cidades",
             "/api/usuarios/gerencia/acesso/senha",
             "/api/usuarios/gerencia/{idUsuario}/supervisor",
-            "/api/cidades/{cidadeId}",
             "/api/usuarios/resetar-senha/**",
             "/api/public/disparar-timer-inativar-usuarios",
             "/api/usuarios/usuario-funil-prospeccao",
@@ -56,6 +55,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/usuarios/situacoes/timer")
             .hasAnyRole(CodigoFuncionalidade.APPLICATION.name(), CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/usuarios/responsaveis-ddd").authenticated()
+            .antMatchers(HttpMethod.POST, "/api/cidades/por-nome-e-ufs").authenticated()
+            .antMatchers(HttpMethod.GET, "/api/cidades/{cidadeId}").permitAll()
             .antMatchers("/api/usuarios/gerencia/**").hasRole(CodigoFuncionalidade.AUT_VISUALIZAR_USUARIO.name())
             .antMatchers("/api/emular**").hasRole(CodigoFuncionalidade.AUT_EMULAR_USUARIO.name())
             .antMatchers(HttpMethod.POST, "/api/cargos").hasRole(CodigoFuncionalidade.AUT_2023.name())

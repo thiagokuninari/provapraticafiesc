@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -74,5 +77,57 @@ public class CidadeServiceTest {
         assertThat(service.findFirstByUfNomeAndCidadeNome("SP", "SAO PAULO"))
             .extracting("id", "nome")
             .containsExactly(6578, "SAO PAULO");
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidadeUf_deveRetornarListaVazia_quandoInformarListaVaziaDeCidades() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of())
+            .ufs(List.of("PR", "PB", "RN"))
+            .build();
+
+        assertThat(service.getCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
+            .hasSize(0)
+            .isEmpty();
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidadeUf_deveRetornarListaVazia_quandoInformarListaVaziaDeUfs() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of())
+            .build();
+
+        assertThat(service.getCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
+            .hasSize(0)
+            .isEmpty();
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidadeUf_deveRetornarListaVazia_quandoValoresInexistentes() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("SP", "MG"))
+            .build();
+
+        assertThat(service.getCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
+            .hasSize(0)
+            .isEmpty();
+    }
+
+    @Test
+    public void getCodigoIbgeRegionalByCidadeUf_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadeEUf() {
+        var listaCidadesUfs = CidadesUfsRequest.builder()
+            .cidades(List.of("LONDRINA", "CARAUBAS"))
+            .ufs(List.of("PR", "PB", "RN"))
+            .build();
+
+        assertThat(service.getCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
+            .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome", "ufId", "uf", "ufSigla")
+            .hasSize(3)
+            .containsExactly(
+                tuple(2641, "CARAUBAS", "2504074", 1, "LESTE", 24, "PARAIBA", "PB"),
+                tuple(5578, "LONDRINA", "4113700", 3, "SUL", 1, "PARANA", "PR"),
+                tuple(5604, "CARAUBAS", "2402303", 1, "LESTE", 26, "RIO GRANDE DO NORTE", "RN"));
     }
 }
