@@ -30,10 +30,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_AA;
-import static br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil.FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -274,8 +272,8 @@ public class FeederServiceTest {
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, atLeastOnce()).exists(anyInt());
-        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
-        verify(permissaoEspecialRepository, atLeastOnce()).save(eq(umaListaPermissoesEspeciais()));
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(eq(1));
+        verify(permissaoEspecialRepository, atLeastOnce()).save(eq(umaListaPermissoesEspeciais(15000, 15005, 15012)));
     }
 
     @Test
@@ -287,8 +285,8 @@ public class FeederServiceTest {
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, atLeastOnce()).exists(anyInt());
-        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
-        verify(permissaoEspecialRepository, atLeastOnce()).save(umaListaPermissoesEspeciaisComUmaFuncionalidade(15005));
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(eq(1));
+        verify(permissaoEspecialRepository, atLeastOnce()).save(eq(umaListaPermissoesEspeciaisComUmaFuncionalidade(15005)));
     }
 
     @Test
@@ -299,7 +297,7 @@ public class FeederServiceTest {
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, times(1)).exists(anyInt());
-        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(eq(1));
         verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
     }
 
@@ -311,34 +309,41 @@ public class FeederServiceTest {
         service.salvarPermissoesEspeciaisCoordenadoresGerentes(umaListaUsuariosIds(), umUsuarioLogadoId());
 
         verify(usuarioRepository, times(1)).exists(anyInt());
-        verify(permissaoEspecialRepository, times(1)).findByUsuario(1);
+        verify(permissaoEspecialRepository, times(1)).findByUsuario(eq(1));
         verify(permissaoEspecialRepository, never()).save(any(PermissaoEspecial.class));
     }
 
     private List<PermissaoEspecial> umaListaPermissoesEspeciaisComUmaFuncionalidade(Integer funcionalidadeId) {
         var localDateTime = dataHoraAtual.getDataHora();
         return List.of(PermissaoEspecial.builder()
-                .funcionalidade(Funcionalidade.builder().id(funcionalidadeId).build())
+            .funcionalidade(Funcionalidade.builder().id(funcionalidadeId).build())
+            .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+            .dataCadastro(localDateTime)
+            .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+            .build());
+    }
+
+    private List<PermissaoEspecial> umaListaPermissoesEspeciais(Integer agendar, Integer descartar, Integer visualizar) {
+        var localDateTime = dataHoraAtual.getDataHora();
+        return List.of(
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(agendar).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(descartar).build())
+                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
+                .dataCadastro(localDateTime)
+                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
+                .build(),
+            PermissaoEspecial.builder()
+                .funcionalidade(Funcionalidade.builder().id(visualizar).build())
                 .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
                 .dataCadastro(localDateTime)
                 .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
                 .build());
-    }
-
-    private List<PermissaoEspecial> umaListaPermissoesEspeciais() {
-        var localDateTime = dataHoraAtual.getDataHora();
-        var listaFunc = List.of();
-        return FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
-            .stream()
-            .filter(func -> !listaFunc.contains(func))
-            .map(id -> PermissaoEspecial
-                .builder()
-                .funcionalidade(Funcionalidade.builder().id(id).build())
-                .usuario(new Usuario(umaListaUsuariosIds().stream().findFirst().orElseThrow()))
-                .dataCadastro(localDateTime)
-                .usuarioCadastro(Usuario.builder().id(umUsuarioLogadoId()).build())
-                .build())
-            .collect(Collectors.toList());
     }
 
     private List<Integer> umaListaUsuariosIds() {
