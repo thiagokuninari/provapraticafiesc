@@ -13,6 +13,8 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     Optional<OrganizacaoEmpresa> findById(Integer id);
 
+    List<OrganizacaoEmpresa> findAllByNivelId(Integer nivelId);
+
     List<OrganizacaoEmpresa> findAllByNivelIdAndSituacao(Integer nivelId, ESituacaoOrganizacaoEmpresa situacao);
 
     boolean existsByRazaoSocialIgnoreCase(String razaoSocial);

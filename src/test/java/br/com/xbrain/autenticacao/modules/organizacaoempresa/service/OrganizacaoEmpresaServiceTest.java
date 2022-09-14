@@ -96,7 +96,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findById_deveRetornarUmSite_quandoBuscarPorId() {
+    public void findById_deveRetornarUmaOrganizacaoEmpresa_quandoBuscarPorId() {
         when(organizacaoEmpresaRepository.findById(any()))
             .thenReturn(Optional.of(umaOrganizacaoEmpresaCadastradaId()));
 
@@ -251,6 +251,58 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    @Test
+    public void findAllByNivelId_deveRetornarUmaListaDeOrganizacaoEmpresa_quandoSolicitado() {
+        when(organizacaoEmpresaRepository.findAllByNivelId(1))
+            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+
+        Assertions.assertThat(service.findAllByNivelId(1))
+            .extracting("id", "razaoSocial", "nivel")
+            .containsExactly(
+                tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
+
+        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+    }
+
+    @Test
+    public void findAllByNivelId_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        when(organizacaoEmpresaRepository.findAllByNivelId(1))
+            .thenReturn(List.of());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findAllByNivelId(1))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+    }
+
+    @Test
+    public void findAllByNivelIdAndSituacao_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
+        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+
+        Assertions.assertThat(service.findAllAtivosByNivelId(1))
+            .extracting("id", "razaoSocial", "nivel")
+            .containsExactly(
+                tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void findAllByNivelIdAndSituacao_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findAllAtivosByNivelId(1))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {

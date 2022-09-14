@@ -291,6 +291,25 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].situacao", is("A")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].situacao", is("A")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllByNivelId_deveRetornarListaOrganizacoesEmpresaIdsPorNivelId_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+
+        when(organizacaoEmpresaService.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+        mockMvc.perform(get(API_URI + "/niveis")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .param("nivelId", "100")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[1].id", is(2)));
     }
 }

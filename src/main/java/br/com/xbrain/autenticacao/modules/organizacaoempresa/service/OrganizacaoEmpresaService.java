@@ -152,7 +152,20 @@ public class  OrganizacaoEmpresaService {
     }
 
     public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
-        return organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
+        var organizacoes = organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
             .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
+    }
+
+    public List<OrganizacaoEmpresaResponse> findAllByNivelId(Integer nivelId) {
+        var organizacoes = organizacaoEmpresaRepository.findAllByNivelId(nivelId)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
     }
 }

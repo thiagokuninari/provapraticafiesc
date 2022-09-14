@@ -61,6 +61,7 @@ public class OrganizacaoEmpresaHelper {
         return OrganizacaoEmpresa.builder()
             .id(2)
             .razaoSocial("Teste AA Dois")
+            .nivel(umNivel())
             .cnpj("79.742.597/0001-08")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -69,9 +70,11 @@ public class OrganizacaoEmpresaHelper {
     public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponse() {
         return List.of(OrganizacaoEmpresaResponse.builder()
                 .id(1)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build(),
             OrganizacaoEmpresaResponse.builder()
                 .id(2)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build());
     }
 
