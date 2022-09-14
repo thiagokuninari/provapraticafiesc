@@ -1237,7 +1237,7 @@ public class UsuarioControllerTest {
     public void getUsuariosById_deveRetornarListaVaziaDeUsuarioResponse_quandoUsuariosNaoCadastrados() {
         mvc.perform(post(USUARIOS_ENDPOINT + "/buscar-todos")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
-                .content(String.valueOf(List.of(1, 2)))clear
+                .content(String.valueOf(List.of(1, 2)))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
