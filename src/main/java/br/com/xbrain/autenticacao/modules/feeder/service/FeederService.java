@@ -82,8 +82,8 @@ public class FeederService {
     }
 
     public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
-        if (CodigoCargo.ASSISTENTE_LOJA_FUTURO != usuarioMqRequest.getCargo() &&
-            (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
+        if (CodigoCargo.ASSISTENTE_LOJA_FUTURO != usuarioMqRequest.getCargo()
+            && (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
             || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
