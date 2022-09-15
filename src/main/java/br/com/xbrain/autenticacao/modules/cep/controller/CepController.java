@@ -21,8 +21,8 @@ public class CepController {
         return ResponseEntity.ok(consultaCepService.consultarCep(cep));
     }
 
-    @GetMapping(params = "ceps")
-    public List<ConsultaCepResponse> buscarCidadesPorCeps(@RequestParam List<String> ceps) {
+    @PostMapping
+    public List<ConsultaCepResponse> buscarCidadesPorCeps(@RequestBody List<String> ceps) {
         return consultaCepService.consultarCeps(ceps);
     }
 }

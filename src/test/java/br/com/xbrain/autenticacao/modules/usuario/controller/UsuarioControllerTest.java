@@ -355,9 +355,10 @@ public class UsuarioControllerTest {
             .when(usuarioService)
             .findByCpfs(List.of("68731547257", "44215764173"), false);
 
-        mvc.perform(get("/api/usuarios")
-                .param("cpfs", "68731547257", "44215764173")
+        mvc.perform(post("/api/usuarios/cpfs")
                 .param("buscarAtivo", "false")
+                .content(convertObjectToJsonBytes(List.of("68731547257", "44215764173")))
+                .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -400,9 +401,10 @@ public class UsuarioControllerTest {
             .when(usuarioService)
             .findByCpfs(List.of("68731547257", "44215764173", "09667546977", "72489645498"), true);
 
-        mvc.perform(get("/api/usuarios")
-                .param("cpfs", "68731547257", "44215764173", "09667546977", "72489645498")
+        mvc.perform(post("/api/usuarios/cpfs")
                 .param("buscarAtivo", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of("68731547257", "44215764173", "09667546977", "72489645498")))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -506,9 +508,10 @@ public class UsuarioControllerTest {
             .when(usuarioService)
             .findByEmails(List.of(INATIVO, ATIVO), false);
 
-        mvc.perform(get("/api/usuarios")
-                .param("emails", "INATIVO@XBRAIN.COM.BR, ATIVO@XBRAIN.COM.BR")
+        mvc.perform(post("/api/usuarios/emails")
                 .param("buscarAtivo", "false")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of("INATIVO@XBRAIN.COM.BR", "ATIVO@XBRAIN.COM.BR")))
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -530,12 +533,14 @@ public class UsuarioControllerTest {
                     "Usuario Ativo 1",
                     ATIVO,
                     ESituacao.A
-                ), umUsuarioResponse(
+                ),
+                umUsuarioResponse(
                     108,
                     "Usuario Ativo 2",
                     "ATIVO2@XBRAIN.COM.BR",
                     ESituacao.A
-                ), umUsuarioResponse(
+                ),
+                umUsuarioResponse(
                     109,
                     "Usuario Ativo 3",
                     "ATIVO3@XBRAIN.COM.BR",
@@ -550,10 +555,13 @@ public class UsuarioControllerTest {
                 "ATIVO2@XBRAIN.COM.BR",
                 "ATIVO3@XBRAIN.COM.BR"), true);
 
-        mvc.perform(get("/api/usuarios")
-                .param("emails", "INATIVO@XBRAIN.COM.BR", "ATIVO@XBRAIN.COM.BR", "ATIVO2@XBRAIN.COM.BR", "ATIVO3@XBRAIN.COM.BR")
+        mvc.perform(post("/api/usuarios/emails")
+                .content(convertObjectToJsonBytes(
+                    List.of("INATIVO@XBRAIN.COM.BR", "ATIVO@XBRAIN.COM.BR", "ATIVO2@XBRAIN.COM.BR", "ATIVO3@XBRAIN.COM.BR")
+                ))
                 .param("buscarAtivo", "true")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id", is(107)))

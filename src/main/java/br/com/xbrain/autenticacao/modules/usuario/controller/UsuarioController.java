@@ -230,9 +230,9 @@ public class UsuarioController {
 
     }
 
-    @GetMapping(params = "emails")
-    public List<UsuarioResponse> getUsuariosByEmails(@RequestParam List<String> emails,
-                                                    @RequestParam(required = false) Boolean buscarAtivo) {
+    @PostMapping("emails")
+    public List<UsuarioResponse> getUsuariosByEmails(@RequestBody List<String> emails,
+                                                     @RequestParam(required = false) Boolean buscarAtivo) {
         return usuarioService.findByEmails(emails, buscarAtivo);
     }
 
@@ -242,8 +242,8 @@ public class UsuarioController {
         return cpfAaOpt.orElse(null);
     }
 
-    @GetMapping(params = "cpfs")
-    public List<UsuarioResponse> getUsuariosByCpfs(@RequestParam List<String> cpfs,
+    @PostMapping("cpfs")
+    public List<UsuarioResponse> getUsuariosByCpfs(@RequestBody List<String> cpfs,
                                                    @RequestParam(required = false) Boolean buscarAtivo) {
         return usuarioService.findByCpfs(cpfs, buscarAtivo);
     }

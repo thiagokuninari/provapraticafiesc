@@ -118,8 +118,8 @@ public class CidadeController {
         return service.findCidadeByCodigoIbge(codigoIbge);
     }
 
-    @GetMapping("codigos-ibge")
-    public List<CidadeResponse> findCidadesByCodigosIbge(@RequestParam List<String> codigosIbge) {
+    @PostMapping("codigos-ibge")
+    public List<CidadeResponse> findCidadesByCodigosIbge(@RequestBody List<String> codigosIbge) {
         return service.findCidadesByCodigosIbge(codigosIbge);
     }
 
