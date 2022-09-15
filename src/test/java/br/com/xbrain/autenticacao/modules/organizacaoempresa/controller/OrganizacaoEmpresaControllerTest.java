@@ -303,7 +303,7 @@ public class OrganizacaoEmpresaControllerTest {
             .thenReturn(umUsuarioAdminAutenticado());
 
         when(organizacaoEmpresaService.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
-        mockMvc.perform(get(API_URI + "/niveis")
+        mockMvc.perform(get(API_URI + "/por-nivel")
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
                 .param("nivelId", "100")
                 .accept(MediaType.APPLICATION_JSON))
