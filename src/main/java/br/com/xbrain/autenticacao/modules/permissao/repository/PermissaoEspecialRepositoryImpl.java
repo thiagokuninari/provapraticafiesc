@@ -40,7 +40,8 @@ public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoE
         return new JPAQueryFactory(entityManager)
             .selectDistinct(permissaoEspecial.funcionalidade.id)
             .from(permissaoEspecial)
-            .where(permissaoEspecial.usuario.id.eq(usuarioId))
+            .where(permissaoEspecial.usuario.id.eq(usuarioId)
+                .and(permissaoEspecial.dataBaixa.isNull()))
             .fetch();
     }
 }
