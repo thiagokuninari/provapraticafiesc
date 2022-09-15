@@ -82,11 +82,9 @@ public class FeederService {
     }
 
     public void adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto usuario, UsuarioMqRequest usuarioMqRequest) {
-        if (CodigoCargo.ASSISTENTE_LOJA_FUTURO == usuarioMqRequest.getCargo()) {
-            return;
-        }
-        if (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
-            || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL) {
+        if (CodigoCargo.ASSISTENTE_LOJA_FUTURO != usuarioMqRequest.getCargo() &&
+            (usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.RESIDENCIAL
+            || usuarioMqRequest.getAgenteAutorizadoFeeder() == ETipoFeeder.EMPRESARIAL)) {
             var permissoesFeeder = usuarioRepository.findById(usuario.getId())
                 .map(usuarioNovo -> getPermissoesEspeciaisDoColobarodaorConformeCargo(usuarioNovo,
                     usuarioMqRequest.getUsuarioCadastroId(), usuarioMqRequest.getCargo()))
@@ -167,7 +165,7 @@ public class FeederService {
             .map(colaboradorId -> usuarioRepository.findComplete(colaboradorId).orElse(null))
             .filter(Objects::nonNull)
             .filter(usuario -> !usuario.getSituacao().equals(ESituacao.R))
-            .filter(usuario -> !(CodigoCargo.ASSISTENTE_LOJA_FUTURO == usuario.getCargoCodigo()))
+            .filter(usuario -> CodigoCargo.ASSISTENTE_LOJA_FUTURO != usuario.getCargoCodigo())
             .flatMap(colaborador -> getPermissoesEspeciaisDoColobarodaorConformeCargo(colaborador,
                 usuarioCadastroId, colaborador.getCargoCodigo()).stream())
             .collect(Collectors.toList());
