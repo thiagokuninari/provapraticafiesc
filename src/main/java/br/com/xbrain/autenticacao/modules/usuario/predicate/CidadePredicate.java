@@ -10,13 +10,12 @@ import com.querydsl.jpa.JPAExpressions;
 
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
 public class CidadePredicate {
-
-    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private QCidade cidade = QCidade.cidade;
     private BooleanBuilder builder;
