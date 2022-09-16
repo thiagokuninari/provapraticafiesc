@@ -49,7 +49,7 @@ public class CidadeRepositoryTest {
 
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate))
             .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId",
-                "regionalNome", "ufId", "uf", "ufSigla")
+                "regionalNome", "ufId", "estadoNome", "uf")
             .hasSize(3)
             .containsExactly(
                 tuple(2641, "CARAUBAS", "2504074", 1, "LESTE", 24, "PARAIBA", "PB"),

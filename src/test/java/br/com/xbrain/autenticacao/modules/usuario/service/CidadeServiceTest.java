@@ -123,7 +123,7 @@ public class CidadeServiceTest {
             .build();
 
         assertThat(service.getCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
-            .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome", "ufId", "uf", "ufSigla")
+            .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome", "ufId", "estadoNome", "uf")
             .hasSize(3)
             .containsExactly(
                 tuple(2641, "CARAUBAS", "2504074", 1, "LESTE", 24, "PARAIBA", "PB"),

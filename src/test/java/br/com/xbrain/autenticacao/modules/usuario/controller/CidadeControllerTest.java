@@ -322,24 +322,24 @@ public class CidadeControllerTest {
             .andExpect(jsonPath("$[0].regionalId", is(1)))
             .andExpect(jsonPath("$[0].regionalNome", is("LESTE")))
             .andExpect(jsonPath("$[0].ufId", is(24)))
-            .andExpect(jsonPath("$[0].uf", is("PARAIBA")))
-            .andExpect(jsonPath("$[0].ufSigla", is("PB")))
+            .andExpect(jsonPath("$[0].estadoNome", is("PARAIBA")))
+            .andExpect(jsonPath("$[0].uf", is("PB")))
             .andExpect(jsonPath("$[1].cidadeId", is(5578)))
             .andExpect(jsonPath("$[1].cidadeNome", is("LONDRINA")))
             .andExpect(jsonPath("$[1].codigoIbge", is("4113700")))
             .andExpect(jsonPath("$[1].regionalId", is(3)))
             .andExpect(jsonPath("$[1].regionalNome", is("SUL")))
             .andExpect(jsonPath("$[1].ufId", is(1)))
-            .andExpect(jsonPath("$[1].uf", is("PARANA")))
-            .andExpect(jsonPath("$[1].ufSigla", is("PR")))
+            .andExpect(jsonPath("$[1].estadoNome", is("PARANA")))
+            .andExpect(jsonPath("$[1].uf", is("PR")))
             .andExpect(jsonPath("$[2].cidadeId", is(5604)))
             .andExpect(jsonPath("$[2].cidadeNome", is("CARAUBAS")))
             .andExpect(jsonPath("$[2].codigoIbge", is("2402303")))
             .andExpect(jsonPath("$[2].regionalId", is(1)))
             .andExpect(jsonPath("$[2].regionalNome", is("LESTE")))
             .andExpect(jsonPath("$[2].ufId", is(26)))
-            .andExpect(jsonPath("$[2].uf", is("RIO GRANDE DO NORTE")))
-            .andExpect(jsonPath("$[2].ufSigla", is("RN")));
+            .andExpect(jsonPath("$[2].estadoNome", is("RIO GRANDE DO NORTE")))
+            .andExpect(jsonPath("$[2].uf", is("RN")));
 
         verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidadeNomeAndUf(eq(listasCidadesUfsValida()));
     }

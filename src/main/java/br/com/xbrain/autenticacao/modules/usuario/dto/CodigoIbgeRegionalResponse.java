@@ -17,6 +17,6 @@ public class CodigoIbgeRegionalResponse {
     private Integer regionalId;
     private String regionalNome;
     private Integer ufId;
+    private String estadoNome;
     private String uf;
-    private String ufSigla;
 }
