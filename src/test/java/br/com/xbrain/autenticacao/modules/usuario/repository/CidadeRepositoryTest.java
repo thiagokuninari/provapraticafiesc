@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,11 @@ public class CidadeRepositoryTest {
             .ufs(List.of("SP", "MG"))
             .build();
 
-        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs)).isEmpty();
+        var predicate = new CidadePredicate()
+            .comCidadesUfs(listaCidadesUfs)
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate)).isEmpty();
     }
 
     @Test
@@ -38,7 +43,11 @@ public class CidadeRepositoryTest {
             .ufs(List.of("PR", "PB", "RN"))
             .build();
 
-        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(listaCidadesUfs))
+        var predicate = new CidadePredicate()
+            .comCidadesUfs(listaCidadesUfs)
+            .build();
+
+        assertThat(cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate))
             .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId",
                 "regionalNome", "ufId", "uf", "ufSigla")
             .hasSize(3)

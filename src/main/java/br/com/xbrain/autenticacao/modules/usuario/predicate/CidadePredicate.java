@@ -1,15 +1,22 @@
 package br.com.xbrain.autenticacao.modules.usuario.predicate;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadesUfsRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
+
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 
 public class CidadePredicate {
+
+    private static final int QTD_MAX_IN_NO_ORACLE = 1000;
 
     private QCidade cidade = QCidade.cidade;
     private BooleanBuilder builder;
@@ -49,6 +56,19 @@ public class CidadePredicate {
     public CidadePredicate filtrarPermitidos(UsuarioAutenticado usuarioAutenticado) {
         if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             dasCidadesQueOUsuarioEstaVinculado(usuarioAutenticado.getId());
+        }
+        return this;
+    }
+
+    public CidadePredicate comCidadesUfs(CidadesUfsRequest cidadesUfs) {
+        if (!cidadesUfs.getCidades().isEmpty() && !cidadesUfs.getUfs().isEmpty()) {
+            builder.and(
+                ExpressionUtils.anyOf(
+                    Lists.partition(cidadesUfs.getCidades(), QTD_MAX_IN_NO_ORACLE)
+                        .stream()
+                        .map(cidade.nome::in)
+                        .collect(Collectors.toList())))
+                .and(cidade.uf.uf.in(cidadesUfs.getUfs()));
         }
         return this;
     }

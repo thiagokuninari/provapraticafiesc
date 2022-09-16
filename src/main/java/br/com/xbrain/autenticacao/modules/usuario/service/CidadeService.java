@@ -155,7 +155,11 @@ public class CidadeService {
 
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidadeNomeAndUf(CidadesUfsRequest cidadesUfs) {
         if (!cidadesUfs.getCidades().isEmpty() && !cidadesUfs.getUfs().isEmpty()) {
-            return cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(cidadesUfs);
+            var predicate = new CidadePredicate()
+                .comCidadesUfs(cidadesUfs)
+                .build();
+
+            return cidadeRepository.findCodigoIbgeRegionalByCidadeNomeAndUf(predicate);
         }
         return new ArrayList<>();
     }
