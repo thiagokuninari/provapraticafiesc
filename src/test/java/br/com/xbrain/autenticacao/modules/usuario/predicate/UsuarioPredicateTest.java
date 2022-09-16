@@ -102,4 +102,22 @@ public class UsuarioPredicateTest {
             .boxed()
             .collect(Collectors.toList());
     }
+
+    @Test
+    public void comOrganizacaoEmpresaId_deveIgnorarTodosOsRegistros_quandoIdForNull() {
+        var predicate = new UsuarioPredicate()
+            .comOrganizacaoEmpresaId(null)
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comOrganizacaoEmpresaId_deveRetornarUsuarioPredicate_quandoIdNaoNull() {
+        var predicate = new UsuarioPredicate()
+            .comOrganizacaoEmpresaId(1)
+            .build();
+        var expected = new BooleanBuilder(usuario.organizacaoEmpresa.id.eq(1));
+        assertThat(predicate).isEqualTo(expected);
+    }
 }

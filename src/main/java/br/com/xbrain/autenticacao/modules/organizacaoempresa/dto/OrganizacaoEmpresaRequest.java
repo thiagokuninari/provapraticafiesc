@@ -24,7 +24,7 @@ public class OrganizacaoEmpresaRequest {
     @NotNull
     private String cnpj;
     @NotNull
-    private Integer nivelEmpresaId;
+    private Integer nivelId;
     @NotEmpty
     private List<Integer> modalidadesEmpresaIds;
 

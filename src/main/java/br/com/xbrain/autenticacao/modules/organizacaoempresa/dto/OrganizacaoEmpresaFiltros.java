@@ -18,7 +18,7 @@ public class OrganizacaoEmpresaFiltros {
     private Integer id;
     private String razaoSocial;
     private String cnpj;
-    private Integer nivelEmpresaId;
+    private Integer nivelId;
     private List<Integer> modalidadesEmpresaIds;
     private ESituacaoOrganizacaoEmpresa situacao;
 
@@ -27,7 +27,7 @@ public class OrganizacaoEmpresaFiltros {
             .comId(id)
             .comRazaoSocial(razaoSocial)
             .comCnpj(cnpj)
-            .comNivelEmpresa(nivelEmpresaId)
+            .comNivel(nivelId)
             .comModalidades(modalidadesEmpresaIds)
             .comSituacao(situacao);
     }

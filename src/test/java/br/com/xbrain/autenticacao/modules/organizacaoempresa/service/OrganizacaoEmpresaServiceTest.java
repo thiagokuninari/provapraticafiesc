@@ -9,14 +9,15 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpr
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.NivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.NivelEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import com.querydsl.core.types.Predicate;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Captor
     private ArgumentCaptor<OrganizacaoEmpresa> organizacaoEmpresaCaptor;
     @Mock
-    private NivelEmpresaRepository nivelEmpresaRepository;
+    private NivelRepository nivelRepository;
     @Mock
     private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
 
@@ -71,15 +72,15 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void validarNivelEmpresa_notFoundException_quandoNaoExistirNivelEmpresaCadastrada() {
-        when(nivelEmpresaRepository.findById(any()))
+    public void validarNivel_notFoundException_quandoNaoExistirNivelCadastrada() {
+        when(nivelRepository.findById(any()))
             .thenReturn(Optional.empty());
 
         assertThatExceptionOfType(NotFoundException.class)
-            .isThrownBy(() -> service.validarNivelEmpresa(1))
+            .isThrownBy(() -> service.validarNivel(1))
             .withMessage("Nível empresa não encontrada.");
 
-        verify(nivelEmpresaRepository, times(1)).findById(eq(1));
+        verify(nivelRepository, times(1)).findById(eq(1));
     }
 
     @Test
@@ -95,7 +96,7 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void findById_deveRetornarUmSite_quandoBuscarPorId() {
+    public void findById_deveRetornarUmaOrganizacaoEmpresa_quandoBuscarPorId() {
         when(organizacaoEmpresaRepository.findById(any()))
             .thenReturn(Optional.of(umaOrganizacaoEmpresaCadastradaId()));
 
@@ -148,7 +149,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void save_deveRetornarOrganizacaoEmpresa_quandoForSalvo() {
-        when(nivelEmpresaRepository.findById(eq(1))).thenReturn(Optional.of(umNivelEmpresa()));
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
@@ -232,7 +233,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     @Test
     public void update_deveSalvarEGerarHistorico_quandoForChamado() {
-        when(nivelEmpresaRepository.findById(eq(1))).thenReturn(Optional.of(umNivelEmpresa()));
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresa(1,
@@ -241,15 +242,67 @@ public class OrganizacaoEmpresaServiceTest {
 
         service.update(1, umaOrganizacaoEmpresaRequest());
         Assertions.assertThat(service.findById(1))
-            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivelEmpresa", "situacao")
+            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
             .containsExactlyInAnyOrder(1, "Organizacao 1", "08112392000192", List.of(umaModalidadeEmpresaTelevendas(),
-                    umaModalidadeEmpresaPap()), umNivelEmpresa(), ESituacaoOrganizacaoEmpresa.A);
+                    umaModalidadeEmpresaPap()), OrganizacaoEmpresaHelper.umNivel(), ESituacaoOrganizacaoEmpresa.A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
             eq(EHistoricoAcao.EDICAO), any());
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+    }
+
+    @Test
+    public void findAllByNivelId_deveRetornarUmaListaDeOrganizacaoEmpresa_quandoSolicitado() {
+        when(organizacaoEmpresaRepository.findAllByNivelId(1))
+            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+
+        Assertions.assertThat(service.findAllByNivelId(1))
+            .extracting("id", "razaoSocial", "nivel")
+            .containsExactly(
+                tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
+
+        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+    }
+
+    @Test
+    public void findAllByNivelId_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        when(organizacaoEmpresaRepository.findAllByNivelId(1))
+            .thenReturn(List.of());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findAllByNivelId(1))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, times(1)).findAllByNivelId(eq(1));
+    }
+
+    @Test
+    public void findAllByNivelIdAndSituacao_deveRetornarUmaListaDeOrganizacaoEmpresaAtiva_quandoSolicitado() {
+        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
+
+        Assertions.assertThat(service.findAllAtivosByNivelId(1))
+            .extracting("id", "razaoSocial", "nivel")
+            .containsExactly(
+                tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
+    }
+
+    @Test
+    public void findAllByNivelIdAndSituacao_deveLancarNotFoundException_quandoNivelIdNaoEncontrado() {
+        when(organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(1, ESituacaoOrganizacaoEmpresa.A))
+            .thenReturn(List.of());
+
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findAllAtivosByNivelId(1))
+            .withMessage("Organização não encontrada.");
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {
@@ -281,7 +334,7 @@ public class OrganizacaoEmpresaServiceTest {
         return OrganizacaoEmpresaRequest.builder()
             .razaoSocial("Organizacao 1")
             .cnpj("08112392000192")
-            .nivelEmpresaId(1)
+            .nivelId(1)
             .modalidadesEmpresaIds(List.of(1,2))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();
@@ -335,17 +388,10 @@ public class OrganizacaoEmpresaServiceTest {
             .razaoSocial(razaoSocial)
             .cnpj(cnpj)
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(),umaModalidadeEmpresaTelevendas()))
-            .nivelEmpresa(NivelEmpresa.builder().id(1).build())
+            .nivel(Nivel.builder().id(1).build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(umUsuario())
             .build();
-    }
-
-    public static NivelEmpresa umNivelEmpresa() {
-        var nivelEmpresa = new NivelEmpresa();
-        nivelEmpresa.setId(1);
-        nivelEmpresa.setNivelEmpresa(null);
-        return nivelEmpresa;
     }
 }

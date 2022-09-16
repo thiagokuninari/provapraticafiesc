@@ -10,10 +10,8 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -202,6 +200,30 @@ public class UsuarioTest {
             .isTrue();
     }
 
+    @Test
+    public void isNivelVarejo_deveRetornarTrue_seUsuarioPossuirNivelVarejo() {
+        assertThat(usuarioAtivo(VAREJO_VENDEDOR, VAREJO).isNivelVarejo())
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelVarejo_deveRetornarFalse_seUsuarioNaoPossuirNivelVarejo() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
+            .isFalse();
+    }
+
+    @Test
+    public void isNivelReceptivoo_deveRetornarTrue_seUsuarioPossuirNivelReceptivo() {
+        assertThat(usuarioAtivo(VENDEDOR_RECEPTIVO, RECEPTIVO).isNivelReceptivo())
+            .isTrue();
+    }
+
+    @Test
+    public void isNivelReceptivo_deveRetornarFalse_seUsuarioNaoPossuirNivelReceptivo() {
+        assertThat(usuarioAtivo(OPERACAO_TELEVENDAS, ATIVO_LOCAL_PROPRIO).isNivelOperacao())
+            .isFalse();
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()
@@ -267,5 +289,4 @@ public class UsuarioTest {
     public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
         assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
     }
-
 }

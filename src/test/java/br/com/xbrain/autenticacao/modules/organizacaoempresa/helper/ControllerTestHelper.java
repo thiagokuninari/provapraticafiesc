@@ -4,12 +4,12 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ENivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.NivelEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 
 import java.util.List;
@@ -30,20 +30,20 @@ public class ControllerTestHelper {
                 .build());
     }
 
-    public static List<NivelEmpresa> doisNiveisEmpresa() {
-        return List.of(NivelEmpresa.builder()
+    public static List<Nivel> doisNiveis() {
+        return List.of(Nivel.builder()
                 .id(1)
-                .nivelEmpresa(ENivelEmpresa.VAREJO)
+                .codigo(CodigoNivel.VAREJO)
                 .build(),
-                NivelEmpresa.builder()
+                Nivel.builder()
                 .id(2)
-                .nivelEmpresa(ENivelEmpresa.RECEPTIVO)
+                .codigo(CodigoNivel.RECEPTIVO)
                 .build());
     }
 
-    public static List<SelectResponse> doisNiveisEmpresaSelectResponse() {
-        return doisNiveisEmpresa().stream()
-            .map(nivel -> new SelectResponse(nivel.getId(), nivel.getNivelEmpresa().name()))
+    public static List<SelectResponse> doisNiveisSelectResponse() {
+        return doisNiveis().stream()
+            .map(nivel -> new SelectResponse(nivel.getId(), nivel.getCodigo().name()))
             .collect(Collectors.toList());
     }
 

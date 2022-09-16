@@ -168,4 +168,11 @@ public class NivelServiceTest {
                         tuple(8, "Receptivo"),
                         tuple(18, "Backoffice"));
     }
+
+    @Test
+    public void getPermitidosParaOrganizacao_deveRetornarNiveisPermitidos_quandoSolicitado() {
+        assertThat(service.getPermitidosParaOrganizacao())
+            .extracting("codigo")
+            .contains(CodigoNivel.VAREJO.name(), CodigoNivel.RECEPTIVO.name());
+    }
 }

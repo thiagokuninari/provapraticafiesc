@@ -6,14 +6,15 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAcao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.NivelEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.NivelEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class  OrganizacaoEmpresaService {
 
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Organização não encontrada.");
-    private static final NotFoundException EX_NIVEL_EMPRESA_NAO_ENCONTRADO =
+    private static final NotFoundException EX_NIVEL_NAO_ENCONTRADO =
         new NotFoundException("Nível empresa não encontrada.");
     private static final NotFoundException EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA =
         new NotFoundException("Modalidade empresa não encontrada.");
@@ -41,7 +43,6 @@ public class  OrganizacaoEmpresaService {
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
 
-
     @Autowired
     private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
 
@@ -52,7 +53,7 @@ public class  OrganizacaoEmpresaService {
     private AutenticacaoService autenticacaoService;
 
     @Autowired
-    private NivelEmpresaRepository nivelEmpresaRepository;
+    private NivelRepository nivelRepository;
 
     @Autowired
     private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
@@ -68,7 +69,7 @@ public class  OrganizacaoEmpresaService {
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         validarRazaoSocial(request);
         validarCnpj(request);
-        var nivel = validarNivelEmpresa(request.getNivelEmpresaId());
+        var nivel = validarNivel(request.getNivelId());
         var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
         return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
@@ -109,7 +110,7 @@ public class  OrganizacaoEmpresaService {
         }
         var organizacaoEmpresaToUpdate = findById(id);
 
-        var nivel = validarNivelEmpresa(request.getNivelEmpresaId());
+        var nivel = validarNivel(request.getNivelId());
         var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
         organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
@@ -137,9 +138,9 @@ public class  OrganizacaoEmpresaService {
         }
     }
 
-    public NivelEmpresa validarNivelEmpresa(Integer id) {
-        return nivelEmpresaRepository.findById(id)
-            .orElseThrow(() -> EX_NIVEL_EMPRESA_NAO_ENCONTRADO);
+    public Nivel validarNivel(Integer id) {
+        return nivelRepository.findById(id)
+            .orElseThrow(() -> EX_NIVEL_NAO_ENCONTRADO);
     }
 
     public List<ModalidadeEmpresa> validarModalidadeEmpresa(List<Integer> ids) {
@@ -148,5 +149,23 @@ public class  OrganizacaoEmpresaService {
             throw EX_MODALIDADE_EMPRESA_NAO_ENCONTRADA;
         }
         return modalidades;
+    }
+
+    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(Integer nivelId) {
+        var organizacoes = organizacaoEmpresaRepository.findAllByNivelIdAndSituacao(nivelId, ESituacaoOrganizacaoEmpresa.A)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
+    }
+
+    public List<OrganizacaoEmpresaResponse> findAllByNivelId(Integer nivelId) {
+        var organizacoes = organizacaoEmpresaRepository.findAllByNivelId(nivelId)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
     }
 }

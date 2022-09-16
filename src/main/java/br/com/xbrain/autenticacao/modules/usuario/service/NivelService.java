@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.usuario.dto.NivelResponse;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.NivelTipoVisualizacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.AUT_VISUALIZAR_GERAL;
 
@@ -56,5 +58,12 @@ public class NivelService {
                     usuarioAutenticado.getNivelCodigoEnum(),
                     usuarioAutenticado.haveCanalAgenteAutorizado())
                 .build());
+    }
+
+    public List<NivelResponse> getPermitidosParaOrganizacao() {
+        return nivelRepository.findByCodigoIn(List.of(CodigoNivel.VAREJO, CodigoNivel.RECEPTIVO))
+            .stream()
+            .map(NivelResponse::of)
+            .collect(Collectors.toList());
     }
 }

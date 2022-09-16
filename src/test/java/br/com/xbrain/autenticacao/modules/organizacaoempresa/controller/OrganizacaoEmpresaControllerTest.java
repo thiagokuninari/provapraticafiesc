@@ -24,8 +24,10 @@ import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.Organ
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static helpers.Usuarios.HELP_DESK;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -273,5 +275,41 @@ public class OrganizacaoEmpresaControllerTest {
                 .header("Authorization", getAccessToken(mockMvc, HELP_DESK))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllAtivosByNivelId_deveRetornarListaOrganizacoesEmpresaAtivaIdsPorNivelId_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+
+        when(organizacaoEmpresaService.findAllAtivosByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+        mockMvc.perform(get(API_URI + "/nivel")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .param("nivelId", "100")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].situacao", is("A")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].situacao", is("A")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllByNivelId_deveRetornarListaOrganizacoesEmpresaIdsPorNivelId_quandoSolicitado() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+
+        when(organizacaoEmpresaService.findAllByNivelId(eq(100))).thenReturn(umaListaOrganizacaoEmpresaResponse());
+        mockMvc.perform(get(API_URI + "/por-nivel")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .param("nivelId", "100")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[1].id", is(2)));
     }
 }

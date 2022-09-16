@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -51,5 +54,15 @@ public class OrganizacaoEmpresaController {
     public OrganizacaoEmpresaResponse update(@PathVariable Integer id,
                                              @Validated @RequestBody OrganizacaoEmpresaRequest request) {
         return OrganizacaoEmpresaResponse.of(service.update(id, request));
+    }
+
+    @GetMapping("nivel")
+    public List<OrganizacaoEmpresaResponse> findAllAtivosByNivelId(@NotNull @RequestParam Integer nivelId) {
+        return service.findAllAtivosByNivelId(nivelId);
+    }
+
+    @GetMapping("por-nivel")
+    public List<OrganizacaoEmpresaResponse> findByNivel(@NotNull @RequestParam Integer nivelId) {
+        return service.findAllByNivelId(nivelId);
     }
 }
