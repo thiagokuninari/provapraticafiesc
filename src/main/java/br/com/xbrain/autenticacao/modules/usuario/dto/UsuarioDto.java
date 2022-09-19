@@ -183,4 +183,9 @@ public class UsuarioDto implements Serializable {
         return !isEmpty(usuario.getUnidadesNegociosId())
             ? usuario.getUnidadesNegociosId().get(0) : 0;
     }
+
+    public UsuarioDto(Integer id, String email) {
+        this.id = id;
+        this.email = email;
+    }
 }

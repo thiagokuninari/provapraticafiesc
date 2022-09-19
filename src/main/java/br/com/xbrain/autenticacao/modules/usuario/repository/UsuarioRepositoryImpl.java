@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.I;
 import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QEmpresa.empresa;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
@@ -747,12 +748,16 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    @SuppressWarnings("LineLength")
-    public List<Integer> findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias(LocalDateTime dataHoraInativarUsuario) {
+    public List<UsuarioDto> findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
+        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade) {
+
         return new JPAQueryFactory(entityManager)
-            .select(usuario.id)
+            .select(Projections.constructor(UsuarioDto.class,
+                usuario.id,
+                usuario.email))
             .from(usuario)
             .where(usuario.situacao.eq(A)
+                .and(usuario.email.notIn(emailsUsuariosViabilidade))
                 .and(usuario.dataUltimoAcesso.isNull())
                 .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
                 .and(usuario.dataCadastro.after(dataHoraInativarUsuario))
@@ -1193,11 +1198,17 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<Integer> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(LocalDateTime dataHoraInativarUsuario) {
+    public List<UsuarioDto> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
+        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade) {
+
         return new JPAQueryFactory(entityManager)
-            .select(usuario.id)
+            .select(Projections.constructor(UsuarioDto.class,
+                usuario.id,
+                usuario.email))
             .from(usuario)
             .where(usuario.dataUltimoAcesso.after(dataHoraInativarUsuario)
+                .and(usuario.situacao.ne(I))
+                .and(usuario.email.notIn(emailsUsuariosViabilidade))
                 .and(usuario.dataUltimoAcesso.before(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS)))
                 .and(usuario.dataReativacao.before(LocalDate.now().atStartOfDay().minusDays(TRES_DIAS))
                     .or(usuario.dataReativacao.isNull()))

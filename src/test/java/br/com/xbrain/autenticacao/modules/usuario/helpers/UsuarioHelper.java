@@ -157,6 +157,13 @@ public class UsuarioHelper {
         return usuario;
     }
 
+    public static UsuarioDto umUsuarioDto(Integer usuarioId, String usuarioEmail) {
+        return UsuarioDto.builder()
+            .id(usuarioId)
+            .email(usuarioEmail)
+            .build();
+    }
+
     public static UsuarioDto umUsuarioDtoMso() {
         return UsuarioDto.builder()
             .nome("MSO FEEDER")

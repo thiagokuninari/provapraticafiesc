@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHistoricoDto;
 import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +33,9 @@ public class UsuarioHistoricoService {
             .collect(Collectors.toList());
     }
 
-    public void gerarHistoricoInativacao(Usuario usuario, String origem) {
+    public void gerarHistoricoInativacao(Integer usuarioId, String origem) {
         usuarioHistoricoRepository.save(UsuarioHistorico.gerarHistorico(
-            usuario.getId(), getMotivoInativacao(), origem, ESituacao.I
+            usuarioId, getMotivoInativacao(), origem, ESituacao.I
         ));
     }
 
