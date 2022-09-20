@@ -118,24 +118,26 @@ public class UsuarioAcessoService {
         var emailsUsuariosViabilidade = Arrays.stream(emailUsuarioViabilidade.split(","))
             .collect(Collectors.toList());
         var usuariosUltimoAcessoExpirado =
-            CollectionUtils.emptyIfNull(getUsuariosUltimoAcessoExpirado(dataHoraInativarUsuario, emailsUsuariosViabilidade));
+            CollectionUtils.emptyIfNull(
+                getUsuariosUltimoAcessoExpiradoAndNotViabilidade(dataHoraInativarUsuario, emailsUsuariosViabilidade));
         var usuariosSemUltimoAcesso =
-            CollectionUtils.emptyIfNull(getUsuariosSemUltimoAcesso(dataHoraInativarUsuario, emailsUsuariosViabilidade));
+            CollectionUtils.emptyIfNull(
+                getUsuariosSemUltimoAcessoAndNotViabilidade(dataHoraInativarUsuario, emailsUsuariosViabilidade));
 
         return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
             .collect(Collectors.toList());
 
     }
 
-    private List<UsuarioDto> getUsuariosSemUltimoAcesso(LocalDateTime dataHoraInativarUsuario,
-                                                        List<String> emailsUsuariosViabilidade) {
+    private List<UsuarioDto> getUsuariosSemUltimoAcessoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario,
+                                                                         List<String> emailsUsuariosViabilidade) {
         return usuarioRepository
             .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
                 dataHoraInativarUsuario, emailsUsuariosViabilidade);
     }
 
-    private List<UsuarioDto> getUsuariosUltimoAcessoExpirado(LocalDateTime dataHoraInativarUsuario,
-                                                          List<String> emailsUsuariosViabilidade) {
+    private List<UsuarioDto> getUsuariosUltimoAcessoExpiradoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario,
+                                                                              List<String> emailsUsuariosViabilidade) {
         return usuarioRepository
             .findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
                 dataHoraInativarUsuario, emailsUsuariosViabilidade);
