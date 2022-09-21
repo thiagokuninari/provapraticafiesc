@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.MotivoInativacao;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import org.junit.Test;
@@ -30,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 @Transactional
 public class UsuarioHistoricoServiceIT {
 
-    private static LocalDateTime DATA_CADASTRO_DEFAULT = LocalDateTime.of(2019, 4, 1, 9, 30, 0);
+    private static final LocalDateTime DATA_CADASTRO_DEFAULT = LocalDateTime.of(2019, 4, 1, 9, 30, 0);
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -45,16 +44,16 @@ public class UsuarioHistoricoServiceIT {
     @Test
     public void gerarHistoricoInativacao_deveGerarHistorico_quandoUsuarioForInativadoPeloSistema() {
         assertEquals(0, usuarioHistoricoRepository.findByUsuarioId(799).size());
-        usuarioHistoricoService.gerarHistoricoInativacao(new Usuario(799), "Teste de histórico");
+        usuarioHistoricoService.gerarHistoricoInativacao(799, "Teste de histórico");
         refresh();
 
         List<UsuarioHistorico> usuarioHistoricos = usuarioHistoricoRepository.findAllCompleteByUsuarioId(799);
         assertEquals(1, usuarioHistoricos.size());
 
         assertThat(usuarioHistoricos.get(0))
-                .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
-                .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
-                        "Teste de histórico", 799);
+            .extracting("situacao", "motivoInativacao", "observacao", "usuario.id")
+            .contains(ESituacao.I, findMotivoInativacaoByCodigo(INATIVADO_SEM_ACESSO),
+                "Teste de histórico", 799);
     }
 
     private MotivoInativacao findMotivoInativacaoByCodigo(CodigoMotivoInativacao codigo) {

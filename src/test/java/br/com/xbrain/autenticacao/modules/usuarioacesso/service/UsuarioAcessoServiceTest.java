@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.usuarioacesso.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -35,7 +34,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.comum.helper.DeslogarUsuarioPorExcessoDeUsoHelper.umUsuarioComSituacao;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.tuple;
@@ -64,8 +63,17 @@ public class UsuarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(any()))
-            .thenReturn(List.of(102, 103, 104, 105, 106));
+        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(any(), any()))
+            .thenReturn(List.of(umUsuarioDto(102, "useremail@xbrain.com"),
+                umUsuarioDto(103, "useremail@xbrain.com"),
+                umUsuarioDto(104, "useremail@xbrain.com"),
+                umUsuarioDto(105, "useremail@xbrain.com"),
+                umUsuarioDto(106, "useremail@xbrain.com")));
+
+        when(usuarioRepository
+            .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(any(), any()))
+            .thenReturn(List.of(umUsuarioDto(107, "useremail@xbrain.com"),
+                umUsuarioDto(108, "useremail@xbrain.com")));
     }
 
     @Test
@@ -78,13 +86,11 @@ public class UsuarioAcessoServiceTest {
 
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuarios_quandoNaoEfetuarLoginPorTrintaEDoisDias() {
-        doReturn(umUsuarioComSituacao(ESituacao.A)).when(usuarioRepository).findById(anyInt());
         usuarioAcessoService.inativarUsuariosSemAcesso("TESTE");
 
-        verify(usuarioRepository, times(5)).save(any(Usuario.class));
-        verify(usuarioRepository, times(5)).atualizarParaSituacaoInativo(anyInt());
-        verify(usuarioHistoricoService, times(5)).gerarHistoricoInativacao(any(Usuario.class), any(String.class));
-        verify(inativarColaboradorMqSender, times(5)).sendSuccess(anyString());
+        verify(usuarioRepository, times(7)).atualizarParaSituacaoInativo(anyInt());
+        verify(usuarioHistoricoService, times(7)).gerarHistoricoInativacao(anyInt(), any(String.class));
+        verify(inativarColaboradorMqSender, times(7)).sendSuccess(anyString());
     }
 
     @Test
@@ -131,8 +137,8 @@ public class UsuarioAcessoServiceTest {
     @Test
     public void getCsv_retornaStringCsvOrdemReversa_quandoExistirRegistros() {
         var listaUsuarioAcesso = List.of(umUsuarioAcesso(1, 14, 29),
-            umUsuarioAcesso(2, 13, 29),
-            umUsuarioAcesso(3, 16, 28)).stream()
+                umUsuarioAcesso(2, 13, 29),
+                umUsuarioAcesso(3, 16, 28)).stream()
             .map(UsuarioAcessoResponse::of)
             .collect(Collectors.toList());
 

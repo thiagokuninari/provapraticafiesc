@@ -111,7 +111,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>,
     void atualizarDataUltimoAcesso(LocalDateTime data, Integer id);
 
     @Modifying
-    @Query("update Usuario u set u.situacao = 'I' where u.id = ?1")
+    @Query("update Usuario u set u.situacao = 'I', u.dataReativacao = null where u.id = ?1")
     void atualizarParaSituacaoInativo(Integer id);
 
     List<Usuario> findByOrganizacaoIdAndCargo_CodigoIn(Integer organizacaoId, List<CodigoCargo> cargos);

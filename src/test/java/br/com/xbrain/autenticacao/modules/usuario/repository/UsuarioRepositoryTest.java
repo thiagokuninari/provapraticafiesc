@@ -53,9 +53,10 @@ public class UsuarioRepositoryTest {
     @Test
     @SuppressWarnings("LineLength")
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
-        assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias(LocalDateTime.now().minusMonths(2)))
-            .extracting("value")
-            .containsExactlyInAnyOrder(100, 104);
+        assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2),
+            List.of("VIABILIDADE@TESTE.COM")))
+            .extracting("id", "email")
+            .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR"), tuple(104, "MARIA@HOTMAIL.COM"));
     }
 
     @Test
@@ -236,10 +237,13 @@ public class UsuarioRepositoryTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
-        Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDias(LocalDateTime.now().minusMonths(2)))
-            .extracting("value")
-            .containsExactlyInAnyOrder(114, 115, 116);
+    public void findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
+        Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2), List.of("VIABILIDADE@TESTE.COM")))
+            .extracting("id", "email")
+            .containsExactlyInAnyOrder(
+                tuple(114, "SUPERVISOR@TESTE.COM"),
+                tuple(115, "SUPERVISOR@TESTE.COM"),
+                tuple(116, "SUPERVISOR@TESTE.COM"));
     }
 
     @Test
