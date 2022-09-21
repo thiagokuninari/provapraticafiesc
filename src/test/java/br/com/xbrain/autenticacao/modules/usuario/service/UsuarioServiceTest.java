@@ -1527,6 +1527,27 @@ public class UsuarioServiceTest {
     }
 
     @Test
+    public void getUsuariosByIdsTodasSituacoes_deveRetornarListaVazia_quandoRegistrosNaoEncontrados() {
+        var emptyUsersIdsPart = IntStream
+            .rangeClosed(1, 500)
+            .boxed()
+            .collect(Collectors.toList());
+
+        var idsUsuarios = IntStream
+            .rangeClosed(1, 500)
+            .boxed()
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        when(usuarioRepository.findByIdIn(emptyUsersIdsPart)).thenReturn(List.of());
+
+        var listaDeUsuarios = usuarioService.getUsuariosByIdsTodasSituacoes(idsUsuarios);
+
+        assertThat(listaDeUsuarios).isEmpty();
+
+        verify(usuarioRepository, times(1)).findByIdIn(emptyUsersIdsPart);
+    }
+
+    @Test
     public void getTiposCanalOptions_opcoesDeSelectParaOsTiposCanal_quandoBuscarOpcoesParaOSelect() {
         assertThat(usuarioService.getTiposCanalOptions())
             .extracting("value", "label")

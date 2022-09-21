@@ -25,7 +25,7 @@ public class SubCanalDtoTest {
 
         assertThat(response).hasSize(2)
             .extracting("id", "codigo", "nome", "situacao")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 tuple(1, ETipoCanal.PAP, "PAP", ESituacao.A),
                 tuple(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A));
     }
