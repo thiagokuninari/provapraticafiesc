@@ -1564,6 +1564,13 @@ public class UsuarioServiceIT {
         assertThat(usuarioAtualizado.getDataReativacao()).isNotNull();
     }
 
+    @Test
+    public void getUsuariosAtivosByIds_retornarUsuariosAtivos_quandoForPassadoIds() {
+        assertThat(service.getUsuariosAtivosByIds(List.of(100, 101, 104, 105, 366, 367, 368, 369, 370, 371)))
+            .hasSize(7)
+            .isEqualTo(List.of(100, 101, 104, 366, 368, 369, 371));
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
         return UsuarioMqRequest.builder()
             .id(371)

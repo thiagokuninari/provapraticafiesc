@@ -42,8 +42,7 @@ import static br.com.xbrain.autenticacao.modules.feeder.helper.VendedoresFeederF
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAgendamentoHelpers.usuariosMesmoSegmentoAgenteAutorizado1300;
 import static helpers.TestBuilders.*;
-import static helpers.TestsHelper.convertObjectToJsonBytes;
-import static helpers.TestsHelper.getAccessToken;
+import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
@@ -1200,4 +1199,26 @@ public class UsuarioControllerTest {
             .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    public void getUsuariosAtivosByIds_deveRetornarListaIdsAtivos_quandoSolicitado() throws Exception {
+        var listaIds = List.of(101, 104, 105);
+
+        mvc.perform(post(USUARIOS_ENDPOINT + "/ativos")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(listaIds)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]", is(101)))
+            .andExpect(jsonPath("$[1]", is(104)));
+    }
+
+    @Test
+    public void getUsuariosAtivosByIds_deveRetornarUnauthorized_seUsuarioNaoAutenticado() throws Exception {
+        var listaIds = List.of(101, 104, 105);
+
+        mvc.perform(post(USUARIOS_ENDPOINT + "/ativos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonString(listaIds)))
+            .andExpect(status().isUnauthorized());
+    }
 }

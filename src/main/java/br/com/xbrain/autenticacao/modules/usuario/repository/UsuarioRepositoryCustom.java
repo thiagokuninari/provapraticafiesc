@@ -165,4 +165,8 @@ public interface UsuarioRepositoryCustom {
         LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade);
 
     List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel nivel);
+
+    List<Usuario> findBySituacaoAndIdsIn(ESituacao situacao, Predicate predicate);
+
+    List<Integer> findAllIdsBySituacaoAndIdsIn(ESituacao situacao, Predicate predicate);
 }

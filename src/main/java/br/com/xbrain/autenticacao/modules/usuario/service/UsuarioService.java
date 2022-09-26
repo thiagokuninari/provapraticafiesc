@@ -1481,10 +1481,16 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
-        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
+        var usuarios = repository.findBySituacaoAndIdsIn(ESituacao.A,
+            new UsuarioPredicate().comUsuariosIds(idsUsuarios).build());
         return usuarios.stream()
             .map(UsuarioResponse::of)
             .collect(toList());
+    }
+
+    public List<Integer> getUsuariosAtivosByIds(List<Integer> idsUsuarios) {
+        return repository.findAllIdsBySituacaoAndIdsIn(ESituacao.A,
+            new UsuarioPredicate().comUsuariosIds(idsUsuarios).build());
     }
 
     public List<UsuarioResponse> getUsuariosByIdsTodasSituacoes(Collection<Integer> idsUsuarios) {
