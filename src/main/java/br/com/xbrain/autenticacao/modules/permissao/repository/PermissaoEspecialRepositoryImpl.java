@@ -34,4 +34,14 @@ public class PermissaoEspecialRepositoryImpl extends CustomRepository<PermissaoE
                 .and(permissaoEspecial.usuario.id.in(usuarioIds)))
             .execute();
     }
+
+    @Override
+    public List<Integer> findByUsuario(Integer usuarioId) {
+        return new JPAQueryFactory(entityManager)
+            .selectDistinct(permissaoEspecial.funcionalidade.id)
+            .from(permissaoEspecial)
+            .where(permissaoEspecial.usuario.id.eq(usuarioId)
+                .and(permissaoEspecial.dataBaixa.isNull()))
+            .fetch();
+    }
 }

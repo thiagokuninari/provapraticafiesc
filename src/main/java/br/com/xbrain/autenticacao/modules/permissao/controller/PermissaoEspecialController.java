@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "api/permissoes-especiais")
 public class PermissaoEspecialController {
@@ -23,5 +25,10 @@ public class PermissaoEspecialController {
     public PermissaoEspecial remover(@PathVariable("usuarioId") Integer usuarioId,
                                      @PathVariable("funcionalidadeId") Integer funcionalidadeId) {
         return service.remover(usuarioId, funcionalidadeId);
+    }
+
+    @PostMapping("processar-permissoes-gerentes-coordenadores")
+    public void processarPermissoesEspeciaisGerentesCoordenadores(@RequestParam(required = false) List<Integer> aaIds) {
+        service.processarPermissoesEspeciaisGerentesCoordenadores(aaIds);
     }
 }

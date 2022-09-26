@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutor
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -155,5 +156,17 @@ public class AgenteAutorizadoService {
 
     public boolean isUsuarioComCanalAa() {
         return autenticacaoService.getUsuarioAutenticado().haveCanalAgenteAutorizado();
+    }
+
+    public List<Integer> getUsuariosAaFeederPorCargo(List<Integer> aaIds, List<CodigoCargo> cargos) {
+        try {
+            return agenteAutorizadoClient.getUsuariosAaFeederPorCargo(aaIds, cargos);
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_BUSCAR_AAS_FEEDER_POR_CARGO);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
     }
 }

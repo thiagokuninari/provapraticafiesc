@@ -32,4 +32,9 @@ public class PermissaoEspecialRepositoryTest {
         repository.deletarPermissaoEspecialBy(List.of(9009, 9010), List.of(300, 303));
         assertEquals(repository.findAll().size(), 4);
     }
+
+    @Test
+    public void findByUsuario_deveRetornarFuncionalidadeId_seSolicitado() {
+        assertEquals(repository.findByUsuario(300).size(), 1);
+    }
 }

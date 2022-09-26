@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.feeder.dto.AgenteAutorizadoPermissaoFeederDto;
 import br.com.xbrain.autenticacao.modules.feeder.dto.SituacaoAlteracaoUsuarioFeederDto;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
@@ -45,6 +46,8 @@ public class FeederService {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private DataHoraAtual dataHoraAtual;
 
     @Transactional
     public void atualizarPermissaoFeeder(AgenteAutorizadoPermissaoFeederDto agenteAutorizadoPermissaoFeederDto) {
@@ -245,5 +248,27 @@ public class FeederService {
 
     private boolean isBackOffice(CodigoCargo codigoCargo) {
         return Objects.nonNull(codigoCargo) && CARGOS_BACKOFFICE.contains(codigoCargo);
+    }
+
+    public void salvarPermissoesEspeciaisCoordenadoresGerentes(List<Integer> usuariosIds, int usuarioLogado) {
+        var localDateTime = dataHoraAtual.getDataHora();
+        usuariosIds.forEach(usuarioId -> {
+            var listaFunc = permissaoEspecialRepository.findByUsuario(usuarioId);
+            if (usuarioRepository.exists(usuarioId)) {
+                permissaoEspecialRepository.save(
+                    FUNCIONALIDADES_FEEDER_PARA_REPROCESSAR_COORD_GER
+                        .stream()
+                        .filter(func -> !listaFunc.contains(func))
+                        .map(id -> PermissaoEspecial
+                            .builder()
+                            .funcionalidade(Funcionalidade.builder().id(id).build())
+                            .usuario(new Usuario(usuarioId))
+                            .dataCadastro(localDateTime)
+                            .usuarioCadastro(Usuario.builder().id(usuarioLogado).build())
+                            .build())
+                        .collect(Collectors.toList()));
+            }
+            }
+        );
     }
 }
