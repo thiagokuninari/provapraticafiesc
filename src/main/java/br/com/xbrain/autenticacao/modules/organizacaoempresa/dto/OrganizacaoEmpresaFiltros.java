@@ -21,6 +21,7 @@ public class OrganizacaoEmpresaFiltros {
     private Integer nivelId;
     private List<Integer> modalidadesEmpresaIds;
     private ESituacaoOrganizacaoEmpresa situacao;
+    private String codigo;
 
     public OrganizacaoEmpresaPredicate toPredicate() {
         return new OrganizacaoEmpresaPredicate()
@@ -29,6 +30,7 @@ public class OrganizacaoEmpresaFiltros {
             .comCnpj(cnpj)
             .comNivel(nivelId)
             .comModalidades(modalidadesEmpresaIds)
-            .comSituacao(situacao);
+            .comSituacao(situacao)
+            .comCodigo(codigo);
     }
 }

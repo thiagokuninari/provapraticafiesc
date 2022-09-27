@@ -20,13 +20,13 @@ public class UsuarioLogadoRequest {
 
     private List<PaLogadoDto> periodos;
     private List<CodigoCargo> cargos;
-    private Integer organizacaoId;
+    private Integer organizacaoEmpresaId;
     private List<Integer> usuariosIds;
 
     @JsonIgnore
     public BooleanBuilder toUsuarioPredicate() {
         return new UsuarioPredicate()
-            .comOrganizacaoId(organizacaoId)
+            .comOrganizacaoEmpresaId(organizacaoEmpresaId)
             .comCodigosCargos(cargos)
             .isAtivo(Eboolean.V)
             .build();

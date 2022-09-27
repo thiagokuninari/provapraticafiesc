@@ -42,7 +42,7 @@ public class UsuarioCsvResponse {
 
     private String razaoSocial;
     private String cnpj;
-    private String organizacao;
+    private String organizacaoEmpresa;
     private List<Canal> canais;
 
     public UsuarioCsvResponse(Integer id,
@@ -58,7 +58,7 @@ public class UsuarioCsvResponse {
                               LocalDateTime dataUltimoAcesso,
                               String loginNetSales,
                               String nivel,
-                              String organizacao,
+                              String organizacaoEmpresa,
                               String hierarquia) {
         this.id = id;
         this.nome = nome;
@@ -73,7 +73,7 @@ public class UsuarioCsvResponse {
         this.dataUltimoAcesso = dataUltimoAcesso;
         this.loginNetSales = loginNetSales;
         this.nivel = nivel;
-        this.organizacao = organizacao;
+        this.organizacaoEmpresa = organizacaoEmpresa;
         this.hierarquia = removeDuplicadosWmConcat(hierarquia);
     }
 
@@ -94,7 +94,7 @@ public class UsuarioCsvResponse {
             .concat("NIVEL;")
             .concat("RAZAO SOCIAL;")
             .concat("CNPJ;")
-            .concat("ORGANIZACAO;")
+            .concat("ORGANIZACAO EMPRESA;")
             .concat("CANAL;")
             .concat("HIERARQUIA")
             .concat("\n");
@@ -119,7 +119,7 @@ public class UsuarioCsvResponse {
             getStringFormatadaCsv(this.nivel),
             getStringFormatadaCsv(this.razaoSocial),
             getStringFormatadaCsv(this.cnpj),
-            getStringFormatadaCsv(this.organizacao),
+            getStringFormatadaCsv(this.organizacaoEmpresa),
             !ObjectUtils.isEmpty(this.canais)
                 ? getCanaisString(this.canais) : "",
             getStringFormatadaCsv(this.hierarquia))

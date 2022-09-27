@@ -162,7 +162,7 @@ public class UsuarioHelper {
             .nome("MSO FEEDER")
             .cpf("873.616.099-70")
             .nivelId(2)
-            .organizacaoId(1)
+            .organizacaoEmpresaId(1)
             .usuarioCadastroId(1)
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .build();
@@ -173,7 +173,7 @@ public class UsuarioHelper {
             .nome("OUVIDORIA NAO FEEDER")
             .cpf("286.250.583-88")
             .nivelId(15)
-            .organizacaoId(1)
+            .organizacaoEmpresaId(1)
             .usuarioCadastroId(1)
             .tiposFeeder(Set.of(EMPRESARIAL, RESIDENCIAL))
             .build();

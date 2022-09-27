@@ -11,7 +11,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
@@ -23,6 +22,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -841,7 +841,7 @@ public class UsuarioServiceTest {
             .nome("Backoffice")
             .cargo(new Cargo(110))
             .departamento(new Departamento(69))
-            .organizacao(new Organizacao(5))
+            .organizacaoEmpresa(new OrganizacaoEmpresa(5))
             .cpf("097.238.645-92")
             .email("usuario@teste.com")
             .telefone("43995565661")
@@ -1095,7 +1095,7 @@ public class UsuarioServiceTest {
     public void getUsuarioByIdComLoginNetSales_deveRetornarUsuario_sePossuirLoginNetSalesEForReceptivo() {
         var umUsuarioComLogin = 1000;
         var user = umUsuarioComLoginNetSales(umUsuarioComLogin);
-        user.setOrganizacao(Organizacao.builder().codigo("ATENTO").build());
+        user.setOrganizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("ATENTO").build());
         user.getCargo().setNivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build());
         when(usuarioRepository.findById(umUsuarioComLogin))
             .thenReturn(Optional.of(user));
@@ -1328,12 +1328,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseSemFiltrarAtivos_seBuscarInativosTrue() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, true))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, true))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -1342,12 +1342,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
-        when(usuarioRepository.findByOrganizacaoIdAndCargo_CodigoIn(
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveRetornarResponseEFiltrarAtivos_seBuscarInativosFalse() {
+        when(usuarioRepository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(
             eq(5), eq(List.of(BACKOFFICE_OPERADOR_TRATAMENTO, BACKOFFICE_ANALISTA_TRATAMENTO))))
             .thenReturn(List.of(umUsuarioAtivo(), umUsuarioInativo(), umUsuarioCompleto()));
 
-        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacao(5, false))
+        assertThat(usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(5, false))
             .extracting("value", "label")
             .containsExactly(
                 tuple(10, "Usuario Ativo"),
@@ -1836,7 +1836,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
     }
 
     @Test
@@ -1852,7 +1852,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
     }
 
     @Test
@@ -1868,7 +1868,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacao().getNome()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
     }
 
     @Test
@@ -2086,7 +2086,7 @@ public class UsuarioServiceTest {
             .hierarquia("hierarquia")
             .razaoSocial("razaoSocial")
             .cnpj("cnpj")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -2106,7 +2106,7 @@ public class UsuarioServiceTest {
             .dataUltimoAcesso(LocalDateTime.of(2021, 1, 1, 1, 1))
             .loginNetSales("loginNetSales")
             .nivel("Agente Autorizado")
-            .organizacao("organizacao")
+            .organizacaoEmpresa("organizacao")
             .build();
     }
 
@@ -2421,9 +2421,9 @@ public class UsuarioServiceTest {
             .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
             .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
             .build();
-        var organizacao = Organizacao.builder().id(1).nome("Org teste").build();
+        var organizacaoEmpresa = OrganizacaoEmpresa.builder().id(1).razaoSocial("Org teste").build();
         usuario.setCargo(cargo);
-        usuario.setOrganizacao(organizacao);
+        usuario.setOrganizacaoEmpresa(organizacaoEmpresa);
         return usuario;
     }
 

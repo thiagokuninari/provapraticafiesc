@@ -178,12 +178,12 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoGerenteMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoGerenteMotiva()
         throws Exception {
 
         var gerenteMotiva = umUsuarioAutenticadoNivelBackoffice();
         gerenteMotiva.setId(1005);
-        gerenteMotiva.setOrganizacaoId(9);
+        gerenteMotiva.setOrganizacaoEmpresaId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(113, 112, 111, 110));
@@ -211,12 +211,12 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoCoordenadorMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoCoordenadorMotiva()
         throws Exception {
 
         var coordMotiva = umUsuarioAutenticadoNivelBackoffice();
         coordMotiva.setId(1006);
-        coordMotiva.setOrganizacaoId(9);
+        coordMotiva.setOrganizacaoEmpresaId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(112, 111, 110));
@@ -242,12 +242,12 @@ public class UsuarioGerenciaBackofficeControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacao_quandoCargoSupervisorMotiva()
+    public void getAll_deveRetornarOsUsuariosDeCargoInferioresDaMesmaOrganizacaoEmpresa_quandoCargoSupervisorMotiva()
         throws Exception {
 
         var supervisorMotiva = umUsuarioAutenticadoNivelBackoffice();
         supervisorMotiva.setId(1007);
-        supervisorMotiva.setOrganizacaoId(9);
+        supervisorMotiva.setOrganizacaoEmpresaId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(111, 110));

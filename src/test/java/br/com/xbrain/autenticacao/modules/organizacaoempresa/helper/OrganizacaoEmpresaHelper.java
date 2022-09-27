@@ -26,6 +26,7 @@ public class OrganizacaoEmpresaHelper {
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .modalidadesEmpresaIds(List.of(1))
             .nivelId(1)
+            .codigo("CODIGO")
             .build();
     }
 

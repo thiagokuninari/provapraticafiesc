@@ -63,6 +63,15 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
         return this;
     }
 
+    public OrganizacaoEmpresaPredicate comCodigo(String codigo) {
+        Optional.ofNullable(codigo)
+            .filter(StringUtils::isNotBlank)
+            .map(organizacaoEmpresa.codigo::containsIgnoreCase)
+            .map(builder::and);
+
+        return this;
+    }
+
     private Optional<List<Integer>> filtrarLista(List<Integer> lista) {
         return Optional.ofNullable(lista)
             .filter(Predicate.not(super::isEmpty));

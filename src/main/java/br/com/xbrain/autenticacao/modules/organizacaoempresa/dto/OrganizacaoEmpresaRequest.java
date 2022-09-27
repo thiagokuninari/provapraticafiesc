@@ -27,6 +27,8 @@ public class OrganizacaoEmpresaRequest {
     private Integer nivelId;
     @NotEmpty
     private List<Integer> modalidadesEmpresaIds;
+    @NotNull
+    private String codigo;
 
     private ESituacaoOrganizacaoEmpresa situacao;
 

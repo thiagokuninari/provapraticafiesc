@@ -12,7 +12,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
@@ -28,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -625,8 +625,8 @@ public class UsuarioService {
     }
 
     private void tratarUsuarioBackoffice(Usuario usuario) {
-        usuario.setOrganizacao(Optional.ofNullable(usuario.getOrganizacao())
-            .orElse(new Organizacao(autenticacaoService.getUsuarioAutenticado().getOrganizacaoId())));
+        usuario.setOrganizacaoEmpresa(Optional.ofNullable(usuario.getOrganizacaoEmpresa())
+            .orElse(new OrganizacaoEmpresa(autenticacaoService.getUsuarioAutenticado().getOrganizacaoEmpresaId())));
         usuario.setEmpresas(empresaRepository.findAllAtivo());
         usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
     }
@@ -2132,10 +2132,10 @@ public class UsuarioService {
         return usuarios;
     }
 
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoEmpresaId,
                                                                               boolean buscarInativos) {
 
-        return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
+        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoEmpresaId, CARGOS_OPERADORES_BACKOFFICE)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))

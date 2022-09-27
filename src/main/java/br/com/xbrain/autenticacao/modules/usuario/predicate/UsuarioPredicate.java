@@ -111,13 +111,6 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comOrganizacaoId(Integer organizacaoId) {
-        if (nonNull(organizacaoId)) {
-            builder.and(usuario.organizacao.id.eq(organizacaoId));
-        }
-        return this;
-    }
-
     public UsuarioPredicate comOrganizacaoEmpresaId(Integer organizacaoEmpresaId) {
         if (nonNull(organizacaoEmpresaId)) {
             builder.and(usuario.organizacaoEmpresa.id.eq(organizacaoEmpresaId));
@@ -319,7 +312,7 @@ public class UsuarioPredicate {
             usuariosIds.add(usuario.getId());
         }
         comIds(usuariosIds);
-        comOrganizacaoId(usuario.getOrganizacaoId());
+        comOrganizacaoEmpresaId(usuario.getOrganizacaoEmpresaId());
 
         return this;
     }

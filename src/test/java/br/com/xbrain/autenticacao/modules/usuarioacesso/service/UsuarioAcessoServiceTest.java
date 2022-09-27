@@ -183,7 +183,7 @@ public class UsuarioAcessoServiceTest {
 
         var response = usuarioAcessoService.getUsuariosLogadosAtualPorIds(
             UsuarioLogadoRequest.builder()
-                .organizacaoId(6)
+                .organizacaoEmpresaId(6)
                 .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
                 .build());
 
@@ -193,7 +193,7 @@ public class UsuarioAcessoServiceTest {
             .getUsuariosLogadosAtualPorIds(eq(List.of(101, 201)));
         verify(usuarioRepository, times(1))
             .findAll(eq(new UsuarioPredicate()
-                .comOrganizacaoId(6)
+                .comOrganizacaoEmpresaId(6)
                 .comCodigosCargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
                 .isAtivo(Eboolean.V)
                 .build()));
@@ -241,7 +241,7 @@ public class UsuarioAcessoServiceTest {
     private UsuarioLogadoRequest umUsuarioLogadoRequest() {
         return UsuarioLogadoRequest.builder()
             .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO))
-            .organizacaoId(6)
+            .organizacaoEmpresaId(6)
             .periodos(List.of(PaLogadoDto.builder()
                     .dataInicial("2020-12-01T10:00:00.000Z")
                     .dataFinal("2020-12-01T10:59:59.999Z")

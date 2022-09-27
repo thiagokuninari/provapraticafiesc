@@ -230,8 +230,8 @@ public class UsuarioGerenciaControllerTest {
     }
 
     @Test
-    public void getAll_deveRetornarUsuarios_quandoFiltroForComOrganizacaoId() throws Exception {
-        mvc.perform(get(API_URI + "?organizacaoId=2")
+    public void getAll_deveRetornarUsuarios_quandoFiltroForComOrganizacaoEmpresaId() throws Exception {
+        mvc.perform(get(API_URI + "?organizacaoEmpresaId=2")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))
@@ -608,7 +608,7 @@ public class UsuarioGerenciaControllerTest {
 
         assertEquals(
                 "\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
-                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO EMPRESA;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
                         + "X-Brain. Claro Residencial;X-Brain. Claro TV;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"
@@ -630,7 +630,7 @@ public class UsuarioGerenciaControllerTest {
                 .getContentAsString();
 
         assertEquals("\uFEFFCODIGO;NOME;EMAIL;TELEFONE;CPF;CARGO;DEPARTAMENTO;UNIDADE NEGOCIO;EMPRESA;SITUACAO;"
-                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO;CANAL;HIERARQUIA\n"
+                        + "DATA ULTIMO ACESSO;LOGIN NETSALES;NIVEL;RAZAO SOCIAL;CNPJ;ORGANIZACAO EMPRESA;CANAL;HIERARQUIA\n"
                         + "1;Usuario Csv;usuario_csv@xbrain.com.br;(43) 2323-1782;754.000.720-62;Vendedor;Comercial;"
                         + ";;A;;;;;;;;\n"
                         + "2;Usuario Teste;usuario_teste@xbrain.com.br;(43) 4575-5878;048.038.280-83;Vendedor;Comercial;"

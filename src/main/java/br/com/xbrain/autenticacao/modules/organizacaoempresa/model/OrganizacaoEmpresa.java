@@ -36,6 +36,9 @@ public class OrganizacaoEmpresa {
     @Column(name = "RAZAO_SOCIAL", nullable = false)
     private String razaoSocial;
 
+    @Column(name = "CODIGO", length = 80, nullable = false, unique = true)
+    private String codigo;
+
     @Column(name = "CNPJ", nullable = false)
     private String cnpj;
 

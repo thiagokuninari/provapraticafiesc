@@ -24,6 +24,7 @@ public class OrganizacaoEmpresaResponse {
     private NivelResponse nivel;
     private List<SelectResponse> modalidadesEmpresa;
     private ESituacaoOrganizacaoEmpresa situacao;
+    private String codigo;
 
     public static OrganizacaoEmpresaResponse of(OrganizacaoEmpresa organizacaoEmpresa) {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();

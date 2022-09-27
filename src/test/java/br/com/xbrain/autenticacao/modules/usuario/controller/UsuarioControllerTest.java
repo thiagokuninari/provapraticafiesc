@@ -1022,41 +1022,41 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoId", "5")
+            .param("organizacaoEmpresaId", "5")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(true));
     }
 
     @Test
     @SneakyThrows
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEMpresa_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoId", "5")
+            .param("organizacaoEmpresaId", "5")
             .param("buscarInativos", "true")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(true));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(true));
     }
 
     @Test
     @SneakyThrows
-    public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoId", "5")
+            .param("organizacaoEmpresaId", "5")
             .param("buscarInativos", "false")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
         verify(usuarioService, times(1))
-            .findUsuariosOperadoresBackofficeByOrganizacao(eq(5), eq(false));
+            .findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(eq(5), eq(false));
     }
 
     @Test

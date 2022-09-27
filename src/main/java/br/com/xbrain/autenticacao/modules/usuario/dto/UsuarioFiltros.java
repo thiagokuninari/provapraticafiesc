@@ -34,7 +34,6 @@ public class UsuarioFiltros {
     private Integer cargoId;
     private ECanal canal;
     private List<ESituacao> situacoes;
-    private Integer organizacaoId;
     private Integer organizacaoEmpresaId;
     private List<Integer> excluiIds;
     private List<CodigoCargo> codigosCargos;
@@ -52,7 +51,6 @@ public class UsuarioFiltros {
             .comRegional(regionalId)
             .comSubCluster(subClusterId)
             .comUnidadeNegocio(unidadeNegocioIds)
-            .comOrganizacaoId(organizacaoId)
             .comOrganizacaoEmpresaId(organizacaoEmpresaId)
             .comNivel(!ObjectUtils.isEmpty(nivelId)
                 ? Collections.singletonList(nivelId) : null)
