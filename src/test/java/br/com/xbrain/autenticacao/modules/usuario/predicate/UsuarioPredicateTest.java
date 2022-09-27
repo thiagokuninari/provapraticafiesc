@@ -96,6 +96,15 @@ public class UsuarioPredicateTest {
         assertThat(predicate).isEqualTo(expected);
     }
 
+    @Test
+    public void comSubCanalId_deveMontarBooleanBuilder_quandoIdExistir() {
+        var predicate = new UsuarioPredicate()
+            .comSubCanal(1)
+            .build();
+        var expected = new BooleanBuilder(usuario.subCanais.any().id.eq(1));
+        assertThat(predicate).isEqualTo(expected);
+    }
+
     private List<Integer> generateRandomIntList(Random random, int size) {
         return IntStream.range(0, size)
             .map(i -> random.nextInt())
