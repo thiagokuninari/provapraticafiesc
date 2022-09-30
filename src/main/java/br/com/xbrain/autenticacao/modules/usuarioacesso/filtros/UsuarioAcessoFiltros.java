@@ -43,7 +43,7 @@ public class UsuarioAcessoFiltros {
     private LocalDateTime dataInicial;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime dataFinal;
-    private Integer organizacaoEmpresaId;
+    private Integer organizacaoId;
     private List<CodigoCargo> cargos;
 
     @JsonIgnore

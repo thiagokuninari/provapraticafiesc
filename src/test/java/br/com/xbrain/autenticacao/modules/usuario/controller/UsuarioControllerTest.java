@@ -1022,7 +1022,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuariosOperadoresBackofficeByOrganizacao_deveBuscarComFlagTrue_seFlagBuscarInativosNaoEnviada() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoEmpresaId", "5")
+            .param("organizacaoId", "5")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -1035,7 +1035,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuariosOperadoresBackofficeByOrganizacaoEMpresa_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoEmpresaId", "5")
+            .param("organizacaoId", "5")
             .param("buscarInativos", "true")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))
@@ -1049,7 +1049,7 @@ public class UsuarioControllerTest {
     @SneakyThrows
     public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveBuscarComFlagFalse_seFlagBuscarInativosForFalse() {
         mvc.perform(get("/api/usuarios")
-            .param("organizacaoEmpresaId", "5")
+            .param("organizacaoId", "5")
             .param("buscarInativos", "false")
             .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
             .accept(MediaType.APPLICATION_JSON))

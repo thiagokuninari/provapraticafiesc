@@ -626,7 +626,7 @@ public class UsuarioService {
 
     private void tratarUsuarioBackoffice(Usuario usuario) {
         usuario.setOrganizacaoEmpresa(Optional.ofNullable(usuario.getOrganizacaoEmpresa())
-            .orElse(new OrganizacaoEmpresa(autenticacaoService.getUsuarioAutenticado().getOrganizacaoEmpresaId())));
+            .orElse(new OrganizacaoEmpresa(autenticacaoService.getUsuarioAutenticado().getOrganizacaoId())));
         usuario.setEmpresas(empresaRepository.findAllAtivo());
         usuario.setUnidadesNegocios(unidadeNegocioRepository.findAllAtivo());
     }
@@ -2132,10 +2132,10 @@ public class UsuarioService {
         return usuarios;
     }
 
-    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoEmpresaId,
+    public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(Integer organizacaoId,
                                                                               boolean buscarInativos) {
 
-        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoEmpresaId, CARGOS_OPERADORES_BACKOFFICE)
+        return repository.findByOrganizacaoEmpresaIdAndCargo_CodigoIn(organizacaoId, CARGOS_OPERADORES_BACKOFFICE)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
             .map(usuario -> SelectResponse.of(usuario.getId(), usuario.getNome()))

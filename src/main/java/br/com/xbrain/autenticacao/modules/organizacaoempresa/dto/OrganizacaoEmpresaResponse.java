@@ -19,7 +19,7 @@ import java.util.List;
 public class OrganizacaoEmpresaResponse {
 
     private Integer id;
-    private String razaoSocial;
+    private String nome;
     private String cnpj;
     private NivelResponse nivel;
     private List<SelectResponse> modalidadesEmpresa;
@@ -30,6 +30,7 @@ public class OrganizacaoEmpresaResponse {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();
         if (organizacaoEmpresa != null) {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaResponse);
+            organizacaoEmpresaResponse.setNome(organizacaoEmpresa.getRazaoSocial());
             organizacaoEmpresaResponse.setCnpj(organizacaoEmpresa.formataCnpj());
             organizacaoEmpresaResponse.setNivel(organizacaoEmpresa.getNivelIdNome().orElse(null));
             organizacaoEmpresaResponse.setModalidadesEmpresa(organizacaoEmpresa.getModalidadesEmpresaIdNome());

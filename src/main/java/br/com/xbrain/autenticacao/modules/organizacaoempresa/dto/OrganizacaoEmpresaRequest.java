@@ -19,7 +19,7 @@ import java.util.List;
 public class OrganizacaoEmpresaRequest {
 
     @NotNull
-    private String razaoSocial;
+    private String nome;
     @CNPJ
     @NotNull
     private String cnpj;

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.xbrainutils.CnpjUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -70,6 +71,14 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
             .map(builder::and);
 
         return this;
+    }
+
+    public OrganizacaoEmpresaPredicate comCodigoNivel(CodigoNivel codigoNivel) {
+        if (nonNull(codigoNivel)) {
+            builder.and(organizacaoEmpresa.nivel.codigo.eq(codigoNivel));
+        }
+        return this;
+
     }
 
     private Optional<List<Integer>> filtrarLista(List<Integer> lista) {

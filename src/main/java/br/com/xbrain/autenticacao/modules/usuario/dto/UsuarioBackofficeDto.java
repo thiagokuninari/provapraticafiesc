@@ -44,12 +44,12 @@ public class UsuarioBackofficeDto {
     private ESituacao situacao;
     @NotNull
     private Integer departamentoId;
-    private Integer organizacaoEmpresaId;
+    private Integer organizacaoId;
 
     public static Usuario of(UsuarioBackofficeDto usuarioBackoffice) {
         var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioBackoffice, usuario);
-        Optional.ofNullable(usuarioBackoffice.getOrganizacaoEmpresaId())
+        Optional.ofNullable(usuarioBackoffice.getOrganizacaoId())
             .map(OrganizacaoEmpresa::new)
             .ifPresent(usuario::setOrganizacaoEmpresa);
         usuario.setCargo(new Cargo(usuarioBackoffice.getCargoId()));

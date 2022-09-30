@@ -94,7 +94,7 @@ public class UsuarioDto implements Serializable {
     private String fotoDiretorio;
     private String fotoNomeOriginal;
     private String fotoContentType;
-    private Integer organizacaoEmpresaId;
+    private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
     private String urlLojaBase;
@@ -115,8 +115,8 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
-        if (!isEmpty(usuarioDto.getOrganizacaoEmpresaId())) {
-            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoEmpresaId()));
+        if (!isEmpty(usuarioDto.getOrganizacaoId())) {
+            usuario.setOrganizacaoEmpresa(new OrganizacaoEmpresa(usuarioDto.getOrganizacaoId()));
         }
         if (!isEmpty(usuarioDto.getUsuarioCadastroId())) {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
@@ -146,7 +146,7 @@ public class UsuarioDto implements Serializable {
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
             .collect(Collectors.toList()));
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
-        usuarioDto.setOrganizacaoEmpresaId(getOrganizacaoEmpresaId(usuario));
+        usuarioDto.setOrganizacaoId(getOrganizacaoEmpresaId(usuario));
         if (Objects.nonNull(usuario.getUsuarioCadastro())) {
             usuarioDto.setUsuarioCadastroId(usuario.getUsuarioCadastro().getId());
         }

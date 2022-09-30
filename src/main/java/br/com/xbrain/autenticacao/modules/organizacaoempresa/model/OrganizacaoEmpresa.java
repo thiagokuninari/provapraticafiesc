@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
-
 @Data
 @Entity
 @Builder
@@ -70,21 +68,23 @@ public class OrganizacaoEmpresa {
     public static OrganizacaoEmpresa of(OrganizacaoEmpresaRequest request, Integer usuarioId, Nivel nivel,
                                         List<ModalidadeEmpresa> modalidadesEmpresa) {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial(request.getRazaoSocial())
+            .razaoSocial(request.getNome())
             .cnpj(request.getCnpjSemMascara())
             .nivel(nivel)
             .modalidadesEmpresa(modalidadesEmpresa)
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(new Usuario(usuarioId))
+            .codigo(request.getCodigo())
             .build();
     }
 
     public void of(OrganizacaoEmpresaRequest request, List<ModalidadeEmpresa> modalidades, Nivel nivel) {
         this.cnpj = request.getCnpjSemMascara();
-        this.razaoSocial = request.getRazaoSocial();
+        this.razaoSocial = request.getNome();
         this.modalidadesEmpresa = modalidades;
         this.nivel = nivel;
+        this.codigo = request.getCodigo();
     }
 
     public void inativar() {

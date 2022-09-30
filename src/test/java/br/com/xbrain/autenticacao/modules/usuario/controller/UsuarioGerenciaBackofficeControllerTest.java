@@ -183,7 +183,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
 
         var gerenteMotiva = umUsuarioAutenticadoNivelBackoffice();
         gerenteMotiva.setId(1005);
-        gerenteMotiva.setOrganizacaoEmpresaId(9);
+        gerenteMotiva.setOrganizacaoId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(113, 112, 111, 110));
@@ -216,7 +216,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
 
         var coordMotiva = umUsuarioAutenticadoNivelBackoffice();
         coordMotiva.setId(1006);
-        coordMotiva.setOrganizacaoEmpresaId(9);
+        coordMotiva.setOrganizacaoId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(112, 111, 110));
@@ -247,7 +247,7 @@ public class UsuarioGerenciaBackofficeControllerTest {
 
         var supervisorMotiva = umUsuarioAutenticadoNivelBackoffice();
         supervisorMotiva.setId(1007);
-        supervisorMotiva.setOrganizacaoEmpresaId(9);
+        supervisorMotiva.setOrganizacaoId(9);
 
         when(cargoSuperiorRepository.getCargosHierarquia(any()))
             .thenReturn(List.of(111, 110));

@@ -73,7 +73,7 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("08112392000192")
             .nivelId(1)
             .modalidadesEmpresaIds(List.of(1, 2))

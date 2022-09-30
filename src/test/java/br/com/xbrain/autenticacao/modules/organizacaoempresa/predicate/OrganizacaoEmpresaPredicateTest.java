@@ -136,4 +136,31 @@ public class OrganizacaoEmpresaPredicateTest {
         var expected = new BooleanBuilder(organizacaoEmpresa.situacao.eq(ESituacaoOrganizacaoEmpresa.I));
         assertThat(predicate).isEqualTo(expected);
     }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoNull() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo(null)
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo("")
+            .build();
+        var expected = new BooleanBuilder();
+        assertThat(predicate).isEqualTo(expected);
+    }
+
+    @Test
+    public void comCodigo_organizacaoEmpresaPredicate_quandoCodigoNaoNullENaoVazio() {
+        var predicate = new OrganizacaoEmpresaPredicate()
+            .comCodigo("codigo")
+            .build();
+        var expected = new BooleanBuilder(organizacaoEmpresa.codigo.containsIgnoreCase("codigo"));
+        assertThat(predicate).isEqualTo(expected);
+    }
 }

@@ -231,7 +231,7 @@ public class UsuarioGerenciaControllerTest {
 
     @Test
     public void getAll_deveRetornarUsuarios_quandoFiltroForComOrganizacaoEmpresaId() throws Exception {
-        mvc.perform(get(API_URI + "?organizacaoEmpresaId=2")
+        mvc.perform(get(API_URI + "?organizacaoId=2")
             .header("Authorization", getAccessToken(mvc, ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))

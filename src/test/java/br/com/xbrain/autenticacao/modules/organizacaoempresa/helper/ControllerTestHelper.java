@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -84,6 +85,25 @@ public class ControllerTestHelper {
                     .nome("MSO")
                     .build())
                 .email("MSOCONSULTOR@XBRAIN.COM.BR")
+                .cpf("12345678911")
+                .organizacaoEmpresa(OrganizacaoEmpresa.builder().id(1).build())
+                .build())
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioVendedorAutenticado() {
+        return UsuarioAutenticado.builder()
+            .id(1)
+            .usuario(Usuario.builder()
+                .id(1)
+                .situacao(ESituacao.A)
+                .cargo(umCargo(8, CodigoCargo.VENDEDOR_OPERACAO))
+                .departamento(Departamento.builder()
+                    .id(67)
+                    .codigo(CodigoDepartamento.COMERCIAL)
+                    .nome("COMERCIAL")
+                    .build())
+                .email("vendedor@XBRAIN.COM.BR")
                 .cpf("12345678911")
                 .build())
             .build();

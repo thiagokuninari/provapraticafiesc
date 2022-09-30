@@ -66,7 +66,7 @@ public class UsuarioDtoTest {
     @Test
     public void convertFrom_naoDeveRetornarOrganizacaoEmpresaId_quandoNaoPassadoNoDto() {
         var usuarioSemOrganizacaoEmpresaId = umUsuarioDtoMso();
-        usuarioSemOrganizacaoEmpresaId.setOrganizacaoEmpresaId(null);
+        usuarioSemOrganizacaoEmpresaId.setOrganizacaoId(null);
 
         assertThat(UsuarioDto.convertFrom(usuarioSemOrganizacaoEmpresaId))
             .extracting("nome", "cpf", "tiposFeeder", "organizacaoEmpresa")
@@ -126,7 +126,7 @@ public class UsuarioDtoTest {
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .unidadeNegocioId(1)
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
@@ -342,7 +342,7 @@ public class UsuarioDtoTest {
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .unidadeNegocioId(1)
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
@@ -467,7 +467,7 @@ public class UsuarioDtoTest {
             .nivelId(5)
             .nivelCodigo(VAREJO)
             .departamentoId(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .usuarioCadastroId(1)
             .unidadesNegociosId(List.of(1))
             .empresasId(List.of(1))
@@ -484,7 +484,7 @@ public class UsuarioDtoTest {
         return UsuarioDto
             .builder()
             .id(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .cargoId(1)
             .departamentoId(1)
             .cidadesId(null)
@@ -496,7 +496,7 @@ public class UsuarioDtoTest {
         return UsuarioDto
             .builder()
             .id(1)
-            .organizacaoEmpresaId(1)
+            .organizacaoId(1)
             .cargoId(1)
             .departamentoId(1)
             .cidadesId(null)

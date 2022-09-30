@@ -21,7 +21,7 @@ public class OrganizacaoEmpresaHelper {
 
     public static OrganizacaoEmpresaRequest organizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
-            .razaoSocial("Marcos AA")
+            .nome("Marcos AA")
             .cnpj("66.845.365/0001-25")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .modalidadesEmpresaIds(List.of(1))
@@ -55,6 +55,7 @@ public class OrganizacaoEmpresaHelper {
             .razaoSocial("Teste AA")
             .cnpj("54.238.644/0001-41")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .codigo("codigo")
             .build();
     }
 
@@ -65,6 +66,7 @@ public class OrganizacaoEmpresaHelper {
             .nivel(umNivel())
             .cnpj("79.742.597/0001-08")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .codigo("codigo2")
             .build();
     }
 

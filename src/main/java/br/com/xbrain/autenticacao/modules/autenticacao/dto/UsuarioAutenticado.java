@@ -49,8 +49,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private String nivelCodigo;
     private CodigoDepartamento departamentoCodigo;
     private CodigoCargo cargoCodigo;
-    private Integer organizacaoEmpresaId;
-    private String organizacaoEmpresaCodigo;
+    private Integer organizacaoId;
+    private String organizacaoCodigo;
     private Set<ECanal> canais;
     private Integer siteId;
 
@@ -107,8 +107,8 @@ public class UsuarioAutenticado extends OAuth2Request {
     private void getOrganizacaoEmpresa(Usuario usuario) {
         Optional.ofNullable(usuario.getOrganizacaoEmpresa())
             .ifPresent(organizacao -> {
-                this.organizacaoEmpresaId = organizacao.getId();
-                this.organizacaoEmpresaCodigo = organizacao.getCodigo();
+                this.organizacaoId = organizacao.getId();
+                this.organizacaoCodigo = organizacao.getCodigo();
             });
     }
 

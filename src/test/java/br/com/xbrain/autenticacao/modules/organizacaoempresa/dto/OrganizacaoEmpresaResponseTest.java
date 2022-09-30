@@ -19,10 +19,10 @@ public class OrganizacaoEmpresaResponseTest {
     @Test
     public void of_deveRetornarOrganizacaoEmpresaResponse_seSolicitado() {
         assertThat(OrganizacaoEmpresaResponse.of(umaOrganizacaoEmpresa()))
-            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel", "situacao")
+            .extracting("id", "nome", "cnpj", "modalidadesEmpresa", "nivel", "situacao", "codigo")
             .containsExactly(1, "Organizacao 1", "19.427.182/0001-00",
                 List.of(new SelectResponse(2, "TELEVENDAS"), new SelectResponse(1, "PAP")),
-                OrganizacaoEmpresaHelper.umNivelResponse(), ESituacaoOrganizacaoEmpresa.A);
+                OrganizacaoEmpresaHelper.umNivelResponse(), ESituacaoOrganizacaoEmpresa.A, "codigo");
     }
 
     private static OrganizacaoEmpresa umaOrganizacaoEmpresa() {
@@ -38,6 +38,7 @@ public class OrganizacaoEmpresaResponseTest {
                 .codigo(CodigoNivel.VAREJO)
                 .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .codigo("codigo")
             .build();
     }
 

@@ -312,7 +312,7 @@ public class UsuarioPredicate {
             usuariosIds.add(usuario.getId());
         }
         comIds(usuariosIds);
-        comOrganizacaoEmpresaId(usuario.getOrganizacaoEmpresaId());
+        comOrganizacaoEmpresaId(usuario.getOrganizacaoId());
 
         return this;
     }

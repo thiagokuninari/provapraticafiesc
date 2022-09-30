@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,7 +123,7 @@ public class  OrganizacaoEmpresaService {
     }
 
     private boolean validarOrganizacaoJaExistente(Integer id, OrganizacaoEmpresaRequest request) {
-        return organizacaoEmpresaRepository.existsByRazaoSocialAndCnpjAndIdNot(request.getRazaoSocial(),
+        return organizacaoEmpresaRepository.existsByRazaoSocialAndCnpjAndIdNot(request.getNome(),
             request.getCnpjSemMascara(), id);
     }
 
@@ -133,7 +134,7 @@ public class  OrganizacaoEmpresaService {
     }
 
     private void validarRazaoSocial(OrganizacaoEmpresaRequest request) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request.getRazaoSocial())) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request.getNome())) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
@@ -167,5 +168,23 @@ public class  OrganizacaoEmpresaService {
             throw EX_NAO_ENCONTRADO;
         }
         return organizacoes;
+    }
+
+    public List<OrganizacaoEmpresa> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build());
+    }
+
+    private OrganizacaoEmpresaFiltros getFiltros(OrganizacaoEmpresaFiltros filtros) {
+        filtros = Objects.isNull(filtros) ? new OrganizacaoEmpresaFiltros() : filtros;
+        var usuario = autenticacaoService.getUsuarioAutenticado();
+        if (usuario.isBackoffice()) {
+            filtros.setOrganizacaoId(usuario.getOrganizacaoId());
+        }
+        return filtros;
+    }
+
+    public OrganizacaoEmpresaResponse getById(Integer id) {
+        return OrganizacaoEmpresaResponse.of(organizacaoEmpresaRepository.findById(id)
+            .orElseThrow(() -> EX_NAO_ENCONTRADO));
     }
 }

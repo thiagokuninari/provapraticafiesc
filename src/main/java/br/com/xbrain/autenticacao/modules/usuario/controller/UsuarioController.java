@@ -458,12 +458,12 @@ public class UsuarioController {
         return usuarioService.getUsuarioByIdComLoginNetSales(id);
     }
 
-    @GetMapping(params = "organizacaoEmpresaId")
+    @GetMapping(params = "organizacaoId")
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(
-        @RequestParam Integer organizacaoEmpresaId,
+        @RequestParam Integer organizacaoId,
         @RequestParam(required = false, defaultValue = "true") boolean buscarInativos) {
 
-        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoEmpresaId, buscarInativos);
+        return usuarioService.findUsuariosOperadoresBackofficeByOrganizacaoEmpresa(organizacaoId, buscarInativos);
     }
 
     @GetMapping("permitidos")

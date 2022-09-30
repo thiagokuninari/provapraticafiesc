@@ -151,9 +151,9 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("departamentoId", usuario.getDepartamentoId());
         token.getAdditionalInformation().put("canais", getCanais(usuario));
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
-        token.getAdditionalInformation().put("organizacaoEmpresa", getOrganizacaoEmpresa(usuario));
+        token.getAdditionalInformation().put("organizacao", getOrganizacaoEmpresa(usuario));
         token.getAdditionalInformation().put("tiposFeeder", getTiposFeeder(usuario));
-        token.getAdditionalInformation().put("organizacaoEmpresaId", getOrganizacaoEmpresaId(usuario).orElse(null));
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario).orElse(null));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()

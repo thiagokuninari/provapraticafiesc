@@ -3,6 +3,8 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
@@ -15,6 +17,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEm
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
@@ -153,7 +156,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.save(any(OrganizacaoEmpresa.class)))
-            .thenReturn(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192"));
+            .thenReturn(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192", "CODIGO"));
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
 
         assertThat(service.save(umaOrganizacaoEmpresaRequest()))
@@ -237,7 +240,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
             umaModalidadeEmpresaPap()));
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresa(1,
-            "Organizacao 4", "08112392000192")));
+            "Organizacao 4", "08112392000192", "CODIGO")));
         when(historicoService.salvarHistorico(any(), any(), any())).thenReturn(umaOrganizacaoEmpresaHistorico());
 
         service.update(1, umaOrganizacaoEmpresaRequest());
@@ -259,7 +262,7 @@ public class OrganizacaoEmpresaServiceTest {
             .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
 
         Assertions.assertThat(service.findAllByNivelId(1))
-            .extracting("id", "razaoSocial", "nivel")
+            .extracting("id", "nome", "nivel")
             .containsExactly(
                 tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
 
@@ -284,7 +287,7 @@ public class OrganizacaoEmpresaServiceTest {
             .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));
 
         Assertions.assertThat(service.findAllAtivosByNivelId(1))
-            .extracting("id", "razaoSocial", "nivel")
+            .extracting("id", "nome", "nivel")
             .containsExactly(
                 tuple(2, "Teste AA Dois", OrganizacaoEmpresaHelper.umNivelResponse()));
 
@@ -305,9 +308,54 @@ public class OrganizacaoEmpresaServiceTest {
             .findAllByNivelIdAndSituacao(eq(1), eq(ESituacaoOrganizacaoEmpresa.A));
     }
 
+    @Test
+    public void findAll_organizacoesFiltradas_quandoUsuarioBackoffice() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
+        var filtros = OrganizacaoEmpresaFiltros.builder().organizacaoId(1).build();
+
+        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
+            .thenReturn(List.of(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
+                "CODIGO")));
+
+        assertThat(service.getAllSelect(null))
+            .hasSize(1)
+            .extracting("id", "razaoSocial", "cnpj", "codigo")
+            .contains(tuple(1, "Organizacao 1", "08112392000192", "CODIGO"));
+    }
+
+    @Test
+    public void findAll_organizacoesFiltradas_quandoParametroCodigoNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
+        var filtros = OrganizacaoEmpresaFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).organizacaoId(1).build();
+        var nivel = Nivel.builder().id(1).build();
+
+        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
+            .thenReturn(List.of(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
+                "CODIGO")));
+
+        assertThat(service.getAllSelect(filtros))
+            .hasSize(1)
+            .extracting("id", "razaoSocial", "cnpj", "codigo", "nivel")
+            .contains(tuple(1, "Organizacao 1", "08112392000192", "CODIGO", nivel));
+    }
+
+    private UsuarioAutenticado umUsuarioBackoffice() {
+        return UsuarioAutenticado.builder()
+            .nome("Backoffice")
+            .cargoId(110)
+            .departamentoId(1)
+            .organizacaoId(1)
+            .nivelCodigo("BACKOFFICE")
+            .cpf("097.238.645-92")
+            .email("usuario@teste.com")
+            .organizacaoCodigo("CODIGO")
+            .build();
+    }
+
     private OrganizacaoEmpresaHistorico umaOrganizacaoEmpresaHistorico() {
         return OrganizacaoEmpresaHistorico.builder()
-            .organizacaoEmpresa(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192" ))
+            .organizacaoEmpresa(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
+                "CODIGO"))
             .observacao(EHistoricoAcao.ATIVACAO)
             .situacao(ESituacaoOrganizacaoEmpresa.I)
             .dataAlteracao(LocalDateTime.of(2020, 5, 11, 11, 1))
@@ -332,7 +380,7 @@ public class OrganizacaoEmpresaServiceTest {
 
     private OrganizacaoEmpresaRequest umaOrganizacaoEmpresaRequest() {
         return OrganizacaoEmpresaRequest.builder()
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("08112392000192")
             .nivelId(1)
             .modalidadesEmpresaIds(List.of(1,2))
@@ -362,9 +410,9 @@ public class OrganizacaoEmpresaServiceTest {
 
     public static List<OrganizacaoEmpresa> umaListaOrganizacoesEmpresa() {
         return List.of(
-            umaOrganizacaoEmpresa(1, "Organizacao 1", "97527243000114"),
-            umaOrganizacaoEmpresa(2, "Organizacao 2", "06890869000135"),
-            umaOrganizacaoEmpresa(3, "Organizacao 3", "71111221000185")
+            umaOrganizacaoEmpresa(1, "Organizacao 1", "97527243000114", "CODIGO"),
+            umaOrganizacaoEmpresa(2, "Organizacao 2", "06890869000135", "CODIGO2"),
+            umaOrganizacaoEmpresa(3, "Organizacao 3", "71111221000185", "CODIGO3")
         );
     }
 
@@ -382,16 +430,23 @@ public class OrganizacaoEmpresaServiceTest {
         return modalidadeEmpresa;
     }
 
-    public static OrganizacaoEmpresa umaOrganizacaoEmpresa(Integer id, String razaoSocial, String cnpj) {
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresa(Integer id, String razaoSocial, String cnpj, String codigo) {
         return OrganizacaoEmpresa.builder()
             .id(id)
             .razaoSocial(razaoSocial)
             .cnpj(cnpj)
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(),umaModalidadeEmpresaTelevendas()))
-            .nivel(Nivel.builder().id(1).build())
+            .nivel(Nivel.builder()
+                .id(1)
+                .codigo(CodigoNivel.BACKOFFICE)
+                .nome("BACKOFFICE")
+                .situacao(ESituacao.A)
+                .exibirCadastroUsuario(Eboolean.V)
+                .build())
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .dataCadastro(LocalDateTime.now())
             .usuarioCadastro(umUsuario())
+            .codigo(codigo)
             .build();
     }
 }
