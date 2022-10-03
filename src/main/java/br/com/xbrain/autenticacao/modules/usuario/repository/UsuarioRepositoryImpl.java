@@ -749,7 +749,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioDto> findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
-        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade) {
+        LocalDateTime dataHoraInativarUsuario) {
 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioDto.class,
@@ -757,7 +757,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 usuario.email))
             .from(usuario)
             .where(usuario.situacao.eq(A)
-                .and(usuario.email.notIn(emailsUsuariosViabilidade))
+                .and(usuario.cargo.nivel.codigo.ne(CodigoNivel.INTEGRACAO))
                 .and(usuario.dataUltimoAcesso.isNull())
                 .and(usuario.dataCadastro.before(LocalDateTime.now().minusDays(SETE_DIAS)))
                 .and(usuario.dataCadastro.after(dataHoraInativarUsuario))
@@ -1199,7 +1199,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     @Override
     public List<UsuarioDto> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
-        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade) {
+        LocalDateTime dataHoraInativarUsuario) {
 
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(UsuarioDto.class,
@@ -1208,7 +1208,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
             .from(usuario)
             .where(usuario.dataUltimoAcesso.after(dataHoraInativarUsuario)
                 .and(usuario.situacao.ne(I))
-                .and(usuario.email.notIn(emailsUsuariosViabilidade))
+                .and(usuario.cargo.nivel.codigo.ne(CodigoNivel.INTEGRACAO))
                 .and(usuario.dataUltimoAcesso.before(LocalDateTime.now().minusDays(TRINTA_E_DOIS_DIAS)))
                 .and(usuario.dataReativacao.before(LocalDate.now().atStartOfDay().minusDays(TRES_DIAS))
                     .or(usuario.dataReativacao.isNull()))

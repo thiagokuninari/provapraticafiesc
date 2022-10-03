@@ -53,8 +53,8 @@ public class UsuarioRepositoryTest {
     @Test
     @SuppressWarnings("LineLength")
     public void findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDias_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
-        assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2),
-            List.of("VIABILIDADE@TESTE.COM")))
+        assertThat(repository.findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)
+            ))
             .extracting("id", "email")
             .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR"), tuple(104, "MARIA@HOTMAIL.COM"));
     }
@@ -238,12 +238,13 @@ public class UsuarioRepositoryTest {
     @Test
     @SuppressWarnings("LineLength")
     public void findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade_deveRetornarUsuario_quandoNaoPossuirDataUltimoAcessoAndEstiverAtivoComDataReativacaoNullComDataReativacaoTresDiasDepois() {
-        Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2), List.of("VIABILIDADE@TESTE.COM")))
+        Assertions.assertThat(repository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(LocalDateTime.now().minusMonths(2)))
             .extracting("id", "email")
             .containsExactlyInAnyOrder(
                 tuple(114, "SUPERVISOR@TESTE.COM"),
                 tuple(115, "SUPERVISOR@TESTE.COM"),
-                tuple(116, "SUPERVISOR@TESTE.COM"));
+                tuple(116, "SUPERVISOR@TESTE.COM"),
+                tuple(217, "VIABILIDADE@TESTE.COM"));
     }
 
     @Test
