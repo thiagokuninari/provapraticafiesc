@@ -149,7 +149,7 @@ public class FeederServiceTest {
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
 
         when(usuarioRepository.findComplete(1000)).thenReturn(
-            umUsuario(CodigoCargo.ASSISTENTE_LOJA_FUTURO, ESituacao.A, 1000));
+            umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
@@ -272,7 +272,7 @@ public class FeederServiceTest {
     @Test
     public void adicionarPermissaoFeederParaUsuarioNovo_naoDeveAdicionarPermissao_quandoUsuarioLojaFuturo() {
         var usuarioNovo = umUsuarioMqRequest();
-        usuarioNovo.setCargo(CodigoCargo.ASSISTENTE_LOJA_FUTURO);
+        usuarioNovo.setCargo(CodigoCargo.ASSISTENTE_RELACIONAMENTO);
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
 
