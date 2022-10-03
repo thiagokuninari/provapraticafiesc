@@ -43,9 +43,12 @@ public class RelatorioLoginLogoutService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest, ECanal canal, Integer agenteAutorizadoId) {
+    public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(PageRequest pageRequest,
+                                                            ECanal canal,
+                                                            Integer agenteAutorizadoId,
+                                                            Integer subCanalId) {
         return notificacaoUsuarioAcessoService
-            .getLoginsLogoutsDeHoje(getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId), pageRequest)
+            .getLoginsLogoutsDeHoje(getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId, subCanalId), pageRequest)
             .toSpringPage(pageRequest);
     }
 
@@ -57,8 +60,9 @@ public class RelatorioLoginLogoutService {
         RelatorioLoginLogoutCsvFiltro filtro,
         HttpServletResponse response,
         ECanal canal,
-        Integer agenteAutorizadoId) {
-        var usuariosIdsPermitidos = getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId);
+        Integer agenteAutorizadoId,
+        Integer subCanalId) {
+        var usuariosIdsPermitidos = getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId, subCanalId);
         var csvs = notificacaoUsuarioAcessoService.getCsv(filtro, usuariosIdsPermitidos);
         if (!CsvUtils.setCsvNoHttpResponse(
             LoginLogoutCsv.getCsv(csvs),
@@ -68,8 +72,8 @@ public class RelatorioLoginLogoutService {
         }
     }
 
-    public List<UsuarioNomeResponse> getColaboradores(ECanal canal, Integer agenteAutorizadoId) {
-        var usuariosIdsPermitidos = getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId);
+    public List<UsuarioNomeResponse> getColaboradores(ECanal canal, Integer agenteAutorizadoId, Integer subCanalId) {
+        var usuariosIdsPermitidos = getUsuariosIdsComNivelDeAcesso(canal, agenteAutorizadoId, subCanalId);
         var predicate = new UsuarioPredicate()
             .comIds(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(usuariosIdsPermitidos))
             .comSituacoes(Set.of(ESituacao.A, ESituacao.I, ESituacao.R))
@@ -78,7 +82,7 @@ public class RelatorioLoginLogoutService {
         return usuarioRepository.findAllUsuariosNomeComSituacao(predicate, order);
     }
 
-    public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso(ECanal canal, Integer agenteAutorizadoId) {
+    public Optional<List<Integer>> getUsuariosIdsComNivelDeAcesso(ECanal canal, Integer agenteAutorizadoId, Integer subCanalId) {
         var usuarioAutenticado = getUsuarioAutenticado();
         if (Objects.nonNull(agenteAutorizadoId)) {
             autenticacaoService.validarPermissaoSobreOAgenteAutorizado(agenteAutorizadoId);
@@ -88,7 +92,8 @@ public class RelatorioLoginLogoutService {
             .comCanais(usuarioAutenticado.getUsuario().getCanais())
             .comCanal(canal)
             .filtraPermitidosComParceiros(usuarioAutenticado, usuarioService)
-            .filtrarPermitidosRelatorioLoginLogout(canal);
+            .filtrarPermitidosRelatorioLoginLogout(canal)
+            .comSubCanal(subCanalId);
         if (Objects.nonNull(agenteAutorizadoId)) {
             predicate.comIds(agenteAutorizadoNovoService.getUsuariosIdsByAaId(agenteAutorizadoId, true));
         }
