@@ -183,7 +183,7 @@ public class UsuarioAcessoServiceTest {
 
         var response = usuarioAcessoService.getUsuariosLogadosAtualPorIds(
             UsuarioLogadoRequest.builder()
-                .organizacaoEmpresaId(6)
+                .organizacaoId(6)
                 .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO))
                 .build());
 
@@ -241,7 +241,7 @@ public class UsuarioAcessoServiceTest {
     private UsuarioLogadoRequest umUsuarioLogadoRequest() {
         return UsuarioLogadoRequest.builder()
             .cargos(List.of(CodigoCargo.BACKOFFICE_OPERADOR_TRATAMENTO, CodigoCargo.BACKOFFICE_ANALISTA_TRATAMENTO))
-            .organizacaoEmpresaId(6)
+            .organizacaoId(6)
             .periodos(List.of(PaLogadoDto.builder()
                     .dataInicial("2020-12-01T10:00:00.000Z")
                     .dataFinal("2020-12-01T10:59:59.999Z")
