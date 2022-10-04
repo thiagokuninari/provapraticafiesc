@@ -1,0 +1,1 @@
+UPDATE CARGO SET NOME = 'Assistente Relacionamento' WHERE ID = 202;
