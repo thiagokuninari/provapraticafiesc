@@ -5,11 +5,9 @@ import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -17,7 +15,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 
 @ActiveProfiles("test")
@@ -39,9 +36,6 @@ public class UsuarioAcessoServiceIT {
     @Autowired
     private UsuarioAcessoService usuarioAcessoService;
 
-    @Value("${app-config.timer-usuario.email-usuario-viabilidade}")
-    private String emailUsuarioViabilidade;
-
     @Test
     public void inativarUsuariosSemAcesso_deveInativarUsuario_quandoUsuarioEstiver32DiasSemLogarESemPrazoCarencia() {
         var usuariosInativados = usuarioAcessoService.inativarUsuariosSemAcesso(ORIGEM_INATIVACAO);
@@ -52,11 +46,6 @@ public class UsuarioAcessoServiceIT {
 
         var usuariosComDataReativacaoNull = usuarioRepository.findByDataReativacaoNotNull();
         Assertions.assertThat(usuariosComDataReativacaoNull.size()).isEqualTo(2);
-
-        var emailsUsuariosViabilidade = emailUsuarioViabilidade.split(",");
-
-        Assert.assertFalse(usuarios.stream().anyMatch(
-            u -> Arrays.asList(emailsUsuariosViabilidade).contains(u.getEmail())));
 
         long usuariosHistoricoInativos = idsUsuariosParaTeste().stream()
             .map(id -> usuarioHistoricoRepository.getUltimoHistoricoPorUsuario(id).orElse(new UsuarioHistorico()))
