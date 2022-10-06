@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,14 @@ public class SubCanalService {
         return repository.findAll()
             .stream()
             .map(SubCanalDto::of)
+            .collect(Collectors.toList());
+    }
+
+    public List<SubCanalDto> getAllExcetoInsideSalesPme() {
+        return repository.findAll()
+            .stream()
+            .map(SubCanalDto::of)
+            .filter(subCanalDto -> subCanalDto.getCodigo() != ETipoCanal.INSIDE_SALES_PME)
             .collect(Collectors.toList());
     }
 
