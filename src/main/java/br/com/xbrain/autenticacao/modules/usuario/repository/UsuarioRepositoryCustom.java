@@ -94,7 +94,7 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
     List<UsuarioDto> findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
-        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade);
+        LocalDateTime dataHoraInativarUsuario);
 
     FunilProspeccaoUsuarioDto findUsuarioGerenteByUf(Integer ufId);
 
@@ -162,7 +162,7 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findAllVendedoresReceptivosByIds(List<Integer> ids);
 
     List<UsuarioDto> findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
-        LocalDateTime dataHoraInativarUsuario, List<String> emailsUsuariosViabilidade);
+        LocalDateTime dataHoraInativarUsuario);
 
     List<Usuario> getUsuariosOperacaoCanalAa(CodigoNivel nivel);
 

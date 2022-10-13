@@ -63,7 +63,7 @@ public class UsuarioAcessoServiceTest {
 
     @Before
     public void setup() {
-        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(any(), any()))
+        when(usuarioRepository.findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(any()))
             .thenReturn(List.of(umUsuarioDto(102, "useremail@xbrain.com"),
                 umUsuarioDto(103, "useremail@xbrain.com"),
                 umUsuarioDto(104, "useremail@xbrain.com"),
@@ -71,7 +71,7 @@ public class UsuarioAcessoServiceTest {
                 umUsuarioDto(106, "useremail@xbrain.com")));
 
         when(usuarioRepository
-            .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(any(), any()))
+            .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(any()))
             .thenReturn(List.of(umUsuarioDto(107, "useremail@xbrain.com"),
                 umUsuarioDto(108, "useremail@xbrain.com")));
     }

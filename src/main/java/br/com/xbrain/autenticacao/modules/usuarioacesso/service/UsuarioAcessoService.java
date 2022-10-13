@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,9 +65,6 @@ public class UsuarioAcessoService {
 
     @Value("${app-config.timer-usuario.data-hora-inativar-usuario-a-partir-de}")
     private String dataHoraInativarUsuario;
-
-    @Value("${app-config.timer-usuario.email-usuario-viabilidade}")
-    private String emailUsuarioViabilidade;
 
     @Transactional
     public void registrarAcesso(Integer usuarioId) {
@@ -115,32 +111,28 @@ public class UsuarioAcessoService {
     }
 
     private List<UsuarioDto> buscarUsuariosParaInativar(LocalDateTime dataHoraInativarUsuario) {
-        var emailsUsuariosViabilidade = Arrays.stream(emailUsuarioViabilidade.split(","))
-            .collect(Collectors.toList());
         var usuariosUltimoAcessoExpirado =
             CollectionUtils.emptyIfNull(
-                getUsuariosUltimoAcessoExpiradoAndNotViabilidade(dataHoraInativarUsuario, emailsUsuariosViabilidade));
+                getUsuariosUltimoAcessoExpiradoAndNotViabilidade(dataHoraInativarUsuario));
         var usuariosSemUltimoAcesso =
             CollectionUtils.emptyIfNull(
-                getUsuariosSemUltimoAcessoAndNotViabilidade(dataHoraInativarUsuario, emailsUsuariosViabilidade));
+                getUsuariosSemUltimoAcessoAndNotViabilidade(dataHoraInativarUsuario));
 
         return Stream.concat(usuariosUltimoAcessoExpirado.stream(), usuariosSemUltimoAcesso.stream())
             .collect(Collectors.toList());
 
     }
 
-    private List<UsuarioDto> getUsuariosSemUltimoAcessoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario,
-                                                                         List<String> emailsUsuariosViabilidade) {
+    private List<UsuarioDto> getUsuariosSemUltimoAcessoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
         return usuarioRepository
             .findAllUsuariosSemDataUltimoAcessoAndDataReativacaoDepoisTresDiasAndNotViabilidade(
-                dataHoraInativarUsuario, emailsUsuariosViabilidade);
+                dataHoraInativarUsuario);
     }
 
-    private List<UsuarioDto> getUsuariosUltimoAcessoExpiradoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario,
-                                                                              List<String> emailsUsuariosViabilidade) {
+    private List<UsuarioDto> getUsuariosUltimoAcessoExpiradoAndNotViabilidade(LocalDateTime dataHoraInativarUsuario) {
         return usuarioRepository
             .findAllUltimoAcessoUsuariosComDataReativacaoDepoisTresDiasAndNotViabilidade(
-                dataHoraInativarUsuario, emailsUsuariosViabilidade);
+                dataHoraInativarUsuario);
     }
 
     private void inativarColaboradorPol(UsuarioDto usuario) {
