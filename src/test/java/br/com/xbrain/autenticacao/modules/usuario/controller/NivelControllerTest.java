@@ -71,18 +71,22 @@ public class NivelControllerTest {
     public void getNivelParaOrganizacao_deveRetornarOsNiveis_filtrandoPorPermitidosParaOrganizacao() throws Exception {
         when(nivelService.getPermitidosParaOrganizacao()).thenReturn(List.of(
             NivelResponse.builder().id(5).nome("VAREJO").codigo(CodigoNivel.VAREJO.name()).build(),
-            NivelResponse.builder().id(8).nome("RECEPTIVO").codigo(CodigoNivel.RECEPTIVO.name()).build()));
+            NivelResponse.builder().id(8).nome("RECEPTIVO").codigo(CodigoNivel.RECEPTIVO.name()).build(),
+            NivelResponse.builder().id(18).nome("BACKOFFICE").codigo(CodigoNivel.BACKOFFICE.name()).build()));
 
         mvc.perform(get("/api/niveis/organizacao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$", hasSize(3)))
             .andExpect(jsonPath("$[0].id", is(5)))
             .andExpect(jsonPath("$[0].nome", is("VAREJO")))
             .andExpect(jsonPath("$[0].codigo", is("VAREJO")))
             .andExpect(jsonPath("$[1].id", is(8)))
             .andExpect(jsonPath("$[1].nome", is("RECEPTIVO")))
-            .andExpect(jsonPath("$[1].codigo", is("RECEPTIVO")));
+            .andExpect(jsonPath("$[1].codigo", is("RECEPTIVO")))
+            .andExpect(jsonPath("$[2].id", is(18)))
+            .andExpect(jsonPath("$[2].nome", is("BACKOFFICE")))
+            .andExpect(jsonPath("$[2].codigo", is("BACKOFFICE")));
     }
 }

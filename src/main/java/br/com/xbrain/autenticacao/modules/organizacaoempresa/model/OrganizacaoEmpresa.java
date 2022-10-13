@@ -37,7 +37,7 @@ public class OrganizacaoEmpresa {
     @Column(name = "CODIGO", length = 80, nullable = false, unique = true)
     private String codigo;
 
-    @Column(name = "CNPJ", nullable = false)
+    @Column(name = "CNPJ")
     private String cnpj;
 
     @JoinColumn(name = "FK_NIVEL", referencedColumnName = "ID",
@@ -115,7 +115,10 @@ public class OrganizacaoEmpresa {
     }
 
     public String formataCnpj() {
-        return CnpjUtil.formataCnpj(cnpj);
+        if (cnpj != null) {
+            return CnpjUtil.formataCnpj(cnpj);
+        }
+        return null;
     }
 
     public OrganizacaoEmpresa(Integer id) {

@@ -96,6 +96,22 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
+    public static Nivel umNivelBackoffice() {
+        return Nivel.builder()
+            .id(2)
+            .nome("BACKOFFICE")
+            .codigo(CodigoNivel.BACKOFFICE)
+            .build();
+    }
+
+    public static Nivel umNivelReceptivo() {
+        return Nivel.builder()
+            .id(3)
+            .nome("RECEPTIVO")
+            .codigo(CodigoNivel.RECEPTIVO)
+            .build();
+    }
+
     public static NivelResponse umNivelResponse() {
         return NivelResponse.builder()
             .id(1)

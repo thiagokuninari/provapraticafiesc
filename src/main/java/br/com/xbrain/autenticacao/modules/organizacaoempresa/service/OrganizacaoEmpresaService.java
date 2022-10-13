@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmp
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,8 @@ public class  OrganizacaoEmpresaService {
         new ValidacaoException("Organização já está ativa.");
     private static final ValidacaoException ORGANIZACAO_INATIVA =
         new ValidacaoException("Organização já está inativa.");
+    private static final ValidacaoException CNPJ_OBRIGATORIO =
+        new ValidacaoException("O campo cnpj é obrigatório.");
 
     @Autowired
     private OrganizacaoEmpresaRepository organizacaoEmpresaRepository;
@@ -68,13 +71,21 @@ public class  OrganizacaoEmpresaService {
     }
 
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
-        validarRazaoSocial(request);
-        validarCnpj(request);
         var nivel = validarNivel(request.getNivelId());
-        var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
+        if (nivel.getCodigo() == CodigoNivel.VAREJO) {
+            validarCnpj(request);
+            validarCnpjExistente(request);
+            validarRazaoSocial(request);
+            var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
-        return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
-            autenticacaoService.getUsuarioId(), nivel, modalidades));
+            return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+                autenticacaoService.getUsuarioId(), nivel, modalidades));
+        } else {
+            validarRazaoSocial(request);
+
+            return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+                autenticacaoService.getUsuarioId(), nivel, null));
+        }
     }
 
     @Transactional
@@ -109,17 +120,19 @@ public class  OrganizacaoEmpresaService {
         if (validarOrganizacaoJaExistente(id, request)) {
             throw CNPJ_OU_RAZAO_SOCIAL_EXISTENTE;
         }
-        var organizacaoEmpresaToUpdate = findById(id);
-
         var nivel = validarNivel(request.getNivelId());
-        var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
+        var organizacaoEmpresaToUpdate = findById(id);
+        if (nivel.getCodigo() == CodigoNivel.VAREJO) {
+            var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
+            organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
 
-        organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
-
+        } else {
+            organizacaoEmpresaToUpdate.of(request, null, nivel);
+        }
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
-
         return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+
     }
 
     private boolean validarOrganizacaoJaExistente(Integer id, OrganizacaoEmpresaRequest request) {
@@ -127,9 +140,15 @@ public class  OrganizacaoEmpresaService {
             request.getCnpjSemMascara(), id);
     }
 
-    private void validarCnpj(OrganizacaoEmpresaRequest request) {
+    private void validarCnpjExistente(OrganizacaoEmpresaRequest request) {
         if (organizacaoEmpresaRepository.existsByCnpj(request.getCnpjSemMascara())) {
             throw CNPJ_EXISTENTE;
+        }
+    }
+
+    private void validarCnpj(OrganizacaoEmpresaRequest request) {
+        if (request.getCnpj() == null) {
+            throw CNPJ_OBRIGATORIO;
         }
     }
 
