@@ -1033,7 +1033,7 @@ public class UsuarioControllerTest {
 
     @Test
     @SneakyThrows
-    public void findUsuariosOperadoresBackofficeByOrganizacaoEMpresa_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
+    public void findUsuariosOperadoresBackofficeByOrganizacaoEmpresa_deveBuscarComFlagTrue_seFlagBuscarInativosForTrue() {
         mvc.perform(get("/api/usuarios")
             .param("organizacaoId", "5")
             .param("buscarInativos", "true")

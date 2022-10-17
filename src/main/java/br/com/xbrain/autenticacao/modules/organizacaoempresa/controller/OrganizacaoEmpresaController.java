@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -70,8 +69,6 @@ public class OrganizacaoEmpresaController {
 
     @GetMapping("select")
     public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
-        return service.getAllSelect(filtros).stream()
-            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getRazaoSocial()))
-            .collect(Collectors.toList());
+        return service.getAllSelect(filtros);
     }
 }

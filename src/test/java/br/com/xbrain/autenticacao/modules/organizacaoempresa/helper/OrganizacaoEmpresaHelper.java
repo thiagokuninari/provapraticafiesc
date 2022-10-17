@@ -1,6 +1,5 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.helper;
 
-import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
@@ -15,7 +14,6 @@ import org.springframework.data.domain.PageImpl;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OrganizacaoEmpresaHelper {
 
@@ -79,13 +77,6 @@ public class OrganizacaoEmpresaHelper {
                 .id(2)
                 .situacao(ESituacaoOrganizacaoEmpresa.A)
                 .build());
-    }
-
-    public static List<SelectResponse> duasOrganizacoesEmpresaSelectResponse() {
-        return duasOrganizacoesEmpresaSelectResponse().stream()
-            .map(organizacaoEmpresa ->
-                new SelectResponse(organizacaoEmpresa().getId(), organizacaoEmpresa().getNivel().getNome()))
-            .collect(Collectors.toList());
     }
 
     public static Nivel umNivel() {

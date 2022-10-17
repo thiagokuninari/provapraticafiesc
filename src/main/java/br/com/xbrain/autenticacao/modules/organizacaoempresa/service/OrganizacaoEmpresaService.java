@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.organizacaoempresa.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
@@ -189,8 +190,11 @@ public class  OrganizacaoEmpresaService {
         return organizacoes;
     }
 
-    public List<OrganizacaoEmpresa> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
-        return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build());
+    public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
+        return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build())
+            .stream()
+            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getRazaoSocial()))
+            .collect(Collectors.toList());
     }
 
     private OrganizacaoEmpresaFiltros getFiltros(OrganizacaoEmpresaFiltros filtros) {

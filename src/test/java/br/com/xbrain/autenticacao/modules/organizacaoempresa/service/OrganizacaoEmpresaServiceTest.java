@@ -391,23 +391,7 @@ public class OrganizacaoEmpresaServiceTest {
     @Test
     public void findAll_organizacoesFiltradas_quandoUsuarioBackoffice() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
-        var filtros = OrganizacaoEmpresaFiltros.builder().organizacaoId(1).build();
-
-        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
-            .thenReturn(List.of(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
-                "CODIGO")));
-
-        assertThat(service.getAllSelect(null))
-            .hasSize(1)
-            .extracting("id", "razaoSocial", "cnpj", "codigo")
-            .contains(tuple(1, "Organizacao 1", "08112392000192", "CODIGO"));
-    }
-
-    @Test
-    public void findAll_organizacoesFiltradas_quandoParametroCodigoNivel() {
-        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
-        var filtros = OrganizacaoEmpresaFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).organizacaoId(1).build();
-        var nivel = Nivel.builder().id(1).build();
+        var filtros = OrganizacaoEmpresaFiltros.builder().organizacaoId(1).nome("organizacao 1").build();
 
         when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
             .thenReturn(List.of(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
@@ -415,8 +399,23 @@ public class OrganizacaoEmpresaServiceTest {
 
         assertThat(service.getAllSelect(filtros))
             .hasSize(1)
-            .extracting("id", "razaoSocial", "cnpj", "codigo", "nivel")
-            .contains(tuple(1, "Organizacao 1", "08112392000192", "CODIGO", nivel));
+            .extracting("value", "label")
+            .contains(tuple(1, "Organizacao 1"));
+    }
+
+    @Test
+    public void findAll_organizacoesFiltradas_quandoParametroCodigoNivel() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioBackoffice());
+        var filtros = OrganizacaoEmpresaFiltros.builder().codigoNivel(CodigoNivel.BACKOFFICE).organizacaoId(1).build();
+
+        when(organizacaoEmpresaRepository.findByPredicate(eq(filtros.toPredicate().build())))
+            .thenReturn(List.of(umaOrganizacaoEmpresa(1, "Organizacao 1", "08112392000192",
+                "CODIGO")));
+
+        assertThat(service.getAllSelect(filtros))
+            .hasSize(1)
+             .extracting("value", "label")
+            .contains(tuple(1, "Organizacao 1"));
     }
 
     private UsuarioAutenticado umUsuarioBackoffice() {

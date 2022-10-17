@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.organizacaoempresa.controller;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper;
@@ -325,7 +326,7 @@ public class OrganizacaoEmpresaControllerTest {
     @Test
     public void getAllSelect_todasOrganizacoes_quandoSolicitar() throws Exception {
         when(organizacaoEmpresaService.getAllSelect(new OrganizacaoEmpresaFiltros()))
-            .thenReturn(List.of(umaOrganizacaoEmpresa()));
+            .thenReturn(List.of(SelectResponse.builder().value(1).label("Teste AA").build()));
 
         mockMvc.perform(get(API_URI + "/select")
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
@@ -334,5 +335,27 @@ public class OrganizacaoEmpresaControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].value", is(1)))
             .andExpect(jsonPath("$[0].label", is("Teste AA")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllSelect_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        mockMvc.perform(get(API_URI + "/select")
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllSelect_deveRetornarBadRequest_quandoParamentrosForemInvalidos() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAdminAutenticado());
+        when(organizacaoEmpresaService.getAllSelect(new OrganizacaoEmpresaFiltros()))
+            .thenReturn(List.of(SelectResponse.builder().value(2).label("Teste AA").build()));
+
+        mockMvc.perform(get(API_URI + "/select?organizacaoId=e&nome=2")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
     }
 }
