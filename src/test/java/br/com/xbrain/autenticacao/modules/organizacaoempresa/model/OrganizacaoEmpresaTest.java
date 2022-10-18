@@ -64,6 +64,20 @@ public class OrganizacaoEmpresaTest {
             .isAtivo());
     }
 
+    @Test
+    public void formataCnpj_deveRetornarCnpjComMascara_quandoCnpjSemMascara() {
+        assertThat(umaOrganizacaoEmpresa().formataCnpj())
+            .isNotEmpty()
+            .isEqualTo("08.112.392/0001-92");
+    }
+
+    @Test
+    public void formataCnpj_deveRetornarCnpjComMascara_quandoCnpjComMascara() {
+        assertThat(umaOrganizacaoEmpresaCnpjComMascara().formataCnpj())
+            .isNotEmpty()
+            .isEqualTo("08.112.392/0001-92");
+    }
+
     private OrganizacaoEmpresa umaOrganizacaoComStatus(Integer id, ESituacaoOrganizacaoEmpresa situacao) {
         return OrganizacaoEmpresa.builder()
             .id(id)
@@ -85,6 +99,16 @@ public class OrganizacaoEmpresaTest {
         return OrganizacaoEmpresa.builder()
             .razaoSocial("Organizacao 1")
             .cnpj("08112392000192")
+            .modalidadesEmpresa(null)
+            .nivel(null)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .build();
+    }
+
+    private OrganizacaoEmpresa umaOrganizacaoEmpresaCnpjComMascara() {
+        return OrganizacaoEmpresa.builder()
+            .razaoSocial("Organizacao 1")
+            .cnpj("08.112.392/0001-92")
             .modalidadesEmpresa(null)
             .nivel(null)
             .situacao(ESituacaoOrganizacaoEmpresa.A)

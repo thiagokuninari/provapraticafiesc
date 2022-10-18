@@ -28,6 +28,17 @@ public class OrganizacaoEmpresaHelper {
             .build();
     }
 
+    public static OrganizacaoEmpresaRequest organizacaoEmpresaSemCnpjRequest() {
+        return OrganizacaoEmpresaRequest.builder()
+            .nome("Marcos AA")
+            .cnpj(null)
+            .situacao(ESituacaoOrganizacaoEmpresa.A)
+            .modalidadesEmpresaIds(List.of(1))
+            .nivelId(1)
+            .codigo("CODIGO")
+            .build();
+    }
+
     public static OrganizacaoEmpresa organizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
             .razaoSocial("Marcos AA")

@@ -115,10 +115,7 @@ public class OrganizacaoEmpresa {
     }
 
     public String formataCnpj() {
-        if (cnpj != null) {
-            return CnpjUtil.formataCnpj(cnpj);
-        }
-        return null;
+        return CnpjUtil.formataCnpj(cnpj);
     }
 
     public OrganizacaoEmpresa(Integer id) {

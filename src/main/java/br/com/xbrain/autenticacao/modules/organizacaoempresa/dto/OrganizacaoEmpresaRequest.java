@@ -34,6 +34,6 @@ public class OrganizacaoEmpresaRequest {
         if (cnpj != null) {
             return CnpjUtils.getNumerosCnpj(cnpj);
         }
-        return null;
+        return "";
     }
 }
