@@ -22,6 +22,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-socio-principal-success}")
     private String usuarioCadastroSocioPrincipalSuccessMq;
 
+    @Value("${app-config.queue.usuario-cadastro-loja-futuro-success}")
+    private String usuarioCadastroLojaFuturoSuccessMq;
+
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessMq;
 
@@ -30,6 +33,9 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-atualizacao}")
     private String usuarioAtualizacaoMq;
+
+    @Value("${app-config.queue.usuario-atualizacao-lojafuturo}")
+    private String usuarioLojaFuturoAtualizacaoMq;
 
     @Value("${app-config.queue.usuario-atualizacao-failure}")
     private String usuarioAtualizacaoFailureMq;
@@ -156,6 +162,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioCadastroLojaFuturoSuccessMq() {
+        return new Queue(usuarioCadastroLojaFuturoSuccessMq, false);
+    }
+
+    @Bean
     Queue atualizarUsuarioPOlMq() {
         return new Queue(atualizarUsuarioPOlMq, false);
     }
@@ -178,6 +189,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAtualizacaoMq() {
         return new Queue(usuarioAtualizacaoMq, false);
+    }
+
+    @Bean
+    Queue usuarioLojaFuturoAtualizacaoMq() {
+        return new Queue(usuarioLojaFuturoAtualizacaoMq, false);
     }
 
     @Bean
@@ -334,6 +350,12 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding usuarioCadastroLojaFuturoSuccessBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroLojaFuturoSuccessMq()).to(exchange)
+            .with(usuarioCadastroLojaFuturoSuccessMq);
+    }
+
+    @Bean
     public Binding atualizarPermissaoFeederBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoFeederMq()).to(exchange).with(atualizarPermissaoFeederMq);
     }
@@ -357,6 +379,11 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAtualizcaoBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAtualizacaoMq()).to(exchange).with(usuarioAtualizacaoMq);
+    }
+
+    @Bean
+    public Binding usuarioLojaFuturoAtualizacaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLojaFuturoAtualizacaoMq()).to(exchange).with(usuarioLojaFuturoAtualizacaoMq);
     }
 
     @Bean

@@ -345,10 +345,9 @@ public class UsuarioGerenciaControllerTest {
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$", hasSize(8)))
+            .andExpect(jsonPath("$", hasSize(7)))
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                 "O campo nome é obrigatório.",
-                "O campo cpf é obrigatório.",
                 "O campo email é obrigatório.",
                 "O campo unidadesNegociosId é obrigatório.",
                 "O campo empresasId é obrigatório.",

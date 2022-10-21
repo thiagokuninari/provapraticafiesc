@@ -18,7 +18,6 @@ import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -82,8 +81,6 @@ public class Usuario {
     @Column(name = "IMEI")
     private Long imei;
 
-    @NotNull
-    @CPF
     @Column(name = "CPF", length = 14)
     private String cpf;
 
@@ -617,5 +614,10 @@ public class Usuario {
     public boolean isNivelReceptivo() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.RECEPTIVO;
+    }
+
+    public boolean isGeradorLeadsOuClienteLojaFuturo() {
+        return getCargoCodigo() == GERADOR_LEADS
+            || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
     }
 }

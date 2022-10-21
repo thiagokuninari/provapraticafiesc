@@ -29,7 +29,7 @@ public class AutenticacaoServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Test
-    public void forcarLogoutGeradorLeads_deveChamarTokenStore_quandoUsuarioGeradorLeads() {
+    public void forcarLogoutGeradorLeadsEClienteLojaFuturo_deveChamarTokenStore_quandoUsuarioGeradorLeads() {
         when(tokenStore.findTokensByClientIdAndUserName(any(), any()))
             .thenReturn(List.of(new DefaultOAuth2AccessToken("token")));
         var umUsuarioGeradorLeads = Usuario.builder()
@@ -42,12 +42,30 @@ public class AutenticacaoServiceTest {
             .email("GERADORLEADS@GMAIL.COM")
             .build();
 
-        autenticacaoService.forcarLogoutGeradorLeads(umUsuarioGeradorLeads);
+        autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuarioGeradorLeads);
         verify(tokenStore, times(1)).removeAccessToken(any());
     }
 
     @Test
-    public void forcarLogoutGeradorLeads_deveNaoChamarTokenStore_quandoUsuarioNaoGeradorLeads() {
+    public void forcarLogoutGeradorLeadsEClienteLojaFuturo_deveChamarTokenStore_quandoUsuarioClienteLojaFuturo() {
+        when(tokenStore.findTokensByClientIdAndUserName(any(), any()))
+            .thenReturn(List.of(new DefaultOAuth2AccessToken("token")));
+        var umUsuarioClienteLojaFuturo = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(96)
+                .codigo(CodigoCargo.CLIENTE_LOJA_FUTURO)
+                .build())
+            .id(12345)
+            .nome("USUARIO CLIENTE LOJA FUTURO")
+            .email("CLIENTELOJAFUTURO@GMAIL.COM")
+            .build();
+
+        autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuarioClienteLojaFuturo);
+        verify(tokenStore, times(1)).removeAccessToken(any());
+    }
+
+    @Test
+    public void forcarLogoutGeradorLeadsEClienteLojaFuturo_deveNaoChamarTokenStore_quandoUsuarioNaoGeradorLeads() {
         var umUsuario = Usuario.builder()
             .cargo(Cargo.builder()
                 .codigo(CodigoCargo.GERENTE_OPERACAO)
@@ -57,7 +75,7 @@ public class AutenticacaoServiceTest {
             .email("THOMAS@GMAIL.COM")
             .build();
 
-        autenticacaoService.forcarLogoutGeradorLeads(umUsuario);
+        autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuario);
         verify(tokenStore, never()).removeAccessToken(any());
     }
 }

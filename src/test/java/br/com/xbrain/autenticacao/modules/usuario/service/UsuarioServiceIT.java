@@ -150,6 +150,15 @@ public class UsuarioServiceIT {
     }
 
     @Test
+    public void updateUsuarioLojaFuturoFromQueue_deveAtualizarEmail_quandoSolicitado() {
+        doReturn(umUsuarioClienteLojaFuturo()).when(service).findComplete(1);
+        service.updateUsuarioLojaFuturoFromQueue(umUsuarioLojaFuturoMqRequest());
+
+        assertThat(service.findComplete(1)).extracting(Usuario::getEmail)
+            .isEqualTo("UMNOVOEMAILLOJAFUTURO@TEST.COM");
+    }
+
+    @Test
     public void deveNaoEnviarEmailQuandoNaoSalvarUsuario() {
         UsuarioMqRequest usuarioMqRequest = umUsuario();
         usuarioMqRequest.setCpf("2292929292929292929229292929");
@@ -1356,6 +1365,12 @@ public class UsuarioServiceIT {
         return usuario;
     }
 
+    private Usuario umUsuarioClienteLojaFuturo() {
+        var usuario = usuarioRepository.findOne(227);
+        usuario.setCargo(cargoRepository.findByCodigo(CLIENTE_LOJA_FUTURO));
+        return usuario;
+    }
+
     private Usuario umUsuarioSupervisor() {
         var usuario = usuarioRepository.findOne(110);
         usuario.setCargo(cargoRepository.findByCodigo(CodigoCargo.SUPERVISOR_OPERACAO));
@@ -1571,6 +1586,13 @@ public class UsuarioServiceIT {
             .isEqualTo(List.of(100, 101, 104, 366, 368, 369, 371));
     }
 
+    @Test
+    public void saveFromQueue_salvarEEnviarParaFilaClienteLojaFuturoSalvoComSucesso_quandoCargoClienteLojaFuturo() {
+        usuarioService.saveFromQueue(umUsuarioMqRequestClienteLojaFuturo());
+
+        verify(sender).sendSuccessLojaFuturo(any(UsuarioDto.class));
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
         return UsuarioMqRequest.builder()
             .id(371)
@@ -1592,6 +1614,13 @@ public class UsuarioServiceIT {
             .build();
     }
 
+    public UsuarioLojaFuturoMqRequest umUsuarioLojaFuturoMqRequest() {
+        return UsuarioLojaFuturoMqRequest.builder()
+            .id(1)
+            .email("UMNOVOEMAILLOJAFUTURO@TEST.COM")
+            .build();
+    }
+
     public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
         return UsuarioMqRequest.builder()
             .agenteAutorizadoId(10)
@@ -1605,6 +1634,23 @@ public class UsuarioServiceIT {
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .email("renato@hotmail.com")
             .isCadastroSocioPrincipal(true)
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestClienteLojaFuturo() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("USUARIO LOJA FUTURO AA TEST")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.CLIENTE_LOJA_FUTURO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("clientelojafuturo@test.com")
+            .isCadastroSocioPrincipal(false)
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();

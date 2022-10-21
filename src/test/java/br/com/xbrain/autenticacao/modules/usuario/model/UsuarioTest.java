@@ -201,6 +201,18 @@ public class UsuarioTest {
     }
 
     @Test
+    public void isGeradorLeadsOuClienteLojaFuturo_deveRetornarBoolean_seUsuarioGeradorLeadsOuLojaFuturo() {
+        assertThat(umUsuarioComCargo(AGENTE_AUTORIZADO_VENDEDOR_D2D).isGeradorLeadsOuClienteLojaFuturo())
+            .isFalse();
+
+        assertThat(umUsuarioComCargo(CodigoCargo.GERADOR_LEADS).isGeradorLeadsOuClienteLojaFuturo())
+            .isTrue();
+
+        assertThat(umUsuarioComCargo(CLIENTE_LOJA_FUTURO).isGeradorLeadsOuClienteLojaFuturo())
+            .isTrue();
+    }
+
+    @Test
     public void isNivelVarejo_deveRetornarTrue_seUsuarioPossuirNivelVarejo() {
         assertThat(usuarioAtivo(VAREJO_VENDEDOR, VAREJO).isNivelVarejo())
             .isTrue();

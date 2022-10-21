@@ -99,9 +99,11 @@ app-config:
     usuario-cidade: usuario-cidade.queue
     usuario-cadastro-success: usuario-cadastro-success.queue
     usuario-cadastro-socio-principal-success: usuario-cadastro-socio-principal-success.queue
+    usuario-cadastro-loja-futuro-success: usuario-cadastro-loja-futuro-success.queue
     usuario-colaborador-success: usuario-colaborador-success.queue
     usuario-cadastro-failure: usuario-cadastro-failure.queue
     usuario-atualizacao: usuario-atualizacao.queue
+    usuario-atualizacao-lojafuturo: usuario-atualizacao-lojafuturo.queue
     usuario-atualizacao-failure: usuario-atualizacao-failure.queue
     usuario-aa-atualizacao: usuario-aa-atualizacao.queue
     usuario-aa-atualizacao-failure: usuario-aa-atualizacao-failure.queue

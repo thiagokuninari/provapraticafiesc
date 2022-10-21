@@ -1004,6 +1004,8 @@ public class UsuarioService {
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
+            } else if (CLIENTE_LOJA_FUTURO.equals(usuarioMqRequest.getCargo())) {
+                enviarParaFilaDeLojaFuturoSalvo(usuarioDto);
             } else {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
@@ -1032,6 +1034,17 @@ public class UsuarioService {
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroAtualizacaoUsuarios(usuarioMqRequest);
+            log.error("erro ao atualizar usuário da fila.", ex);
+        }
+    }
+
+    @Transactional
+    public void updateUsuarioLojaFuturoFromQueue(UsuarioLojaFuturoMqRequest usuarioLojaFuturoMqRequest) {
+        try {
+            validarEmailCadastrado(usuarioLojaFuturoMqRequest.getEmail(), usuarioLojaFuturoMqRequest.getId());
+            var usuario = findComplete(usuarioLojaFuturoMqRequest.getId());
+            usuario.setEmail(usuarioLojaFuturoMqRequest.getEmail());
+        } catch (Exception ex) {
             log.error("erro ao atualizar usuário da fila.", ex);
         }
     }
@@ -1198,6 +1211,10 @@ public class UsuarioService {
         usuarioMqSender.sendSuccessSocioPrincipal(usuarioDto);
     }
 
+    private void enviarParaFilaDeLojaFuturoSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessLojaFuturo(usuarioDto);
+    }
+
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
         atualizarUsuarioMqSender.sendSuccess(usuarioDto);
     }
@@ -1262,6 +1279,10 @@ public class UsuarioService {
     }
 
     private void validarCpfExistente(Usuario usuario) {
+        if (usuario.getCpf() == null) {
+            return;
+        }
+
         usuario.removerCaracteresDoCpf();
         repository
             .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
@@ -1627,7 +1648,7 @@ public class UsuarioService {
         repository.updateSenha(passwordEncoder.encode(usuarioDadosAcessoRequest.getSenhaNova()),
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
-        autenticacaoService.forcarLogoutGeradorLeads(usuario);
+        autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(usuario);
         return usuario.getId();
     }
 

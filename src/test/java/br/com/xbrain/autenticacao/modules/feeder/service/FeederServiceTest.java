@@ -153,6 +153,29 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void atualizarPermissaoFeeder_naoDeveAdicionarPermissao_quandoUsuarioLojaFuturo() {
+        var aaComPermissaoFeeder = umAgenteAutorizadoLojaFuturo();
+        aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
+        aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(false);
+
+        when(usuarioRepository.findComplete(1000)).thenReturn(
+            umUsuario(CodigoCargo.ASSISTENTE_RELACIONAMENTO, ESituacao.A, 1000));
+
+        service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
+
+        verify(usuarioHistoricoService, times(1)).save(anyList());
+        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(4)
+            .extracting("usuario.id", "funcionalidade.id")
+            .containsExactlyInAnyOrder(
+                tuple(5, 3046),
+                tuple(5, 15000),
+                tuple(5, 15005),
+                tuple(5, 15012));
+    }
+
+    @Test
     public void alterarSituacaoUsuarioFeeder_deveLancarException_quandoUsuarioNaoEncontrado() {
         when(usuarioRepository.findComplete(1111)).thenReturn(Optional.empty());
 
@@ -410,6 +433,17 @@ public class FeederServiceTest {
     }
 
     @Test
+    public void adicionarPermissaoFeederParaUsuarioNovo_naoDeveAdicionarPermissao_quandoUsuarioLojaFuturo() {
+        var usuarioNovo = umUsuarioMqRequest();
+        usuarioNovo.setCargo(CodigoCargo.ASSISTENTE_RELACIONAMENTO);
+
+        service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
+
+        verify(usuarioRepository, never()).findById(anyInt());
+        verify(permissaoEspecialRepository, never()).save(permissaoEspecialCaptor.capture());
+    }
+
+    @Test
     public void limparCpfEAlterarEmailUsuarioFeeder_deveLimparCpfAlterarEmailEGerarHistorico_quandoUsuarioFeederExcluido() {
         var usuarioSemCpf = umUsuarioFeeder(100).get();
         usuarioSemCpf.setCpf(null);
@@ -519,6 +553,15 @@ public class FeederServiceTest {
             .usuarioProprietarioId(10)
             .usuarioCadastroId(999)
             .agenteAutorizadoId(30)
+            .build();
+    }
+
+    private AgenteAutorizadoPermissaoFeederDto umAgenteAutorizadoLojaFuturo() {
+        return AgenteAutorizadoPermissaoFeederDto.builder()
+            .colaboradoresVendasIds(Lists.newArrayList(1000))
+            .usuarioProprietarioId(5)
+            .usuarioCadastroId(999)
+            .agenteAutorizadoId(1)
             .build();
     }
 
