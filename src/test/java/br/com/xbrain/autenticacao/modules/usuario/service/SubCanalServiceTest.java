@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 public class SubCanalServiceTest {
-    
+
     @Autowired
     private SubCanalService service;
     @MockBean
@@ -56,5 +56,14 @@ public class SubCanalServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.getSubCanalById(100))
             .withMessage("Erro, subcanal não encontrado.");
+    }
+
+    @Test
+    public void getAllExcetoInsideSalesPme_deveRetornarTodosSubCanaisExcetoInsideSales_quandoSolicitado() {
+        when(repository.findAll()).thenReturn(List.of(umSubCanal()));
+
+        assertThat(service.getAllExcetoInsideSalesPme())
+            .hasSize(1)
+            .containsExactly(new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 }

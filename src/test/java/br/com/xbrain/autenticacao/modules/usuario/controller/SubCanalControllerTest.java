@@ -81,12 +81,12 @@ public class SubCanalControllerTest {
 
     @Test
     public void getAllSubCanaisExcetoInsideSalesPme_deveRetornarOsSubCanais_quandoSolicitado() throws Exception {
-        when(subCanalService.getAll()).thenReturn(List.of(
+        when(subCanalService.getAllExcetoInsideSalesPme()).thenReturn(List.of(
             new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A),
             new SubCanalDto(2, ETipoCanal.PAP_PME, "PAP PME", ESituacao.A),
             new SubCanalDto(3, ETipoCanal.PAP_PREMIUM, "PAP PREMIUM", ESituacao.A)));
 
-        mvc.perform(get(API_URI)
+        mvc.perform(get(API_URI + "/exceto-inside-sales")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -99,9 +99,9 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[1].codigo", is("PAP_PME")))
             .andExpect(jsonPath("$[1].nome", is("PAP PME")))
             .andExpect(jsonPath("$[1].situacao", is("A")))
-            .andExpect(jsonPath("$[1].id", is(3)))
-            .andExpect(jsonPath("$[1].codigo", is("PAP_PREMIUM")))
-            .andExpect(jsonPath("$[1].nome", is("PAP PREMIUM")))
-            .andExpect(jsonPath("$[1].situacao", is("A")));
+            .andExpect(jsonPath("$[2].id", is(3)))
+            .andExpect(jsonPath("$[2].codigo", is("PAP_PREMIUM")))
+            .andExpect(jsonPath("$[2].nome", is("PAP PREMIUM")))
+            .andExpect(jsonPath("$[2].situacao", is("A")));
     }
 }
