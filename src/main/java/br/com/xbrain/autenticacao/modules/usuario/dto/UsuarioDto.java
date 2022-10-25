@@ -6,10 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
+import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -115,6 +112,8 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
+        usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
+        usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
             usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));

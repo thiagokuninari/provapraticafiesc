@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHistorico;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHistoricoService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,12 +47,12 @@ public class FeederServiceTest {
     private UsuarioHistoricoService usuarioHistoricoService;
     @Mock
     private UsuarioRepository usuarioRepository;
+    @Mock
+    private UsuarioService usuarioService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
     private ArgumentCaptor<UsuarioHistorico> usuarioHistoricoCaptor;
-    @Captor
-    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
 
     @Test
     public void removerPermissoesEspeciais_deveRemoverPermissoesQuandoHouver() {
@@ -70,24 +72,33 @@ public class FeederServiceTest {
         when(usuarioRepository.findComplete(100)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 100));
 
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(102));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046))))
+            .thenReturn(List.of(PermissaoEspecial.builder().id(3046).usuario(Usuario.builder().id(100).build()).build()));
+        when(usuarioService.getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046))))
+            .thenReturn(umaListaPermissoesFuncionalidadesFeederParaAa(10));
+
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
-        verify(permissaoEspecialRepository, times(0)).deletarPermissaoEspecialBy(anyList(), anyList());
-        verify(usuarioHistoricoService, times(1)).save(anyList());
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
+        verify(permissaoEspecialRepository, times(0))
+            .deletarPermissaoEspecialBy(anyList(), anyList());
+        verify(usuarioHistoricoService, times(1))
+            .save(anyList());
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(102), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(100), eq(999), eq(List.of(3046)));
+        verify(usuarioService, times(1))
+            .getPermissoesEspeciaisDoUsuario(eq(10), eq(999), eq(List.of(15000, 15005, 15012, 3046)));
+    }
 
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(9)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(100, 3046),
-                tuple(102, 3046),
-                tuple(102, 15000),
-                tuple(102, 15005),
-                tuple(102, 15012),
-                tuple(10, 3046),
-                tuple(10, 15000),
-                tuple(10, 15005),
-                tuple(10, 15012));
+    private List<PermissaoEspecial> umaListaPermissoesFuncionalidadesFeederParaAa(Integer idUsuario) {
+        return Arrays.asList(
+            PermissaoEspecial.builder().id(15000).usuario(Usuario.builder().id(idUsuario).build()).build(),
+            PermissaoEspecial.builder().id(15005).usuario(Usuario.builder().id(idUsuario).build()).build(),
+            PermissaoEspecial.builder().id(15012).usuario(Usuario.builder().id(idUsuario).build()).build(),
+            PermissaoEspecial.builder().id(3046).usuario(Usuario.builder().id(idUsuario).build()).build());
     }
 
     @Test
@@ -95,9 +106,6 @@ public class FeederServiceTest {
         var aaComPermissaoFeeder = umAgenteAutorizadoFeederDto();
         aaComPermissaoFeeder.setFeeder(ETipoFeeder.RESIDENCIAL);
         aaComPermissaoFeeder.setSocioDeOutroAaComPermissaoFeeder(true);
-
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.of(new PermissaoEspecial()));
 
         service.atualizarPermissaoFeeder(aaComPermissaoFeeder);
 
@@ -202,16 +210,8 @@ public class FeederServiceTest {
     public void adicionarPermissaoFeederParaUsuarioNovo_deveSalvarPermissaoTratarLead_quandoAgenteAutorizadoForFeeder() {
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_VENDEDOR_D2D, ESituacao.A, 1111));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), umUsuarioMqRequest());
-
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(1)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(1111, 3046));
     }
 
     @Test
@@ -231,19 +231,8 @@ public class FeederServiceTest {
 
         when(usuarioRepository.findById(1111)).thenReturn(
             umUsuario(CodigoCargo.AGENTE_AUTORIZADO_BACKOFFICE_D2D, ESituacao.A, 1111));
-        when(permissaoEspecialRepository.findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(anyInt(), anyInt()))
-            .thenReturn(Optional.empty());
 
         service.adicionarPermissaoFeederParaUsuarioNovo(umUsuarioDto(), usuarioNovo);
-
-        verify(permissaoEspecialRepository, times(1)).save(permissaoEspecialCaptor.capture());
-        assertThat(permissaoEspecialCaptor.getValue())
-            .hasSize(4)
-            .extracting("usuario.id", "funcionalidade.id")
-            .containsExactlyInAnyOrder(tuple(1111, 3046),
-                tuple(1111, 15000),
-                tuple(1111, 15005),
-                tuple(1111, 15012));
     }
 
     @Test

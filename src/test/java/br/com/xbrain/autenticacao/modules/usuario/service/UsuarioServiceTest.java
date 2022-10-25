@@ -138,6 +138,8 @@ public class UsuarioServiceTest {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
     private CargoService cargoService;
+    @Mock
+    private SubCanalService subCanalService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -1854,6 +1856,23 @@ public class UsuarioServiceTest {
             .doesNotThrowAnyException();
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
+    }
+
+    @Test
+    public void save_naoDeveLancarException_quandoUsuarioComSubCanalPapPremiumNivelOperacao() {
+        when(usuarioRepository.findById(any()))
+            .thenReturn(Optional.of(umUsuarioCompleto(VENDEDOR_OPERACAO, 8, OPERACAO,
+                CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO, Set.of(new SubCanal(2)))));
+
+        assertThatCode(() -> usuarioService.save(
+                umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
+                    CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO, Set.of(new SubCanal(3)))))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
+        verify(subCanalService, times(1)).removerPermissaoIndicacaoPremium(any());
+        verify(usuarioRepository, times(1)).saveAndFlush(any());
+        verify(subCanalService, times(1)).adicionarPermissaoIndicacaoPremium(any());
     }
 
     @Test

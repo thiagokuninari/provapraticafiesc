@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.service.DeslogarUsuarioPorExcessoDeUsoService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
+import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.permissao.service.JsonWebTokenService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
@@ -14,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.ConfiguracaoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioAgendamentoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import helpers.Usuarios;
@@ -81,6 +83,10 @@ public class UsuarioControllerTest {
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @MockBean
     private DeslogarUsuarioPorExcessoDeUsoService deslogarUsuarioPorExcessoDeUsoService;
+    @MockBean
+    private FeederService feederService;
+    @MockBean
+    private SubCanalService subCanalService;
 
     private static UsuarioExecutivoResponse umUsuarioExecutivo(Integer id, String email, String nome) {
         return new UsuarioExecutivoResponse(id, email, nome);
