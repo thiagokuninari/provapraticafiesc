@@ -30,13 +30,12 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public Iterable<Cidade> findBySubCluster(Integer subClusterId) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(subCluster.id.eq(subClusterId))
             .orderBy(cidade.nome.asc())
             .distinct()
@@ -46,18 +45,28 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findAllByRegionalId(Integer regionalId, Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(regional.id.eq(regionalId).and(predicate))
-            .orderBy(grupo.nome.asc(),
-                cluster.nome.asc(),
-                subCluster.nome.asc(),
-                cidade.nome.asc())
+            .orderBy(cidade.nome.asc())
+            .distinct()
+            .fetch();
+    }
+
+    @Override
+    public List<Cidade> findAllByNovaRegionalId(Integer regionalId, Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.regional, regional)
+            .where(regional.id.eq(regionalId)
+                .and(cidade.subCluster.isNotNull())
+                .and(predicate))
+            .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
     }
@@ -65,18 +74,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(subCluster.id.eq(subClusterId).and(predicate))
-            .orderBy(grupo.nome.asc(),
-                cluster.nome.asc(),
-                subCluster.nome.asc(),
-                cidade.nome.asc())
+            .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
     }
@@ -84,18 +89,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findAllBySubClustersId(List<Integer> subClustersId, Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(subCluster.id.in(subClustersId).and(predicate))
-            .orderBy(grupo.nome.asc(),
-                cluster.nome.asc(),
-                subCluster.nome.asc(),
-                cidade.nome.asc())
+            .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
     }
@@ -103,18 +104,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findAllByGrupoId(Integer grupoId, Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(grupo.id.eq(grupoId).and(predicate))
-            .orderBy(grupo.nome.asc(),
-                cluster.nome.asc(),
-                subCluster.nome.asc(),
-                cidade.nome.asc())
+            .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
     }
@@ -122,18 +119,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public List<Cidade> findAllByClusterId(Integer clusterId, Predicate predicate) {
         return new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
-            .leftJoin(cidade.uf).fetchJoin()
-            .leftJoin(cidade.subCluster, subCluster).fetchJoin()
-            .leftJoin(subCluster.cluster, cluster).fetchJoin()
-            .leftJoin(cluster.grupo, grupo).fetchJoin()
-            .leftJoin(grupo.regional, regional).fetchJoin()
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
             .where(cluster.id.eq(clusterId).and(predicate))
-            .orderBy(grupo.nome.asc(),
-                cluster.nome.asc(),
-                subCluster.nome.asc(),
-                cidade.nome.asc())
+            .orderBy(cidade.nome.asc())
             .distinct()
             .fetch();
     }
@@ -220,8 +213,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public Optional<Cidade> findByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
+            .selectFrom(cidade)
             .where(predicate)
             .fetchOne());
     }
@@ -229,10 +221,25 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     @Override
     public Optional<Cidade> findFirstByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
-            .select(cidade)
-            .from(cidade)
+            .selectFrom(cidade)
             .where(predicate)
             .fetchFirst());
+    }
+
+    @Override
+    public List<Cidade> findAllByRegionalIdAndUfId(Integer regionalId,
+                                                   Integer ufId,
+                                                   Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.regional, regional)
+            .where(cidade.regional.id.eq(regionalId)
+                .and(cidade.uf.id.eq(ufId))
+                .and(cidade.subCluster.isNotNull())
+                .and(predicate))
+            .orderBy(cidade.nome.asc())
+            .fetch();
     }
 
     @Override
@@ -247,10 +254,7 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             ))
             .from(cidade)
             .where(predicate)
-            .innerJoin(cidade.subCluster, subCluster)
-            .innerJoin(subCluster.cluster, cluster)
-            .innerJoin(cluster.grupo, grupo)
-            .innerJoin(grupo.regional, regional)
+            .innerJoin(cidade.regional, regional)
             .fetch();
     }
 }

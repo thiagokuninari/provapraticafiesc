@@ -1,15 +1,18 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,6 +66,10 @@ public class Cidade {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "cidade", fetch = FetchType.LAZY)
     private List<CidadeDbm> cidadesDbm;
 
+    @JoinColumn(name = "FK_REGIONAL", referencedColumnName = "ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Regional regional;
+
     public Cidade() {
     }
 
@@ -77,12 +84,16 @@ public class Cidade {
 
     @JsonIgnore
     public Integer getRegionalId() {
-        return subCluster.getCluster().getGrupo().getRegional().getId();
+        return Objects.nonNull(this.getRegional())
+            ? this.getRegional().getId()
+            : null;
     }
 
     @JsonIgnore
     public String getRegionalNome() {
-        return subCluster.getCluster().getGrupo().getRegional().getNome();
+        return Objects.nonNull(this.getRegional())
+            ? this.getRegional().getNome()
+            : null;
     }
 
     @JsonIgnore

@@ -172,9 +172,7 @@ public class UsuarioServiceTestOracle {
 
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
-                Tuple.tuple(111, "HELPDESK"),
                 Tuple.tuple(104, "operacao_gerente_comercial"),
-                Tuple.tuple(115, "joao silveira"),
                 Tuple.tuple(100, "ADMIN"),
                 Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
                 Tuple.tuple(234, "COORDENADOR OPERACAO 2"),
@@ -206,9 +204,7 @@ public class UsuarioServiceTestOracle {
 
         assertThat(usuarios).extracting("id", "nome")
             .containsExactlyInAnyOrder(
-                Tuple.tuple(111, "HELPDESK"),
                 Tuple.tuple(104, "operacao_gerente_comercial"),
-                Tuple.tuple(115, "joao silveira"),
                 Tuple.tuple(100, "ADMIN"),
                 Tuple.tuple(233, "VENDEDOR OPERACAO 3"),
                 Tuple.tuple(234, "COORDENADOR OPERACAO 2"),

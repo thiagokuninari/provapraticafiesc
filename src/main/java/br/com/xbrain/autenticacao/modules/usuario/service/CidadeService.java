@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
@@ -27,23 +28,38 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-
+    
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
     private CidadeRepository cidadeRepository;
-
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
+    @Autowired
+    private RegionalService regionalService;
 
     private Supplier<BooleanBuilder> predicateCidadesPermitidas = () ->
         new CidadePredicate().filtrarPermitidos(autenticacaoService.getUsuarioAutenticado()).build();
 
     public List<UsuarioCidadeDto> getAllByRegionalId(Integer regionalId) {
+        return UsuarioCidadeDto.of(regionalService.getNovasRegionaisIds().contains(regionalId)
+            ? cidadeRepository.findAllByNovaRegionalId(regionalId, predicateCidadesPermitidas.get())
+            : cidadeRepository.findAllByRegionalId(regionalId, predicateCidadesPermitidas.get()));
+    }
+
+    public List<UsuarioCidadeDto> getAllByRegionalIdAndUfId(Integer regionalId, Integer ufId) {
         return UsuarioCidadeDto.of(
-            cidadeRepository.findAllByRegionalId(
-                regionalId,
-                predicateCidadesPermitidas.get()));
+            cidadeRepository.findAllByRegionalIdAndUfId(regionalId, ufId, predicateCidadesPermitidas.get()));
+    }
+
+    public List<UsuarioCidadeDto> getCidadesByRegionalReprocessamento(Integer regionalId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllByNovaRegionalId(regionalId, new CidadePredicate().build()));
+    }
+
+    public List<UsuarioCidadeDto> getCidadesByRegionalAndUfReprocessamento(Integer regionalId, Integer ufId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllByRegionalIdAndUfId(regionalId, ufId, new CidadePredicate().build()));
     }
 
     public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
@@ -75,6 +91,10 @@ public class CidadeService {
 
     public List<Cidade> getAllCidadeByUf(Integer idUf) {
         return cidadeRepository.findCidadeByUfId(idUf, new Sort("nome"));
+    }
+
+    public List<Cidade> getAllCidadeByRegionalAndUf(Integer idRegional, Integer idUf) {
+        return cidadeRepository.findAllByRegionalIdAndUfId(idRegional, idUf, new CidadePredicate().build());
     }
 
     public List<Cidade> getAllBySubCluster(Integer idSubCluster) {

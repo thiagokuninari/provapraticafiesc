@@ -22,11 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.REGIONAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.UF;
 import static helpers.TestsHelper.getAccessToken;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -133,5 +135,33 @@ public class SupervisorControllerTest {
             .andExpect(jsonPath("$[0].nome", is("RENATO")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].nome", is("JOAO")));
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisores_quandoForNovaRegional() throws Exception {
+        when(supervisorService.getSupervisoresPorAreaAtuacao(REGIONAL, List.of(1027)))
+            .thenReturn(singletonList(
+                UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
+        mvc.perform(get("/api/supervisor/por-area-atuacao/REGIONAL/1027")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("VENDEDOR 1")));
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisores_quandoPorUf() throws Exception {
+        when(supervisorService.getSupervisoresPorAreaAtuacao(UF, List.of(1)))
+            .thenReturn(singletonList(
+                UsuarioResponse.builder().id(1).nome("SUPERVISOR 1").build()));
+        mvc.perform(get("/api/supervisor/por-area-atuacao/UF/1")
+            .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("SUPERVISOR 1")));
     }
 }

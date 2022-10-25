@@ -1,16 +1,18 @@
-package br.com.xbrain.autenticacao.modules.usuario.dto;
+package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto;
 
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
-
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class AgenteAutorizadoComunicadosFiltros {
+public class AgenteAutorizadoFiltros {
 
     private Integer cargoId;
     private Integer departamentoId;
@@ -22,8 +24,8 @@ public class AgenteAutorizadoComunicadosFiltros {
     private List<Integer> cidadesIds;
     private List<Integer> agentesAutorizadosIds;
 
-    public static AgenteAutorizadoComunicadosFiltros of(PublicoAlvoComunicadoFiltros filtro) {
-        var response = new AgenteAutorizadoComunicadosFiltros();
+    public static AgenteAutorizadoFiltros of(PublicoAlvoComunicadoFiltros filtro) {
+        var response = new AgenteAutorizadoFiltros();
         BeanUtils.copyProperties(filtro, response);
         return response;
     }

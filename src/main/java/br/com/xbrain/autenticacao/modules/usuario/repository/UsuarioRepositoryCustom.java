@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.repository;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
+import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -89,7 +90,14 @@ public interface UsuarioRepositoryCustom {
                                                     List<CodigoCargo> cargos,
                                                     Set<ECanal> canais);
 
+    List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
+                                                    List<Integer> areasAtuacaoIds,
+                                                    List<CodigoCargo> cargos,
+                                                    Set<ECanal> canais);
+
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
+
+    List<Uf> getUfsUsuario(Integer usuarioId);
 
     List<UsuarioPermissoesResponse> getUsuariosIdAndPermissoes(List<Integer> usuariosIds, List<String> permissoes);
 
@@ -102,9 +110,9 @@ public interface UsuarioRepositoryCustom {
 
     List<Integer> findAllIds(Predicate predicate);
 
-    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate);
+    List<Integer> findAllIds(PublicoAlvoComunicadoFiltros predicate, List<Integer> novasRegionaisIds);
 
-    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro);
+    List<UsuarioNomeResponse> findAllNomesIds(PublicoAlvoComunicadoFiltros filtro, List<Integer> novasRegionaisIds);
 
     long deleteUsuarioHierarquia(Integer usuarioId);
 

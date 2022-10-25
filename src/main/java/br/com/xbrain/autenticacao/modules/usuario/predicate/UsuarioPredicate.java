@@ -24,6 +24,7 @@ import static br.com.xbrain.autenticacao.modules.comum.model.QCluster.cluster;
 import static br.com.xbrain.autenticacao.modules.comum.model.QGrupo.grupo;
 import static br.com.xbrain.autenticacao.modules.comum.model.QRegional.regional;
 import static br.com.xbrain.autenticacao.modules.comum.model.QSubCluster.subCluster;
+import static br.com.xbrain.autenticacao.modules.comum.model.QUf.uf1;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
@@ -238,16 +239,42 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comRegional(Integer regionalId) {
+    public UsuarioPredicate comRegional(Integer regionalId, List<Integer> novasRegionaisIds) {
         if (regionalId != null) {
+            if (novasRegionaisIds.contains(regionalId)) {
+                comNovaRegional(regionalId);
+            } else {
+                builder.and(usuario.cidades.any().cidade.id.in(
+                    JPAExpressions.select(cidade.id)
+                        .from(cidade)
+                        .join(cidade.subCluster, subCluster)
+                        .join(subCluster.cluster, cluster)
+                        .join(cluster.grupo, grupo)
+                        .join(grupo.regional, regional)
+                        .where(regional.id.eq(regionalId))
+                ));
+            }
+        }
+        return this;
+    }
+
+    private void comNovaRegional(Integer regionalId) {
+        builder.and(usuario.cidades.any().cidade.id.in(
+            JPAExpressions.select(cidade.id)
+                .from(cidade)
+                .join(cidade.uf, uf1)
+                .join(cidade.regional, regional)
+                .where(regional.id.eq(regionalId))
+        ));
+    }
+
+    public UsuarioPredicate comUf(Integer ufId) {
+        if (ufId != null) {
             builder.and(usuario.cidades.any().cidade.id.in(
                 JPAExpressions.select(cidade.id)
                     .from(cidade)
-                    .join(cidade.subCluster, subCluster)
-                    .join(subCluster.cluster, cluster)
-                    .join(cluster.grupo, grupo)
-                    .join(grupo.regional, regional)
-                    .where(regional.id.eq(regionalId))
+                    .join(cidade.uf, uf1)
+                    .where(uf1.id.eq(ufId))
             ));
         }
         return this;
@@ -350,8 +377,9 @@ public class UsuarioPredicate {
         return this;
     }
 
-    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, Integer clusterId, Integer grupoId,
-                                          Integer regionalId, Integer subClusterId) {
+    public UsuarioPredicate comCidadesIds(List<Integer> cidadesIds, List<Integer> novasRegionaisIds,
+                                          Integer clusterId, Integer grupoId, Integer regionalId,
+                                          Integer subClusterId, Integer ufId) {
         if (!isEmpty(cidadesIds)) {
             comCidade(cidadesIds);
         } else if (!isEmpty(subClusterId)) {
@@ -360,8 +388,10 @@ public class UsuarioPredicate {
             comCluster(clusterId);
         } else if (!isEmpty(grupoId)) {
             comGrupo(grupoId);
+        } else if (!isEmpty(ufId)) {
+            comUf(ufId);
         } else if (!isEmpty(regionalId)) {
-            comRegional(regionalId);
+            comRegional(regionalId, novasRegionaisIds);
         }
         return this;
     }
@@ -441,7 +471,8 @@ public class UsuarioPredicate {
         return comCluster(filtros.getClusterId())
             .comCidade(filtros.getCidadesIds())
             .comGrupo(filtros.getGrupoId())
-            .comRegional(filtros.getRegionalId())
+            .comRegional(filtros.getRegionalId(), filtros.getNovasRegionaisIds())
+            .comUf(filtros.getUfId())
             .comSubCluster(filtros.getSubClusterId());
     }
 

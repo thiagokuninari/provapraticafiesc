@@ -503,7 +503,17 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].value", is(189)))
             .andExpect(jsonPath("$[0].label", is("LONDRINA - Claro")));
+    }
 
+    @Test
+    public void getUfsUsuario_deveRetornarOsEstados_conformeUsuarioIdInformado() throws Exception {
+        mvc.perform(get("/api/usuarios/100/ufs")
+            .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].value", is(1)))
+            .andExpect(jsonPath("$[0].label", is("PARANA")));
     }
 
     @Test
@@ -802,6 +812,84 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[1].label", is("Brandon")));
 
         verify(usuarioService, times(1)).buscarUsuariosDaHierarquiaDoUsuarioLogado(isNull());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerRegionalId() {
+        doReturn(List.of(
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .regionalId(1027)
+                .build()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerUfId() {
+        doReturn(List.of(
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
+            .param("ufId", "1")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .ufId(1)
+                .regionalId(1027)
+                .build()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findUsuarioAlvoDosComunicados_deveRetornarUsuarios_quandoFornecerCidadesIds() {
+        doReturn(List.of(
+            UsuarioNomeResponse.of(1, "Teste", ESituacao.A),
+            UsuarioNomeResponse.of(2, "Brandon", ESituacao.A)))
+            .when(usuarioService).getUsuariosAlvoDoComunicado(any(PublicoAlvoComunicadoFiltros.class));
+
+        mvc.perform(get("/api/usuarios/alvo/comunicado")
+            .param("regionalId", "1027")
+            .param("ufId", "1")
+            .param("cidadesIds", "5578")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].nome", is("Teste")))
+            .andExpect(jsonPath("$[1].id", is(2)))
+            .andExpect(jsonPath("$[1].nome", is("Brandon")));
+    
+        verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
+            eq(PublicoAlvoComunicadoFiltros.builder()
+                .ufId(1)
+                .regionalId(1027)
+                .cidadesIds(List.of(5578))
+                .build()));
     }
 
     @Test

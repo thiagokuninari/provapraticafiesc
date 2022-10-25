@@ -1,17 +1,20 @@
 package br.com.xbrain.autenticacao.modules.usuario.repository;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelMso;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +38,8 @@ public class UsuarioRepositoryTest {
 
     @Autowired
     private UsuarioRepository repository;
+    @MockBean
+    private UsuarioService usuarioService;
 
     @Test
     public void getSubclustersUsuario_deveRetornarOsSubclusters_somenteAtivosSemDuplicar() {
@@ -57,6 +63,21 @@ public class UsuarioRepositoryTest {
             ))
             .extracting("id", "email")
             .containsExactlyInAnyOrder(tuple(100, "ADMIN@XBRAIN.COM.BR"), tuple(104, "MARIA@HOTMAIL.COM"));
+    }
+
+    @Test
+    public void getUfsUsuario_deveRetornarOsEstados_somenteAtivosSemDuplicar() {
+
+        assertThat(repository.getUfsUsuario(100))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(1, "PARANA"),
+                tuple(22, "SANTA CATARINA"));
+
+        assertThat(repository.getUfsUsuario(101))
+            .extracting("id", "nome")
+            .containsExactly(
+                tuple(2, "SAO PAULO"));
     }
 
     @Test
@@ -260,5 +281,31 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllIdsBySituacaoAndIdsIn(A, predicate))
             .hasSize(8)
             .isEqualTo(List.of(100, 101, 103, 104, 110, 111, 114, 115));
+    }
+
+    @Test
+    public void findAllIds_listaVazia_quandoInformadoNovaRegional() {
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(false)
+            .todoCanalD2d(false)
+            .comUsuariosLogadosHoje(false)
+            .regionalId(1027)
+            .usuarioService(usuarioService)
+            .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
+            .build();
+        assertThat(repository.findAllIds(filtros, List.of(1027))).isEmpty();
+    }
+
+    @Test
+    public void findAllNomesIds_listaVazia_quandoInformadoNovaRegional() {
+        var filtros = PublicoAlvoComunicadoFiltros.builder()
+            .todoCanalAa(false)
+            .todoCanalD2d(false)
+            .comUsuariosLogadosHoje(false)
+            .regionalId(1027)
+            .usuarioService(usuarioService)
+            .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
+            .build();
+        assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
     }
 }

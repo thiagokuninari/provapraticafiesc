@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioNomeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioResponse;
@@ -35,6 +36,8 @@ public class SupervisorService {
 
     @Autowired
     private EquipeVendaD2dService equipeVendaD2dService;
+    @Autowired
+    private RegionalService regionalService;
 
     public List<UsuarioResponse> getCargosDescendentesEVendedoresD2dDoSupervisor(Integer supervisorId, Integer equipeId) {
         var vendedoresDoSupervisor = filtrarUsuariosParaAderirAEquipe(equipeId, getVendedoresDoSupervisor(supervisorId));
@@ -83,19 +86,37 @@ public class SupervisorService {
     }
 
     public List<UsuarioResponse> getSupervisoresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
-        return usuarioRepository.getUsuariosPorAreaAtuacao(
-            areaAtuacao,
-            areasAtuacaoId,
-            List.of(SUPERVISOR_OPERACAO),
-            Set.of(D2D_PROPRIO));
+        var porRegional = AreaAtuacao.REGIONAL.equals(areaAtuacao) 
+            && regionalService.getNovasRegionaisIds().contains(areasAtuacaoId.get(0));
+        var porUf = AreaAtuacao.UF.equals(areaAtuacao);
+        return porRegional || porUf
+            ? usuarioRepository.getUsuariosPorNovaAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO),
+                Set.of(D2D_PROPRIO))
+            : usuarioRepository.getUsuariosPorAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO),
+                Set.of(D2D_PROPRIO));
     }
 
     public List<UsuarioResponse> getLideresPorAreaAtuacao(AreaAtuacao areaAtuacao, List<Integer> areasAtuacaoId) {
-        return usuarioRepository.getUsuariosPorAreaAtuacao(
-            areaAtuacao,
-            areasAtuacaoId,
-            List.of(SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO),
-            Set.of(D2D_PROPRIO));
+        var porRegional = AreaAtuacao.REGIONAL.equals(areaAtuacao) 
+            && regionalService.getNovasRegionaisIds().contains(areasAtuacaoId.get(0));
+        var porUf = AreaAtuacao.UF.equals(areaAtuacao);
+        return porRegional || porUf
+            ? usuarioRepository.getUsuariosPorNovaAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO),
+                Set.of(D2D_PROPRIO))
+            : usuarioRepository.getUsuariosPorAreaAtuacao(
+                areaAtuacao,
+                areasAtuacaoId,
+                List.of(SUPERVISOR_OPERACAO,COORDENADOR_OPERACAO),
+                Set.of(D2D_PROPRIO));
     }
 
     public List<UsuarioNomeResponse> getSupervisoresDoSubclusterDoUsuarioPeloCanal(Integer usuarioId, ECanal canal) {

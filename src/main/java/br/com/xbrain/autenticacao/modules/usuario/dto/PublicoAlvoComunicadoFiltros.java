@@ -34,7 +34,9 @@ public class PublicoAlvoComunicadoFiltros {
     private Integer grupoId;
     private Integer regionalId;
     private Integer subClusterId;
+    private Integer ufId;
     private List<Integer> usuariosFiltradosPorCidadePol;
+    private List<Integer> novasRegionaisIds;
 
     private UsuarioAutenticado usuarioAutenticado;
     private UsuarioService usuarioService;
@@ -71,6 +73,9 @@ public class PublicoAlvoComunicadoFiltros {
             grupoId = null;
             regionalId = null;
             subClusterId = null;
+            ufId = null;
+        } else if (!ObjectUtils.isEmpty(ufId)) {
+            regionalId = null;
         } else if (!ObjectUtils.isEmpty(subClusterId)) {
             clusterId = null;
             grupoId = null;
@@ -85,6 +90,7 @@ public class PublicoAlvoComunicadoFiltros {
 
     public boolean haveFiltrosDeLocalizacao() {
         return !ObjectUtils.isEmpty(cidadesIds)
+            || !ObjectUtils.isEmpty(ufId)
             || !ObjectUtils.isEmpty(clusterId)
             || !ObjectUtils.isEmpty(grupoId)
             || !ObjectUtils.isEmpty(regionalId)

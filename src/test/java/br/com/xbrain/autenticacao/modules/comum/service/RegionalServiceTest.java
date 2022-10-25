@@ -13,6 +13,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
@@ -35,7 +37,7 @@ public class RegionalServiceTest {
         assertThat(regionalService.getAllByUsuarioId(1))
                 .isNotNull()
                 .extracting("value", "label")
-                .containsExactly(tuple(3, "SUL"), tuple(2, "SÃO PAULO"));
+                .containsExactly(tuple(1027, "RPS"));
     }
 
     @Test
@@ -43,13 +45,13 @@ public class RegionalServiceTest {
         assertThat(regionalService.getAllByUsuarioId(2))
                 .isNotNull()
                 .extracting("value", "label")
-                .containsExactly(tuple(1, "LESTE"));
+                .containsExactly(tuple(1025, "RNE"));
     }
 
     @Test
     public void findById_deveRetornarUmaRegional_seExistir() {
         assertThat(regionalService.findById(1))
-            .isEqualTo(umClusterDto());
+            .isEqualTo(umRegionalDto());
     }
 
     @Test
@@ -59,7 +61,12 @@ public class RegionalServiceTest {
         regionalService.findById(16516);
     }
 
-    RegionalDto umClusterDto() {
+    @Test
+    public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
+        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(List.of(1025, 1027));
+    }
+
+    RegionalDto umRegionalDto() {
         RegionalDto regionalDto = new RegionalDto();
         regionalDto.setId(1);
         regionalDto.setNome("LESTE");

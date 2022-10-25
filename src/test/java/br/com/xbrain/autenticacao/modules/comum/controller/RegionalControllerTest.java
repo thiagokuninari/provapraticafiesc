@@ -45,8 +45,9 @@ public class RegionalControllerTest {
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].nome", is("LESTE")));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].nome", is("RNE")))
+                .andExpect(jsonPath("$[1].nome", is("RPS")));
     }
 
     @Test
@@ -56,7 +57,18 @@ public class RegionalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nome", is("SUL")));
+                .andExpect(jsonPath("$[0].nome", is("RPS")));
+    }
+
+    @Test
+    public void deveRetornarIdsDeNovasRegionais() throws Exception {
+        mvc.perform(get("/api/regionais/novas-regionais-ids")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0]", is(1025)))
+                .andExpect(jsonPath("$[1]", is(1027)));
     }
 
 }

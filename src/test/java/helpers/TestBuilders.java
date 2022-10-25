@@ -124,7 +124,7 @@ public class TestBuilders {
     }
 
     public static Uf umaUf(Integer id, String nome, String uf) {
-        return new Uf(id, nome, uf);
+        return Uf.builder().id(id).nome(nome).uf(uf).build();
     }
 
     public static List<Uf> umaListaUfs() {

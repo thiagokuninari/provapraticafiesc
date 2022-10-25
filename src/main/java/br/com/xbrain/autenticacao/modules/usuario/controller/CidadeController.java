@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Objects.nonNull;
+
 @RestController
 @RequestMapping(value = "api/cidades")
 public class CidadeController {
@@ -18,11 +20,14 @@ public class CidadeController {
     private CidadeService service;
 
     @GetMapping()
-    public Iterable<Cidade> get(Integer idUf, Integer idSubCluster) {
-        if (idUf != null) {
+    public Iterable<Cidade> get(Integer idUf, Integer idRegional, Integer idSubCluster) {
+        if (nonNull(idUf)) {
+            if (nonNull(idRegional)) {
+                return service.getAllCidadeByRegionalAndUf(idRegional, idUf);
+            }
             return service.getAllCidadeByUf(idUf);
         }
-        if (idSubCluster != null) {
+        if (nonNull(idSubCluster)) {
             return service.getAllBySubCluster(idSubCluster);
         }
         return Collections.emptyList();
@@ -44,8 +49,14 @@ public class CidadeController {
     }
 
     @GetMapping("regional/{regionalId}")
-    public List<UsuarioCidadeDto> getByIdRegional(@PathVariable("regionalId") int regionalId) {
+    public List<UsuarioCidadeDto> getByIdRegional(@PathVariable Integer regionalId) {
         return service.getAllByRegionalId(regionalId);
+    }
+
+    @GetMapping("regional/{regionalId}/uf/{ufId}")
+    public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
+                                                         @PathVariable Integer ufId) {
+        return service.getAllByRegionalIdAndUfId(regionalId, ufId);
     }
 
     @GetMapping("grupo/{grupoId}")
@@ -96,6 +107,17 @@ public class CidadeController {
     @GetMapping("por-estados")
     public List<SelectResponse> buscarCidadesPorEstados(@RequestParam List<Integer> estadosIds) {
         return service.buscarCidadesPorEstadosIds(estadosIds);
+    }
+
+    @GetMapping("reprocessamento-regional")
+    public List<UsuarioCidadeDto> buscarCidadesPorRegionalParaReprocessamento(@RequestParam Integer regionalId) {
+        return service.getCidadesByRegionalReprocessamento(regionalId);
+    }
+
+    @GetMapping("reprocessamento-uf")
+    public List<UsuarioCidadeDto> buscarCidadesPorRegionalAndUfParaReprocessamento(@RequestParam Integer regionalId,
+                                                                                   @RequestParam Integer ufId) {
+        return service.getCidadesByRegionalAndUfReprocessamento(regionalId, ufId);
     }
 
     @GetMapping("cidade-dbm/{codigoCidadeDbm}")

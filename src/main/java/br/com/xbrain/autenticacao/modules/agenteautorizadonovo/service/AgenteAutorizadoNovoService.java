@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.client.AgenteAutorizadoNovoClient;
+import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.AgenteAutorizadoFiltros;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.dto.UsuarioDtoVendas;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoUsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioRequest;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +60,19 @@ public class AgenteAutorizadoNovoService {
                 idsUsuarios.stream(),
                 Optional.ofNullable(incluirProprio ? autenticacaoService.getUsuarioId() : null).stream()
             ).collect(Collectors.toSet());
+        } catch (RetryableException ex) {
+            throw new IntegracaoException(ex,
+                AgenteAutorizadoService.class.getName(),
+                EErrors.ERRO_OBTER_IDS_USUARIOS_SUBORDINADOS);
+        } catch (HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex);
+        }
+    }
+
+    public List<Integer> getIdsUsuariosSubordinadosByFiltros(PublicoAlvoComunicadoFiltros filtros) {
+        try {
+            var request = new ObjectMapper().convertValue(AgenteAutorizadoFiltros.of(filtros), Map.class);
+            return client.getIdsUsuariosPermitidosDoUsuario(request);
         } catch (RetryableException ex) {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),

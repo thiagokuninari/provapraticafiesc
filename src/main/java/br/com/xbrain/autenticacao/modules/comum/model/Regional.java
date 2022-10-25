@@ -2,6 +2,8 @@ package br.com.xbrain.autenticacao.modules.comum.model;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.EAreaAtuacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +33,11 @@ public class Regional implements AreaAtuacao {
     @Column(name = "SITUACAO", length = 1, nullable = false)
     @Enumerated(EnumType.STRING)
     private ESituacao situacao;
+
+    @JsonIgnore
+    @Column(name = "NOVA_REGIONAL", length = 1)
+    @Enumerated(EnumType.STRING)
+    private Eboolean novaRegional;
 
     public Regional(Integer id) {
         this.id = id;

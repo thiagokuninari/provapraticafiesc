@@ -150,6 +150,11 @@ public class UsuarioController {
         return usuarioService.getSubclusterUsuario(usuarioId);
     }
 
+    @GetMapping(value = "/{id}/ufs")
+    public List<SelectResponse> getUfsUsuario(@PathVariable("id") int usuarioId) {
+        return usuarioService.getUfUsuario(usuarioId);
+    }
+
     @RequestMapping(value = "/{id}/subordinados", method = RequestMethod.GET)
     public List<Integer> getSubordinados(@PathVariable("id") int id,
                                          @RequestParam(required = false, defaultValue = "false") boolean incluirProprio) {

@@ -40,7 +40,7 @@ public class CidadeRepositoryTest {
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
             .extracting("cidadeId", "cidadeNome", "codigoIbge", "regionalId", "regionalNome")
             .containsExactlyInAnyOrder(
-                tuple(3426, "MARINGA", "4115200", 3, "SUL"),
-                tuple(5578, "LONDRINA", "4113700", 3, "SUL"));
+                tuple(3426, "MARINGA", "4115200", 1027, "RPS"),
+                tuple(5578, "LONDRINA", "4113700", 1027, "RPS"));
     }
 }

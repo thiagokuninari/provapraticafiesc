@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -27,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
@@ -50,6 +53,9 @@ public class SupervisorServiceTest {
 
     private static final int REGIONAL_SUL_ID = 3;
     private static final int REGIONAL_LESTE_ID = 1;
+    private static final int REGIONAL_RPS = 1027;
+
+    private static final int UF_PARANA = 1;
 
     private static final int SUPERVISOR_LONDRINA_ID = 1;
     private static final int SUPERVISOR_ARAPONGAS_ID = 2;
@@ -338,6 +344,44 @@ public class SupervisorServiceTest {
         assertThat(
             service.getLideresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_LESTE_ID)))
             .isEmpty();
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaRegional_seExisteremNovaRegional() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getSupervisoresPorAreaAtuacao(REGIONAL, singletonList(REGIONAL_RPS)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+        verify(usuarioRepository, times(1))
+            .getUsuariosPorNovaAreaAtuacao(
+                eq(REGIONAL),
+                eq(List.of(1027)),
+                eq(List.of(SUPERVISOR_OPERACAO)),
+                eq(Set.of(ECanal.D2D_PROPRIO)));
+    }
+
+    @Test
+    public void getSupervisoresPorAreaAtuacao_deveRetornarOsSupervisoresDaUf_seExisterem() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(TestBuilders.buildUsuarioAutenticadoComTodosCanais());
+        assertThat(
+            service.getSupervisoresPorAreaAtuacao(UF, singletonList(UF_PARANA)))
+            .extracting("nome", "codigoCargo")
+            .containsExactly(
+                tuple("SUPERVISOR LONDRINA", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR ARAPONGAS", SUPERVISOR_OPERACAO),
+                tuple("SUPERVISOR CURITIBA", SUPERVISOR_OPERACAO));
+        verify(usuarioRepository, times(1))
+            .getUsuariosPorNovaAreaAtuacao(
+                eq(UF),
+                eq(List.of(1)),
+                eq(List.of(SUPERVISOR_OPERACAO)),
+                eq(Set.of(ECanal.D2D_PROPRIO)));
     }
 
     private Object[] umVendedorComId(int id, String cargoCodigo) {

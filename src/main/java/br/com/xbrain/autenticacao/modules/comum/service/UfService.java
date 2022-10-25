@@ -26,4 +26,11 @@ public class UfService {
                 .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
                 .collect(Collectors.toList());
     }
+
+    public List<SelectResponse> findAllByRegionalId(Integer regionalId) {
+        return ufRepository.buscarEstadosPorRegional(regionalId)
+                .stream()
+                .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
+                .collect(Collectors.toList());
+    }
 }

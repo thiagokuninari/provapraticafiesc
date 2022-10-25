@@ -12,6 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,6 +34,16 @@ public class UfServiceTest {
                 Tuple.tuple(1, "PR"),
                 Tuple.tuple(2, "SP")
             );
+    }
+
+    @Test
+    public void findAllByRegionalId_umaListaUfs_quandoSolicitado() {
+        when(ufRepository.buscarEstadosPorRegional(anyInt()))
+            .thenReturn(List.of(Uf.builder().id(1).nome("PR").build()));
+
+        assertThat(ufService.findAllByRegionalId(1027))
+            .extracting("value", "label")
+            .containsExactly(Tuple.tuple(1, "PR"));
     }
 
     private List<Uf> umaListaUf() {
