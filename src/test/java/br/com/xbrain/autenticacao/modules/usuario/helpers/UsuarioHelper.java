@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -14,10 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.ADMINISTRADOR;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 
 public class UsuarioHelper {
@@ -186,6 +185,47 @@ public class UsuarioHelper {
             .codigo(XBRAIN)
             .nome("X-BRAIN")
             .situacao(A)
+            .build();
+    }
+
+    public static Usuario umUsuarioOperacaoComSubCanal(Set<SubCanal> subCanais) {
+        return Usuario.builder()
+            .id(101112)
+            .cargo(Cargo.builder()
+                .codigo(VENDEDOR_OPERACAO)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(OPERACAO)
+                    .situacao(ESituacao.A)
+                    .nome("OPERACAO")
+                    .build())
+                .build())
+            .subCanais(subCanais)
+            .usuarioCadastro(umUsuarioMsoConsultor(Set.of()))
+            .build();
+    }
+
+    public static Usuario umUsuarioMsoConsultor(Set<SubCanal> subCanais) {
+        return Usuario.builder()
+            .id(23)
+            .cargo(Cargo.builder()
+                .codigo(MSO_CONSULTOR)
+                .nivel(Nivel
+                    .builder()
+                    .codigo(MSO)
+                    .situacao(ESituacao.A)
+                    .nome("MSO")
+                    .build())
+                .build())
+            .subCanais(subCanais)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioOperacaoDto() {
+        return UsuarioDto.builder()
+            .nome("VENDEDOR OPERACAO D2D")
+            .nivelCodigo(OPERACAO)
+            .subCanaisId(Set.of(3))
             .build();
     }
 }

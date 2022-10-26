@@ -364,6 +364,10 @@ public class Usuario {
         }
     }
 
+    public boolean hasSubCanalPapPremium() {
+        return getSubCanaisId().contains(ETipoCanal.PAP_PREMIUM.getId());
+    }
+
     public Set<UsuarioCidade> getCidades() {
         return Collections.unmodifiableSet(this.cidades);
     }
@@ -488,7 +492,7 @@ public class Usuario {
     public boolean isUsuarioEquipeVendas() {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getCodigo())
             && List.of(VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, ASSISTENTE_OPERACAO, SUPERVISOR_OPERACAO,
-            OPERACAO_TELEVENDAS)
+                OPERACAO_TELEVENDAS)
             .contains(cargo.getCodigo());
     }
 
@@ -571,7 +575,7 @@ public class Usuario {
     @JsonIgnore
     public boolean isOperadorTelevendasAtivoLocal() {
         return isCargo(OPERACAO_TELEVENDAS)
-                && hasCanal(ECanal.ATIVO_PROPRIO);
+            && hasCanal(ECanal.ATIVO_PROPRIO);
     }
 
     public boolean isXbrain() {

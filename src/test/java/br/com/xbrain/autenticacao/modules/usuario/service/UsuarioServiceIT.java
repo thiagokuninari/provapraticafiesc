@@ -116,6 +116,8 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
+    @MockBean
+    private SubCanalService subCanalService;
 
     @Before
     public void setUp() {
