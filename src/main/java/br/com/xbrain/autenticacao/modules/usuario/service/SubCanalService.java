@@ -23,7 +23,7 @@ public class SubCanalService {
     @Autowired
     private UsuarioService usuarioService;
 
-    public List<SubCanalDto> getAll() {r
+    public List<SubCanalDto> getAll() {
         return repository.findAll()
             .stream()
             .map(SubCanalDto::of)
