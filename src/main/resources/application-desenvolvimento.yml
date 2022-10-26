@@ -30,6 +30,8 @@ app-config:
       url: http://172.10.10.105:8300
     emails:
       url: http://api-hom.conexaoclarobrasil.com.br/email
+    integracao-vendas:
+      url: http://172.10.10.45:8086
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
