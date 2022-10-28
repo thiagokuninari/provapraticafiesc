@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -112,8 +113,10 @@ public class UsuarioDto implements Serializable {
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
         usuario.setCargo(new Cargo(usuarioDto.getCargoId()));
         usuario.getCargo().setCodigo(usuarioDto.getCargoCodigo());
-        usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
-        usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
+        Optional.ofNullable(usuarioDto.getNivelId()).ifPresent(user -> {
+            usuario.getCargo().setNivel(new Nivel(usuarioDto.getNivelId()));
+            usuario.getCargo().getNivel().setCodigo(usuarioDto.getNivelCodigo());
+        });
         usuario.setDepartamento(new Departamento(usuarioDto.getDepartamentoId()));
         if (!isEmpty(usuarioDto.getOrganizacaoId())) {
             usuario.setOrganizacao(new Organizacao(usuarioDto.getOrganizacaoId()));
