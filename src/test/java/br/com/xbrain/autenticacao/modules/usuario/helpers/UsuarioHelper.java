@@ -224,6 +224,7 @@ public class UsuarioHelper {
     public static UsuarioDto umUsuarioOperacaoDto() {
         return UsuarioDto.builder()
             .nome("VENDEDOR OPERACAO D2D")
+            .nivelId(1)
             .nivelCodigo(OPERACAO)
             .subCanaisId(Set.of(3))
             .build();
