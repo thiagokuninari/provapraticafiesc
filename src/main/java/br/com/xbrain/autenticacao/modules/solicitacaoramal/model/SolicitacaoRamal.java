@@ -6,6 +6,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalR
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -41,6 +42,14 @@ public class SolicitacaoRamal {
             foreignKey = @ForeignKey(name = "FK_SOLICITACAO_RAMAL_USUARIO"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario usuario;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(name = "CANAL")
+    private ECanal canal;
+
+    @Column(name = "SUB_CANAL_ID")
+    private Integer subCanalId;
 
     @JsonIgnore
     @NotEmpty
@@ -99,13 +108,15 @@ public class SolicitacaoRamal {
     private LocalDateTime dataEnviadoEmailExpiracao;
 
     public SolicitacaoRamal(Integer id, Integer agenteAutorizadoId, String agenteAutorizadoNome,
-                            String agenteAutorizadoCnpj, ESituacaoSolicitacao situacao,
-                            Integer quantidadeRamais, LocalDateTime dataCadastro,
-                            LocalDateTime dataFinalizacao, Usuario usuario) {
+                            String agenteAutorizadoCnpj, ECanal canal, Integer subCanalId,
+                            ESituacaoSolicitacao situacao, Integer quantidadeRamais,
+                            LocalDateTime dataCadastro, LocalDateTime dataFinalizacao, Usuario usuario) {
         this.id = id;
         this.agenteAutorizadoId = agenteAutorizadoId;
         this.agenteAutorizadoNome = agenteAutorizadoNome;
         this.agenteAutorizadoCnpj = agenteAutorizadoCnpj;
+        this.canal = canal;
+        this.subCanalId = subCanalId;
         this.situacao = situacao;
         this.quantidadeRamais = quantidadeRamais;
         this.dataCadastro = dataCadastro;
@@ -130,6 +141,8 @@ public class SolicitacaoRamal {
 
     public void editar(SolicitacaoRamalRequest request) {
         this.agenteAutorizadoId = request.getAgenteAutorizadoId();
+        this.canal = request.getCanal();
+        this.subCanalId = request.getSubCanalId();
         this.melhorHorarioImplantacao = request.getMelhorHorarioImplantacao();
         this.quantidadeRamais = request.getQuantidadeRamais();
         this.tipoImplantacao = ETipoImplantacao.valueOf(request.getTipoImplantacao());

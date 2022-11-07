@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,8 @@ public class SolicitacaoRamalResponse {
 
     private Integer id;
     private Integer quantidadeRamais;
+    private ECanal canal;
+    private Integer subCanalId;
     private String tipoImplantacao;
     private ESituacaoSolicitacao situacao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -38,6 +39,22 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     public SolicitacaoRamalPredicate comAgenteAutorizadoId(Integer agenteAutorizadoId) {
         if (!ObjectUtils.isEmpty(agenteAutorizadoId)) {
             builder.and(solicitacaoRamal.agenteAutorizadoId.eq(agenteAutorizadoId));
+        }
+
+        return this;
+    }
+
+    public SolicitacaoRamalPredicate comCanal(ECanal canal) {
+        if(canal != null) {
+            builder.and(solicitacaoRamal.canal.eq(canal));
+        }
+
+        return this;
+    }
+
+    public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId){
+        if (subCanalId != null) {
+            builder.and(solicitacaoRamal.subCanalId.eq(subCanalId));
         }
 
         return this;

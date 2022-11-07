@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -295,6 +296,7 @@ public class SolicitacaoRamalControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo agenteAutorizadoId é obrigatório.",
+                    "O campo canal é obrigatório.",
                     "O campo melhorHorarioImplantacao é obrigatório.",
                     "O campo quantidadeRamais é obrigatório.",
                     "O campo melhorDataImplantacao é obrigatório.",
@@ -448,7 +450,6 @@ public class SolicitacaoRamalControllerTest {
             .andExpect(jsonPath("$.[0].descricao", is("ESCRITÓRIO")))
             .andExpect(jsonPath("$.[1].codigo", is("HOME_OFFICE")))
             .andExpect(jsonPath("$.[1].descricao", is("HOME OFFICE")));
-
     }
 
     @Test
@@ -479,6 +480,8 @@ public class SolicitacaoRamalControllerTest {
         return SolicitacaoRamalRequest.builder()
             .id(id)
             .quantidadeRamais(38)
+            .canal(ECanal.D2D_PROPRIO)
+            .subCanalId(3)
             .agenteAutorizadoId(aaId)
             .melhorHorarioImplantacao(LocalTime.of(10, 00))
             .melhorDataImplantacao(LocalDate.of(2019, 01, 25))

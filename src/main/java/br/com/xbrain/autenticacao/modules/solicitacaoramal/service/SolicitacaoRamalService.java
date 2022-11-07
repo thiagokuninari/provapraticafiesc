@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -53,6 +54,7 @@ public class SolicitacaoRamalService {
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
+    public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D = new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -147,8 +149,9 @@ public class SolicitacaoRamalService {
 
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         validaSalvar(request.getAgenteAutorizadoId());
+        validarSubCanalIdD2d(request.getCanal(), request.getSubCanalId());
 
-        SolicitacaoRamal solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
+        var solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
         solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
 
@@ -157,7 +160,7 @@ public class SolicitacaoRamalService {
         );
 
         solicitacaoRamal.retirarMascara();
-        SolicitacaoRamal solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
+        var solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
         enviarEmailAposCadastro(solicitacaoRamalPersistida);
 
         gerarHistorico(solicitacaoRamalPersistida, null);
@@ -169,6 +172,12 @@ public class SolicitacaoRamalService {
         if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
             throw new ValidacaoException(
                     "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+        }
+    }
+
+    private void validarSubCanalIdD2d(ECanal canal, Integer subCanalId) {
+        if (canal == ECanal.D2D_PROPRIO && subCanalId == null){
+                throw ERRO_SEM_TIPO_CANAL_D2D;
         }
     }
 

@@ -45,6 +45,8 @@ public class SolicitacaoRamalRepositoryImpl
                                 solicitacaoRamal.agenteAutorizadoId,
                                 solicitacaoRamal.agenteAutorizadoNome,
                                 solicitacaoRamal.agenteAutorizadoCnpj,
+                                solicitacaoRamal.canal,
+                                solicitacaoRamal.subCanalId,
                                 solicitacaoRamal.situacao,
                                 solicitacaoRamal.quantidadeRamais,
                                 solicitacaoRamal.dataCadastro,
