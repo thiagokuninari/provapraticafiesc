@@ -218,6 +218,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + "     , U.NOME "
                 + "     , U.CPF "
                 + "     , U.EMAIL_01 AS EMAIL"
+                + "     , U.SITUACAO AS SITUACAO"
                 + "     , N.CODIGO AS CODIGO_NIVEL "
                 + "     , D.CODIGO AS CODIGO_DEPARTAMENTO "
                 + "     , C.CODIGO AS CODIGO_CARGO "
@@ -227,7 +228,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 + "  JOIN CARGO C ON C.ID = U.FK_CARGO "
                 + "  JOIN DEPARTAMENTO D ON D.ID = U.FK_DEPARTAMENTO "
                 + "  JOIN NIVEL N ON N.ID = D.FK_NIVEL "
-                + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
+                + " GROUP BY FK_USUARIO, U.NOME, U.CPF, U.EMAIL_01, U.SITUACAO, N.CODIGO, D.CODIGO, C.CODIGO, C.NOME"
                 + " START WITH FK_USUARIO_SUPERIOR = :usuarioId "
                 + " CONNECT BY NOCYCLE PRIOR FK_USUARIO = FK_USUARIO_SUPERIOR",
             new MapSqlParameterSource().addValue("usuarioId", usuarioId),

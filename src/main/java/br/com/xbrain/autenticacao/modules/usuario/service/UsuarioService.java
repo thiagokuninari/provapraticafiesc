@@ -102,6 +102,7 @@ public class UsuarioService {
     private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
+    private static final String CONTRATO_ATIVO = "CONTRATO ATIVO";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
         "Não é possível remover o canal Ativo Local, pois o usuário possui vínculo com o(s) Site(s): %s.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO =
@@ -123,25 +124,24 @@ public class UsuarioService {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
-    private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
-    private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
-        = new ValidacaoException("Email atual está incorreto.");
-    private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
-        = new ValidacaoException("Senha atual está incorreta.");
-    private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
-        = new ValidacaoException("O usuário não foi encontrado.");
-    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
-        VENDEDOR_OPERACAO);
-    private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
-        "Não foi possível inativar usuario Ativo Local com agendamentos"
-    );
-    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
-        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
-
+    private static final ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
+    private static final ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
+        = new ValidacaoException("Email atual está incorreto.");
+    private static final ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
+        = new ValidacaoException("Senha atual está incorreta.");
+    private static final ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
+        = new ValidacaoException("O usuário não foi encontrado.");
+    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
+        VENDEDOR_OPERACAO);
+    private static final ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
+        "Não foi possível inativar usuario Ativo Local com agendamentos"
+    );
+    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
+        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
     @Autowired
     private UsuarioRepository repository;
     @Autowired
@@ -220,6 +220,14 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+
+    private static String verificarSituacao(String nome, ESituacao situacao) {
+        return ESituacao.I == situacao
+            ? nome.concat(" (INATIVO)")
+            : ESituacao.R == situacao
+            ? nome.concat(" (REALOCADO)")
+            : nome;
+    }
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -413,6 +421,41 @@ public class UsuarioService {
 
     public List<UsuarioSubordinadoDto> getSubordinadosDoUsuario(Integer usuarioId) {
         return repository.getUsuariosCompletoSubordinados(usuarioId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(boolean incluirInativos) {
+        var usuario = UsuarioHierarquiaDto
+            .of(repository.findById(autenticacaoService.getUsuarioId())
+            .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
+
+        var subordinados = UsuarioHierarquiaDto.ofUsuarioSubordinadoDtoList(
+            repository.getUsuariosCompletoSubordinados(usuario.getId()));
+
+        subordinados.add(usuario);
+        adicionaAas(subordinados);
+        return validarIativos(subordinados, incluirInativos);
+    }
+
+    private List<UsuarioHierarquiaDto> validarIativos(List<UsuarioHierarquiaDto> subordinados, boolean incluirInativos) {
+        if (!incluirInativos) {
+            return subordinados.stream().filter(subordinado ->
+                    subordinado.getSituacao().equalsIgnoreCase(ESituacao.A.getDescricao())
+                        || subordinado.getSituacao().equalsIgnoreCase(CONTRATO_ATIVO))
+                .collect(toList());
+        }
+        return subordinados;
+    }
+
+    private List<UsuarioHierarquiaDto> adicionaAas(List<UsuarioHierarquiaDto> subordinados) {
+        var usuariosIds = subordinados.stream()
+            .map(UsuarioHierarquiaDto::getId).collect(toList());
+
+        subordinados.addAll(UsuarioHierarquiaDto
+            .ofAgenteAutorizadoResponseList(
+                agenteAutorizadoNovoService.findAgentesAutorizadosByUsuariosIds(usuariosIds, true)));
+
+        return subordinados;
     }
 
     public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId) {
@@ -1177,7 +1220,7 @@ public class UsuarioService {
     public void recuperarUsuariosAgentesAutorizados(UsuarioMqRequest usuarioMqRequest) {
         try {
             Usuario usuario = repository.findOne(usuarioMqRequest.getId());
-            usuario = usuario.parse(usuarioMqRequest);
+            usuario = Usuario.parse(usuarioMqRequest);
             usuario.setEmpresas(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa()));
             usuario.setUnidadesNegocios(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()));
             usuario.setCargo(cargoRepository.findByCodigo(usuarioMqRequest.getCargo()));
@@ -2312,14 +2355,6 @@ public class UsuarioService {
                 return UsuarioVendedorReceptivoResponse.of(usuario);
             })
             .collect(toList());
-    }
-
-    private static String verificarSituacao(String nome, ESituacao situacao) {
-        return ESituacao.I == situacao
-            ? nome.concat(" (INATIVO)")
-            : ESituacao.R == situacao
-            ? nome.concat(" (REALOCADO)")
-            : nome;
     }
 
     public List<SelectResponse> buscarUsuariosDaHierarquiaDoUsuarioLogadoPorFiltros(UsuarioFiltros filtros) {

@@ -177,6 +177,12 @@ public class UsuarioController {
         return usuarioService.getSubordinadosDoUsuario(id);
     }
 
+    @GetMapping("/hierarquia/subordinados-aas")
+    public List<UsuarioHierarquiaDto> getSubordinadosAndAasDoUsuario(
+        @RequestParam(required = false, defaultValue = "false") boolean incluirInativos) {
+        return usuarioService.getSubordinadosAndAasDoUsuario(incluirInativos);
+    }
+
     @GetMapping("/hierarquia/subordinados/gerente/{id}")
     public List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(@PathVariable Integer id) {
         return usuarioService.getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(id);

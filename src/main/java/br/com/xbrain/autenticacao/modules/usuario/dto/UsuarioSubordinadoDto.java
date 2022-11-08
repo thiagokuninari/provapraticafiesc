@@ -1,5 +1,6 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -18,9 +19,9 @@ public class UsuarioSubordinadoDto {
     private String nome;
     private String cpf;
     private String email;
+    private ESituacao situacao;
     private CodigoNivel codigoNivel;
     private CodigoDepartamento codigoDepartamento;
     private CodigoCargo codigoCargo;
     private String nomeCargo;
-
 }
