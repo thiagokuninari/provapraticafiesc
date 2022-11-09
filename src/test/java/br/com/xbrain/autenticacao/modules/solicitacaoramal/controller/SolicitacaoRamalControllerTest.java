@@ -94,7 +94,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)));
+                .andExpect(jsonPath("$", hasSize(5)));
     }
 
     @Test
@@ -250,7 +250,7 @@ public class SolicitacaoRamalControllerTest {
         SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(request)))
                 .andExpect(status().isCreated())
@@ -259,6 +259,20 @@ public class SolicitacaoRamalControllerTest {
 
         verify(historicoService, times(1)).save(any());
         verify(emailService, times(1)).enviarEmailTemplate(anyList(), anyString(), any(), any());
+    }
+
+    @Test
+    public void save_deveLancarForbidden_quandoUsuarioNaoAutorizado() throws Exception {
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
+
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, OPERACAO_ASSISTENTE))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(request)))
+            .andExpect(status().isForbidden());
+
+        verify(historicoService, never()).save(any());
+        verify(emailService, never()).enviarEmailTemplate(anyList(), anyString(), any(), any());
     }
 
     @Test
@@ -292,7 +306,7 @@ public class SolicitacaoRamalControllerTest {
     @Test
     public void save_validacaoCamposObrigatorio_quandoTentarSalvarSemOsCamposObrigatorios() throws Exception {
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo agenteAutorizadoId é obrigatório.",

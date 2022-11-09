@@ -54,7 +54,8 @@ public class SolicitacaoRamalService {
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
-    public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D = new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
+    public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D =
+        new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -176,8 +177,8 @@ public class SolicitacaoRamalService {
     }
 
     private void validarSubCanalIdD2d(ECanal canal, Integer subCanalId) {
-        if (canal == ECanal.D2D_PROPRIO && subCanalId == null){
-                throw ERRO_SEM_TIPO_CANAL_D2D;
+        if (canal == ECanal.D2D_PROPRIO && subCanalId == null) {
+            throw ERRO_SEM_TIPO_CANAL_D2D;
         }
     }
 

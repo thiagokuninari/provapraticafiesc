@@ -45,14 +45,14 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     }
 
     public SolicitacaoRamalPredicate comCanal(ECanal canal) {
-        if(canal != null) {
+        if (canal != null) {
             builder.and(solicitacaoRamal.canal.eq(canal));
         }
 
         return this;
     }
 
-    public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId){
+    public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId) {
         if (subCanalId != null) {
             builder.and(solicitacaoRamal.subCanalId.eq(subCanalId));
         }
