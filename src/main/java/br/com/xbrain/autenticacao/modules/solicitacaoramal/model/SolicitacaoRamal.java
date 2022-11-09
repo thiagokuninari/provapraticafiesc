@@ -48,7 +48,7 @@ public class SolicitacaoRamal {
     @Column(name = "CANAL")
     private ECanal canal;
 
-    @Column(name = "SUB_CANAL_ID")
+    @Column(name = "SUBCANAL_ID")
     private Integer subCanalId;
 
     @JsonIgnore

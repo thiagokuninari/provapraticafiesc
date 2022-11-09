@@ -262,7 +262,7 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
-    public void save_deveLancarForbidden_quandoUsuarioNaoAutorizado() throws Exception {
+    public void save_deveRetornarForbidden_quandoUsuarioNaoAutorizado() throws Exception {
         SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)

@@ -1,3 +1,0 @@
-ALTER TABLE solicitacao_ramal ADD ( canal VARCHAR2(80) DEFAULT 'AGENTE_AUTORIZADO' NOT NULL,
-sub_canal_id NUMBER(10, 0)
-);
