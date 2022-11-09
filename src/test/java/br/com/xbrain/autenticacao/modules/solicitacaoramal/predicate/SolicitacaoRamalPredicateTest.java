@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SolicitacaoRamalPredicateTest {
 
     @Test
-    public void comSituacaoSolicitacao_montarPredicate_seHouverSituacao() {
+    public void comSituacaoSolicitacao_deveMontarPredicate_seHouverSituacao() {
 
         assertThat(new SolicitacaoRamalPredicate()
             .comSituacaoSolicitacao(ESituacaoSolicitacao.EM_ANDAMENTO)
