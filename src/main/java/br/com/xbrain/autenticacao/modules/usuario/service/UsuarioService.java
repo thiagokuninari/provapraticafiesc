@@ -433,11 +433,11 @@ public class UsuarioService {
             repository.getUsuariosCompletoSubordinados(usuario.getId()));
 
         subordinados.add(usuario);
-        adicionaAas(subordinados);
-        return validarIativos(subordinados, incluirInativos);
+        adicionarAas(subordinados);
+        return validarInativos(subordinados, incluirInativos);
     }
 
-    private List<UsuarioHierarquiaDto> validarIativos(List<UsuarioHierarquiaDto> subordinados, boolean incluirInativos) {
+    private List<UsuarioHierarquiaDto> validarInativos(List<UsuarioHierarquiaDto> subordinados, boolean incluirInativos) {
         if (!incluirInativos) {
             return subordinados.stream().filter(subordinado ->
                     subordinado.getSituacao().equalsIgnoreCase(ESituacao.A.getDescricao())
@@ -447,7 +447,7 @@ public class UsuarioService {
         return subordinados;
     }
 
-    private List<UsuarioHierarquiaDto> adicionaAas(List<UsuarioHierarquiaDto> subordinados) {
+    private List<UsuarioHierarquiaDto> adicionarAas(List<UsuarioHierarquiaDto> subordinados) {
         var usuariosIds = subordinados.stream()
             .map(UsuarioHierarquiaDto::getId).collect(toList());
 
