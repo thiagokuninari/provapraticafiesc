@@ -96,6 +96,9 @@ public enum EErrors {
         "#030 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#030 - Ocorreu um erro ao buscar usuários do agente autorizado"
     ),
+    ERRO_OBTER_SUBCANAIS_USUARIO_DO_EQUIPE_VENDAS(
+        "#031 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#031 - Ocorreu um erro ao buscar subcanais pelo usuário no serviço de equipe vendas"),
     ERRO_OBTER_USUARIOS_LOGADOS_POR_HORA(
         "#032 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#032 - Erro ao tentar recuperar o número de usuários logados por hora."),
