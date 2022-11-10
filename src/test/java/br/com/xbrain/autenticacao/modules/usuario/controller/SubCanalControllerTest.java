@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,5 +104,14 @@ public class SubCanalControllerTest {
             .andExpect(jsonPath("$[2].codigo", is("PAP_PREMIUM")))
             .andExpect(jsonPath("$[2].nome", is("PAP PREMIUM")))
             .andExpect(jsonPath("$[2].situacao", is("A")));
+    }
+
+    @Test
+    @SneakyThrows
+    public void getAllSubCanaisExcetoInsideSalesPme_deveRetornarUnauthorized_seNaoAutenticado() {
+
+        mvc.perform(get(API_URI + "/exceto-inside-sales")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
     }
 }
