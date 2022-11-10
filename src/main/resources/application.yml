@@ -266,6 +266,9 @@ app-config:
     emails:
       #url: http://localhost:8080
       url: http://api-hom.conexaoclarobrasil.com.br/email
+    integracao-vendas:
+      #url: http://localhost:8086
+      url: http://192.168.50.1:6545
 
 flyway:
   enabled: true
@@ -311,6 +314,9 @@ zuul:
     emails:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.emails.url}
+    integracao-vendas:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.integracao-vendas.url}
 
   host:
     connect-timeout-millis: 1800000

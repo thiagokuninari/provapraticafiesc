@@ -68,6 +68,8 @@ app-config:
       url: http://172.10.10.113:8300
     emails:
       url: http://172.10.10.41:8080
+    integracao-vendas:
+      url: http://172.10.10.83:8086
 
   email:
     enviar: true
