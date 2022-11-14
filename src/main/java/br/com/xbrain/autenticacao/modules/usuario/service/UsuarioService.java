@@ -115,7 +115,8 @@ public class UsuarioService {
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
-
+    private static final ValidacaoException EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL =
+        new ValidacaoException("Este usuário está em uma equipe ativa com outro subcanal.");
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
@@ -2384,7 +2385,7 @@ public class UsuarioService {
                     .collect(toList());
 
                 if (subCanaisExistentes.size() < subCanaisDaEquipeVendas.size()) {
-                    throw new ValidacaoException("Este usuário está em uma equipe ativa com outro subcanal.");
+                    throw EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL;
                 }
             }
         }
