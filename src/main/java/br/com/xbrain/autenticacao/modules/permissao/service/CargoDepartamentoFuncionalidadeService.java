@@ -41,6 +41,12 @@ public class CargoDepartamentoFuncionalidadeService {
         return repository.findFuncionalidadesPorCargoEDepartamento(filtros.toPredicate());
     }
 
+    public List<Departamento> getDepartamentoByCargo(Integer cargoId) {
+        var filtros = new CargoDepartamentoFuncionalidadeFiltros();
+        filtros.setCargoId(cargoId);
+        return repository.findAllDepartamentos(filtros.toPredicate());
+    }
+
     public void save(CargoDepartamentoFuncionalidadeRequest request) {
         Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         List<Integer> funcionalidadesIds = tratarPermissoesExistentes(request);
