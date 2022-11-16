@@ -28,6 +28,7 @@ public class UsuarioGerenciaController {
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        service.validarUsuarioCanalD2dNaEquipeVendas(usuario);
         return service.save(UsuarioDto.convertFrom(usuario), foto);
     }
 

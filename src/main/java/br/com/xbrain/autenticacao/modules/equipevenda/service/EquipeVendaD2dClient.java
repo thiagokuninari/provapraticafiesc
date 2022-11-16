@@ -48,4 +48,6 @@ public interface EquipeVendaD2dClient {
     @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/equipe-por-supervisor/{supervisorId}")
     List<Integer> getEquipeVendaBySupervisorId(@PathVariable("supervisorId") Integer supervisorId);
 
+    @GetMapping(EQUIPE_VENDAS_ENDPOINT + "/sub-canais/{usuarioId}")
+    List<Integer> getSubCanaisDaEquipeVendaD2dByUsuarioId(@PathVariable("usuarioId") Integer usuarioId);
 }

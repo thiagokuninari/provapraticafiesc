@@ -167,6 +167,7 @@ public class SubCanalServiceTest {
 
         verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());
     }
+
     @Test
     public void getAllExcetoInsideSalesPme_deveRetornarTodosSubCanaisExcetoInsideSales_quandoSolicitado() {
         when(repository.findAll()).thenReturn(List.of(umSubCanal()));

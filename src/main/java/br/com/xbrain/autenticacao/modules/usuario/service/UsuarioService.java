@@ -116,7 +116,8 @@ public class UsuarioService {
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
-
+    private static final ValidacaoException EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL =
+        new ValidacaoException("Este usuário está em uma equipe ativa com outro subcanal.");
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
@@ -154,6 +155,8 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
     private static List<CodigoCargo> CARGOS_COM_MAIS_SUBCANAIS = List.of(
         COORDENADOR_OPERACAO, DIRETOR_OPERACAO, GERENTE_OPERACAO);
+    private static List<CodigoCargo> LISTA_CARGOS_EQUIPE_VENDAS_D2D = List.of(COORDENADOR_OPERACAO, SUPERVISOR_OPERACAO,
+        OPERACAO_CONSULTOR, OPERACAO_ANALISTA, ASSISTENTE_OPERACAO, VENDEDOR_OPERACAO, OPERACAO_EXECUTIVO_VENDAS);
 
     @Autowired
     private UsuarioRepository repository;
@@ -2409,5 +2412,29 @@ public class UsuarioService {
 
     public void removerPermissoesEspeciais(List<Integer> funcionalidadesIds, List<Integer> usuariosIds) {
         permissaoEspecialRepository.deletarPermissaoEspecialBy(funcionalidadesIds, usuariosIds);
+    }
+
+    public void validarUsuarioCanalD2dNaEquipeVendas(UsuarioDto usuario) {
+        if (validarCondicoesUsuarioCanalD2d(usuario)) {
+            var subCanaisDaEquipeVendas = equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId());
+
+            if (!subCanaisDaEquipeVendas.isEmpty()) {
+                var subCanaisExistentes = subCanaisDaEquipeVendas.stream()
+                    .filter(subCanalDaEquipeVenda -> usuario.getSubCanaisId().contains(subCanalDaEquipeVenda))
+                    .collect(toList());
+
+                if (subCanaisExistentes.size() < subCanaisDaEquipeVendas.size()) {
+                    throw EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL;
+                }
+            }
+        }
+    }
+
+    private boolean validarCondicoesUsuarioCanalD2d(UsuarioDto usuario) {
+        return usuario.getId() != null
+            && usuario.getCargoCodigo() != null
+            && usuario.getCanais().contains(ECanal.D2D_PROPRIO)
+            && !usuario.getSubCanaisId().isEmpty()
+            && LISTA_CARGOS_EQUIPE_VENDAS_D2D.contains(usuario.getCargoCodigo());
     }
 }
