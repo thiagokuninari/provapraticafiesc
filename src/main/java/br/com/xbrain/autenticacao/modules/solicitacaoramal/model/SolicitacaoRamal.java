@@ -65,10 +65,10 @@ public class SolicitacaoRamal {
     @Column(name = "SITUACAO")
     private ESituacaoSolicitacao situacao;
 
-    @Column(name = "AGENTE_AUTORIZADO_ID", nullable = false)
+    @Column(name = "AGENTE_AUTORIZADO_ID")
     private Integer agenteAutorizadoId;
 
-    @Column(name = "AGENTE_AUTORIZADO_NOME", nullable = false)
+    @Column(name = "AGENTE_AUTORIZADO_NOME")
     private String agenteAutorizadoNome;
 
     @Column(name = "AGENTE_AUTORIZADO_CNPJ")

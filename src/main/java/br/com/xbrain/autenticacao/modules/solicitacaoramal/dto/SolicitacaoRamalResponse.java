@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

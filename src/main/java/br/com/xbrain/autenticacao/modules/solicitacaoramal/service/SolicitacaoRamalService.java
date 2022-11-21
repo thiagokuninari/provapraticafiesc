@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -39,6 +40,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
@@ -49,13 +51,19 @@ import static java.util.Comparator.comparing;
 @Slf4j
 public class SolicitacaoRamalService {
 
+    public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D =
+        new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
+    public static final ValidacaoException ERRO_SEM_AGENTE_AUTORIZADO =
+        new ValidacaoException("agenteAutorizadoId obrigatório para o cargo agente autorizado");
+    public static final ValidacaoException SOLICITACAO_PENDENTE_OU_ANDAMENTO = new ValidacaoException(
+        "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
     private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
-    private static final String MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO = "É necessário enviar o parâmetro agente autorizado id.";
-    public static final ValidacaoException ERRO_SEM_TIPO_CANAL_D2D =
-        new ValidacaoException("Tipo de canal obrigatório para o canal D2D");
+    private static final String MSG_DEFAULT_PARAM_OBRIGATORIO =
+        "É necessário enviar o parâmetro agente autorizado id ou sub canal id.";
+
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
@@ -83,64 +91,68 @@ public class SolicitacaoRamalService {
 
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
-                .stream()
-                .map(SolicitacaoRamalHistoricoResponse::convertFrom)
-                .collect(Collectors.toList());
+            .stream()
+            .map(SolicitacaoRamalHistoricoResponse::convertFrom)
+            .collect(Collectors.toList());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                .stream()
-                .map(SolicitacaoRamalResponse::convertFrom)
-                .collect(Collectors.toList()),
-                pageable,
-                solicitacoes.getTotalElements());
+            .stream()
+            .map(SolicitacaoRamalResponse::convertFrom)
+            .collect(Collectors.toList()),
+            pageable,
+            solicitacoes.getTotalElements());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        validarFiltroAgenteAutorizadoId(filtros);
+        validarFiltroObrigatorios(filtros);
 
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                .stream()
-                .map(SolicitacaoRamalResponse::convertFrom)
-                .collect(Collectors.toList()),
-                pageable,
-                solicitacoes.getTotalElements());
+            .stream()
+            .map(SolicitacaoRamalResponse::convertFrom)
+            .collect(Collectors.toList()),
+            pageable,
+            solicitacoes.getTotalElements());
     }
 
-    private void validarFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
-        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+    private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
+        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId()) ||
+            !ObjectUtils.isEmpty(filtros.getSubCanalId())) {
             verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
         } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
-            throw new ValidacaoException(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO);
+            throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
         }
     }
 
     private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
         autenticacaoService.getUsuarioAutenticado()
-                .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
+            .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllDetalhar(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        hasFiltroAgenteAutorizadoId(filtros);
+        hasFiltrosObrigatorios(filtros);
 
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
-                .stream()
-                .map(SolicitacaoRamalResponse::convertFrom)
-                .collect(Collectors.toList()),
-                pageable,
-                solicitacoes.getTotalElements());
+            .stream()
+            .map(SolicitacaoRamalResponse::convertFrom)
+            .collect(Collectors.toList()),
+            pageable,
+            solicitacoes.getTotalElements());
     }
 
-    private void hasFiltroAgenteAutorizadoId(SolicitacaoRamalFiltros filtros) {
-        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
-            throw new ValidacaoException(MSG_DEFAULT_PARAM_AA_ID_OBRIGATORIO);
+    private void hasFiltrosObrigatorios(SolicitacaoRamalFiltros filtros) {
+        var usuario = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
+
+        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId()) ||
+            ObjectUtils.isEmpty(filtros.getSubCanalId())) {
+            throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
         }
     }
 
@@ -149,42 +161,73 @@ public class SolicitacaoRamalService {
     }
 
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        validaSalvar(request.getAgenteAutorizadoId());
-        validarSubCanalIdD2d(request.getCanal(), request.getSubCanalId());
+        var cargo = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
+        validaCargoUsuario(request, cargo);
 
         var solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
-        solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
-
-        solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
-                agenteAutorizadoNovoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId())
-        );
-
         solicitacaoRamal.retirarMascara();
+        solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
+        trataAA(cargo, solicitacaoRamal);
+
         var solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
         enviarEmailAposCadastro(solicitacaoRamalPersistida);
 
         gerarHistorico(solicitacaoRamalPersistida, null);
-
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
     }
 
-    private void validaSalvar(Integer aaId) {
-        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
-            throw new ValidacaoException(
-                    "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+    private void trataAA(CodigoCargo cargo, SolicitacaoRamal solicitacaoRamal) {
+        if (Objects.equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO, cargo)) {
+            solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
+                agenteAutorizadoNovoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId()));
         }
     }
 
-    private void validarSubCanalIdD2d(ECanal canal, Integer subCanalId) {
-        if (canal == ECanal.D2D_PROPRIO && subCanalId == null) {
+    private void validaSalvarAA(Integer aaId) {
+        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
+            throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
+        }
+    }
+
+    private void validaSalvarD2d(Integer subCanalId) {
+        if (hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(subCanalId)) {
+            throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
+        }
+    }
+
+    private void validarParametroAA(SolicitacaoRamalRequest request) {
+        validaSalvarAA(request.getAgenteAutorizadoId());
+        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO &&
+            request.getAgenteAutorizadoId() == null) {
+            throw ERRO_SEM_AGENTE_AUTORIZADO;
+        }
+    }
+
+    private void validarParametroD2d(SolicitacaoRamalRequest request) {
+        validaSalvarD2d(request.getSubCanalId());
+        if (request.getCanal() == ECanal.D2D_PROPRIO &&
+            request.getSubCanalId() == null) {
             throw ERRO_SEM_TIPO_CANAL_D2D;
+        }
+    }
+
+    private void validaCargoUsuario(SolicitacaoRamalRequest request, CodigoCargo cargo) {
+        if (Objects.equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO, cargo)) {
+            validarParametroAA(request);
+        } else {
+            validarParametroD2d(request);
         }
     }
 
     private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
         return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
-                .size() > 0;
+            .size() > 0;
+    }
+
+    private boolean hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(Integer subCanalId) {
+        return solicitacaoRamalRepository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(subCanalId)
+            .size() > 0;
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
@@ -201,7 +244,7 @@ public class SolicitacaoRamalService {
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
         solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
-                agenteAutorizadoNovoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
+            agenteAutorizadoNovoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
         );
 
         solicitacaoEncontrada.retirarMascara();
@@ -226,19 +269,19 @@ public class SolicitacaoRamalService {
 
     public List<SolicitacaoRamalColaboradorResponse> getColaboradoresBySolicitacaoId(Integer solicitacaoId) {
         SolicitacaoRamal solicitacaoRamal = solicitacaoRamalRepository.findBySolicitacaoId(solicitacaoId)
-                .orElseThrow(() -> EX_NAO_ENCONTRADO);
+            .orElseThrow(() -> EX_NAO_ENCONTRADO);
 
         return solicitacaoRamal.getUsuariosSolicitados()
-                .stream()
-                .map(SolicitacaoRamalColaboradorResponse::convertFrom)
-                .sorted(comparing(SolicitacaoRamalColaboradorResponse::getNome))
-                .collect(Collectors.toList());
+            .stream()
+            .map(SolicitacaoRamalColaboradorResponse::convertFrom)
+            .sorted(comparing(SolicitacaoRamalColaboradorResponse::getNome))
+            .collect(Collectors.toList());
     }
 
     private void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
         if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
             emailService.enviarEmailTemplate(
-                    getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
+                getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
         }
     }
 
@@ -257,20 +300,20 @@ public class SolicitacaoRamalService {
         context.setVariable("cnpjAa", CnpjUtil.formataCnpj(solicitacaoRamal.getAgenteAutorizadoCnpj()));
         context.setVariable("nomeAa", solicitacaoRamal.getAgenteAutorizadoNome());
         context.setVariable("dataLimite", DateUtils.parseLocalDateTimeToString(
-                getDataLimite(solicitacaoRamal.getDataCadastro())));
+            getDataLimite(solicitacaoRamal.getDataCadastro())));
         context.setVariable("colaboradoresIds", getColaboradoresIds(solicitacaoRamal.getUsuariosSolicitados()));
         return context;
     }
 
     private List<Integer> getColaboradoresIds(List<Usuario> usuarios) {
         return usuarios.stream()
-                .map(Usuario::getId)
-                .collect(Collectors.toList());
+            .map(Usuario::getId)
+            .collect(Collectors.toList());
     }
 
     public List<SolicitacaoRamal> enviarEmailSolicitacoesQueVaoExpirar() {
         List<SolicitacaoRamal> solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente =
-                getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
+            getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
 
         solicitacoesPendentesOuEmAndamentoQueNaoEnviouEmailAnteriomente.forEach(solicitacao -> {
             boolean deveEnviarEmail = verificarCasoTenhaQueEnviarEmailDeExpiracao(solicitacao.getDataCadastro());
@@ -289,7 +332,7 @@ public class SolicitacaoRamalService {
 
         final int umDiaEmHoras = 24;
         return LocalDateTime.now().isEqual(dataLimite.minusHours(umDiaEmHoras))
-                || LocalDateTime.now().isAfter(dataLimite.minusHours(umDiaEmHoras));
+            || LocalDateTime.now().isAfter(dataLimite.minusHours(umDiaEmHoras));
     }
 
     private LocalDateTime getDataLimite(LocalDateTime dataCadastro) {
@@ -321,11 +364,11 @@ public class SolicitacaoRamalService {
         AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(agenteAutorizadoId);
 
         return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
-                getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
-                getNomeSocioPrincipalAa(agenteAutorizadoId),
-                getQuantidadeUsuariosAtivos(agenteAutorizadoId),
-                getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId),
-                agenteAutorizadoResponse);
+            getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
+            getNomeSocioPrincipalAa(agenteAutorizadoId),
+            getQuantidadeUsuariosAtivos(agenteAutorizadoId),
+            getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId),
+            agenteAutorizadoResponse);
     }
 
     private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
