@@ -9,7 +9,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
@@ -19,9 +18,8 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
@@ -40,7 +38,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
@@ -71,11 +68,15 @@ public class SolicitacaoRamalService {
     @Autowired
     private CallService callService;
     @Autowired
+    private SolicitacaoRamalServiceAa serviceAa;
+    @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
     private SolicitacaoRamalHistoricoService historicoService;
     @Autowired
     private AutenticacaoService autenticacaoService;
+    @Autowired
+    private CargoService cargoService;
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
@@ -108,7 +109,6 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        validarFiltroObrigatorios(filtros);
 
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
@@ -123,15 +123,10 @@ public class SolicitacaoRamalService {
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
         if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId()) ||
             !ObjectUtils.isEmpty(filtros.getSubCanalId())) {
-            verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+            serviceAa.verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
         } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
             throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
         }
-    }
-
-    private void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
-        autenticacaoService.getUsuarioAutenticado()
-            .hasPermissaoSobreOAgenteAutorizado(agenteAutorizadoId, getAgentesAutorizadosIdsDoUsuarioLogado());
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllDetalhar(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
@@ -148,10 +143,7 @@ public class SolicitacaoRamalService {
     }
 
     private void hasFiltrosObrigatorios(SolicitacaoRamalFiltros filtros) {
-        var usuario = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
-
-        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId()) ||
-            ObjectUtils.isEmpty(filtros.getSubCanalId())) {
+        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
             throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
         }
     }
@@ -160,95 +152,22 @@ public class SolicitacaoRamalService {
         return filtros.toPredicate().build();
     }
 
+    @Transactional
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        var cargo = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
-        validaCargoUsuario(request, cargo);
-
-        var solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
-        solicitacaoRamal.retirarMascara();
-        solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
-        trataAA(cargo, solicitacaoRamal);
-
-        var solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
-        enviarEmailAposCadastro(solicitacaoRamalPersistida);
-
-        gerarHistorico(solicitacaoRamalPersistida, null);
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
+        return cargoService.getSolicitacaoRamalService().save(request);
     }
 
-    private void trataAA(CodigoCargo cargo, SolicitacaoRamal solicitacaoRamal) {
-        if (Objects.equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO, cargo)) {
-            solicitacaoRamal.atualizarNomeECnpjDoAgenteAutorizado(
-                agenteAutorizadoNovoService.getAaById(solicitacaoRamal.getAgenteAutorizadoId()));
-        }
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer id) {
+        return cargoService.getSolicitacaoRamalService().getDadosAdicionais(id);
     }
 
-    private void validaSalvarAA(Integer aaId) {
-        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
-            throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
-        }
-    }
-
-    private void validaSalvarD2d(Integer subCanalId) {
-        if (hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(subCanalId)) {
-            throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
-        }
-    }
-
-    private void validarParametroAA(SolicitacaoRamalRequest request) {
-        validaSalvarAA(request.getAgenteAutorizadoId());
-        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO &&
-            request.getAgenteAutorizadoId() == null) {
-            throw ERRO_SEM_AGENTE_AUTORIZADO;
-        }
-    }
-
-    private void validarParametroD2d(SolicitacaoRamalRequest request) {
-        validaSalvarD2d(request.getSubCanalId());
-        if (request.getCanal() == ECanal.D2D_PROPRIO &&
-            request.getSubCanalId() == null) {
-            throw ERRO_SEM_TIPO_CANAL_D2D;
-        }
-    }
-
-    private void validaCargoUsuario(SolicitacaoRamalRequest request, CodigoCargo cargo) {
-        if (Objects.equals(CodigoCargo.AGENTE_AUTORIZADO_SOCIO, cargo)) {
-            validarParametroAA(request);
-        } else {
-            validarParametroD2d(request);
-        }
-    }
-
-    private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
-        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
-            .size() > 0;
-    }
-
-    private boolean hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(Integer subCanalId) {
-        return solicitacaoRamalRepository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(subCanalId)
-            .size() > 0;
+    @Transactional
+    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
+        return cargoService.getSolicitacaoRamalService().update(request);
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
         historicoService.save(new SolicitacaoRamalHistorico().gerarHistorico(solicitacaoRamal, comentario));
-    }
-
-    private List<Integer> getAgentesAutorizadosIdsDoUsuarioLogado() {
-        Usuario usuario = usuarioService.findComplete(autenticacaoService.getUsuarioId());
-        return agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(usuario);
-    }
-
-    public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
-        solicitacaoEncontrada.editar(request);
-        solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
-        solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
-            agenteAutorizadoNovoService.getAaById(solicitacaoEncontrada.getAgenteAutorizadoId())
-        );
-
-        solicitacaoEncontrada.retirarMascara();
-        return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
     }
 
     public SolicitacaoRamalResponse atualizarStatus(SolicitacaoRamalAtualizarStatusRequest request) {
@@ -358,37 +277,6 @@ public class SolicitacaoRamalService {
         }
 
         return Collections.singletonList(this.destinatarios);
-    }
-
-    public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(Integer agenteAutorizadoId) {
-        AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(agenteAutorizadoId);
-
-        return SolicitacaoRamalDadosAdicionaisAaResponse.convertFrom(
-            getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
-            getNomeSocioPrincipalAa(agenteAutorizadoId),
-            getQuantidadeUsuariosAtivos(agenteAutorizadoId),
-            getQuantidadeRamaisPeloAgenteAutorizadoId(agenteAutorizadoId),
-            agenteAutorizadoResponse);
-    }
-
-    private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
-        if (!ObjectUtils.isEmpty(agenteAutorizado.getDiscadoraId())) {
-            return callService.obterNomeTelefoniaPorId(agenteAutorizado.getDiscadoraId()).getNome();
-        }
-
-        return "";
-    }
-
-    private long getQuantidadeRamaisPeloAgenteAutorizadoId(Integer agenteAutorizadoId) {
-        return callService.obterRamaisParaAgenteAutorizado(agenteAutorizadoId).size();
-    }
-
-    private String getNomeSocioPrincipalAa(Integer agenteAutorizadoId) {
-        return socioService.findSocioPrincipalByAaId(agenteAutorizadoId).getNome();
-    }
-
-    private long getQuantidadeUsuariosAtivos(Integer agenteAutorizadoId) {
-        return agenteAutorizadoService.getUsuariosAaAtivoComVendedoresD2D(agenteAutorizadoId).size();
     }
 
     @Transactional

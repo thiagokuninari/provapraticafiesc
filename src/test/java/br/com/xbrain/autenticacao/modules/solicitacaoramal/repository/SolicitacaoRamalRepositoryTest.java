@@ -31,4 +31,14 @@ public class SolicitacaoRamalRepositoryTest {
         assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(1).size());
     }
 
+    @Test
+    public void findAllBySubCanalId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
+        assertEquals(0, repository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(3).size());
+    }
+
+    @Test
+    public void findAllBySubCanal_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
+        assertEquals(2, repository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(1).size());
+    }
+
 }

@@ -20,8 +20,8 @@ public class SolicitacaoRamalController {
     private SolicitacaoRamalService solicitacaoRamalService;
 
     @GetMapping("/dados-agente-autorizado/{agenteAutorizadoId}")
-    public SolicitacaoRamalDadosAdicionaisAaResponse getDadosAgenteAutorizado(@PathVariable Integer agenteAutorizadoId) {
-        return solicitacaoRamalService.getDadosAgenteAutorizado(agenteAutorizadoId);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(@PathVariable Integer id) {
+        return solicitacaoRamalService.getDadosAdicionais(id);
     }
 
     @GetMapping("/historico/{idSolicitacao}")

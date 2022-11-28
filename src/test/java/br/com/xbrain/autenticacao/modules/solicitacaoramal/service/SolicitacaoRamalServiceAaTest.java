@@ -3,12 +3,10 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -29,25 +27,26 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Transactional
 @ActiveProfiles("test")
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class SolicitacaoRamalServiceTest {
+public class SolicitacaoRamalServiceAaTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
     @MockBean
     private SolicitacaoRamalRepository repository;
     @Autowired
-    private SolicitacaoRamalService service;
+    private SolicitacaoRamalServiceAa service;
 
     @MockBean
     private Usuario usuario;
@@ -58,32 +57,6 @@ public class SolicitacaoRamalServiceTest {
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
     @MockBean
     private EquipeVendasService equipeVendasService;
-
-    @Test
-    public void calcularDataFinalizacao_quandoHouverRegistros() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder()
-                .nivelCodigo(ENivel.XBRAIN.name()).build());
-
-        when(repository.findAllByPredicate(any())).thenReturn(umaListaSolicitacaoRamal());
-
-        service.calcularDataFinalizacao(new SolicitacaoRamalFiltros());
-
-        verify(repository, times(1)).save(umaListaSolicitacaoRamal());
-    }
-
-    @Test
-    public void calcularDataFinalizacao_quandoNaoHouverRegistros() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder()
-                .nivelCodigo(ENivel.XBRAIN.name()).build());
-
-        when(repository.findAllByPredicate(any())).thenReturn(umaListaSolicitacaoRamalEmpty());
-
-        service.calcularDataFinalizacao(new SolicitacaoRamalFiltros());
-
-        verify(repository, never()).save(umaListaSolicitacaoRamalEmpty());
-    }
 
     @Test
     public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForAgenteAutorizado() {
@@ -102,34 +75,6 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
-    public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForNivelOperacao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoOperacao());
-        when(repository.save(any(SolicitacaoRamal.class))).
-            thenReturn(umaSolicitacaoRamalCanalD2d(1));
-
-        service.save(criaSolicitacaoRamal(null, 7129));
-
-        verify(autenticacaoService, times(1)).getUsuarioId();
-        verify(repository, times(1)).save(any(SolicitacaoRamal.class));
-    }
-
-    @Test
-    public void save_deveLancarException_seCanalForD2dESubCanalNaoSelecionado() {
-        var solicitacaoRamal = criaSolicitacaoRamal(null, 200);
-        solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
-        solicitacaoRamal.setSubCanalId(null);
-
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoOperacao());
-
-        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
-            .withMessage("Tipo de canal obrigatório para o canal D2D");
-
-        verify(repository, never()).save(any(SolicitacaoRamal.class));
-    }
-
-    @Test
     public void save_deveLancarException_seCanalForAgenteAutorizadoEAgenteAutorizadoIdNaoForInformado() {
         var solicitacaoRamal = criaSolicitacaoRamal(null, 200);
         solicitacaoRamal.setCanal(ECanal.AGENTE_AUTORIZADO);
@@ -142,6 +87,14 @@ public class SolicitacaoRamalServiceTest {
             .withMessage("agenteAutorizadoId obrigatório para o cargo agente autorizado");
 
         verify(repository, never()).save(any(SolicitacaoRamal.class));
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return UsuarioAutenticado.builder()
+            .id(1)
+            .usuario(Usuario.builder().id(1).build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .build();
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
@@ -160,22 +113,6 @@ public class SolicitacaoRamalServiceTest {
             .build();
     }
 
-    private UsuarioAutenticado umUsuarioAutenticado() {
-        return UsuarioAutenticado.builder()
-            .id(1)
-            .usuario(Usuario.builder().id(1).build())
-            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
-            .build();
-    }
-
-    private UsuarioAutenticado umUsuarioAutenticadoOperacao() {
-        return UsuarioAutenticado.builder()
-            .id(1)
-            .usuario(Usuario.builder().id(1).build())
-            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
-            .build();
-    }
-
     private AgenteAutorizadoResponse criaAa() {
         return AgenteAutorizadoResponse.builder()
             .id("303030")
@@ -184,34 +121,6 @@ public class SolicitacaoRamalServiceTest {
             .discadoraId(1)
             .razaoSocial("RAZAO SOCIAL AA")
             .build();
-    }
-
-    private List<SolicitacaoRamal> umaListaSolicitacaoRamal() {
-        return List.of(
-            umaSolicitacaoRamal(1),
-            umaSolicitacaoRamal(2),
-            umaSolicitacaoRamal(3)
-        );
-    }
-
-    private List<SolicitacaoRamal> umaListaSolicitacaoRamalEmpty() {
-        List<SolicitacaoRamal> lista = new ArrayList<>();
-        return lista;
-    }
-
-    private SolicitacaoRamal umaSolicitacaoRamalCanalD2d(Integer id) {
-        var solicitacaoRamal = new SolicitacaoRamal();
-        solicitacaoRamal.setId(id);
-        solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
-        solicitacaoRamal.setSubCanalId(1);
-        solicitacaoRamal.setDataCadastro(LocalDateTime.of(2022, 02, 10, 10, 00, 00));
-        solicitacaoRamal.setMelhorDataImplantacao(LocalDate.of(2022, 12, 01));
-        solicitacaoRamal.setUsuariosSolicitados(List.of(Usuario.builder().id(1).build()));
-        solicitacaoRamal.setSituacao(ESituacaoSolicitacao.PENDENTE);
-        solicitacaoRamal.setUsuario(Usuario.builder().id(1).nome("teste").build());
-        solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.ESCRITORIO);
-
-        return solicitacaoRamal;
     }
 
     private SolicitacaoRamal umaSolicitacaoRamal(Integer id) {
@@ -227,4 +136,5 @@ public class SolicitacaoRamalServiceTest {
 
         return solicitacaoRamal;
     }
+
 }

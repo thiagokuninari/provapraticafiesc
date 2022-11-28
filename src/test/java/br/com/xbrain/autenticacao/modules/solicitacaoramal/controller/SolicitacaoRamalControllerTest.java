@@ -125,7 +125,7 @@ public class SolicitacaoRamalControllerTest {
     public void getDadosAgenteAutorizado_dadosDoAa_quandoPassarAgenteAutorizadoPorParametroUrl() throws Exception {
         when(agenteAutorizadoNovoService.getUsuariosByAaId(anyInt(), anyBoolean())).thenReturn(criaListaUsuariosAtivos());
         when(callService.obterNomeTelefoniaPorId(anyInt())).thenReturn(criaTelefonia());
-        when(callService.obterRamaisParaAgenteAutorizado(anyInt())).thenReturn(criaListaRamal());
+        when(callService.obterRamaisParaCanal(ECanal.valueOf(anyString()),anyInt())).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());
 
         mvc.perform(get(URL_API_SOLICITACAO_RAMAL + "/dados-agente-autorizado/2")
@@ -143,14 +143,14 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
                 solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
-        Assert.assertEquals(4, resultList.size());
+        Assert.assertEquals(6, resultList.size());
     }
 
     @Test
     public void enviarEmailSolicitacoesQueVaoExpirar_enviarEmailFoiInvocadoQuatroVezes_quandoSolicitacaoForExpirar() {
         solicitacaoRamalService.enviarEmailSolicitacoesQueVaoExpirar();
 
-        verify(emailService, times(4)).enviarEmailTemplate(anyList(), any(), any(), any());
+        verify(emailService, times(6)).enviarEmailTemplate(anyList(), any(), any(), any());
     }
 
     @Test
@@ -309,7 +309,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(new SolicitacaoRamalRequest())))
-                .andExpect(jsonPath("$[*].message", containsInAnyOrder("O campo agenteAutorizadoId é obrigatório.",
+                .andExpect(jsonPath("$[*].message", containsInAnyOrder(
                     "O campo canal é obrigatório.",
                     "O campo melhorHorarioImplantacao é obrigatório.",
                     "O campo quantidadeRamais é obrigatório.",
@@ -327,7 +327,7 @@ public class SolicitacaoRamalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                        "É necessário enviar o parâmetro agente autorizado id.")));
+                        "É necessário enviar o parâmetro agente autorizado id ou sub canal id.")));
     }
 
     @Test
