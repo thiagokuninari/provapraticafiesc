@@ -1,9 +1,6 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.ISolicitacaoRamalService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceAa;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceD2d;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.IUsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHierarquiaAtivoService;
