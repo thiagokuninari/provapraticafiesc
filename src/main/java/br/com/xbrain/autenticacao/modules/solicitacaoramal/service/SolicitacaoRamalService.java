@@ -1,16 +1,11 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
-import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -18,14 +13,16 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
+import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
@@ -38,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
@@ -54,41 +52,32 @@ public class SolicitacaoRamalService {
         new ValidacaoException("agenteAutorizadoId obrigatório para o cargo agente autorizado");
     public static final ValidacaoException SOLICITACAO_PENDENTE_OU_ANDAMENTO = new ValidacaoException(
         "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
-    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_OBRIGATORIO =
-        "É necessário enviar o parâmetro agente autorizado id ou sub canal id.";
+        "É necessário enviar o parâmetro agente autorizado id.";
 
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    private SocioService socioService;
-    @Autowired
-    private CallService callService;
     @Autowired
     private SolicitacaoRamalServiceAa serviceAa;
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
+    private ApplicationContext context;
+    @Autowired
     private SolicitacaoRamalHistoricoService historicoService;
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private CargoService cargoService;
-    @Autowired
-    private AgenteAutorizadoService agenteAutorizadoService;
-    @Autowired
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @Autowired
     private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private DataHoraAtual dataHoraAtual;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
+    private final Map<ECanal, Class<? extends ISolicitacaoRamalService>> solicitacaoRamalService = ImmutableMap.of(
+        ECanal.D2D_PROPRIO, SolicitacaoRamalServiceD2d.class,
+        ECanal.AGENTE_AUTORIZADO, SolicitacaoRamalServiceAa.class
+    );
 
     public List<SolicitacaoRamalHistoricoResponse> getAllHistoricoBySolicitacaoId(Integer idSolicitacao) {
         return historicoRepository.findAllBySolicitacaoRamalId(idSolicitacao)
@@ -109,7 +98,7 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-
+        validarFiltroObrigatorios(filtros);
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
 
         return new PageImpl<>(solicitacoes.getContent()
@@ -121,11 +110,13 @@ public class SolicitacaoRamalService {
     }
 
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
-        if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId()) ||
-            !ObjectUtils.isEmpty(filtros.getSubCanalId())) {
-            serviceAa.verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
-        } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
-            throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
+        var cargo = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
+        if (cargo == CodigoCargo.AGENTE_AUTORIZADO_SOCIO) {
+            if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+                serviceAa.verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
+            } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
+                throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
+            }
         }
     }
 
@@ -154,16 +145,20 @@ public class SolicitacaoRamalService {
 
     @Transactional
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        return cargoService.getSolicitacaoRamalService().save(request);
+        return getSolicitacaoRamalService(request.getCanal()).save(request);
     }
 
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer id) {
-        return cargoService.getSolicitacaoRamalService().getDadosAdicionais(id);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(ECanal canal, Integer id) {
+        return getSolicitacaoRamalService(canal).getDadosAdicionais(id);
     }
 
     @Transactional
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        return cargoService.getSolicitacaoRamalService().update(request);
+        return getSolicitacaoRamalService(request.getCanal()).update(request);
+    }
+
+    public ISolicitacaoRamalService getSolicitacaoRamalService(ECanal canal) {
+        return context.getBean(solicitacaoRamalService.get(canal));
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {
@@ -182,7 +177,7 @@ public class SolicitacaoRamalService {
         return SolicitacaoRamalResponse.convertFrom(findById(idSolicitacao));
     }
 
-    private SolicitacaoRamal findById(Integer id) {
+    public SolicitacaoRamal findById(Integer id) {
         return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
@@ -195,13 +190,6 @@ public class SolicitacaoRamalService {
             .map(SolicitacaoRamalColaboradorResponse::convertFrom)
             .sorted(comparing(SolicitacaoRamalColaboradorResponse::getNome))
             .collect(Collectors.toList());
-    }
-
-    private void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
-        if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
-            emailService.enviarEmailTemplate(
-                getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
-        }
     }
 
     private Context obterContexto(SolicitacaoRamal solicitacaoRamal) {

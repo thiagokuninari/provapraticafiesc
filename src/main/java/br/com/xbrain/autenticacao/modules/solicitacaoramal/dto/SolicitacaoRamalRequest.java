@@ -3,10 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.dto;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -72,8 +69,8 @@ public class SolicitacaoRamalRequest {
         SolicitacaoRamal solicitacaoRamal = new SolicitacaoRamal();
 
         solicitacaoRamal.setUsuariosSolicitados(request.getUsuariosSolicitadosIds()
-                .stream()
-                .map(Usuario::new).collect(Collectors.toList()));
+            .stream()
+            .map(Usuario::new).collect(Collectors.toList()));
 
         BeanUtils.copyProperties(request, solicitacaoRamal);
         solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.valueOf(request.getTipoImplantacao()));

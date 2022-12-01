@@ -3,7 +3,9 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
@@ -17,11 +19,15 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import com.querydsl.core.types.Predicate;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +38,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
@@ -48,10 +56,8 @@ public class SolicitacaoRamalServiceTest {
     private SolicitacaoRamalRepository repository;
     @Autowired
     private SolicitacaoRamalService service;
-
     @MockBean
-    private Usuario usuario;
-
+    private UsuarioService usuarioService;
     @MockBean
     private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
@@ -86,62 +92,67 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
-    public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForAgenteAutorizado() {
+    public void findById_deveRetornarSolicitacao_quandoSolicitacaoForEncontrada() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
-        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
-            .getUsuario()))).thenReturn(Arrays.asList(1, 2));
-        when(agenteAutorizadoNovoService.getAaById(eq(7129))).thenReturn(criaAa());
-        when(repository.save(any(SolicitacaoRamal.class))).thenReturn(umaSolicitacaoRamal(1));
+        when(repository.findById(1))
+            .thenReturn(Optional.of(umaSolicitacaoRamalCanalD2d(1)));
 
-        service.save(criaSolicitacaoRamal(null, 7129));
+        assertThat(service.findById(1)).isEqualTo(umaSolicitacaoRamalCanalD2d(1));
 
-        verify(autenticacaoService, times(1)).getUsuarioId();
-        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(7129));
-        verify(repository, times(1)).save(any(SolicitacaoRamal.class));
+        verify(repository, atLeastOnce()).findById(eq(1));
     }
 
     @Test
-    public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForNivelOperacao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoOperacao());
-        when(repository.save(any(SolicitacaoRamal.class))).
-            thenReturn(umaSolicitacaoRamalCanalD2d(1));
+    public void findById_deveLancarException_seSolicitacaoNaoForEncontrada() {
+        when(repository.findById(5)).thenReturn(Optional.of(umaSolicitacaoRamalCanalD2d(5)));
+        assertThat(service.findById(5)).isEqualTo(umaSolicitacaoRamalCanalD2d(5));
+        assertThatExceptionOfType(NotFoundException.class)
+            .isThrownBy(() -> service.findById(1))
+            .withMessage("Solicitação não encontrada.");
 
-        service.save(criaSolicitacaoRamal(null, 7129));
-
-        verify(autenticacaoService, times(1)).getUsuarioId();
-        verify(repository, times(1)).save(any(SolicitacaoRamal.class));
+        verify(repository, atLeastOnce()).findById(eq(1));
     }
 
     @Test
-    public void save_deveLancarException_seCanalForD2dESubCanalNaoSelecionado() {
-        var solicitacaoRamal = criaSolicitacaoRamal(null, 200);
-        solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
-        solicitacaoRamal.setSubCanalId(null);
+    public void getAll_deveListarSolicitacoes_seTodosOsParametrosPreenchidos() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(usuarioService.findComplete(1)).thenReturn(Usuario.builder().id(1).nome("teste").build());
 
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticadoOperacao());
+        var filtros = new SolicitacaoRamalFiltros();
+        filtros.setAgenteAutorizadoId(1);
+        filtros.setSituacao(ESituacaoSolicitacao.PENDENTE);
+        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
 
-        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
-            .withMessage("Tipo de canal obrigatório para o canal D2D");
+        var response = service.getAll(new PageRequest(), filtros);
 
-        verify(repository, never()).save(any(SolicitacaoRamal.class));
+        assertThat(response)
+            .extracting("id", "canal", "dataCadastro",
+                "situacao", "agenteAutorizadoId").containsExactly(
+
+                Tuple.tuple(1, ECanal.AGENTE_AUTORIZADO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE, 1),
+
+                Tuple.tuple(2, ECanal.AGENTE_AUTORIZADO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE, 1)
+            );
     }
 
     @Test
-    public void save_deveLancarException_seCanalForAgenteAutorizadoEAgenteAutorizadoIdNaoForInformado() {
-        var solicitacaoRamal = criaSolicitacaoRamal(null, 200);
-        solicitacaoRamal.setCanal(ECanal.AGENTE_AUTORIZADO);
-        solicitacaoRamal.setAgenteAutorizadoId(null);
+    public void getAll_deveLancarException_seParametroAgenteAutorizadoIdNaoInformado() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAll(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(usuarioService.findComplete(1)).thenReturn(Usuario.builder().id(1).nome("teste").build());
 
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioAutenticado());
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
+                service.getAll(new PageRequest(), new SolicitacaoRamalFiltros()))
+            .withMessage("É necessário enviar o parâmetro agente autorizado id.");
 
-        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
-            .withMessage("agenteAutorizadoId obrigatório para o cargo agente autorizado");
-
-        verify(repository, never()).save(any(SolicitacaoRamal.class));
+        verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));
+        verify(usuarioService, never()).findComplete(1);
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
@@ -189,8 +200,14 @@ public class SolicitacaoRamalServiceTest {
     private List<SolicitacaoRamal> umaListaSolicitacaoRamal() {
         return List.of(
             umaSolicitacaoRamal(1),
-            umaSolicitacaoRamal(2),
-            umaSolicitacaoRamal(3)
+            umaSolicitacaoRamal(2)
+        );
+    }
+
+    private PageImpl<SolicitacaoRamal> umaPageSolicitacaoRamal() {
+        return new PageImpl<>(
+            List.of(umaSolicitacaoRamal(1),
+                umaSolicitacaoRamal(2))
         );
     }
 
@@ -218,6 +235,7 @@ public class SolicitacaoRamalServiceTest {
         var solicitacaoRamal = new SolicitacaoRamal();
         solicitacaoRamal.setId(id);
         solicitacaoRamal.setCanal(ECanal.AGENTE_AUTORIZADO);
+        solicitacaoRamal.setAgenteAutorizadoId(1);
         solicitacaoRamal.setDataCadastro(LocalDateTime.of(2022, 02, 10, 10, 00, 00));
         solicitacaoRamal.setMelhorDataImplantacao(LocalDate.of(2022, 12, 01));
         solicitacaoRamal.setUsuariosSolicitados(List.of(Usuario.builder().id(1).build()));

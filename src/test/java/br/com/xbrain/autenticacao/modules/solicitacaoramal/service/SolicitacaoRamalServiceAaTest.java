@@ -3,10 +3,15 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
+import br.com.xbrain.autenticacao.modules.call.service.CallClient;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioClient;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -15,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +35,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,18 +53,16 @@ public class SolicitacaoRamalServiceAaTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private SolicitacaoRamalRepository repository;
+    @MockBean
+    private CallClient client;
+    @MockBean
+    private SocioClient socioClient;
+    @MockBean
+    private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
     private SolicitacaoRamalServiceAa service;
-
-    @MockBean
-    private Usuario usuario;
-
-    @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
     @MockBean
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @MockBean
-    private EquipeVendasService equipeVendasService;
 
     @Test
     public void save_deveSalvarUmaSolicitacaoRamal_seUsuarioForAgenteAutorizado() {
@@ -89,11 +95,95 @@ public class SolicitacaoRamalServiceAaTest {
         verify(repository, never()).save(any(SolicitacaoRamal.class));
     }
 
+    @Test
+    public void update_deveAtualizarSolicitacaoD2dSeTodosOsDadosPreenchidosCorretamente() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(repository.findById(1))
+            .thenReturn(Optional.of(umaSolicitacaoRamal(1)));
+        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(eq(umUsuarioAutenticado()
+            .getUsuario()))).thenReturn(Arrays.asList(1, 2));
+        when(agenteAutorizadoNovoService.getAaById(eq(7129))).thenReturn(criaAa());
+        when(repository.save(any(SolicitacaoRamal.class)))
+            .thenReturn(umaSolicitacaoRamal(1));
+
+        assertThat(service.update(criaSolicitacaoRamal(1, 7129)))
+            .extracting("id")
+            .contains(1);
+
+        verify(repository, times(1)).save(any(SolicitacaoRamal.class));
+        verify(repository, atLeastOnce()).findById(eq(1));
+    }
+
+    @Test
+    public void getDadosAdicionais_deveChamarClientPeloAgenteAutorizadoId() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoNovoService.getAaById(1)).thenReturn(umAgenteAutorizado());
+        when(client.obterNomeTelefoniaPorId(1)).thenReturn(umaTelefonia());
+        when(agenteAutorizadoClient.getUsuariosAaAtivoComVendedoresD2D(1))
+            .thenReturn(List.of());
+        when(socioClient.findSocioPrincipalByAaId(1)).thenReturn(umSocioPrincipal());
+        when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
+
+        service.getDadosAdicionais(1);
+
+        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(1));
+        verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
+        verify(client, times(1)).obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1);
+        verify(socioClient, times(1)).findSocioPrincipalByAaId(eq(1));
+        verify(agenteAutorizadoClient, times(1))
+            .getUsuariosAaAtivoComVendedoresD2D(eq(1));
+    }
+
+    @Test
+    public void getDadosAdicionais_deveLancarException_quandoOcorrerAlgumErro() {
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(umUsuarioAutenticado());
+        when(agenteAutorizadoNovoService.getAaById(1)).thenReturn(umAgenteAutorizado());
+        when(client.obterNomeTelefoniaPorId(1)).thenThrow(RetryableException.class);
+        when(client.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1)).thenReturn(List.of());
+
+        assertThatExceptionOfType(IntegracaoException.class)
+            .isThrownBy(() -> service.getDadosAdicionais(1))
+            .withMessage("#008 - Desculpe, ocorreu um erro interno. Contate o administrador.");
+
+        verify(agenteAutorizadoNovoService, times(1)).getAaById(eq(1));
+        verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
             .id(1)
+            .nome("teste")
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .build();
+    }
+
+    private TelefoniaResponse umaTelefonia() {
+        var telefoniaResponse = new TelefoniaResponse();
+        telefoniaResponse.setId(1);
+        telefoniaResponse.setNome("teste");
+        return telefoniaResponse;
+    }
+
+    private SocioResponse umSocioPrincipal() {
+        var socioResponse = new SocioResponse();
+        socioResponse.setId(1);
+        socioResponse.setNome("teste");
+        socioResponse.setCpf("12345678900");
+        return socioResponse;
+    }
+
+    private AgenteAutorizadoResponse umAgenteAutorizado() {
+        return AgenteAutorizadoResponse.builder()
+            .id("1234")
+            .razaoSocial("solteiro")
+            .nomeFantasia("teste")
+            .cnpj("123456789")
+            .nacional(Eboolean.V)
+            .discadoraId(1)
             .build();
     }
 
@@ -101,8 +191,7 @@ public class SolicitacaoRamalServiceAaTest {
         return SolicitacaoRamalRequest.builder()
             .id(id)
             .quantidadeRamais(38)
-            .canal(ECanal.D2D_PROPRIO)
-            .subCanalId(3)
+            .canal(ECanal.AGENTE_AUTORIZADO)
             .agenteAutorizadoId(aaId)
             .melhorHorarioImplantacao(LocalTime.of(10, 00))
             .melhorDataImplantacao(LocalDate.of(2019, 01, 25))

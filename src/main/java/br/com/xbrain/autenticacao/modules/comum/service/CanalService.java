@@ -1,6 +1,9 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.ISolicitacaoRamalService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceAa;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceD2d;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.service.IUsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioHierarquiaAtivoService;
@@ -25,10 +28,19 @@ public class CanalService {
         ECanal.ATIVO_PROPRIO, UsuarioHierarquiaAtivoService.class
     );
 
+    private Map<ECanal, Class<? extends ISolicitacaoRamalService>> solicitacaoRamalService = ImmutableMap.of(
+        ECanal.D2D_PROPRIO, SolicitacaoRamalServiceD2d.class,
+        ECanal.AGENTE_AUTORIZADO, SolicitacaoRamalServiceAa.class
+    );
+
     public IUsuarioHierarquia usuarioHierarquia() {
         var service = Optional
             .ofNullable(usuarioHierarquia.get(autenticacaoService.getUsuarioCanal()))
             .orElseThrow(() -> new NotImplementedException("Funcionalidade não disponível para canal selecionado"));
         return context.getBean(service);
+    }
+
+    public ISolicitacaoRamalService getSolicitacaoRamalService() {
+        return context.getBean(solicitacaoRamalService.get(autenticacaoService.getUsuarioCanal()));
     }
 }

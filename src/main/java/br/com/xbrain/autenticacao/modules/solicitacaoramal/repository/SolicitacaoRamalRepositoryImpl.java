@@ -103,11 +103,11 @@ public class SolicitacaoRamalRepositoryImpl
     @Override
     public List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(Integer subCanalId) {
         return new JPAQueryFactory(entityManager)
-            .select(solicitacaoRamal)
-            .from(solicitacaoRamal)
-            .where(solicitacaoRamal.subCanalId.eq(subCanalId)
-                .and(solicitacaoRamal.situacao.eq(PENDENTE)
-                    .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
+                .select(solicitacaoRamal)
+                .from(solicitacaoRamal)
+                .where(solicitacaoRamal.subCanalId.eq(subCanalId)
+                        .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                                .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
             .fetch();
     }
 

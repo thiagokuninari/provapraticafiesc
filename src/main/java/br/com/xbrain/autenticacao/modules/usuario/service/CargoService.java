@@ -5,9 +5,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.ISolicitacaoRamalService;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceAa;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalServiceD2d;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
@@ -21,14 +18,13 @@ import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.CargoSuperiorRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.NivelRepository;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
-import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,8 +42,6 @@ public class CargoService {
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
-    private ApplicationContext context;
-    @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
 
     @Autowired
@@ -60,7 +54,7 @@ public class CargoService {
             .collect(Collectors.toList());
     }
 
-    public  List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
+    public List<Cargo> filtrarPorNivelOuCargoProprio(Integer nivelId, boolean permiteEditarCompleto) {
         var predicate = new CargoPredicate().comNivel(nivelId);
         return permiteEditarCompleto ? getPermitidosPorNivel(predicate) : cargoProprio(predicate, nivelId);
     }
@@ -101,11 +95,11 @@ public class CargoService {
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
         return repository.buscarTodosComNiveis(
-            new CargoPredicate()
-                .comNiveis(niveisIds)
-                .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
-                .build())
+                new CargoPredicate()
+                    .comNiveis(niveisIds)
+                    .filtrarPermitidos(usuarioAutenticado, cargosIds)
+                    .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
+                    .build())
             .stream()
             .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ", cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
@@ -165,24 +159,5 @@ public class CargoService {
         cargosPermitidos.add(cargoProprioId);
 
         return cargosPermitidos;
-    }
-
-    public CodigoCargo getCargo() {
-        return autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
-    }
-
-    public Map<CodigoCargo, Class<? extends ISolicitacaoRamalService>> solicitacaoRamalService() {
-        var cargo = new HashMap<CodigoCargo, Class<? extends ISolicitacaoRamalService>>();
-        cargo.put(CodigoCargo.MSO_ANALISTA, SolicitacaoRamalServiceD2d.class);
-        cargo.put(CodigoCargo.MSO_GERENTE, SolicitacaoRamalServiceD2d.class);
-        cargo.put(CodigoCargo.AGENTE_AUTORIZADO_SOCIO, SolicitacaoRamalServiceAa.class);
-        cargo.put(CodigoCargo.GERENTE_OPERACAO, SolicitacaoRamalServiceD2d.class);
-        cargo.put(CodigoCargo.COORDENADOR_OPERACAO, SolicitacaoRamalServiceD2d.class);
-        cargo.put(CodigoCargo.OPERACAO_ANALISTA, SolicitacaoRamalServiceD2d.class);
-        return cargo;
-    }
-
-    public ISolicitacaoRamalService getSolicitacaoRamalService() {
-        return context.getBean(solicitacaoRamalService().get(autenticacaoService.getUsuarioAutenticado().getCargoCodigo()));
     }
 }

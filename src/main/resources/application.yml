@@ -6,8 +6,8 @@ server:
 
 spring:
   redis:
-    #    host: 127.0.0.1
-    host: 192.168.50.1
+    host: 127.0.0.1
+#   host: 192.168.50.1
     port: 6379
 
     pool:
@@ -48,8 +48,8 @@ spring:
       connectionTimeout: 10000
 
   rabbitmq:
-    host: 192.168.50.1
-    #    host: localhost
+#    host: 192.168.50.1
+    host: localhost
     port: 5671
     username: xbrain
     password: xbrain
@@ -114,6 +114,7 @@ app-config:
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     usuario-logout: usuario-logout.queue
+    usuario-logout-failure: usuario-logout-failure.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue

@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
-import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -11,7 +10,6 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalR
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
@@ -39,12 +37,11 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
     @Autowired
     private SubCanalService subCanalService;
     @Autowired
-    private SolicitacaoRamalHistoricoRepository historicoRepository;
+    private SolicitacaoRamalService solicitacaoRamalService;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -55,7 +52,6 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
     private SolicitacaoRamalHistoricoService historicoService;
-
     @Autowired
     private DataHoraAtual dataHoraAtual;
     @Value("${app-config.email.emails-solicitacao-ramal}")
@@ -85,8 +81,8 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     private void validarParametroD2d(SolicitacaoRamalRequest request) {
         validaSalvarD2d(request.getSubCanalId());
-        if (request.getCanal() == ECanal.D2D_PROPRIO &&
-            request.getSubCanalId() == null) {
+        if (request.getCanal() == ECanal.D2D_PROPRIO
+            && request.getSubCanalId() == null) {
             throw ERRO_SEM_TIPO_CANAL_D2D;
         }
     }
@@ -119,7 +115,6 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         return LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
 
-
     private Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
         Context context = new Context();
         context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
@@ -148,7 +143,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer subCanalId) {
-        SubCanalDto subCanalDto = subCanalService.getSubCanalById(subCanalId);
+        var subCanalDto = subCanalService.getSubCanalById(subCanalId);
 
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(subCanalDto),
@@ -169,15 +164,10 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
+        SolicitacaoRamal solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
-
         solicitacaoEncontrada.retirarMascara();
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
-    }
-
-    private SolicitacaoRamal findById(Integer id) {
-        return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 }

@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
-import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
@@ -15,15 +14,14 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalR
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
-import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import br.com.xbrain.xbrainutils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
@@ -42,22 +40,17 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
-    private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
 
     @Autowired
     private SolicitacaoRamalRepository solicitacaoRamalRepository;
     @Autowired
     private UsuarioService usuarioService;
-
     @Autowired
     private AgenteAutorizadoService agenteAutorizadoService;
     @Autowired
-    private SolicitacaoRamalServiceD2d solicitacaoRamalServiceD2d;
+    private SolicitacaoRamalService solicitacaoRamalService;
     @Autowired
     private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-
-    @Autowired
-    private SolicitacaoRamalHistoricoRepository historicoRepository;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -70,13 +63,12 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     private CallService callService;
     @Autowired
     private SocioService socioService;
-
+    @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        validaCargo(request);
-        validarParametroAA(request);
+        validarParametroAa(request);
 
         var solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
         solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
@@ -91,27 +83,19 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
         gerarHistorico(solicitacaoRamalPersistida, null);
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalPersistida);
-
     }
 
-    private void validaSalvarAA(Integer aaId) {
+    private void validaSalvarAa(Integer aaId) {
         if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
             throw SOLICITACAO_PENDENTE_OU_ANDAMENTO;
         }
     }
 
-    private void validarParametroAA(SolicitacaoRamalRequest request) {
-        validaSalvarAA(request.getAgenteAutorizadoId());
-        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO &&
-            request.getAgenteAutorizadoId() == null) {
+    private void validarParametroAa(SolicitacaoRamalRequest request) {
+        validaSalvarAa(request.getAgenteAutorizadoId());
+        if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
+            && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
-        }
-    }
-
-    private void validaCargo(SolicitacaoRamalRequest request) {
-        var usuario = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
-        if(usuario == CodigoCargo.MSO_CONSULTOR || usuario == CodigoCargo.MSO_ANALISTA) {
-           solicitacaoRamalServiceD2d.save(request);
         }
     }
 
@@ -173,6 +157,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     private LocalDateTime getDataLimite(LocalDateTime dataCadastro) {
         return LocalDateTime.from(dataCadastro.with(new SolicitacaoRamalExpiracaoAdjuster()));
     }
+
     @Override
     public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer agenteAutorizadoId) {
         AgenteAutorizadoResponse agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(agenteAutorizadoId);
@@ -184,7 +169,6 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
             getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, agenteAutorizadoId),
             agenteAutorizadoResponse);
     }
-
 
     private String getTelefoniaPelaDiscadoraId(AgenteAutorizadoResponse agenteAutorizado) {
         if (!ObjectUtils.isEmpty(agenteAutorizado.getDiscadoraId())) {
@@ -208,7 +192,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        SolicitacaoRamal solicitacaoEncontrada = findById(request.getId());
+        SolicitacaoRamal solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
         solicitacaoEncontrada.atualizarNomeECnpjDoAgenteAutorizado(
@@ -217,10 +201,6 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
         solicitacaoEncontrada.retirarMascara();
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
-    }
-
-    private SolicitacaoRamal findById(Integer id) {
-        return solicitacaoRamalRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
 
     public void verificaPermissaoSobreOAgenteAutorizado(Integer agenteAutorizadoId) {
