@@ -85,9 +85,6 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-remanejado-aut}")
     private String usuarioRemanejadoAut;
 
-    @Value("${app-config.queue.usuario-logout-failure}")
-    private String usuarioLogoutFailureMq;
-
     @Value("${app-config.queue.usuario-remanejado-aut-failure}")
     private String usuarioRemanejadoAutFailure;
 
@@ -244,6 +241,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioLogoutMq() {
+        return new Queue(usuarioLogoutMq, false);
+    }
+
+    @Bean
     Queue usuarioUltimoAcessoPol() {
         return new Queue(usuarioUltimoAcessoPolMq, false);
     }
@@ -309,27 +311,6 @@ public class RabbitConfig {
             .withArgument(DEAD_LETTER_ROUTING_KEY, alterarSituacaoUsuarioFeederFailureMq)
             .build();
     }
-
-    @Bean
-    Queue usuarioLogoutMq() {
-        return QueueBuilder
-            .durable(usuarioLogoutMq)
-            .withArgument(DEAD_LETTER_EXCHANGE, "")
-            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioLogoutFailureMq)
-            .build();
-    }
-
-    @Bean
-    Queue usuarioLogoutFailureMq() {
-        return QueueBuilder.durable(usuarioLogoutFailureMq).build();
-    }
-
-    @Bean
-    public Binding usuarioLogoutFailureBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioLogoutFailureMq())
-            .to(exchange).with(usuarioLogoutFailureMq);
-    }
-
     @Bean
     Queue alterarSituacaoUsuarioFeederFailureMq() {
         return QueueBuilder.durable(alterarSituacaoUsuarioFeederFailureMq).build();

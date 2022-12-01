@@ -28,11 +28,6 @@ public class CanalService {
         ECanal.ATIVO_PROPRIO, UsuarioHierarquiaAtivoService.class
     );
 
-    private Map<ECanal, Class<? extends ISolicitacaoRamalService>> solicitacaoRamalService = ImmutableMap.of(
-        ECanal.D2D_PROPRIO, SolicitacaoRamalServiceD2d.class,
-        ECanal.AGENTE_AUTORIZADO, SolicitacaoRamalServiceAa.class
-    );
-
     public IUsuarioHierarquia usuarioHierarquia() {
         var service = Optional
             .ofNullable(usuarioHierarquia.get(autenticacaoService.getUsuarioCanal()))
@@ -40,7 +35,4 @@ public class CanalService {
         return context.getBean(service);
     }
 
-    public ISolicitacaoRamalService getSolicitacaoRamalService() {
-        return context.getBean(solicitacaoRamalService.get(autenticacaoService.getUsuarioCanal()));
-    }
 }
