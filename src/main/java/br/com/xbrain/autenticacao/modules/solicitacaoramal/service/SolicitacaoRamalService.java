@@ -52,11 +52,13 @@ public class SolicitacaoRamalService {
         new ValidacaoException("agenteAutorizadoId obrigatório para o cargo agente autorizado");
     public static final ValidacaoException SOLICITACAO_PENDENTE_OU_ANDAMENTO = new ValidacaoException(
         "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
-    private static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
-    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
+    public static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
+    public static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
+    public static final String TEMPLATE_EMAIL = "solicitacao-ramal";
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_OBRIGATORIO =
-        "É necessário enviar o parâmetro agente autorizado id.";
+        "Campo agente autorizado é obrigatório";
+    public static final String SEPARACAO = ",";
 
     @Autowired
     private SolicitacaoRamalServiceAa serviceAa;
@@ -74,6 +76,7 @@ public class SolicitacaoRamalService {
     private EmailService emailService;
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
+
     private final Map<ECanal, Class<? extends ISolicitacaoRamalService>> solicitacaoRamalService = ImmutableMap.of(
         ECanal.D2D_PROPRIO, SolicitacaoRamalServiceD2d.class,
         ECanal.AGENTE_AUTORIZADO, SolicitacaoRamalServiceAa.class
@@ -112,7 +115,7 @@ public class SolicitacaoRamalService {
     private void validarFiltroObrigatorios(SolicitacaoRamalFiltros filtros) {
         var cargo = autenticacaoService.getUsuarioAutenticado().getCargoCodigo();
         if (cargo == CodigoCargo.AGENTE_AUTORIZADO_SOCIO) {
-            if (!ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
+            if (filtros.getAgenteAutorizadoId() != null) {
                 serviceAa.verificaPermissaoSobreOAgenteAutorizado(filtros.getAgenteAutorizadoId());
             } else if (!autenticacaoService.getUsuarioAutenticado().hasPermissao(CTR_2034)) {
                 throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
@@ -157,7 +160,7 @@ public class SolicitacaoRamalService {
         return getSolicitacaoRamalService(request.getCanal()).update(request);
     }
 
-    public ISolicitacaoRamalService getSolicitacaoRamalService(ECanal canal) {
+    private ISolicitacaoRamalService getSolicitacaoRamalService(ECanal canal) {
         return context.getBean(solicitacaoRamalService.get(canal));
     }
 

@@ -29,14 +29,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.ERRO_SEM_TIPO_CANAL_D2D;
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.SOLICITACAO_PENDENTE_OU_ANDAMENTO;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService.*;
 
 @Component
 public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
-
-    private static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
-    private static final String TEMPLATE_EMAIL = "solicitacao-ramal";
 
     @Autowired
     private SubCanalService subCanalService;
@@ -88,7 +84,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     }
 
     private boolean hasSolicitacaoPendenteOuEmAdamentoBySubCanalId(Integer subCanalId) {
-        return solicitacaoRamalRepository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(subCanalId)
+        return solicitacaoRamalRepository.findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(subCanalId)
             .size() > 0;
     }
 
@@ -97,15 +93,15 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     }
 
     private void enviarEmailAposCadastro(SolicitacaoRamal solicitacaoRamal) {
-        if (!ObjectUtils.isEmpty(solicitacaoRamal)) {
+        if (solicitacaoRamal != null) {
             emailService.enviarEmailTemplate(
                 getDestinatarios(), ASSUNTO_EMAIL_CADASTRAR, TEMPLATE_EMAIL, obterContexto(solicitacaoRamal));
         }
     }
 
     private List<String> getDestinatarios() {
-        if (this.destinatarios.contains(",")) {
-            return Arrays.asList(this.destinatarios.split(","));
+        if (this.destinatarios.contains(SEPARACAO)) {
+            return Arrays.asList(this.destinatarios.split(SEPARACAO));
         }
 
         return Collections.singletonList(this.destinatarios);

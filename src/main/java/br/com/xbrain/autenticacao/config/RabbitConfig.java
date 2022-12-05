@@ -311,6 +311,7 @@ public class RabbitConfig {
             .withArgument(DEAD_LETTER_ROUTING_KEY, alterarSituacaoUsuarioFeederFailureMq)
             .build();
     }
+
     @Bean
     Queue alterarSituacaoUsuarioFeederFailureMq() {
         return QueueBuilder.durable(alterarSituacaoUsuarioFeederFailureMq).build();

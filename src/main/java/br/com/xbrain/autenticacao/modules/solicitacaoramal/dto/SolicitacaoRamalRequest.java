@@ -68,7 +68,8 @@ public class SolicitacaoRamalRequest {
 
         solicitacaoRamal.setUsuariosSolicitados(request.getUsuariosSolicitadosIds()
             .stream()
-            .map(Usuario::new).collect(Collectors.toList()));
+            .map(Usuario::new)
+            .collect(Collectors.toList()));
 
         BeanUtils.copyProperties(request, solicitacaoRamal);
         solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.valueOf(request.getTipoImplantacao()));

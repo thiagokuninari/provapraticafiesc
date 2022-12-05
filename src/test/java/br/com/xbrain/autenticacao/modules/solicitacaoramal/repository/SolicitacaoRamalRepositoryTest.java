@@ -22,23 +22,23 @@ public class SolicitacaoRamalRepositoryTest {
     private SolicitacaoRamalRepository repository;
 
     @Test
-    public void findAllByAaId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
-        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(3).size());
+    public void findAllByAaId_deveRetornarlistaVazia_quandoNaoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
+        assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(3).size());
     }
 
     @Test
-    public void findAllByAaId_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
-        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(1).size());
+    public void findAllByAaId_deveRetornarlistaComDoisRegistros_quandoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
+        assertEquals(2, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(1).size());
     }
 
     @Test
-    public void findAllBySubCanalId_listaVazia_quandoNaoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
-        assertEquals(0, repository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(3).size());
+    public void findAllBySubCanalId_deveRetornarlistaVazia_quandoNaoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
+        assertEquals(0, repository.findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(3).size());
     }
 
     @Test
-    public void findAllBySubCanal_listaComDoisRegistros_quandoHouverSolicitacaoPeloAaIdComStatusPendenteOuEmAndamento() {
-        assertEquals(2, repository.findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(1).size());
+    public void findAllBySubCanalId_deveRetornarlistaComDoisRegistros_quandoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
+        assertEquals(2, repository.findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(1).size());
     }
 
 }

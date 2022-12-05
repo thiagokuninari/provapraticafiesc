@@ -1,17 +1,15 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
-import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -59,11 +57,9 @@ public class SolicitacaoRamalServiceTest {
     @MockBean
     private UsuarioService usuarioService;
     @MockBean
-    private AgenteAutorizadoService agenteAutorizadoService;
+    private SolicitacaoRamalServiceAa serviceAa;
     @MockBean
-    private AgenteAutorizadoNovoService agenteAutorizadoNovoService;
-    @MockBean
-    private EquipeVendasService equipeVendasService;
+    private SolicitacaoRamalServiceD2d serviceD2d;
 
     @Test
     public void calcularDataFinalizacao_quandoHouverRegistros() {
@@ -149,18 +145,79 @@ public class SolicitacaoRamalServiceTest {
 
         assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() ->
                 service.getAll(new PageRequest(), new SolicitacaoRamalFiltros()))
-            .withMessage("É necessário enviar o parâmetro agente autorizado id.");
+            .withMessage("Campo agente autorizado é obrigatório");
 
         verify(repository, never()).findAll(any(PageRequest.class), any(Predicate.class));
         verify(usuarioService, never()).findComplete(1);
+    }
+
+    @Test
+    public void save_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
+        var request = criaSolicitacaoRamal(1, null);
+        request.setCanal(ECanal.AGENTE_AUTORIZADO);
+        when(serviceAa.save(request)).thenReturn(umaSolicitacaoRamalResponseAa(1));
+
+        service.save(request);
+
+        verify(serviceAa, times(1)).save(request);
+    }
+
+    @Test
+    public void save_deveMandarParaServiceD2d_seCanalForD2d() {
+        var request = criaSolicitacaoRamal(1, null);
+        request.setCanal(ECanal.D2D_PROPRIO);
+        request.setSubCanalId(1);
+        when(serviceD2d.save(request)).thenReturn(umaSolicitacaoRamalResponseD2d(1));
+
+        service.save(request);
+
+        verify(serviceD2d, times(1)).save(request);
+    }
+
+    @Test
+    public void getDadosAdicionais_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
+        when(serviceAa.getDadosAdicionais(1)).thenReturn(dadosAdicionaisResponse());
+
+        service.getDadosAdicionais(ECanal.AGENTE_AUTORIZADO, 1);
+
+        verify(serviceAa, times(1)).getDadosAdicionais(1);
+    }
+
+    @Test
+    public void getDadosAdicionais_deveMandarParaServiceD2d_seCanalForD2d() {
+        when(serviceD2d.getDadosAdicionais(1)).thenReturn(dadosAdicionaisResponse());
+
+        service.getDadosAdicionais(ECanal.D2D_PROPRIO, 1);
+
+        verify(serviceD2d, times(1)).getDadosAdicionais(1);
+    }
+
+    @Test
+    public void update_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
+        var request = criaSolicitacaoRamal(1, 2);
+        request.setCanal(ECanal.AGENTE_AUTORIZADO);
+        when(serviceAa.update(request)).thenReturn(umaSolicitacaoRamalResponseAa(1));
+
+        service.update(request);
+
+        verify(serviceAa, times(1)).update(request);
+    }
+
+    @Test
+    public void update_deveMandarParaServiceD2d_seCanalForD2d() {
+        var request = criaSolicitacaoRamal(1, 2);
+        request.setCanal(ECanal.D2D_PROPRIO);
+        when(serviceD2d.update(request)).thenReturn(umaSolicitacaoRamalResponseD2d(1));
+
+        service.update(request);
+
+        verify(serviceD2d, times(1)).update(request);
     }
 
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
             .id(id)
             .quantidadeRamais(38)
-            .canal(ECanal.D2D_PROPRIO)
-            .subCanalId(3)
             .agenteAutorizadoId(aaId)
             .melhorHorarioImplantacao(LocalTime.of(10, 00))
             .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
@@ -179,21 +236,13 @@ public class SolicitacaoRamalServiceTest {
             .build();
     }
 
-    private UsuarioAutenticado umUsuarioAutenticadoOperacao() {
-        return UsuarioAutenticado.builder()
-            .id(1)
-            .usuario(Usuario.builder().id(1).build())
-            .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
-            .build();
-    }
-
-    private AgenteAutorizadoResponse criaAa() {
-        return AgenteAutorizadoResponse.builder()
-            .id("303030")
-            .cnpj("81733187000134")
-            .nomeFantasia("Fulano")
-            .discadoraId(1)
-            .razaoSocial("RAZAO SOCIAL AA")
+    private SolicitacaoRamalDadosAdicionaisResponse dadosAdicionaisResponse() {
+        return SolicitacaoRamalDadosAdicionaisResponse
+            .builder()
+            .agenteAutorizadoRazaoSocial("teste")
+            .usuariosAtivos(1)
+            .discadora("discadora")
+            .quantidadeRamais(1)
             .build();
     }
 
@@ -244,5 +293,24 @@ public class SolicitacaoRamalServiceTest {
         solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.ESCRITORIO);
 
         return solicitacaoRamal;
+    }
+
+    private SolicitacaoRamalResponse umaSolicitacaoRamalResponseAa(Integer id) {
+        var response = new SolicitacaoRamalResponse();
+        response.setId(id);
+        response.setCanal(ECanal.AGENTE_AUTORIZADO);
+        response.setDataCadastro(LocalDateTime.now());
+        response.setSituacao(ESituacaoSolicitacao.PENDENTE);
+        return response;
+    }
+
+    private SolicitacaoRamalResponse umaSolicitacaoRamalResponseD2d(Integer id) {
+        var response = new SolicitacaoRamalResponse();
+        response.setId(id);
+        response.setCanal(ECanal.D2D_PROPRIO);
+        response.setSubCanalId(1);
+        response.setDataCadastro(LocalDateTime.now());
+        response.setSituacao(ESituacaoSolicitacao.PENDENTE);
+        return response;
     }
 }

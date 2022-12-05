@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.Solicitaca
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import feign.RetryableException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -57,6 +57,8 @@ public class SolicitacaoRamalServiceAaTest {
     private CallClient client;
     @MockBean
     private SocioClient socioClient;
+    @MockBean
+    private UsuarioService usuarioService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
     @Autowired
@@ -82,9 +84,8 @@ public class SolicitacaoRamalServiceAaTest {
 
     @Test
     public void save_deveLancarException_seCanalForAgenteAutorizadoEAgenteAutorizadoIdNaoForInformado() {
-        var solicitacaoRamal = criaSolicitacaoRamal(null, 200);
+        var solicitacaoRamal = criaSolicitacaoRamal(null, null);
         solicitacaoRamal.setCanal(ECanal.AGENTE_AUTORIZADO);
-        solicitacaoRamal.setAgenteAutorizadoId(null);
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
@@ -96,7 +97,7 @@ public class SolicitacaoRamalServiceAaTest {
     }
 
     @Test
-    public void update_deveAtualizarSolicitacaoD2dSeTodosOsDadosPreenchidosCorretamente() {
+    public void update_deveAtualizarSolicitacaoAaSeTodosOsDadosPreenchidosCorretamente() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticado());
         when(repository.findById(1))
@@ -152,12 +153,36 @@ public class SolicitacaoRamalServiceAaTest {
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
     }
 
+    @Test
+    public void verificaPermissaoSobreOAgenteAutorizado_deveRetornarTrue_seOUsuarioTemPermissaoSobreOAa() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(usuarioService.findComplete(1)).thenReturn(umUsuario());
+        when(autenticacaoService.getUsuarioId()).thenReturn(1);
+        when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(umUsuario()))
+            .thenReturn(List.of(1,2));
+
+        service.verificaPermissaoSobreOAgenteAutorizado(1);
+
+        verify(autenticacaoService, times(1)).getUsuarioAutenticado();
+        verify(usuarioService, times(1)).findComplete(1);
+        verify(autenticacaoService, times(1)).getUsuarioId();
+        verify(agenteAutorizadoNovoService, times(1)).getAgentesAutorizadosPermitidos(umUsuario());
+    }
+
     private UsuarioAutenticado umUsuarioAutenticado() {
         return UsuarioAutenticado.builder()
             .id(1)
             .nome("teste")
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .build();
+    }
+
+    private Usuario umUsuario() {
+        return Usuario.builder()
+            .id(1)
+            .nome("teste")
+            .cpf("123456789")
             .build();
     }
 

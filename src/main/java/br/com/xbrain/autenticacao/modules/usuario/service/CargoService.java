@@ -95,13 +95,14 @@ public class CargoService {
         var cargosIds = cargoSuperiorRepository.getCargosHierarquia(usuarioAutenticado.getCargoId());
 
         return repository.buscarTodosComNiveis(
-                new CargoPredicate()
-                    .comNiveis(niveisIds)
-                    .filtrarPermitidos(usuarioAutenticado, cargosIds)
-                    .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
-                    .build())
+            new CargoPredicate()
+                .comNiveis(niveisIds)
+                .filtrarPermitidos(usuarioAutenticado, cargosIds)
+                .ouComCodigos(getCodigosEspeciais(niveisIds, usuarioAutenticado))
+                .build())
             .stream()
-            .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ", cargo.getNome(), cargo.getNivel().getNome())))
+            .map(cargo -> SelectResponse.of(cargo.getId(), String.join(" - ",
+                 cargo.getNome(), cargo.getNivel().getNome())))
             .collect(Collectors.toList());
     }
 

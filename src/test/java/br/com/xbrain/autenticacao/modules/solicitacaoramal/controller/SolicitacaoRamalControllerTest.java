@@ -327,7 +327,7 @@ public class SolicitacaoRamalControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$[*].message", containsInAnyOrder(
-                "É necessário enviar o parâmetro agente autorizado id.")));
+                "Campo agente autorizado é obrigatório")));
     }
 
     @Test

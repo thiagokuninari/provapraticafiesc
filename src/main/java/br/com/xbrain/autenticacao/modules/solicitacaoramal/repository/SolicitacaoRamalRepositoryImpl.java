@@ -90,7 +90,7 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId) {
+    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(Integer aaId) {
         return new JPAQueryFactory(entityManager)
                 .select(solicitacaoRamal)
                 .from(solicitacaoRamal)
@@ -101,7 +101,7 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoDiferentePendenteOuEmAndamento(Integer subCanalId) {
+    public List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(Integer subCanalId) {
         return new JPAQueryFactory(entityManager)
                 .select(solicitacaoRamal)
                 .from(solicitacaoRamal)

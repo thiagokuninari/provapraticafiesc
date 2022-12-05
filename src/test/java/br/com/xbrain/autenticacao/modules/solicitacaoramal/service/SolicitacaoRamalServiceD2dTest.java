@@ -161,7 +161,8 @@ public class SolicitacaoRamalServiceD2dTest {
     }
 
     private SolicitacaoRamalDadosAdicionaisResponse umDadosAdicionaisResponse() {
-        var adicionalResponse = new SolicitacaoRamalDadosAdicionaisResponse();
+        var adicionalResponse = SolicitacaoRamalDadosAdicionaisResponse
+            .convertFrom("nome discadora", 2);
         adicionalResponse.setDiscadora("discadora teste");
         adicionalResponse.setQuantidadeRamais(2);
         return adicionalResponse;

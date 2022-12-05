@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class SolicitacaoRamalResponse {
     private List<SolicitacaoRamalColaboradorResponse> colaboradores;
 
     public static SolicitacaoRamalResponse convertFrom(SolicitacaoRamal solicitacaoRamal) {
-        SolicitacaoRamalResponse response = new SolicitacaoRamalResponse();
+        var response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
         response.dataHoraExpiracao = solicitacaoRamal.getDataFinalizacao();
@@ -62,9 +63,10 @@ public class SolicitacaoRamalResponse {
 
     private List<SolicitacaoRamalColaboradorResponse> getColaboradores(SolicitacaoRamal solicitacaoRamal) {
         return !ObjectUtils.isEmpty(solicitacaoRamal.getUsuariosSolicitados())
-            ? solicitacaoRamal.getUsuariosSolicitados().stream()
+            ? solicitacaoRamal.getUsuariosSolicitados()
+            .stream()
             .map(SolicitacaoRamalColaboradorResponse::convertFrom)
             .collect(Collectors.toList())
-            : null;
+            : Collections.emptyList();
     }
 }
