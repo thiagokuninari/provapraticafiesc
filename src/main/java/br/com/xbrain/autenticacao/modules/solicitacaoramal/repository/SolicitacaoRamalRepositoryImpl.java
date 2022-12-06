@@ -45,6 +45,8 @@ public class SolicitacaoRamalRepositoryImpl
                                 solicitacaoRamal.agenteAutorizadoId,
                                 solicitacaoRamal.agenteAutorizadoNome,
                                 solicitacaoRamal.agenteAutorizadoCnpj,
+                                solicitacaoRamal.canal,
+                                solicitacaoRamal.subCanalId,
                                 solicitacaoRamal.situacao,
                                 solicitacaoRamal.quantidadeRamais,
                                 solicitacaoRamal.dataCadastro,
@@ -88,7 +90,7 @@ public class SolicitacaoRamalRepositoryImpl
     }
 
     @Override
-    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId) {
+    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(Integer aaId) {
         return new JPAQueryFactory(entityManager)
                 .select(solicitacaoRamal)
                 .from(solicitacaoRamal)
@@ -96,6 +98,17 @@ public class SolicitacaoRamalRepositoryImpl
                         .and(solicitacaoRamal.situacao.eq(PENDENTE)
                                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
                 .fetch();
+    }
+
+    @Override
+    public List<SolicitacaoRamal> findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(Integer subCanalId) {
+        return new JPAQueryFactory(entityManager)
+                .select(solicitacaoRamal)
+                .from(solicitacaoRamal)
+                .where(solicitacaoRamal.subCanalId.eq(subCanalId)
+                        .and(solicitacaoRamal.situacao.eq(PENDENTE)
+                                .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
+            .fetch();
     }
 
     @Override
