@@ -23,7 +23,7 @@ public class SolicitacaoRamalResponseTest {
     }
 
     @Test
-    public void convertFrom_deveRetornarDadosAdicionaisResponse_seParametrosAACorretos() {
+    public void convertFrom_deveRetornarDadosAdicionaisResponse_seParametrosAaCorretos() {
         var atual = SolicitacaoRamalDadosAdicionaisResponse
             .convertFrom("nome discadora", "nome sócio", 5, 4,
                 AgenteAutorizadoResponse.builder().razaoSocial("teste").build());

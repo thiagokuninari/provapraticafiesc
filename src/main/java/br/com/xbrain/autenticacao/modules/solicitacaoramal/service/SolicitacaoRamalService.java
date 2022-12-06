@@ -58,7 +58,6 @@ public class SolicitacaoRamalService {
     private static final NotFoundException EX_NAO_ENCONTRADO = new NotFoundException("Solicitação não encontrada.");
     private static final String MSG_DEFAULT_PARAM_OBRIGATORIO =
         "Campo agente autorizado é obrigatório";
-    public static final String SEPARACAO = ",";
 
     @Autowired
     private SolicitacaoRamalServiceAa serviceAa;

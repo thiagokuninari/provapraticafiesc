@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
+import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
@@ -100,8 +101,8 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     }
 
     private List<String> getDestinatarios() {
-        if (this.destinatarios.contains(SEPARACAO)) {
-            return Arrays.asList(this.destinatarios.split(SEPARACAO));
+        if (this.destinatarios.contains(Constantes.VIRGULA)) {
+            return Arrays.asList(this.destinatarios.split(Constantes.VIRGULA));
         }
 
         return Collections.singletonList(this.destinatarios);
@@ -112,7 +113,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     }
 
     private Context obterContexto(SolicitacaoRamal solicitacaoRamal) {
-        Context context = new Context();
+        var context = new Context();
         context.setVariable("dataAtual", DateUtils.parseLocalDateTimeToString(LocalDateTime.now()));
         context.setVariable("codigo", solicitacaoRamal.getId());
         context.setVariable("situacao", solicitacaoRamal.getSituacao());
@@ -160,7 +161,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
-        SolicitacaoRamal solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
+        var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
         solicitacaoEncontrada.editar(request);
         solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
         solicitacaoEncontrada.retirarMascara();

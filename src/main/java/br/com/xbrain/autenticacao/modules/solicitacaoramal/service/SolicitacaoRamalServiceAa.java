@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAut
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
+import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
@@ -137,8 +138,8 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     private List<String> getDestinatarios() {
-        if (this.destinatarios.contains(SEPARACAO)) {
-            return Arrays.asList(this.destinatarios.split(SEPARACAO));
+        if (this.destinatarios.contains(Constantes.VIRGULA)) {
+            return Arrays.asList(this.destinatarios.split(Constantes.VIRGULA));
         }
 
         return Collections.singletonList(this.destinatarios);
