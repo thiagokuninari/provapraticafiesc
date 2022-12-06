@@ -90,7 +90,9 @@ public class CargoDepartamentoFuncionalidadeRepositoryImpl
             .select(departamento)
             .distinct()
             .from(cargoDepartamentoFuncionalidade)
-            .where(predicate)
+            .innerJoin(cargoDepartamentoFuncionalidade.departamento, departamento)
+            .innerJoin(cargoDepartamentoFuncionalidade.cargo, cargo)
+            .where(departamento.nivel.id.eq(cargo.nivel.id).and(predicate))
             .fetch();
     }
 }
