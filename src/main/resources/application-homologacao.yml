@@ -61,6 +61,8 @@ app-config:
       url: http://email-hom:8080
     integracao-vendas:
       url: http://172.10.10.85:8086
+    mailing-importacao:
+      url: http://172.10.10.86:8087
 
   email:
     enviar: true
