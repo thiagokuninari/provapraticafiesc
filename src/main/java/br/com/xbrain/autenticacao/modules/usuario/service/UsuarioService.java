@@ -558,14 +558,6 @@ public class UsuarioService {
             .anyMatch(canalUsuario -> canalUsuario.getCanal() == ECanal.D2D_PROPRIO);
     }
 
-    private boolean verificarSubCanalValidacao(Usuario usuario) {
-        return repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()).stream()
-            .map(SubCanal::getId)
-            .filter(usuario.getSubCanaisId()::contains)
-            .collect(Collectors.toSet())
-            .isEmpty();
-    }
-
     public Set<SubCanal> verificarSubCanalValidacao(Integer usuarioId) {
         return repository.getSubCanaisByUsuarioIds(List.of(usuarioId));
     }
@@ -883,12 +875,20 @@ public class UsuarioService {
         var isCargoDiretor = cargo.getCodigo().equals(DIRETOR_OPERACAO);
         var hasHierarquia = !isEmpty(usuario.getHierarquiasId());
 
-        if (!isCargoDiretor && hasHierarquia) {
-            var naoPossuiSubCanalHierarquia = verificarSubCanalValidacao(usuario);            
-            if (naoPossuiSubCanalHierarquia) {
-                throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
-            }
+        if (!isCargoDiretor && hasHierarquia && !hasUsuarioSubCanalHierarquia(usuario)) {
+            throw MSG_ERRO_USUARIO_SEM_SUBCANAL_DA_HIERARQUIA;
         }
+    }
+
+    private boolean hasUsuarioSubCanalHierarquia(Usuario usuario) {
+        var hierarquiaSubCanaisId = repository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()).stream()
+            .map(SubCanal::getId)
+            .collect(Collectors.toSet());
+
+        return usuario.getSubCanaisId().stream()
+            .filter(subCanalId -> !hierarquiaSubCanaisId.contains(subCanalId))
+            .collect(Collectors.toSet())
+            .isEmpty();
     }
 
     private void tratarHierarquiaUsuario(Usuario usuario, List<Integer> hierarquiasId) {
