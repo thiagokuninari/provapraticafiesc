@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.CidadeSiteResponse;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UfResponse;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import helpers.Usuarios;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
@@ -29,6 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -115,7 +119,9 @@ public class CidadeControllerTest {
         mvc.perform(get("/api/cidades/regional/3")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].nomeCidade", is("LONDRINA")));
     }
 
     @Test
@@ -331,6 +337,29 @@ public class CidadeControllerTest {
         verify(cidadeService, times(1)).getCodigoIbgeRegionalByCidade(eq(List.of(3426, 5578)));
     }
 
+    @Test
+    public void findCidadesByCodigosIbge_deveRetornarListaDeCidades_quandoEncontrarPorCodigosIbge() throws Exception {
+        doReturn(umaListaCidadeResponse())
+            .when(cidadeService)
+            .findCidadesByCodigosIbge(List.of("4113700", "3527108"));
+
+        mvc.perform(post("/api/cidades/codigos-ibge")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(List.of("4113700", "3527108")))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(5578)))
+            .andExpect(jsonPath("$[0].nome", is("LONDRINA")))
+            .andExpect(jsonPath("$[0].codigoIbge", is("4113700")))
+            .andExpect(jsonPath("$[0].uf.nome", is("PR")))
+            .andExpect(jsonPath("$[1].id", is(5579)))
+            .andExpect(jsonPath("$[1].nome", is("LINS")))
+            .andExpect(jsonPath("$[1].codigoIbge", is("3527108")))
+            .andExpect(jsonPath("$[1].uf.nome", is("SP")));
+    }
+
     private Cidade umaCidade() {
         return Cidade.builder()
             .id(5578)
@@ -347,5 +376,36 @@ public class CidadeControllerTest {
             .siteId(189)
             .uf("pr")
             .build();
+    }
+
+    private List<CidadeResponse> umaListaCidadeResponse() {
+        return List.of(
+            CidadeResponse
+                .builder()
+                .id(5578)
+                .nome("LONDRINA")
+                .codigoIbge("4113700")
+                .uf(
+                    UfResponse
+                        .builder()
+                        .id(2)
+                        .nome("PR")
+                        .build()
+                )
+                .build(),
+            CidadeResponse
+                .builder()
+                .id(5579)
+                .nome("LINS")
+                .codigoIbge("3527108")
+                .uf(
+                    UfResponse
+                        .builder()
+                        .id(1)
+                        .nome("SP")
+                        .build()
+                )
+                .build()
+        );
     }
 }

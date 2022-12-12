@@ -199,9 +199,9 @@ public class Usuario {
     private List<UsuarioHistorico> historicos;
 
     @NotAudited
-    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
-    @Column(name = "CANAL", nullable = false, length = 20)
     @ElementCollection
+    @Column(name = "CANAL", nullable = false, length = 20)
+    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
@@ -287,6 +287,11 @@ public class Usuario {
         departamento.getId();
         canais.size();
         Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
+        return this;
+    }
+
+    public Usuario forceLoadCanais() {
+        canais.size();
         return this;
     }
 
