@@ -82,6 +82,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
 
+    @Value("${app-config.queue.usuario-logout-failure}")
+    private String usuarioLogoutFailureMq;
+
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
 
@@ -149,6 +152,20 @@ public class RabbitConfig {
             .withArgument(DEAD_LETTER_EXCHANGE, "")
             .withArgument(DEAD_LETTER_ROUTING_KEY, atualizarPermissaoFeederFailureMq)
             .build();
+    }
+
+    @Bean
+    Queue usuarioLogoutMq() {
+        return QueueBuilder
+            .durable(usuarioLogoutMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioLogoutFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue usuarioLogoutFailureMq() {
+        return QueueBuilder.durable(usuarioLogoutFailureMq).build();
     }
 
     @Bean
@@ -257,11 +274,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue usuarioLogoutMq() {
-        return new Queue(usuarioLogoutMq, false);
-    }
-
-    @Bean
     Queue usuarioUltimoAcessoPol() {
         return new Queue(usuarioUltimoAcessoPolMq, false);
     }
@@ -367,6 +379,17 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding usuarioLogoutBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutMq()).to(exchange).with(usuarioLogoutMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutFailureMq())
+            .to(exchange).with(usuarioLogoutFailureMq);
+    }
+
+    @Bean
     public Binding usuarioCadastroSuccessBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioCadastroSuccessMq()).to(exchange).with(usuarioCadastroSuccessMq);
     }
@@ -454,11 +477,6 @@ public class RabbitConfig {
     @Bean
     public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
-    }
-
-    @Bean
-    public Binding usuarioLogoutBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioLogoutMq()).to(exchange).with(usuarioLogoutMq);
     }
 
     @Bean
