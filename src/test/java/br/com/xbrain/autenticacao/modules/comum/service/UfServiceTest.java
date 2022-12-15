@@ -46,6 +46,16 @@ public class UfServiceTest {
             .containsExactly(Tuple.tuple(1, "PR"));
     }
 
+    @Test
+    public void findAllByRegionalIdComUf_umaListaUfs_quandoSolicitado() {
+        when(ufRepository.buscarEstadosPorRegional(anyInt()))
+            .thenReturn(List.of(Uf.builder().id(1).nome("PARANA").uf("PR").build()));
+
+        assertThat(ufService.findAllByRegionalIdComUf(1027))
+            .extracting("id", "nome", "uf")
+            .containsExactly(Tuple.tuple(1, "PARANA", "PR"));
+    }
+
     private List<Uf> umaListaUf() {
         return List.of(
                 Uf.builder()

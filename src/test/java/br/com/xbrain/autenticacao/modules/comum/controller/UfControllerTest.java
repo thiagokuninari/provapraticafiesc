@@ -54,4 +54,34 @@ public class UfControllerTest {
                 .andExpect(jsonPath("$[1].value").value(11))
                 .andExpect(jsonPath("$[1].label").value("ALAGOAS"));
     }
+
+    @Test
+    public void getAllByRegionalComUf_listaUfs_quandoBuscarTodasAsUfsComRegional() throws Exception {
+        mvc.perform(get("/api/ufs/por-regional-com-uf?regionalId=1022")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id").value(10))
+            .andExpect(jsonPath("$[0].uf").value("BA"))
+            .andExpect(jsonPath("$[0].nome").value("BAHIA"))
+            .andExpect(jsonPath("$[1].id").value(16))
+            .andExpect(jsonPath("$[1].uf").value("SE"))
+            .andExpect(jsonPath("$[1].nome").value("SERGIPE"));
+    }
+
+    @Test
+    public void getAllByRegionalComUf_deveRetornarUnauthorized_quandoNaoTemAutorizacao() throws Exception {
+        mvc.perform(get("/api/ufs/por-regional-com-uf")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getAllByRegionalComUf_deveRetornarBadRequest_quandoParametroErrado() throws Exception {
+        mvc.perform(get("/api/ufs/por-regional-com-uf")
+                .header("Authorization", getAccessToken(mvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
 }

@@ -1,10 +1,16 @@
 package br.com.xbrain.autenticacao.modules.usuario.dto;
 
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UfResponse {
 
     private Integer id;
