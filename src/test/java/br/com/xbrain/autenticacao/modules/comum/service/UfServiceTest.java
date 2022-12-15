@@ -24,7 +24,7 @@ public class UfServiceTest {
     private UfRepository ufRepository;
 
     @Test
-    public void findAll_umaListaUfs_quandoSolicitado() {
+    public void findAll_deveRetornarUmaListaUfs_quandoSolicitado() {
         when(ufRepository.findByOrderByNomeAsc())
                 .thenReturn(umaListaUf());
 
@@ -37,7 +37,7 @@ public class UfServiceTest {
     }
 
     @Test
-    public void findAllByRegionalId_umaListaUfs_quandoSolicitado() {
+    public void findAllByRegionalId_deveRetornarUmaListaUfs_quandoSolicitado() {
         when(ufRepository.buscarEstadosPorRegional(anyInt()))
             .thenReturn(List.of(Uf.builder().id(1).nome("PR").build()));
 
@@ -47,7 +47,7 @@ public class UfServiceTest {
     }
 
     @Test
-    public void findAllByRegionalIdComUf_umaListaUfs_quandoSolicitado() {
+    public void findAllByRegionalIdComUf_deveRetornarUmaListaUfs_quandoSolicitado() {
         when(ufRepository.buscarEstadosPorRegional(anyInt()))
             .thenReturn(List.of(Uf.builder().id(1).nome("PARANA").uf("PR").build()));
 
