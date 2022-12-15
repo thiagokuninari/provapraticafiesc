@@ -43,7 +43,7 @@ public class UfControllerTest {
     }
 
     @Test
-    public void getAllUfs_deveRetornarUmalistaUfs_quandoBuscarTodosAsUfs() throws Exception {
+    public void getAllUfs_deveRetornarUmaListaUfs_quandoBuscarTodosAsUfs() throws Exception {
         mvc.perform(get("/api/ufs/todas")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
@@ -56,7 +56,7 @@ public class UfControllerTest {
     }
 
     @Test
-    public void getAllByRegionalComUf_deveRetornarUmalistaUfs_quandoBuscarTodasAsUfsComRegional() throws Exception {
+    public void getAllByRegionalComUf_deveRetornarUmaListaUfs_quandoBuscarTodasAsUfsComRegional() throws Exception {
         mvc.perform(get("/api/ufs/por-regional-com-uf?regionalId=1022")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
