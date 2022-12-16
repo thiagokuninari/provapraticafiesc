@@ -140,7 +140,8 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[0].message", is("Este usuário está em uma equipe ativa com outro subcanal.")));
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.")));
 
         verify(usuarioService, never()).save(any(), any());
     }
@@ -155,7 +156,24 @@ public class UsuarioGerenciaControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", getAccessToken(mvc, ADMIN)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$[0].message", is("Este usuário está em uma equipe ativa com outro subcanal.")));
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.")));
+
+        verify(usuarioService, never()).save(any(), any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void save_deveRetornarBadRequest_quandoUsuarioSemCanalD2dEstiverEmEquipeDoCanalD2d() {
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(1660123)).thenReturn(List.of(1));
+
+        mvc.perform(fileUpload(API_URI)
+                .file(umUsuario(umUsuarioQueEraCanalD2dAlterandoParaCanalAtivo()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization", getAccessToken(mvc, ADMIN)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].message",
+                is("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) do Canal D2D PRÓPRIO.")));
 
         verify(usuarioService, never()).save(any(), any());
     }
@@ -916,6 +934,23 @@ public class UsuarioGerenciaControllerTest {
             .cargoCodigo(CodigoCargo.COORDENADOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(2, 3, 4))
+            .empresasId(List.of(1, 2, 3, 5))
+            .unidadesNegociosId(List.of(2))
+            .loginNetSales("LOGINUSUARIOD2D")
+            .departamentoId(21)
+            .build();
+    }
+
+    private UsuarioDto umUsuarioQueEraCanalD2dAlterandoParaCanalAtivo() {
+        return UsuarioDto.builder()
+            .id(1660123)
+            .nome("USUARIO D2D")
+            .email("USUARIOD2D@TESTE.COM")
+            .cpf("442.341.797-95")
+            .cargoId(10)
+            .cargoCodigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
             .empresasId(List.of(1, 2, 3, 5))
             .unidadesNegociosId(List.of(2))
             .loginNetSales("LOGINUSUARIOD2D")

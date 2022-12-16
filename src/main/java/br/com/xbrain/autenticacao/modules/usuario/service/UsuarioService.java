@@ -115,8 +115,6 @@ public class UsuarioService {
     private static final ValidacaoException USUARIO_NAO_POSSUI_LOGIN_NET_SALES_EX = new ValidacaoException(
         "Usuário não possui login NetSales válido."
     );
-    private static final ValidacaoException EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL =
-        new ValidacaoException("Este usuário está em uma equipe ativa com outro subcanal.");
     private static final ValidacaoException COLABORADOR_NAO_ATIVO = new ValidacaoException(
         "O colaborador não se encontra mais com a situação Ativo. Favor verificar seu cadastro."
     );
@@ -237,8 +235,9 @@ public class UsuarioService {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
 
     public Usuario findComplete(Integer id) {
-        Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.forceLoad();
+
         return usuario;
     }
 
@@ -254,10 +253,12 @@ public class UsuarioService {
 
     @Transactional
     public Usuario findByIdEmulacao(int id) {
-        UsuarioPredicate predicate = new UsuarioPredicate();
+        var predicate = new UsuarioPredicate();
         predicate.comId(id);
-        Usuario usuario = repository.findOne(predicate.build());
+
+        var usuario = repository.findOne(predicate.build());
         usuario.forceLoad();
+
         return usuario;
     }
 
@@ -335,21 +336,28 @@ public class UsuarioService {
     }
 
     public List<EmpresaResponse> findEmpresasDoUsuario(Integer idUsuario) {
-        Usuario usuario = findComplete(idUsuario);
-        return usuario.getEmpresas().stream().map(EmpresaResponse::convertFrom).collect(toList());
+        var usuario = findComplete(idUsuario);
+
+        return usuario.getEmpresas()
+            .stream()
+            .map(EmpresaResponse::convertFrom)
+            .collect(toList());
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        var pages = repository.findAll(predicate.build(), pageRequest);
+
         if (!isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
+
         return pages;
     }
 
     public List<Usuario> getAllByPredicate(UsuarioFiltros filtros) {
         var predicate = filtrarUsuariosPermitidos(filtros);
+
         return (List<Usuario>) repository.findAll(predicate.build());
     }
 
@@ -362,7 +370,7 @@ public class UsuarioService {
     }
 
     private void obterUsuariosAa(String cnpjAa, UsuarioPredicate predicate, Boolean buscarInativos) {
-        List<Integer> lista = agenteAutorizadoNovoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
+        var lista = agenteAutorizadoNovoService.getIdUsuariosPorAa(cnpjAa, buscarInativos);
         predicate.comIds(lista);
     }
 
@@ -371,8 +379,8 @@ public class UsuarioService {
     }
 
     public UsuarioDto saveUsuarioConfiguracao(UsuarioConfiguracaoSaveDto usuarioHierarquiaSaveDto) {
-        Usuario usuario = findComplete(usuarioHierarquiaSaveDto.getUsuarioId());
-        Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
+        var usuario = findComplete(usuarioHierarquiaSaveDto.getUsuarioId());
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         if (usuario.hasConfiguracao()) {
             usuario.configurarRamal(usuarioHierarquiaSaveDto.getRamal());
         } else {
@@ -381,6 +389,7 @@ public class UsuarioService {
                     usuario, usuarioAutenticado, LocalDateTime.now(), usuarioHierarquiaSaveDto.getRamal()));
         }
         usuario.removerCaracteresDoCpf();
+
         return UsuarioDto.of(repository.save(usuario));
     }
 
@@ -389,10 +398,11 @@ public class UsuarioService {
     }
 
     public List<Integer> getIdDosUsuariosSubordinados(Integer usuarioId, Boolean incluirProprio) {
-        List<Integer> usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
+        var usuariosSubordinados = repository.getUsuariosSubordinados(usuarioId);
         if (incluirProprio) {
             usuariosSubordinados.add(usuarioId);
         }
+
         return usuariosSubordinados;
     }
 
@@ -403,8 +413,8 @@ public class UsuarioService {
 
         return Stream.of(
                 agenteAutorizadoNovoService.getIdsUsuariosSubordinados(false),
-                repository.getUsuariosSubordinados(usuario.getId())
-            ).flatMap(Collection::stream)
+                repository.getUsuariosSubordinados(usuario.getId()))
+            .flatMap(Collection::stream)
             .distinct()
             .collect(toList());
     }
@@ -438,6 +448,7 @@ public class UsuarioService {
         var predicate = new UsuarioPredicate()
             .comCargo(cargo)
             .build();
+
         return repository.findAllExecutivosOperacaoDepartamentoComercial(predicate);
     }
 
@@ -445,15 +456,18 @@ public class UsuarioService {
         var predicate = new UsuarioPredicate()
             .comCargo(cargo)
             .build();
+
         return repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(predicate);
     }
 
     public List<UsuarioAutoComplete> findExecutivosPorIds(List<Integer> idsPermitidos) {
         var usuarioLogado = autenticacaoService.getUsuarioAutenticado();
+
         if (usuarioLogado.isCoordenadorOperacao() || usuarioLogado.isGerenteOperacao()) {
             return repository
                 .findAllExecutivosDosIdsCoordenadorGerente(idsPermitidos, usuarioLogado.getId());
         }
+
         return repository.findAllExecutivosDosIds(idsPermitidos);
     }
 
@@ -474,6 +488,7 @@ public class UsuarioService {
         if (!isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
+
         return save(request);
     }
 
@@ -627,10 +642,12 @@ public class UsuarioService {
         tratarUsuarioBackoffice(usuario);
         validar(usuario);
         tratarCadastroUsuario(usuario);
+
         var enviarEmail = usuario.isNovoCadastro();
         repository.save(usuario);
 
         enviarEmailDadosAcesso(usuario, enviarEmail);
+
         return usuario;
     }
 
@@ -669,7 +686,7 @@ public class UsuarioService {
 
             var usuario = new Usuario();
             boolean enviarEmail = false;
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
 
             if (usuarioDto.isNovoCadastro()) {
                 usuario = criarUsuarioFeederNovo(usuarioDto);
@@ -701,6 +718,7 @@ public class UsuarioService {
     private Usuario criarUsuarioFeeder(UsuarioFeederMqDto usuarioDto) {
         var usuario = findCompleteById(usuarioDto.getUsuarioId());
         BeanUtils.copyProperties(usuarioDto, usuario);
+
         return usuario;
     }
 
@@ -712,6 +730,7 @@ public class UsuarioService {
             .findByCodigoIn(List.of(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)));
         usuario.setEmpresas(empresaRepository.findByCodigoIn(List.of(CodigoEmpresa.NET, CodigoEmpresa.CLARO_TV)));
         usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO));
+
         return usuario;
     }
 
@@ -728,7 +747,7 @@ public class UsuarioService {
     }
 
     public void salvarUsuarioRealocado(Usuario usuario) {
-        Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
+        var usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuarioARealocar.setSituacao(ESituacao.R);
         repository.save(usuarioARealocar);
     }
@@ -747,8 +766,9 @@ public class UsuarioService {
     }
 
     public void vincularUsuario(List<Integer> idUsuarioNovo, Integer idUsuarioSuperior) {
-        Usuario usuarioSuperior = repository.findById(idUsuarioSuperior)
+        var usuarioSuperior = repository.findById(idUsuarioSuperior)
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
+
         idUsuarioNovo.stream()
             .map(id -> {
                 var usuario = usuarioHierarquiaRepository.findOne(id);
@@ -810,9 +830,9 @@ public class UsuarioService {
 
     private void atualizarUsuariosParceiros(Usuario usuario) {
         cargoRepository.findById(usuario.getCargoId()).ifPresent(cargo -> {
-            Optional<Usuario> usuarioAtualizar = repository.findById(usuario.getId());
+            var usuarioAtualizar = repository.findById(usuario.getId());
             if (isSocioPrincipal(cargo.getCodigo()) && usuarioAtualizar.isPresent()) {
-                UsuarioDto usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
+                var usuarioDto = UsuarioDto.of(usuarioAtualizar.get());
                 try {
                     enviarParaFilaDeAtualizarUsuariosPol(usuarioDto);
                 } catch (Exception ex) {
@@ -913,7 +933,7 @@ public class UsuarioService {
     }
 
     private void removerHierarquiaSubordinados(Usuario usuario) {
-        Set<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
+        var subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
             .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
             .collect(Collectors.toSet());
         if (!isEmpty(subordinados)) {
@@ -937,9 +957,7 @@ public class UsuarioService {
         }
     }
 
-    private boolean processarHierarquia(final Usuario usuarioParaAchar,
-                                        UsuarioHierarquia usuario,
-                                        ArrayList<Usuario> valores) {
+    private boolean processarHierarquia(final Usuario usuarioParaAchar, UsuarioHierarquia usuario, ArrayList<Usuario> valores) {
         boolean existeId = false;
 
         if (validarUsuarios(usuarioParaAchar, usuario)) {
@@ -947,21 +965,21 @@ public class UsuarioService {
             valores.add(usuario.getUsuario());
 
             if (!existeId) {
-                List<Integer> superiores = getIdSuperiores(usuario.getUsuario());
-                Set<UsuarioHierarquia> usuarios = getUsuariosSuperioresPorId(superiores);
+                var superiores = getIdSuperiores(usuario.getUsuario());
+                var usuarios = getUsuariosSuperioresPorId(superiores);
                 existeId = validarHierarquia(usuarioParaAchar, usuarios, valores);
             }
             if (existeId) {
-                String mensagem = montarMensagemDeErro(valores, usuarioParaAchar);
+                var mensagem = montarMensagemDeErro(valores, usuarioParaAchar);
                 throw new ValidacaoException(mensagem);
             }
-
         }
+
         return existeId;
     }
 
     private String montarMensagemDeErro(ArrayList<Usuario> usuarios, Usuario usuarioParaAchar) {
-        List<Usuario> valores = usuarios.stream().distinct().collect(toList());
+        var valores = usuarios.stream().distinct().collect(toList());
         return valores.size() == 1
             ? "Não é possível atrelar o próprio usuário em sua Hierarquia."
             : "Não é possível adicionar o usuário "
@@ -1047,7 +1065,7 @@ public class UsuarioService {
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
-            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
 
@@ -1067,7 +1085,7 @@ public class UsuarioService {
     @Transactional
     public void updateFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
-            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             if (!isAlteracaoCpf(UsuarioDto.convertFrom(usuarioDto))) {
                 configurarUsuario(usuarioMqRequest, usuarioDto);
                 save(UsuarioDto.convertFrom(usuarioDto));
@@ -1145,6 +1163,7 @@ public class UsuarioService {
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setSituacao(ESituacao.A);
         usuario.setId(null);
+
         return usuario;
     }
 
@@ -1161,9 +1180,10 @@ public class UsuarioService {
     }
 
     public boolean isAlteracaoCpf(Usuario usuario) {
-        Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
+        var usuarioCpfAntigo = repository.findById(usuario.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
+
         return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
@@ -1181,9 +1201,9 @@ public class UsuarioService {
     public void atualizarUsuariosAgentesAutorizados(UsuarioMqAtualizacaoRequest usuariosAtualizacao) {
         try {
             usuariosAtualizacao.getUsuariosIds().forEach(u -> {
-                Optional<Usuario> usuarioOptional = repository.findById(u);
+                var usuarioOptional = repository.findById(u);
                 if (usuarioOptional.isPresent()) {
-                    Usuario usuario = usuarioOptional.get();
+                    var usuario = usuarioOptional.get();
                     atualizarEmpresas(usuario, usuariosAtualizacao.getEmpresasIds());
                     atualizarUnidadesNegocio(usuario, usuariosAtualizacao.getUnidadeId());
                 } else {
@@ -1211,7 +1231,7 @@ public class UsuarioService {
     @Transactional
     public void recuperarUsuariosAgentesAutorizados(UsuarioMqRequest usuarioMqRequest) {
         try {
-            Usuario usuario = repository.findOne(usuarioMqRequest.getId());
+            var usuario = repository.findOne(usuarioMqRequest.getId());
             usuario = usuario.parse(usuarioMqRequest);
             usuario.setEmpresas(empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa()));
             usuario.setUnidadesNegocios(unidadeNegocioRepository.findByCodigoIn(usuarioMqRequest.getUnidadesNegocio()));
@@ -1220,7 +1240,7 @@ public class UsuarioService {
             usuario.setAlterarSenha(Eboolean.V);
             usuario.removerCaracteresDoCpf();
 
-            String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+            var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
             repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), usuario.getId());
             repository.updateEmail(usuario.getEmail(), usuario.getId());
             repository.save(usuario);
@@ -1275,7 +1295,7 @@ public class UsuarioService {
     }
 
     private void configurarCargo(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        Cargo cargo = getCargo(usuarioMqRequest.getCargo());
+        var cargo = getCargo(usuarioMqRequest.getCargo());
         usuarioDto.setCargoId(cargo.getId());
     }
 
@@ -1284,24 +1304,24 @@ public class UsuarioService {
     }
 
     private void configurarDepartamento(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        Departamento departamento = departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento());
+        var departamento = departamentoRepository.findByCodigo(usuarioMqRequest.getDepartamento());
         usuarioDto.setDepartamentoId(departamento.getId());
     }
 
     private void configurarNivel(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        Nivel nivel = nivelRepository.findByCodigo(usuarioMqRequest.getNivel());
+        var nivel = nivelRepository.findByCodigo(usuarioMqRequest.getNivel());
         usuarioDto.setNivelId(nivel.getId());
     }
 
     private void configurarUnidadesNegocio(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        List<UnidadeNegocio> unidadesNegocios = unidadeNegocioRepository
+        var unidadesNegocios = unidadeNegocioRepository
             .findByCodigoIn(usuarioMqRequest.getUnidadesNegocio());
         usuarioDto.setUnidadesNegociosId(unidadesNegocios.stream()
             .map(UnidadeNegocio::getId).collect(toList()));
     }
 
     private void configurarEmpresas(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
-        List<Empresa> empresas = empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa());
+        var empresas = empresaRepository.findByCodigoIn(usuarioMqRequest.getEmpresa());
         usuarioDto.setEmpresasId(empresas.stream().map(Empresa::getId).collect(toList()));
     }
 
@@ -1388,14 +1408,15 @@ public class UsuarioService {
     }
 
     public void limparCpfUsuario(Integer id) {
-        Usuario usuario = limpaCpf(id);
+        var usuario = limpaCpf(id);
         agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
     }
 
     @Transactional
     public Usuario limpaCpf(Integer id) {
-        Usuario usuario = findComplete(id);
+        var usuario = findComplete(id);
         usuario.setCpf(null);
+
         return repository.save(usuario);
     }
 
@@ -1410,7 +1431,7 @@ public class UsuarioService {
 
     @Transactional
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
-        Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
+        var usuario = findComplete(usuarioInativacao.getIdUsuario());
         validarUsuarioAtivoLocalEPossuiAgendamento(usuario);
         usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
@@ -1474,9 +1495,10 @@ public class UsuarioService {
     }
 
     public List<UsuarioHierarquiaResponse> getUsuariosHierarquia(Integer nivelId) {
-        UsuarioPredicate usuarioPredicate = new UsuarioPredicate();
+        var usuarioPredicate = new UsuarioPredicate();
         usuarioPredicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         usuarioPredicate.comNivel(Collections.singletonList(nivelId));
+
         return repository.findAllUsuariosHierarquia(usuarioPredicate.build());
     }
 
@@ -1498,11 +1520,14 @@ public class UsuarioService {
                 .comCidade(cidadesId)
                 .comCanais(canais)
                 .build());
+
         return UsuarioHierarquiaResponse.convertTo(usuariosCargoSuperior);
     }
 
-    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanalAndSubCanal(Integer cargoId, List<Integer> cidadesId,
-                                                                                    Set<ECanal> canais, Set<Integer> subCanais) {
+    public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperiorByCanalAndSubCanal(Integer cargoId,
+                                                                                      List<Integer> cidadesId,
+                                                                                      Set<ECanal> canais,
+                                                                                      Set<Integer> subCanais) {
         var usuariosCargoSuperior = repository.getUsuariosFilter(
             new UsuarioPredicate()
                 .filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, false)
@@ -1515,7 +1540,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioDto> getUsuariosFiltros(UsuarioFiltrosDto usuarioFiltrosDto) {
-        UsuarioPredicate usuarioPredicate = new UsuarioPredicate()
+        var usuarioPredicate = new UsuarioPredicate()
             .comEmpresas(usuarioFiltrosDto.getEmpresasIds())
             .comUnidadesNegocio(usuarioFiltrosDto.getUnidadesNegocioIds())
             .comNivel(usuarioFiltrosDto.getNivelIds())
@@ -1526,7 +1551,7 @@ public class UsuarioService {
 
         montarPredicateComCidade(usuarioPredicate, usuarioFiltrosDto);
 
-        List<Usuario> usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
+        var usuarioList = repository.getUsuariosFilter(usuarioPredicate.build());
 
         return usuarioList.stream()
             .map(UsuarioDto::of)
@@ -1534,14 +1559,13 @@ public class UsuarioService {
     }
 
     private void montarPredicateComCidade(UsuarioPredicate predicate, UsuarioFiltrosDto filtro) {
-
-        List<List<Integer>> listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), QTD_MAX_IN_NO_ORACLE);
+        var listaPartes = ListUtil.divideListaEmListasMenores(filtro.getCidadesIds(), QTD_MAX_IN_NO_ORACLE);
 
         listaPartes.forEach(lista -> predicate.comCidade(lista));
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
-        List<Usuario> usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
+        var usuarios = repository.findBySituacaoAndIdIn(ESituacao.A, idsUsuarios);
         return usuarios.stream()
             .map(UsuarioResponse::of)
             .collect(toList());
@@ -1609,7 +1633,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuarioSuperiores(Integer idUsuario) {
-        List<UsuarioHierarquia> usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
+        var usuariosHierarquia = repository.getUsuarioSuperiores(idUsuario);
+
         return usuariosHierarquia
             .stream()
             .map(uh -> UsuarioResponse.of(uh.getUsuarioSuperior()))
@@ -1626,13 +1651,13 @@ public class UsuarioService {
 
     @Transactional
     public void alterarSenhaEReenviarPorEmail(Integer idUsuario) {
-        Usuario usuario = findComplete(idUsuario);
+        var usuario = findComplete(idUsuario);
         updateSenha(usuario, Eboolean.V);
     }
 
     @Transactional
     public void alterarSenhaAa(UsuarioAlterarSenhaDto usuarioAlterarSenhaDto) {
-        Usuario usuario = findComplete(usuarioAlterarSenhaDto.getUsuarioId());
+        var usuario = findComplete(usuarioAlterarSenhaDto.getUsuarioId());
         usuario.setAlterarSenha(usuarioAlterarSenhaDto.getAlterarSenha());
         updateSenha(usuario, usuarioAlterarSenhaDto.getAlterarSenha());
         repository.save(usuario);
@@ -1640,7 +1665,7 @@ public class UsuarioService {
 
     @Transactional
     public void alterarDadosAcessoEmail(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
-        Usuario usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
+        var usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         validarEmail(usuario, usuarioDadosAcessoRequest.getEmailAtual(), usuarioDadosAcessoRequest.getEmailNovo());
         usuario.setEmail(usuarioDadosAcessoRequest.getEmailNovo());
         repository.updateEmail(usuarioDadosAcessoRequest.getEmailNovo(), usuario.getId());
@@ -1650,7 +1675,7 @@ public class UsuarioService {
     }
 
     private void updateSenha(Usuario usuario, Eboolean alterarSenha) {
-        String senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
+        var senhaDescriptografada = getSenhaRandomica(MAX_CARACTERES_SENHA);
         repository.updateSenha(passwordEncoder.encode(senhaDescriptografada), alterarSenha, usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, senhaDescriptografada);
     }
@@ -1682,6 +1707,7 @@ public class UsuarioService {
             usuarioDadosAcessoRequest.getAlterarSenha(), usuario.getId());
         notificacaoService.enviarEmailAtualizacaoSenha(usuario, usuarioDadosAcessoRequest.getSenhaNova());
         autenticacaoService.forcarLogoutGeradorLeads(usuario);
+
         return usuario.getId();
     }
 
@@ -1692,17 +1718,19 @@ public class UsuarioService {
     }
 
     public ConfiguracaoResponse getConfiguracaoByUsuario() {
-        Usuario usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(null);
+        var usuario = repository.findComConfiguracao(autenticacaoService.getUsuarioId()).orElse(null);
+
         return usuario != null
             ? ConfiguracaoResponse.convertFrom(usuario.getConfiguracao())
             : new ConfiguracaoResponse();
     }
 
     public List<FuncionalidadeResponse> getFuncionalidadeByUsuario(Integer idUsuario) {
-        Usuario usuario = findComplete(idUsuario);
-        FuncionalidadePredicate predicate = getFuncionalidadePredicate(usuario);
-        List<CargoDepartamentoFuncionalidade> funcionalidades = cargoDepartamentoFuncionalidadeRepository
+        var usuario = findComplete(idUsuario);
+        var predicate = getFuncionalidadePredicate(usuario);
+        var funcionalidades = cargoDepartamentoFuncionalidadeRepository
             .findFuncionalidadesPorCargoEDepartamento(predicate.build());
+
         return Stream.concat(
                 funcionalidades
                     .stream()
@@ -1715,7 +1743,7 @@ public class UsuarioService {
     }
 
     public UsuarioPermissaoResponse findPermissoesByUsuario(Integer idUsuario) {
-        Usuario usuario = findComplete(idUsuario);
+        var usuario = findComplete(idUsuario);
 
         return findPermissoesByUsuario(usuario);
     }
@@ -1746,7 +1774,8 @@ public class UsuarioService {
     }
 
     public List<UsuarioCidadeDto> getCidadeByUsuario(Integer usuarioId) {
-        Usuario usuario = findComplete(usuarioId);
+        var usuario = findComplete(usuarioId);
+
         return usuario.getCidades().stream()
             .map(c -> UsuarioCidadeDto.of(c.getCidade()))
             .collect(toList());
@@ -1754,23 +1783,24 @@ public class UsuarioService {
 
     @Transactional
     public ConfiguracaoResponse adicionarConfiguracao(UsuarioConfiguracaoDto dto) {
-        Configuracao configuracao = configuracaoRepository
+        var configuracao = configuracaoRepository
             .findByUsuario(new Usuario(dto.getUsuario()))
             .orElse(new Configuracao());
         configuracao.configurar(dto);
         configuracao = configuracaoRepository.save(configuracao);
+
         return ConfiguracaoResponse.convertFrom(configuracao);
     }
 
     @Transactional
     public void removerConfiguracao(UsuarioConfiguracaoDto dto) {
-        List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        var configuracao = configuracaoRepository.findByRamal(dto.getRamal());
         configuracao.forEach(c -> configuracaoRepository.delete(c));
     }
 
     @Transactional
     public void removerRamalConfiguracao(UsuarioConfiguracaoDto dto) {
-        List<Configuracao> configuracao = configuracaoRepository.findByRamal(dto.getRamal());
+        var configuracao = configuracaoRepository.findByRamal(dto.getRamal());
         configuracao.forEach(config -> {
             config.removerRamal();
             configuracaoRepository.save(config);
@@ -1792,10 +1822,10 @@ public class UsuarioService {
 
     @Transactional
     public void saveUsuarioHierarquia(List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
-        List<UsuarioHierarquiaCarteiraDto> novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
+        var novasHierarquiasValidas = validaUsuarioHierarquiaExistente(novasHierarquias);
 
         novasHierarquiasValidas.forEach(u -> {
-            UsuarioHierarquia usuarioHierarquia
+            var usuarioHierarquia
                 = UsuarioHierarquia.criar(new Usuario(u.getUsuarioId()), u.getUsuarioSuperiorId(), u.getUsuarioCadastroId());
             usuarioHierarquiaRepository.save(usuarioHierarquia);
         });
@@ -1803,8 +1833,8 @@ public class UsuarioService {
 
     private List<UsuarioHierarquiaCarteiraDto> validaUsuarioHierarquiaExistente(
         List<UsuarioHierarquiaCarteiraDto> novasHierarquias) {
-        List<UsuarioHierarquia> usuarioHierarquiasExistentes
-            = (List<UsuarioHierarquia>) usuarioHierarquiaRepository.findAll();
+        var usuarioHierarquiasExistentes = (List<UsuarioHierarquia>) usuarioHierarquiaRepository.findAll();
+
         return novasHierarquias
             .stream()
             .filter(c -> !validaUsuarioHierarquiaExistente(usuarioHierarquiasExistentes, c))
@@ -1826,9 +1856,9 @@ public class UsuarioService {
     }
 
     public void ativarSocioPrincipal(String email) {
-        Optional<UsuarioResponse> usuario = findByEmailAa(email, null);
+        var usuario = findByEmailAa(email, null);
         usuario.ifPresent(u -> {
-            Optional<Usuario> usuarioCompleto = repository.findById(u.getId());
+            var usuarioCompleto = repository.findById(u.getId());
             usuarioCompleto.ifPresent(user -> {
                 user.setSituacao(ATIVO);
                 repository.save(user);
@@ -1837,9 +1867,9 @@ public class UsuarioService {
     }
 
     public void inativarSocioPrincipal(String email) {
-        Optional<UsuarioResponse> usuario = findByEmailAa(email, null);
+        var usuario = findByEmailAa(email, null);
         usuario.ifPresent(u -> {
-            Optional<Usuario> usuarioCompleto = repository.findById(usuario.get().getId());
+            var usuarioCompleto = repository.findById(usuario.get().getId());
             usuarioCompleto.ifPresent(user -> {
                 user.setSituacao(INATIVO);
                 repository.save(user);
@@ -1848,9 +1878,9 @@ public class UsuarioService {
     }
 
     public void inativarColaboradores(String cnpj) {
-        List<String> emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
+        var emailColaboradores = agenteAutorizadoClient.recuperarColaboradoresDoAgenteAutorizado(cnpj);
         emailColaboradores.forEach(colaborador -> {
-            Usuario usuario = repository.findByEmail(colaborador)
+            var usuario = repository.findByEmail(colaborador)
                 .orElseThrow(() -> EX_NAO_ENCONTRADO);
             usuario.setSituacao(INATIVO);
             usuario.removerCaracteresDoCpf();
@@ -1881,6 +1911,7 @@ public class UsuarioService {
 
     private UsuarioHierarquiaResponse criarUsuarioHierarquiaVendedoresResponse(Object[] param) {
         int indice = POSICAO_ZERO;
+
         return UsuarioHierarquiaResponse.builder()
             .id(objectToInteger(param[indice++]))
             .nome(objectToString(param[indice++]))
@@ -1893,11 +1924,12 @@ public class UsuarioService {
             repository.getUsuariosCsv(filtrarUsuariosPermitidos(filtros).build());
         preencherUsuarioCsvsDeOperacao(usuarioCsvResponses);
         preencherUsuarioCsvsDeAa(usuarioCsvResponses);
+
         return usuarioCsvResponses;
     }
 
     void preencherUsuarioCsvsDeOperacao(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        List<Integer> usuarioIds = usuarioCsvResponses.parallelStream()
+        var usuarioIds = usuarioCsvResponses.parallelStream()
             .filter(usuarioCsvResponse -> OPERACAO.equals(usuarioCsvResponse.getNivel()))
             .map(UsuarioCsvResponse::getId)
             .collect(toList());
@@ -1917,7 +1949,7 @@ public class UsuarioService {
     }
 
     void preencherUsuarioCsvsDeAa(List<UsuarioCsvResponse> usuarioCsvResponses) {
-        UsuarioRequest usuarioRequest = UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
+        var usuarioRequest = UsuarioRequest.of(usuarioCsvResponses.parallelStream().filter(
             usuarioCsvResponse -> AGENTE_AUTORIZADO.equals(usuarioCsvResponse.getNivel())
         ).map(UsuarioCsvResponse::getId).collect(toList()));
 
@@ -1952,7 +1984,7 @@ public class UsuarioService {
     }
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtros.toPredicate();
+        var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
@@ -2063,7 +2095,6 @@ public class UsuarioService {
     }
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-
         if (!isEmpty(usuarioFiltros.getAgentesAutorizadosIds())) {
             var usuarios = new ArrayList<Integer>();
             usuarioFiltros.getAgentesAutorizadosIds()
@@ -2076,7 +2107,6 @@ public class UsuarioService {
     }
 
     private List<Integer> getIdUsuariosAa(Integer aaId) {
-
         try {
             return agenteAutorizadoNovoService.getUsuariosByAaId(aaId, true)
                 .stream()
@@ -2109,7 +2139,6 @@ public class UsuarioService {
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {
-
         return usuarioCidadeRepository.findCidadesDtoByUsuarioId(autenticacaoService.getUsuarioAutenticadoId()
             .orElseThrow(PermissaoException::new));
     }
@@ -2194,7 +2223,6 @@ public class UsuarioService {
 
     public List<SelectResponse> findUsuariosOperadoresBackofficeByOrganizacao(Integer organizacaoId,
                                                                               boolean buscarInativos) {
-
         return repository.findByOrganizacaoIdAndCargo_CodigoIn(organizacaoId, cargosOperadoresBackoffice)
             .stream()
             .filter(usuario -> buscarInativos || usuario.isAtivo())
@@ -2205,6 +2233,7 @@ public class UsuarioService {
     public List<Integer> getAllUsuariosDaHierarquiaD2dDoUserLogado() {
         var predicate = new UsuarioPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
+
         return StreamSupport.stream(repository.findAll(predicate.build()).spliterator(), false)
             .map(Usuario::getId)
             .collect(toList());
@@ -2298,8 +2327,8 @@ public class UsuarioService {
         return Arrays.stream(ETipoCanal.values())
             .map(tipoCanal -> SelectResponse.of(
                 tipoCanal.name(),
-                tipoCanal.getDescricao().toUpperCase()
-            )).collect(toList());
+                tipoCanal.getDescricao().toUpperCase()))
+            .collect(toList());
     }
 
     public List<UsuarioSituacaoResponse> buscarUsuarioSituacaoPorIds(UsuarioSituacaoFiltro filtro) {
@@ -2335,7 +2364,8 @@ public class UsuarioService {
                     .label(usuario.getNome())
                     .value(usuario.getId())
                     .build();
-            }).collect(toList());
+            })
+            .collect(toList());
     }
 
     public List<UsuarioVendedorReceptivoResponse> buscarVendedoresReceptivosPorId(List<Integer> ids) {
@@ -2372,30 +2402,48 @@ public class UsuarioService {
         if (situacao == ESituacao.R) {
             return usuarioNome.concat(" (REALOCADO)");
         }
+
         return usuarioNome;
     }
 
-    public void validarUsuarioCanalD2dNaEquipeVendas(UsuarioDto usuario) {
-        if (validarCondicoesUsuarioCanalD2d(usuario)) {
-            var subCanaisDaEquipeVendas = equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId());
-
-            if (!subCanaisDaEquipeVendas.isEmpty()) {
-                var subCanaisExistentes = subCanaisDaEquipeVendas.stream()
-                    .filter(subCanalDaEquipeVenda -> usuario.getSubCanaisId().contains(subCanalDaEquipeVenda))
-                    .collect(toList());
-
-                if (subCanaisExistentes.size() < subCanaisDaEquipeVendas.size()) {
-                    throw EX_USUARIO_EM_EQUIPE_COM_OUTRO_SUBCANAL;
-                }
-            }
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal(UsuarioDto usuarioDto) {
+        if (validarCondicoesUsuarioCanalD2d(usuarioDto)) {
+            validarSeUsuarioEstaEmEquipeVendasComOutroSubCanalId(usuarioDto,
+                new ValidacaoException("Não foi possível editar o usuário, "
+                    + "pois ele possui vínculo com equipe(s) com outro subcanal."));
+        }
+        if (validarCondicoesSeUsuarioTrocarDeCanal(usuarioDto)) {
+            validarSeUsuarioEstaEmEquipeVendasComOutroSubCanalId(usuarioDto,
+                new ValidacaoException("Não foi possível editar o usuário, "
+                    + "pois ele possui vínculo com equipe(s) do Canal D2D PRÓPRIO."));
         }
     }
 
-    private boolean validarCondicoesUsuarioCanalD2d(UsuarioDto usuario) {
-        return usuario.getId() != null
-            && usuario.getCargoCodigo() != null
-            && usuario.getCanais().contains(ECanal.D2D_PROPRIO)
-            && !usuario.getSubCanaisId().isEmpty()
-            && LISTA_CARGOS_EQUIPE_VENDAS_D2D.contains(usuario.getCargoCodigo());
+    private boolean validarCondicoesUsuarioCanalD2d(UsuarioDto usuarioDto) {
+        return usuarioDto.hasIdAndCargoCodigo()
+            && usuarioDto.hasSubCanaisId()
+            && usuarioDto.hasCanalD2dProprio()
+            && LISTA_CARGOS_EQUIPE_VENDAS_D2D.contains(usuarioDto.getCargoCodigo());
+    }
+
+    private boolean validarCondicoesSeUsuarioTrocarDeCanal(UsuarioDto usuarioDto) {
+        return usuarioDto.hasIdAndCargoCodigo()
+            && !usuarioDto.hasSubCanaisId()
+            && !usuarioDto.hasCanalD2dProprio();
+    }
+
+    private void validarSeUsuarioEstaEmEquipeVendasComOutroSubCanalId(UsuarioDto usuarioDto,
+                                                                      ValidacaoException validacaoException) {
+        var subCanaisDaEquipeVendas = equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId());
+
+        if (!subCanaisDaEquipeVendas.isEmpty()) {
+            var subCanaisExistentes = subCanaisDaEquipeVendas.stream()
+                .filter(subCanalDaEquipeVenda -> usuarioDto.getSubCanaisId().contains(subCanalDaEquipeVenda))
+                .collect(toList());
+
+            if (subCanaisExistentes.size() < subCanaisDaEquipeVendas.size()) {
+                throw validacaoException;
+            }
+        }
     }
 }

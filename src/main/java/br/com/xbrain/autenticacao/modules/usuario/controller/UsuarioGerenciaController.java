@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping(value = "api/usuarios/gerencia")
+@RequestMapping("api/usuarios/gerencia")
 public class UsuarioGerenciaController {
 
     @Autowired
@@ -28,7 +28,8 @@ public class UsuarioGerenciaController {
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
-        service.validarUsuarioCanalD2dNaEquipeVendas(usuario);
+        service.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuario);
+
         return service.save(UsuarioDto.convertFrom(usuario), foto);
     }
 
@@ -45,6 +46,7 @@ public class UsuarioGerenciaController {
     @GetMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
+
         return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 public class SubCanalServiceTest {
-    
+
     @Autowired
     private SubCanalService service;
     @MockBean

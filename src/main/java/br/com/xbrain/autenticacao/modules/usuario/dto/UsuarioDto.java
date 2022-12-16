@@ -109,7 +109,7 @@ public class UsuarioDto implements Serializable {
     }
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
-        Usuario usuario = new Usuario();
+        var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
@@ -123,6 +123,7 @@ public class UsuarioDto implements Serializable {
             usuario.setUsuarioCadastro(new Usuario(usuarioDto.getUsuarioCadastroId()));
         }
         usuario.setSubCanaisId(usuarioDto.getSubCanaisId());
+
         return usuario;
     }
 
@@ -144,12 +145,14 @@ public class UsuarioDto implements Serializable {
         usuarioDto.setUnidadeNegocioId(obterUnidadeNegocioId(usuario));
         usuarioDto.setOrganizacaoId(getOrganizacaoId(usuario));
         usuarioDto.setSubCanaisId(usuario.getSubCanaisId());
+
         return usuarioDto;
     }
 
     public static UsuarioDto of(Usuario usuario, boolean permiteEditarCompleto) {
         var usuarioDto = UsuarioDto.of(usuario);
         usuarioDto.setPermiteEditarCompleto(permiteEditarCompleto);
+
         return usuarioDto;
     }
 
@@ -158,13 +161,25 @@ public class UsuarioDto implements Serializable {
     }
 
     public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuarioMqRequest, usuarioDto);
+
         return usuarioDto;
     }
 
     private static Integer obterUnidadeNegocioId(Usuario usuario) {
-        return !isEmpty(usuario.getUnidadesNegociosId())
-            ? usuario.getUnidadesNegociosId().get(0) : 0;
+        return !isEmpty(usuario.getUnidadesNegociosId()) ? usuario.getUnidadesNegociosId().get(0) : 0;
+    }
+
+    public boolean hasCanalD2dProprio() {
+        return canais.contains(ECanal.D2D_PROPRIO);
+    }
+
+    public boolean hasIdAndCargoCodigo() {
+        return id != null && cargoCodigo != null;
+    }
+
+    public boolean hasSubCanaisId() {
+        return !subCanaisId.isEmpty();
     }
 }

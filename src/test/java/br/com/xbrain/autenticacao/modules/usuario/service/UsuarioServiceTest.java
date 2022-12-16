@@ -16,7 +16,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
@@ -33,7 +32,10 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -234,7 +236,6 @@ public class UsuarioServiceTest {
             .findMotivoInativacaoByUsuarioId(anyInt());
 
         usuarioService.ativar(umUsuarioAtivacaoDto());
-
     }
 
     @Test
@@ -1428,6 +1429,7 @@ public class UsuarioServiceTest {
     private Usuario umUsuarioSemLoginNetSales(int id) {
         var usuario = umUsuarioComLoginNetSales(id);
         usuario.setLoginNetSales(null);
+
         return usuario;
     }
 
@@ -1456,6 +1458,7 @@ public class UsuarioServiceTest {
         var predicate = new UsuarioPredicate();
         predicate.comCodigosCargos(FeederUtil.CARGOS_BACKOFFICE_AND_SOCIO_PRINCIPAL_AA);
         predicate.comIds(ids);
+
         return predicate;
     }
 
@@ -1532,8 +1535,8 @@ public class UsuarioServiceTest {
 
     @Test
     public void getAllForCsv_deveRetornarCsv_quandoEncontrarUsuarios() {
-        UsuarioFiltros usuarioFiltros = new UsuarioFiltros();
-        UsuarioPredicate usuarioPredicate = usuarioFiltros.toPredicate();
+        var usuarioFiltros = new UsuarioFiltros();
+        var usuarioPredicate = usuarioFiltros.toPredicate();
 
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelAa());
@@ -1565,12 +1568,10 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(usuarioAaCsvCompletado, umUsuarioOperacaoCsv()));
-
     }
 
     @Test
     public void preencheUsuarioCsvsDeOperacao_devePreencherColunasDeCanal_seUsuarioForOperacao() {
-
         when(usuarioRepository.getCanaisByUsuarioIds(Collections.singletonList(1)))
             .thenReturn(List.of(umCanal(), umOutroCanal()));
 
@@ -1585,7 +1586,6 @@ public class UsuarioServiceTest {
 
         assertThat(usuarioCsvResponses)
             .isEqualTo(List.of(umUsuarioAaCsv(), usuarioOperacaoCsvCompletado));
-
     }
 
     @Test
@@ -1704,10 +1704,10 @@ public class UsuarioServiceTest {
         var usuarioCadastro = umUsuarioCompleto(VENDEDOR_OPERACAO, 8, CodigoNivel.OPERACAO,
             CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
         usuarioCadastro.setSubCanais(Set.of(new SubCanal(1)));
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuarioCadastro))
             .withMessage("Usuário já está cadastrado em outra equipe");
-
     }
 
     @Test
@@ -1720,7 +1720,8 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendasUsuarioService.buscarUsuarioEquipeVendasPorId(anyInt()))
             .thenReturn(List.of());
-        Assertions.assertThatCode(() -> usuarioService.save(
+
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(VENDEDOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
                     ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
@@ -1737,13 +1738,13 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of(1));
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 4, CodigoNivel.OPERACAO,
                     CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
                     Set.of(new SubCanal(1)))))
             .withMessage("Usuário já está cadastrado em outra equipe");
-
     }
 
     @Test
@@ -1756,12 +1757,14 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of(1));
-        Assertions.assertThatExceptionOfType(ValidacaoException.class)
+
+        assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 9, CodigoNivel.OPERACAO,
                     CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
                     Set.of(new SubCanal(1)))))
             .withMessage("Usuário já está cadastrado em outra equipe");
+
         verify(usuarioRepository, never()).saveAndFlush(any());
     }
 
@@ -1775,11 +1778,13 @@ public class UsuarioServiceTest {
             .thenReturn(List.of(new Canal(1, ECanal.D2D_PROPRIO)));
         when(equipeVendaD2dService.getEquipeVendasBySupervisorId(any()))
             .thenReturn(List.of());
-        Assertions.assertThatCode(() -> usuarioService.save(
+
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7, CodigoNivel.OPERACAO,
                     CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
                     Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
+
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
 
@@ -1789,11 +1794,13 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(umUsuarioCompleto(OPERACAO_CONSULTOR, 3,
                 OPERACAO, CodigoDepartamento.COMERCIAL,
                 ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
-        Assertions.assertThatCode(() -> usuarioService.save(
+
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(GERENTE_OPERACAO, 7,
                     CodigoNivel.OPERACAO, CodigoDepartamento.COMERCIAL,
                     ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
+
         verify(equipeVendaD2dService, never()).getEquipeVendasBySupervisorId(any());
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
@@ -1805,11 +1812,13 @@ public class UsuarioServiceTest {
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.AGENTE_AUTORIZADO,
                 ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))));
-        Assertions.assertThatCode(() -> usuarioService.save(
+
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO,
                     ECanal.D2D_PROPRIO, Set.of(new SubCanal(1)))))
             .doesNotThrowAnyException();
+
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
@@ -1819,10 +1828,12 @@ public class UsuarioServiceTest {
         when(usuarioRepository.findById(any()))
             .thenReturn(Optional.of(umUsuarioCompleto(ASSISTENTE_OPERACAO, 2, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.ATIVO_PROPRIO)));
-        Assertions.assertThatCode(() -> usuarioService.save(
+
+        assertThatCode(() -> usuarioService.save(
                 umUsuarioCompleto(COORDENADOR_OPERACAO, 8,
                     CodigoNivel.OPERACAO, CodigoDepartamento.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO)))
             .doesNotThrowAnyException();
+
         verify(equipeVendasUsuarioService, never()).buscarUsuarioEquipeVendasPorId(any());
         verify(usuarioRepository, times(1)).saveAndFlush(any());
     }
@@ -2009,56 +2020,12 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoUsuarioDtoIdForNull() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoIdForNull() {
+        var usuarioDto = UsuarioDto.builder()
             .id(null)
             .build();
 
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
-            .doesNotThrowAnyException();
-
-        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
-    }
-
-    @Test
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoForNull() {
-        var usuario = UsuarioDto.builder()
-            .id(1660123)
-            .cargoCodigo(null)
-            .subCanaisId(Set.of())
-            .build();
-
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
-            .doesNotThrowAnyException();
-
-        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
-    }
-
-    @Test
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoUsuarioDtoNaoConterCanalD2d() {
-        var usuario = UsuarioDto.builder()
-            .id(1660123)
-            .cargoCodigo(VENDEDOR_OPERACAO)
-            .canais(Set.of(ECanal.ATIVO_PROPRIO))
-            .subCanaisId(Set.of())
-            .build();
-
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
-            .doesNotThrowAnyException();
-
-        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
-    }
-
-    @Test
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoListaSubCanaisIdUsuarioDtoForVazia() {
-        var usuario = UsuarioDto.builder()
-            .id(1660123)
-            .cargoCodigo(VENDEDOR_OPERACAO)
-            .canais(Set.of(ECanal.D2D_PROPRIO))
-            .subCanaisId(Set.of())
-            .build();
-
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
             .doesNotThrowAnyException();
 
         verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
@@ -2066,15 +2033,61 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoNaoEstiverNaListaDeCargosEquipeD2d() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoForNull() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(null)
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEListaSubCanaisIdVazia() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(VENDEDOR_OPERACAO)
+            .canais(Set.of(ECanal.D2D_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dComListaSubCanaisId() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(VENDEDOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of(1))
+            .build();
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoCargoCodigoUsuarioDtoNaoEstiverNaListaDeCargosEquipeD2d() {
+        var usuarioDto = UsuarioDto.builder()
             .id(1660123)
             .cargoCodigo(DIRETOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(1, 2, 3, 4))
             .build();
 
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
             .doesNotThrowAnyException();
 
         verify(equipeVendaD2dService, never()).getSubCanaisDaEquipeVendaD2dByUsuarioId(anyInt());
@@ -2082,76 +2095,113 @@ public class UsuarioServiceTest {
 
     @Test
     @SuppressWarnings("LineLength")
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoClientEquipeVendasRetornarListaVazia() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEClientEquipeVendasRetornarListaVazia() {
+        var usuarioDto = UsuarioDto.builder()
             .id(1660123)
             .cargoCodigo(SUPERVISOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(3))
             .build();
 
-        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId())).thenReturn(List.of());
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of());
 
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
             .doesNotThrowAnyException();
 
-        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuario.getId()));
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void validarUsuarioCanalD2dNaEquipeVendas_naoDeveLancarValidacaoException_quandoUsuarioEstiverEmEquipeVendasComMesmoSubCanal() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dClientEquipeVendasRetornarListaVazia() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of());
+
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .doesNotThrowAnyException();
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_naoDeveLancarValidacaoException_quandoUsuarioEstiverEmEquipeVendasComMesmoSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
             .id(1660123)
             .cargoCodigo(SUPERVISOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(3))
             .build();
 
-        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId())).thenReturn(List.of(3));
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(3));
 
-        assertThatCode(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
+        assertThatCode(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
             .doesNotThrowAnyException();
 
-        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuario.getId()));
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void validarUsuarioCanalD2dNaEquipeVendas_deveLancarValidacaoException_quandoUsuarioComApenasUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEComApenasUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
             .id(1660123)
             .cargoCodigo(SUPERVISOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(2))
             .build();
 
-        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId())).thenReturn(List.of(3));
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(3));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
-            .withMessage("Este usuário está em uma equipe ativa com outro subcanal.");
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.");
 
-        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuario.getId()));
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
     }
 
     @Test
     @SuppressWarnings("LineLength")
-    public void validarUsuarioCanalD2dNaEquipeVendas_deveLancarValidacaoException_quandoUsuarioComMaisDeUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
-        var usuario = UsuarioDto.builder()
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoComCanalD2dEComMaisDeUmSubCanalEstiverEmUmaEquipeVendasComOutroSubCanal() {
+        var usuarioDto = UsuarioDto.builder()
             .id(1660123)
             .cargoCodigo(COORDENADOR_OPERACAO)
             .canais(Set.of(ECanal.D2D_PROPRIO))
             .subCanaisId(Set.of(2, 3, 4))
             .build();
 
-        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuario.getId())).thenReturn(List.of(1, 3));
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(1, 3));
 
         assertThatExceptionOfType(ValidacaoException.class)
-            .isThrownBy(() -> usuarioService.validarUsuarioCanalD2dNaEquipeVendas(usuario))
-            .withMessage("Este usuário está em uma equipe ativa com outro subcanal.");
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) com outro subcanal.");
 
-        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuario.getId()));
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
+    }
+
+    @Test
+    @SuppressWarnings("LineLength")
+    public void validarVinculoDoUsuarioNaEquipeVendasComSubCanal_deveLancarValidacaoException_quandoUsuarioDtoSemCanalD2dEstiverEmUmaEquipeVendasDoCanalD2d() {
+        var usuarioDto = UsuarioDto.builder()
+            .id(1660123)
+            .cargoCodigo(SUPERVISOR_OPERACAO)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .subCanaisId(Set.of())
+            .build();
+
+        when(equipeVendaD2dService.getSubCanaisDaEquipeVendaD2dByUsuarioId(usuarioDto.getId())).thenReturn(List.of(1));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuarioDto))
+            .withMessage("Não foi possível editar o usuário, pois ele possui vínculo com equipe(s) do Canal D2D PRÓPRIO.");
+
+        verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
     }
 
     private Canal umCanal() {
@@ -2599,11 +2649,13 @@ public class UsuarioServiceTest {
         var organizacao = Organizacao.builder().id(1).nome("Org teste").build();
         usuario.setCargo(cargo);
         usuario.setOrganizacao(organizacao);
+
         return usuario;
     }
 
     private SelectResponse umSelectResponseDeVendedorReceptivoInativo() {
         var vendedorReceptivo = umVendedorReceptivo();
+
         return SelectResponse
             .builder()
             .label(vendedorReceptivo.getNome().concat(" (INATIVO)"))
@@ -2613,6 +2665,7 @@ public class UsuarioServiceTest {
 
     private SelectResponse umSelectResponseDeVendedorReceptivoRealocado() {
         var vendedorReceptivo = umVendedorReceptivo();
+
         return SelectResponse
             .builder()
             .label(vendedorReceptivo.getNome().concat(" (REALOCADO)"))
@@ -2646,23 +2699,7 @@ public class UsuarioServiceTest {
                 .nome("AGENTE AUTORIZADO")
                 .build())
             .build());
+
         return usuario;
-    }
-
-    private List<EquipeVendaUsuarioResponse> listaVazia() {
-        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
-        return lista;
-    }
-
-    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
-        return Usuario.builder().id(1)
-            .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(3))
-            .build();
-    }
-
-    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
-        return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
     }
 }

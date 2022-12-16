@@ -11,7 +11,7 @@ public class SubCanalHelper {
     public static List<SubCanal> umaListaSubCanais() {
         return List.of(umSubCanal(), doisSubCanal());
     }
-    
+
     public static SubCanal umSubCanal() {
         return SubCanal.builder()
             .id(1)
