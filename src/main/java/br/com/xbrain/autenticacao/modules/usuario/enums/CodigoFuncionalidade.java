@@ -39,7 +39,9 @@ public enum CodigoFuncionalidade {
     CTR_2044("Visualizar todos os Sites"),
     INT_7007("Resgatar tratativas para motiva"),
     AUT_20009("Gerenciar Horários de Acesso"),
-    AUT_20010("Adicionar novo usuário");
+    AUT_20010("Adicionar novo usuário"),
+    CTR_20014("Solicitar Ramal AA"),
+    CTR_20015("Solicitar Ramal D2D");
 
     @Getter
     private String descricao;
