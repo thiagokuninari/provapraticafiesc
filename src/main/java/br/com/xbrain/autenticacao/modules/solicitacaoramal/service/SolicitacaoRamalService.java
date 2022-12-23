@@ -89,7 +89,9 @@ public class SolicitacaoRamalService {
     }
 
     public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros));
+        var solicitacaoRamalPredicate = filtros.toPredicate().comSolicitacaoRamal(filtros.getCanal()).build();
+        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository
+            .findAllGerencia(pageable, getBuild(filtros), solicitacaoRamalPredicate);
 
         return new PageImpl<>(solicitacoes.getContent()
             .stream()

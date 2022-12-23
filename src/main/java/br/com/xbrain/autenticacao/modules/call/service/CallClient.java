@@ -26,9 +26,9 @@ public interface CallClient {
     @GetMapping(API_CONFIGURACAO_TELEFONIA + "/obter-nome-telefonia-por-id/{id}")
     TelefoniaResponse obterNomeTelefoniaPorId(@PathVariable("id") Integer id);
 
-    @GetMapping(URL_RAMAL + "/vinculado/{canalTelefonia}/{id}")
+    @GetMapping(URL_RAMAL + "/vinculado/{canalTelefonia}/{canalTelefoniaId}")
     List<RamalResponse> obterRamaisParaCanal(@PathVariable("canalTelefonia") ECanal canalTelefonia,
-                                             @PathVariable("id") Integer id);
+                                             @PathVariable("canalTelefoniaId") Integer canalTelefoniaId);
 
     @DeleteMapping(API_CACHE_CLEAN_FERIADOS)
     void cleanCacheFeriadosTelefonia();
