@@ -63,7 +63,6 @@ public class UsuarioRepositoryOracleTest {
 
     @Test
     @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
-    @SuppressWarnings("LineLength")
     public void getSubCanalIdsDosSubordinados_deveRetornarListaDeSubCanais_seExistirSubordinadosDoDiretor() {
         var diretorId = 126;
 
@@ -75,7 +74,6 @@ public class UsuarioRepositoryOracleTest {
 
     @Test
     @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
-    @SuppressWarnings("LineLength")
     public void getSubCanalIdsDosSubordinados_deveRetornarListaDeSubCanais_seExistirSubordinadosDoGerente() {
         var gerenteId = 127;
 
@@ -87,7 +85,6 @@ public class UsuarioRepositoryOracleTest {
 
     @Test
     @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
-    @SuppressWarnings("LineLength")
     public void getSubCanalIdsDosSubordinados_deveRetornarListaDeSubCanais_seExistirSubordinadosDoCoordenadorPapPremium() {
         var coordenadorPapPremiumId = 129;
 
