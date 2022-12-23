@@ -620,6 +620,6 @@ public class Usuario {
     public boolean hasAllSubCanaisDosSubordinados(List<Integer> subordinadosSubCanalIds) {
         return subordinadosSubCanalIds
             .stream()
-            .allMatch(subCanalId -> this.getSubCanaisId().contains(subCanalId));
+            .allMatch(this.getSubCanaisId()::contains);
     }
 }
