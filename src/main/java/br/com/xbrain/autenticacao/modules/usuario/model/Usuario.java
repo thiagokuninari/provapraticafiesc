@@ -606,4 +606,20 @@ public class Usuario {
         return !ObjectUtils.isEmpty(cargo) && !ObjectUtils.isEmpty(cargo.getNivel())
             && cargo.getNivel().getCodigo() == CodigoNivel.OPERACAO;
     }
+
+    public boolean hasHierarquia() {
+        return !ObjectUtils.isEmpty(hierarquiasId);
+    }
+
+    public boolean hasSubCanaisDaHierarquia(Set<Integer> hierarquiaSubCanalIds) {
+        return this.getSubCanaisId()
+            .stream()
+            .allMatch(hierarquiaSubCanalIds::contains);
+    }
+
+    public boolean hasAllSubCanaisDosSubordinados(List<Integer> subordinadosSubCanalIds) {
+        return subordinadosSubCanalIds
+            .stream()
+            .allMatch(subCanalId -> this.getSubCanaisId().contains(subCanalId));
+    }
 }
