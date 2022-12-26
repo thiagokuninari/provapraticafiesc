@@ -1,18 +1,28 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
 import com.querydsl.core.BooleanBuilder;
 import org.junit.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.*;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SolicitacaoRamalPredicateTest {
+
+    @MockBean
+    private SolicitacaoRamalRepository repository;
+
+    @MockBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     public void comSituacaoSolicitacao_deveMontarPredicate_seHouverSituacao() {
@@ -59,4 +69,13 @@ public class SolicitacaoRamalPredicateTest {
         assertThat(new SolicitacaoRamalPredicate().comSubCanalId(1).build())
             .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanalId.eq(1)));
     }
+
+    @Test
+    public void comSolicitacaoRamal_deveMontarPredicate_seHouverSolicitacaoAa() {
+        final var solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
+        assertThat(new SolicitacaoRamalPredicate().comSolicitacaoRamal(ECanal.AGENTE_AUTORIZADO).build())
+            .isEqualTo(new BooleanBuilder(solicitacaoAuxiliar.agenteAutorizadoId
+                .eq(solicitacaoRamal.agenteAutorizadoId)));
+    }
+
 }
