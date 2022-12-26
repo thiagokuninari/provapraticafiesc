@@ -13,7 +13,8 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     Page<SolicitacaoRamal> findAll(Pageable pageable, Predicate predicate);
 
-    PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate);
+    PageImpl<SolicitacaoRamal> findAllGerencia(Pageable pageable, Predicate predicate,
+                                               Predicate solicitacaoRamalPredicate);
 
     List<SolicitacaoRamal> findAllBySituacaoAndDataEnviadoEmailExpiracaoIsNull();
 

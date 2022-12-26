@@ -225,7 +225,7 @@ app-config:
       #url: http://localhost:8096
       url: https://autenticacao-api-dev.conexaoclarobrasil.com.br
     call:
-      url: http://call-api-dev.conexaoclarobrasil.com.br
+      url: https://call-api-dev.conexaoclarobrasil.com.br
       # url: http://localhost:8094
     parceiros-online:
       url: https://parceiros-dev.conexaoclarobrasil.com.br/
