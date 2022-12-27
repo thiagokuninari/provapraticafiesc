@@ -512,6 +512,10 @@ public class UsuarioService {
         }
     }
 
+    private LocalDateTime getDataUltimoAcesso(Integer id) {
+        return repository.findById(id).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION).getDataUltimoAcesso();
+    }
+
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
         if (usuarioOriginal.isNivelOperacao() && usuarioOriginal.isCanalAgenteAutorizadoRemovido(usuarioAlterado.getCanais())) {
             var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
@@ -647,6 +651,7 @@ public class UsuarioService {
         } else {
             atualizarUsuariosParceiros(usuario);
             usuario.setAlterarSenha(Eboolean.F);
+            usuario.setDataUltimoAcesso(getDataUltimoAcesso(usuario.getId()));
         }
     }
 
