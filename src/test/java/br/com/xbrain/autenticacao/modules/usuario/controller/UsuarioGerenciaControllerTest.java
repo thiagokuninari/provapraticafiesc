@@ -353,7 +353,7 @@ public class UsuarioGerenciaControllerTest {
                 "O campo empresasId é obrigatório.",
                 "O campo cargoId é obrigatório.",
                 "O campo departamentoId é obrigatório.",
-                "O campo loginNetSales Não pode estar em branco")));
+                "O campo loginNetSales may not be empty")));
     }
 
     @Test
