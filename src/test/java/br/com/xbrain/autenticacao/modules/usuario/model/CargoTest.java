@@ -1,11 +1,14 @@
 package br.com.xbrain.autenticacao.modules.usuario.model;
 
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CargoTest {
 
@@ -43,6 +46,24 @@ public class CargoTest {
         cargo = new Cargo();
         assertThat(cargo.getCanais()).isNull();
         assertThat(cargo.hasPermissaoSobreOCanal(null)).isTrue();
+    }
+
+    @Test
+    public void isDiretorOperacao_deveRetornarTrue_quandoCodigoIgualADiretorOperacao() {
+        var cargo = Cargo.builder()
+            .codigo(CodigoCargo.DIRETOR_OPERACAO)
+            .build();
+
+        assertTrue(cargo.isDiretorOperacao());
+    }
+
+    @Test
+    public void isDiretorOperacao_deveRetornarFalse_quandoCodigoDiferenteDeDiretorOperacao() {
+        var cargo = Cargo.builder()
+            .codigo(CodigoCargo.GERENTE_OPERACAO)
+            .build();
+
+        assertFalse(cargo.isDiretorOperacao());
     }
 
     private Cargo umCargoComCanais(ECanal... canais) {

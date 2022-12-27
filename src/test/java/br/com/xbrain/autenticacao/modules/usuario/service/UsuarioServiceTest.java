@@ -77,6 +77,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
+import static br.com.xbrain.autenticacao.modules.usuario.util.UsuarioConstantesUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -89,8 +90,6 @@ public class UsuarioServiceTest {
 
     @InjectMocks
     private UsuarioService usuarioService;
-    @Mock
-    private UsuarioService service;
     @Mock
     private UsuarioRepository usuarioRepository;
     @Mock
@@ -141,10 +140,6 @@ public class UsuarioServiceTest {
     private SubCanalService subCanalService;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
-
-    public static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES = "Não foi possível ativar usuário. "
-        + "O usuário foi inativado por realizar muitas simulações, por favor entre em contato com algum usuário XBrain "
-        + "para que ele possa reativar o usuário.";
 
     @Test
     public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
@@ -335,8 +330,11 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanal() {
-        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 10, OPERACAO,
-            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            10,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
         usuario.setSubCanais(Set.of(new SubCanal(1)));
 
         when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
@@ -348,29 +346,36 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoDiretor() {
-        var usuario = umUsuarioCompleto(DIRETOR_OPERACAO, 5, OPERACAO,
-            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
-            Set.of(new SubCanal(1), new SubCanal(2)));
+        var usuario = umUsuarioCompleto(DIRETOR_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
 
         when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
         when(cargoService.findById(anyInt()))
             .thenReturn(Cargo.builder().codigo(DIRETOR_OPERACAO).build());
-
-        usuario.setNome("Usuario Teste");
 
         assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
     }
 
     @Test
     public void save_deveDispararValidacaoException_seUsuarioPossuirSubCanaisECargoSupervisor() {
-        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
-            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO,
-            Set.of(new SubCanal(1), new SubCanal(2)));
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            1,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
 
-        usuario.setNome("Usuario Teste");
-
-        when(cargoService.findById(anyInt()))
-            .thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
+        when(cargoService.findById(anyInt())).thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
@@ -379,10 +384,11 @@ public class UsuarioServiceTest {
 
     @Test
     public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanais() {
-        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
-            CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
-
-        usuario.setNome("Usuario Teste");
+        var usuario = umUsuarioCompleto(SUPERVISOR_OPERACAO,
+            1,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO);
 
         when(cargoService.findById(anyInt()))
             .thenReturn(Cargo.builder().codigo(SUPERVISOR_OPERACAO).build());
@@ -390,6 +396,119 @@ public class UsuarioServiceTest {
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> usuarioService.save(usuario))
             .withMessage("Usuário não possui sub-canais, deve ser cadastrado no mínimo um.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seUsuarioPossuirSubCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5))
+            .thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3)
+            ));
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canal em comum com usuários da hierarquia.");
+    }
+
+    @Test
+    public void save_naoDeveDispararValidacaoException_seSuperiorPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5,
+            OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3)
+            ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(usuarioRepository.findById(eq(1))).thenReturn(Optional.of(usuario));
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
+            .thenReturn(List.of(PAP_ID, PAP_PREMIUM_ID));
+
+        assertThatCode(() -> usuarioService.save(usuario)).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void save_deveDispararValidacaoException_seSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = umUsuarioCompleto(GERENTE_OPERACAO,
+            5, OPERACAO,
+            CodigoDepartamento.COMERCIAL,
+            ECanal.D2D_PROPRIO,
+            Set.of(
+                new SubCanal(1),
+                new SubCanal(2)
+            ));
+        usuario.setHierarquiasId(List.of(10));
+
+        when(cargoService.findById(5)).thenReturn(Cargo.builder().codigo(GERENTE_OPERACAO).build());
+        when(usuarioRepository.getSubCanaisByUsuarioIds(usuario.getHierarquiasId()))
+            .thenReturn(Set.of(
+                new SubCanal(1),
+                new SubCanal(2),
+                new SubCanal(3),
+                new SubCanal(4)
+            ));
+        when(usuarioRepository.getSubCanalIdsDosSubordinados(usuario.getId()))
+            .thenReturn(List.of(
+                PAP_ID,
+                PAP_PME_ID,
+                PAP_PREMIUM_ID,
+                INSIDE_SALES_PME_ID)
+            );
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> usuarioService.save(usuario))
+            .withMessage("Usuário não possui sub-canal em comum com usuários subordinados.");
     }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {

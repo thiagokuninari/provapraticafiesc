@@ -8,13 +8,16 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.OPERACAO_TELEVENDAS;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.VENDEDOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.ATIVO_LOCAL_PROPRIO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
-import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.PAP_PREMIUM;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.doisSubCanal;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubCanalHelper.umSubCanal;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuario;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioOperacaoComSubCanal;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -222,6 +225,56 @@ public class UsuarioTest {
             .isFalse();
     }
 
+    @Test
+    public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
+        assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
+    }
+
+    @Test
+    public void hasHierarquia_deveRetornarTrue_seUsuarioPossuirHierarquia() {
+        var usuario = Usuario.builder()
+            .hierarquiasId(List.of(10, 20))
+            .build();
+        assertTrue(usuario.hasHierarquia());
+    }
+
+    @Test
+    public void hasHierarquia_deveRetornarFalse_seUsuarioNaoPossuirHierarquia() {
+        assertFalse(new Usuario().hasHierarquia());
+    }
+
+    @Test
+    public void hasSubCanaisDaHierarquia_deveRetornarTrue_seUsuarioPossuirSubCanaisDaHierarquia() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+        assertTrue(usuario.hasSubCanaisDaHierarquia(Set.of(1, 2, 3, 4)));
+    }
+
+    @Test
+    public void hasSubCanaisDaHierarquia_deveRetornarFalse_seUsuarioNaoPossuirSubCanaisDaHierarquia() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+        assertFalse(usuario.hasSubCanaisDaHierarquia(Set.of(2, 3, 4)));
+    }
+
+    @Test
+    public void hasAllSubCanaisDosSubordinados_deveRetornarTrue_seUsuarioSuperiorPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal(), doisSubCanal()))
+            .build();
+        assertTrue(usuario.hasAllSubCanaisDosSubordinados(List.of(1, 2)));
+    }
+
+    @Test
+    public void hasAllSubCanaisDosSubordinados_deveRetornarFalse_seUsuarioSuperiorNaoPossuirTodosSubCanaisDosSubordinados() {
+        var usuario = Usuario.builder()
+            .subCanais(Set.of(umSubCanal()))
+            .build();
+        assertFalse(usuario.hasAllSubCanaisDosSubordinados(List.of(1, 2, 3, 4)));
+    }
+
     private static Cargo umCargo(CodigoCargo codigoCargo) {
         return Cargo
             .builder()
@@ -282,10 +335,4 @@ public class UsuarioTest {
             .usuario(umUsuarioComCargo(codigoCargo))
             .build();
     }
-
-    @Test
-    public void hasLoginNetSales_deveRetornarTrue_seUsuarioPossuirLoginNetSales() {
-        assertThat(umUsuarioComLoginNetSales("login").hasLoginNetSales()).isTrue();
-    }
-
 }

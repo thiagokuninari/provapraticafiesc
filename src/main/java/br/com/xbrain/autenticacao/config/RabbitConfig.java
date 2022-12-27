@@ -22,6 +22,9 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-socio-principal-success}")
     private String usuarioCadastroSocioPrincipalSuccessMq;
 
+    @Value("${app-config.queue.usuario-cadastro-loja-futuro-success}")
+    private String usuarioCadastroLojaFuturoSuccessMq;
+
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessMq;
 
@@ -30,6 +33,9 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-atualizacao}")
     private String usuarioAtualizacaoMq;
+
+    @Value("${app-config.queue.usuario-atualizacao-lojafuturo}")
+    private String usuarioLojaFuturoAtualizacaoMq;
 
     @Value("${app-config.queue.usuario-atualizacao-failure}")
     private String usuarioAtualizacaoFailureMq;
@@ -75,6 +81,9 @@ public class RabbitConfig {
 
     @Value("${app-config.queue.usuario-logout}")
     private String usuarioLogoutMq;
+
+    @Value("${app-config.queue.usuario-logout-failure}")
+    private String usuarioLogoutFailureMq;
 
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
@@ -146,6 +155,20 @@ public class RabbitConfig {
     }
 
     @Bean
+    Queue usuarioLogoutMq() {
+        return QueueBuilder
+            .durable(usuarioLogoutMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioLogoutFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue usuarioLogoutFailureMq() {
+        return QueueBuilder.durable(usuarioLogoutFailureMq).build();
+    }
+
+    @Bean
     Queue atualizarPermissaoFeederFailureMq() {
         return QueueBuilder.durable(atualizarPermissaoFeederFailureMq).build();
     }
@@ -153,6 +176,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroSocioPrincipalSuccessMq() {
         return new Queue(usuarioCadastroSocioPrincipalSuccessMq, false);
+    }
+
+    @Bean
+    Queue usuarioCadastroLojaFuturoSuccessMq() {
+        return new Queue(usuarioCadastroLojaFuturoSuccessMq, false);
     }
 
     @Bean
@@ -178,6 +206,11 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAtualizacaoMq() {
         return new Queue(usuarioAtualizacaoMq, false);
+    }
+
+    @Bean
+    Queue usuarioLojaFuturoAtualizacaoMq() {
+        return new Queue(usuarioLojaFuturoAtualizacaoMq, false);
     }
 
     @Bean
@@ -238,11 +271,6 @@ public class RabbitConfig {
     @Bean
     Queue usuarioAlterarSituacaoMq() {
         return new Queue(usuarioAlterarSituacaoMq, false);
-    }
-
-    @Bean
-    Queue usuarioLogoutMq() {
-        return new Queue(usuarioLogoutMq, false);
     }
 
     @Bean
@@ -334,6 +362,12 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Binding usuarioCadastroLojaFuturoSuccessBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioCadastroLojaFuturoSuccessMq()).to(exchange)
+            .with(usuarioCadastroLojaFuturoSuccessMq);
+    }
+
+    @Bean
     public Binding atualizarPermissaoFeederBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoFeederMq()).to(exchange).with(atualizarPermissaoFeederMq);
     }
@@ -342,6 +376,17 @@ public class RabbitConfig {
     public Binding atualizarPermissaoFeederFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(atualizarPermissaoFeederFailureMq())
             .to(exchange).with(atualizarPermissaoFeederFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutMq()).to(exchange).with(usuarioLogoutMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutFailureMq())
+            .to(exchange).with(usuarioLogoutFailureMq);
     }
 
     @Bean
@@ -357,6 +402,11 @@ public class RabbitConfig {
     @Bean
     public Binding usuarioAtualizcaoBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioAtualizacaoMq()).to(exchange).with(usuarioAtualizacaoMq);
+    }
+
+    @Bean
+    public Binding usuarioLojaFuturoAtualizacaoBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLojaFuturoAtualizacaoMq()).to(exchange).with(usuarioLojaFuturoAtualizacaoMq);
     }
 
     @Bean
@@ -427,11 +477,6 @@ public class RabbitConfig {
     @Bean
     public Binding inativarColaboradorPolBinding(TopicExchange exchange) {
         return BindingBuilder.bind(inativarColaboradorPolMq()).to(exchange).with(inativarColaboradorPolMq);
-    }
-
-    @Bean
-    public Binding usuarioLogoutBinding(TopicExchange exchange) {
-        return BindingBuilder.bind(usuarioLogoutMq()).to(exchange).with(usuarioLogoutMq);
     }
 
     @Bean

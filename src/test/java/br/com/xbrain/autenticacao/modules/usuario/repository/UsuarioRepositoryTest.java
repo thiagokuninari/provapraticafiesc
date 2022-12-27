@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquiaPk;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,7 @@ import java.util.Optional;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.COORDENADOR_OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.SUPERVISOR_OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
@@ -74,19 +74,12 @@ public class UsuarioRepositoryTest {
         assertThat(repository.findAllExecutivosAndAssistenteOperacaoDepartamentoComercial(getUsuarioPredicate().build()))
             .hasSize(4)
             .extracting("value", "text")
-            .containsExactly(
-                Assertions.tuple(125, "ASSISTENTE OP"),
-                Assertions.tuple(107, "EXECUTIVO 1"),
-                Assertions.tuple(108, "EXECUTIVO 2"),
-                Assertions.tuple(124, "EXECUTIVO OP")
+            .containsExactlyInAnyOrder(
+                tuple(125, "ASSISTENTE OP"),
+                tuple(107, "EXECUTIVO 1"),
+                tuple(108, "EXECUTIVO 2"),
+                tuple(124, "EXECUTIVO OP")
             );
-    }
-
-    private UsuarioPredicate getUsuarioPredicate() {
-        return new UsuarioPredicate()
-            .comDepartamento(List.of(3))
-            .comNivel(List.of(1))
-            .comCargo(List.of(2, 5));
     }
 
     @Test
@@ -217,5 +210,31 @@ public class UsuarioRepositoryTest {
                 tuple(121, "VR 1"),
                 tuple(123, "VR 3")
             );
+    }
+
+    @Test
+    @Sql({"classpath:/tests_usuario_subcanal_repository.sql"})
+    public void getSubCanaisByUsuarioIds_deveRetornarSetDeSubCanais_sePossuirSubCanais() {
+        assertThat(repository.getSubCanaisByUsuarioIds(List.of(126, 127, 128)))
+            .hasSize(4)
+            .extracting("id", "codigo")
+            .containsExactlyInAnyOrder(
+                tuple(1, PAP),
+                tuple(2, PAP_PME),
+                tuple(3, PAP_PREMIUM),
+                tuple(4, INSIDE_SALES_PME)
+            );
+    }
+
+    @Test
+    public void getSubCanaisByUsuarioIds_deveRetornarVazio_seNaoPossuirSubCanais() {
+        assertThat(repository.getSubCanaisByUsuarioIds(List.of(100, 121, 123))).isEmpty();
+    }
+
+    private UsuarioPredicate getUsuarioPredicate() {
+        return new UsuarioPredicate()
+            .comDepartamento(List.of(3))
+            .comNivel(List.of(1))
+            .comCargo(List.of(2, 5));
     }
 }

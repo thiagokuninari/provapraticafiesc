@@ -79,8 +79,8 @@ import static org.thymeleaf.util.StringUtils.concat;
 public class UsuarioGerenciaControllerTest {
 
     private static final int ID_USUARIO_HELPDESK = 101;
-    private static final int ID_USUARIO_VENDEDOR = 430;
     private static final String API_URI = "/api/usuarios/gerencia";
+
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -797,7 +797,7 @@ public class UsuarioGerenciaControllerTest {
         return usuario;
     }
 
-    private MockMultipartFile umUsuario(UsuarioDto usuario) throws Exception {
+    private MockMultipartFile umUsuario(UsuarioDto usuario)  {
         byte[] json = convertObjectToJsonString(usuario).getBytes(StandardCharsets.UTF_8);
         return new MockMultipartFile("usuario", "json", "application/json", json);
     }
@@ -816,7 +816,7 @@ public class UsuarioGerenciaControllerTest {
         usuario.setHierarquiasId(Arrays.asList(100));
         usuario.setCidadesId(Arrays.asList(736, 2921, 527));
         usuario.setLoginNetSales("MIDORIYA SHOUNEN");
-        usuario.setCanais(Sets.newHashSet(ECanal.D2D_PROPRIO));
+        usuario.setCanais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO));
         usuario.setSubCanaisId(Sets.newHashSet(1));
         usuario.setSituacao(ESituacao.A);
         usuario.setSubCanaisId(Sets.newHashSet(1));

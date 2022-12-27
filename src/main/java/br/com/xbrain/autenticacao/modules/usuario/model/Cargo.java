@@ -13,6 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.DIRETOR_OPERACAO;
+
 @Entity
 @Table(name = "CARGO")
 @Data
@@ -80,5 +82,9 @@ public class Cargo {
 
     public boolean hasPermissaoSobreOCanal(ECanal canal) {
         return ObjectUtils.isEmpty(canais) || Objects.isNull(canal) || canais.contains(canal);
+    }
+
+    public boolean isDiretorOperacao() {
+        return this.codigo == DIRETOR_OPERACAO;
     }
 }

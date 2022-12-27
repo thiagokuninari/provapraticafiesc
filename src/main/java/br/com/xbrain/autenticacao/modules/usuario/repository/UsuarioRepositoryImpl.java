@@ -6,16 +6,15 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.AreaAtuacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.*;
 import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -53,7 +52,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartament
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
-import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.*;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QConfiguracao.configuracao;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QDepartamento.departamento;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -213,9 +212,8 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
 
     public Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds) {
         return Sets.newHashSet(jdbcTemplate.query(" SELECT * FROM SUB_CANAL"
-                + " WHERE ID IN (SELECT FK_SUBCANAL" 
-                + " FROM USUARIO_SUBCANAL WHERE FK_USUARIO IN (:usuarioIds))"
-                + " ORDER BY ID ASC",
+                + " WHERE ID IN (SELECT FK_SUBCANAL"
+                + " FROM USUARIO_SUBCANAL WHERE FK_USUARIO IN (:usuarioIds))",
             new MapSqlParameterSource()
                 .addValue("usuarioIds", usuarioIds),
             new BeanPropertyRowMapper<>(SubCanal.class)));
@@ -284,6 +282,24 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .addValue("usuarioId", usuarioId)
                 .addValue("codigoCargos", List.of(EXECUTIVO.name(), EXECUTIVO_HUNTER.name())),
             new BeanPropertyRowMapper<>(UsuarioAutoComplete.class));
+    }
+
+    @Override
+    public List<Integer> getSubCanalIdsDosSubordinados(Integer usuarioSuperiorId) {
+        List<BigDecimal> subCanalIds = entityManager
+            .createNativeQuery(" SELECT DISTINCT US.FK_SUBCANAL "
+                + " FROM USUARIO_SUBCANAL US "
+                + "  JOIN USUARIO U ON U.ID = US.FK_USUARIO "
+                + "  JOIN USUARIO_HIERARQUIA UH ON UH.FK_USUARIO = U.ID "
+                + " START WITH UH.FK_USUARIO_SUPERIOR = :usuarioSuperiorId "
+                + " CONNECT BY NOCYCLE PRIOR UH.FK_USUARIO = UH.FK_USUARIO_SUPERIOR ")
+            .setParameter("usuarioSuperiorId", usuarioSuperiorId)
+            .getResultList();
+
+        return subCanalIds
+            .stream()
+            .map(BigDecimal::intValue)
+            .collect(Collectors.toList());
     }
 
     @Override

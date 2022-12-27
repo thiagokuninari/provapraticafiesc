@@ -39,6 +39,8 @@ public interface UsuarioRepositoryCustom {
 
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
 
+    List<Integer> getSubCanalIdsDosSubordinados(Integer usuarioId);
+
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
     List<UsuarioAutoComplete> findAllExecutivosOperacaoDepartamentoComercial(Predicate predicate);
