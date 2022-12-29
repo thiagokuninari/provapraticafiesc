@@ -39,7 +39,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
             "/api/sites/permitidos",
-            "/api/horarios-acesso/status/**"
+            "/api/horarios-acesso/status/**",
+            "/api/lei-nao-perturbe/consultar/**"
         };
 
         http

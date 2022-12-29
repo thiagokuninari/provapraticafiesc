@@ -32,6 +32,8 @@ app-config:
       url: http://api-hom.conexaoclarobrasil.com.br/email
     integracao-vendas:
       url: http://172.10.10.45:8086
+    lei-nao-perturbe:
+      url: http://172.10.10.8:8107
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
