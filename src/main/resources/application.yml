@@ -327,12 +327,7 @@ zuul:
       url: ${app-config.services.integracao-vendas.url}
     lei-nao-perturbe:
       sensitiveHeaders: Cookie,Set-Cookie
-      path: /api/lei-nao-perturbe/**
-      url: ${app-config.services.lei-nao-perturbe.url}/api/lei-nao-perturbe
-    lei-nao-perturbe-v2:
-      sensitiveHeaders: Cookie,Set-Cookie
-      path: /api/v2/lei-nao-perturbe/**
-      url: ${app-config.services.lei-nao-perturbe.url}/api/v2/lei-nao-perturbe
+      url: ${app-config.services.lei-nao-perturbe.url}
 
   host:
     connect-timeout-millis: 1800000
