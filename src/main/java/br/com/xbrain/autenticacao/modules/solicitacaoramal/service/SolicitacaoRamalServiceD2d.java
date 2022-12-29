@@ -2,11 +2,13 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.util.CnpjUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.Constantes;
 import br.com.xbrain.autenticacao.modules.comum.util.DataHoraAtual;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalResponse;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
@@ -18,8 +20,11 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
 import br.com.xbrain.xbrainutils.DateUtils;
+import com.querydsl.core.BooleanBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
@@ -54,13 +59,28 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     @Value("${app-config.email.emails-solicitacao-ramal}")
     private String destinatarios;
 
+    public Page<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        var solicitacoes = solicitacaoRamalRepository
+            .findAllGerenciaD2d(pageable, getBuild(filtros));
+
+        return new PageImpl<>(solicitacoes.getContent()
+            .stream()
+            .map(SolicitacaoRamalResponse::convertFrom)
+            .collect(Collectors.toList()),
+            pageable,
+            solicitacoes.getTotalElements());
+    }
+
+    private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
+        return filtros.toPredicate().build();
+    }
+
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         validarParametroD2d(request);
 
-        var solicitacaoRamal = SolicitacaoRamalRequest.convertFrom(request);
-        solicitacaoRamal.atualizarDataCadastro(dataHoraAtual.getDataHora());
-        solicitacaoRamal.atualizarUsuario(autenticacaoService.getUsuarioId());
+        var usuarioId = autenticacaoService.getUsuarioId();
+        var solicitacaoRamal = SolicitacaoRamal.convertFrom(request, usuarioId, dataHoraAtual.getDataHora());
         solicitacaoRamal.retirarMascara();
 
         var solicitacaoRamalPersistida = solicitacaoRamalRepository.save(solicitacaoRamal);
@@ -163,7 +183,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         var solicitacaoEncontrada = solicitacaoRamalService.findById(request.getId());
         solicitacaoEncontrada.editar(request);
-        solicitacaoEncontrada.atualizarUsuario(autenticacaoService.getUsuarioId());
+        solicitacaoEncontrada.setUsuario(new Usuario(autenticacaoService.getUsuarioId()));
         solicitacaoEncontrada.retirarMascara();
         return SolicitacaoRamalResponse.convertFrom(solicitacaoRamalRepository.save(solicitacaoEncontrada));
     }

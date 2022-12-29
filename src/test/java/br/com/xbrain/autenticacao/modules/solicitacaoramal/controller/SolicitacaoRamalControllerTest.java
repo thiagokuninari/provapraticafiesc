@@ -12,6 +12,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutoriza
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -63,6 +64,8 @@ public class SolicitacaoRamalControllerTest {
     private static final String URL_API_SOLICITACAO_RAMAL_GERENCIAL = "/api/solicitacao-ramal/gerencia";
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
+    @MockBean
+    private SolicitacaoRamalFiltros solicitacaoRamalFiltros;
     @Autowired
     private MockMvc mvc;
     @MockBean
@@ -163,7 +166,7 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void getAllGerencia_listaComRegistros_quandoAcessarListagemDaTelaDeGerencia() throws Exception {
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/?page=0&size=10")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/?page=0&size=10&canal=D2D_PROPRIO")
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

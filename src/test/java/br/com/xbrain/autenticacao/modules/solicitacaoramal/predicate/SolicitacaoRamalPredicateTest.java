@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -67,15 +66,7 @@ public class SolicitacaoRamalPredicateTest {
     @Test
     public void comSubCanalId_deveRetornarPredicate_seHouverSubCanalId() {
         assertThat(new SolicitacaoRamalPredicate().comSubCanalId(1).build())
-            .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanalId.eq(1)));
-    }
-
-    @Test
-    public void comSolicitacaoRamal_deveMontarPredicate_seHouverSolicitacaoAa() {
-        final var solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
-        assertThat(new SolicitacaoRamalPredicate().comSolicitacaoRamal(ECanal.AGENTE_AUTORIZADO).build())
-            .isEqualTo(new BooleanBuilder(solicitacaoAuxiliar.agenteAutorizadoId
-                .eq(solicitacaoRamal.agenteAutorizadoId)));
+            .isEqualTo(new BooleanBuilder(solicitacaoRamal.subCanal.id.eq(1)));
     }
 
 }
