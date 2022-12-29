@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.predicate;
 
 import br.com.xbrain.autenticacao.infra.PredicateBase;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.xbrainutils.DateUtils;
 import org.springframework.util.ObjectUtils;
@@ -25,8 +24,8 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     public SolicitacaoRamalPredicate comDataCadastro(String dataInicialSolicitacao, String dataFinalSolicitacao) {
         if (!ObjectUtils.isEmpty(dataInicialSolicitacao) && !ObjectUtils.isEmpty(dataFinalSolicitacao)) {
             builder.and(solicitacaoRamal.dataCadastro.between(
-                    LocalDateTime.of(DateUtils.parseStringToLocalDate(dataInicialSolicitacao), LocalTime.MIN),
-                    LocalDateTime.of(DateUtils.parseStringToLocalDate(dataFinalSolicitacao), LocalTime.MAX)));
+                LocalDateTime.of(DateUtils.parseStringToLocalDate(dataInicialSolicitacao), LocalTime.MIN),
+                LocalDateTime.of(DateUtils.parseStringToLocalDate(dataFinalSolicitacao), LocalTime.MAX)));
         }
 
         return this;
@@ -55,16 +54,7 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
 
     public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId) {
         if (subCanalId != null) {
-            builder.and(solicitacaoRamal.subCanalId.eq(subCanalId));
-        }
-
-        return this;
-    }
-
-    public SolicitacaoRamalPredicate comSolicitacaoRamal(ECanal canal) {
-        final QSolicitacaoRamal solicitacaoAuxiliar = new QSolicitacaoRamal("solicitacao");
-        if (canal == ECanal.AGENTE_AUTORIZADO) {
-            builder.and(solicitacaoAuxiliar.agenteAutorizadoId.eq(solicitacaoRamal.agenteAutorizadoId));
+            builder.and(solicitacaoRamal.subCanal.id.eq(subCanalId));
         }
 
         return this;

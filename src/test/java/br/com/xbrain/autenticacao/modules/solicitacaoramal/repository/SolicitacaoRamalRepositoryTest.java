@@ -1,5 +1,8 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.repository;
 
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,8 @@ public class SolicitacaoRamalRepositoryTest {
     @Autowired
     private SolicitacaoRamalRepository repository;
 
+    private SolicitacaoRamalFiltros filtros;
+
     @Test
     public void findAllByAaId_deveRetornarlistaVazia_quandoNaoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
         assertEquals(0, repository.findAllByAgenteAutorizadoIdAndSituacaoPendenteOuEmAndamento(3).size());
@@ -39,6 +44,25 @@ public class SolicitacaoRamalRepositoryTest {
     @Test
     public void findAllBySubCanalId_deveRetornarlistaComDoisRegistros_quandoHouverSolicitacaoComStatusPendenteOuEmAndamento() {
         assertEquals(2, repository.findAllBySubCanalIdAndSituacaoPendenteOuEmAndamento(1).size());
+    }
+
+    @Test
+    public void findAllGerencia_deveRetornarLista_quandoCanalForAgenteAutorizado() {
+        var filtros = umaSolicitacaoFiltros();
+        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
+        assertEquals(10, repository.findAllGerenciaAa(new PageRequest(), filtros.toPredicate().build()).getSize());
+    }
+
+    @Test
+    public void findAllGerencia_deveRetornarLista_quandoCanalForD2d() {
+        var filtros = umaSolicitacaoFiltros();
+        filtros.setCanal(ECanal.D2D_PROPRIO);
+        assertEquals(10, repository.findAllGerenciaD2d(new PageRequest(), filtros.toPredicate().build()).getSize());
+    }
+
+    private SolicitacaoRamalFiltros umaSolicitacaoFiltros() {
+        var filtros = new SolicitacaoRamalFiltros();
+        return filtros;
     }
 
 }

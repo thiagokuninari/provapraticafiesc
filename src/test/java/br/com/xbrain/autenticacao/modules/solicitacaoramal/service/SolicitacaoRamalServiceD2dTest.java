@@ -5,10 +5,12 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallClient;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalDadosAdicionaisResponse;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -18,14 +20,20 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
+import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import com.querydsl.core.types.Predicate;
 import feign.RetryableException;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +60,8 @@ public class SolicitacaoRamalServiceD2dTest {
     private AutenticacaoService autenticacaoService;
     @MockBean
     private SolicitacaoRamalRepository repository;
+    @MockBean
+    private UsuarioService usuarioService;
     @Autowired
     private SolicitacaoRamalServiceD2d service;
     @MockBean
@@ -136,6 +146,42 @@ public class SolicitacaoRamalServiceD2dTest {
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
     }
 
+    @Test
+    public void getAllGerencia_deveListarSolicitacoes_seTodosOsParametrosPreenchidos() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAllGerenciaD2d(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(usuarioService.findComplete(1)).thenReturn(Usuario.builder().id(1).nome("teste").build());
+
+        var filtros = new SolicitacaoRamalFiltros();
+        filtros.setAgenteAutorizadoId(1);
+        filtros.setSituacao(ESituacaoSolicitacao.PENDENTE);
+        filtros.setCanal(ECanal.D2D_PROPRIO);
+
+        var response = service.getAllGerencia(new PageRequest(), filtros);
+
+        assertThat(response)
+            .extracting("id", "canal", "dataCadastro",
+                "situacao").containsExactly(
+
+                Tuple.tuple(1, ECanal.D2D_PROPRIO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE),
+
+                Tuple.tuple(2, ECanal.D2D_PROPRIO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE)
+            );
+    }
+
+    private UsuarioAutenticado umUsuarioAutenticado() {
+        return UsuarioAutenticado.builder()
+            .id(1)
+            .nome("teste")
+            .usuario(Usuario.builder().id(1).build())
+            .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .build();
+    }
+
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id) {
         return SolicitacaoRamalRequest.builder()
             .id(id)
@@ -194,7 +240,7 @@ public class SolicitacaoRamalServiceD2dTest {
         var solicitacaoRamal = new SolicitacaoRamal();
         solicitacaoRamal.setId(id);
         solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
-        solicitacaoRamal.setSubCanalId(1);
+        solicitacaoRamal.setSubCanal(SubCanal.builder().id(1).build());
         solicitacaoRamal.setDataCadastro(LocalDateTime.of(2022, 02, 10, 10, 00, 00));
         solicitacaoRamal.setMelhorDataImplantacao(LocalDate.of(2022, 12, 01));
         solicitacaoRamal.setUsuariosSolicitados(List.of(Usuario.builder().id(1).build()));
@@ -205,4 +251,10 @@ public class SolicitacaoRamalServiceD2dTest {
         return solicitacaoRamal;
     }
 
+    private Page<SolicitacaoRamal> umaPageSolicitacaoRamal() {
+        return new PageImpl<>(
+            List.of(umaSolicitacaoRamalCanalD2d(1),
+                umaSolicitacaoRamalCanalD2d(2))
+        );
+    }
 }
