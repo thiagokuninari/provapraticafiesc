@@ -31,6 +31,7 @@ public class SolicitacaoRamalResponse {
     private Integer quantidadeRamais;
     private ECanal canal;
     private ETipoCanal codigoSubCanal;
+    private Integer subCanalId;
     private String tipoImplantacao;
     private ESituacaoSolicitacao situacao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -56,6 +57,7 @@ public class SolicitacaoRamalResponse {
         response.codigoSubCanal = Optional.ofNullable(solicitacaoRamal.getSubCanal())
             .map(SubCanal::getCodigo)
             .orElse(null);
+        response.subCanalId = solicitacaoRamal.getSubCanal().getId();
         response.dataHoraExpiracao = solicitacaoRamal.getDataFinalizacao();
         response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
             .map(ETipoImplantacao::getDescricao)
