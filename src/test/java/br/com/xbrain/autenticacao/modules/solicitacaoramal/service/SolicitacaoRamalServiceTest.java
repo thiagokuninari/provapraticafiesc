@@ -347,7 +347,7 @@ public class SolicitacaoRamalServiceTest {
         var response = new SolicitacaoRamalResponse();
         response.setId(id);
         response.setCanal(ECanal.D2D_PROPRIO);
-        response.setCodigoSubCanal(ETipoCanal.PAP);
+        response.setSubCanalCodigo(ETipoCanal.PAP);
         response.setDataCadastro(LocalDateTime.now());
         response.setSituacao(ESituacaoSolicitacao.PENDENTE);
         return response;
