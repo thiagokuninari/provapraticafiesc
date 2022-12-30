@@ -30,7 +30,7 @@ public class SolicitacaoRamalResponse {
     private Integer id;
     private Integer quantidadeRamais;
     private ECanal canal;
-    private ETipoCanal codigoSubCanal;
+    private ETipoCanal subCanalCodigo;
     private Integer subCanalId;
     private String tipoImplantacao;
     private ESituacaoSolicitacao situacao;
@@ -54,10 +54,12 @@ public class SolicitacaoRamalResponse {
         var response = new SolicitacaoRamalResponse();
         response.solicitante = solicitacaoRamal.getUsuario().getNome();
         response.colaboradores = response.getColaboradores(solicitacaoRamal);
-        response.codigoSubCanal = Optional.ofNullable(solicitacaoRamal.getSubCanal())
+        response.subCanalCodigo = Optional.ofNullable(solicitacaoRamal.getSubCanal())
             .map(SubCanal::getCodigo)
             .orElse(null);
-        response.subCanalId = solicitacaoRamal.getSubCanal().getId();
+        response.subCanalId = Optional.ofNullable(solicitacaoRamal.getSubCanal())
+            .map(SubCanal::getId)
+            .orElse(null);
         response.dataHoraExpiracao = solicitacaoRamal.getDataFinalizacao();
         response.setTipoImplantacao(Optional.ofNullable(solicitacaoRamal.getTipoImplantacao())
             .map(ETipoImplantacao::getDescricao)
