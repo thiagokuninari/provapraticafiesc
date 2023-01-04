@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallClient;
+import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoRe
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioClient;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
@@ -21,12 +23,16 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
+import com.querydsl.core.types.Predicate;
 import feign.RetryableException;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +44,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -159,7 +166,7 @@ public class SolicitacaoRamalServiceAaTest {
         when(usuarioService.findComplete(1)).thenReturn(umUsuario());
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
         when(agenteAutorizadoNovoService.getAgentesAutorizadosPermitidos(umUsuario()))
-            .thenReturn(List.of(1,2));
+            .thenReturn(List.of(1, 2));
 
         service.verificaPermissaoSobreOAgenteAutorizado(1);
 
@@ -167,6 +174,33 @@ public class SolicitacaoRamalServiceAaTest {
         verify(usuarioService, times(1)).findComplete(1);
         verify(autenticacaoService, times(1)).getUsuarioId();
         verify(agenteAutorizadoNovoService, times(1)).getAgentesAutorizadosPermitidos(umUsuario());
+    }
+
+    @Test
+    public void getAllGerencia_deveListarSolicitacoes_seTodosOsParametrosPreenchidos() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticado());
+        when(repository.findAllGerenciaAa(any(PageRequest.class), any(Predicate.class))).thenReturn((umaPageSolicitacaoRamal()));
+        when(usuarioService.findComplete(1)).thenReturn(Usuario.builder().id(1).nome("teste").build());
+
+        var filtros = new SolicitacaoRamalFiltros();
+        filtros.setAgenteAutorizadoId(1);
+        filtros.setSituacao(ESituacaoSolicitacao.PENDENTE);
+        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
+
+        var response = service.getAllGerencia(new PageRequest(), filtros);
+
+        assertThat(response)
+            .extracting("id", "canal", "dataCadastro",
+                "situacao").containsExactly(
+
+                Tuple.tuple(1, ECanal.AGENTE_AUTORIZADO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE),
+
+                Tuple.tuple(2, ECanal.AGENTE_AUTORIZADO,
+                    LocalDateTime.of(2022, 02, 10, 10, 00, 00),
+                    ESituacaoSolicitacao.PENDENTE)
+            );
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {
@@ -251,4 +285,10 @@ public class SolicitacaoRamalServiceAaTest {
         return solicitacaoRamal;
     }
 
+    private Page<SolicitacaoRamal> umaPageSolicitacaoRamal() {
+        return new PageImpl<>(
+            List.of(umaSolicitacaoRamal(1),
+                umaSolicitacaoRamal(2))
+        );
+    }
 }

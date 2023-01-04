@@ -16,6 +16,8 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.querydsl.core.types.Predicate;
@@ -25,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -214,6 +217,28 @@ public class SolicitacaoRamalServiceTest {
         verify(serviceD2d, times(1)).update(request);
     }
 
+    @Test
+    public void getAllGerenciaDeveMandarParaServiceAa_seCanalforAgenteAutorizado() {
+        var filtros = umaSolicitacaoFiltros();
+        filtros.setCanal(ECanal.AGENTE_AUTORIZADO);
+        when(serviceAa.getAllGerencia(new PageRequest(), filtros)).thenReturn(umaPageResponseAa());
+
+        service.getAllGerencia(new PageRequest(), filtros);
+
+        verify(serviceAa, times(1)).getAllGerencia(any(PageRequest.class), eq(filtros));
+    }
+
+    @Test
+    public void getAllGerenciaDeveMandarParaServiceD2d_seCanalforD2d() {
+        var filtros = umaSolicitacaoFiltros();
+        filtros.setCanal(ECanal.D2D_PROPRIO);
+        when(serviceD2d.getAllGerencia(new PageRequest(), filtros)).thenReturn(umaPageResponseD2d());
+
+        service.getAllGerencia(new PageRequest(), filtros);
+
+        verify(serviceD2d, times(1)).getAllGerencia(any(PageRequest.class), eq(filtros));
+    }
+
     private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
         return SolicitacaoRamalRequest.builder()
             .id(id)
@@ -253,10 +278,24 @@ public class SolicitacaoRamalServiceTest {
         );
     }
 
-    private PageImpl<SolicitacaoRamal> umaPageSolicitacaoRamal() {
+    private Page<SolicitacaoRamal> umaPageSolicitacaoRamal() {
         return new PageImpl<>(
             List.of(umaSolicitacaoRamal(1),
                 umaSolicitacaoRamal(2))
+        );
+    }
+
+    private PageImpl<SolicitacaoRamalResponse> umaPageResponseAa() {
+        return new PageImpl<>(
+            List.of(umaSolicitacaoRamalResponseAa(1),
+                umaSolicitacaoRamalResponseAa(2))
+        );
+    }
+
+    private PageImpl<SolicitacaoRamalResponse> umaPageResponseD2d() {
+        return new PageImpl<>(
+            List.of(umaSolicitacaoRamalResponseD2d(1),
+                umaSolicitacaoRamalResponseD2d(2))
         );
     }
 
@@ -269,7 +308,7 @@ public class SolicitacaoRamalServiceTest {
         var solicitacaoRamal = new SolicitacaoRamal();
         solicitacaoRamal.setId(id);
         solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
-        solicitacaoRamal.setSubCanalId(1);
+        solicitacaoRamal.setSubCanal(SubCanal.builder().id(1).build());
         solicitacaoRamal.setDataCadastro(LocalDateTime.of(2022, 02, 10, 10, 00, 00));
         solicitacaoRamal.setMelhorDataImplantacao(LocalDate.of(2022, 12, 01));
         solicitacaoRamal.setUsuariosSolicitados(List.of(Usuario.builder().id(1).build()));
@@ -308,9 +347,14 @@ public class SolicitacaoRamalServiceTest {
         var response = new SolicitacaoRamalResponse();
         response.setId(id);
         response.setCanal(ECanal.D2D_PROPRIO);
-        response.setSubCanalId(1);
+        response.setSubCanalCodigo(ETipoCanal.PAP);
         response.setDataCadastro(LocalDateTime.now());
         response.setSituacao(ESituacaoSolicitacao.PENDENTE);
         return response;
+    }
+
+    private SolicitacaoRamalFiltros umaSolicitacaoFiltros() {
+        var filtros = new SolicitacaoRamalFiltros();
+        return filtros;
     }
 }

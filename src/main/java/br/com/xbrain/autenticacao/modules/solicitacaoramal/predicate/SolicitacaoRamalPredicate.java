@@ -24,8 +24,8 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
     public SolicitacaoRamalPredicate comDataCadastro(String dataInicialSolicitacao, String dataFinalSolicitacao) {
         if (!ObjectUtils.isEmpty(dataInicialSolicitacao) && !ObjectUtils.isEmpty(dataFinalSolicitacao)) {
             builder.and(solicitacaoRamal.dataCadastro.between(
-                    LocalDateTime.of(DateUtils.parseStringToLocalDate(dataInicialSolicitacao), LocalTime.MIN),
-                    LocalDateTime.of(DateUtils.parseStringToLocalDate(dataFinalSolicitacao), LocalTime.MAX)));
+                LocalDateTime.of(DateUtils.parseStringToLocalDate(dataInicialSolicitacao), LocalTime.MIN),
+                LocalDateTime.of(DateUtils.parseStringToLocalDate(dataFinalSolicitacao), LocalTime.MAX)));
         }
 
         return this;
@@ -54,7 +54,7 @@ public class SolicitacaoRamalPredicate extends PredicateBase {
 
     public SolicitacaoRamalPredicate comSubCanalId(Integer subCanalId) {
         if (subCanalId != null) {
-            builder.and(solicitacaoRamal.subCanalId.eq(subCanalId));
+            builder.and(solicitacaoRamal.subCanal.id.eq(subCanalId));
         }
 
         return this;

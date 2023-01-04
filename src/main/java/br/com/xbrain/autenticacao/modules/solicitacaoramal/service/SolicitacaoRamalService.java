@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.util.ListUtils;
 
@@ -88,17 +87,6 @@ public class SolicitacaoRamalService {
             .collect(Collectors.toList());
     }
 
-    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAllGerencia(pageable, getBuild(filtros));
-
-        return new PageImpl<>(solicitacoes.getContent()
-            .stream()
-            .map(SolicitacaoRamalResponse::convertFrom)
-            .collect(Collectors.toList()),
-            pageable,
-            solicitacoes.getTotalElements());
-    }
-
     public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         validarFiltroObrigatorios(filtros);
         Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
@@ -122,25 +110,6 @@ public class SolicitacaoRamalService {
         }
     }
 
-    public PageImpl<SolicitacaoRamalResponse> getAllDetalhar(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
-        hasFiltrosObrigatorios(filtros);
-
-        Page<SolicitacaoRamal> solicitacoes = solicitacaoRamalRepository.findAll(pageable, getBuild(filtros));
-
-        return new PageImpl<>(solicitacoes.getContent()
-            .stream()
-            .map(SolicitacaoRamalResponse::convertFrom)
-            .collect(Collectors.toList()),
-            pageable,
-            solicitacoes.getTotalElements());
-    }
-
-    private void hasFiltrosObrigatorios(SolicitacaoRamalFiltros filtros) {
-        if (ObjectUtils.isEmpty(filtros.getAgenteAutorizadoId())) {
-            throw new ValidacaoException(MSG_DEFAULT_PARAM_OBRIGATORIO);
-        }
-    }
-
     private BooleanBuilder getBuild(SolicitacaoRamalFiltros filtros) {
         return filtros.toPredicate().build();
     }
@@ -157,6 +126,10 @@ public class SolicitacaoRamalService {
     @Transactional
     public SolicitacaoRamalResponse update(SolicitacaoRamalRequest request) {
         return getSolicitacaoRamalService(request.getCanal()).update(request);
+    }
+
+    public Page<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+        return getSolicitacaoRamalService(filtros.getCanal()).getAllGerencia(pageable, filtros);
     }
 
     private ISolicitacaoRamalService getSolicitacaoRamalService(ECanal canal) {

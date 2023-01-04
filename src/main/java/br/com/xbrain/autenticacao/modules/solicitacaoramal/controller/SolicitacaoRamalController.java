@@ -6,7 +6,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,12 +42,12 @@ public class SolicitacaoRamalController {
     }
 
     @GetMapping("/gerencia")
-    public PageImpl<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+    public Page<SolicitacaoRamalResponse> getAllGerencia(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return solicitacaoRamalService.getAllGerencia(pageable, filtros);
     }
 
     @GetMapping
-    public PageImpl<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
+    public Page<SolicitacaoRamalResponse> getAll(PageRequest pageable, SolicitacaoRamalFiltros filtros) {
         return solicitacaoRamalService.getAll(pageable, filtros);
     }
 
