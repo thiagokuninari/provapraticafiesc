@@ -185,4 +185,6 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findByCpfsAndSituacao(Predicate predicate, ESituacao situacao);
 
     List<Usuario> findByCpfs(Predicate predicate);
+
+    Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
 }

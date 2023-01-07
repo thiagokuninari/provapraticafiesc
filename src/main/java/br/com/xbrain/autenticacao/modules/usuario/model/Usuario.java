@@ -253,6 +253,11 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ETipoFeederMso> tiposFeeder;
 
+    @NotAudited
+    @JsonIgnore
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UsuarioSenhaIncorretaHistorico> historicosSenhaIncorretas;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -624,5 +629,16 @@ public class Usuario {
     public boolean isGeradorLeadsOuClienteLojaFuturo() {
         return getCargoCodigo() == GERADOR_LEADS
             || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public Integer numeroTentativasLoginSenhaIncorreta() {
+        return this.historicosSenhaIncorretas.size();
+    }
+
+    public void adicionar(UsuarioSenhaIncorretaHistorico usuarioSenhaIncorretaHistorico) {
+        if (this.historicosSenhaIncorretas == null) {
+            this.historicosSenhaIncorretas = new ArrayList<>();
+        }
+        this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
     }
 }
