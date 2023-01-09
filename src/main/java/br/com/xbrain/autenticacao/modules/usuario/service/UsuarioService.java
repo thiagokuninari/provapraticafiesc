@@ -2457,7 +2457,7 @@ public class UsuarioService {
     }
 
     private void gerarHistoricoPermissaoEquipeTecnica(List<Integer> usuariosIds, boolean hasEquipeTecnica) {
-        if (!ObjectUtils.isEmpty(usuariosIds)) {
+        if (!isEmpty(usuariosIds)) {
             usuarioHistoricoService.save(
                 UsuarioHistorico.gerarHistorico(
                     usuariosIds,
