@@ -2432,7 +2432,7 @@ public class UsuarioService {
                 .filter(item -> item.getDataTentativa().equals(LocalDate.now()))
                 .count();
 
-            if (tentativas == NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA) {
+            if (tentativas >= NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA) {
                 var usuarioInativacaoDto = UsuarioInativacaoDto.builder()
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
