@@ -1250,6 +1250,7 @@ public class UsuarioService {
     private void configurarCargo(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
         Cargo cargo = getCargo(usuarioMqRequest.getCargo());
         usuarioDto.setCargoId(cargo.getId());
+        usuarioDto.setCargoCodigo(cargo.getCodigo());
     }
 
     private Cargo getCargo(CodigoCargo codigoCargo) {
