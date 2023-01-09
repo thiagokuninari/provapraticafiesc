@@ -7,7 +7,11 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.*;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -40,10 +44,15 @@ import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.permissao.repository.CargoDepartamentoFuncionalidadeRepository;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CargoPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
@@ -62,6 +71,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.NumberUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,7 +87,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.RelatorioNome.USUARIOS_CSV;
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.QTD_MAX_IN_NO_ORACLE;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
@@ -100,8 +109,8 @@ public class UsuarioService {
     private static final int POSICAO_ZERO = 0;
     private static final int MAX_CARACTERES_SENHA = 6;
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Usuário não encontrado.");
-    private static final ESituacao ATIVO = A;
-    private static final ESituacao INATIVO = I;
+    private static final ESituacao ATIVO = ESituacao.A;
+    private static final ESituacao INATIVO = ESituacao.I;
     private static final String MSG_ERRO_AO_ATIVAR_USUARIO =
         "Erro ao ativar, o agente autorizado está inativo ou descredenciado.";
     private static final String MSG_ERRO_AO_REMOVER_CANAL_ATIVO_LOCAL =
@@ -143,6 +152,7 @@ public class UsuarioService {
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
         SUPERVISOR_OPERACAO, COORDENADOR_OPERACAO);
+    private static final List<Integer> FUNCIONALIDADES_EQUIPE_TECNICA = List.of(16101);
 
     @Autowired
     private UsuarioRepository repository;
@@ -174,6 +184,8 @@ public class UsuarioService {
     private CargoDepartamentoFuncionalidadeRepository cargoDepartamentoFuncionalidadeRepository;
     @Autowired
     private PermissaoEspecialRepository permissaoEspecialRepository;
+    @Autowired
+    private PermissaoEspecialService permissaoEspecialService;
     @Autowired
     private UsuarioCadastroMqSender usuarioMqSender;
     @Autowired
@@ -287,7 +299,7 @@ public class UsuarioService {
 
     public Optional<UsuarioResponse> findByEmailAa(String email, Boolean buscarAtivo) {
         if (Boolean.TRUE.equals(buscarAtivo)) {
-            return repository.findByEmailAndSituacao(email, A)
+            return repository.findByEmailAndSituacao(email, ESituacao.A)
                 .map(UsuarioResponse::of);
         }
 
@@ -297,7 +309,7 @@ public class UsuarioService {
 
     public Optional<UsuarioResponse> findByCpfAa(String cpf, Boolean buscarAtivo) {
         if (Boolean.TRUE.equals(buscarAtivo)) {
-            return repository.findTop1UsuarioByCpfAndSituacao(getOnlyNumbers(cpf), A)
+            return repository.findTop1UsuarioByCpfAndSituacao(getOnlyNumbers(cpf), ESituacao.A)
                 .map(UsuarioResponse::of);
         }
 
@@ -307,19 +319,19 @@ public class UsuarioService {
 
     public UsuarioResponse buscarAtualByCpf(String cpf) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), R)
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
     public UsuarioResponse buscarNaoRealocadoByCpf(String cpf) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), R)
+            .findTop1UsuarioByCpfAndSituacaoNotOrderByDataCadastroDesc(getOnlyNumbers(cpf), ESituacao.R)
             .orElse(null));
     }
 
     public UsuarioResponse buscarAtualByEmail(String email) {
         return UsuarioResponse.of(repository
-            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, R)
+            .findTop1UsuarioByEmailAndSituacaoNotOrderByDataCadastroDesc(email, ESituacao.R)
             .orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION));
     }
 
@@ -718,13 +730,13 @@ public class UsuarioService {
 
     public void salvarUsuarioRealocado(Usuario usuario) {
         Usuario usuarioARealocar = repository.findById(usuario.getId()).orElseThrow(() -> EX_NAO_ENCONTRADO);
-        usuarioARealocar.setSituacao(R);
+        usuarioARealocar.setSituacao(ESituacao.R);
         repository.save(usuarioARealocar);
     }
 
     private ESituacao recuperarSituacaoAnterior(Usuario usuario) {
         return usuario.isNovoCadastro()
-            ? A
+            ? ESituacao.A
             : repository.findById(usuario.getId()).orElseThrow(() -> USUARIO_NOT_FOUND_EXCEPTION).getSituacao();
     }
 
@@ -822,7 +834,7 @@ public class UsuarioService {
     }
 
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
-        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), R)
+        repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
                 if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
@@ -832,7 +844,7 @@ public class UsuarioService {
     }
 
     private void validarEmailCadastrado(String email, Integer usuarioId) {
-        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, R)
+        repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
             .ifPresent(usuario -> {
                 if (isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
@@ -993,7 +1005,7 @@ public class UsuarioService {
         usuario.setSenhaDescriptografada(senhaDescriptografada);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAlterarSenha(Eboolean.V);
-        usuario.setSituacao(A);
+        usuario.setSituacao(ESituacao.A);
         if (!usuario.hasUsuarioCadastro()) {
             usuario.setUsuarioCadastro(new Usuario(autenticacaoService.getUsuarioId()));
         }
@@ -1071,7 +1083,7 @@ public class UsuarioService {
 
     private void inativarUsuario(Usuario usuario) {
         if (usuario.isAtivo()) {
-            usuario.setSituacao(I);
+            usuario.setSituacao(ESituacao.I);
             repository.save(usuario);
             usuarioHistoricoService.gerarHistoricoDeInativacaoPorAgenteAutorizado(usuario.getId());
             autenticacaoService.logout(usuario.getId());
@@ -1102,7 +1114,7 @@ public class UsuarioService {
 
     private void salvarUsuarioRemanejado(Usuario usuarioRemanejado) {
         usuarioRemanejado.setAlterarSenha(Eboolean.F);
-        usuarioRemanejado.setSituacao(R);
+        usuarioRemanejado.setSituacao(ESituacao.R);
         usuarioRemanejado.setSenha(repository.findById(usuarioRemanejado.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO).getSenha());
         usuarioRemanejado.adicionarHistorico(UsuarioHistorico.gerarHistorico(usuarioRemanejado, REMANEJAMENTO));
@@ -1112,13 +1124,13 @@ public class UsuarioService {
     private Usuario criaNovoUsuarioAPartirDoRemanejado(Usuario usuario) {
         validarUsuarioComCpfDiferenteRemanejado(usuario);
         usuario.setDataCadastro(LocalDateTime.now());
-        usuario.setSituacao(A);
+        usuario.setSituacao(ESituacao.A);
         usuario.setId(null);
         return usuario;
     }
 
     public void validarUsuarioComCpfDiferenteRemanejado(Usuario usuario) {
-        if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), R)) {
+        if (repository.existsByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)) {
             throw new ValidacaoException("Não é possível remanejar o usuário pois já existe outro usuário "
                 + "para este CPF.");
         }
@@ -1289,7 +1301,7 @@ public class UsuarioService {
 
         usuario.removerCaracteresDoCpf();
         repository
-            .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), R)
+            .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
             .ifPresent(u -> {
                 if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
@@ -1300,7 +1312,7 @@ public class UsuarioService {
 
     private void validarEmailExistente(Usuario usuario) {
         repository
-            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), R)
+            .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
             .ifPresent(u -> {
                 if (isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
@@ -1313,7 +1325,7 @@ public class UsuarioService {
     public void ativar(UsuarioAtivacaoDto dto) {
         var usuario = findComplete(dto.getIdUsuario());
         usuario.setDataReativacao(LocalDateTime.now());
-        usuario.setSituacao(A);
+        usuario.setSituacao(ESituacao.A);
         validarAtivacao(usuario);
         usuario.adicionarHistorico(
             UsuarioHistorico.criarHistoricoAtivacao(
@@ -1390,7 +1402,7 @@ public class UsuarioService {
     public void inativar(UsuarioInativacaoDto usuarioInativacao) {
         Usuario usuario = findComplete(usuarioInativacao.getIdUsuario());
         validarUsuarioAtivoLocalEPossuiAgendamento(usuario);
-        usuario.setSituacao(I);
+        usuario.setSituacao(ESituacao.I);
         usuario.adicionarHistorico(gerarDadosDeHistoricoDeInativacao(usuarioInativacao, usuario));
         inativarUsuarioNaEquipeVendas(usuario, carregarMotivoInativacao(usuarioInativacao));
         removerHierarquiaDoUsuarioEquipe(usuario, carregarMotivoInativacao(usuarioInativacao));
@@ -1506,7 +1518,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosByIds(List<Integer> idsUsuarios) {
-        var usuarios = repository.findBySituacaoAndIdsIn(A,
+        var usuarios = repository.findBySituacaoAndIdsIn(ESituacao.A,
             new UsuarioPredicate().comUsuariosIds(idsUsuarios).build());
         return usuarios.stream()
             .map(UsuarioResponse::of)
@@ -1514,7 +1526,7 @@ public class UsuarioService {
     }
 
     public List<Integer> getUsuariosAtivosByIds(List<Integer> idsUsuarios) {
-        return repository.findAllIdsBySituacaoAndIdsIn(A,
+        return repository.findAllIdsBySituacaoAndIdsIn(ESituacao.A,
             new UsuarioPredicate().comUsuariosIds(idsUsuarios).build());
     }
 
@@ -1527,7 +1539,7 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> getUsuariosInativosByIds(List<Integer> usuariosInativosIds) {
-        var usuarios = repository.findBySituacaoAndIdIn(I, usuariosInativosIds);
+        var usuarios = repository.findBySituacaoAndIdIn(ESituacao.I, usuariosInativosIds);
 
         return usuarios.stream()
             .map(UsuarioResponse::of)
@@ -2195,7 +2207,7 @@ public class UsuarioService {
 
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true)
             .comCodigoCargo(codigoCargo)
-            .comSituacoes(List.of(A));
+            .comSituacoes(List.of(ESituacao.A));
 
         return StreamSupport.stream(
                 repository.findAll(predicate.build(), new Sort(ASC, "nome")).spliterator(), false)
@@ -2328,9 +2340,9 @@ public class UsuarioService {
     }
 
     private static String verificarSituacao(String nome, ESituacao situacao) {
-        return I == situacao
+        return ESituacao.I == situacao
             ? nome.concat(" (INATIVO)")
-            : R == situacao
+            : ESituacao.R == situacao
             ? nome.concat(" (REALOCADO)")
             : nome;
     }
@@ -2346,10 +2358,10 @@ public class UsuarioService {
     }
 
     private String obterNomeComSituacao(String usuarioNome, ESituacao situacao) {
-        if (situacao == I) {
+        if (situacao == ESituacao.I) {
             return usuarioNome.concat(" (INATIVO)");
         }
-        if (situacao == R) {
+        if (situacao == ESituacao.R) {
             return usuarioNome.concat(" (REALOCADO)");
         }
         return usuarioNome;
@@ -2361,7 +2373,7 @@ public class UsuarioService {
     }
 
     private void configurarDataReativacao(UsuarioMqRequest usuarioMqRequest) {
-        if (usuarioMqRequest.getSituacao() == A) {
+        if (usuarioMqRequest.getSituacao() == ESituacao.A) {
             repository.updateDataReativacao(LocalDateTime.now(), usuarioMqRequest.getId());
         }
     }
@@ -2372,7 +2384,7 @@ public class UsuarioService {
             return repository.findByEmailsAndSituacao(
                     new UsuarioPredicate()
                         .comUsuariosEmail(emails)
-                        .build(), A)
+                        .build(), ESituacao.A)
                 .stream()
                 .map(Usuario::forceLoadCanais)
                 .map(UsuarioResponse::of)
@@ -2396,7 +2408,7 @@ public class UsuarioService {
             return repository.findByCpfsAndSituacao(
                     new UsuarioPredicate()
                         .comUsuariosCpfs(cpfs)
-                        .build(), A)
+                        .build(), ESituacao.A)
                 .stream()
                 .map(Usuario::forceLoadCanais)
                 .map(UsuarioResponse::of)
@@ -2414,4 +2426,49 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    @Transactional
+    public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
+        var sociosIds = new ArrayList<>(dto.getSociosSecundariosIds());
+        sociosIds.add(dto.getUsuarioProprietarioId());
+        boolean hasEquipeTecnica;
+
+        if (dto.hasEquipeTecnica()) {
+            permissaoEspecialService.save(criarPermissaoEspecialEquipeTecnica(sociosIds, dto.getUsuarioCadastroId()));
+            hasEquipeTecnica = true;
+            log.info("Salva permissoes especiais equipe tecnica.");
+        } else {
+            permissaoEspecialService.deletarPermissoesEspeciaisBy(FUNCIONALIDADES_EQUIPE_TECNICA, sociosIds);
+            hasEquipeTecnica = false;
+            log.info("Remove permissoes especiais equipe tecnica.");
+        }
+        gerarHistoricoPermissaoEquipeTecnica(sociosIds, hasEquipeTecnica);
+        log.info("Gera historico permissoes equipe tecnica.");
+    }
+
+    private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
+                                                                List<Integer> funcionalidades) {
+        return funcionalidades.stream()
+            .filter(funcionalidadeId -> !permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioId, funcionalidadeId))
+            .map(funcionalidadeId -> PermissaoEspecial.of(usuarioId, funcionalidadeId, usuarioCadastroId))
+            .collect(Collectors.toList());
+    }
+
+    private List<PermissaoEspecial> criarPermissaoEspecialEquipeTecnica(List<Integer> sociosIds, Integer usuarioCadastroId) {
+        return sociosIds.stream()
+            .flatMap(socioId -> criarPermissoesEspeciaisPor(socioId, usuarioCadastroId, FUNCIONALIDADES_EQUIPE_TECNICA).stream())
+            .collect(Collectors.toList());
+    }
+
+    private void gerarHistoricoPermissaoEquipeTecnica(List<Integer> usuariosIds, boolean hasEquipeTecnica) {
+        if (!ObjectUtils.isEmpty(usuariosIds)) {
+            usuarioHistoricoService.save(
+                UsuarioHistorico.gerarHistorico(
+                    usuariosIds,
+                    hasEquipeTecnica
+                        ? "Agente Autorizado com permissão de Equipe Técnica."
+                        : "Agente Autorizado sem permissão de Equipe Técnica.",
+                    ESituacao.A)
+            );
+        }
+    }
 }

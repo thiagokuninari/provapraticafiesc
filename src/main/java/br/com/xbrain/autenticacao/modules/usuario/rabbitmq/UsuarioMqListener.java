@@ -87,5 +87,10 @@ public class UsuarioMqListener {
     public void inativarPorAgenteAutorizado(UsuarioDto usuario) {
         service.inativarPorAgenteAutorizado(usuario);
     }
+
+    @RabbitListener(queues = "${app-config.queue.permissao-agente-autorizado-equipe-tecnica}")
+    public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
+        service.atualizarPermissaoEquipeTecnica(dto);
+    }
 }
 

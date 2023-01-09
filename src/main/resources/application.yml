@@ -137,6 +137,7 @@ app-config:
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
     limpar-cpf-e-alterar-email-feeder: limpar-cpf-e-alterar-email-feeder.queue
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
+    permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
 
   oauth-clients:
     autenticacao-api:

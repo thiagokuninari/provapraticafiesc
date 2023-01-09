@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +49,10 @@ public class PermissaoEspecialService {
                 .collect(Collectors.toList()));
     }
 
+    public void save(List<PermissaoEspecial> permissoes) {
+        repository.save(permissoes);
+    }
+
     public PermissaoEspecial remover(int usuarioId, int funcionalidadeId) {
         return repository
             .findOneByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId)
@@ -68,5 +73,13 @@ public class PermissaoEspecialService {
             .collect(Collectors.toList());
 
         feederService.salvarPermissoesEspeciaisCoordenadoresGerentes(usuariosIds, usuarioLogado);
+    }
+
+    public boolean hasPermissaoEspecialAtiva(Integer usuarioId, Integer funcionalidadeId) {
+        return repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(usuarioId, funcionalidadeId);
+    }
+
+    public void deletarPermissoesEspeciaisBy(List<Integer> funcionalidadesIds, List<Integer> usuariosIds) {
+        repository.deletarPermissaoEspecialBy(funcionalidadesIds, usuariosIds);
     }
 }
