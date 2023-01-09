@@ -2428,7 +2428,11 @@ public class UsuarioService {
 
             this.repository.save(usuario);
 
-            if (usuario.numeroTentativasLoginSenhaIncorreta() == NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA) {
+            var tentativas = usuario.getHistoricosSenhaIncorretas().stream()
+                .filter(item -> item.getDataTentativa().equals(LocalDate.now()))
+                .count();
+
+            if (tentativas == NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA) {
                 var usuarioInativacaoDto = UsuarioInativacaoDto.builder()
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
