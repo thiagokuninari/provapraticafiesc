@@ -70,6 +70,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -97,8 +98,6 @@ import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 import static com.google.common.collect.Lists.partition;
 import static java.util.Collections.emptyList;
 import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.util.CollectionUtils.isEmpty;
-import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Service
 @Slf4j
@@ -340,7 +339,7 @@ public class UsuarioService {
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
         UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
         Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
-        if (!isEmpty(pages.getContent())) {
+        if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
         return pages;
@@ -411,7 +410,7 @@ public class UsuarioService {
         if (!usuario.haveCanalAgenteAutorizado() || usuario.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             return List.of();
         }
-        var usuariosPol = isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
+        var usuariosPol = CollectionUtils.isEmpty(filtros.getUsuariosFiltradosPorCidadePol())
             ? agenteAutorizadoService.getIdsUsuariosPermitidosDoUsuario(filtros)
             : filtros.getUsuariosFiltradosPorCidadePol();
         var usuariosSubordinados = Sets.newHashSet(repository.getUsuariosSubordinados(usuario.getId()));
@@ -469,7 +468,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDto save(Usuario request, MultipartFile foto) {
-        if (!isEmpty(foto)) {
+        if (!ObjectUtils.isEmpty(foto)) {
             fileService.uploadFotoUsuario(request, foto);
         }
         return save(request);
@@ -524,7 +523,7 @@ public class UsuarioService {
     private void validarVinculoComAa(Usuario usuarioOriginal, Usuario usuarioAlterado) {
         if (usuarioOriginal.isNivelOperacao() && usuarioOriginal.isCanalAgenteAutorizadoRemovido(usuarioAlterado.getCanais())) {
             var aas = agenteAutorizadoNovoService.findAgenteAutorizadoByUsuarioId(usuarioOriginal.getId());
-            if (!isEmpty(aas)) {
+            if (!CollectionUtils.isEmpty(aas)) {
                 throw new ValidacaoException(String.format(MSG_ERRO_AO_REMOVER_CANAL_AGENTE_AUTORIZADO, obterDadosAa(aas)));
             }
         }
@@ -587,7 +586,7 @@ public class UsuarioService {
     private void validarVinculoComSite(Usuario usuarioOriginal, Usuario usuarioAlterado) {
         var sitesVinculados = siteService.buscarSitesAtivosPorCoordenadorOuSupervisor(usuarioOriginal.getId());
 
-        if (!isEmpty(sitesVinculados)) {
+        if (!CollectionUtils.isEmpty(sitesVinculados)) {
             validarRemocaoCanalAtivoLocal(usuarioOriginal, usuarioAlterado, sitesVinculados);
             validarAlteracaoDeCargo(usuarioOriginal, usuarioAlterado, sitesVinculados);
         }
@@ -714,7 +713,7 @@ public class UsuarioService {
     }
 
     private void salvarUsuarioCadastroCasoAutocadastro(Usuario usuario) {
-        if (isEmpty(usuario.getUsuarioCadastro())) {
+        if (ObjectUtils.isEmpty(usuario.getUsuarioCadastro())) {
             usuario.setUsuarioCadastro(new Usuario(usuario.getId()));
             repository.save(usuario);
         }
@@ -767,10 +766,10 @@ public class UsuarioService {
                 var usuarioHierarquia = usuarioHierarquiaRepository.findByUsuarioHierarquia(id,
                     superiorRequest.getSuperiorAntigo());
 
-                if (!isEmpty(usuarioHierarquia) && !isEmpty(usuarioAutenticado)) {
+                if (!ObjectUtils.isEmpty(usuarioHierarquia) && !ObjectUtils.isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.delete(usuarioHierarquia);
                 }
-                if (!isEmpty(usuarioAutenticado)) {
+                if (!ObjectUtils.isEmpty(usuarioAutenticado)) {
                     usuarioHierarquiaRepository.save(
                         criarHierarquia(id, usuarioSuperiorNovo, superiorRequest, usuarioAutenticado));
                 }
@@ -833,7 +832,7 @@ public class UsuarioService {
     private void validarCpfCadastrado(String cpf, Integer usuarioId) {
         repository.findTop1UsuarioByCpfAndSituacaoNot(getOnlyNumbers(cpf), ESituacao.R)
             .ifPresent(usuario -> {
-                if (isEmpty(usuarioId)
+                if (ObjectUtils.isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -843,7 +842,7 @@ public class UsuarioService {
     private void validarEmailCadastrado(String email, Integer usuarioId) {
         repository.findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(email, ESituacao.R)
             .ifPresent(usuario -> {
-                if (isEmpty(usuarioId)
+                if (ObjectUtils.isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
                     throw new ValidacaoException("Email já cadastrado.");
                 }
@@ -868,7 +867,7 @@ public class UsuarioService {
     }
 
     private void removerUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (isEmpty(hierarquiasId)) {
+        if (CollectionUtils.isEmpty(hierarquiasId)) {
             usuario.getUsuariosHierarquia().clear();
         } else {
             usuario.getUsuariosHierarquia()
@@ -880,21 +879,21 @@ public class UsuarioService {
         Set<UsuarioHierarquia> subordinados = usuarioHierarquiaRepository.findAllByIdUsuarioSuperior(usuario.getId())
             .stream().filter(hierarquia -> !hierarquia.isSuperior(usuario.getCargoId()))
             .collect(Collectors.toSet());
-        if (!isEmpty(subordinados)) {
+        if (!CollectionUtils.isEmpty(subordinados)) {
             usuarioHierarquiaRepository.delete(subordinados);
         }
     }
 
     private void adicionarUsuarioSuperior(Usuario usuario, List<Integer> hierarquiasId) {
-        if (!isEmpty(hierarquiasId)) {
+        if (!CollectionUtils.isEmpty(hierarquiasId)) {
             hierarquiasId
                 .forEach(idHierarquia -> usuario.adicionarHierarquia(criarUsuarioHierarquia(usuario, idHierarquia)));
         }
     }
 
     public void hierarquiaIsValida(Usuario usuario) {
-        if (!isEmpty(usuario)
-            && !isEmpty(usuario.getUsuariosHierarquia())) {
+        if (!ObjectUtils.isEmpty(usuario)
+            && !CollectionUtils.isEmpty(usuario.getUsuariosHierarquia())) {
 
             usuario.getUsuariosHierarquia()
                 .forEach(user -> processarHierarquia(usuario, user, new ArrayList<>()));
@@ -936,10 +935,10 @@ public class UsuarioService {
     }
 
     private boolean validarUsuarios(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
-        return !isEmpty(usuarioParaAchar)
-            && !isEmpty(usuarioParaAchar.getUsuariosHierarquia())
-            && !isEmpty(usuario)
-            && !isEmpty(usuario.getUsuarioSuperior());
+        return !ObjectUtils.isEmpty(usuarioParaAchar)
+            && !CollectionUtils.isEmpty(usuarioParaAchar.getUsuariosHierarquia())
+            && !ObjectUtils.isEmpty(usuario)
+            && !ObjectUtils.isEmpty(usuario.getUsuarioSuperior());
     }
 
     private boolean verificarUsuariosHierarquia(Usuario usuarioParaAchar, UsuarioHierarquia usuario) {
@@ -951,7 +950,7 @@ public class UsuarioService {
         return usuario.getUsuariosHierarquia()
             .stream()
             .map(UsuarioHierarquia::getUsuarioSuperiorId)
-            .filter(item -> !isEmpty(item))
+            .filter(item -> !ObjectUtils.isEmpty(item))
             .collect(Collectors.toList());
     }
 
@@ -978,7 +977,8 @@ public class UsuarioService {
 
     private void tratarCidadesUsuario(Usuario usuario) {
         var cidadesAtuais = Sets.newHashSet(usuarioCidadeRepository.findCidadesIdByUsuarioId(usuario.getId()));
-        var cidadesModificadas = Sets.newHashSet(isEmpty(usuario.getCidadesId()) ? emptyList() : usuario.getCidadesId());
+        var cidadesModificadas = Sets.newHashSet(
+            CollectionUtils.isEmpty(usuario.getCidadesId()) ? emptyList() : usuario.getCidadesId());
         var cidadesRemovidas = Sets.difference(cidadesAtuais, cidadesModificadas);
         var cidadesAdicionadas = Sets.difference(cidadesModificadas, cidadesAtuais);
         removerUsuarioCidade(usuario, cidadesRemovidas);
@@ -990,7 +990,7 @@ public class UsuarioService {
     }
 
     private void adicionarUsuarioCidade(Usuario usuario, Set<Integer> cidadesId) {
-        if (!isEmpty(cidadesId)) {
+        if (!CollectionUtils.isEmpty(cidadesId)) {
             cidadesId.forEach(idCidade -> usuario.adicionarCidade(
                 criarUsuarioCidade(usuario, idCidade)));
             repository.save(usuario);
@@ -1142,7 +1142,7 @@ public class UsuarioService {
         Usuario usuarioCpfAntigo = repository.findById(usuario.getId())
             .orElseThrow(() -> EX_NAO_ENCONTRADO);
         usuario.removerCaracteresDoCpf();
-        return !isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
+        return !ObjectUtils.isEmpty(usuario.getCpf()) && !usuario.getCpf().equals(usuarioCpfAntigo.getCpf());
     }
 
     public void saveUsuarioAlteracaoCpf(Usuario usuario) {
@@ -1300,7 +1300,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByCpfAndSituacaoNot(usuario.getCpf(), ESituacao.R)
             .ifPresent(u -> {
-                if (isEmpty(usuario.getId())
+                if (ObjectUtils.isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw new ValidacaoException("CPF já cadastrado.");
                 }
@@ -1311,7 +1311,7 @@ public class UsuarioService {
         repository
             .findTop1UsuarioByEmailIgnoreCaseAndSituacaoNot(usuario.getEmail(), ESituacao.R)
             .ifPresent(u -> {
-                if (isEmpty(usuario.getId())
+                if (ObjectUtils.isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
                     throw new ValidacaoException("Email já cadastrado.");
                 }
@@ -1351,7 +1351,7 @@ public class UsuarioService {
             .map(motivoInativacao -> motivoInativacao.equals("INATIVADO POR REALIZAR MUITAS SIMULAÇÕES"))
             .orElse(false);
 
-        if (isEmpty(usuario.getCpf())) {
+        if (ObjectUtils.isEmpty(usuario.getCpf())) {
             throw new ValidacaoException("O usuário não pode ser ativado por não possuir CPF.");
         } else if (usuario.isSocioPrincipal() && !encontrouAgenteAutorizadoBySocioEmail(usuario.getEmail())) {
             throw new ValidacaoException(MSG_ERRO_AO_ATIVAR_USUARIO
@@ -1649,12 +1649,12 @@ public class UsuarioService {
     @Transactional
     public Integer alterarDadosAcessoSenha(UsuarioDadosAcessoRequest usuarioDadosAcessoRequest) {
         Usuario usuario;
-        if (isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
+        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getUsuarioId())) {
             usuario = autenticacaoService.getUsuarioAutenticado().getUsuario();
         } else {
             usuario = findComplete(usuarioDadosAcessoRequest.getUsuarioId());
         }
-        if (isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
+        if (ObjectUtils.isEmpty(usuarioDadosAcessoRequest.getIgnorarSenhaAtual())
             || !usuarioDadosAcessoRequest.getIgnorarSenhaAtual()) {
             validarSenhaAtual(usuario, usuarioDadosAcessoRequest.getSenhaAtual());
         }
@@ -2045,7 +2045,7 @@ public class UsuarioService {
     }
 
     private void adicionarFiltroEquipeVendas(PublicoAlvoComunicadoFiltros usuarioFiltros) {
-        if (!isEmpty(usuarioFiltros.getEquipesVendasIds())) {
+        if (!CollectionUtils.isEmpty(usuarioFiltros.getEquipesVendasIds())) {
             var usuarios = equipeVendaD2dService.getUsuariosDaEquipe(usuarioFiltros.getEquipesVendasIds());
             usuarioFiltros.adicionarUsuariosId(usuarios);
         }
@@ -2053,7 +2053,7 @@ public class UsuarioService {
 
     private void adicionarFiltroAgenteAutorizado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
 
-        if (!isEmpty(usuarioFiltros.getAgentesAutorizadosIds())) {
+        if (!CollectionUtils.isEmpty(usuarioFiltros.getAgentesAutorizadosIds())) {
             var usuarios = new ArrayList<Integer>();
             usuarioFiltros.getAgentesAutorizadosIds()
                 .forEach(aaId -> usuarios.addAll(getIdUsuariosAa(aaId)));
@@ -2165,7 +2165,7 @@ public class UsuarioService {
         if (usuarioAutenticado.haveCanalAgenteAutorizado()) {
             var usuariosPol = agenteAutorizadoService.getUsuariosIdsSuperioresPol();
 
-            if (!isEmpty(usuariosPol)) {
+            if (!CollectionUtils.isEmpty(usuariosPol)) {
                 usuarios.addAll(repository.findAllIds(new UsuarioPredicate()
                     .comCargo(cargosAceitos)
                     .comUsuariosIds(usuariosPol)
@@ -2255,7 +2255,7 @@ public class UsuarioService {
 
     public List<VendedoresFeederResponse> buscarVendedoresFeeder(VendedoresFeederFiltros filtros) {
         return Optional.ofNullable(buscarUsuariosIdsPorAasIds(filtros.getAasIds(), true))
-            .filter(usuariosIds -> !isEmpty(usuariosIds))
+            .filter(usuariosIds -> !CollectionUtils.isEmpty(usuariosIds))
             .map(filtros::toPredicate)
             .map(this::buscarTodosPorPredicate)
             .map(usuarios -> usuarios
@@ -2457,7 +2457,7 @@ public class UsuarioService {
     }
 
     private void gerarHistoricoPermissaoEquipeTecnica(List<Integer> usuariosIds, boolean hasEquipeTecnica) {
-        if (!isEmpty(usuariosIds)) {
+        if (!CollectionUtils.isEmpty(usuariosIds)) {
             usuarioHistoricoService.save(
                 UsuarioHistorico.gerarHistorico(
                     usuariosIds,
