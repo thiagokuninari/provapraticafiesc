@@ -2427,19 +2427,13 @@ public class UsuarioService {
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
         var sociosIds = new ArrayList<>(dto.getSociosSecundariosIds());
         sociosIds.add(dto.getUsuarioProprietarioId());
-        boolean hasEquipeTecnica;
 
         if (dto.hasEquipeTecnica()) {
             permissaoEspecialService.save(criarPermissaoEspecialEquipeTecnica(sociosIds, dto.getUsuarioCadastroId()));
-            hasEquipeTecnica = true;
-            log.info("Salva permissoes especiais equipe tecnica.");
         } else {
             permissaoEspecialService.deletarPermissoesEspeciaisBy(FUNCIONALIDADES_EQUIPE_TECNICA, sociosIds);
-            hasEquipeTecnica = false;
-            log.info("Remove permissoes especiais equipe tecnica.");
         }
-        gerarHistoricoPermissaoEquipeTecnica(sociosIds, hasEquipeTecnica);
-        log.info("Gera historico permissoes equipe tecnica.");
+        gerarHistoricoPermissaoEquipeTecnica(sociosIds, dto.hasEquipeTecnica());
     }
 
     private List<PermissaoEspecial> criarPermissoesEspeciaisPor(Integer usuarioId, Integer usuarioCadastroId,
