@@ -2441,6 +2441,7 @@ public class UsuarioService {
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
+                this.usuarioClientService.alterarSituacao(usuario.getId());
             }
         }
     }
