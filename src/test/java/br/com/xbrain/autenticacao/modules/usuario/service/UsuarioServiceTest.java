@@ -31,6 +31,7 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelp
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
@@ -138,6 +139,8 @@ public class UsuarioServiceTest {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
     private FeederService feederService;
+    @Mock
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
 
@@ -2178,6 +2181,7 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository, times(2)).save(any(Usuario.class));
         verify(autenticacaoService, times(1)).logout(any(Integer.class));
+        verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
     }
 
     private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {

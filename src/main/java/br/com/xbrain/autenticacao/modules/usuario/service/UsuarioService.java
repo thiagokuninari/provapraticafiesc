@@ -225,6 +225,8 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Autowired
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2441,7 +2443,7 @@ public class UsuarioService {
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
-                this.usuarioClientService.alterarSituacao(usuario.getId());
+                this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
             }
         }
     }
