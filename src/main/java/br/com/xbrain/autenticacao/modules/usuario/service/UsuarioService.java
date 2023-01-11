@@ -2439,7 +2439,7 @@ public class UsuarioService {
                     .idUsuario(usuario.getId())
                     .idUsuarioInativacao(1)
                     .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
-                    .observacao("Usuário errou a senha 3 vezes")
+                    .observacao("Usuário inativo devido ao erro excessivo de senha")
                     .build();
 
                 this.inativar(usuarioInativacaoDto);
