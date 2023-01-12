@@ -1023,6 +1023,7 @@ public class UsuarioService {
                 enviarParaFilaDeUsuariosSalvos(usuarioDto);
             }
             feederService.adicionarPermissaoFeederParaUsuarioNovo(usuarioDto, usuarioMqRequest);
+            criarPermissaoEspecialEquipeTecnica(usuarioDto, usuarioMqRequest);
         } catch (Exception ex) {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
@@ -2448,6 +2449,19 @@ public class UsuarioService {
         return sociosIds.stream()
             .flatMap(socioId -> criarPermissoesEspeciaisPor(socioId, usuarioCadastroId, FUNCIONALIDADES_EQUIPE_TECNICA).stream())
             .collect(Collectors.toList());
+    }
+
+    private void criarPermissaoEspecialEquipeTecnica(UsuarioDto usuarioDto, UsuarioMqRequest usuarioMqRequest) {
+        if (usuarioMqRequest.isNovoCadastroSocioSecundario() && usuarioMqRequest.isEquipeTecnica()) {
+            permissaoEspecialService.save(
+                criarPermissoesEspeciaisPor(
+                    usuarioDto.getId(),
+                    usuarioDto.getUsuarioCadastroId(),
+                    FUNCIONALIDADES_EQUIPE_TECNICA
+                )
+            );
+            gerarHistoricoPermissaoEquipeTecnica(List.of(usuarioDto.getId()), true);
+        }
     }
 
     private void gerarHistoricoPermissaoEquipeTecnica(List<Integer> usuariosIds, boolean hasEquipeTecnica) {

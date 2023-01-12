@@ -48,6 +48,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -193,6 +194,27 @@ public class UsuarioServiceIT {
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
         verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
+    }
+
+    @Test
+    @DirtiesContext
+    public void saveFromQueue_deveSalvarUsuarioEEnviarParaFilaECriarPermissao_seUsuarioSocioSecundarioEPossuiEquipeTecnica() {
+        var usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setCargo(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
+        usuarioMqRequest.setEquipeTecnica(true);
+
+        service.saveFromQueue(usuarioMqRequest);
+        var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
+
+        assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
+        assertThat(permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioDto.getId(), 16101))
+            .isTrue();
+        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioDto.getId()))
+            .flatExtracting("situacao", "observacao")
+            .contains("ATIVO", "Agente Autorizado com permissão de Equipe Técnica.");
+
+        verify(sender).sendSuccess(any());
+        verify(feederService).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
