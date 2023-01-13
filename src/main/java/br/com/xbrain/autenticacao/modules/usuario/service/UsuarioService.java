@@ -2426,8 +2426,11 @@ public class UsuarioService {
 
     @Transactional
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
-        var sociosIds = new ArrayList<>(dto.getSociosSecundariosIds());
-        sociosIds.add(dto.getUsuarioProprietarioId());
+        var sociosIds = Stream.of(dto.getUsuarioProprietarioId(), dto.getSociosSecundariosIds())
+            .flatMap(id -> id instanceof List ? ((List<?>) id).stream() : Stream.of(id))
+            .filter(Objects::nonNull)
+            .map(Integer.class::cast)
+            .collect(Collectors.toList());
 
         if (dto.hasEquipeTecnica()) {
             permissaoEspecialService.save(criarPermissaoEspecialEquipeTecnica(sociosIds, dto.getUsuarioCadastroId()));
