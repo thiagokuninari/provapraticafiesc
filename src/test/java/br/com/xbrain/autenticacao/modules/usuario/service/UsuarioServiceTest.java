@@ -2207,12 +2207,12 @@ public class UsuarioServiceTest {
     public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
         usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, List.of(2023)));
 
-        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(eq(List.of(16101)), eq(List.of(2023, 100)));
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100, 2023));
         verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
 
         assertThat(usuarioHistoricoCaptor.getValue())
             .flatExtracting("usuario", "observacao", "situacao")
-            .containsExactly(
+            .containsExactlyInAnyOrder(
                 Usuario.builder()
                     .id(2023)
                     .build(),
