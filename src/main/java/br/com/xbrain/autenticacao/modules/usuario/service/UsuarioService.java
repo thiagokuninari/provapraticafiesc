@@ -125,6 +125,7 @@ public class UsuarioService {
     private static final String MSG_ERRO_ATIVAR_USUARIO_INATIVADO_POR_MUITAS_SIMULACOES =
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
+    public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
     private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
     private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
@@ -224,6 +225,8 @@ public class UsuarioService {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
+    @Autowired
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -2414,4 +2417,34 @@ public class UsuarioService {
             .collect(toList());
     }
 
+    @Transactional
+    public void gerarHistoricoTentativasLoginSenhaIncorreta(String email) {
+        var usuarioOptional = this.repository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(email);
+        if (usuarioOptional.isPresent()) {
+            var usuario = usuarioOptional.get();
+            var registro = UsuarioSenhaIncorretaHistorico.builder()
+                .usuario(usuario)
+                .dataTentativa(LocalDate.now())
+                .build();
+            usuario.adicionar(registro);
+
+            this.repository.save(usuario);
+
+            var tentativas = usuario.getHistoricosSenhaIncorretas().stream()
+                .filter(item -> item.getDataTentativa().equals(LocalDate.now()))
+                .count();
+
+            if (tentativas >= NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA) {
+                var usuarioInativacaoDto = UsuarioInativacaoDto.builder()
+                    .idUsuario(usuario.getId())
+                    .idUsuarioInativacao(1)
+                    .codigoMotivoInativacao(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+                    .observacao("Usuário inativo devido ao erro excessivo de senha")
+                    .build();
+
+                this.inativar(usuarioInativacaoDto);
+                this.inativarColaboradorMqSender.sendSuccess(usuario.getEmail());
+            }
+        }
+    }
 }
