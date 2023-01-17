@@ -57,13 +57,4 @@ public class SubCanalServiceTest {
             .isThrownBy(() -> service.getSubCanalById(100))
             .withMessage("Erro, subcanal não encontrado.");
     }
-
-    @Test
-    public void getAllExcetoInsideSalesPme_deveRetornarTodosSubCanaisExcetoInsideSales_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(List.of(umSubCanal()));
-
-        assertThat(service.getAllExcetoInsideSalesPme())
-            .hasSize(1)
-            .containsExactly(new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
-    }
 }

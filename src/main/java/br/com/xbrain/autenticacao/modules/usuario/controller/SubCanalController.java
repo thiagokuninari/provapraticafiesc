@@ -23,11 +23,6 @@ public class SubCanalController {
         return service.getAll();
     }
 
-    @GetMapping("exceto-inside-sales")
-    public List<SubCanalDto> getAllSubCanaisExcetoInsideSalesPme() {
-        return service.getAllExcetoInsideSalesPme();
-    }
-
     @GetMapping("{id}")
     public SubCanalDto getSubCanalById(@PathVariable int id) {
         return service.getSubCanalById(id);
