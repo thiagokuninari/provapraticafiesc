@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.repository.SubCanalRepository;
 import org.junit.Test;
@@ -166,14 +165,5 @@ public class SubCanalServiceTest {
             .doesNotThrowAnyException();
 
         verify(usuarioService, never()).removerPermissoesEspeciais(anyList(), anyList());
-    }
-
-    @Test
-    public void getAllExcetoInsideSalesPme_deveRetornarTodosSubCanaisExcetoInsideSales_quandoSolicitado() {
-        when(repository.findAll()).thenReturn(List.of(umSubCanal()));
-
-        assertThat(service.getAllExcetoInsideSalesPme())
-            .hasSize(1)
-            .containsExactly(new SubCanalDto(1, ETipoCanal.PAP, "PAP", ESituacao.A));
     }
 }
