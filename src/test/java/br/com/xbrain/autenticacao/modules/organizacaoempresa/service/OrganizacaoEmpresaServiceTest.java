@@ -15,6 +15,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoE
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresaHistorico;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -61,6 +62,8 @@ public class OrganizacaoEmpresaServiceTest {
     private NivelRepository nivelRepository;
     @Mock
     private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
+    @Mock
+    private OrganizacaoEmpresaMqSender sender;
 
     @Test
     public void findById_notFoundException_quandoNaoExistirOrganizacaoCadastrada() {
@@ -175,7 +178,7 @@ public class OrganizacaoEmpresaServiceTest {
             .contains("Organizacao 1", "08112392000192", 1);
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
-
+        verify(sender, times(1)).sendSuccess(any());
     }
 
     @Test
@@ -191,6 +194,8 @@ public class OrganizacaoEmpresaServiceTest {
             .contains("Organizacao 2", 2, "BACKOFFICE");
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
+        verify(sender, times(1)).sendSuccess(any());
+
     }
 
     @Test
@@ -206,6 +211,7 @@ public class OrganizacaoEmpresaServiceTest {
             .contains("Organizacao 3", 3, "RECEPTIVO");
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
+        verify(sender, times(1)).sendSuccess(any());
     }
 
     @Test
@@ -234,6 +240,8 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.I);
+        verify(sender, times(1)).sendInativarSituacaoSuccess(any());
+
     }
 
     @Test
@@ -261,6 +269,8 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+        verify(sender, times(1)).sendAtivarSituacaoSuccess(any());
+
     }
 
     @Test
@@ -296,6 +306,8 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(1, ESituacaoOrganizacaoEmpresa.A);
+        verify(sender, times(1)).sendUpdateSuccess(any());
+
     }
 
     @Test
@@ -315,6 +327,8 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(2, ESituacaoOrganizacaoEmpresa.A);
+        verify(sender, times(1)).sendUpdateSuccess(any());
+
     }
 
     @Test
@@ -334,6 +348,8 @@ public class OrganizacaoEmpresaServiceTest {
         Assertions.assertThat(organizacaoEmpresaCaptor.getValue())
             .extracting("id", "situacao")
             .containsExactlyInAnyOrder(3, ESituacaoOrganizacaoEmpresa.A);
+        verify(sender, times(1)).sendUpdateSuccess(any());
+
     }
 
     @Test

@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaDto;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaFiltros;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaRequest;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.dto.OrganizacaoEmpresaResponse;
@@ -12,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.EHistoricoAca
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.enums.ESituacaoOrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.ModalidadeEmpresa;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
+import br.com.xbrain.autenticacao.modules.organizacaoempresa.rabbitmq.OrganizacaoEmpresaMqSender;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.ModalidadeEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.organizacaoempresa.repository.OrganizacaoEmpresaRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
@@ -63,6 +65,9 @@ public class  OrganizacaoEmpresaService {
     @Autowired
     private ModalidadeEmpresaRepository modalidadeEmpresaRepository;
 
+    @Autowired
+    private OrganizacaoEmpresaMqSender organizacaoEmpresaMqSender;
+
     public OrganizacaoEmpresa findById(Integer id) {
         return organizacaoEmpresaRepository.findById(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
     }
@@ -73,20 +78,25 @@ public class  OrganizacaoEmpresaService {
 
     public OrganizacaoEmpresa save(OrganizacaoEmpresaRequest request) {
         var nivel = validarNivel(request.getNivelId());
+        var organizacaoEmpresa = new OrganizacaoEmpresa();
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
             validarCnpj(request);
             validarCnpjExistente(request);
             validarRazaoSocial(request);
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
-            return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+            organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, modalidades));
+
         } else {
             validarRazaoSocial(request);
 
-            return organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
+            organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, null));
         }
+        organizacaoEmpresaMqSender.sendSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
+
+        return organizacaoEmpresa;
     }
 
     @Transactional
@@ -98,7 +108,7 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.I);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.INATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-
+        organizacaoEmpresaMqSender.sendInativarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
@@ -112,7 +122,7 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresa.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         historicoService.salvarHistorico(organizacaoEmpresa, EHistoricoAcao.ATIVACAO,
             autenticacaoService.getUsuarioAutenticado());
-
+        organizacaoEmpresaMqSender.sendAtivarSituacaoSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
         organizacaoEmpresaRepository.save(organizacaoEmpresa);
     }
 
@@ -132,8 +142,10 @@ public class  OrganizacaoEmpresaService {
         }
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
-        return organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+        var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
+        organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
 
+        return organizacaoEmpresa;
     }
 
     private boolean validarOrganizacaoJaExistente(Integer id, OrganizacaoEmpresaRequest request) {
