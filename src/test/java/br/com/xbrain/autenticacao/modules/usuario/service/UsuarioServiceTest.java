@@ -329,116 +329,105 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void save_deveLancarExcecao_quandoPadraoEmailInvalido() {
-        var emailCedilha = Usuario.builder().email("emailç@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailCedilha))
+    public void save_deveLancarExcecao_quandoEmailConterCedilha() {
+        var usuario = Usuario.builder().email("emailç@gmail.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailAcento = Usuario.builder().email("émail@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailAcento))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailConterAcento() {
+        var usuario = Usuario.builder().email("émail@gmail.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailInvertendoAsOrdens = Usuario.builder().email("email.com@gmail").build();
-        assertThatThrownBy(() -> usuarioService.save(emailInvertendoAsOrdens))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailInvertidoAsOrdens() {
+        var usuario = Usuario.builder().email("email.com@gmail").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemArroba = Usuario.builder().email("emailgmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemArroba))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemArroba() {
+        var usuario = Usuario.builder().email("emailgmail.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemPonto = Usuario.builder().email("email@gmailcom").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemPonto))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailComDoisArrobas() {
+        var usuario = Usuario.builder().email("email@@gmail.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemCaracterDepoisPonto = Usuario.builder().email("email@gmail.").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemCaracterDepoisPonto))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemPonto() {
+        var usuario = Usuario.builder().email("email@gmailcom").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemCaracterEntreArrobaEPonto = Usuario.builder().email("email@.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemCaracterEntreArrobaEPonto))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisPonto() {
+        var usuario = Usuario.builder().email("email@gmail.").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemCaracterAntesPonto = Usuario.builder().email(".com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemCaracterAntesPonto))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemCaracterEntreArrobaEPonto() {
+        var usuario = Usuario.builder().email("email@.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailComDoisArrobas = Usuario.builder().email("email@@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComDoisArrobas))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemCaracterAntesPonto() {
+        var usuario = Usuario.builder().email(".com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemCaracterAntesArroba = Usuario.builder().email("@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemCaracterAntesArroba))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemCaracterAntesArroba() {
+        var usuario = Usuario.builder().email("@gmail.com").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailSemCaracterDepoisArroba = Usuario.builder().email("email@").build();
-        assertThatThrownBy(() -> usuarioService.save(emailSemCaracterDepoisArroba))
+    @Test
+    public void save_deveLancarExcecao_quandoEmailSemCaracterDepoisArroba() {
+        var usuario = Usuario.builder().email("email@").build();
+        assertThatThrownBy(() -> usuarioService.save(usuario))
             .isInstanceOf(ValidacaoException.class)
             .hasMessage("Email inválido.");
+    }
 
-        var emailComPorcento = Usuario.builder().email("email%@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComPorcento))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
+    @Test
+    public void save_deveLancarExcecao_quandoEmailComCaracteresEspeciais() {
+        var emailsComCaracteresEspeciais = List.of( "asteristico*@test.com","!exclamacao@gmail.com",
+            "#hashtag@gmail.com","&ecomercial@gmail.com","(parentese@gmail.com",")parentese@gmail.com",
+            "=igual@gmail.com","/barra@gmail.com", "{chave@gmail.com","}chave@gmail.com", "[colchete@gmail.com",
+            "]colchete@gmail.com", "?interrogacao@gmail.com");
 
-        var emailComHashtag = Usuario.builder().email("email#@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComHashtag))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComEComercial = Usuario.builder().email("email&@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComEComercial))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComAsteristico = Usuario.builder().email("email*@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComAsteristico))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComAcentoCircunflexo = Usuario.builder().email("email^@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComAcentoCircunflexo))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComParentese1 = Usuario.builder().email("email(@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComParentese1))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComParentese2 = Usuario.builder().email("email)@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComParentese2))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComSimboloIgual = Usuario.builder().email("email=@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComSimboloIgual))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComBarra = Usuario.builder().email("email/@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComBarra))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComExclamacao = Usuario.builder().email("email!@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComExclamacao))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
-
-        var emailComAspas = Usuario.builder().email("email'@gmail.com").build();
-        assertThatThrownBy(() -> usuarioService.save(emailComAspas))
-            .isInstanceOf(ValidacaoException.class)
-            .hasMessage("Email inválido.");
+        emailsComCaracteresEspeciais.forEach(email -> {
+            var usuario = Usuario.builder().email(email).build();
+            assertThatThrownBy(() -> usuarioService.save(usuario)).hasMessage("Email inválido.");
+            }
+        );
     }
 
     private static UsuarioAgenteAutorizadoResponse umUsuarioAgenteAutorizadoResponse(Integer id, Integer aaId) {
