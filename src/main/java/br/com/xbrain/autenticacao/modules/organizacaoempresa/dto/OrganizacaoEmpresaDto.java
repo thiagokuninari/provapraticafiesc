@@ -19,7 +19,7 @@ public class OrganizacaoEmpresaDto {
     private String codigo;
     private ESituacaoOrganizacaoEmpresa situacao;
 
-    public static OrganizacaoEmpresaDto  of(OrganizacaoEmpresa organizacaoEmpresa) {
+    public static OrganizacaoEmpresaDto of(OrganizacaoEmpresa organizacaoEmpresa) {
         var organizacaoEmpresaDto = new OrganizacaoEmpresaDto();
         if (organizacaoEmpresa != null) {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaDto);
