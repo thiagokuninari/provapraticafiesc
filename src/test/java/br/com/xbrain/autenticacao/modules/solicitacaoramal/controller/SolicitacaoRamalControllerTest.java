@@ -131,8 +131,8 @@ public class SolicitacaoRamalControllerTest {
         when(callService.obterRamaisParaCanal(ECanal.AGENTE_AUTORIZADO, 1)).thenReturn(criaListaRamal());
         when(socioService.findSocioPrincipalByAaId(anyInt())).thenReturn(criaSocio());
 
-        mvc.perform(get(URL_API_SOLICITACAO_RAMAL +
-                "/dados-canal?canal=AGENTE_AUTORIZADO&agenteAutorizadoId=1")
+        mvc.perform(get(URL_API_SOLICITACAO_RAMAL
+                + "/dados-canal?canal=AGENTE_AUTORIZADO&agenteAutorizadoId=1")
                 .header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
