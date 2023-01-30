@@ -123,7 +123,7 @@ public class SolicitacaoRamalServiceD2dTest {
         when(client.obterNomeTelefoniaPorId(1)).thenReturn(umaTelefonia());
         when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
 
-        service.getDadosAdicionais(1);
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null));
 
         verify(subCanalService, times(1)).getSubCanalById(eq(1));
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
@@ -139,7 +139,8 @@ public class SolicitacaoRamalServiceD2dTest {
         when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.getDadosAdicionais(1))
+            .isThrownBy(() -> service
+                .getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null)))
             .withMessage("#008 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(subCanalService, times(1)).getSubCanalById(eq(1));
@@ -256,5 +257,13 @@ public class SolicitacaoRamalServiceD2dTest {
             List.of(umaSolicitacaoRamalCanalD2d(1),
                 umaSolicitacaoRamalCanalD2d(2))
         );
+    }
+
+    private SolicitacaoRamalFiltros umFiltrosSolicitacao(ECanal canal, Integer subCanalId, Integer aaId) {
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setCanal(canal);
+        filtro.setSubCanalId(subCanalId);
+        filtro.setAgenteAutorizadoId(aaId);
+        return filtro;
     }
 }

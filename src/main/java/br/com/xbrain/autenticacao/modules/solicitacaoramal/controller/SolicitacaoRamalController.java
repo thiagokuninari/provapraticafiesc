@@ -20,10 +20,9 @@ public class SolicitacaoRamalController {
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
 
-    @GetMapping("/dados-canal/{canal}/{id}")
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(@PathVariable ECanal canal,
-                                                                      @PathVariable Integer id) {
-        return solicitacaoRamalService.getDadosAdicionais(canal, id);
+    @GetMapping("/dados-canal")
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        return solicitacaoRamalService.getDadosAdicionais(filtros);
     }
 
     @GetMapping("/historico/{idSolicitacao}")

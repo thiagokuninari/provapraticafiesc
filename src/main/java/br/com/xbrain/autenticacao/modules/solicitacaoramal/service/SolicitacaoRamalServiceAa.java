@@ -175,14 +175,14 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
     }
 
     @Override
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer agenteAutorizadoId) {
-        var agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(agenteAutorizadoId);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        var agenteAutorizadoResponse = agenteAutorizadoNovoService.getAaById(filtros.getAgenteAutorizadoId());
 
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(agenteAutorizadoResponse),
-            getNomeSocioPrincipalAa(agenteAutorizadoId),
-            getQuantidadeUsuariosAtivos(agenteAutorizadoId),
-            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, agenteAutorizadoId),
+            getNomeSocioPrincipalAa(filtros.getAgenteAutorizadoId()),
+            getQuantidadeUsuariosAtivos(filtros.getAgenteAutorizadoId()),
+            getQuantidadeRamaisPeloAgenteAutorizadoId(ECanal.AGENTE_AUTORIZADO, filtros.getAgenteAutorizadoId()),
             agenteAutorizadoResponse);
     }
 

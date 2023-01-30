@@ -11,7 +11,7 @@ public interface ISolicitacaoRamalService {
 
     SolicitacaoRamalResponse save(SolicitacaoRamalRequest request);
 
-    SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer id);
+    SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros);
 
     SolicitacaoRamalResponse update(SolicitacaoRamalRequest request);
 

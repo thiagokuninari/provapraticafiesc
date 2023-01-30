@@ -179,20 +179,24 @@ public class SolicitacaoRamalServiceTest {
 
     @Test
     public void getDadosAdicionais_deveMandarParaServiceAa_seCanalForAgenteAutorizado() {
-        when(serviceAa.getDadosAdicionais(1)).thenReturn(dadosAdicionaisResponse());
+        when(serviceAa.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1)))
+            .thenReturn(dadosAdicionaisResponse());
 
-        service.getDadosAdicionais(ECanal.AGENTE_AUTORIZADO, 1);
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
 
-        verify(serviceAa, times(1)).getDadosAdicionais(1);
+        verify(serviceAa, times(1))
+            .getDadosAdicionais(umFiltrosSolicitacao(ECanal.AGENTE_AUTORIZADO, null, 1));
     }
 
     @Test
     public void getDadosAdicionais_deveMandarParaServiceD2d_seCanalForD2d() {
-        when(serviceD2d.getDadosAdicionais(1)).thenReturn(dadosAdicionaisResponse());
+        when(serviceD2d.getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null)))
+            .thenReturn(dadosAdicionaisResponse());
 
-        service.getDadosAdicionais(ECanal.D2D_PROPRIO, 1);
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null));
 
-        verify(serviceD2d, times(1)).getDadosAdicionais(1);
+        verify(serviceD2d, times(1))
+            .getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null));
     }
 
     @Test
@@ -356,5 +360,13 @@ public class SolicitacaoRamalServiceTest {
     private SolicitacaoRamalFiltros umaSolicitacaoFiltros() {
         var filtros = new SolicitacaoRamalFiltros();
         return filtros;
+    }
+
+    private SolicitacaoRamalFiltros umFiltrosSolicitacao(ECanal canal, Integer subCanalId, Integer aaId) {
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setCanal(canal);
+        filtro.setSubCanalId(subCanalId);
+        filtro.setAgenteAutorizadoId(aaId);
+        return filtro;
     }
 }
