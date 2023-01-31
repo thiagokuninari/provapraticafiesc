@@ -119,8 +119,8 @@ public class SolicitacaoRamalService {
         return getSolicitacaoRamalService(request.getCanal()).save(request);
     }
 
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(ECanal canal, Integer id) {
-        return getSolicitacaoRamalService(canal).getDadosAdicionais(id);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        return getSolicitacaoRamalService(filtros.getCanal()).getDadosAdicionais(filtros);
     }
 
     @Transactional

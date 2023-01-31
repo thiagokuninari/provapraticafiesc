@@ -159,12 +159,12 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     }
 
     @Override
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(Integer subCanalId) {
-        var subCanalDto = subCanalService.getSubCanalById(subCanalId);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        var subCanalDto = subCanalService.getSubCanalById(filtros.getSubCanalId());
 
         return SolicitacaoRamalDadosAdicionaisResponse.convertFrom(
             getTelefoniaPelaDiscadoraId(subCanalDto),
-            getQuantidadeRamaisPeloSubCanal(ECanal.D2D_PROPRIO, subCanalId));
+            getQuantidadeRamaisPeloSubCanal(ECanal.D2D_PROPRIO, filtros.getSubCanalId()));
     }
 
     private Integer getQuantidadeRamaisPeloSubCanal(ECanal canal, Integer subCanalId) {
