@@ -35,9 +35,4 @@ public class RegionalController {
     public RegionalDto findById(@PathVariable Integer regionalId) {
         return service.findById(regionalId);
     }
-
-    @GetMapping("novas-regionais-ids")
-    public List<Integer> getNovasRegionaisIds() {
-        return service.getNovasRegionaisIds();
-    }
 }
