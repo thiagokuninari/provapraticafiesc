@@ -2,39 +2,43 @@ package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.model.Regional;
+import br.com.xbrain.autenticacao.modules.comum.repository.RegionalRepository;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
+import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
-import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_area_atuacao.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class RegionalServiceTest {
 
-    @Autowired
-    private RegionalService regionalService;
+    private static final List<Integer> NOVAS_REGIONAIS_IDS = List.of(1025, 1027);
+    private static final int USUARIO_ID = 1;
 
+    @InjectMocks
+    private RegionalService regionalService;
+    @Mock
+    private RegionalRepository regionalRepository;
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionaisSulESp_doUsuarioInformadoPeloParametro() {
-        assertThat(regionalService.getAllByUsuarioId(1))
+        when(regionalRepository.getAllByUsuarioId(USUARIO_ID))
+            .thenReturn(List.of(Regional.builder().id(1027).nome("RPS").build()));
+
+        assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
                 .isNotNull()
                 .extracting("value", "label")
                 .containsExactly(tuple(1027, "RPS"));
@@ -42,7 +46,10 @@ public class RegionalServiceTest {
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionalLeste_doUsuarioInformadoPeloParametro() {
-        assertThat(regionalService.getAllByUsuarioId(2))
+        when(regionalRepository.getAllByUsuarioId(USUARIO_ID))
+            .thenReturn(List.of(Regional.builder().id(1025).nome("RNE").build()));
+
+        assertThat(regionalService.getAllByUsuarioId(USUARIO_ID))
                 .isNotNull()
                 .extracting("value", "label")
                 .containsExactly(tuple(1025, "RNE"));
@@ -50,6 +57,9 @@ public class RegionalServiceTest {
 
     @Test
     public void findById_deveRetornarUmaRegional_seExistir() {
+        when(regionalRepository.findById(USUARIO_ID))
+            .thenReturn(Optional.of(Regional.builder().id(1).nome("LESTE").situacao(A).build()));
+
         assertThat(regionalService.findById(1))
             .isEqualTo(umRegionalDto());
     }
@@ -63,7 +73,9 @@ public class RegionalServiceTest {
 
     @Test
     public void getNovasRegionaisIds_deveRetornarIdsDeNovasRegionais_quandoSolicitado() {
-        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(List.of(1025, 1027));
+        when(regionalRepository.getNovasRegionaisIds()).thenReturn(NOVAS_REGIONAIS_IDS);
+
+        assertThat(regionalService.getNovasRegionaisIds()).isEqualTo(NOVAS_REGIONAIS_IDS);
     }
 
     RegionalDto umRegionalDto() {

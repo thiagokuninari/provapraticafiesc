@@ -1,42 +1,53 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
+import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
+import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.List;
+import java.util.Optional;
+
+import static helpers.GrupoHelper.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Transactional
-@Sql(scripts = {"classpath:/tests_area_atuacao.sql"})
+@RunWith(MockitoJUnitRunner.class)
 public class GrupoServiceTest {
 
     private static final int REGIONAL_LESTE_ID = 1;
     private static final int REGIONAL_SP_ID = 2;
     private static final int REGIONAL_SUL_ID = 3;
-    @Autowired
-    private GrupoService grupoService;
+    private static final int USUARIO_ID = 1;
 
+    @InjectMocks
+    private GrupoService grupoService;
+    @Mock
+    private GrupoRepository grupoRepository;
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+    private GrupoPredicate predicate;
+
+    @Before
+    public void setUp() throws Exception {
+        predicate = new GrupoPredicate().filtrarPermitidos(USUARIO_ID);
+    }
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarGrupo_quandoUsuarioPossuirRegionalSul() {
-        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SUL_ID, 1))
+        when(grupoRepository.findAllByRegionalId(REGIONAL_SUL_ID, predicate.build()))
+            .thenReturn(List.of(umGrupoNorteDoParana()));
+
+        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SUL_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(20, "NORTE DO PARANÁ"));
@@ -44,7 +55,10 @@ public class GrupoServiceTest {
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarGrupo_quandoUsuarioPossuirRegionalSp() {
-        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SP_ID, 1))
+        when(grupoRepository.findAllByRegionalId(REGIONAL_SP_ID, predicate.build()))
+            .thenReturn(List.of(umGrupoMarilia()));
+
+        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_SP_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(15, "MARILIA"));
@@ -52,13 +66,16 @@ public class GrupoServiceTest {
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarVazio_quandoUsuarioNaoPossuirRegionalLeste() {
-        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, 1))
+        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, USUARIO_ID))
                 .isEmpty();
     }
 
     @Test
     public void getAllByRegionalIdAndUsuarioId_deveRetornarGrupo_quandoUsuarioPossuirRegionalLeste() {
-        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, 2))
+        when(grupoRepository.findAllByRegionalId(REGIONAL_LESTE_ID, predicate.build()))
+            .thenReturn(List.of(umGrupoNordeste()));
+
+        assertThat(grupoService.getAllByRegionalIdAndUsuarioId(REGIONAL_LESTE_ID, USUARIO_ID))
                 .isNotNull()
                 .extracting("id", "nome")
                 .containsExactly(tuple(4, "NORDESTE"));
@@ -66,8 +83,9 @@ public class GrupoServiceTest {
 
     @Test
     public void findById_deveRetornarUmGrupo_seExistir() {
-        assertThat(grupoService.findById(1))
-            .isEqualTo(umGrupoDto());
+        when(grupoRepository.findById(1)).thenReturn(Optional.of(umGrupoPortoVelho()));
+
+        assertThat(grupoService.findById(1)).isEqualTo(GrupoDto.of(umGrupoPortoVelho()));
     }
 
     @Test
@@ -75,22 +93,5 @@ public class GrupoServiceTest {
         thrown.expect(ValidacaoException.class);
         thrown.expectMessage("Grupo não encontrado.");
         grupoService.findById(1516516);
-    }
-
-    GrupoDto umGrupoDto() {
-        GrupoDto grupoDto = new GrupoDto();
-        grupoDto.setId(1);
-        grupoDto.setNome("CENTRO-OESTE");
-        grupoDto.setRegional(umaRegionalDto());
-        grupoDto.setSituacao(ESituacao.A);
-        return grupoDto;
-    }
-
-    RegionalDto umaRegionalDto() {
-        return RegionalDto.builder()
-            .id(1)
-            .nome("LESTE")
-            .situacao(ESituacao.A)
-            .build();
     }
 }
