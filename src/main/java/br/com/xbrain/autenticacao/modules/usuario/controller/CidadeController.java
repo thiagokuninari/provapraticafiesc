@@ -20,15 +20,12 @@ public class CidadeController {
     private CidadeService service;
 
     @GetMapping()
-    public Iterable<Cidade> get(Integer idUf, Integer idRegional, Integer idSubCluster) {
+    public Iterable<Cidade> get(Integer idUf, Integer idRegional) {
         if (nonNull(idUf)) {
             if (nonNull(idRegional)) {
                 return service.getAllCidadeByRegionalAndUf(idRegional, idUf);
             }
             return service.getAllCidadeByUf(idUf);
-        }
-        if (nonNull(idSubCluster)) {
-            return service.getAllBySubCluster(idSubCluster);
         }
         return Collections.emptyList();
     }
@@ -57,31 +54,6 @@ public class CidadeController {
     public List<UsuarioCidadeDto> getByIdRegionalAndIdUf(@PathVariable Integer regionalId, 
                                                          @PathVariable Integer ufId) {
         return service.getAllByRegionalIdAndUfId(regionalId, ufId);
-    }
-
-    @GetMapping("grupo/{grupoId}")
-    public List<UsuarioCidadeDto> getByIdGrupo(@PathVariable("grupoId") int grupoId) {
-        return service.getAllByGrupoId(grupoId);
-    }
-
-    @GetMapping("cluster/{clusterId}")
-    public List<UsuarioCidadeDto> getByIdCluster(@PathVariable("clusterId") int clusterId) {
-        return service.getAllByClusterId(clusterId);
-    }
-
-    @GetMapping("sub-cluster/{subclusterId}")
-    public List<UsuarioCidadeDto> getByIdSubCluster(@PathVariable("subclusterId") int subclusterId) {
-        return service.getAllBySubClusterId(subclusterId);
-    }
-
-    @RequestMapping("comunicados")
-    public List<UsuarioCidadeDto> getAtivosParaComunicados(@RequestParam Integer subclusterId) {
-        return service.getAtivosParaComunicados(subclusterId);
-    }
-
-    @GetMapping("sub-clusters")
-    public List<UsuarioCidadeDto> getByIdSubClusters(@RequestParam(name = "subclustersId") List<Integer> subclustersId) {
-        return service.getAllBySubClustersId(subclustersId);
     }
 
     @GetMapping("cidade/{cidadeId}")

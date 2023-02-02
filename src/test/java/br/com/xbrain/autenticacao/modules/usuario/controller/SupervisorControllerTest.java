@@ -88,7 +88,7 @@ public class SupervisorControllerTest {
                 .thenReturn(singletonList(
                         UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
-        mvc.perform(get("/api/supervisor/por-area-atuacao/SUBCLUSTER/1")
+        mvc.perform(get("/api/supervisor/por-area-atuacao/UF/1")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ public class SupervisorControllerTest {
             .thenReturn(singletonList(
                 UsuarioResponse.builder().id(1).nome("VENDEDOR 1").build()));
 
-        mvc.perform(get("/api/supervisor/lideres-por-area-atuacao/SUBCLUSTER/1")
+        mvc.perform(get("/api/supervisor/lideres-por-area-atuacao/UF/1")
                 .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

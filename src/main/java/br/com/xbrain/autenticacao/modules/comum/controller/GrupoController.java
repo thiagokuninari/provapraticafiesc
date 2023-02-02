@@ -28,11 +28,6 @@ public class GrupoController {
         return service.getAllByRegionalIdAndUsuarioId(regionalId, usuarioId);
     }
 
-    @GetMapping("comunicados")
-    public List<GrupoDto> getAtivosParaComunicados(@RequestParam Integer regionalId) {
-        return service.getAtivosParaComunicados(regionalId);
-    }
-
     @GetMapping("/{grupoId}")
     public GrupoDto findById(@PathVariable Integer grupoId) {
         return service.findById(grupoId);

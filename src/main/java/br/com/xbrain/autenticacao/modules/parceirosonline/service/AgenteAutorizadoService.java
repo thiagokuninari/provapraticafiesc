@@ -1,17 +1,12 @@
 package br.com.xbrain.autenticacao.modules.parceirosonline.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
-import br.com.xbrain.autenticacao.modules.comum.dto.ClusterDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.GrupoDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
-import br.com.xbrain.autenticacao.modules.comum.dto.SubClusterDto;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoAgendamentoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.AgenteAutorizadoComunicadosFiltros;
 import br.com.xbrain.autenticacao.modules.usuario.dto.PublicoAlvoComunicadoFiltros;
-import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioCidadeDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -74,81 +69,6 @@ public class AgenteAutorizadoService {
             throw new IntegracaoException(ex,
                 AgenteAutorizadoService.class.getName(),
                 EErrors.ERRO_OBTER_COLABORADORES_DO_AA);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public List<ClusterDto> getClusters(Integer grupoId) {
-        if (!isUsuarioComCanalAa()) {
-            return List.of();
-        }
-        try {
-            return agenteAutorizadoClient.getClusters(grupoId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_CIDADE_DO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public List<GrupoDto> getGrupos(Integer regionalId) {
-        if (!isUsuarioComCanalAa()) {
-            return List.of();
-        }
-        try {
-            return agenteAutorizadoClient.getGrupos(regionalId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_CIDADE_DO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public List<RegionalDto> getRegionais() {
-        if (!isUsuarioComCanalAa()) {
-            return List.of();
-        }
-        try {
-            return agenteAutorizadoClient.getRegionais();
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_CIDADE_DO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public List<SubClusterDto> getSubclusters(Integer clusterId) {
-        if (!isUsuarioComCanalAa()) {
-            return List.of();
-        }
-        try {
-            return agenteAutorizadoClient.getSubclusters(clusterId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_CIDADE_DO_POL);
-        } catch (HystrixBadRequestException ex) {
-            throw new IntegracaoException(ex);
-        }
-    }
-
-    public List<UsuarioCidadeDto> getCidades(Integer subclusterId) {
-        if (!isUsuarioComCanalAa()) {
-            return List.of();
-        }
-        try {
-            return agenteAutorizadoClient.getCidades(subclusterId);
-        } catch (RetryableException ex) {
-            throw new IntegracaoException(ex,
-                AgenteAutorizadoService.class.getName(),
-                EErrors.ERRO_OBTER_CIDADE_DO_POL);
         } catch (HystrixBadRequestException ex) {
             throw new IntegracaoException(ex);
         }

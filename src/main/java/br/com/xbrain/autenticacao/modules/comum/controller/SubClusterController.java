@@ -43,11 +43,6 @@ public class SubClusterController {
         }
     }
 
-    @GetMapping("comunicados")
-    public List<SubClusterDto> getAtivosParaComunicados(@RequestParam Integer clusterId) {
-        return service.getAtivosParaComunicados(clusterId);
-    }
-
     @GetMapping("todos")
     public List<SubClusterDto> getAllSubclusters() {
         return service.getAll();

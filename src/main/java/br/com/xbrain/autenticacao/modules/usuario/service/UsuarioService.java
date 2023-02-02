@@ -17,7 +17,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.FileService;
-import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
 import br.com.xbrain.autenticacao.modules.comum.util.ListUtil;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
@@ -219,8 +218,6 @@ public class UsuarioService {
     private MailingService mailingService;
     @Autowired
     private CargoSuperiorRepository cargoSuperiorRepository;
-    @Autowired
-    private RegionalService regionalService;
     @Autowired
     private UsuarioClientService usuarioClientService;
     @Autowired
@@ -1926,7 +1923,6 @@ public class UsuarioService {
     }
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
-        filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
         UsuarioPredicate predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
@@ -2074,7 +2070,7 @@ public class UsuarioService {
     public List<Integer> getIdDosUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
         usuarioFiltros.setComUsuariosLogadosHoje(true);
-        return repository.findAllIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllIds(usuarioFiltros);
     }
 
     private void montarPredicate(PublicoAlvoComunicadoFiltros usuarioFiltros) {
@@ -2088,7 +2084,7 @@ public class UsuarioService {
 
     public List<UsuarioNomeResponse> getUsuariosAlvoDoComunicado(PublicoAlvoComunicadoFiltros usuarioFiltros) {
         montarPredicate(usuarioFiltros);
-        return repository.findAllNomesIds(usuarioFiltros, regionalService.getNovasRegionaisIds());
+        return repository.findAllNomesIds(usuarioFiltros);
     }
 
     public List<UsuarioCidadeDto> findCidadesDoUsuarioLogado() {

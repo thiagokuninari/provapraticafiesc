@@ -23,11 +23,6 @@ public class ClusterController {
         }
     }
 
-    @GetMapping("comunicados")
-    public List<ClusterDto> getAtivosParaComunicados(@RequestParam Integer grupoId) {
-        return service.getAtivosParaComunicados(grupoId);
-    }
-
     @GetMapping("/grupo/{grupoId}/usuario/{usuarioId}")
     public List<ClusterDto> getAllByGrupoIdAndUsuarioId(@PathVariable Integer grupoId, @PathVariable Integer usuarioId) {
         return service.getAllByGrupoIdAndUsuarioId(grupoId, usuarioId);

@@ -94,29 +94,8 @@ public class CidadeControllerTest {
     }
 
     @Test
-    public void deveRetornarTodosPorSubCluster() throws Exception {
-        mvc.perform(get("/api/cidades?idSubCluster=57")
-                .header("Authorization", getAccessToken(mvc, Usuarios.ADMIN))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("JACARAU")));
-    }
-
-    @Test
-    public void deveRetornarSomentePorSubClusterGerenteComercial() throws Exception {
-        mvc.perform(get("/api/cidades?idSubCluster=189")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nome", is("ARAPONGAS")))
-                .andExpect(jsonPath("$[1].nome", is("LONDRINA")));
-    }
-
-    @Test
     public void deveRetornarSomentePorRegionalIdGerenteComercial() throws Exception {
-        mvc.perform(get("/api/cidades/regional/3")
+        mvc.perform(get("/api/cidades/regional/1027")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -127,30 +106,6 @@ public class CidadeControllerTest {
     @Test
     public void deveRetornarTodosPorRegionalId() throws Exception {
         mvc.perform(get("/api/cidades/regional/1")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    public void deveRetornarTodosPorGrupoId() throws Exception {
-        mvc.perform(get("/api/cidades/grupo/1")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    public void deveRetornarTodosPorClusterId() throws Exception {
-        mvc.perform(get("/api/cidades/cluster/1")
-                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    public void deveRetornarTodosPorSubClusterId() throws Exception {
-        mvc.perform(get("/api/cidades/sub-cluster/1")
                 .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());

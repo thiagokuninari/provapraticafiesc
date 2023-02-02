@@ -15,9 +15,6 @@ public class AgenteAutorizadoComunicadosFiltros {
     private Integer cargoId;
     private Integer departamentoId;
     private Integer regionalId;
-    private Integer grupoId;
-    private Integer clusterId;
-    private Integer subClusterId;
     private Integer ufId;
     private List<Integer> cidadesIds;
     private List<Integer> agentesAutorizadosIds;

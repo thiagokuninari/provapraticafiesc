@@ -118,26 +118,6 @@ public class CidadeServiceTest {
             .thenReturn(List.of(
                 Cidade.builder().id(5578).nome("LONDRINA")
                     .uf(Uf.builder().id(1).nome("PARANA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build(),
-                Cidade.builder().id(4519).nome("FLORIANOPOLIS")
-                    .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())
-                    .regional(Regional.builder().id(1001).nome("RS").build()).build()
-            ));
-        assertThat(service.getAllByRegionalId(1001))
-            .extracting("idCidade", "nomeCidade", "idUf", "nomeUf", "idRegional", "nomeRegional")
-            .contains(
-                tuple(5578, "LONDRINA", 1, "PARANA", 1001, "RS"),
-                tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1001, "RS"));
-    }
-
-    @Test
-    public void getAllByRegionalId_deveRetornarCidades_quandoInformarNovaRegional() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(UsuarioAutenticado.builder().id(1).build());
-        when(cidadeRepository.findAllByNovaRegionalId(anyInt(), any(Predicate.class)))
-            .thenReturn(List.of(
-                Cidade.builder().id(5578).nome("LONDRINA")
-                    .uf(Uf.builder().id(1).nome("PARANA").build())
                     .regional(Regional.builder().id(1027).nome("RPS").build()).build(),
                 Cidade.builder().id(4519).nome("FLORIANOPOLIS")
                     .uf(Uf.builder().id(22).nome("SANTA CATARINA").build())

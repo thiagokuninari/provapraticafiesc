@@ -293,7 +293,7 @@ public class UsuarioRepositoryTest {
             .usuarioService(usuarioService)
             .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
-        assertThat(repository.findAllIds(filtros, List.of(1027))).isEmpty();
+        assertThat(repository.findAllIds(filtros)).isEmpty();
     }
 
     @Test
@@ -306,6 +306,6 @@ public class UsuarioRepositoryTest {
             .usuarioService(usuarioService)
             .usuarioAutenticado(umUsuarioAutenticadoNivelMso())
             .build();
-        assertThat(repository.findAllNomesIds(filtros, List.of(1027))).isEmpty();
+        assertThat(repository.findAllNomesIds(filtros)).isEmpty();
     }
 }
