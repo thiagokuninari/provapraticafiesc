@@ -13,7 +13,6 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -663,13 +662,6 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1))
             .findByIdIn(eq(IntStream.rangeClosed(0, 800).boxed().collect(Collectors.toList())));
     }
-
-    // private List<UnidadeNegocio> umaListaUnidadesNegocio() {
-    //     return List.of(
-    //         umaUnidadeNegocio(CodigoUnidadeNegocio.CLARO_RESIDENCIAL),
-    //         umaUnidadeNegocio(CodigoUnidadeNegocio.RESIDENCIAL_COMBOS)
-    //     );
-    // }
 
     @Test
     public void getAllUsuariosDaHierarquiaD2dDoUserLogado_usuarios_quandoUsuarioDiferenteDeAaExbrain() {
@@ -2446,65 +2438,6 @@ public class UsuarioServiceTest {
         return usuario;
     }
 
-    private Usuario umUsuarioCompleto(int cargoId, CodigoNivel nivel, int departamentoId) {
-        var usuario = Usuario
-            .builder()
-            .id(1)
-            .nome("NOME UM")
-            .email("email@email.com")
-            .cpf("111.111.111-11")
-            .situacao(ESituacao.A)
-            .loginNetSales("login123")
-            .cargo(Cargo
-                .builder()
-                .codigo(VENDEDOR_OPERACAO)
-                .nivel(Nivel
-                    .builder()
-                    .codigo(nivel)
-                    .nome(nivel.name())
-                    .build())
-                .build())
-            .departamento(Departamento
-                .builder()
-                .id(departamentoId)
-                .nome("DEPARTAMENTO UM")
-                .build())
-            .unidadesNegocios(List.of(UnidadeNegocio
-                .builder()
-                .nome("UNIDADE NEGÓCIO UM")
-                .build()))
-            .empresas(List.of(Empresa
-                .builder()
-                .nome("EMPRESA UM")
-                .build()))
-            .build();
-
-        usuario.setCidades(
-            Sets.newHashSet(
-                List.of(UsuarioCidade.criar(
-                    usuario,
-                    3237,
-                    100
-                ))
-            )
-        );
-        usuario.setUsuariosHierarquia(
-            Sets.newHashSet(
-                UsuarioHierarquia.criar(
-                    usuario,
-                    65,
-                    100)
-            )
-        );
-        usuario.setCanais(
-            Sets.newHashSet(
-                List.of(ECanal.ATIVO_PROPRIO)
-            )
-        );
-
-        return usuario;
-    }
-
     private Usuario outroUsuarioCompleto() {
         var usuario = Usuario
             .builder()
@@ -2621,22 +2554,5 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
-    }
-
-    private List<EquipeVendaUsuarioResponse> listaVazia() {
-        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
-        return lista;
-    }
-
-    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
-        return Usuario.builder().id(1)
-            .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(3))
-            .build();
-    }
-
-    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
-        return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
     }
 }
