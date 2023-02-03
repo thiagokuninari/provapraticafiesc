@@ -19,6 +19,7 @@ public class UsuarioRemanejamentoRequest {
     private ESituacao usuarioSituacao;
     private Integer colaboradorVendasId;
     private Integer agenteAutorizadoId;
+    private Integer agenteAutorizadoAntigoId;
 
     public static UsuarioRemanejamentoRequest of(Usuario usuario, UsuarioMqRequest request) {
         return UsuarioRemanejamentoRequest
@@ -27,8 +28,9 @@ public class UsuarioRemanejamentoRequest {
             .usuarioNome(usuario.getNome())
             .usuarioEmail(usuario.getEmail())
             .usuarioSituacao(usuario.getSituacao())
-            .colaboradorVendasId(request.getColaboradorVendasId())
             .agenteAutorizadoId(request.getAgenteAutorizadoId())
+            .colaboradorVendasId(request.getColaboradorVendasId())
+            .agenteAutorizadoAntigoId(request.getAgenteAutorizadoAntigoId())
             .build();
     }
 
