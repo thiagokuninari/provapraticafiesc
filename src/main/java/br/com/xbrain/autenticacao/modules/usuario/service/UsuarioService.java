@@ -1095,11 +1095,12 @@ public class UsuarioService {
     @Transactional
     private void duplicarUsuarioERemanejarAntigo(Usuario usuario, UsuarioMqRequest usuarioMqRequest) {
         usuario.removerCaracteresDoCpf();
+        var usuarioAntigoId = usuario.getId();
         salvarUsuarioRemanejado(usuario);
         var usuarioNovo = criaNovoUsuarioAPartirDoRemanejado(usuario);
         gerarHistoricoAtivoAposRemanejamento(usuario);
         repository.save(usuarioNovo);
-        enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest));
+        enviarParaFilaDeUsuariosRemanejadosAut(UsuarioRemanejamentoRequest.of(usuarioNovo, usuarioMqRequest, usuarioAntigoId));
         feederService.adicionarPermissaoFeederParaUsuarioNovo(UsuarioDto.of(usuarioNovo), usuarioMqRequest);
     }
 
