@@ -271,6 +271,9 @@ app-config:
     integracao-vendas:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
+    gestao-colaborador-pol:
+      url: http://localhost:8310
+    #      url: http://192.168.50.1:8310
 
 flyway:
   enabled: true
@@ -319,6 +322,9 @@ zuul:
     integracao-vendas:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.integracao-vendas.url}
+    gestao-colaborador-pol:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.gestao-colaborador-pol.url}
 
   host:
     connect-timeout-millis: 1800000
