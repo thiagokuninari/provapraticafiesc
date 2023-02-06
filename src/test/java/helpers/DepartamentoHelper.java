@@ -2,8 +2,10 @@ package helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 
@@ -35,4 +37,44 @@ public class DepartamentoHelper {
             .build();
     }
 
+    public static Nivel umNivelAa() {
+        return Nivel.builder()
+            .id(3)
+            .nome("Agente Autorizado")
+            .codigo(CodigoNivel.AGENTE_AUTORIZADO)
+            .situacao(ESituacao.A)
+            .exibirCadastroUsuario(Eboolean.F)
+            .build();
+    }
+
+    public static Nivel umNivelReceptivo() {
+        return Nivel.builder()
+            .id(8)
+            .nome("Receptivo")
+            .codigo(CodigoNivel.RECEPTIVO)
+            .situacao(ESituacao.A)
+            .exibirCadastroUsuario(Eboolean.F)
+            .build();
+    }
+
+    public static Departamento umDepartamentoComercial() {
+        return Departamento.builder()
+            .id(57)
+            .nome("Comercial")
+            .nivel(umNivelReceptivo())
+            .codigo(CodigoDepartamento.COMERCIAL)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Cargo umCargoReceptivo() {
+        return Cargo.builder()
+            .id(63)
+            .nome("Vendedor Receptivo")
+            .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
+            .situacao(ESituacao.A)
+            .quantidadeSuperior(50)
+            .nivel(umNivelReceptivo())
+            .build();
+    }
 }

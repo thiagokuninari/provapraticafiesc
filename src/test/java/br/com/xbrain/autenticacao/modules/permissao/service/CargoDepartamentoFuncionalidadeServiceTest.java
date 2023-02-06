@@ -7,12 +7,9 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import helpers.DepartamentoHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 
@@ -20,15 +17,12 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@Transactional
+@RunWith(MockitoJUnitRunner.class)
 public class CargoDepartamentoFuncionalidadeServiceTest {
 
-    @Autowired
+    @InjectMocks
     private CargoDepartamentoFuncionalidadeService service;
-    @MockBean
+    @Mock
     private CargoDepartamentoFuncionalidadeRepository repository;
 
     @Test
