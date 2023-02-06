@@ -112,6 +112,14 @@ public class CidadeControllerTest {
     }
 
     @Test
+    public void deveRetornarTodosPorSubClusterId() throws Exception {
+        mvc.perform(get("/api/cidades/sub-cluster/1")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     public void getHierarquia_deveRetornarTodaEstruturaDeCluster_quandoPossuiEstrutura() throws Exception {
         mvc.perform(get("/api/cidades/5578/clusterizacao")
                 .header("Authorization", getAccessToken(mvc, ADMIN))

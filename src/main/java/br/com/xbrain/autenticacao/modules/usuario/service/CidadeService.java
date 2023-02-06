@@ -53,6 +53,13 @@ public class CidadeService {
             cidadeRepository.findAllByRegionalIdAndUfId(regionalId, ufId, new CidadePredicate().build()));
     }
 
+    public List<UsuarioCidadeDto> getAllBySubClusterId(Integer subClusterId) {
+        return UsuarioCidadeDto.of(
+            cidadeRepository.findAllBySubClusterId(
+                subClusterId,
+                predicateCidadesPermitidas.get()));
+    }
+
     public List<Cidade> getAllCidadeByUf(Integer idUf) {
         return cidadeRepository.findCidadeByUfId(idUf, new Sort("nome"));
     }

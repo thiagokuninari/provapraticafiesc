@@ -57,6 +57,21 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
+    public List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .leftJoin(cidade.uf)
+            .leftJoin(cidade.subCluster, subCluster)
+            .leftJoin(subCluster.cluster, cluster)
+            .leftJoin(cluster.grupo, grupo)
+            .leftJoin(grupo.regional, regional)
+            .where(subCluster.id.eq(subClusterId).and(predicate))
+            .orderBy(cidade.nome.asc())
+            .distinct()
+            .fetch();
+    }
+
+    @Override
     public ClusterizacaoDto getClusterizacao(Integer id) {
         return new JPAQueryFactory(entityManager)
             .select(Projections.constructor(ClusterizacaoDto.class,

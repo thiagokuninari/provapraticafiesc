@@ -17,6 +17,8 @@ public interface CidadeRepositoryCustom {
 
     List<Cidade> findAllByRegionalId(Integer regionalId, Predicate predicate);
 
+    List<Cidade> findAllBySubClusterId(Integer subClusterId, Predicate predicate);
+
     ClusterizacaoDto getClusterizacao(Integer id);
 
     List<Cidade> buscarCidadesVinculadasAoUsuarioSemSite(Predicate permissaoPredicate,
