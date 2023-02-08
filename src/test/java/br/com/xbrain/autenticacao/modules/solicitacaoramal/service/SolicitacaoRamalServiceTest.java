@@ -30,7 +30,7 @@ public class SolicitacaoRamalServiceTest {
     private SolicitacaoRamalRepository repository;
 
     @Test
-    public void calcularDataFinalizacao_quandoHouverRegistros() {
+    public void calcularDataFinalizacao_deveSetarADataFinalizacao_seHouverRegistros() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder()
                 .nivelCodigo(ENivel.XBRAIN.name()).build());
@@ -43,7 +43,7 @@ public class SolicitacaoRamalServiceTest {
     }
 
     @Test
-    public void calcularDataFinalizacao_quandoNaoHouverRegistros() {
+    public void calcularDataFinalizacao_naoDeveSetarADataFinalizacao_seNaoHouverRegistros() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(UsuarioAutenticado.builder()
                 .nivelCodigo(ENivel.XBRAIN.name()).build());
