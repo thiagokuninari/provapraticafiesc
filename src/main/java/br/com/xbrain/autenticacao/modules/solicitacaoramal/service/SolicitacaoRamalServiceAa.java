@@ -86,7 +86,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
-        validaAutorizacao();
+        validarAutorizacao();
         validarParametroAa(request);
 
         var usuarioId = autenticacaoService.getUsuarioId();
@@ -116,7 +116,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         }
     }
 
-    private void validaAutorizacao() {
+    private void validarAutorizacao() {
         if (!autenticacaoService.getUsuarioAutenticado()
             .hasPermissao(CodigoFuncionalidade.CTR_20014)) {
             throw SEM_AUTORIZACAO;

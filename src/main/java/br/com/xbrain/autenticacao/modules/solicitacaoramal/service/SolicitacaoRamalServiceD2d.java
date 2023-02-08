@@ -79,7 +79,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         validarParametroD2d(request);
-        validaAutorizacao();
+        validarAutorizacao();
 
         var usuarioId = autenticacaoService.getUsuarioId();
         var solicitacaoRamal = SolicitacaoRamal.convertFrom(request, usuarioId, dataHoraAtual.getDataHora());
@@ -106,7 +106,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         }
     }
 
-    private void validaAutorizacao() {
+    private void validarAutorizacao() {
         if (!autenticacaoService.getUsuarioAutenticado()
             .hasPermissao(CodigoFuncionalidade.CTR_20015)) {
             throw SEM_AUTORIZACAO;
