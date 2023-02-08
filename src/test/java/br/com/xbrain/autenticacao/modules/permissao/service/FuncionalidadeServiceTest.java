@@ -74,7 +74,7 @@ public class FuncionalidadeServiceTest {
             .build();
 
         assertThat(service.getFuncionalidadesPermitidasAoUsuario(usuario))
-                .hasSize(52);
+                .hasSize(53);
     }
 
     @Test

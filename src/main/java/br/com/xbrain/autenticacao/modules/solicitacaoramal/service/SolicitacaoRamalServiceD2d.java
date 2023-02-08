@@ -16,6 +16,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.SubCanalService;
@@ -78,6 +79,7 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
         validarParametroD2d(request);
+        validaAutorizacao();
 
         var usuarioId = autenticacaoService.getUsuarioId();
         var solicitacaoRamal = SolicitacaoRamal.convertFrom(request, usuarioId, dataHoraAtual.getDataHora());
@@ -101,6 +103,13 @@ public class SolicitacaoRamalServiceD2d implements ISolicitacaoRamalService {
         if (request.getCanal() == ECanal.D2D_PROPRIO
             && request.getSubCanalId() == null) {
             throw ERRO_SEM_TIPO_CANAL_D2D;
+        }
+    }
+
+    private void validaAutorizacao() {
+        if (!autenticacaoService.getUsuarioAutenticado()
+            .hasPermissao(CodigoFuncionalidade.CTR_20015)) {
+            throw SEM_AUTORIZACAO;
         }
     }
 

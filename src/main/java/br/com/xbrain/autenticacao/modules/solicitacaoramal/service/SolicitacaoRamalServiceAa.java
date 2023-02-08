@@ -19,6 +19,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -85,6 +86,7 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
 
     @Override
     public SolicitacaoRamalResponse save(SolicitacaoRamalRequest request) {
+        validaAutorizacao();
         validarParametroAa(request);
 
         var usuarioId = autenticacaoService.getUsuarioId();
@@ -111,6 +113,13 @@ public class SolicitacaoRamalServiceAa implements ISolicitacaoRamalService {
         if (request.getCanal() == ECanal.AGENTE_AUTORIZADO
             && request.getAgenteAutorizadoId() == null) {
             throw ERRO_SEM_AGENTE_AUTORIZADO;
+        }
+    }
+
+    private void validaAutorizacao() {
+        if (!autenticacaoService.getUsuarioAutenticado()
+            .hasPermissao(CodigoFuncionalidade.CTR_20014)) {
+            throw SEM_AUTORIZACAO;
         }
     }
 

@@ -254,7 +254,7 @@ public class SolicitacaoRamalControllerTest {
         SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
-                .header("Authorization", getAccessToken(mvc, OPERACAO_GERENTE))
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(convertObjectToJsonBytes(request)))
             .andExpect(status().isCreated())

@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
@@ -34,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +97,21 @@ public class SolicitacaoRamalServiceD2dTest {
             .withMessage("Tipo de canal obrigatório para o canal D2D");
 
         verify(repository, never()).save(any(SolicitacaoRamal.class));
+    }
+
+    @Test
+    public void save_deveLancarException_seUsuarioAutenticadoNaoTiverPermissaoCTR_20015() {
+        var solicitacaoRamal = criaSolicitacaoRamal(null);
+        solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
+        solicitacaoRamal.setSubCanalId(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1)
+                .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20014.getRole()))).build());
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+            .withMessage("Sem autorização para fazer uma solicitação para este canal.");
+
     }
 
     @Test
@@ -234,6 +251,7 @@ public class SolicitacaoRamalServiceD2dTest {
             .id(1)
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20015.getRole())))
             .build();
     }
 
