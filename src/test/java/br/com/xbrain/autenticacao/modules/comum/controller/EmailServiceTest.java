@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.comum.controller;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.EmailPrioridade;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -31,11 +30,6 @@ public class EmailServiceTest {
     private RestTemplate restTemplate;
     @InjectMocks
     private EmailService emailService;
-
-    @Before
-    public void setup() {
-        when(restTemplate.postForEntity(anyString(), any(), any())).then(invocationOnMock -> null);
-    }
 
     @Test
     public void deveEnviarEmail() {

@@ -5,9 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.GrupoPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.GrupoRepository;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,9 +15,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static helpers.GrupoHelper.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class GrupoServiceTest {
@@ -33,8 +33,6 @@ public class GrupoServiceTest {
     private GrupoService grupoService;
     @Mock
     private GrupoRepository grupoRepository;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     private GrupoPredicate predicate;
 
     @Before
@@ -90,8 +88,8 @@ public class GrupoServiceTest {
 
     @Test
     public void findById_deveLancarException_seGrupoNaoExistir() {
-        thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Grupo não encontrado.");
-        grupoService.findById(1516516);
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> grupoService.findById(1516516))
+            .withMessage("Grupo não encontrado.");
     }
 }

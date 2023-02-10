@@ -11,7 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static helpers.SubClusterHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SubClusterHelper.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;

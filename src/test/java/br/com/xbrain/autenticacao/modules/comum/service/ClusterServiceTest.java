@@ -5,9 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.predicate.ClusterPredicate;
 import br.com.xbrain.autenticacao.modules.comum.repository.ClusterRepository;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static helpers.ClusterHelper.*;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
@@ -34,8 +33,7 @@ public class ClusterServiceTest {
     private ClusterService clusterService;
     @Mock
     private ClusterRepository clusterRepository;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+
     private ClusterPredicate predicate;
 
     @Before
@@ -85,8 +83,8 @@ public class ClusterServiceTest {
 
     @Test
     public void findById_deveLancarException_seClusterNaoExistir() {
-        thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Cluster não encontrado.");
-        clusterService.findById(100556);
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> clusterService.findById(100556))
+            .withMessage("Cluster não encontrado.");
     }
 }

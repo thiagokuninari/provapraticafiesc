@@ -31,7 +31,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static helpers.DepartamentoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargoReceptivo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoComercial;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelAa;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.umNivelReceptivo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -39,6 +42,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class UsuarioUploadFileServiceTest {

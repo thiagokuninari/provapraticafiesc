@@ -4,9 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.dto.RegionalDto;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Regional;
 import br.com.xbrain.autenticacao.modules.comum.repository.RegionalRepository;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,9 +14,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.Mockito.when;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class RegionalServiceTest {
@@ -30,8 +30,6 @@ public class RegionalServiceTest {
     private RegionalService regionalService;
     @Mock
     private RegionalRepository regionalRepository;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void getAllByUsuarioId_deveRetornarRegionaisSulESp_doUsuarioInformadoPeloParametro() {
@@ -66,9 +64,9 @@ public class RegionalServiceTest {
 
     @Test
     public void findById_deveLancarException_seRegionalNaoExistir() {
-        thrown.expect(ValidacaoException.class);
-        thrown.expectMessage("Regional não encontrada.");
-        regionalService.findById(16516);
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> regionalService.findById(16516))
+            .withMessage("Regional não encontrada.");
     }
 
     @Test

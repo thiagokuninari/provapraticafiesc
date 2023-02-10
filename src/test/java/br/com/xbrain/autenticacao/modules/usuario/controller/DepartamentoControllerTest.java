@@ -2,7 +2,7 @@ package br.com.xbrain.autenticacao.modules.usuario.controller;
 
 import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import br.com.xbrain.autenticacao.modules.usuario.service.DepartamentoService;
-import helpers.DepartamentoHelper;
+import br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

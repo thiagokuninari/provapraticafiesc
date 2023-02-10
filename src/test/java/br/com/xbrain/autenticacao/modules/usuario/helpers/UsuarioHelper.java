@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
@@ -10,6 +11,7 @@ import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.google.common.collect.Sets;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +20,8 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPR
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAdministrador;
 
 public class UsuarioHelper {
 
@@ -212,5 +216,65 @@ public class UsuarioHelper {
             .id(101112)
             .nome("COLABORADOR SUPORTE")
             .build();
+    }
+
+    public static Usuario umUsuarioComCargo(Integer usuarioId, Cargo cargo) {
+        return Usuario.builder()
+            .id(usuarioId)
+            .situacao(ESituacao.A)
+            .alterarSenha(Eboolean.F)
+            .cpf("38957979875")
+            .dataCadastro(LocalDateTime.now())
+            .email("ADMIN@XBRAIN.COM.BR")
+            .nome("ADMIN")
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .telefone("99999")
+            .cargo(cargo)
+            .departamento(umDepartamentoAdministrador())
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosDeLondrina() {
+        return List.of(
+            umUsuarioComCargo(1, umCargoExecutivo()),
+            umUsuarioComCargo(2, umCargoExecutivo()),
+            umUsuarioComCargo(3, umCargoGerente()),
+            umUsuarioComCargo(4, umCargoGerente()),
+            umUsuarioComCargo(5, umCargoCoordernador()),
+            umUsuarioComCargo(6, umCargoCoordernador()),
+            umUsuarioComCargo(7, umCargoExecutivoHunter()),
+            umUsuarioComCargo(8, umCargoExecutivoHunter())
+        );
+    }
+
+    public static List<Usuario> umaListaDeUsuariosDeSaoPaulo() {
+        return List.of(
+            umUsuarioComCargo(1, umCargoExecutivo()),
+            umUsuarioComCargo(2, umCargoExecutivo()),
+            umUsuarioComCargo(3, umCargoGerente()),
+            umUsuarioComCargo(4, umCargoGerente()),
+            umUsuarioComCargo(5, umCargoCoordernador()),
+            umUsuarioComCargo(7, umCargoExecutivoHunter()),
+            umUsuarioComCargo(8, umCargoExecutivoHunter())
+        );
+    }
+
+    public static List<Usuario> umaListaDeUsuariosDeRioDeJaneiro() {
+        return List.of(
+            umUsuarioComCargo(1, umCargoExecutivo()),
+            umUsuarioComCargo(3, umCargoGerente()),
+            umUsuarioComCargo(4, umCargoGerente()),
+            umUsuarioComCargo(5, umCargoCoordernador()),
+            umUsuarioComCargo(7, umCargoExecutivoHunter()),
+            umUsuarioComCargo(8, umCargoExecutivoHunter())
+        );
+    }
+
+    public static List<Usuario> umaListaDeUsuariosDeCapitolio() {
+        return List.of(
+            umUsuarioComCargo(1, umCargoExecutivo()),
+            umUsuarioComCargo(3, umCargoGerente()),
+            umUsuarioComCargo(7, umCargoExecutivoHunter())
+        );
     }
 }
