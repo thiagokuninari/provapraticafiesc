@@ -20,6 +20,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
@@ -33,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,6 +103,21 @@ public class SolicitacaoRamalServiceAaTest {
             .withMessage("agenteAutorizadoId obrigatório para o cargo agente autorizado");
 
         verify(repository, never()).save(any(SolicitacaoRamal.class));
+    }
+
+    @Test
+    public void save_deveLancarException_seUsuarioAutenticadoNaoTiverPermissaoCTR_20014() {
+        var solicitacaoRamal = criaSolicitacaoRamal(null, null);
+        solicitacaoRamal.setCanal(ECanal.AGENTE_AUTORIZADO);
+        solicitacaoRamal.setAgenteAutorizadoId(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1)
+                .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20015.getRole()))).build());
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+            .withMessage("Sem autorização para fazer uma solicitação para este canal.");
+
     }
 
     @Test
@@ -210,6 +227,7 @@ public class SolicitacaoRamalServiceAaTest {
             .nome("teste")
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20014.getRole())))
             .build();
     }
 
