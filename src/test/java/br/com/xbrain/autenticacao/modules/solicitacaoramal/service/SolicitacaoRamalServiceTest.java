@@ -3,9 +3,11 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.service;
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.ENivel;
+import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalFiltros;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalHistoricoRepository;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,10 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.SolicitacaoRamalHelper.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,6 +29,8 @@ public class SolicitacaoRamalServiceTest {
     private AutenticacaoService autenticacaoService;
     @Mock
     private SolicitacaoRamalRepository repository;
+    @Mock
+    private SolicitacaoRamalHistoricoRepository historicoRepository;
 
     @Test
     public void calcularDataFinalizacao_deveSetarADataFinalizacao_seHouverRegistros() {
@@ -55,25 +58,28 @@ public class SolicitacaoRamalServiceTest {
         verify(repository, never()).save(umaListaSolicitacaoRamalEmpty());
     }
 
-    private SolicitacaoRamal umaSolicitacaoRamal(Integer id) {
-        var solicitacaoRamal = new SolicitacaoRamal();
-        solicitacaoRamal.setId(id);
-        solicitacaoRamal.setDataCadastro(LocalDateTime.of(2022,02,10,10,00,00));
-        solicitacaoRamal.setTipoImplantacao(ETipoImplantacao.ESCRITORIO);
+    @Test
+    public void remover_deveDeletarSolicitacaoRamal_seSolicitacaoRamalComStatusPendente() {
+        when(repository.findById(1)).thenReturn(Optional.of(umaSolicitacaoRamal(ESituacaoSolicitacao.PENDENTE)));
 
-        return solicitacaoRamal;
+        service.remover(1);
+
+        verify(historicoRepository, times(1)).deleteAll(1);
+        verify(repository, times(1)).delete(umaSolicitacaoRamal(ESituacaoSolicitacao.PENDENTE));
     }
 
-    private List<SolicitacaoRamal> umaListaSolicitacaoRamal() {
-        return List.of(
-            umaSolicitacaoRamal(1),
-            umaSolicitacaoRamal(2),
-            umaSolicitacaoRamal(3)
-        );
+    @Test(expected = NotFoundException.class)
+    public void remover_deveRetornarNotFoundException_seSolicitacaoRamalNaoExistir() {
+        service.remover(1000);
     }
 
-    private List<SolicitacaoRamal> umaListaSolicitacaoRamalEmpty() {
-        List<SolicitacaoRamal> lista = new ArrayList<>();
-        return lista;
+    @Test(expected = ValidacaoException.class)
+    public void remover_deveRetornarValidacaoException_seSolicitacaoRamalComStatusDiferenteDePendente() {
+        when(repository.findById(1)).thenReturn(Optional.of(umaSolicitacaoRamal(ESituacaoSolicitacao.EM_ANDAMENTO)));
+
+        service.remover(1);
+
+        verify(historicoRepository, never()).deleteAll(1);
+        verify(repository, never()).delete(umaSolicitacaoRamal(ESituacaoSolicitacao.EM_ANDAMENTO));
     }
 }

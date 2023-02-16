@@ -1138,7 +1138,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
     }
 
     @Override
-    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExetoPorSiteId(Predicate sitePredicate, Integer siteId) {
+    public List<UsuarioNomeResponse> findCoordenadoresDisponiveisExcetoPorSiteId(Predicate sitePredicate, Integer siteId) {
         var usuarioCoordenadores = new QUsuario("usuarioCoordenadores");
         return new JPAQueryFactory(entityManager)
             .selectDistinct(Projections.constructor(UsuarioNomeResponse.class, usuario.id, usuario.nome, usuario.situacao))

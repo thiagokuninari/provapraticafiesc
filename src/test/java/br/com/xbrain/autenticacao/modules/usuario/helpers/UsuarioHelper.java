@@ -21,6 +21,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESI
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamento;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAdministrador;
 
 public class UsuarioHelper {
@@ -276,5 +277,80 @@ public class UsuarioHelper {
             umUsuarioComCargo(3, umCargoGerente()),
             umUsuarioComCargo(7, umCargoExecutivoHunter())
         );
+    }
+
+    public static Usuario umCoordenador() {
+        return Usuario.builder()
+            .id(11122)
+            .nome("Coordenador operacao ativo local")
+            .email("COORDENADOR_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.COORDENADOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11122), 1200, 10),
+                UsuarioCidade.criar(new Usuario(11122), 1300, 10)
+            ))
+            .build();
+    }
+
+    public static Usuario outroCoordenador() {
+        return Usuario.builder()
+            .id(11126)
+            .nome("Coordenador sem site operacao ativo local")
+            .email("COORDENADOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(4, CodigoCargo.COORDENADOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .cidades(Set.of(
+                UsuarioCidade.criar(new Usuario(11126), 1700, 10)
+            ))
+            .build();
+    }
+
+    public static Usuario umSupervisor() {
+        return Usuario.builder()
+            .id(11127)
+            .nome("Supervisor2 operacao ativo local")
+            .email("SUPERVISOR3_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .cargo(umCargo(10, CodigoCargo.SUPERVISOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Usuario outroSupervisor() {
+        return Usuario.builder()
+            .id(11123)
+            .nome("Supervisor operacao ativo local")
+            .email("SUPERVISOR_OPERACAO@NET.COM.BR")
+            .telefone("99999")
+            .cpf("54564564654")
+            .usuariosHierarquia(Set.of(UsuarioHierarquia.criar(new Usuario(11123), 11122, 10)))
+            .cargo(umCargo(10, CodigoCargo.SUPERVISOR_OPERACAO))
+            .departamento(umDepartamento(3, "Comercial"))
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
     }
 }

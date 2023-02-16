@@ -6,19 +6,15 @@ import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
-import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.*;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
@@ -26,7 +22,6 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioHierarquiaResponse;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioSubordinadoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
-import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadeDbmPredicate;
@@ -52,8 +47,10 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
+import static helpers.TestBuilders.umUsuario;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -191,6 +188,26 @@ public class SiteServiceTest {
 
         verify(siteRepository, never()).save(any(Site.class));
         verify(siteRepository, atLeastOnce()).findById(eq(1));
+    }
+
+    @Test
+    public void update_deveLancarException_quandoSupervisorRemovidoEstiverEmEquipeVendas() {
+        when(siteRepository.findAll()).thenReturn(List.of(umSiteManaus(), umSiteInativo()));
+        when(siteRepository.findById(any())).thenReturn(Optional.of(umSiteManaus()));
+        when(equipeVendaD2dService.getEquipeVendas(any())).thenReturn(
+            List.of(EquipeVendaDto.builder().descricao("Equipe 1").build()));
+
+        assertThatThrownBy(() -> service.update(requestUpdateSite()))
+            .isInstanceOf(ValidacaoException.class)
+            .hasMessage("Para concluir essa operação é necessário inativar a equipe de vendas Equipe 1.");
+    }
+
+    @Test
+    public void update_deveEditarSiteComSucesso_quandoSupervisorRemovidoNaoEstiverVinculadoAEquipe() {
+        when(siteRepository.findById(any())).thenReturn(Optional.of(umSiteManaus()));
+
+        assertThatCode(() -> service.update(requestUpdateSite()))
+            .doesNotThrowAnyException();
     }
 
     @Test
@@ -777,5 +794,40 @@ public class SiteServiceTest {
     private UsuarioAutenticado umUsuarioAutenticado() {
         return umUsuarioAutenticadoAtivoProprioComCargo(1, COORDENADOR_OPERACAO,
             CodigoDepartamento.COMERCIAL);
+    }
+
+    private static Site umSiteManaus() {
+        return Site.builder()
+            .id(1)
+            .nome("Manaus")
+            .timeZone(ETimeZone.AMT)
+            .supervisores(Set.of(umSupervisor(), outroSupervisor()))
+            .coordenadores(Set.of(umCoordenador()))
+            .situacao(ESituacao.A)
+            .siteNacional(Eboolean.F)
+            .build();
+    }
+
+    private static Site umSiteInativo() {
+        return Site.builder()
+            .id(2)
+            .nome("Site Inativo")
+            .timeZone(ETimeZone.FNT)
+            .supervisores(Set.of(umSupervisor(), outroSupervisor()))
+            .coordenadores(Set.of(outroCoordenador()))
+            .situacao(ESituacao.I)
+            .siteNacional(Eboolean.F)
+            .build();
+    }
+
+    private SiteRequest requestUpdateSite() {
+        return SiteRequest.builder()
+            .id(1)
+            .supervisoresIds(List.of(11123))
+            .nome("Manaus")
+            .coordenadoresIds(List.of(11122))
+            .cidadesIds(List.of(1500))
+            .estadosIds(List.of(200))
+            .build();
     }
 }
