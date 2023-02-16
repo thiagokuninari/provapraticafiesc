@@ -27,8 +27,6 @@ import static org.assertj.core.api.Java6Assertions.tuple;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-
-
 @RunWith(MockitoJUnitRunner.class)
 public class DepartamentoServiceTest {
 
