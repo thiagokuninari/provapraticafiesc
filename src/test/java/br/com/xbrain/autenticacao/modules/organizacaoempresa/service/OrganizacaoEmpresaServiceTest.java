@@ -353,6 +353,37 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
+    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoCnpj() {
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+        when(modalidadeEmpresaRepository.findAll(anyIterable())).thenReturn(List.of(umaModalidadeEmpresaTelevendas(),
+            umaModalidadeEmpresaPap()));
+        when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresa(1,
+            "Organizacao 4", "08112392000192", "CODIGO")));
+        when(organizacaoEmpresaRepository.existsByCnpj("08112392000192"))
+            .thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.update(1, umaOrganizacaoEmpresaRequest()))
+            .withMessage("Organização já cadastrada com o mesmo CNPJ.");
+
+        verify(organizacaoEmpresaRepository, times(1)).existsByCnpj(anyString());
+    }
+
+    @Test
+    public void update_validacaoException_quandoExistirUmaOrganizacaoEmpresaComOMesmoNome() {
+        when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
+        when(organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase("Organizacao 1"))
+            .thenReturn(true);
+
+        assertThatExceptionOfType(ValidacaoException.class)
+            .isThrownBy(() -> service.save(umaOrganizacaoEmpresaRequest()))
+            .withMessage("Organização já cadastrada com o mesmo nome.");
+
+        verify(organizacaoEmpresaRepository, times(1))
+            .existsByRazaoSocialIgnoreCase(eq("Organizacao 1"));
+    }
+
+    @Test
     public void findAllByNivelId_deveRetornarUmaListaDeOrganizacaoEmpresa_quandoSolicitado() {
         when(organizacaoEmpresaRepository.findAllByNivelId(1))
             .thenReturn(List.of(OrganizacaoEmpresaHelper.umaOutraOrganizacaoEmpresa()));

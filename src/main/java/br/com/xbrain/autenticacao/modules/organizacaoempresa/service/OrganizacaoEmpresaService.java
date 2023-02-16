@@ -39,8 +39,6 @@ public class  OrganizacaoEmpresaService {
         new NotFoundException("Modalidade empresa não encontrada.");
     private static final ValidacaoException ORGANIZACAO_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo nome.");
-    private static final ValidacaoException CNPJ_OU_RAZAO_SOCIAL_EXISTENTE =
-        new ValidacaoException("Organização já cadastrada.");
     private static final ValidacaoException CNPJ_EXISTENTE =
         new ValidacaoException("Organização já cadastrada com o mesmo CNPJ.");
     private static final ValidacaoException ORGANIZACAO_ATIVA =
@@ -128,16 +126,16 @@ public class  OrganizacaoEmpresaService {
 
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
-        if (validarOrganizacaoJaExistente(id, request)) {
-            throw CNPJ_OU_RAZAO_SOCIAL_EXISTENTE;
-        }
         var nivel = validarNivel(request.getNivelId());
         var organizacaoEmpresaToUpdate = findById(id);
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
+            validarRazaoSocial(request);
+            validarCnpjExistente(request);
             organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
 
         } else {
+            validarRazaoSocial(request);
             organizacaoEmpresaToUpdate.of(request, null, nivel);
         }
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
@@ -146,11 +144,6 @@ public class  OrganizacaoEmpresaService {
         organizacaoEmpresaMqSender.sendUpdateSuccess(OrganizacaoEmpresaDto.of(organizacaoEmpresa));
 
         return organizacaoEmpresa;
-    }
-
-    private boolean validarOrganizacaoJaExistente(Integer id, OrganizacaoEmpresaRequest request) {
-        return organizacaoEmpresaRepository.existsByRazaoSocialAndCnpjAndIdNot(request.getNome(),
-            request.getCnpjSemMascara(), id);
     }
 
     private void validarCnpjExistente(OrganizacaoEmpresaRequest request) {

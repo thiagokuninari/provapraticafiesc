@@ -21,9 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioAdminAutenticado;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioMsoConsultorAutenticado;
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.*;
+import static helpers.Usuarios.ADMIN;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
@@ -49,26 +48,6 @@ public class ModalidadeEmpresaControllerTest {
 
     @MockBean
     private AutenticacaoService autenticacaoService;
-
-    @Test
-    @SneakyThrows
-    public void buscarModalidadeEmpresa_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
-        mvc.perform(get(API_URI)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    public void buscarModalidadeEmpresa_deveRetornarForbidden_seUsuarioNaoTiverPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
-
-        mvc.perform(get(API_URI)
-                .header("Authorization", getAccessToken(mvc, HELP_DESK))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isForbidden());
-    }
 
     @Test
     @SneakyThrows

@@ -39,7 +39,10 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             "/api/sites/{id}",
             "/api/sites/{id}/supervisores",
             "/api/sites/permitidos",
-            "/api/horarios-acesso/status/**"
+            "/api/horarios-acesso/status/**",
+            "/api/organizacao-empresa-historico/**",
+            "/api/nivel-empresa/**",
+            "/api/modalidade-empresa/**"
         };
 
         http
@@ -74,16 +77,17 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
             .antMatchers("/api/logout/todos-usuarios").hasRole(CodigoFuncionalidade.AUT_DESLOGAR_USUARIO.name())
             .antMatchers("/api/relatorio-login-logout/entre-datas").authenticated()
             .antMatchers("/api/relatorio-login-logout/**").hasRole(CodigoFuncionalidade.AUT_2100.name())
-            .antMatchers(HttpMethod.GET, "/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name(),
+                .antMatchers(HttpMethod.GET, "/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name(),
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/sites/**").hasAnyRole(CodigoFuncionalidade.AUT_2047.name(),
                 CodigoFuncionalidade.APPLICATION.name())
             .antMatchers("/api/usuario/site**").hasAnyRole(CodigoFuncionalidade.AUT_2046.name())
             .antMatchers("/api/usuario-acesso/inativar").hasRole(CodigoFuncionalidade.AUT_INATIVAR_USUARIOS_SEM_ACESSO.name())
             .antMatchers("/api/horarios-acesso/**").hasAnyRole(CodigoFuncionalidade.AUT_20009.name())
-            .antMatchers("/api/organizacoes/**", "/api/organizacao-empresa-historico/**",
-                "/api/nivel-empresa/**", "/api/modalidade-empresa/**").hasRole(
-                    CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES_VAREJO_RECEPTIVO.name())
+            .antMatchers(HttpMethod.POST, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
+            .antMatchers(HttpMethod.PUT, "/api/organizacoes/**")
+                .hasRole(CodigoFuncionalidade.VAR_GERENCIAR_ORGANIZACOES.name())
             .anyRequest().authenticated();
     }
 

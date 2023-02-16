@@ -22,12 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioAdminAutenticado;
-import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioMsoConsultorAutenticado;
+import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.*;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
 import static helpers.TestsHelper.getAccessToken;
-import static helpers.Usuarios.ADMIN;
-import static helpers.Usuarios.HELP_DESK;
+import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,10 +68,10 @@ public class OrganizacaoEmpresaControllerTest {
     @SneakyThrows
     public void ativar_deveRetornarForbidden_quandoNaoTiverPermissao() {
         when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
+            .thenReturn(umUsuarioVendedorAutenticado());
 
         mockMvc.perform(put(API_URI + "/{id}/ativar", 2)
-                .header("Authorization", getAccessToken(mockMvc, HELP_DESK)))
+                .header("Authorization", getAccessToken(mockMvc, OPERACAO_ASSISTENTE)))
             .andExpect(status().isForbidden());
     }
 
@@ -212,17 +210,6 @@ public class OrganizacaoEmpresaControllerTest {
 
     @Test
     @SneakyThrows
-    public void getOrganizacaoEmpresa_deveRetornarForbidden_seNaoTiverPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
-
-        mockMvc.perform(get(API_URI)
-            .header("Authorization", getAccessToken(mockMvc, HELP_DESK)))
-            .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @SneakyThrows
     public void getOrganizacaoEmpresa_deveRetornarListaDeOrganizacaoEmpresa_quandoExistiremOrganizacoesCadastradas() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAdminAutenticado());
@@ -273,18 +260,6 @@ public class OrganizacaoEmpresaControllerTest {
         mockMvc.perform(get(API_URI + "/{id}", 1)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @SneakyThrows
-    public void findById_deveRetornarForbidden_quandoUsuarioSemPermissao() {
-        when(autenticacaoService.getUsuarioAutenticado())
-            .thenReturn(umUsuarioMsoConsultorAutenticado());
-
-        mockMvc.perform(get(API_URI + "/{id}", 1)
-                .header("Authorization", getAccessToken(mockMvc, HELP_DESK))
-                .contentType(APPLICATION_JSON))
-            .andExpect(status().isForbidden());
     }
 
     @Test
