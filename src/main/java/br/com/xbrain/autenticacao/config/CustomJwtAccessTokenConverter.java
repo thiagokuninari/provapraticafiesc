@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.util.StringUtil;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.organizacaoempresa.model.OrganizacaoEmpresa;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.EquipeVendasSupervisionadasResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
@@ -153,7 +152,7 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         token.getAdditionalInformation().put("equipeVendas", equipeVendas);
         token.getAdditionalInformation().put("organizacao", getOrganizacaoEmpresa(usuario));
         token.getAdditionalInformation().put("tiposFeeder", getTiposFeeder(usuario));
-        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario).orElse(null));
+        token.getAdditionalInformation().put("organizacaoId", getOrganizacaoEmpresaId(usuario));
 
         if (!isEmpty(empresas)) {
             token.getAdditionalInformation()
@@ -198,9 +197,8 @@ public class CustomJwtAccessTokenConverter extends JwtAccessTokenConverter imple
         return Sets.newHashSet();
     }
 
-    private Optional<Integer> getOrganizacaoEmpresaId(Usuario usuario) {
-        return Optional.ofNullable(usuario.getOrganizacaoEmpresa())
-            .map(OrganizacaoEmpresa::getId);
+    private Integer getOrganizacaoEmpresaId(Usuario usuario) {
+        return ObjectUtils.isEmpty(usuario.getOrganizacaoEmpresa()) ? null : usuario.getOrganizacaoEmpresa().getId();
     }
 
     private List getListaEmpresaPorCampo(List<Empresa> empresas, Function<Empresa, Object> mapper) {
