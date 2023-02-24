@@ -24,6 +24,16 @@ public class DepartamentoHelper {
         return List.of(umDepartamento(1, "Departamento 1"), umDepartamento(2, "Departamento 2"));
     }
 
+    public static Departamento umDepartamentoAa() {
+        return Departamento.builder()
+            .id(40)
+            .nome("Agente Autorizado")
+            .nivel(umNivelAa())
+            .codigo(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
     public static Departamento umDepartamentoComercial() {
         return Departamento.builder()
             .id(57)

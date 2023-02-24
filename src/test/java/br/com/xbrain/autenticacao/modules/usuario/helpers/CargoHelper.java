@@ -88,4 +88,31 @@ public class CargoHelper {
             .nivel(umNivelOperacao())
             .build();
     }
+
+    public static Cargo umCargoAaSocio() {
+        return Cargo.builder()
+            .id(41)
+            .nome("Sócio Principal")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(umNivelAa())
+            .build();
+    }
+
+    public static Cargo umCargoMsoConsultor() {
+        return Cargo.builder()
+            .id(22)
+            .nome("Consultor")
+            .codigo(CodigoCargo.MSO_CONSULTOR)
+            .nivel(umNivelMso())
+            .build();
+    }
+
+    public static Cargo umCargoVendedorOperacao() {
+        return Cargo.builder()
+            .id(8)
+            .nome("Vendedor Operação")
+            .codigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .build();
+    }
 }

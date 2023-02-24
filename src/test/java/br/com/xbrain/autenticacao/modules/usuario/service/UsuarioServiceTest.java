@@ -14,7 +14,6 @@ import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
-import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaUsuarioResponse;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendasUsuarioService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
@@ -33,7 +32,10 @@ import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -2630,22 +2632,5 @@ public class UsuarioServiceTest {
                 .build())
             .build());
         return usuario;
-    }
-
-    private List<EquipeVendaUsuarioResponse> listaVazia() {
-        var lista = new ArrayList<EquipeVendaUsuarioResponse>();
-        return lista;
-    }
-
-    private Usuario criaNovoUsuario(int cargoId, CodigoDepartamento departamento) {
-        return Usuario.builder().id(1)
-            .cargo(new Cargo(cargoId))
-            .departamento(new Departamento(3))
-            .build();
-    }
-
-    private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
-        return EquipeVendaUsuarioResponse.builder().id(1)
-            .build();
     }
 }
