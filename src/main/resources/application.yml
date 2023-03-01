@@ -271,6 +271,9 @@ app-config:
     integracao-vendas:
       #url: http://localhost:8086
       url: http://192.168.50.1:6545
+    mailing-importacao:
+#      url: http://localhost:8087
+      url: http://192.168.50.1:6530
 
 flyway:
   enabled: true
@@ -319,6 +322,9 @@ zuul:
     integracao-vendas:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.integracao-vendas.url}
+    mailing-importacao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.mailing-importacao.url}
 
   host:
     connect-timeout-millis: 1800000
