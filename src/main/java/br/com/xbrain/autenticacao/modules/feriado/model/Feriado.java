@@ -157,7 +157,7 @@ public class Feriado {
     }
 
     public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao,
-                                      Cidade cidade, UsuarioAutenticado usuarioAutenticado) {
+                                      UsuarioAutenticado usuarioAutenticado) {
         var feriado = new Feriado();
         feriado.setNome(feriadoAutomacao.getNome());
         feriado.setDataFeriado(DateUtil.strToDate(feriadoAutomacao.getDataFeriado(), "dd/MM/yyyy"));
@@ -165,8 +165,12 @@ public class Feriado {
         feriado.setFeriadoNacional(
             ETipoFeriado.NACIONAL.equals(feriadoAutomacao.getTipoFeriado()) ? Eboolean.V : Eboolean.F);
         feriado.setTipoFeriado(feriadoAutomacao.getTipoFeriado());
-        feriado.setCidade(!Objects.isNull(cidade) ? cidade : null);
-        feriado.setUf(!Objects.isNull(cidade) ? cidade.getUf() : null);
+        if (nonNull(feriadoAutomacao.getUf())) {
+            feriado.setUf(feriadoAutomacao.getUf());
+        }
+        if (nonNull(feriadoAutomacao.getCidade())) {
+            feriado.setCidade(feriadoAutomacao.getCidade());
+        }
         feriado.setUsuarioCadastro(usuarioAutenticado.getUsuario());
         return feriado;
     }

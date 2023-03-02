@@ -148,6 +148,23 @@ public class FeriadoService {
         return feriadoImportado;
     }
 
+    public void salvarFeriadoAutomacao(FeriadoAutomacao feriadoAutomacao) {
+        var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
+        //todo salvar feriados
+        log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
+
+    }
+
+    public void salvarFeriadoAutomacaoMunicipais(List<FeriadoAutomacao> feriadosMunipais) {
+        //feriadosMunipais.forEach(feriado -> );
+
+
+        //var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
+        //todo salvar feriados
+        //log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
+
+    }
+
     @Transactional
     public FeriadoResponse editarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
@@ -184,6 +201,15 @@ public class FeriadoService {
     }
 
     private void salvarFeriadoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
+        if (feriadoPai.isFeriadoEstadual()) {
+            var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
+                .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))
+                .collect(Collectors.toList());
+            repository.save(feriadosFilhos);
+        }
+    }
+
+    private void salvarFeriadoAutomacaoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
             var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
                 .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))

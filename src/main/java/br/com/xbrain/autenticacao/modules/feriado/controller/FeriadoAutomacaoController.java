@@ -24,4 +24,8 @@ public class FeriadoAutomacaoController {
         service.importarFeriadosAutomacaoNacionais(ano);
     }
 
+    @GetMapping("estaduais")
+    public void importarFeriadosAutomacaoEstaduais(Integer ano) {
+        service.importarFeriadosAutomacaoEstaduais(ano);
+    }
 }
