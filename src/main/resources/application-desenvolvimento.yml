@@ -33,7 +33,7 @@ app-config:
     integracao-vendas:
       url: http://172.10.10.45:8086
     gestao-colaborador-pol:
-      url: http://gestao-colaborador-pol-api:8107
+      url: http://gestao-colaborador-pol-api:8310
 
 logging:
   file: /home/xbrain/dev/autenticacao/dev.log
