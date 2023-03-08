@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -36,5 +36,15 @@ public class PermissaoEspecialRepositoryTest {
     @Test
     public void findByUsuario_deveRetornarFuncionalidadeId_seSolicitado() {
         assertEquals(repository.findByUsuario(300).size(), 1);
+    }
+
+    @Test
+    public void existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull_deveRetornarTrue_seExistir() {
+        assertTrue(repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(300, 9000));
+    }
+
+    @Test
+    public void existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull_deveRetornarFalse_seNaoExistir() {
+        assertFalse(repository.existsByUsuarioIdAndFuncionalidadeIdAndDataBaixaIsNull(300, 9001));
     }
 }

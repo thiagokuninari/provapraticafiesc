@@ -24,6 +24,9 @@ import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -56,6 +59,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -68,6 +72,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
@@ -89,8 +94,6 @@ public class UsuarioServiceTest {
 
     @InjectMocks
     private UsuarioService usuarioService;
-    @Mock
-    private UsuarioService service;
     @Mock
     private UsuarioRepository usuarioRepository;
     @Mock
@@ -143,6 +146,12 @@ public class UsuarioServiceTest {
     private InativarColaboradorMqSender inativarColaboradorMqSender;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
+    @Captor
+    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
+    @Captor
+    private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
+    @Mock
+    private PermissaoEspecialService permissaoEspecialService;
 
     @Test
     public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
@@ -1616,8 +1625,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    @SuppressWarnings("LineLength")
-   public void save_deveDispararValidacaoException_seUsuarioOperacaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
+    public void save_deveDispararValidacaoException_seUsuarioOperacaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)));
@@ -1637,7 +1645,6 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void save_naoDeveDispararValidacaoException_seUsuarioDadosAlteradosNaoForCanalAgenteAutorizado() {
         var usuarioCompleto = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
             CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO);
@@ -2198,6 +2205,68 @@ public class UsuarioServiceTest {
         usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
         usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
         return usuario;
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(16101)
+                    .build(),
+                Usuario.builder()
+                    .id(105)
+                    .build()
+            );
+        assertThat(permissaoEspecialCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado com permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, List.of(2023)));
+
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100, 2023));
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactlyInAnyOrder(
+                Usuario.builder()
+                    .id(2023)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A,
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 
     private Canal umCanal() {

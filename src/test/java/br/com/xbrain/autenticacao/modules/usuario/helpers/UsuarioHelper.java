@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
+import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioMqRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
@@ -211,6 +212,18 @@ public class UsuarioHelper {
         return Usuario.builder()
             .id(101112)
             .nome("COLABORADOR SUPORTE")
+            .build();
+    }
+
+    public static UsuarioMqRequest umUsuarioMqRequestSocioPrincipal() {
+        return UsuarioMqRequest.builder()
+            .isCadastroSocioPrincipal(true)
+            .build();
+    }
+
+    public static UsuarioMqRequest umUsuarioMqRequestSocioSecundario() {
+        return UsuarioMqRequest.builder()
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO)
             .build();
     }
 }

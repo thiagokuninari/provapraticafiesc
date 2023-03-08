@@ -16,14 +16,24 @@ import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
+import br.com.xbrain.autenticacao.modules.permissao.dto.FuncionalidadeResponse;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
-import br.com.xbrain.autenticacao.modules.usuario.enums.*;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
+import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioCidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.*;
-import br.com.xbrain.autenticacao.modules.usuario.repository.*;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.DepartamentoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHistoricoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import helpers.TestBuilders;
@@ -38,6 +48,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -45,7 +56,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa.*;
 import static br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio.RESIDENCIAL_COMBOS;
@@ -54,8 +70,8 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.AGENTE_AUTORIZADO;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.XBRAIN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -118,6 +134,8 @@ public class UsuarioServiceIT {
     private UsuarioClientService usuarioClientService;
     @Autowired
     private SiteRepository siteRepository;
+    @Autowired
+    private PermissaoEspecialService permissaoEspecialService;
 
     @Before
     public void setUp() {
@@ -176,6 +194,27 @@ public class UsuarioServiceIT {
         assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
         verify(sender, times(1)).sendSuccess(any());
         verify(feederService, times(1)).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
+    }
+
+    @Test
+    @DirtiesContext
+    public void saveFromQueue_deveSalvarUsuarioEEnviarParaFilaECriarPermissao_seUsuarioSocioSecundarioEPossuiEquipeTecnica() {
+        var usuarioMqRequest = umUsuario();
+        usuarioMqRequest.setCargo(AGENTE_AUTORIZADO_SOCIO_SECUNDARIO);
+        usuarioMqRequest.setEquipeTecnica(true);
+
+        service.saveFromQueue(usuarioMqRequest);
+        var usuarioDto = service.findByEmail(usuarioMqRequest.getEmail());
+
+        assertEquals(usuarioDto.getCpf(), usuarioMqRequest.getCpf());
+        assertThat(permissaoEspecialService.hasPermissaoEspecialAtiva(usuarioDto.getId(), 16101))
+            .isTrue();
+        assertThat(usuarioHistoricoService.getHistoricoDoUsuario(usuarioDto.getId()))
+            .flatExtracting("situacao", "observacao")
+            .contains("ATIVO", "Agente Autorizado com permissão de Equipe Técnica.");
+
+        verify(sender).sendSuccess(any());
+        verify(feederService).adicionarPermissaoFeederParaUsuarioNovo(any(), any());
     }
 
     @Test
@@ -1591,6 +1630,55 @@ public class UsuarioServiceIT {
         usuarioService.saveFromQueue(umUsuarioMqRequestClienteLojaFuturo());
 
         verify(sender).sendSuccessLojaFuturo(any(UsuarioDto.class));
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
+        var permissoes = service.findPermissoesByUsuario(100);
+        var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
+
+        assertThat(permissoes.getPermissoesEspeciais())
+            .hasSize(1)
+            .flatExtracting("funcionalidadeId", "nome", "role", "aplicacao")
+            .containsExactly(16101, "Acompanhamento de Indicações do Técnico Vendedor", "BKO_16101", "BACKOFFICE");
+
+        assertThat(historicos)
+            .flatExtracting("situacao", "observacao")
+            .containsExactly(
+                "ATIVO", "Agente Autorizado com permissão de Equipe Técnica.",
+                "ATIVO / ÚLTIMO ACESSO DO USUÁRIO", null
+            );
+        assertThat(historicos.get(0).getCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    @Sql("classpath:/tests_database.sql")
+    public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
+        var dto = permissaoEquipeTecnicaDto(false, null);
+        usuarioService.atualizarPermissaoEquipeTecnica(dto);
+
+        var permissoes = service.findPermissoesByUsuario(100);
+        var historicos = usuarioHistoricoService.getHistoricoDoUsuario(100);
+
+        assertThat(permissoes.getPermissoesEspeciais())
+            .hasSize(2)
+            .doesNotContain(
+                FuncionalidadeResponse.builder()
+                    .funcionalidadeId(16101)
+                    .nome("Acompanhamento de Indicações do Técnico Vendedor")
+                    .role("BKO_16101")
+                    .aplicacao("BACKOFFICE")
+                    .build()
+            );
+
+        assertThat(historicos.get(0))
+            .extracting("situacao", "observacao")
+            .containsExactly("ATIVO", "Agente Autorizado sem permissão de Equipe Técnica.");
+        assertThat(historicos.get(0).getCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
