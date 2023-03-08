@@ -1,6 +1,8 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
@@ -15,8 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static br.com.xbrain.autenticacao.modules.comum.enums.ESituacao.A;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_TECNICO_VENDEDOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 
@@ -224,6 +228,25 @@ public class UsuarioHelper {
     public static UsuarioMqRequest umUsuarioMqRequestSocioSecundario() {
         return UsuarioMqRequest.builder()
             .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO)
+            .build();
+    }
+
+    public static UsuarioDto umUsuarioDtoSender() {
+        return UsuarioDto.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargoId(1)
+            .cargoCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .departamentoId(1)
+            .alterarSenha(Eboolean.F)
+            .situacao(A)
+            .unidadesNegociosId(List.of(1))
+            .unidadeNegocioId(1)
+            .nivelId(1)
+            .empresasId(List.of(1))
+            .hierarquiasId(List.of())
+            .recuperarSenhaTentativa(0)
+            .tiposFeeder(Set.of())
             .build();
     }
 }

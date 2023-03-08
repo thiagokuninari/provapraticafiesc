@@ -35,6 +35,7 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
@@ -74,6 +75,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERA
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -144,6 +146,12 @@ public class UsuarioServiceTest {
     private FeederService feederService;
     @Mock
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Mock
+    private UsuarioCadastroMqSender usuarioMqSender;
+    @Mock
+    private DepartamentoRepository departamentoRepository;
+    @Mock
+    private NivelRepository nivelRepository;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
     @Captor
@@ -2716,5 +2724,33 @@ public class UsuarioServiceTest {
     private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
         return EquipeVendaUsuarioResponse.builder().id(1)
             .build();
+    }
+
+    @Test
+    public void saveFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
+        var umCargo = Cargo.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .build();
+
+        when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
+            .thenReturn(umCargo);
+        when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
+        when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        var usuarioMqRequest = UsuarioMqRequest.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .situacao(ESituacao.A)
+            .build();
+        var expectedDto = umUsuarioDtoSender();
+
+        usuarioService.saveFromQueue(usuarioMqRequest);
+
+        verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 }
