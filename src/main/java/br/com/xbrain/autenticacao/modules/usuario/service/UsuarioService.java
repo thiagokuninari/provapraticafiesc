@@ -27,6 +27,7 @@ import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederFiltros;
 import br.com.xbrain.autenticacao.modules.feeder.dto.VendedoresFeederResponse;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederUtil;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.mailing.service.MailingService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
@@ -227,6 +228,8 @@ public class UsuarioService {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Autowired
     private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Autowired
+    private ColaboradorVendasService colaboradorVendasService;
 
     public Usuario findComplete(Integer id) {
         Usuario usuario = repository.findComplete(id).orElseThrow(() -> EX_NAO_ENCONTRADO);
@@ -1371,7 +1374,7 @@ public class UsuarioService {
 
     public void limparCpfUsuario(Integer id) {
         Usuario usuario = limpaCpf(id);
-        agenteAutorizadoClient.limparCpfAgenteAutorizado(usuario.getEmail());
+        colaboradorVendasService.limparCpfColaboradorVendas(usuario.getEmail());
     }
 
     @Transactional

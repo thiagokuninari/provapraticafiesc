@@ -13,6 +13,7 @@ import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
+import br.com.xbrain.autenticacao.modules.gestaocolaboradorespol.service.ColaboradorVendasService;
 import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoClient;
@@ -58,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -86,6 +88,8 @@ public class UsuarioServiceIT {
     private EmailService emailService;
     @MockBean
     private AgenteAutorizadoClient agenteAutorizadoClient;
+    @MockBean
+    private ColaboradorVendasService colaboradorVendasService;
     @MockBean
     private AgenteAutorizadoNovoClient agenteAutorizadoNovoClient;
     @Autowired
@@ -479,7 +483,9 @@ public class UsuarioServiceIT {
     public void deveLimparCpfDeUmUsuario() {
         service.limparCpfUsuario(100);
         Usuario usuario = service.findByIdCompleto(100);
-        assertEquals(usuario.getCpf(), null);
+        assertNull(usuario.getCpf());
+
+        verify(colaboradorVendasService, times(1)).limparCpfColaboradorVendas(usuario.getEmail());
     }
 
     @Test

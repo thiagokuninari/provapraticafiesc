@@ -6,46 +6,46 @@ import lombok.Setter;
 public enum EErrors {
 
     ERRO_CONVERTER_EXCEPTION(
-            "#001 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#001 - Erro ao tentar tratar uma exceção"),
+        "#001 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#001 - Erro ao tentar tratar uma exceção"),
     ERRO_OBTER_AA_BY_CNPJ(
-            "#002 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#002 - Erro ao tentar recuperar o AA por CPNJ."),
+        "#002 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#002 - Erro ao tentar recuperar o AA por CPNJ."),
     ERRO_OBTER_USUARIOS_AA_BY_ID(
-            "#003 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#003 - Erro ao tentar recuperar os Usuários do AA por ID."),
+        "#003 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#003 - Erro ao tentar recuperar os Usuários do AA por ID."),
     ERRO_VERIFICAR_PAUSA(
-            "#004 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#004 - Erro ao verificar as pausas em andamento."),
+        "#004 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#004 - Erro ao verificar as pausas em andamento."),
     ERRO_OBTER_AA_BY_ID(
-            "#005 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#005 - Erro ao tentar recuperar o AA por id."),
+        "#005 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#005 - Erro ao tentar recuperar o AA por id."),
     ERRO_OBTER_EQUIPE_VENDAS_USUARIO(
-            "#006 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#006 - Erro ao tentar recuperar as equipes de vendas do usuário."),
+        "#006 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#006 - Erro ao tentar recuperar as equipes de vendas do usuário."),
     ERRO_OBTER_SOCIO_PRINCIPAL_BY_AA_ID(
-            "#007 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#007 - Erro ao tentar recuperar o sócio principal do agente autorizado."),
+        "#007 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#007 - Erro ao tentar recuperar o sócio principal do agente autorizado."),
     ERRO_OBTER_DISCADORA_BY_ID(
-            "#008 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#008 - Erro ao tentar recuperar a discadora pelo id."),
+        "#008 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#008 - Erro ao tentar recuperar a discadora pelo id."),
     ERRO_OBTER_LISTA_RAMAIS_BY_AA(
-            "#009 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#009 - Erro ao tentar recuperar a lista de ramais do agente autorizado"),
+        "#009 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#009 - Erro ao tentar recuperar a lista de ramais do agente autorizado"),
     ERRO_INATIVAR_SUPERVISOR_EQUIPE_VENDA(
-            "#010 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#010 - Erro ao tentar inativar o usuário supervisor na equipe de vendas."),
+        "#010 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#010 - Erro ao tentar inativar o usuário supervisor na equipe de vendas."),
     ERRO_INATIVAR_USUARIO_EQUIPE_VENDA(
-            "#011 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#011 - Erro ao tentar inativar o usuário Assistente ou Vendedor na equipe de vendas."),
+        "#011 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#011 - Erro ao tentar inativar o usuário Assistente ou Vendedor na equipe de vendas."),
     ERRO_OBTER_COLABORADORES_DO_AA(
-            "#012 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#012 - Erro ao obter os colaboradores do agente autorizado."),
+        "#012 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#012 - Erro ao obter os colaboradores do agente autorizado."),
     ERRO_INATIVAR_COLABORADOR_VENDAS(
-            "#013 - Desculpe, ocorreu um erro interno. Contate o administrador.",
-            "#013 - Erro ao inativar o colaborador de vendas."),
+        "#013 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#013 - Erro ao inativar o colaborador de vendas."),
     ERRO_OBTER_COLABORADOR_VENDAS_BY_ID(
-            "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
+        "#014 - Desculpe, ocorreu um erro interno. Contate o administrador.",
         "#014 - Erro ao tentar recuperar o colaborador de vendas por ID do usuário."),
     ERRO_DISTRIBUIR_TABULACOES(
         "#015 - Desculpe, ocorreu um erro interno. Contate o administrador.",
@@ -140,9 +140,10 @@ public enum EErrors {
     ERRO_BUSCAR_TODOS_AAS_DO_USUARIO(
         "#044 - Desculpe, ocorreu um erro interno. Contate a administrador.",
         "#044 - Ocorreu um erro ao buscar todos os agentes autorizados do usuario."),
-     ERRO_BUSCAR_AAS_FEEDER_POR_CARGO(
-        "#049 - Desculpe, ocorreu um erro interno. Contate a administrador.",
-            "#049 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo.");
+    ERRO_BUSCAR_AAS_FEEDER_POR_CARGO("#049 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#049 - Ocorreu um erro ao buscar os usuarios dos agentes autorizados com permissão Feeder por cargo."),
+    ERRO_AO_LIMPAR_CPF_COLABORADOR("#050 - Desculpe, ocorreu um erro interno. Contate a administrador.",
+        "#050 - Ocorreu um erro ao tentar limpar o CPF do colaborador.");
 
 
     @Getter
