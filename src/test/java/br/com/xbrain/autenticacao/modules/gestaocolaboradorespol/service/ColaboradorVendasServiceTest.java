@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class ColaboradorVendasServiceTest {
 
     @Mock
