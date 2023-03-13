@@ -59,7 +59,7 @@ public class UsuarioTimer {
     @Async
     @Scheduled(cron = EVERY_DAY_AT_MIDNIGHT, zone = TIME_ZONE)
     public void deslogarTodosOsUsuarios() {
-        log.info("Iniciando métododo deslogarTodosOsUsuarios");
+        log.info("Iniciando método deslogarTodosOsUsuarios");
         autenticacaoService.logoutAllUsers();
         log.info("Finalizando método deslogarTodosOsUsuarios");
     }
