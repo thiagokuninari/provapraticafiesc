@@ -86,6 +86,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-logout-failure}")
     private String usuarioLogoutFailureMq;
 
+    @Value("${app-config.queue.usuario-logout-multiplo}")
+    private String usuarioLogoutMultiploMq;
+
+    @Value("${app-config.queue.usuario-logout-multiplo-failure}")
+    private String usuarioLogoutMultiploFailureMq;
+
     @Value("${app-config.queue.usuario-ultimo-acesso-pol}")
     private String usuarioUltimoAcessoPolMq;
 
@@ -173,6 +179,20 @@ public class RabbitConfig {
     @Bean
     Queue usuarioLogoutFailureMq() {
         return QueueBuilder.durable(usuarioLogoutFailureMq).build();
+    }
+
+    @Bean
+    Queue usuarioLogoutMultiploMq() {
+        return QueueBuilder
+            .durable(usuarioLogoutMultiploMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioLogoutMultiploFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue usuarioLogoutMultiploFailureMq() {
+        return QueueBuilder.durable(usuarioLogoutMultiploFailureMq).build();
     }
 
     @Bean
@@ -403,6 +423,17 @@ public class RabbitConfig {
     public Binding usuarioLogoutFailureBinding(TopicExchange exchange) {
         return BindingBuilder.bind(usuarioLogoutFailureMq())
             .to(exchange).with(usuarioLogoutFailureMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutMultiploBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutMultiploMq()).to(exchange).with(usuarioLogoutMultiploMq);
+    }
+
+    @Bean
+    public Binding usuarioLogoutMultiploFailureBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(usuarioLogoutMultiploFailureMq())
+            .to(exchange).with(usuarioLogoutMultiploFailureMq);
     }
 
     @Bean

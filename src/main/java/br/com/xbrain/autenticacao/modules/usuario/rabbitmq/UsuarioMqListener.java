@@ -92,5 +92,10 @@ public class UsuarioMqListener {
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
         service.atualizarPermissaoEquipeTecnica(dto);
     }
+
+    @RabbitListener(queues = "${app-config.queue.usuario-logout-multiplo}")
+    public void logoutUsuarioMultiplo(Integer usuarioId) {
+        autenticacaoService.logoutLoginMultiplo(usuarioId);
+    }
 }
 
