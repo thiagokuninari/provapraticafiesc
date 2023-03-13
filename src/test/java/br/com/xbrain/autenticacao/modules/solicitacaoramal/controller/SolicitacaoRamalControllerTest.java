@@ -1,21 +1,16 @@
 package br.com.xbrain.autenticacao.modules.solicitacaoramal.controller;
 
 import br.com.xbrain.autenticacao.modules.agenteautorizadonovo.service.AgenteAutorizadoNovoService;
-import br.com.xbrain.autenticacao.modules.call.dto.RamalResponse;
-import br.com.xbrain.autenticacao.modules.call.dto.TelefoniaResponse;
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.email.service.EmailService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.SocioResponse;
-import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.EquipeVendasService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.SocioService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalAtualizarStatusRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.SolicitacaoRamalRequest;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
-import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHelper;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamal;
+import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRamalHistorico;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalHistoricoService;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
 import org.junit.Assert;
@@ -33,13 +28,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.REJEITADO;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.helper.SolicitacaoRamalHelper.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static helpers.Usuarios.*;
@@ -78,6 +71,8 @@ public class SolicitacaoRamalControllerTest {
     private CallService callService;
     @MockBean
     private SocioService socioService;
+    @MockBean
+    private SolicitacaoRamalHistorico solicitacaoRamalHistorico;
 
     @Before
     public void setUp() {
@@ -142,14 +137,14 @@ public class SolicitacaoRamalControllerTest {
     public void getAll_listaComQuatroRegistro_quandoHouverSolicitacoesPendenteOuEmAndamento() {
         List<SolicitacaoRamal> resultList =
                 solicitacaoRamalService.getAllSolicitacoesPendenteOuEmAndamentoComEmailExpiracaoFalse();
-        Assert.assertEquals(4, resultList.size());
+        Assert.assertEquals(5, resultList.size());
     }
 
     @Test
     public void enviarEmailSolicitacoesQueVaoExpirar_enviarEmailFoiInvocadoQuatroVezes_quandoSolicitacaoForExpirar() {
         solicitacaoRamalService.enviarEmailSolicitacoesQueVaoExpirar();
 
-        verify(emailService, times(4)).enviarEmailTemplate(anyList(), any(), any(), any());
+        verify(emailService, times(5)).enviarEmailTemplate(anyList(), any(), any(), any());
     }
 
     @Test
@@ -166,7 +161,7 @@ public class SolicitacaoRamalControllerTest {
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(3)));
+                .andExpect(jsonPath("$.content", hasSize(5)));
     }
 
     @Test
@@ -246,7 +241,11 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void save_isCreated_quandoTentarSalvarUmaNovaSolicitacao() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 7129);
+        when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(7129))
+            .thenReturn(umaListaUsuarioAgenteAutorizadoResponse());
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(1, 7129);
+        when(solicitacaoRamalHistorico.gerarHistorico(umaOutraSolicitacaoRamal(1), null))
+            .thenReturn(umaSolicitacaoRamalHistorico());
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -262,7 +261,9 @@ public class SolicitacaoRamalControllerTest {
 
     @Test
     public void save_badRequest_quandoTentarSalvarSolicitacaoHavendoUmaEmPendenteOuEmAndamento() throws Exception {
-        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 1);
+        when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(3333))
+            .thenReturn(SolicitacaoRamalHelper.umaListaUsuarioAgenteAutorizadoResponse());
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 3333);
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
@@ -274,8 +275,23 @@ public class SolicitacaoRamalControllerTest {
     }
 
     @Test
+    public void save_badRequest_quandoTentarSalvarSolicitacaoHavendoPassadoOLimite() throws Exception {
+        when(agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(3334))
+            .thenReturn(SolicitacaoRamalHelper.umaListaUsuarioAgenteAutorizadoResponse());
+        SolicitacaoRamalRequest request = criaSolicitacaoRamal(null, 3334);
+
+        mvc.perform(post(URL_API_SOLICITACAO_RAMAL)
+                .header("Authorization", getAccessToken(mvc, SOCIO_AA))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(convertObjectToJsonBytes(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.[*].message", containsInAnyOrder(
+                "Não é possível salvar a solicitação de ramal, pois excedeu o limite.")));
+    }
+
+    @Test
     public void atualizarSituacao_isOk_quandoAtualizarOStatusDeUmaSolicitacaoParaRejeitada() throws Exception {
-        SolicitacaoRamalAtualizarStatusRequest request = criaSolicitacaoRamalAtualizarStatusRequest();
+        SolicitacaoRamalAtualizarStatusRequest request = SolicitacaoRamalHelper.criaSolicitacaoRamalAtualizarStatusRequest();
 
         mvc.perform(post(URL_API_SOLICITACAO_RAMAL_GERENCIAL + "/atualiza-status")
                 .header("Authorization", getAccessToken(mvc, HELP_DESK))
@@ -473,66 +489,5 @@ public class SolicitacaoRamalControllerTest {
             .param("dataInicialSolicitacao", "20/01/2022")
             .param("dataFinalSolicitacao", "21/01/2022"))
             .andExpect(status().isUnauthorized());
-    }
-
-    private SolicitacaoRamalRequest criaSolicitacaoRamal(Integer id, Integer aaId) {
-        return SolicitacaoRamalRequest.builder()
-            .id(id)
-            .quantidadeRamais(38)
-            .agenteAutorizadoId(aaId)
-            .melhorHorarioImplantacao(LocalTime.of(10, 00))
-            .melhorDataImplantacao(LocalDate.of(2019, 01, 25))
-            .tipoImplantacao(ETipoImplantacao.ESCRITORIO.getCodigo())
-            .emailTi("reanto@ti.com.br")
-                .telefoneTi("(18) 3322-2388")
-                .usuariosSolicitadosIds(Arrays.asList(100, 101))
-                .build();
-    }
-
-    private AgenteAutorizadoResponse criaAa() {
-        return AgenteAutorizadoResponse.builder()
-                .id("303030")
-                .cnpj("81733187000134")
-                .nomeFantasia("Fulano")
-                .discadoraId(1)
-                .razaoSocial("RAZAO SOCIAL AA")
-                .build();
-    }
-
-    private SolicitacaoRamalAtualizarStatusRequest criaSolicitacaoRamalAtualizarStatusRequest() {
-        return SolicitacaoRamalAtualizarStatusRequest.builder()
-                .idSolicitacao(1)
-                .observacao("Rejeitada teste")
-                .situacao(REJEITADO)
-                .build();
-    }
-
-    private TelefoniaResponse criaTelefonia() {
-        return TelefoniaResponse.builder()
-                .id(13)
-                .nome("DISCADORA UN")
-                .build();
-    }
-
-    private List<RamalResponse> criaListaRamal() {
-        return Arrays.asList(new RamalResponse(), new RamalResponse());
-    }
-
-    private SocioResponse criaSocio() {
-        return SocioResponse.builder()
-                .cpf("33333333333")
-                .nome("FULANO")
-                .build();
-    }
-
-    private List<UsuarioAgenteAutorizadoResponse> criaListaUsuariosAtivos() {
-        return Arrays.asList(new UsuarioAgenteAutorizadoResponse(), new UsuarioAgenteAutorizadoResponse());
-    }
-
-    private SolicitacaoRamalAtualizarStatusRequest criaSolicitacaoRamalRequest() {
-        return SolicitacaoRamalAtualizarStatusRequest.builder()
-                .idSolicitacao(4)
-                .situacao(ESituacaoSolicitacao.ENVIADO)
-                .build();
     }
 }

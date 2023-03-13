@@ -2,9 +2,7 @@ package br.com.xbrain.autenticacao.modules.solicitacaoramal.model;
 
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,6 +11,9 @@ import java.time.LocalDateTime;
 @ToString(of = "id")
 @EqualsAndHashCode(of = "id")
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "SOLICITACAO_RAMAL_HISTORICO")
 public class SolicitacaoRamalHistorico {
 

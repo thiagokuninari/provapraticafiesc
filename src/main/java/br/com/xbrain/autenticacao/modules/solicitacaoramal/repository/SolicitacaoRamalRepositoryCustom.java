@@ -19,6 +19,8 @@ public interface SolicitacaoRamalRepositoryCustom {
 
     List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(Integer aaId);
 
+    List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviado(Integer aaId);
+
     Optional<SolicitacaoRamal> findBySolicitacaoId(Integer solicitacaoId);
 
     List<SolicitacaoRamal> findAllByPredicate(Predicate predicate);

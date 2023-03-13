@@ -15,8 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.EM_ANDAMENTO;
-import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.PENDENTE;
+import static br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ESituacaoSolicitacao.*;
 import static br.com.xbrain.autenticacao.modules.solicitacaoramal.model.QSolicitacaoRamal.solicitacaoRamal;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QCargo.cargo;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
@@ -96,6 +95,17 @@ public class SolicitacaoRamalRepositoryImpl
                         .and(solicitacaoRamal.situacao.eq(PENDENTE)
                                 .or(solicitacaoRamal.situacao.eq(EM_ANDAMENTO))))
                 .fetch();
+    }
+
+    @Override
+    public List<SolicitacaoRamal> findAllByAgenteAutorizadoIdAndSituacaoEnviado(Integer aaId) {
+        return new JPAQueryFactory(entityManager)
+            .select(solicitacaoRamal)
+            .from(solicitacaoRamal)
+            .where(solicitacaoRamal.agenteAutorizadoId.eq(aaId)
+                .and(solicitacaoRamal.situacao.eq(ENVIADO)))
+
+            .fetch();
     }
 
     @Override

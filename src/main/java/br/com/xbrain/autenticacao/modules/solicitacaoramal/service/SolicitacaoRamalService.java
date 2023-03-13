@@ -166,7 +166,9 @@ public class SolicitacaoRamalService {
     }
 
     private void validaSalvar(Integer aaId) {
-        if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
+        if (validarQuantidade(aaId)) {
+            throw new ValidacaoException("Não é possível salvar a solicitação de ramal, pois excedeu o limite.");
+        } else if (hasSolicitacaoPendenteOuEmAdamentoByAaId(aaId)) {
             throw new ValidacaoException(
                     "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
         }
@@ -175,6 +177,11 @@ public class SolicitacaoRamalService {
     private boolean hasSolicitacaoPendenteOuEmAdamentoByAaId(Integer aaId) {
         return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoDiferentePendenteOuEmAndamento(aaId)
                 .size() > 0;
+    }
+
+    private boolean validarQuantidade(Integer aaId) {
+        return solicitacaoRamalRepository.findAllByAgenteAutorizadoIdAndSituacaoEnviado(aaId)
+            .size() >= agenteAutorizadoNovoService.getUsuariosAaAtivoSemVendedoresD2D(aaId).size() ;
     }
 
     private void gerarHistorico(SolicitacaoRamal solicitacaoRamal, String comentario) {

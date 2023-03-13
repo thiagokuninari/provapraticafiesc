@@ -8,10 +8,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantaca
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.util.SolicitacaoRamalExpiracaoAdjuster;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -30,6 +27,8 @@ import static br.com.xbrain.xbrainutils.NumberUtils.getOnlyNumbers;
 @Entity
 @Table(name = "SOLICITACAO_RAMAL")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SolicitacaoRamal {
 
     @Id
