@@ -108,4 +108,16 @@ public class LogoutControllerTest {
         requestEmpresas(tokenAdmin).andExpect(status().isUnauthorized());
         requestEmpresas(tokenGerente).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    public void logoutLoginMultiplo_deveDeslogarUsuario_quandoMultiplosLogins() throws Exception {
+        var token = getAccessToken(mvc, ADMIN);
+
+        mvc.perform(get("/api/logout/login-multiplo/{usuarioId}", 440)
+                .header("Authorization", token)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(tokenStore, atLeastOnce()).removeAccessToken(any());
+    }
 }

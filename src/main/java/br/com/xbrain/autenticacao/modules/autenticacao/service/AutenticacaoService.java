@@ -134,9 +134,10 @@ public class AutenticacaoService {
     }
 
     public void logout(Integer usuarioId) {
-        logout(usuarioRepository.findById(usuarioId)
-            .orElseThrow(() -> new ValidacaoException("O usuário " + usuarioId + " não foi encontrado."))
-            .getLogin());
+        var usuario = usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new ValidacaoException("O usuário " + usuarioId + " não foi encontrado."));
+        logout(usuario.getLogin());
+        forcarLogoutGeradorLeadsEClienteLojaFuturo(usuario);
     }
 
     public void logout(List<Integer> usuariosIds) {
@@ -204,5 +205,11 @@ public class AutenticacaoService {
 
     public ECanal getUsuarioCanal() {
         return AutenticacaoService.getUsuarioCanal(request).orElseThrow(() -> EX_NAO_ENCONTRADO);
+    }
+
+    public void logoutLoginMultiplo(Integer usuarioId) {
+        var usuario = usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new ValidacaoException("O usuário " + usuarioId + " não foi encontrado."));
+        forcarLogoutGeradorLeadsEClienteLojaFuturo(usuario);
     }
 }
