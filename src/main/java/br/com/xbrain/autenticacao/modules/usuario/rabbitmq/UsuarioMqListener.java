@@ -100,7 +100,8 @@ public class UsuarioMqListener {
         try {
             autenticacaoService.logoutLoginMultiplo(usuarioId);
         } catch (Exception ex) {
-            log.error("Erro ao processar fila de mensagem de logout de usuários com múltiplos acessos.", ex);
+            log.error("Erro ao processar fila de mensagem de logout de usuários com múltiplos acessos. "
+                + "Usuário ID: {}", usuarioId, ex);
         }
     }
 }
