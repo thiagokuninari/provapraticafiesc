@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -151,8 +152,9 @@ public class FeriadoService {
     public void salvarFeriadoAutomacao(FeriadoAutomacao feriadoAutomacao) {
         var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
         //todo salvar feriados
-        log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
 
+        log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
+        salvarFeriadoEstadualParaCidadesDoEstadoAsync(feriado);
     }
 
     public void salvarFeriadoAutomacaoMunicipais(List<FeriadoAutomacao> feriadosMunipais) {
@@ -205,7 +207,13 @@ public class FeriadoService {
             var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
                 .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))
                 .collect(Collectors.toList());
-            repository.save(feriadosFilhos);
+            var cidades = new ArrayList<String>();
+            feriadosFilhos.forEach(feriado -> {
+                cidades.add(feriado.getCidade().getNome());
+                });
+            log.info("Qtde Cidades: " + cidades.size());
+            log.info("Cidades: " + cidades);
+          //  repository.save(feriadosFilhos);
         }
     }
 

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 @FeignClient(name = "feriadoAutomacaoClient",
     url = "${app-config.services.feriado-automacao.url}",
@@ -19,8 +18,8 @@ public interface FeriadoAutomacaoClient {
 
     @GetMapping(FERIADOS + "/municipal")
     List<FeriadoAutomacao> consultarFeriadosMunicipais(@RequestParam("ano") Integer ano,
-                                                     @RequestParam("estado") String estado,
-                                                     @RequestParam("cidade") String cidade);
+                                                       @RequestParam("estado") String estado,
+                                                       @RequestParam("cidade") String cidade);
 
     @GetMapping(FERIADOS + "/nacional")
     List<FeriadoAutomacao> buscarFeriadosNacionais(@RequestParam("ano") Integer ano);
