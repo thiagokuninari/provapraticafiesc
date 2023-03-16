@@ -240,6 +240,9 @@ public class Usuario {
     private Integer agenteAutorizadoId;
 
     @Transient
+    private List<Integer> agentesAutorizadosIds;
+
+    @Transient
     private String senhaDescriptografada;
 
     public Usuario(Integer id) {

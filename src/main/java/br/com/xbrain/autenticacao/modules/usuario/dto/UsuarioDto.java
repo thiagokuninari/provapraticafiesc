@@ -99,6 +99,7 @@ public class UsuarioDto implements Serializable {
     private Integer organizacaoId;
     private boolean permiteEditarCompleto;
     private Integer agenteAutorizadoId;
+    private List<Integer> agentesAutorizadosIds;
     private String urlLojaBase;
     private String urlLojaProspect;
     private String urlLojaProspectNextel;
@@ -110,7 +111,7 @@ public class UsuarioDto implements Serializable {
     }
 
     public static Usuario convertFrom(UsuarioDto usuarioDto) {
-        Usuario usuario = new Usuario();
+        var usuario = new Usuario();
         BeanUtils.copyProperties(usuarioDto, usuario);
         usuario.setEmpresasId(usuarioDto.getEmpresasId());
         usuario.setUnidadesNegociosId(usuarioDto.getUnidadesNegociosId());
@@ -156,7 +157,7 @@ public class UsuarioDto implements Serializable {
     }
 
     public static UsuarioDto parse(UsuarioMqRequest usuarioMqRequest) {
-        UsuarioDto usuarioDto = new UsuarioDto();
+        var usuarioDto = new UsuarioDto();
         BeanUtils.copyProperties(usuarioMqRequest, usuarioDto);
         return usuarioDto;
     }

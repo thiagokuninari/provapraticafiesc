@@ -1519,9 +1519,16 @@ public class UsuarioServiceIT {
 
     @Test
     public void saveFromQueue_salvarEEnviarParaFilaDeSocioPrincipalSalvoComSucesso_quandoFlagSocioPrincipalForTrue() {
-        usuarioService.saveFromQueue(umUsuarioMqRequestSocioprincipal());
+        usuarioService.saveFromQueue(umUsuarioMqRequestSocioPrincipal());
 
         verify(sender).sendSuccessSocioPrincipal(any(UsuarioDto.class));
+    }
+
+    @Test
+    public void saveFromQueue_deveSalvarEEnviarParaFilaDeAtualizarSocioPrincipal_quandoFlagAtualizarSocioPrincipalForTrue() {
+        usuarioService.saveFromQueue(umUsuarioMqRequestAtualizarSocioPrincipal());
+
+        verify(sender).sendSuccessAtualizarSocioPrincipal(any(UsuarioDto.class));
     }
 
     public UsuarioMqRequest umUsuarioMqRequestComFeeder() {
@@ -1545,7 +1552,7 @@ public class UsuarioServiceIT {
             .build();
     }
 
-    public UsuarioMqRequest umUsuarioMqRequestSocioprincipal() {
+    public UsuarioMqRequest umUsuarioMqRequestSocioPrincipal() {
         return UsuarioMqRequest.builder()
             .agenteAutorizadoId(10)
             .usuarioCadastroId(100)
@@ -1558,6 +1565,26 @@ public class UsuarioServiceIT {
             .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
             .email("renato@hotmail.com")
             .isCadastroSocioPrincipal(true)
+            .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
+            .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
+            .build();
+    }
+
+    public UsuarioMqRequest umUsuarioMqRequestAtualizarSocioPrincipal() {
+        return UsuarioMqRequest.builder()
+            .agenteAutorizadoId(10)
+            .usuarioCadastroId(100)
+            .usuarioCadastroNome("RENATO")
+            .nome("JOSÉ")
+            .canais(Sets.newHashSet(ECanal.AGENTE_AUTORIZADO))
+            .cargo(CodigoCargo.AGENTE_AUTORIZADO_SOCIO)
+            .nivel(CodigoNivel.AGENTE_AUTORIZADO)
+            .cpf("333.333.333-11")
+            .departamento(CodigoDepartamento.AGENTE_AUTORIZADO)
+            .email("renato@hotmail.com")
+            .isCadastroSocioPrincipal(false)
+            .isAtualizarSocioPrincipal(true)
+            .agentesAutorizadosIds(List.of(50, 55))
             .unidadesNegocio(Lists.newArrayList(CodigoUnidadeNegocio.CLARO_RESIDENCIAL))
             .empresa(Lists.newArrayList(CLARO_RESIDENCIAL))
             .build();

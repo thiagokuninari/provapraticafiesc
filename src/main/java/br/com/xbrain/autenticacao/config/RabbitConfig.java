@@ -22,6 +22,12 @@ public class RabbitConfig {
     @Value("${app-config.queue.usuario-cadastro-socio-principal-success}")
     private String usuarioCadastroSocioPrincipalSuccessMq;
 
+    @Value("${app-config.queue.usuario-atualizar-socio-principal-success}")
+    private String usuarioAtualizarSocioPrincipalSuccessMq;
+
+    @Value("${app-config.queue.usuario-atualizar-socio-principal-failure}")
+    private String usuarioAtualizarSocioPrincipalFailureMq;
+
     @Value("${app-config.queue.usuario-cadastro-success}")
     private String usuarioCadastroSuccessMq;
 
@@ -153,6 +159,19 @@ public class RabbitConfig {
     @Bean
     Queue usuarioCadastroSocioPrincipalSuccessMq() {
         return new Queue(usuarioCadastroSocioPrincipalSuccessMq, false);
+    }
+
+    @Bean
+    Queue usuarioAtualizarSocioPrincipalSuccessMq() {
+        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalSuccessMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, usuarioAtualizarSocioPrincipalFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue usuarioAtualizarSocioPrincipalFailureMq() {
+        return new Queue(usuarioAtualizarSocioPrincipalFailureMq, true);
     }
 
     @Bean

@@ -47,6 +47,8 @@ public class UsuarioMqRequest {
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
+    private boolean isAtualizarSocioPrincipal;
+    private List<Integer> agentesAutorizadosIds;
 
     public boolean isNovoCadastroSocioPrincipal() {
         return Objects.isNull(id) && isCadastroSocioPrincipal;

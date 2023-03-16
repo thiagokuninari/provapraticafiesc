@@ -996,9 +996,11 @@ public class UsuarioService {
     @Transactional
     public void saveFromQueue(UsuarioMqRequest usuarioMqRequest) {
         try {
-            UsuarioDto usuarioDto = UsuarioDto.parse(usuarioMqRequest);
+            var usuarioDto = UsuarioDto.parse(usuarioMqRequest);
             configurarUsuario(usuarioMqRequest, usuarioDto);
             usuarioDto = save(UsuarioDto.convertFrom(usuarioDto));
+
+            enviarParaFilaDeAtualizarSocioPrincipal(usuarioMqRequest, usuarioDto);
 
             if (usuarioMqRequest.isNovoCadastroSocioPrincipal()) {
                 enviarParaFilaDeSocioPrincipalSalvo(usuarioDto);
@@ -1010,6 +1012,12 @@ public class UsuarioService {
             usuarioMqRequest.setException(ex.getMessage());
             enviarParaFilaDeErroCadastroUsuarios(usuarioMqRequest);
             log.error("Erro ao salvar usuário da fila.", ex);
+        }
+    }
+
+    private void enviarParaFilaDeAtualizarSocioPrincipal(UsuarioMqRequest usuarioMqRequest, UsuarioDto usuarioDto) {
+        if (usuarioMqRequest.isAtualizarSocioPrincipal()) {
+            enviarParaFilaDeAtualizarSocioPrincipalSalvo(usuarioDto);
         }
     }
 
@@ -1193,6 +1201,10 @@ public class UsuarioService {
 
     private void enviarParaFilaDeSocioPrincipalSalvo(UsuarioDto usuarioDto) {
         usuarioMqSender.sendSuccessSocioPrincipal(usuarioDto);
+    }
+
+    private void enviarParaFilaDeAtualizarSocioPrincipalSalvo(UsuarioDto usuarioDto) {
+        usuarioMqSender.sendSuccessAtualizarSocioPrincipal(usuarioDto);
     }
 
     private void enviarParaFilaDeAtualizarUsuariosPol(UsuarioDto usuarioDto) {
