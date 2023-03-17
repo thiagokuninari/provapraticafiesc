@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+
     private static final String DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
     private static final String DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
 
@@ -171,7 +172,7 @@ public class RabbitConfig {
 
     @Bean
     Queue usuarioAtualizarSocioPrincipalFailureMq() {
-        return new Queue(usuarioAtualizarSocioPrincipalFailureMq, true);
+        return QueueBuilder.durable(usuarioAtualizarSocioPrincipalFailureMq).build();
     }
 
     @Bean
