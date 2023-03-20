@@ -94,15 +94,5 @@ public class UsuarioMqListener {
     public void atualizarPermissaoEquipeTecnica(PermissaoEquipeTecnicaDto dto) {
         service.atualizarPermissaoEquipeTecnica(dto);
     }
-
-    @RabbitListener(queues = "${app-config.queue.usuario-logout-multiplo}")
-    public void logoutUsuarioMultiplo(Integer usuarioId) {
-        try {
-            autenticacaoService.logoutLoginMultiplo(usuarioId);
-        } catch (Exception ex) {
-            log.error("Erro ao processar fila de mensagem de logout de usuários com múltiplos acessos. "
-                + "Usuário ID: {}", usuarioId, ex);
-        }
-    }
 }
 

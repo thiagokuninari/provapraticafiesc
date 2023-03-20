@@ -118,8 +118,6 @@ app-config:
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     usuario-logout: usuario-logout.queue
     usuario-logout-failure: usuario-logout-failure.queue
-    usuario-logout-multiplo: usuario-logout-multiplo.queue
-    usuario-logout-multiplo-failure: usuario-logout-multiplo-failure.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
