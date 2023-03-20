@@ -28,7 +28,7 @@ public class OrganizacaoHelper {
         return umaOrganizacao(4, "ATENTO");
     }
 
-    public static Organizacao umaOrganizacaoaVgx() {
+    public static Organizacao umaOrganizacaoVgx() {
         return umaOrganizacao(5, "VGX");
     }
 }
