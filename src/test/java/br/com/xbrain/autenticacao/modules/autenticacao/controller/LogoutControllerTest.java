@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.autenticacao.controller;
 
 import br.com.xbrain.autenticacao.config.AuthServerConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dClient;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,8 @@ public class LogoutControllerTest {
     }
 
     @Test
-    public void logoutLoginMultiplo_deveDeslogarUsuario_quandoMultiplosLogins() throws Exception {
+    @SneakyThrows
+    public void logoutLoginMultiplo_deveDeslogarUsuario_quandoMultiplosLogins(){
         var token = getAccessToken(mvc, ADMIN);
 
         mvc.perform(get("/api/logout/usuario-multiplo/{usuarioId}", 440)
@@ -119,5 +121,13 @@ public class LogoutControllerTest {
             .andExpect(status().isOk());
 
         verify(tokenStore, atLeastOnce()).removeAccessToken(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void logoutLoginMultiplo_deveRetornarUnauthorized_quandoNaoAutenticado() {
+        mvc.perform(get("/api/logout/usuario-multiplo/{usuarioId}", 440)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
     }
 }
