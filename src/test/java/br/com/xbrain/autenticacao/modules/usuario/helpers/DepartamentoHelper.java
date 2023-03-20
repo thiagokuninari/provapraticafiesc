@@ -63,4 +63,24 @@ public class DepartamentoHelper {
             .situacao(ESituacao.A)
             .build();
     }
+
+    public static Departamento umDepartamentoEndomarketing() {
+        return Departamento.builder()
+            .id(5)
+            .nome("Endomarketing")
+            .nivel(umNivelOperacao())
+            .codigo(CodigoDepartamento.ENDOMARKETING)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    public static Departamento umDepartamentoAdministrativoMso() {
+        return Departamento.builder()
+            .id(20)
+            .nome("Administrativo")
+            .nivel(umNivelMso())
+            .codigo(CodigoDepartamento.ADMINISTRATIVO)
+            .situacao(ESituacao.A)
+            .build();
+    }
 }

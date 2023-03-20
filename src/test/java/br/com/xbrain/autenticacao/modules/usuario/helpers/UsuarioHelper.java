@@ -18,11 +18,11 @@ import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPRESARIAL;
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
+import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacaoCallink;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamento;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAdministrador;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 
 public class UsuarioHelper {
 
@@ -351,6 +351,21 @@ public class UsuarioHelper {
             .alterarSenha(Eboolean.F)
             .situacao(ESituacao.A)
             .canais(Set.of(ECanal.ATIVO_PROPRIO))
+            .build();
+    }
+
+    public static Usuario umUsuarioMsoAnalistaClaroPessoal() {
+        return Usuario.builder()
+            .id(366)
+            .nome("MSO ANALISTA ADM CLARO PESSOAL")
+            .email("MSO_ANALISTAADM_CLAROMOVEL_PESSOAL@NET.COM.BR")
+            .telefone("99999")
+            .cpf("28667582506")
+            .cargo(umCargoMsoAnalista())
+            .departamento(umDepartamentoAdministrativoMso())
+            .organizacao(umaOrganizacaoCallink())
+            .dataCadastro(LocalDateTime.now())
+            .situacao(ESituacao.A)
             .build();
     }
 }

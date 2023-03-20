@@ -2,7 +2,9 @@ package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
+import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 
 import java.util.Set;
 
@@ -112,6 +114,69 @@ public class CargoHelper {
             .id(8)
             .nome("Vendedor Operação")
             .codigo(CodigoCargo.VENDEDOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .build();
+    }
+
+    public static Cargo umCargoSupervisor() {
+        return Cargo.builder()
+            .id(28)
+            .nome("Supervisor")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR)
+            .nivel(Nivel.builder().codigo(CodigoNivel.AGENTE_AUTORIZADO).build())
+            .build();
+    }
+
+    public static Cargo umCargoAaSupervisorXbrain() {
+        return Cargo.builder()
+            .id(51)
+            .nome("Analista de Suporte")
+            .codigo(CodigoCargo.AGENTE_AUTORIZADO_SUPERVISOR_XBRAIN)
+            .nivel(umNivelXbrain())
+            .build();
+    }
+
+    public static Cargo umCargoAdministrador() {
+        return Cargo.builder()
+            .id(50)
+            .nome("Administrador")
+            .codigo(CodigoCargo.ADMINISTRADOR)
+            .nivel(umNivelXbrain())
+            .build();
+    }
+
+    public static Cargo umCargoSupervisorOperacao() {
+        return Cargo.builder()
+            .id(10)
+            .nome("Supervisor")
+            .codigo(CodigoCargo.SUPERVISOR_OPERACAO)
+            .nivel(umNivelOperacao())
+            .build();
+    }
+
+    public static Cargo umCargoAssistenteOperacao() {
+        return Cargo.builder()
+            .id(2)
+            .nome("Assistente")
+            .codigo(CodigoCargo.ASSISTENTE_OPERACAO)
+            .nivel(umNivelOperacao())
+            .build();
+    }
+
+    public static Cargo umCargoMsoAnalista() {
+        return Cargo.builder()
+            .id(20)
+            .nome("Analista")
+            .codigo(CodigoCargo.MSO_ANALISTA)
+            .nivel(umNivelMso())
+            .build();
+    }
+
+    public static Cargo umCargoOperacaoTelevendas() {
+        return Cargo.builder()
+            .id(120)
+            .nome("Operador Televendas")
+            .codigo(CodigoCargo.OPERACAO_TELEVENDAS)
             .nivel(umNivelOperacao())
             .build();
     }
