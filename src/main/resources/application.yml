@@ -6,7 +6,7 @@ server:
 
 spring:
   redis:
-    #    host: 127.0.0.1
+    #host: 127.0.0.1
     host: 192.168.50.1
     port: 6379
 
@@ -37,6 +37,7 @@ spring:
             database/cidades.sql,
             database/motivo-inativacao.sql,
             database/feriados.sql
+        format_sql: false
 
   datasource:
     url: jdbc:oracle:thin:@//192.168.50.2:1521/dev
@@ -116,6 +117,7 @@ app-config:
     usuario-alterar-senha: usuario-alterar-senha.queue
     usuario-alterar-situacao: usuario-alterar-situacao.queue
     usuario-logout: usuario-logout.queue
+    usuario-logout-failure: usuario-logout-failure.queue
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
@@ -135,6 +137,8 @@ app-config:
     usuario-inativacao-por-aa: usuario-inativacao-por-aa.queue
     limpar-cpf-e-alterar-email-feeder: limpar-cpf-e-alterar-email-feeder.queue
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
+    permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
+    permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
 
   oauth-clients:
     autenticacao-api:
@@ -266,6 +270,12 @@ app-config:
     emails:
       #url: http://localhost:8080
       url: http://api-hom.conexaoclarobrasil.com.br/email
+    integracao-vendas:
+      #url: http://localhost:8086
+      url: http://192.168.50.1:6545
+    mailing-importacao:
+#      url: http://localhost:8087
+      url: http://192.168.50.1:6530
 
 flyway:
   enabled: true
@@ -311,6 +321,12 @@ zuul:
     emails:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.emails.url}
+    integracao-vendas:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.integracao-vendas.url}
+    mailing-importacao:
+      sensitiveHeaders: Cookie,Set-Cookie
+      url: ${app-config.services.mailing-importacao.url}
 
   host:
     connect-timeout-millis: 1800000

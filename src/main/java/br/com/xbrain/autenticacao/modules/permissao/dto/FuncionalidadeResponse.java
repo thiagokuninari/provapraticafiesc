@@ -1,13 +1,19 @@
 package br.com.xbrain.autenticacao.modules.permissao.dto;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class FuncionalidadeResponse {
 
     private Integer id;

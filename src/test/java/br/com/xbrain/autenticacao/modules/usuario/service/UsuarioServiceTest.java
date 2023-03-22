@@ -10,11 +10,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
-import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
-import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
-import br.com.xbrain.autenticacao.modules.comum.model.SubCluster;
-import br.com.xbrain.autenticacao.modules.comum.model.Uf;
-import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
+import br.com.xbrain.autenticacao.modules.comum.model.*;
 import br.com.xbrain.autenticacao.modules.comum.repository.EmpresaRepository;
 import br.com.xbrain.autenticacao.modules.comum.repository.UnidadeNegocioRepository;
 import br.com.xbrain.autenticacao.modules.comum.service.RegionalService;
@@ -28,6 +24,9 @@ import br.com.xbrain.autenticacao.modules.notificacao.service.NotificacaoService
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.AgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.dto.UsuarioAgenteAutorizadoResponse;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
+import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.permissao.model.PermissaoEspecial;
+import br.com.xbrain.autenticacao.modules.permissao.service.PermissaoEspecialService;
 import br.com.xbrain.autenticacao.modules.site.service.SiteService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
@@ -35,11 +34,10 @@ import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelp
 import br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import br.com.xbrain.autenticacao.modules.usuario.predicate.UsuarioPredicate;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.InativarColaboradorMqSender;
+import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioCadastroMqSender;
 import br.com.xbrain.autenticacao.modules.usuario.rabbitmq.UsuarioEquipeVendaMqSender;
-import br.com.xbrain.autenticacao.modules.usuario.repository.CargoRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioCidadeRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioHierarquiaRepository;
-import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioRepository;
+import br.com.xbrain.autenticacao.modules.usuario.repository.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
@@ -60,7 +58,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -73,7 +73,9 @@ import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalid
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.CTR_VISUALIZAR_CARTEIRA_HIERARQUIA;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.umCargo;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.PermissaoEquipeTecnicaHelper.permissaoEquipeTecnicaDto;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioMso;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioDtoSender;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalESituacaoAtiva;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioPredicateHelper.umVendedoresFeederPredicateComSocioPrincipalETodasSituacaoes;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
@@ -94,8 +96,6 @@ public class UsuarioServiceTest {
 
     @InjectMocks
     private UsuarioService usuarioService;
-    @Mock
-    private UsuarioService service;
     @Mock
     private UsuarioRepository usuarioRepository;
     @Mock
@@ -144,8 +144,22 @@ public class UsuarioServiceTest {
     private EquipeVendasUsuarioService equipeVendasUsuarioService;
     @Mock
     private FeederService feederService;
+    @Mock
+    private InativarColaboradorMqSender inativarColaboradorMqSender;
+    @Mock
+    private UsuarioCadastroMqSender usuarioMqSender;
+    @Mock
+    private DepartamentoRepository departamentoRepository;
+    @Mock
+    private NivelRepository nivelRepository;
     @Captor
     private ArgumentCaptor<Usuario> usuarioCaptor;
+    @Captor
+    private ArgumentCaptor<List<PermissaoEspecial>> permissaoEspecialCaptor;
+    @Captor
+    private ArgumentCaptor<List<UsuarioHistorico>> usuarioHistoricoCaptor;
+    @Mock
+    private PermissaoEspecialService permissaoEspecialService;
 
     @Test
     public void buscarNaoRealocadoByCpf_deveRetornarUsuarioNaoRealocado_quandoCpfForValido() {
@@ -1619,8 +1633,7 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    @SuppressWarnings("LineLength")
-   public void save_deveDispararValidacaoException_seUsuarioOperacaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
+    public void save_deveDispararValidacaoException_seUsuarioOperacaoEstiverNaCarteiraDeAlgumAgenteAutorizado() {
         when(usuarioRepository.findById(eq(1)))
             .thenReturn(Optional.of(umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
                 CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO)));
@@ -1640,7 +1653,6 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    @SuppressWarnings("LineLength")
     public void save_naoDeveDispararValidacaoException_seUsuarioDadosAlteradosNaoForCanalAgenteAutorizado() {
         var usuarioCompleto = umUsuarioCompleto(SUPERVISOR_OPERACAO, 1, OPERACAO,
             CodigoDepartamento.COMERCIAL, ECanal.AGENTE_AUTORIZADO);
@@ -2159,6 +2171,112 @@ public class UsuarioServiceTest {
         verify(agenteAutorizadoNovoService, times(1)).getIdsUsuariosSubordinadosByFiltros(eq(filtros));
     }
 
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_deveGerarHistorico_quandoSenhaIncorreta() {
+        when(usuarioRepository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(any(String.class)))
+            .thenReturn(Optional.of(umUsuarioCompleto()));
+
+        usuarioService.gerarHistoricoTentativasLoginSenhaIncorreta("EMAIL@EMAIL.COM");
+
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+    }
+
+    @Test
+    public void gerarHistoricoTentativasLoginSenhaIncorreta_deveInativarUsuario_quandoSenhaIncorreta() {
+        when(usuarioRepository.findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(any(String.class)))
+            .thenReturn(Optional.of(umUsuarioCompletoSenhaErrada()));
+
+        when(usuarioRepository.findComplete(any(Integer.class)))
+            .thenReturn(Optional.of(umUsuarioCompletoSenhaErrada()));
+
+        when(motivoInativacaoService.findByCodigoMotivoInativacao(any(CodigoMotivoInativacao.class)))
+            .thenReturn(umMotivoInativacaoSenhaIncorreta());
+
+        usuarioService.gerarHistoricoTentativasLoginSenhaIncorreta("EMAIL@EMAIL.COM");
+
+        verify(usuarioRepository, times(2)).save(any(Usuario.class));
+        verify(autenticacaoService, times(1)).logout(any(Integer.class));
+        verify(inativarColaboradorMqSender, times(1)).sendSuccess(any(String.class));
+    }
+
+    private MotivoInativacao umMotivoInativacaoSenhaIncorreta() {
+        return MotivoInativacao.builder()
+            .id(1)
+            .descricao("TESTE")
+            .codigo(CodigoMotivoInativacao.TENTATIVAS_LOGIN_SENHA_INCORRETA)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private Usuario umUsuarioCompletoSenhaErrada() {
+        var usuario = umUsuarioCompleto();
+        usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
+        usuario.adicionar(UsuarioSenhaIncorretaHistorico.builder().id(1).dataTentativa(LocalDate.now()).usuario(usuario).build());
+        return usuario;
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveCriarPermissoes_quandoDtoDeEquipeTecnicaTrue() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(true, null));
+
+        verify(permissaoEspecialService).save(permissaoEspecialCaptor.capture());
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(permissaoEspecialCaptor.getValue())
+            .hasSize(1)
+            .flatExtracting("usuario", "funcionalidade", "usuarioCadastro")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                Funcionalidade.builder()
+                    .id(16101)
+                    .build(),
+                Usuario.builder()
+                    .id(105)
+                    .build()
+            );
+        assertThat(permissaoEspecialCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactly(
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado com permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    public void atualizarPermissaoEquipeTecnica_deveRemoverPermissoes_quandoDtoDeEquipeTecnicaFalse() {
+        usuarioService.atualizarPermissaoEquipeTecnica(permissaoEquipeTecnicaDto(false, List.of(2023)));
+
+        verify(permissaoEspecialService).deletarPermissoesEspeciaisBy(List.of(16101), List.of(100, 2023));
+        verify(usuarioHistoricoService).save(usuarioHistoricoCaptor.capture());
+
+        assertThat(usuarioHistoricoCaptor.getValue())
+            .flatExtracting("usuario", "observacao", "situacao")
+            .containsExactlyInAnyOrder(
+                Usuario.builder()
+                    .id(2023)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A,
+                Usuario.builder()
+                    .id(100)
+                    .build(),
+                "Agente Autorizado sem permissão de Equipe Técnica.",
+                ESituacao.A
+            );
+        assertThat(usuarioHistoricoCaptor.getValue().get(0).getDataCadastro())
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()
@@ -2606,5 +2724,33 @@ public class UsuarioServiceTest {
     private EquipeVendaUsuarioResponse criaEquipeVendaUsuarioResponse() {
         return EquipeVendaUsuarioResponse.builder().id(1)
             .build();
+    }
+
+    @Test
+    public void saveFromQueue_deveEnviarParaFilaDeUsuaruiosSalvosComCargoCodigo_quandoSolicitado() {
+        var umCargo = Cargo.builder()
+            .id(1)
+            .codigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .build();
+
+        when(cargoRepository.findByCodigo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR))
+            .thenReturn(umCargo);
+        when(departamentoRepository.findByCodigo(any())).thenReturn(new Departamento(1));
+        when(nivelRepository.findByCodigo(any())).thenReturn(new Nivel(1));
+        when(unidadeNegocioRepository.findByCodigoIn(any())).thenReturn(List.of(new UnidadeNegocio(1)));
+        when(empresaRepository.findByCodigoIn(any())).thenReturn(List.of(new Empresa(1)));
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(umUsuario()));
+
+        var usuarioMqRequest = UsuarioMqRequest.builder()
+            .id(1)
+            .email("EMAIL@TEST.COM")
+            .cargo(AGENTE_AUTORIZADO_TECNICO_VENDEDOR)
+            .situacao(ESituacao.A)
+            .build();
+        var expectedDto = umUsuarioDtoSender();
+
+        usuarioService.saveFromQueue(usuarioMqRequest);
+
+        verify(usuarioMqSender, times(1)).sendSuccess(eq(expectedDto));
     }
 }

@@ -199,9 +199,9 @@ public class Usuario {
     private List<UsuarioHistorico> historicos;
 
     @NotAudited
-    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
-    @Column(name = "CANAL", nullable = false, length = 20)
     @ElementCollection
+    @Column(name = "CANAL", nullable = false, length = 20)
+    @CollectionTable(name = "USUARIO_CANAL", joinColumns = @JoinColumn(name = "FK_USUARIO"))
     @Enumerated(EnumType.STRING)
     private Set<ECanal> canais;
 
@@ -253,6 +253,11 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Set<ETipoFeederMso> tiposFeeder;
 
+    @NotAudited
+    @JsonIgnore
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UsuarioSenhaIncorretaHistorico> historicosSenhaIncorretas;
+
     public Usuario(Integer id) {
         this.id = id;
     }
@@ -287,6 +292,11 @@ public class Usuario {
         departamento.getId();
         canais.size();
         Optional.ofNullable(tiposFeeder).ifPresent(Set::size);
+        return this;
+    }
+
+    public Usuario forceLoadCanais() {
+        canais.size();
         return this;
     }
 
@@ -619,5 +629,16 @@ public class Usuario {
     public boolean isGeradorLeadsOuClienteLojaFuturo() {
         return getCargoCodigo() == GERADOR_LEADS
             || getCargoCodigo() == CLIENTE_LOJA_FUTURO;
+    }
+
+    public Integer numeroTentativasLoginSenhaIncorreta() {
+        return this.historicosSenhaIncorretas.size();
+    }
+
+    public void adicionar(UsuarioSenhaIncorretaHistorico usuarioSenhaIncorretaHistorico) {
+        if (this.historicosSenhaIncorretas == null) {
+            this.historicosSenhaIncorretas = new ArrayList<>();
+        }
+        this.historicosSenhaIncorretas.add(usuarioSenhaIncorretaHistorico);
     }
 }

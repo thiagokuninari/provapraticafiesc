@@ -47,8 +47,13 @@ public class UsuarioMqRequest {
     private Integer agenteAutorizadoId;
     private ETipoFeeder agenteAutorizadoFeeder;
     private boolean isCadastroSocioPrincipal;
+    private boolean equipeTecnica;
 
     public boolean isNovoCadastroSocioPrincipal() {
         return Objects.isNull(id) && isCadastroSocioPrincipal;
+    }
+
+    public boolean isNovoCadastroSocioSecundario() {
+        return this.id == null && this.cargo == CodigoCargo.AGENTE_AUTORIZADO_SOCIO_SECUNDARIO;
     }
 }

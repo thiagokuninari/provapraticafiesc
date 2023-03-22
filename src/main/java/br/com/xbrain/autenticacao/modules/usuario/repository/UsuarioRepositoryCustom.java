@@ -91,9 +91,9 @@ public interface UsuarioRepositoryCustom {
                                                     Set<ECanal> canais);
 
     List<UsuarioResponse> getUsuariosPorNovaAreaAtuacao(AreaAtuacao areaAtuacao,
-                                                    List<Integer> areasAtuacaoIds,
-                                                    List<CodigoCargo> cargos,
-                                                    Set<ECanal> canais);
+                                                        List<Integer> areasAtuacaoIds,
+                                                        List<CodigoCargo> cargos,
+                                                        Set<ECanal> canais);
 
     List<SubCluster> getSubclustersUsuario(Integer usuarioId);
 
@@ -177,4 +177,14 @@ public interface UsuarioRepositoryCustom {
     List<Usuario> findBySituacaoAndIdsIn(ESituacao situacao, Predicate predicate);
 
     List<Integer> findAllIdsBySituacaoAndIdsIn(ESituacao situacao, Predicate predicate);
+
+    List<Usuario> findByEmailsAndSituacao(Predicate predicate, ESituacao situacao);
+
+    List<Usuario> findByEmails(Predicate predicate);
+
+    List<Usuario> findByCpfsAndSituacao(Predicate predicate, ESituacao situacao);
+
+    List<Usuario> findByCpfs(Predicate predicate);
+
+    Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email);
 }

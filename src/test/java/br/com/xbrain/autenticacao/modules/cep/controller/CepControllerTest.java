@@ -18,10 +18,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static helpers.TestsHelper.getAccessToken;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,15 +48,42 @@ public class CepControllerTest {
 
     @Before
     public void setUp() {
-        when(consultaCepClient.consultarCep("86080260"))
-            .thenReturn(umaConsultaCep());
+        doReturn(umaConsultaCep(
+            "86080260",
+            "Rua Elza Grandi Jorge",
+            "Conjunto Professora Hilda Mandarino",
+            "LONDRINA",
+            "PR"
+        ))
+            .when(consultaCepClient)
+            .consultarCep("86080260");
+
+        doReturn(umaConsultaCep(
+            "71930000",
+            "Avenida Parque Águas Clarase",
+            "Sul (Águas Claras)",
+            "BRASILIA",
+            "DF"
+        ))
+            .when(consultaCepClient)
+            .consultarCep("71930000");
+
+        doReturn(umaConsultaCep(
+            "16400123",
+            "Praça Napoleão Laureano",
+            "Vila Ramalho",
+            "LINS",
+            "SP"
+        ))
+            .when(consultaCepClient)
+            .consultarCep("16400123");
     }
 
     @Test
     public void buscarCidadeEstado_deveRetornarCidadeEstadoComStatus200_quandoExistir() throws Exception {
         mvc.perform(get("/api/cep/86080-260")
-            .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
-            .accept(MediaType.APPLICATION_JSON))
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.cidadeId", is(5578)))
             .andExpect(jsonPath("$.cidade", is("LONDRINA")))
@@ -61,10 +92,40 @@ public class CepControllerTest {
 
     }
 
-    private ConsultaCepResponse umaConsultaCep() {
-        ConsultaCepResponse consulta = new ConsultaCepResponse();
-        consulta.setCidade("LONDRINA");
-        consulta.setUf("PR");
-        return consulta;
+    @Test
+    public void buscarCidadesPorCeps_deveRetornarCidadeEstadoComStatus200_quandoExistir() throws Exception {
+        mvc.perform(post("/api/cep")
+                .header("Authorization", getAccessToken(mvc, Usuarios.OPERACAO_GERENTE_COMERCIAL))
+                .content(convertObjectToJsonBytes(List.of("86080260", "71930000", "16400123")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].cep", is("86080260")))
+            .andExpect(jsonPath("$[0].nomeCompleto", is("Rua Elza Grandi Jorge")))
+            .andExpect(jsonPath("$[0].bairro", is("Conjunto Professora Hilda Mandarino")))
+            .andExpect(jsonPath("$[0].cidade", is("LONDRINA")))
+            .andExpect(jsonPath("$[0].uf", is("PR")))
+            .andExpect(jsonPath("$[1].cep", is("71930000")))
+            .andExpect(jsonPath("$[1].nomeCompleto", is("Avenida Parque Águas Clarase")))
+            .andExpect(jsonPath("$[1].bairro", is("Sul (Águas Claras)")))
+            .andExpect(jsonPath("$[1].cidade", is("BRASILIA")))
+            .andExpect(jsonPath("$[1].uf", is("DF")))
+            .andExpect(jsonPath("$[2].cep", is("16400123")))
+            .andExpect(jsonPath("$[2].nomeCompleto", is("Praça Napoleão Laureano")))
+            .andExpect(jsonPath("$[2].bairro", is("Vila Ramalho")))
+            .andExpect(jsonPath("$[2].cidade", is("LINS")))
+            .andExpect(jsonPath("$[2].uf", is("SP")));
+
+    }
+
+    private ConsultaCepResponse umaConsultaCep(String cep, String nomeCompleto, String bairro, String cidade, String uf) {
+        return ConsultaCepResponse
+            .builder()
+            .cep(cep)
+            .nomeCompleto(nomeCompleto)
+            .bairro(bairro)
+            .cidade(cidade)
+            .uf(uf)
+            .build();
     }
 }

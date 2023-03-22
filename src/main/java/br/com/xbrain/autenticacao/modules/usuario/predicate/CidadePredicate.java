@@ -19,8 +19,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class CidadePredicate {
 
-    private QCidade cidade = QCidade.cidade;
-    private BooleanBuilder builder;
+    private final QCidade cidade = QCidade.cidade;
+    private final BooleanBuilder builder;
 
     public CidadePredicate() {
         this.builder = new BooleanBuilder();
@@ -58,6 +58,19 @@ public class CidadePredicate {
         if (!usuarioAutenticado.hasPermissao(AUT_VISUALIZAR_GERAL)) {
             dasCidadesQueOUsuarioEstaVinculado(usuarioAutenticado.getId());
         }
+        return this;
+    }
+
+    public CidadePredicate comCodigosIbge(List<String> codigosIbge) {
+        if (!codigosIbge.isEmpty()) {
+            builder.and(ExpressionUtils.anyOf(
+                Lists.partition(codigosIbge, QTD_MAX_IN_NO_ORACLE)
+                    .parallelStream()
+                    .map(cidade.codigoIbge::in)
+                    .collect(Collectors.toList()))
+            );
+        }
+
         return this;
     }
 

@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.permissao.repository;
 
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.Departamento;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,4 +19,6 @@ public interface CargoDepartamentoFuncionalidadeRepositoryCustom {
 
     List<Funcionalidade> findFuncionalidadesDoCargoDepartamentoComCanal(Integer cargoId,
                                                                         Integer departamentoId);
+
+    List<Departamento> findAllDepartamentos(Predicate predicate);
 }

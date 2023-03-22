@@ -257,4 +257,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
             .innerJoin(cidade.regional, regional)
             .fetch();
     }
+
+    @Override
+    public List<Cidade> findCidadesByCodigosIbge(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .where(cidade.fkCidade.isNull()
+                .and(predicate)
+            )
+            .fetch();
+    }
 }

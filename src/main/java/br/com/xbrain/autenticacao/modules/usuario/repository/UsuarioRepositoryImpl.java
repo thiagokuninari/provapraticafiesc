@@ -61,6 +61,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QNivel.nivel;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuario.usuario;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioCidade.usuarioCidade;
 import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioHierarquia.usuarioHierarquia;
+import static br.com.xbrain.autenticacao.modules.usuario.model.QUsuarioSenhaIncorretaHistorico.usuarioSenhaIncorretaHistorico;
 import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
 import static com.querydsl.jpa.JPAExpressions.select;
 
@@ -1297,4 +1298,48 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 .and(predicate))
             .fetch();
     }
+
+    @Override
+    public List<Usuario> findByEmailsAndSituacao(Predicate predicate, ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(usuario.situacao.eq(situacao)
+                .and(predicate))
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByEmails(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(predicate)
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByCpfsAndSituacao(Predicate predicate, ESituacao situacao) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(usuario.situacao.eq(situacao)
+                .and(predicate))
+            .fetch();
+    }
+
+    @Override
+    public List<Usuario> findByCpfs(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .where(predicate)
+            .fetch();
+    }
+
+    @Override
+    public Optional<Usuario> findUsuarioHistoricoTentativaLoginSenhaIncorretaHoje(String email) {
+        return Optional.ofNullable(new JPAQueryFactory(entityManager)
+            .selectFrom(usuario)
+            .leftJoin(usuario.historicosSenhaIncorretas, usuarioSenhaIncorretaHistorico).fetchJoin()
+            .where(usuario.email.eq(email))
+            .fetchOne());
+    }
+
 }
