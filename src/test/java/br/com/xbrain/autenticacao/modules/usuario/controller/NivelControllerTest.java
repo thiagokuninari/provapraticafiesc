@@ -70,7 +70,6 @@ public class NivelControllerTest {
                         Nivel.builder().id(1).nome("Nivel").build()));
 
         mvc.perform(get("/api/niveis/permitidos/CADASTRO")
-                //.header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -86,7 +85,6 @@ public class NivelControllerTest {
             NivelResponse.builder().id(8).nome("RECEPTIVO").codigo(CodigoNivel.RECEPTIVO.name()).build()));
 
         mvc.perform(get("/api/niveis/organizacao")
-                //.header("Authorization", getAccessToken(mvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
