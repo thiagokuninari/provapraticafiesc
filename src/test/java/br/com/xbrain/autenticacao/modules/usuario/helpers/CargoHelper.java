@@ -180,4 +180,13 @@ public class CargoHelper {
             .nivel(umNivelOperacao())
             .build();
     }
+
+    public static Cargo umCargoAnalistaOperacao() {
+        return Cargo.builder()
+            .id(1)
+            .nome("Analista")
+            .nivel(umNivelOperacao())
+            .superiores(Set.of(umCargoCoordernador()))
+            .build();
+    }
 }

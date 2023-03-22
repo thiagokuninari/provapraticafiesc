@@ -2,39 +2,40 @@ package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioFerias;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioFeriasRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioFerias;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioHelpDesk;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql"})
-public class UsuarioFeriasServiceIT {
+@RunWith(MockitoJUnitRunner.class)
+public class UsuarioFeriasServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UsuarioFeriasService service;
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
+    @Mock
     private UsuarioFeriasRepository repository;
+    @Captor
+    private ArgumentCaptor<UsuarioFerias> argumentCaptorUsuarioFerias;
 
     @Test
     public void save_deveGerarORegistroDeFerias_quandoOMotivoDeInativacaoForFerias() {
+        when(repository.save(any(UsuarioFerias.class))).thenReturn(umUsuarioFerias());
+
         service.save(
-                usuarioService.findByIdCompleto(101),
+                umUsuarioHelpDesk(),
                 UsuarioInativacaoDto
                         .builder()
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
@@ -42,21 +43,24 @@ public class UsuarioFeriasServiceIT {
                         .dataFim(LocalDate.of(2019, 2, 1))
                         .build());
 
-        assertThat(repository.findAll())
-                .extracting("inicio", "fim")
-                .contains(
-                        tuple(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)));
+        verify(repository, times(1)).save(argumentCaptorUsuarioFerias.capture());
+
+        assertThat(argumentCaptorUsuarioFerias.getValue())
+            .extracting("inicio", "fim")
+            .contains(
+                LocalDate.of(2019, 1, 1),
+                LocalDate.of(2019, 2, 1));
     }
 
     @Test
     public void save_deveNaoGerarORegistroDeFerias_quandoOMotivoDeInativacaoNaoForFerias() {
         service.save(
-                usuarioService.findByIdCompleto(101),
+                umUsuarioHelpDesk(),
                 UsuarioInativacaoDto
                         .builder()
                         .codigoMotivoInativacao(CodigoMotivoInativacao.FERIAS)
                         .build());
 
-        assertThat(repository.findAll()).isEmpty();
+        verify(repository, never()).save(any(UsuarioFerias.class));
     }
 }

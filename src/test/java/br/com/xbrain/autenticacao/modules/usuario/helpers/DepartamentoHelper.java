@@ -83,4 +83,13 @@ public class DepartamentoHelper {
             .situacao(ESituacao.A)
             .build();
     }
+
+    public static Departamento umDepartamentoAdministrativo() {
+        return Departamento.builder()
+            .id(1)
+            .nome("Administrativo")
+            .nivel(umNivelOperacao())
+            .situacao(ESituacao.A)
+            .build();
+    }
 }

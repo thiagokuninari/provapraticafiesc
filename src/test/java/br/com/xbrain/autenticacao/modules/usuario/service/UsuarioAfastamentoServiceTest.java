@@ -1,40 +1,40 @@
 package br.com.xbrain.autenticacao.modules.usuario.service;
 
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioInativacaoDto;
+import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioAfastamento;
 import br.com.xbrain.autenticacao.modules.usuario.repository.UsuarioAfastamentoRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoMotivoInativacao.AFASTAMENTO;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioAfastamento;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.umUsuarioHelpDesk;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.tuple;
+import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
-@Sql(scripts = {"classpath:/tests_database_oracle.sql"})
-public class UsuarioAfastamentoServiceIT {
+@RunWith(MockitoJUnitRunner.class)
+public class UsuarioAfastamentoServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UsuarioAfastamentoService service;
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
+    @Mock
     private UsuarioAfastamentoRepository repository;
+    @Captor
+    private ArgumentCaptor<UsuarioAfastamento> argumentCaptorUsuarioAfastamento;
 
     @Test
     public void save_deveGerarORegistroDeAfastamemto_quandoOMotivoDeInativacaoForAfastamento() {
+        when(repository.save(any(UsuarioAfastamento.class))).thenReturn(umUsuarioAfastamento());
+
         service.save(
-            usuarioService.findByIdCompleto(101),
+            umUsuarioHelpDesk(),
             UsuarioInativacaoDto
                 .builder()
                 .codigoMotivoInativacao(AFASTAMENTO)
@@ -42,22 +42,24 @@ public class UsuarioAfastamentoServiceIT {
                 .dataFim(LocalDate.of(2019, 2, 1))
                 .build());
 
-        assertThat(repository.findAll())
+        verify(repository, times(1)).save(argumentCaptorUsuarioAfastamento.capture());
+
+        assertThat(argumentCaptorUsuarioAfastamento.getValue())
             .extracting("inicio", "fim")
             .contains(
-                tuple(LocalDate.of(2019, 1, 1),
-                    LocalDate.of(2019, 2, 1)));
+                    LocalDate.of(2019, 1, 1),
+                    LocalDate.of(2019, 2, 1));
     }
 
     @Test
     public void save_deveNaoGerarORegistroDeAfastamento_quandoNaoConterDataInicialEDataFim() {
         service.save(
-            usuarioService.findByIdCompleto(101),
+            umUsuarioHelpDesk(),
             UsuarioInativacaoDto
                 .builder()
                 .codigoMotivoInativacao(AFASTAMENTO)
                 .build());
 
-        assertThat(repository.findAll()).isEmpty();
+        verify(repository, never()).save(any(UsuarioAfastamento.class));
     }
 }

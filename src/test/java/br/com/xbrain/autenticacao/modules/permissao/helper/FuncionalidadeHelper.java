@@ -835,6 +835,106 @@ public class FuncionalidadeHelper {
             .build();
     }
 
+    public static Funcionalidade funcionalidadeVisualizarTodosDadosDosAas() {
+        return Funcionalidade.builder()
+            .id(244)
+            .nome("Visualizar todos os dados dos Agentes Autorizados")
+            .role("POL_244")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeGerenciarEquipeVenda() {
+        return Funcionalidade.builder()
+            .id(5)
+            .nome("Gerenciar Equipe Venda")
+            .role("POL_GERENCIAR_EQUIPE_VENDA")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeGerenciarEquipeTecnica() {
+        return Funcionalidade.builder()
+            .id(6)
+            .nome("Gerenciar Equipe Técnica")
+            .role("POL_GERENCIAR_EQUIPE_TECNICA")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeVisualizarNoticias() {
+        return Funcionalidade.builder()
+            .id(11)
+            .nome("Visualizar Notícias")
+            .role("POL_VISUALIZAR_NOTICIAS")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeAaAprovacaoOperacao() {
+        return Funcionalidade.builder()
+            .id(12)
+            .nome("Agente Autorizado Aprovação Operação")
+            .role("POL_AGENTE_AUTORIZADO_APROVACAO_OPERACAO")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeAaAprovacaoMso() {
+        return Funcionalidade.builder()
+            .id(13)
+            .nome("Agente Autorizado Aprovação MSO")
+            .role("POL_AGENTE_AUTORIZADO_APROVACAO_MSO")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeGerenciarAas() {
+        return Funcionalidade.builder()
+            .id(16)
+            .nome("Gerenciar Agentes Autorizados")
+            .role("POL_GERENCIAR_AA")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeDescredenciamentoDeAa() {
+        return Funcionalidade.builder()
+            .id(17)
+            .nome("Descredenciamento de Agente Autorizado")
+            .role("POL_DESCREDENCIAR_AA")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeVisualizarComissionamento() {
+        return Funcionalidade.builder()
+            .id(18)
+            .nome("Visualizar Comissionamento")
+            .role("POL_VISUALIZAR_COMISSAO")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
+    public static Funcionalidade funcionalidadeCaptacaoAaExtracao() {
+        return Funcionalidade.builder()
+            .id(28)
+            .nome("Captação de AA Extração")
+            .role("POL_CAPTACAO_AA_EXTRACAO")
+            .aplicacao(umaAplicacaoPol())
+            .especial(false)
+            .build();
+    }
+
     private static Aplicacao umaAplicacaoAutenticacao() {
         return new Aplicacao(1, "AUTENTICAÇÃO", AUT);
     }

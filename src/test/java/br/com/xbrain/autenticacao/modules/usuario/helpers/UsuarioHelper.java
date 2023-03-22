@@ -1,16 +1,23 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
+import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Empresa;
+import br.com.xbrain.autenticacao.modules.comum.model.Marca;
+import br.com.xbrain.autenticacao.modules.comum.model.Organizacao;
 import br.com.xbrain.autenticacao.modules.comum.model.UnidadeNegocio;
 import br.com.xbrain.autenticacao.modules.usuario.dto.UsuarioDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.*;
 import com.google.common.collect.Sets;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +27,7 @@ import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.EMPR
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeederMso.RESIDENCIAL;
 import static br.com.xbrain.autenticacao.modules.comum.helper.OrganizacaoHelper.umaOrganizacaoCallink;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.EXECUTIVO_HUNTER;
+import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel.OPERACAO;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
@@ -367,5 +375,128 @@ public class UsuarioHelper {
             .dataCadastro(LocalDateTime.now())
             .situacao(ESituacao.A)
             .build();
+    }
+
+    public static Usuario umUsuarioHelpDesk() {
+        return Usuario.builder()
+            .id(101)
+            .nome("HELPDESK")
+            .email("HELPDESK@XBRAIN.COM.BR")
+            .telefone("99999")
+            .cpf("65710871036")
+            .unidadesNegocios(List.of(new UnidadeNegocio(1)))
+            .empresas(List.of(Empresa.builder()
+                .id(1)
+                .nome("Claro Móvel")
+                .marca(new Marca(1))
+                .codigo(CodigoEmpresa.CLARO_MOVEL)
+                .unidadeNegocio(new UnidadeNegocio(1))
+                .build()))
+            .usuariosHierarquia(
+                Set.of(
+                    UsuarioHierarquia.criar(new Usuario(101), 104, 100),
+                    UsuarioHierarquia.criar(new Usuario(101), 369, 100),
+                    UsuarioHierarquia.criar(new Usuario(101), 370, 100)
+                    ))
+            .departamento(new Departamento(51))
+            .organizacao(umaOrganizacaoCallink())
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO, ECanal.D2D_PROPRIO))
+            .organizacao(new Organizacao(2))
+            .cidades(Set.of(UsuarioCidade.criar(new Usuario(100), 5578, 100)))
+            .cargo(umCargoAaSupervisorXbrain())
+            .build();
+    }
+
+    public static UsuarioAfastamento umUsuarioAfastamento() {
+        return UsuarioAfastamento.builder()
+            .id(1)
+            .usuario(umUsuarioHelpDesk())
+            .dataCadastro(LocalDateTime.now())
+            .inicio(LocalDate.of(2019, 1, 1))
+            .fim(LocalDate.of(2019, 2, 1))
+            .build();
+    }
+
+    public static UsuarioFerias umUsuarioFerias() {
+        return UsuarioFerias.builder()
+            .id(1)
+            .usuario(umUsuarioHelpDesk())
+            .dataCadastro(LocalDateTime.now())
+            .inicio(LocalDate.of(2019, 1, 1))
+            .fim(LocalDate.of(2019, 2, 1))
+            .build();
+    }
+
+    public static UsuarioAutenticado umUsuarioAutenticadoAdmin() {
+        return UsuarioAutenticado.builder()
+            .usuario(umUsuarioAdmin())
+            .id(100)
+            .nome("ADMIN")
+            .email("ADMIN@XBRAIN.COM.BR")
+            .cargoId(50)
+            .cargo("Administrador")
+            .departamentoId(50)
+            .departamento("Administrador")
+            .nivel("XBRAIN")
+            .nivelId(4)
+            .cpf("38957979875")
+            .situacao(ESituacao.A)
+            .empresasNome(List.of("Xbrain"))
+            .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIO.getRole()),
+                new SimpleGrantedAuthority(AUT_VISUALIZAR_USUARIOS_AA.getRole())))
+            .nivelCodigo("XBRAIN")
+            .departamentoCodigo(CodigoDepartamento.ADMINISTRADOR)
+            .cargoCodigo(CodigoCargo.ADMINISTRADOR)
+            .organizacaoId(1)
+            .organizacaoCodigo("BCC")
+            .canais(Set.of(ECanal.AGENTE_AUTORIZADO, ECanal.ATIVO_PROPRIO, ECanal.D2D_PROPRIO))
+            .build();
+    }
+
+    private static Usuario umUsuarioAdmin() {
+        return Usuario.builder()
+            .id(100)
+            .nome("ADMIN")
+            .email("ADMIN@XBRAIN.COM.BR")
+            .cpf("38957979875")
+            .unidadesNegocios(List.of(new UnidadeNegocio(3)))
+            .cidades(Set.of(UsuarioCidade.criar(new Usuario(100), 5578, 100)))
+            .configuracao(umaConfiguracao())
+            .empresas(List.of(new Empresa(1, "XBRAIN", CodigoEmpresa.XBRAIN)))
+            .cargo(umCargoAdministrador())
+            .departamento(umDepartamentoAdministrador())
+            .dataCadastro(LocalDateTime.now())
+            .senha("$2a$10$5Km7U7CyDD5VIrkJPXPK8.px0hJE9n.NgGx2tGRa/Gu3e3xEumipm")
+            .alterarSenha(Eboolean.F)
+            .situacao(ESituacao.A)
+            .build();
+    }
+
+    private static Configuracao umaConfiguracao() {
+        return new Configuracao(new Usuario(100), new Usuario(100), LocalDateTime.now(), 7006);
+    }
+
+    private static Usuario umUsuarioAdminSimples(Integer id, String nome, String email) {
+        return Usuario.builder()
+            .id(id)
+            .nome(nome)
+            .email(email)
+            .cargo(new Cargo(50))
+            .departamento(new Departamento(50))
+            .build();
+    }
+
+    public static List<Usuario> umaListaDeUsuariosAdminSimples() {
+        return List.of(
+            umUsuarioAdminSimples(101, "USUARIO ADMIN 1", "ADMIN1@XBRAIN.COM.BR"),
+            umUsuarioAdminSimples(102, "USUARIO ADMIN 2", "ADMIN2@XBRAIN.COM.BR"),
+            umUsuarioAdminSimples(103, "USUARIO ADMIN 3", "ADMIN3@XBRAIN.COM.BR"),
+            umUsuarioAdminSimples(104, "USUARIO ADMIN 4", "ADMIN4@XBRAIN.COM.BR")
+        );
     }
 }

@@ -4,11 +4,12 @@ import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFunci
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoAa;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.umDepartamentoComercial;
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.DepartamentoHelper.*;
 
 public class CargoDepartamentoFuncionalidadeHelper {
 
@@ -38,6 +39,26 @@ public class CargoDepartamentoFuncionalidadeHelper {
             .id(cargoDeptoFuncionalidadeId)
             .cargo(umCargoVendedorOperacao())
             .departamento(umDepartamentoComercial())
+            .funcionalidade(funcionalidade)
+            .build();
+    }
+
+    public static CargoDepartamentoFuncionalidade umCargoDeptoFuncionalidadeDeAnalista(Integer cargoDeptoFuncionalidadeId,
+                                                                                       Funcionalidade funcionalidade) {
+        return CargoDepartamentoFuncionalidade.builder()
+            .id(cargoDeptoFuncionalidadeId)
+            .cargo(umCargoAnalistaOperacao())
+            .departamento(umDepartamentoAdministrativo())
+            .funcionalidade(funcionalidade)
+            .build();
+    }
+
+    public static CargoDepartamentoFuncionalidade umCargoDeptoFuncionalidadeDeAdministrador(Integer cargoDeptoFuncionalidadeId,
+                                                                                            Funcionalidade funcionalidade) {
+        return CargoDepartamentoFuncionalidade.builder()
+            .id(cargoDeptoFuncionalidadeId)
+            .cargo(umCargoAdministrador())
+            .departamento(umDepartamentoAdministrador())
             .funcionalidade(funcionalidade)
             .build();
     }
@@ -149,6 +170,40 @@ public class CargoDepartamentoFuncionalidadeHelper {
             umCargoDeptoFuncionalidadeDeVendedor(1351, funcionalidadeGerenciarAgendaVisita()),
             umCargoDeptoFuncionalidadeDeVendedor(1350, funcionalidadeGerenciarCondominio()),
             umCargoDeptoFuncionalidadeDeVendedor(1351, funcionalidadeVisualizarTratativas())
+        );
+    }
+
+    public static List<CargoDepartamentoFuncionalidade> umaListaDeCargoDepartamentoFuncionalidadeDeAnalista() {
+        return List.of(
+            umCargoDeptoFuncionalidadeDeAnalista(1001, funcionalidadeVisualizarTodosDadosDosAas()),
+            umCargoDeptoFuncionalidadeDeAnalista(3019, funcionalidadeDashboardNumerosTabulacao()),
+            umCargoDeptoFuncionalidadeDeAnalista(970, funcionalidadeDashboardRelatorioTabulacao()),
+            umCargoDeptoFuncionalidadeDeAnalista(971, funcionalidadeRelatorioResumoMailing())
+        );
+    }
+
+    public static List<CargoDepartamentoFuncionalidade> umaListaComTodosCargoDepartamentoFuncionalidade() {
+        return Stream.of(
+                umaListaDeCargoDepartamentoFuncionalidadeDeSocio(),
+                umaListaDeCargoDepartamentoFuncionalidadeDeConsultor(),
+                umaListaDeCargoDepartamentoFuncionalidadeDeVendedor(),
+                umaListaDeCargoDepartamentoFuncionalidadeDeAnalista()
+            ).flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    public static List<CargoDepartamentoFuncionalidade> umaListaDeCargoDepartamentoFuncionalidadeDeAdministrador() {
+        return List.of(
+            umCargoDeptoFuncionalidadeDeAdministrador(1, funcionalidadeVisualizarGeral()),
+            umCargoDeptoFuncionalidadeDeAdministrador(2, funcionalidadeGerenciarEquipeVenda()),
+            umCargoDeptoFuncionalidadeDeAdministrador(3, funcionalidadeGerenciarEquipeTecnica()),
+            umCargoDeptoFuncionalidadeDeAdministrador(4, funcionalidadeVisualizarNoticias()),
+            umCargoDeptoFuncionalidadeDeAdministrador(5, funcionalidadeAaAprovacaoOperacao()),
+            umCargoDeptoFuncionalidadeDeAdministrador(6, funcionalidadeAaAprovacaoMso()),
+            umCargoDeptoFuncionalidadeDeAdministrador(7, funcionalidadeGerenciarAas()),
+            umCargoDeptoFuncionalidadeDeAdministrador(8, funcionalidadeDescredenciamentoDeAa()),
+            umCargoDeptoFuncionalidadeDeAdministrador(9, funcionalidadeVisualizarComissionamento()),
+            umCargoDeptoFuncionalidadeDeAdministrador(10, funcionalidadeCaptacaoAaExtracao())
         );
     }
 }
