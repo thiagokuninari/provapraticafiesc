@@ -458,7 +458,7 @@ public class UsuarioHelper {
             .build();
     }
 
-    private static Usuario umUsuarioAdmin() {
+    public static Usuario umUsuarioAdmin() {
         return Usuario.builder()
             .id(100)
             .nome("ADMIN")

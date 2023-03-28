@@ -45,7 +45,7 @@ import static helpers.TestBuilders.*;
 import static helpers.TestsHelper.*;
 import static helpers.Usuarios.*;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
