@@ -21,8 +21,6 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     boolean existsByRazaoSocialIgnoreCase(String razaoSocial);
 
-    boolean existsByRazaoSocialAndCnpjAndIdNot(String razaoSocial, String cnpj, Integer id);
-
     boolean existsByCnpjAndIdNot(String cnpj, Integer id);
 
     boolean existsByRazaoSocialAndIdNot(String razaoSocial, Integer id);
