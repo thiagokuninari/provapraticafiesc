@@ -126,18 +126,19 @@ public class  OrganizacaoEmpresaService {
 
     @Transactional
     public OrganizacaoEmpresa update(Integer id, OrganizacaoEmpresaRequest request) throws ValidacaoException {
-        var nivel = validarNivel(request.getNivelId());
         var organizacaoEmpresaToUpdate = findById(id);
+        var nivel = validarNivel(request.getNivelId());
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
+            validarCnpj(request);
+            validarCnpjExistenteParaUpdate(request, id);
+            validarRazaoSocialParaUpdate(request, id);
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
-            validarRazaoSocial(request);
-            validarCnpjExistente(request);
             organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
-
         } else {
-            validarRazaoSocial(request);
+            validarRazaoSocialParaUpdate(request, id);
             organizacaoEmpresaToUpdate.of(request, null, nivel);
         }
+
         historicoService.salvarHistorico(organizacaoEmpresaToUpdate,
             EHistoricoAcao.EDICAO, autenticacaoService.getUsuarioAutenticado());
         var organizacaoEmpresa = organizacaoEmpresaRepository.save(organizacaoEmpresaToUpdate);
@@ -152,6 +153,12 @@ public class  OrganizacaoEmpresaService {
         }
     }
 
+    private void validarCnpjExistenteParaUpdate(OrganizacaoEmpresaRequest request, Integer id) {
+        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(request.getCnpjSemMascara(), id)) {
+            throw CNPJ_EXISTENTE;
+        }
+    }
+
     private void validarCnpj(OrganizacaoEmpresaRequest request) {
         if (request.getCnpj() == null) {
             throw CNPJ_OBRIGATORIO;
@@ -160,6 +167,12 @@ public class  OrganizacaoEmpresaService {
 
     private void validarRazaoSocial(OrganizacaoEmpresaRequest request) {
         if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request.getNome())) {
+            throw ORGANIZACAO_EXISTENTE;
+        }
+    }
+
+    private void validarRazaoSocialParaUpdate(OrganizacaoEmpresaRequest request, Integer id) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(request.getNome(), id)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
