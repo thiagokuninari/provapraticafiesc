@@ -147,32 +147,32 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresa;
     }
 
-    private void validarCnpjExistente(String request) {
-        if (organizacaoEmpresaRepository.existsByCnpj(request)) {
+    private void validarCnpjExistente(String cnpj) {
+        if (organizacaoEmpresaRepository.existsByCnpj(cnpj)) {
             throw CNPJ_EXISTENTE;
         }
     }
 
-    private void validarCnpjExistenteParaUpdate(String request, Integer id) {
-        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(request, id)) {
+    private void validarCnpjExistenteParaUpdate(String cnpj, Integer id) {
+        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(cnpj, id)) {
             throw CNPJ_EXISTENTE;
         }
     }
 
-    private void validarCnpj(String request) {
-        if (request == null) {
+    private void validarCnpj(String cnpj) {
+        if (cnpj == null) {
             throw CNPJ_OBRIGATORIO;
         }
     }
 
-    private void validarRazaoSocial(String request) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request)) {
+    private void validarRazaoSocial(String razaoSocial) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(razaoSocial)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
 
-    private void validarRazaoSocialParaUpdate(String request, Integer id) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(request, id)) {
+    private void validarRazaoSocialParaUpdate(String razaoSocial, Integer id) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(razaoSocial, id)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
