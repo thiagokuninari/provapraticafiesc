@@ -510,6 +510,7 @@ public class OrganizacaoEmpresaServiceTest {
         return OrganizacaoEmpresaRequest.builder()
             .nome("Organizacao 1")
             .nivelId(1)
+            .cnpj(null)
             .modalidadesEmpresaIds(List.of(1,2))
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .build();

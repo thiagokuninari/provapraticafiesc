@@ -78,16 +78,16 @@ public class  OrganizacaoEmpresaService {
         var nivel = validarNivel(request.getNivelId());
         var organizacaoEmpresa = new OrganizacaoEmpresa();
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
-            validarCnpj(request);
-            validarCnpjExistente(request);
-            validarRazaoSocial(request);
+            validarCnpj(request.getCnpj());
+            validarCnpjExistente(request.getCnpjSemMascara());
+            validarRazaoSocial(request.getNome());
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
             organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, modalidades));
 
         } else {
-            validarRazaoSocial(request);
+            validarRazaoSocial(request.getNome());
 
             organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, null));
@@ -129,13 +129,13 @@ public class  OrganizacaoEmpresaService {
         var organizacaoEmpresaToUpdate = findById(id);
         var nivel = validarNivel(request.getNivelId());
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
-            validarCnpj(request);
-            validarCnpjExistenteParaUpdate(request, id);
-            validarRazaoSocialParaUpdate(request, id);
+            validarCnpj(request.getCnpj());
+            validarCnpjExistenteParaUpdate(request.getCnpjSemMascara(), id);
+            validarRazaoSocialParaUpdate(request.getNome(), id);
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
             organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
         } else {
-            validarRazaoSocialParaUpdate(request, id);
+            validarRazaoSocialParaUpdate(request.getNome(), id);
             organizacaoEmpresaToUpdate.of(request, null, nivel);
         }
 
@@ -147,32 +147,32 @@ public class  OrganizacaoEmpresaService {
         return organizacaoEmpresa;
     }
 
-    private void validarCnpjExistente(OrganizacaoEmpresaRequest request) {
-        if (organizacaoEmpresaRepository.existsByCnpj(request.getCnpjSemMascara())) {
+    private void validarCnpjExistente(String request) {
+        if (organizacaoEmpresaRepository.existsByCnpj(request)) {
             throw CNPJ_EXISTENTE;
         }
     }
 
-    private void validarCnpjExistenteParaUpdate(OrganizacaoEmpresaRequest request, Integer id) {
-        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(request.getCnpjSemMascara(), id)) {
+    private void validarCnpjExistenteParaUpdate(String request, Integer id) {
+        if (organizacaoEmpresaRepository.existsByCnpjAndIdNot(request, id)) {
             throw CNPJ_EXISTENTE;
         }
     }
 
-    private void validarCnpj(OrganizacaoEmpresaRequest request) {
-        if (request.getCnpj() == null) {
+    private void validarCnpj(String request) {
+        if (request == null) {
             throw CNPJ_OBRIGATORIO;
         }
     }
 
-    private void validarRazaoSocial(OrganizacaoEmpresaRequest request) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request.getNome())) {
+    private void validarRazaoSocial(String request) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(request)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
 
-    private void validarRazaoSocialParaUpdate(OrganizacaoEmpresaRequest request, Integer id) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(request.getNome(), id)) {
+    private void validarRazaoSocialParaUpdate(String request, Integer id) {
+        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(request, id)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
