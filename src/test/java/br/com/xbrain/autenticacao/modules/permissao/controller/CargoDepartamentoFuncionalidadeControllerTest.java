@@ -24,8 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.novasPermissoes;
-import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.umaListaDeCargoDepartamentoFuncionalidadeDeAdministrador;
+import static br.com.xbrain.autenticacao.modules.permissao.helper.CargoDepartamentoFuncionalidadeHelper.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -110,7 +109,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
     public void save_deveRetornarUnauthorized_seUsuarioNaoAutenticado() {
         mvc.perform(MockMvcRequestBuilders.post(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
             .andExpect(status().isUnauthorized());
     }
 
@@ -120,7 +119,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
     public void save_deveRetornarForbidden_seUsuarioNaoPossuirPermissaoParaGerenciaDePermissao() {
         mvc.perform(MockMvcRequestBuilders.post(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
             .andExpect(status().isForbidden());
     }
 
@@ -130,7 +129,7 @@ public class CargoDepartamentoFuncionalidadeControllerTest {
     public void save_deveRetornarOk_seUsuarioPossuirPermissaoParaGerenciaDePermissao() {
         mvc.perform(MockMvcRequestBuilders.post(URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestsHelper.convertObjectToJsonBytes(novasPermissoes())))
+                .content(TestsHelper.convertObjectToJsonBytes(novasFuncionalidades())))
             .andExpect(status().isOk());
     }
 

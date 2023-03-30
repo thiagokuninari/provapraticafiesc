@@ -173,7 +173,7 @@ public class CargoDepartamentoFuncionalidadeHelper {
         );
     }
 
-    public static List<CargoDepartamentoFuncionalidade> umaListaDePermissoesRepetidas() {
+    public static List<CargoDepartamentoFuncionalidade> umaListaDeFuncionalidadesRepetidas() {
         return List.of(
             umCargoDeptoFuncionalidadeDeAnalista(20, funcionalidadeAaAprovacaoOperacao()),
             umCargoDeptoFuncionalidadeDeAnalista(30, funcionalidadeAaAprovacaoMso()),
@@ -205,11 +205,11 @@ public class CargoDepartamentoFuncionalidadeHelper {
         return request;
     }
 
-    public static CargoDepartamentoFuncionalidadeRequest novasPermissoes() {
+    public static CargoDepartamentoFuncionalidadeRequest novasFuncionalidades() {
         return permissoes(Arrays.asList(1, 2, 3, 4));
     }
 
-    public static CargoDepartamentoFuncionalidadeRequest permissoesRepetidas() {
+    public static CargoDepartamentoFuncionalidadeRequest funcionalidadesRepetidas() {
         return permissoes(Arrays.asList(12, 13, 16, 17));
     }
 }

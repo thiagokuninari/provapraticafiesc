@@ -133,7 +133,7 @@ public class CargoDepartamentoFuncionalidadeServiceTest {
     public void save_deveSalvarIdsDeCargoDepartamentoFuncionalidade_seSolicitado() {
         when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoAdmin());
 
-        service.save(novasPermissoes());
+        service.save(novasFuncionalidades());
 
         verify(repository, times(1)).save(argumentCaptorListaCargoDeptoFuncionalidade.capture());
 
@@ -154,9 +154,9 @@ public class CargoDepartamentoFuncionalidadeServiceTest {
         var predicate = getPredicate();
 
         when(repository.findFuncionalidadesPorCargoEDepartamento(predicate.build()))
-            .thenReturn(umaListaDePermissoesRepetidas());
+            .thenReturn(umaListaDeFuncionalidadesRepetidas());
 
-        service.save(permissoesRepetidas());
+        service.save(funcionalidadesRepetidas());
 
         verify(repository, times(1)).save(argumentCaptorListaCargoDeptoFuncionalidade.capture());
 
@@ -164,7 +164,7 @@ public class CargoDepartamentoFuncionalidadeServiceTest {
     }
 
     @Test
-    public void remover_deveRemoverUmaPermissao_seSolicitado() {
+    public void remover_deveRemoverUmaFuncionalidade_seSolicitado() {
         service.remover(100);
 
         verify(repository, times(1)).delete(100);
