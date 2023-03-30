@@ -1,11 +1,11 @@
 package br.com.xbrain.autenticacao.modules.permissao.helper;
 
+import br.com.xbrain.autenticacao.modules.permissao.dto.CargoDepartamentoFuncionalidadeRequest;
 import br.com.xbrain.autenticacao.modules.permissao.model.CargoDepartamentoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.permissao.model.Funcionalidade;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static br.com.xbrain.autenticacao.modules.permissao.helper.FuncionalidadeHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
@@ -173,23 +173,13 @@ public class CargoDepartamentoFuncionalidadeHelper {
         );
     }
 
-    public static List<CargoDepartamentoFuncionalidade> umaListaDeCargoDepartamentoFuncionalidadeDeAnalista() {
+    public static List<CargoDepartamentoFuncionalidade> umaListaDePermissoesRepetidas() {
         return List.of(
-            umCargoDeptoFuncionalidadeDeAnalista(1001, funcionalidadeVisualizarTodosDadosDosAas()),
-            umCargoDeptoFuncionalidadeDeAnalista(3019, funcionalidadeDashboardNumerosTabulacao()),
-            umCargoDeptoFuncionalidadeDeAnalista(970, funcionalidadeDashboardRelatorioTabulacao()),
-            umCargoDeptoFuncionalidadeDeAnalista(971, funcionalidadeRelatorioResumoMailing())
+            umCargoDeptoFuncionalidadeDeAnalista(20, funcionalidadeAaAprovacaoOperacao()),
+            umCargoDeptoFuncionalidadeDeAnalista(30, funcionalidadeAaAprovacaoMso()),
+            umCargoDeptoFuncionalidadeDeAnalista(40, funcionalidadeGerenciarAas()),
+            umCargoDeptoFuncionalidadeDeAnalista(50, funcionalidadeDescredenciamentoDeAa())
         );
-    }
-
-    public static List<CargoDepartamentoFuncionalidade> umaListaComTodosCargoDepartamentoFuncionalidade() {
-        return Stream.of(
-                umaListaDeCargoDepartamentoFuncionalidadeDeSocio(),
-                umaListaDeCargoDepartamentoFuncionalidadeDeConsultor(),
-                umaListaDeCargoDepartamentoFuncionalidadeDeVendedor(),
-                umaListaDeCargoDepartamentoFuncionalidadeDeAnalista()
-            ).flatMap(List::stream)
-            .collect(Collectors.toList());
     }
 
     public static List<CargoDepartamentoFuncionalidade> umaListaDeCargoDepartamentoFuncionalidadeDeAdministrador() {
@@ -205,5 +195,21 @@ public class CargoDepartamentoFuncionalidadeHelper {
             umCargoDeptoFuncionalidadeDeAdministrador(9, funcionalidadeVisualizarComissionamento()),
             umCargoDeptoFuncionalidadeDeAdministrador(10, funcionalidadeCaptacaoAaExtracao())
         );
+    }
+
+    private static CargoDepartamentoFuncionalidadeRequest permissoes(List<Integer> funcionalidadeIds) {
+        var request = new CargoDepartamentoFuncionalidadeRequest();
+        request.setCargoId(1);
+        request.setDepartamentoId(1);
+        request.setFuncionalidadesIds(funcionalidadeIds);
+        return request;
+    }
+
+    public static CargoDepartamentoFuncionalidadeRequest novasPermissoes() {
+        return permissoes(Arrays.asList(1, 2, 3, 4));
+    }
+
+    public static CargoDepartamentoFuncionalidadeRequest permissoesRepetidas() {
+        return permissoes(Arrays.asList(12, 13, 16, 17));
     }
 }

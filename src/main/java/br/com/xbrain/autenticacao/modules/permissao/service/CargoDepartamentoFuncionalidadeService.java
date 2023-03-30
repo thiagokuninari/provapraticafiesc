@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CargoDepartamentoFuncionalidadeService {
 
     private final CargoDepartamentoFuncionalidadeRepository repository;
@@ -45,6 +46,7 @@ public class CargoDepartamentoFuncionalidadeService {
         return repository.findAllDepartamentos(filtros.toPredicate());
     }
 
+    @Transactional
     public void save(CargoDepartamentoFuncionalidadeRequest request) {
         Usuario usuarioAutenticado = autenticacaoService.getUsuarioAutenticado().getUsuario();
         List<Integer> funcionalidadesIds = tratarPermissoesExistentes(request);
@@ -84,6 +86,7 @@ public class CargoDepartamentoFuncionalidadeService {
         ).collect(Collectors.toList());
     }
 
+    @Transactional
     public void remover(int id) {
         repository.delete(id);
     }

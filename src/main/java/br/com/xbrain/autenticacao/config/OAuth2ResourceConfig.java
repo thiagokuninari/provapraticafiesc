@@ -14,7 +14,6 @@ import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.INDICE_ZERO;
 
-
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {

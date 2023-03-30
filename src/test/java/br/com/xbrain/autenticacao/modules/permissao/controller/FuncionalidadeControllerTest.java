@@ -3,6 +3,7 @@ package br.com.xbrain.autenticacao.modules.permissao.controller;
 import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
 import br.com.xbrain.autenticacao.modules.permissao.service.FuncionalidadeService;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
@@ -33,6 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FuncionalidadeControllerTest {
 
     private static final String URL = "/api/funcionalidades";
+    private static final String USUARIO_HELPDESK = "USUARIO HELPDESK";
+    private static final String USUARIO_ADMIN = "USUARIO ADMIN";
+    private static final String CHM_ABRIR_CHAMADO = "CHM_ABRIR_CHAMADO";
+    private static final String AUT_VISUALIZAR_USUARIO = "AUT_VISUALIZAR_USUARIO";
 
     @Autowired
     private MockMvc mvc;
@@ -40,16 +44,18 @@ public class FuncionalidadeControllerTest {
     private FuncionalidadeService funcionalidadeService;
 
     @Test
+    @SneakyThrows
     @WithAnonymousUser
-    public void getAll_unauthorized_quandoNaoPassarAToken() throws Exception {
+    public void getAll_unauthorized_quandoNaoPassarAToken() {
         mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser(username = "usuario-helpdesk", roles = {"CHM_ABRIR_CHAMADO"})
-    public void getAll_forbidden_quandoNaoTiverPermissaoParaControleDeUsuarios() throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_HELPDESK, roles = { CHM_ABRIR_CHAMADO })
+    public void getAll_forbidden_quandoNaoTiverPermissaoParaControleDeUsuarios() {
         mvc.perform(get(URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -57,11 +63,11 @@ public class FuncionalidadeControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "usuario-admin", roles = {"AUT_VISUALIZAR_USUARIO"})
-    public void getAll_ok_quandoTiverPermissaoParaControleDeUsuarios() throws Exception {
+    @SneakyThrows
+    @WithMockUser(username = USUARIO_ADMIN, roles = { AUT_VISUALIZAR_USUARIO })
+    public void getAll_ok_quandoTiverPermissaoParaControleDeUsuarios() {
         mvc.perform(get(URL)
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andDo(print());
+            .andExpect(status().isOk());
     }
 }
