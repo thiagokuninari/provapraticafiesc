@@ -688,7 +688,7 @@ public class UsuarioControllerTest {
                 .header("Authorization", getAccessToken(mvc, SOCIO_AA))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(13)))
+            .andExpect(jsonPath("$", hasSize(14)))
             .andExpect(jsonPath("$[0].permissao", is("ROLE_AUT_2031")))
             .andExpect(jsonPath("$[0].canais", hasSize(2)))
             .andExpect(jsonPath("$[0].canais[0]", is("AGENTE_AUTORIZADO")))
@@ -1032,7 +1032,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].nome", is("Teste")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].nome", is("Brandon")));
-    
+
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
                 .regionalId(1027)
@@ -1057,7 +1057,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].nome", is("Teste")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].nome", is("Brandon")));
-    
+
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
                 .ufId(1)
@@ -1084,7 +1084,7 @@ public class UsuarioControllerTest {
             .andExpect(jsonPath("$[0].nome", is("Teste")))
             .andExpect(jsonPath("$[1].id", is(2)))
             .andExpect(jsonPath("$[1].nome", is("Brandon")));
-    
+
         verify(usuarioService, times(1)).getUsuariosAlvoDoComunicado(
             eq(PublicoAlvoComunicadoFiltros.builder()
                 .ufId(1)
