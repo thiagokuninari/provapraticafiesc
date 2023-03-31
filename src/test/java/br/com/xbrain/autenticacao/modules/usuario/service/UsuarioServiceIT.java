@@ -136,6 +136,8 @@ public class UsuarioServiceIT {
     private SiteRepository siteRepository;
     @Autowired
     private PermissaoEspecialService permissaoEspecialService;
+    @MockBean
+    private SubCanalService subCanalService;
 
     @Before
     public void setUp() {

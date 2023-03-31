@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping(value = "api/usuarios/gerencia")
+@RequestMapping("api/usuarios/gerencia")
 public class UsuarioGerenciaController {
 
     @Autowired
@@ -28,6 +28,8 @@ public class UsuarioGerenciaController {
     @PostMapping(consumes = {"multipart/form-data"})
     public UsuarioDto save(@RequestPart(value = "usuario") @Validated UsuarioDto usuario,
                            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+        service.validarVinculoDoUsuarioNaEquipeVendasComSubCanal(usuario);
+
         return service.save(UsuarioDto.convertFrom(usuario), foto);
     }
 
@@ -44,6 +46,7 @@ public class UsuarioGerenciaController {
     @GetMapping("{id}")
     public UsuarioDto getById(@PathVariable("id") int id) {
         var usuario = service.findByIdComAa(id);
+
         return UsuarioDto.of(
             usuario,
             usuario.permiteEditar(autenticacaoService.getUsuarioAutenticado()));
@@ -69,8 +72,9 @@ public class UsuarioGerenciaController {
     @PostMapping(value = "/cargo-superior/{cargoId}/{canal}")
     public List<UsuarioHierarquiaResponse> getUsuariosCargoSuperior(@PathVariable int cargoId,
                                                                     @RequestBody UsuarioCargoSuperiorPost post,
-                                                                    @PathVariable Set<ECanal> canal) {
-        return service.getUsuariosCargoSuperiorByCanal(cargoId, post.getCidadeIds(), canal);
+                                                                    @PathVariable Set<ECanal> canal,
+                                                                    @RequestParam(required = false) Set<Integer> subCanais) {
+        return service.getUsuariosCargoSuperiorByCanalAndSubCanal(cargoId, post.getCidadeIds(), canal, subCanais);
     }
 
     @GetMapping(params = "email")

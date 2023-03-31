@@ -34,6 +34,7 @@ public class UsuarioFiltros {
     private Integer departamentoId;
     private Integer cargoId;
     private ECanal canal;
+    private Integer subCanalId;
     private List<ESituacao> situacoes;
     private Integer organizacaoId;
     private Integer organizacaoEmpresaId;
@@ -48,6 +49,7 @@ public class UsuarioFiltros {
             .comNome(nome)
             .comEmail(emailUsuario)
             .comCanal(canal)
+            .comSubCanal(subCanalId)
             .comSituacoes(situacoes)
             .comGrupo(grupoId)
             .comCluster(clusterId)

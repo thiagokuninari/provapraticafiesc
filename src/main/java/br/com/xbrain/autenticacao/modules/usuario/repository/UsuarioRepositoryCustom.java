@@ -9,6 +9,7 @@ import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.*;
 import br.com.xbrain.autenticacao.modules.usuario.model.Canal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.autenticacao.modules.usuario.model.UsuarioHierarquia;
 import com.querydsl.core.types.OrderSpecifier;
@@ -35,7 +36,11 @@ public interface UsuarioRepositoryCustom {
 
     List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo);
 
+    List<Object[]> getSubordinadosPorCargo(Integer usuarioId, Set<String> codigoCargo, Integer subCanalId);
+
     List<UsuarioSubordinadoDto> getUsuariosCompletoSubordinados(Integer usuarioId);
+
+    List<Integer> getSubCanalIdsDosSubordinados(Integer usuarioId);
 
     List<UsuarioAutoComplete> getSubordinadosDoGerenteComCargoExecutivoOrExecutivoHunter(Integer usuarioId);
 
@@ -84,6 +89,11 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
                                                               List<CodigoCargo> cargos,
                                                               ECanal canal);
+
+    List<UsuarioResponse> getUsuariosDaMesmaCidadeDoUsuarioId(Integer usuarioId,
+                                                              List<CodigoCargo> cargos,
+                                                              ECanal canal,
+                                                              Integer subCanalId);
 
     List<UsuarioResponse> getUsuariosPorAreaAtuacao(AreaAtuacao areaAtuacao,
                                                     List<Integer> areasAtuacaoIds,
@@ -139,6 +149,8 @@ public interface UsuarioRepositoryCustom {
     List<UsuarioSituacaoResponse> buscarUsuarioSituacao(Predicate predicate);
 
     List<Canal> getCanaisByUsuarioIds(List<Integer> usuarioIds);
+
+    Set<SubCanal> getSubCanaisByUsuarioIds(List<Integer> usuarioIds);
 
     List<UsuarioNomeResponse> buscarUsuariosPorCanalECargo(ECanal canal, CodigoCargo cargo);
 

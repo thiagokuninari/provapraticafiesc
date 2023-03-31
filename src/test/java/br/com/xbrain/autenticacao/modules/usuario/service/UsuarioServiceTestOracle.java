@@ -5,7 +5,6 @@ import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
-import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.usuario.dto.*;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoDepartamento;
@@ -381,6 +380,15 @@ public class UsuarioServiceTestOracle {
         filtros.setCnpjAa("15.765.222/0001-72");
 
         assertThat(service.getAll(new PageRequest(), filtros)).isEmpty();
+    }
+
+    @Test
+    public void getAll_deveRetornarTodos_quandoPossuirSubCanalPap() {
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(umUsuarioAutenticadoCompleto());
+
+        var filtros = UsuarioFiltros.builder().subCanalId(1).build();
+
+        assertThat(service.getAll(new PageRequest(), filtros)).isNotEmpty();
     }
 
     private UsuarioFiltrosHierarquia getFiltroHierarquia() {

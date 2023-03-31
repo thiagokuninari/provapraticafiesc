@@ -26,8 +26,9 @@ public class RelatorioLoginLogoutController {
     public Page<LoginLogoutResponse> getLoginsLogoutsDeHoje(
         PageRequest pageRequest,
         @RequestHeader("X-Usuario-Canal") ECanal canal,
-        @RequestParam(required = false) Integer agenteAutorizadoId) {
-        return service.getLoginsLogoutsDeHoje(pageRequest, canal, agenteAutorizadoId);
+        @RequestParam(required = false) Integer agenteAutorizadoId,
+        @RequestParam(required = false) Integer subCanalId) {
+        return service.getLoginsLogoutsDeHoje(pageRequest, canal, agenteAutorizadoId, subCanalId);
     }
 
     @PostMapping("entre-datas")
@@ -41,14 +42,16 @@ public class RelatorioLoginLogoutController {
         @Validated RelatorioLoginLogoutCsvFiltro filtro,
         HttpServletResponse response,
         @RequestHeader("X-Usuario-Canal") ECanal canal,
-        @RequestParam(required = false) Integer agenteAutorizadoId) {
-        service.getCsv(filtro, response, canal, agenteAutorizadoId);
+        @RequestParam(required = false) Integer agenteAutorizadoId,
+        @RequestParam(required = false) Integer subCanalId) {
+        service.getCsv(filtro, response, canal, agenteAutorizadoId, subCanalId);
     }
 
     @GetMapping("colaboradores")
     public List<UsuarioNomeResponse> getColaboradores(
         @RequestHeader("X-Usuario-Canal") ECanal canal,
-        @RequestParam(required = false) Integer agenteAutorizadoId) {
-        return service.getColaboradores(canal, agenteAutorizadoId);
+        @RequestParam(required = false) Integer agenteAutorizadoId,
+        @RequestParam(required = false) Integer subCanalId) {
+        return service.getColaboradores(canal, agenteAutorizadoId, subCanalId);
     }
 }

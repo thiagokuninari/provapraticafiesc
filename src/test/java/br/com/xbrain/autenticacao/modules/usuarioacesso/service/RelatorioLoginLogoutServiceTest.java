@@ -67,7 +67,7 @@ public class RelatorioLoginLogoutServiceTest {
             .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
-            .isThrownBy(() -> service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO, 101));
+            .isThrownBy(() -> service.getLoginsLogoutsDeHoje(new PageRequest(), ECanal.D2D_PROPRIO, 101, null));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class RelatorioLoginLogoutServiceTest {
             .isThrownBy(() -> service.getCsv(
                 new RelatorioLoginLogoutCsvFiltro(),
                 new MockHttpServletResponse(),
-                ECanal.D2D_PROPRIO, 101));
+                ECanal.D2D_PROPRIO, 101, null));
     }
 
     @Test
@@ -130,7 +130,7 @@ public class RelatorioLoginLogoutServiceTest {
                 UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
             ));
 
-        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
+        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicateBuscaIds));
 
@@ -174,7 +174,7 @@ public class RelatorioLoginLogoutServiceTest {
                 UsuarioNomeResponse.of(1, "Adilson Elias", ESituacao.I)
             ));
 
-        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null);
+        var colaboradores = service.getColaboradores(ECanal.D2D_PROPRIO, null, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicateBuscaIds));
 
@@ -196,7 +196,7 @@ public class RelatorioLoginLogoutServiceTest {
         when(notificacaoUsuarioAcessoService.getUsuariosIdsByIds(eq(Optional.empty())))
             .thenReturn(List.of());
 
-        service.getColaboradores(ECanal.D2D_PROPRIO, null);
+        service.getColaboradores(ECanal.D2D_PROPRIO, null, null);
 
         var predicateArgCaptor = ArgumentCaptor.forClass(Predicate.class);
         verify(usuarioRepository, times(1)).findAllUsuariosNomeComSituacao(predicateArgCaptor.capture(), any());
@@ -216,7 +216,7 @@ public class RelatorioLoginLogoutServiceTest {
             .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
-            .isThrownBy(() -> service.getColaboradores(ECanal.D2D_PROPRIO, 101));
+            .isThrownBy(() -> service.getColaboradores(ECanal.D2D_PROPRIO, 101, null));
     }
 
     @Test
@@ -235,7 +235,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -260,7 +260,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, null, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -287,7 +287,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -313,7 +313,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -339,7 +339,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -365,7 +365,7 @@ public class RelatorioLoginLogoutServiceTest {
             .build();
         when(usuarioRepository.findAllIds(eq(predicate))).thenReturn(List.of(12, 7, 90, 1, 3, 100));
 
-        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67);
+        var usuariosIds = service.getUsuariosIdsComNivelDeAcesso(ECanal.D2D_PROPRIO, 67, null);
 
         verify(usuarioRepository, times(1)).findAllIds(eq(predicate));
 
@@ -383,7 +383,7 @@ public class RelatorioLoginLogoutServiceTest {
             .when(autenticacaoService).validarPermissaoSobreOAgenteAutorizado(eq(101));
 
         assertThatExceptionOfType(PermissaoException.class)
-            .isThrownBy(() -> service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, 101));
+            .isThrownBy(() -> service.getUsuariosIdsComNivelDeAcesso(ECanal.AGENTE_AUTORIZADO, 101, null));
     }
 
     private void mockAutenticacao(UsuarioAutenticado usuarioAutenticado) {
