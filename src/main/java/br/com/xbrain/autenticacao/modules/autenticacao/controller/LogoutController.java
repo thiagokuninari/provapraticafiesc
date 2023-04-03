@@ -28,4 +28,9 @@ public class LogoutController {
     public void logoutAll() {
         autenticacaoService.logoutAllUsers();
     }
+
+    @GetMapping("usuario-multiplo/{usuarioId}")
+    public void logoutUsuarioMultiplo(@PathVariable Integer usuarioId) {
+        autenticacaoService.logoutLoginMultiplo(usuarioId);
+    }
 }
