@@ -112,7 +112,7 @@ public class LogoutControllerTest {
 
     @Test
     @SneakyThrows
-    public void logoutLoginMultiplo_deveDeslogarUsuario_quandoMultiplosLogins(){
+    public void logoutLoginMultiplo_deveDeslogarUsuario_quandoMultiplosLogins() {
         var token = getAccessToken(mvc, ADMIN);
 
         mvc.perform(get("/api/logout/usuario-multiplo/{usuarioId}", 440)
