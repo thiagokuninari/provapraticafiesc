@@ -93,9 +93,28 @@ public class AutenticacaoServiceTest {
             .nome("USUARIO CLIENTE LOJA FUTURO")
             .email("CLIENTELOJAFUTURO@GMAIL.COM")
             .build();
-        when(usuarioRepository.findById(96)).thenReturn(Optional.of(umUsuarioClienteLojaFuturo));
+        when(usuarioRepository.findComplete(96)).thenReturn(Optional.of(umUsuarioClienteLojaFuturo));
 
         autenticacaoService.logoutLoginMultiplo(96);
         verify(tokenStore, times(1)).removeAccessToken(any());
+        verify(usuarioRepository, times(1)).findComplete(96);
+    }
+
+    @Test
+    public void logoutLoginMultiplo_naoDeveChamarTokenStore_quandoUsuarioNaoClienteLojaFuturo() {
+        var umUsuarioClienteLojaFuturo = Usuario.builder()
+            .cargo(Cargo.builder()
+                .id(96)
+                .codigo(CodigoCargo.GERENTE_OPERACAO)
+                .build())
+            .id(12345)
+            .nome("USUARIO CLIENTE LOJA FUTURO")
+            .email("CLIENTELOJAFUTURO@GMAIL.COM")
+            .build();
+        when(usuarioRepository.findComplete(96)).thenReturn(Optional.of(umUsuarioClienteLojaFuturo));
+
+        autenticacaoService.logoutLoginMultiplo(96);
+        verify(tokenStore, never()).removeAccessToken(any());
+        verify(usuarioRepository, times(1)).findComplete(96);
     }
 }

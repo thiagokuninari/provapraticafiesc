@@ -212,7 +212,7 @@ public class AutenticacaoService {
     }
 
     private Usuario buscarUsuario(Integer usuarioId) {
-        return usuarioRepository.findById(usuarioId)
+        return usuarioRepository.findComplete(usuarioId)
             .orElseThrow(() -> new ValidacaoException(String.format(MSG_USUARIO_NAO_ENCONTRADO, usuarioId)));
     }
 }
