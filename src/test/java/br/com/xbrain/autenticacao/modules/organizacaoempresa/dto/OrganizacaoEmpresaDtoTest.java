@@ -19,7 +19,7 @@ public class OrganizacaoEmpresaDtoTest {
         return OrganizacaoEmpresa
             .builder()
             .id(1)
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .situacao(ESituacaoOrganizacaoEmpresa.A)
             .codigo("codigo")
             .build();

@@ -1836,7 +1836,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -1852,7 +1852,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -1868,7 +1868,7 @@ public class UsuarioServiceTest {
                     umVendedorReceptivo().getEmail(),
                     umVendedorReceptivo().getLoginNetSales(),
                     umVendedorReceptivo().getNivelNome(),
-                    umVendedorReceptivo().getOrganizacaoEmpresa().getRazaoSocial()));
+                    umVendedorReceptivo().getOrganizacaoEmpresa().getNome()));
     }
 
     @Test
@@ -2421,7 +2421,7 @@ public class UsuarioServiceTest {
             .codigo(CodigoCargo.VENDEDOR_RECEPTIVO)
             .nivel(Nivel.builder().codigo(CodigoNivel.RECEPTIVO).build())
             .build();
-        var organizacaoEmpresa = OrganizacaoEmpresa.builder().id(1).razaoSocial("Org teste").build();
+        var organizacaoEmpresa = OrganizacaoEmpresa.builder().id(1).nome("Org teste").build();
         usuario.setCargo(cargo);
         usuario.setOrganizacaoEmpresa(organizacaoEmpresa);
         return usuario;

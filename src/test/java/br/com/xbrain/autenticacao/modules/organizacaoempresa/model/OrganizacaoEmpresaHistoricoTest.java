@@ -28,7 +28,7 @@ public class OrganizacaoEmpresaHistoricoTest {
     private OrganizacaoEmpresa umaOrganizacaoEmpresaCadastrada() {
         return OrganizacaoEmpresa.builder()
             .id(1)
-            .razaoSocial("THIAGO TESTE")
+            .nome("THIAGO TESTE")
             .cnpj("08112392000192")
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()))
             .nivel(Nivel.builder()

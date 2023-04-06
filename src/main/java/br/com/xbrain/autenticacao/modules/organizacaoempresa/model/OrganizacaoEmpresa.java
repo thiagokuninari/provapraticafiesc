@@ -31,8 +31,8 @@ public class OrganizacaoEmpresa {
     @GeneratedValue(generator = "SEQ_ORGANIZACAO_EMPRESA", strategy = GenerationType.SEQUENCE)
     private Integer id;
 
-    @Column(name = "RAZAO_SOCIAL", nullable = false)
-    private String razaoSocial;
+    @Column(name = "NOME", nullable = false)
+    private String nome;
 
     @Column(name = "CODIGO", length = 80, nullable = false, unique = true)
     private String codigo;
@@ -68,7 +68,7 @@ public class OrganizacaoEmpresa {
     public static OrganizacaoEmpresa of(OrganizacaoEmpresaRequest request, Integer usuarioId, Nivel nivel,
                                         List<ModalidadeEmpresa> modalidadesEmpresa) {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial(request.getNome())
+            .nome(request.getNome())
             .cnpj(request.getCnpjSemMascara())
             .nivel(nivel)
             .modalidadesEmpresa(modalidadesEmpresa)
@@ -81,7 +81,7 @@ public class OrganizacaoEmpresa {
 
     public void of(OrganizacaoEmpresaRequest request, List<ModalidadeEmpresa> modalidades, Nivel nivel) {
         this.cnpj = request.getCnpjSemMascara();
-        this.razaoSocial = request.getNome();
+        this.nome = request.getNome();
         this.modalidadesEmpresa = modalidades;
         this.nivel = nivel;
         this.codigo = request.getCodigo();

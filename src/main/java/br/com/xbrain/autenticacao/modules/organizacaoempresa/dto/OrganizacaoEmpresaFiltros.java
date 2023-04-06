@@ -28,7 +28,7 @@ public class OrganizacaoEmpresaFiltros {
     public OrganizacaoEmpresaPredicate toPredicate() {
         return new OrganizacaoEmpresaPredicate()
             .comId(organizacaoId)
-            .comRazaoSocial(nome)
+            .comNome(nome)
             .comCnpj(cnpj)
             .comNivel(nivelId)
             .comModalidades(modalidadesEmpresaIds)

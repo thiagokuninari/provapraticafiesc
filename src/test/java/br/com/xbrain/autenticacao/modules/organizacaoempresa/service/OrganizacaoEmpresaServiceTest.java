@@ -120,7 +120,7 @@ public class OrganizacaoEmpresaServiceTest {
 
         assertThat(service.getAll(new OrganizacaoEmpresaFiltros(), new PageRequest()))
             .hasSize(3)
-            .extracting("id", "razaoSocial", "cnpj")
+            .extracting("id", "nome", "cnpj")
             .containsExactly(
                 tuple(1, "Organizacao 1", "97527243000114"),
                 tuple(2, "Organizacao 2", "06890869000135"),
@@ -129,9 +129,9 @@ public class OrganizacaoEmpresaServiceTest {
     }
 
     @Test
-    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComAMesmaRazaoSocial() {
+    public void save_validacaoException_quandoExistirUmaOrganizacaoEmpresaComAMesmoNome() {
         when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
-        when(organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(eq("Organizacao 1")))
+        when(organizacaoEmpresaRepository.existsByNomeIgnoreCase(eq("Organizacao 1")))
             .thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
@@ -139,7 +139,7 @@ public class OrganizacaoEmpresaServiceTest {
             .withMessage("Organização já cadastrada com o mesmo nome.");
 
         verify(organizacaoEmpresaRepository, times(1))
-            .existsByRazaoSocialIgnoreCase(eq("Organizacao 1"));
+            .existsByNomeIgnoreCase(eq("Organizacao 1"));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
 
         assertThat(service.save(umaOrganizacaoEmpresaRequest()))
-            .extracting("razaoSocial", "cnpj", "nivel.id")
+            .extracting("nome", "cnpj", "nivel.id")
             .contains("Organizacao 1", "08112392000192", 1);
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
@@ -190,7 +190,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
 
         assertThat(service.save(umaOrganizacaoEmpresaBackofficeRequest()))
-            .extracting("razaoSocial", "nivel.id", "codigo")
+            .extracting("nome", "nivel.id", "codigo")
             .contains("Organizacao 2", 2, "BACKOFFICE");
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
@@ -207,7 +207,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(autenticacaoService.getUsuarioId()).thenReturn(1);
 
         assertThat(service.save(umaOrganizacaoEmpresaReceptivoRequest()))
-            .extracting("razaoSocial", "nivel.id", "codigo")
+            .extracting("nome", "nivel.id", "codigo")
             .contains("Organizacao 3", 3, "RECEPTIVO");
 
         verify(organizacaoEmpresaRepository, times(1)).save(any(OrganizacaoEmpresa.class));
@@ -296,7 +296,7 @@ public class OrganizacaoEmpresaServiceTest {
 
         service.update(1, umaOrganizacaoEmpresaRequest());
         Assertions.assertThat(service.findById(1))
-            .extracting("id", "razaoSocial", "cnpj", "modalidadesEmpresa", "nivel.id", "situacao")
+            .extracting("id", "nome", "cnpj", "modalidadesEmpresa", "nivel.id", "situacao")
             .containsExactlyInAnyOrder(1, "Organizacao 1", "08112392000192", List.of(umaModalidadeEmpresaTelevendas(),
                     umaModalidadeEmpresaPap()), 1, ESituacaoOrganizacaoEmpresa.A);
 
@@ -318,7 +318,7 @@ public class OrganizacaoEmpresaServiceTest {
 
         service.update(2, umaOrganizacaoEmpresaBackofficeRequest());
         Assertions.assertThat(service.findById(2))
-            .extracting("id", "razaoSocial", "nivel.id", "situacao")
+            .extracting("id", "nome", "nivel.id", "situacao")
             .containsExactlyInAnyOrder(2, "Organizacao 2", 2, ESituacaoOrganizacaoEmpresa.A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
@@ -339,7 +339,7 @@ public class OrganizacaoEmpresaServiceTest {
 
         service.update(3, umaOrganizacaoEmpresaReceptivoRequest());
         Assertions.assertThat(service.findById(3))
-            .extracting("id", "razaoSocial", "nivel.id", "situacao")
+            .extracting("id", "nome", "nivel.id", "situacao")
             .containsExactlyInAnyOrder(3, "Organizacao 3", 3, ESituacaoOrganizacaoEmpresa.A);
 
         verify(historicoService, times(1)).salvarHistorico(organizacaoEmpresaCaptor.capture(),
@@ -356,7 +356,7 @@ public class OrganizacaoEmpresaServiceTest {
         when(nivelRepository.findById(eq(1))).thenReturn(Optional.of(OrganizacaoEmpresaHelper.umNivel()));
         when(organizacaoEmpresaRepository.findById(1)).thenReturn(Optional.of(umaOrganizacaoEmpresa(1,
             "Organizacao 4", "08112392000192", "CODIGO")));
-        when(organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot("Organizacao 1", 1)).thenReturn(true);
+        when(organizacaoEmpresaRepository.existsByNomeAndIdNot("Organizacao 1", 1)).thenReturn(true);
 
         assertThatExceptionOfType(ValidacaoException.class)
             .isThrownBy(() -> service.update(1, umaOrganizacaoEmpresaRequest()))
@@ -574,10 +574,10 @@ public class OrganizacaoEmpresaServiceTest {
         return modalidadeEmpresa;
     }
 
-    public static OrganizacaoEmpresa umaOrganizacaoEmpresa(Integer id, String razaoSocial, String cnpj, String codigo) {
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresa(Integer id, String nome, String cnpj, String codigo) {
         return OrganizacaoEmpresa.builder()
             .id(id)
-            .razaoSocial(razaoSocial)
+            .nome(nome)
             .cnpj(cnpj)
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaPap(),umaModalidadeEmpresaTelevendas()))
             .nivel(Nivel.builder()
@@ -594,10 +594,10 @@ public class OrganizacaoEmpresaServiceTest {
             .build();
     }
 
-    public static OrganizacaoEmpresa umaOrganizacaoEmpresaBackoffice(Integer id, String razaoSocial, String codigo) {
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresaBackoffice(Integer id, String nome, String codigo) {
         return OrganizacaoEmpresa.builder()
             .id(id)
-            .razaoSocial(razaoSocial)
+            .nome(nome)
             .nivel(Nivel.builder()
                 .id(2)
                 .codigo(CodigoNivel.BACKOFFICE)
@@ -612,10 +612,10 @@ public class OrganizacaoEmpresaServiceTest {
             .build();
     }
 
-    public static OrganizacaoEmpresa umaOrganizacaoEmpresaReceptivo(Integer id, String razaoSocial, String codigo) {
+    public static OrganizacaoEmpresa umaOrganizacaoEmpresaReceptivo(Integer id, String nome, String codigo) {
         return OrganizacaoEmpresa.builder()
             .id(id)
-            .razaoSocial(razaoSocial)
+            .nome(nome)
             .nivel(Nivel.builder()
                 .id(3)
                 .codigo(CodigoNivel.RECEPTIVO)

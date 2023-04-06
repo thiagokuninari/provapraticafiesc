@@ -23,7 +23,7 @@ public class OrganizacaoEmpresaDto {
         var organizacaoEmpresaDto = new OrganizacaoEmpresaDto();
         if (organizacaoEmpresa != null) {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaDto);
-            organizacaoEmpresaDto.setNome(organizacaoEmpresa.getRazaoSocial());
+            organizacaoEmpresaDto.setNome(organizacaoEmpresa.getNome());
             organizacaoEmpresaDto.setSituacao(ESituacaoOrganizacaoEmpresa.A);
         }
         return organizacaoEmpresaDto;

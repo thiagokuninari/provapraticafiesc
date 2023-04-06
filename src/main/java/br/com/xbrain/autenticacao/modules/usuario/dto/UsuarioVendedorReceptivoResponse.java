@@ -21,7 +21,7 @@ public class UsuarioVendedorReceptivoResponse {
         BeanUtils.copyProperties(usuario, response);
         response.setNivel(usuario.getNivelNome());
         response.setOrganizacao(Optional.ofNullable(usuario.getOrganizacaoEmpresa())
-            .map(OrganizacaoEmpresa::getRazaoSocial)
+            .map(OrganizacaoEmpresa::getNome)
             .orElse(null));
         return response;
     }

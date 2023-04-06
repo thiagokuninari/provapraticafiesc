@@ -30,7 +30,7 @@ public class OrganizacaoEmpresaResponse {
         var organizacaoEmpresaResponse = new OrganizacaoEmpresaResponse();
         if (organizacaoEmpresa != null) {
             BeanUtils.copyProperties(organizacaoEmpresa, organizacaoEmpresaResponse);
-            organizacaoEmpresaResponse.setNome(organizacaoEmpresa.getRazaoSocial());
+            organizacaoEmpresaResponse.setNome(organizacaoEmpresa.getNome());
             organizacaoEmpresaResponse.setCnpj(organizacaoEmpresa.formataCnpj());
             organizacaoEmpresaResponse.setNivel(organizacaoEmpresa.getNivelIdNome().orElse(null));
             organizacaoEmpresaResponse.setModalidadesEmpresa(organizacaoEmpresa.getModalidadesEmpresaIdNome());

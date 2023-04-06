@@ -30,29 +30,29 @@ public class OrganizacaoEmpresaPredicateTest {
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialNull() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeNull() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial(null)
+            .comNome(null)
             .build();
         var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialVazio() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeVazio() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial("")
+            .comNome("")
             .build();
         var expected = new BooleanBuilder();
         assertThat(predicate).isEqualTo(expected);
     }
 
     @Test
-    public void comRazaoSocial_organizacaoEmpresaPredicate_quandoRazaoSocialNaoNullENaoVazio() {
+    public void comNome_organizacaoEmpresaPredicate_quandoNomeNaoNullENaoVazio() {
         var predicate = new OrganizacaoEmpresaPredicate()
-            .comRazaoSocial("Thiago teste")
+            .comNome("Thiago teste")
             .build();
-        var expected = new BooleanBuilder(organizacaoEmpresa.razaoSocial.containsIgnoreCase("Thiago teste"));
+        var expected = new BooleanBuilder(organizacaoEmpresa.nome.containsIgnoreCase("Thiago teste"));
         assertThat(predicate).isEqualTo(expected);
     }
 

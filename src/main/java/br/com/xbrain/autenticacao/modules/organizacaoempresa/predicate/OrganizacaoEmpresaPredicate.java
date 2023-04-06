@@ -22,10 +22,10 @@ public class OrganizacaoEmpresaPredicate extends PredicateBase {
         return this;
     }
 
-    public OrganizacaoEmpresaPredicate comRazaoSocial(String razaoSocial) {
-        Optional.ofNullable(razaoSocial)
+    public OrganizacaoEmpresaPredicate comNome(String nome) {
+        Optional.ofNullable(nome)
             .filter(StringUtils::isNotBlank)
-            .map(organizacaoEmpresa.razaoSocial::containsIgnoreCase)
+            .map(organizacaoEmpresa.nome::containsIgnoreCase)
             .map(builder::and);
 
         return this;

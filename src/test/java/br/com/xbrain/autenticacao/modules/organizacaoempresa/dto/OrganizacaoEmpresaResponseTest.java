@@ -29,7 +29,7 @@ public class OrganizacaoEmpresaResponseTest {
         return OrganizacaoEmpresa
             .builder()
             .id(1)
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("19427182000100")
             .modalidadesEmpresa(List.of(umaModalidadeEmpresaTelevendas(), umaModalidadeEmpresaPap()))
             .nivel(Nivel.builder()

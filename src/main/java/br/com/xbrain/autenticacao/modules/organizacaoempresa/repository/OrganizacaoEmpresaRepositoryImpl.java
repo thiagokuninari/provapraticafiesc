@@ -18,7 +18,7 @@ public class OrganizacaoEmpresaRepositoryImpl extends CustomRepository<Organizac
             .select(organizacaoEmpresa)
             .from(organizacaoEmpresa)
             .where(predicate)
-            .orderBy(organizacaoEmpresa.razaoSocial.asc())
+            .orderBy(organizacaoEmpresa.nome.asc())
             .fetch();
     }
 }

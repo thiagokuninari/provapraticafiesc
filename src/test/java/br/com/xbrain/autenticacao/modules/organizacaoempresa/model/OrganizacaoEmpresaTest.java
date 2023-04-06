@@ -22,7 +22,7 @@ public class OrganizacaoEmpresaTest {
     public void of_deveRetornarObjetoCorreto_quandoRecebeOrganizacaoEmpresa() {
         assertThat(OrganizacaoEmpresa.of(umaOrganizacaoEmpresaRequest(), 1, Nivel.builder().id(1).build(),
             List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas())))
-            .extracting("razaoSocial", "cnpj", "nivel", "modalidadesEmpresa", "situacao")
+            .extracting("nome", "cnpj", "nivel", "modalidadesEmpresa", "situacao")
             .containsExactly("Organizacao 1", "08112392000192", OrganizacaoEmpresaHelper.umNivel(),
                 List.of(umaModalidadeEmpresaPap(), umaModalidadeEmpresaTelevendas()), ESituacaoOrganizacaoEmpresa.A);
     }
@@ -97,7 +97,7 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresa umaOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("08112392000192")
             .modalidadesEmpresa(null)
             .nivel(null)
@@ -107,7 +107,7 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresa umaOrganizacaoEmpresaCnpjComMascara() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("08.112.392/0001-92")
             .modalidadesEmpresa(null)
             .nivel(null)
@@ -117,7 +117,7 @@ public class OrganizacaoEmpresaTest {
 
     private OrganizacaoEmpresa umaOutraOrganizacaoEmpresa() {
         return OrganizacaoEmpresa.builder()
-            .razaoSocial("Organizacao 1")
+            .nome("Organizacao 1")
             .cnpj("08112392000192")
             .nivel(Nivel.builder()
                 .id(1)

@@ -80,14 +80,14 @@ public class  OrganizacaoEmpresaService {
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
             validarCnpj(request.getCnpj());
             validarCnpjExistente(request.getCnpjSemMascara());
-            validarRazaoSocial(request.getNome());
+            validarNome(request.getNome());
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
 
             organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, modalidades));
 
         } else {
-            validarRazaoSocial(request.getNome());
+            validarNome(request.getNome());
 
             organizacaoEmpresa = organizacaoEmpresaRepository.save(OrganizacaoEmpresa.of(request,
                 autenticacaoService.getUsuarioId(), nivel, null));
@@ -131,11 +131,11 @@ public class  OrganizacaoEmpresaService {
         if (nivel.getCodigo() == CodigoNivel.VAREJO) {
             validarCnpj(request.getCnpj());
             validarCnpjExistenteParaUpdate(request.getCnpjSemMascara(), id);
-            validarRazaoSocialParaUpdate(request.getNome(), id);
+            validarNomeParaUpdate(request.getNome(), id);
             var modalidades = validarModalidadeEmpresa(request.getModalidadesEmpresaIds());
             organizacaoEmpresaToUpdate.of(request, modalidades, nivel);
         } else {
-            validarRazaoSocialParaUpdate(request.getNome(), id);
+            validarNomeParaUpdate(request.getNome(), id);
             organizacaoEmpresaToUpdate.of(request, null, nivel);
         }
 
@@ -165,14 +165,14 @@ public class  OrganizacaoEmpresaService {
         }
     }
 
-    private void validarRazaoSocial(String razaoSocial) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialIgnoreCase(razaoSocial)) {
+    private void validarNome(String nome) {
+        if (organizacaoEmpresaRepository.existsByNomeIgnoreCase(nome)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
 
-    private void validarRazaoSocialParaUpdate(String razaoSocial, Integer id) {
-        if (organizacaoEmpresaRepository.existsByRazaoSocialAndIdNot(razaoSocial, id)) {
+    private void validarNomeParaUpdate(String nome, Integer id) {
+        if (organizacaoEmpresaRepository.existsByNomeAndIdNot(nome, id)) {
             throw ORGANIZACAO_EXISTENTE;
         }
     }
@@ -211,7 +211,7 @@ public class  OrganizacaoEmpresaService {
     public List<SelectResponse> getAllSelect(OrganizacaoEmpresaFiltros filtros) {
         return organizacaoEmpresaRepository.findByPredicate(getFiltros(filtros).toPredicate().build())
             .stream()
-            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getRazaoSocial()))
+            .map(organizacao -> SelectResponse.of(organizacao.getId(), organizacao.getNome()))
             .collect(Collectors.toList());
     }
 

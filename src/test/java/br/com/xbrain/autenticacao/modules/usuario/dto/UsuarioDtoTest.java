@@ -179,7 +179,7 @@ public class UsuarioDtoTest {
                 .build()))
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
@@ -211,7 +211,7 @@ public class UsuarioDtoTest {
             .id(1)
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
@@ -254,7 +254,7 @@ public class UsuarioDtoTest {
             .organizacaoEmpresa(OrganizacaoEmpresa
                 .builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)
@@ -417,7 +417,7 @@ public class UsuarioDtoTest {
                 .build()))
             .organizacaoEmpresa(OrganizacaoEmpresa.builder()
                 .id(1)
-                .razaoSocial("Thiago teste")
+                .nome("Thiago teste")
                 .nivel(Nivel
                     .builder()
                     .id(5)

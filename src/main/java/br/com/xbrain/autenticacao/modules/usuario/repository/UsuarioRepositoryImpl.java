@@ -610,7 +610,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                     usuario.dataUltimoAcesso,
                     usuario.loginNetSales,
                     nivel.nome,
-                    organizacaoEmpresa.razaoSocial,
+                    organizacaoEmpresa.nome,
                     stringTemplate(CONCATENA_STRINGS, usuarioHierarquia.usuarioSuperior.nome)
                 )
             )
@@ -636,7 +636,7 @@ public class UsuarioRepositoryImpl extends CustomRepository<Usuario> implements 
                 usuario.dataUltimoAcesso,
                 usuario.loginNetSales,
                 nivel.nome,
-                organizacaoEmpresa.razaoSocial)
+                organizacaoEmpresa.nome)
             .fetch();
     }
 

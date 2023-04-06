@@ -19,11 +19,11 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
 
     List<OrganizacaoEmpresa> findAllByNivelIdAndSituacao(Integer nivelId, ESituacaoOrganizacaoEmpresa situacao);
 
-    boolean existsByRazaoSocialIgnoreCase(String razaoSocial);
+    boolean existsByNomeIgnoreCase(String nome);
 
     boolean existsByCnpjAndIdNot(String cnpj, Integer id);
 
-    boolean existsByRazaoSocialAndIdNot(String razaoSocial, Integer id);
+    boolean existsByNomeAndIdNot(String nome, Integer id);
 
     boolean existsByCnpj(String cnpj);
 }

@@ -25,7 +25,7 @@ public class OrganizacaoEmpresaRepositoryTest {
     public void findAll_todasOrganizacoes_quandoPesquisar() {
         assertThat(organizacaoEmpresaRepository.findAll())
             .hasSize(5)
-            .extracting("codigo", "razaoSocial")
+            .extracting("codigo", "nome")
             .contains(tuple("BCC", "Brasil Center"),
                 tuple("CALLINK", "Callink"),
                 tuple("PROPRIO", "Próprio"),
@@ -39,7 +39,7 @@ public class OrganizacaoEmpresaRepositoryTest {
 
         assertThat(organizacaoEmpresaRepository.findByPredicate(predicate.build()))
             .hasSize(1)
-            .extracting("codigo", "razaoSocial")
+            .extracting("codigo", "nome")
             .contains(tuple("BCC", "Brasil Center"));
     }
 
@@ -49,7 +49,7 @@ public class OrganizacaoEmpresaRepositoryTest {
 
         assertThat(organizacaoEmpresaRepository.findByPredicate(predicate.build()))
             .hasSize(1)
-            .extracting("codigo", "razaoSocial")
+            .extracting("codigo", "nome")
             .contains(tuple("CALLINK", "Callink"));
     }
 
@@ -57,7 +57,7 @@ public class OrganizacaoEmpresaRepositoryTest {
     public void findById_organizacao_quandoExistir() {
         var response = organizacaoEmpresaRepository.findById(3).get();
         assertThat(response.getId()).isEqualTo(3);
-        assertThat(response.getRazaoSocial()).isEqualTo("Próprio");
+        assertThat(response.getNome()).isEqualTo("Próprio");
         assertThat(response.getCodigo()).isEqualTo("PROPRIO");
     }
 }

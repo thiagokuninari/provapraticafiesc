@@ -18,7 +18,7 @@ public class UsuarioVendedorReceptivosResponseTest {
         assertThat(usuariosVendedorReceptivoResponse)
             .extracting("nome", "email", "loginNetSales", "nivel", "organizacao")
             .containsExactly(usuario.getNome(), usuario.getEmail(), usuario.getLoginNetSales(),
-                usuario.getNivelNome(), usuario.getOrganizacaoEmpresa().getRazaoSocial());
+                usuario.getNivelNome(), usuario.getOrganizacaoEmpresa().getNome());
     }
 
     private Usuario umUsuario() {
@@ -34,7 +34,7 @@ public class UsuarioVendedorReceptivosResponseTest {
                     .nome("Nivel teste")
                     .build())
                 .build())
-            .organizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("1").razaoSocial("Org teste").build())
+            .organizacaoEmpresa(OrganizacaoEmpresa.builder().codigo("1").nome("Org teste").build())
             .build();
     }
 }
