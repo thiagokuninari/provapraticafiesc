@@ -39,42 +39,42 @@ public class NivelServiceTest {
     @Test
     public void getPermitidosPorNivel_deveRetornarXbrain_quandoOUsuarioForXbrain() {
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .usuario(Usuario
                     .builder()
-                    .usuario(Usuario
-                        .builder()
-                        .canais(Set.of(ECanal.D2D_PROPRIO))
-                        .build())
-                    .cargoCodigo(CodigoCargo.EXECUTIVO)
-                    .nivelCodigo("XBRAIN")
-                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                        .build());
+                    .canais(Set.of(ECanal.D2D_PROPRIO))
+                    .build())
+                .cargoCodigo(CodigoCargo.EXECUTIVO)
+                .nivelCodigo("XBRAIN")
+                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                .build());
 
         assertThat(service.getPermitidos(NivelTipoVisualizacao.CADASTRO))
-                .extracting("id", "nome")
-                .contains(
-                        tuple(4, "X-BRAIN"));
+            .extracting("id", "nome")
+            .contains(
+                tuple(4, "X-BRAIN"));
     }
 
     @Test
     public void getPermitidosPorNivel_deveIgnorarXbrain_quandoOUsuarioNaoForXbrain() {
         when(autenticacaoService.getUsuarioAutenticado())
-                .thenReturn(UsuarioAutenticado
+            .thenReturn(UsuarioAutenticado
+                .builder()
+                .usuario(Usuario
                     .builder()
-                    .usuario(Usuario
-                        .builder()
-                        .canais(Set.of(ECanal.D2D_PROPRIO))
-                        .build())
-                    .cargoCodigo(CodigoCargo.EXECUTIVO)
-                    .cargoCodigo(CodigoCargo.EXECUTIVO)
-                        .nivelCodigo("MSO")
-                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                        .build());
+                    .canais(Set.of(ECanal.D2D_PROPRIO))
+                    .build())
+                .cargoCodigo(CodigoCargo.EXECUTIVO)
+                .cargoCodigo(CodigoCargo.EXECUTIVO)
+                .nivelCodigo("MSO")
+                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                .build());
 
         assertThat(service.getPermitidos(NivelTipoVisualizacao.CADASTRO))
-                .extracting("id", "nome")
-                .doesNotContain(
-                        tuple(4, "X-BRAIN"));
+            .extracting("id", "nome")
+            .doesNotContain(
+                tuple(4, "X-BRAIN"));
     }
 
     @Test
@@ -147,27 +147,28 @@ public class NivelServiceTest {
                     .canais(Set.of(ECanal.D2D_PROPRIO))
                     .build())
                 .cargoCodigo(CodigoCargo.EXECUTIVO)
-                        .nivelCodigo("MSO")
-                        .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
-                        .build());
+                .nivelCodigo("MSO")
+                .permissoes(List.of(new SimpleGrantedAuthority(AUT_VISUALIZAR_GERAL.getRole())))
+                .build());
 
         assertThat(service.getPermitidos(NivelTipoVisualizacao.CADASTRO))
-                .extracting("id", "nome")
-                .containsExactlyInAnyOrder(
-                        tuple(6, "Atendimento Pessoal"),
-                        tuple(16, "Ativo Local Colaborador"),
-                        tuple(9, "Ativo Local Proprio"),
-                        tuple(10, "Ativo Local Terceiro"),
-                        tuple(11, "Ativo Nacional Terceiro"),
-                        tuple(12, "Ativo Nacional Terceiro Segmentado"),
-                        tuple(13, "Ativo Rentabilização"),
-                        tuple(7, "Lojas"),
-                        tuple(2, "MSO"),
-                        tuple(1, "Operação"),
-                        tuple(15, "Ouvidoria"),
-                        tuple(8, "Receptivo"),
-                        tuple(18, "Backoffice"),
-                        tuple(19, "Backoffice Centralizado"));
+            .extracting("id", "nome")
+            .containsExactlyInAnyOrder(
+                tuple(6, "Atendimento Pessoal"),
+                tuple(16, "Ativo Local Colaborador"),
+                tuple(9, "Ativo Local Proprio"),
+                tuple(10, "Ativo Local Terceiro"),
+                tuple(11, "Ativo Nacional Terceiro"),
+                tuple(12, "Ativo Nacional Terceiro Segmentado"),
+                tuple(13, "Ativo Rentabilização"),
+                tuple(7, "Lojas"),
+                tuple(2, "MSO"),
+                tuple(1, "Operação"),
+                tuple(15, "Ouvidoria"),
+                tuple(8, "Receptivo"),
+                tuple(18, "Backoffice"),
+                tuple(19, "Backoffice Centralizado"),
+                tuple(21, "Backoffice Qualidade"));
     }
 
     @Test
