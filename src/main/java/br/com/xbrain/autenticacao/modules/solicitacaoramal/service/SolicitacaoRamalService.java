@@ -51,6 +51,8 @@ public class SolicitacaoRamalService {
         new ValidacaoException("agenteAutorizadoId obrigatório para o cargo agente autorizado");
     public static final ValidacaoException SOLICITACAO_PENDENTE_OU_ANDAMENTO = new ValidacaoException(
         "Não é possível salvar a solicitação de ramal, pois já existe uma pendente ou em andamento.");
+    public static final ValidacaoException SEM_AUTORIZACAO = new ValidacaoException(
+        "Sem autorização para fazer uma solicitação para este canal.");
     public static final String ASSUNTO_EMAIL_EXPIRAR = "Solicitação de Ramal irá expirar em 24h";
     public static final String ASSUNTO_EMAIL_CADASTRAR = "Nova Solicitação de Ramal";
     public static final String TEMPLATE_EMAIL = "solicitacao-ramal";
@@ -119,8 +121,8 @@ public class SolicitacaoRamalService {
         return getSolicitacaoRamalService(request.getCanal()).save(request);
     }
 
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(ECanal canal, Integer id) {
-        return getSolicitacaoRamalService(canal).getDadosAdicionais(id);
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        return getSolicitacaoRamalService(filtros.getCanal()).getDadosAdicionais(filtros);
     }
 
     @Transactional

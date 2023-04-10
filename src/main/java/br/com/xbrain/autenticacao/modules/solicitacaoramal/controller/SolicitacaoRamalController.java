@@ -4,7 +4,6 @@ import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.dto.*;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.enums.ETipoImplantacao;
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.service.SolicitacaoRamalService;
-import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,10 +19,9 @@ public class SolicitacaoRamalController {
     @Autowired
     private SolicitacaoRamalService solicitacaoRamalService;
 
-    @GetMapping("/dados-canal/{canal}/{id}")
-    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(@PathVariable ECanal canal,
-                                                                      @PathVariable Integer id) {
-        return solicitacaoRamalService.getDadosAdicionais(canal, id);
+    @GetMapping("dados-canal")
+    public SolicitacaoRamalDadosAdicionaisResponse getDadosAdicionais(SolicitacaoRamalFiltros filtros) {
+        return solicitacaoRamalService.getDadosAdicionais(filtros);
     }
 
     @GetMapping("/historico/{idSolicitacao}")

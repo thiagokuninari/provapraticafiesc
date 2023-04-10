@@ -18,6 +18,7 @@ import br.com.xbrain.autenticacao.modules.solicitacaoramal.model.SolicitacaoRama
 import br.com.xbrain.autenticacao.modules.solicitacaoramal.repository.SolicitacaoRamalRepository;
 import br.com.xbrain.autenticacao.modules.usuario.dto.SubCanalDto;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ETipoCanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.SubCanal;
@@ -34,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +100,21 @@ public class SolicitacaoRamalServiceD2dTest {
     }
 
     @Test
+    public void save_deveLancarException_seUsuarioAutenticadoNaoTiverPermissaoCTR_20015() {
+        var solicitacaoRamal = criaSolicitacaoRamal(null);
+        solicitacaoRamal.setCanal(ECanal.D2D_PROPRIO);
+        solicitacaoRamal.setSubCanalId(1);
+
+        when(autenticacaoService.getUsuarioAutenticado())
+            .thenReturn(UsuarioAutenticado.builder().id(1)
+                .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20014.getRole()))).build());
+
+        assertThatExceptionOfType(ValidacaoException.class).isThrownBy(() -> service.save(solicitacaoRamal))
+            .withMessage("Sem autorização para fazer uma solicitação para este canal.");
+
+    }
+
+    @Test
     public void update_deveAtualizarSolicitacaoD2dSeTodosOsDadosPreenchidosCorretamente() {
         when(autenticacaoService.getUsuarioAutenticado())
             .thenReturn(umUsuarioAutenticadoOperacao());
@@ -123,7 +140,7 @@ public class SolicitacaoRamalServiceD2dTest {
         when(client.obterNomeTelefoniaPorId(1)).thenReturn(umaTelefonia());
         when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
 
-        service.getDadosAdicionais(1);
+        service.getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null));
 
         verify(subCanalService, times(1)).getSubCanalById(eq(1));
         verify(client, times(1)).obterNomeTelefoniaPorId(eq(1));
@@ -139,7 +156,8 @@ public class SolicitacaoRamalServiceD2dTest {
         when(client.obterRamaisParaCanal(ECanal.D2D_PROPRIO, 1)).thenReturn(List.of());
 
         assertThatExceptionOfType(IntegracaoException.class)
-            .isThrownBy(() -> service.getDadosAdicionais(1))
+            .isThrownBy(() -> service
+                .getDadosAdicionais(umFiltrosSolicitacao(ECanal.D2D_PROPRIO, 1, null)))
             .withMessage("#008 - Desculpe, ocorreu um erro interno. Contate o administrador.");
 
         verify(subCanalService, times(1)).getSubCanalById(eq(1));
@@ -233,6 +251,7 @@ public class SolicitacaoRamalServiceD2dTest {
             .id(1)
             .usuario(Usuario.builder().id(1).build())
             .cargoCodigo(CodigoCargo.GERENTE_OPERACAO)
+            .permissoes(List.of(new SimpleGrantedAuthority(CodigoFuncionalidade.CTR_20015.getRole())))
             .build();
     }
 
@@ -256,5 +275,13 @@ public class SolicitacaoRamalServiceD2dTest {
             List.of(umaSolicitacaoRamalCanalD2d(1),
                 umaSolicitacaoRamalCanalD2d(2))
         );
+    }
+
+    private SolicitacaoRamalFiltros umFiltrosSolicitacao(ECanal canal, Integer subCanalId, Integer aaId) {
+        var filtro = new SolicitacaoRamalFiltros();
+        filtro.setCanal(canal);
+        filtro.setSubCanalId(subCanalId);
+        filtro.setAgenteAutorizadoId(aaId);
+        return filtro;
     }
 }
