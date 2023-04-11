@@ -276,6 +276,9 @@ app-config:
     mailing-importacao:
 #      url: http://localhost:8087
       url: http://192.168.50.1:6530
+    extrato-comissao:
+      #url: http://localhost:8309
+      url: http://192.168.50.1:8309
 
 flyway:
   enabled: true
@@ -327,6 +330,9 @@ zuul:
     mailing-importacao:
       sensitiveHeaders: Cookie,Set-Cookie
       url: ${app-config.services.mailing-importacao.url}
+    extrato-comissao:
+      sensitive-headers: Cookie,Set-Cookie
+      url: ${app-config.services.extrato-comissao.url}
 
   host:
     connect-timeout-millis: 1800000
