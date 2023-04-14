@@ -2379,6 +2379,28 @@ public class UsuarioServiceTest {
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.MINUTES));
     }
 
+    @Test
+    public void inativar_deveForcarLogoutClienteLojaFuturo_quandoEncontrarUsuario() {
+        when(usuarioRepository.findComplete(eq(1))).thenReturn(Optional.of(umUsuarioCompleto()));
+
+        assertThatCode(() -> usuarioService.inativar(1))
+            .doesNotThrowAnyException();
+
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+        verify(autenticacaoService, times(1))
+            .forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuarioCompleto());
+    }
+
+    @Test
+    public void inativar_naoDeveForcarLogoutClienteLojaFuturo_quandoNaoEncontrarUsuario() {
+        assertThatCode(() -> usuarioService.inativar(1))
+            .doesNotThrowAnyException();
+
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+        verify(autenticacaoService, never())
+            .forcarLogoutGeradorLeadsEClienteLojaFuturo(umUsuarioCompleto());
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()

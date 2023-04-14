@@ -1399,11 +1399,12 @@ public class UsuarioService {
     }
 
     public void inativar(Integer id) {
-        repository.findById(id)
+        repository.findComplete(id)
             .ifPresent(user -> {
                 usuarioClientService.alterarSituacao(id);
                 user.setSituacao(ESituacao.I);
                 repository.save(user);
+                autenticacaoService.forcarLogoutGeradorLeadsEClienteLojaFuturo(user);
             });
     }
 
