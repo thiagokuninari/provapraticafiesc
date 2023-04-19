@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -148,6 +149,24 @@ public class FeriadoService {
         return feriadoImportado;
     }
 
+    public void salvarFeriadoAutomacao(FeriadoAutomacao feriadoAutomacao) {
+        var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
+        //todo salvar feriados
+
+        log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
+        salvarFeriadoEstadualParaCidadesDoEstadoAsync(feriado);
+    }
+
+    public void salvarFeriadoAutomacaoMunicipais(List<FeriadoAutomacao> feriadosMunipais) {
+        //feriadosMunipais.forEach(feriado -> );
+
+
+        //var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
+        //todo salvar feriados
+        //log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
+
+    }
+
     @Transactional
     public FeriadoResponse editarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
@@ -184,6 +203,21 @@ public class FeriadoService {
     }
 
     private void salvarFeriadoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
+        if (feriadoPai.isFeriadoEstadual()) {
+            var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
+                .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))
+                .collect(Collectors.toList());
+            var cidades = new ArrayList<String>();
+            feriadosFilhos.forEach(feriado -> {
+                cidades.add(feriado.getCidade().getNome());
+                });
+            log.info("Qtde Cidades: " + cidades.size());
+            log.info("Cidades: " + cidades);
+          //  repository.save(feriadosFilhos);
+        }
+    }
+
+    private void salvarFeriadoAutomacaoEstadualParaCidadesDoEstado(Feriado feriadoPai) {
         if (feriadoPai.isFeriadoEstadual()) {
             var feriadosFilhos = cidadeService.getAllCidadeByUf(feriadoPai.getUf().getId()).stream()
                 .map(cidade -> Feriado.criarFeriadoFilho(cidade, feriadoPai))

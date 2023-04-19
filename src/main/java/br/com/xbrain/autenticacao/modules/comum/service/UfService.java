@@ -33,4 +33,8 @@ public class UfService {
                 .map(uf -> SelectResponse.of(uf.getId(), uf.getNome()))
                 .collect(Collectors.toList());
     }
+
+    public Uf findUfByUf(String uf) {
+        return ufRepository.findByUf(uf).orElseThrow();
+    }
 }
