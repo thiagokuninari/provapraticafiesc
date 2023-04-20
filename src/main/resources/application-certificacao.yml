@@ -14,11 +14,11 @@ spring:
       maximumPoolSize: 2
 
   redis:
-    host: 172.18.0.3
+    host: 172.10.10.2
     port: 6379
 
   rabbitmq:
-    host: 172.18.0.4
+    host: 172.10.10.3
     port: 5672
     username: xbrain
     password: xbrain
