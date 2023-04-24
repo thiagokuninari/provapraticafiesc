@@ -1,11 +1,15 @@
 package br.com.xbrain.autenticacao.modules.usuario.helpers;
 
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
+import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoNivel;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
 import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
+import java.util.List;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.NivelHelper.*;
@@ -17,6 +21,15 @@ public class CargoHelper {
             .builder()
             .id(id)
             .codigo(codigoCargo)
+            .build();
+    }
+
+    public static Cargo umCargoVendedor() {
+        return Cargo.builder()
+            .nivel(Nivel.builder()
+                .nome("Xbrain")
+                .build())
+            .nome("Vendedor")
             .build();
     }
 
@@ -187,6 +200,43 @@ public class CargoHelper {
             .nome("Analista")
             .nivel(umNivelOperacao())
             .superiores(Set.of(umCargoCoordernador()))
+            .build();
+    }
+
+    public static Page<Cargo> umCargoPage(Integer id, String nome, Integer nivelId) {
+        return new PageImpl<>(List.of(Cargo
+            .builder()
+            .id(id)
+            .nome(nome)
+            .nivel(Nivel
+                .builder()
+                .id(nivelId)
+                .build())
+            .build()));
+    }
+
+    public static Cargo umCargoNivelAdministrador(Integer id, String nome) {
+        return Cargo.builder()
+            .id(id)
+            .nome(nome)
+            .nivel(Nivel
+                .builder()
+                .id(4)
+                .nome("Administrador")
+                .build())
+            .build();
+    }
+
+    public static CargoRequest umCargoRequest(Integer id, String nome) {
+        return CargoRequest
+            .builder()
+            .id(id)
+            .nome(nome)
+            .situacao(ESituacao.A)
+            .nivel(Nivel
+                .builder()
+                .id(4)
+                .build())
             .build();
     }
 }

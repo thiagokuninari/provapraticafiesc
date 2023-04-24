@@ -2,6 +2,7 @@ package br.com.xbrain.autenticacao.modules.permissao.service;
 
 import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
+import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.feeder.service.FeederService;
 import br.com.xbrain.autenticacao.modules.parceirosonline.service.AgenteAutorizadoService;
 import br.com.xbrain.autenticacao.modules.permissao.repository.PermissaoEspecialRepository;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_COORDENADOR;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.AGENTE_AUTORIZADO_GERENTE;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,6 +55,20 @@ public class PermissaoEspecialServiceTest {
         verify(autenticacaoService, times(2)).getUsuarioAutenticado();
         verify(agenteAutorizadoService, times(1)).getUsuariosAaFeederPorCargo(List.of(1), umaListaCodigoCargo());
         verify(feederService, times(1)).salvarPermissoesEspeciaisCoordenadoresGerentes(eq(List.of(1, 2)), eq(1));
+    }
+
+    @Test
+    public void processarPermissoesEspeciaisGerentesCoordenadores_naoDeveProcessarPermissoes_seUsuarioAutenticadoNaoForXbrain() {
+        var usuarioAutenticadoOperacao = umUsuarioAutenticado();
+        usuarioAutenticadoOperacao.setNivelCodigo(CodigoNivel.OPERACAO.name());
+        when(autenticacaoService.getUsuarioAutenticado()).thenReturn(usuarioAutenticadoOperacao);
+
+        assertThatExceptionOfType(PermissaoException.class)
+            .isThrownBy(() -> service.processarPermissoesEspeciaisGerentesCoordenadores(List.of(1)))
+            .withMessageContaining("Usuário não autorizado!");
+
+        verify(agenteAutorizadoService, never()).getUsuariosAaFeederPorCargo(any(), any());
+        verify(feederService, never()).salvarPermissoesEspeciaisCoordenadoresGerentes(any(), anyInt());
     }
 
     private UsuarioAutenticado umUsuarioAutenticado() {

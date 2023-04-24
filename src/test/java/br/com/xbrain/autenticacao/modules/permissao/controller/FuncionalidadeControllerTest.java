@@ -24,8 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = FuncionalidadeController.class)
-@MockBeans( {
+@WebMvcTest(FuncionalidadeController.class)
+@MockBeans({
     @MockBean(EquipeVendaD2dService.class),
     @MockBean(TokenStore.class),
 })

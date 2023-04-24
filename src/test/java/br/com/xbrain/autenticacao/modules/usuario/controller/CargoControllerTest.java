@@ -1,26 +1,21 @@
 package br.com.xbrain.autenticacao.modules.usuario.controller;
 
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.usuario.dto.CargoRequest;
 import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo;
 import br.com.xbrain.autenticacao.modules.usuario.enums.ECanal;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cargo;
-import br.com.xbrain.autenticacao.modules.usuario.model.Nivel;
 import br.com.xbrain.autenticacao.modules.usuario.service.CargoService;
-import br.com.xbrain.autenticacao.modules.usuario.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -33,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static br.com.xbrain.autenticacao.modules.usuario.helpers.CargoHelper.*;
 import static helpers.TestsHelper.convertObjectToJsonBytes;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +42,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = CargoController.class)
-@AutoConfigureMockMvc
+@WebMvcTest(CargoController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+})
 public class CargoControllerTest {
 
     private static final String API_CARGO = "/api/cargos";
@@ -59,12 +58,6 @@ public class CargoControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private WebApplicationContext context;
-    @MockBean
-    private EquipeVendaD2dService equipeVendaD2dService;
-    @MockBean
-    private TokenEndpoint tokenEndpoint;
-    @MockBean
-    private UsuarioService usuarioService;
 
     @Before
     public void setUp() throws Exception {
@@ -72,14 +65,15 @@ public class CargoControllerTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getAll_isUnauthorized_quandoNaoInformarAToken() throws Exception {
         mvc.perform(get(API_CARGO)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
 
-    @WithMockUser
     @Test
+    @WithMockUser
     public void getAll_deveRetornarOsCargos_conformeNivelECanaisPermitidosFiltrados() throws Exception {
         when(cargoService.getAll(any(), any()))
             .thenReturn(umCargoPage(1, "Administrador", 4));
@@ -173,58 +167,12 @@ public class CargoControllerTest {
     @WithMockUser
     public void getAll_deveRetornarOsCargosComNomeNivel_conformeNivelFiltrado() throws Exception {
         when(cargoService.getPermitidosPorNiveis(anyList()))
-            .thenReturn(List.of(umCargo()));
+            .thenReturn(List.of(umCargoVendedor()));
 
-        mvc.perform(get("/api/cargos/com-nivel?niveisId=1,2,3")
+        mvc.perform(get(API_CARGO + "/com-nivel?niveisId=1,2,3")
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", not(empty())))
             .andExpect(jsonPath("$[0].nome", is("Vendedor - Xbrain")));
-    }
-
-    public Page<Cargo> umCargoPage(Integer id, String nome, Integer nivelId) {
-        return new PageImpl<>(List.of(Cargo
-            .builder()
-            .id(id)
-            .nome(nome)
-            .nivel(Nivel
-                .builder()
-                .id(nivelId)
-                .build())
-            .build()));
-    }
-
-    public Cargo umCargoNivelAdministrador(Integer id, String nome) {
-        return Cargo.builder()
-            .id(id)
-            .nome(nome)
-            .nivel(Nivel
-                .builder()
-                .id(4)
-                .nome("Administrador")
-                .build())
-            .build();
-    }
-
-    public CargoRequest umCargoRequest(Integer id, String nome) {
-        return CargoRequest
-            .builder()
-            .id(id)
-            .nome(nome)
-            .situacao(ESituacao.A)
-            .nivel(Nivel
-                .builder()
-                .id(4)
-                .build())
-            .build();
-    }
-
-    private Cargo umCargo() {
-        return Cargo.builder()
-            .nivel(Nivel.builder()
-                .nome("Xbrain")
-                .build())
-            .nome("Vendedor")
-            .build();
     }
 }

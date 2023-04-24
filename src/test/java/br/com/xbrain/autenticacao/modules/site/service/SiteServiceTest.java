@@ -6,7 +6,6 @@ import br.com.xbrain.autenticacao.modules.call.dto.ConfiguracaoTelefoniaResponse
 import br.com.xbrain.autenticacao.modules.call.service.CallService;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -14,7 +13,10 @@ import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import br.com.xbrain.autenticacao.modules.equipevenda.dto.EquipeVendaDto;
 import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
-import br.com.xbrain.autenticacao.modules.site.dto.*;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteCidadeResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteFiltros;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteResponse;
+import br.com.xbrain.autenticacao.modules.site.dto.SiteSupervisorResponse;
 import br.com.xbrain.autenticacao.modules.site.model.Site;
 import br.com.xbrain.autenticacao.modules.site.predicate.SitePredicate;
 import br.com.xbrain.autenticacao.modules.site.repository.SiteRepository;
@@ -44,13 +46,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import static br.com.xbrain.autenticacao.modules.comum.enums.ETimeZone.*;
+import static br.com.xbrain.autenticacao.modules.site.helper.SiteHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.enums.CodigoCargo.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoAtivoProprioComCargo;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioAutenticadoHelper.umUsuarioAutenticadoNivelBackoffice;
-import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioHelper.*;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.doisUsuarioResponse;
 import static br.com.xbrain.autenticacao.modules.usuario.helpers.UsuarioResponseHelper.umUsuarioResponse;
-import static helpers.TestBuilders.umUsuario;
 import static helpers.TestBuilders.*;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.*;
@@ -794,40 +795,5 @@ public class SiteServiceTest {
     private UsuarioAutenticado umUsuarioAutenticado() {
         return umUsuarioAutenticadoAtivoProprioComCargo(1, COORDENADOR_OPERACAO,
             CodigoDepartamento.COMERCIAL);
-    }
-
-    private static Site umSiteManaus() {
-        return Site.builder()
-            .id(1)
-            .nome("Manaus")
-            .timeZone(ETimeZone.AMT)
-            .supervisores(Set.of(umSupervisor(), outroSupervisor()))
-            .coordenadores(Set.of(umCoordenador()))
-            .situacao(ESituacao.A)
-            .siteNacional(Eboolean.F)
-            .build();
-    }
-
-    private static Site umSiteInativo() {
-        return Site.builder()
-            .id(2)
-            .nome("Site Inativo")
-            .timeZone(ETimeZone.FNT)
-            .supervisores(Set.of(umSupervisor(), outroSupervisor()))
-            .coordenadores(Set.of(outroCoordenador()))
-            .situacao(ESituacao.I)
-            .siteNacional(Eboolean.F)
-            .build();
-    }
-
-    private SiteRequest requestUpdateSite() {
-        return SiteRequest.builder()
-            .id(1)
-            .supervisoresIds(List.of(11123))
-            .nome("Manaus")
-            .coordenadoresIds(List.of(11122))
-            .cidadesIds(List.of(1500))
-            .estadosIds(List.of(200))
-            .build();
     }
 }
