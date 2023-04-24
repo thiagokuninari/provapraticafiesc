@@ -1,15 +1,20 @@
 package br.com.xbrain.autenticacao.modules.feriado.service;
 
+import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoService;
 import br.com.xbrain.autenticacao.modules.comum.enums.EErrors;
 import br.com.xbrain.autenticacao.modules.comum.exception.IntegracaoException;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.service.UfService;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacaoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacaoMunicipais;
-import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriadoAutomacao;
+import br.com.xbrain.autenticacao.modules.feriado.repository.FeriadoRepository;
+import br.com.xbrain.autenticacao.modules.usuario.enums.CodigoFuncionalidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
+import br.com.xbrain.autenticacao.modules.usuario.predicate.CidadePredicate;
+import br.com.xbrain.autenticacao.modules.usuario.repository.CidadeRepository;
 import br.com.xbrain.autenticacao.modules.usuario.service.CidadeService;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import feign.RetryableException;
@@ -19,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,26 +39,10 @@ public class FeriadoAutomacaoService {
     private FeriadoService feriadoService;
     @Autowired
     private UfService ufService;
-
-
-    public void importarFeriadosAutomacaoNacionais(Integer ano) {
-        log.info("Importando feriados Nacionais do ano: " + ano);
-
-        //todo criar feriado importacao com status em importacao
-
-
-        var usuarioAutenticao = autenticacaoService.getUsuarioAutenticado();
-        var feriadosNacionais = consultarFeriadosNacionais(ano);
-
-
-//        repository.save(br.com.xbrain.autenticacao.modules.feriado.model.FeriadoAutomacao.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticao));
-//
-//        if (!feriadosNacionais.isEmpty()) {
-//            var feriadoAutomacao
-//            feriadosNacionais.forEach(feriadoAutomacao -> feriadoService.salvarFeriadoAutomacao(feriadoAutomacao));
-//            log.info("Feriados Nacionais importados.");
-//        }
-    }
+    @Autowired
+    private CidadeRepository cidadeRepository;
+    @Autowired
+    private FeriadoRepository feriadoRepository;
 
     private List<FeriadoAutomacao> consultarFeriadosNacionais(Integer ano) {
         try {
@@ -64,6 +52,62 @@ public class FeriadoAutomacaoService {
                 FeriadoAutomacao.class.getName(),
                 EErrors.ERRO_BUSCAR_FERIADOS);
         }
+    }
+
+    private List<FeriadoAutomacao> consultarFeriadosMunicipais(FeriadoAutomacaoFiltros filtros) {
+        try {
+            return feriadoAutomacaoClient.consultarFeriadosMunicipais(
+                filtros.getAno(), filtros.getEstado(), filtros.getCidade());
+        } catch (RetryableException | HystrixBadRequestException ex) {
+            throw new IntegracaoException(ex,
+                FeriadoAutomacao.class.getName(),
+                EErrors.ERRO_BUSCAR_FERIADOS);
+        }
+    }
+
+    public void importarFeriadosAutomacaoMunicipais(FeriadoAutomacaoFiltros filtros) {
+        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
+        validarAutorizacaoGerenciamentoFeriados(usuarioAutenticado);
+
+        var predicate = new CidadePredicate()
+            .comCidadesId(filtros.getCidadesIds())
+            .build();
+
+        var cidades = cidadeRepository.findCidadesByPredicate(predicate);
+
+        var feriadosMunicipais = new ArrayList<FeriadoAutomacaoMunicipais>();
+
+        cidades.forEach(cidade -> {
+            filtros.setCidade(cidade.getNome());
+            filtros.setEstado(cidade.getNomeUf());
+            var listaFeriadosAutomacao = consultarFeriadosMunicipais(filtros);
+
+            var feriadoAutomacaoMunicipal = new FeriadoAutomacaoMunicipais().builder()
+                .cidadeId(cidade.getId())
+                .cidadeNome(cidade.getNome())
+                .feriadosMunicipais(listaFeriadosAutomacao)
+                .build();
+
+            feriadosMunicipais.add(feriadoAutomacaoMunicipal);
+        });
+
+    }
+
+    public void importarFeriadosAutomacaoNacionais(Integer ano) {
+        log.info("Importando feriados Nacionais do ano: " + ano);
+
+        //todo criar feriado importacao com status em importacao
+
+        var usuarioAutenticao = autenticacaoService.getUsuarioAutenticado();
+        var feriadosNacionais = consultarFeriadosNacionais(ano);
+
+//        repository.save(FeriadoAutomacao.of(ESituacaoFeriadoAutomacao.EM_IMPORTACAO, usuarioAutenticao));
+//
+//        if (!feriadosNacionais.isEmpty()) {
+//            var feriadoAutomacao
+//            feriadosNacionais.forEach(feriadoAutomacao -> feriadoService.salvarFeriadoAutomacao(feriadoAutomacao));
+//            log.info("Feriados Nacionais importados.");
+//        }
     }
 
     public void importarFeriadosAutomacaoEstaduais(Integer ano) {
@@ -98,36 +142,12 @@ public class FeriadoAutomacaoService {
             });
         });
 
-
         log.info("Feriados ESTADUAIS importados.");
     }
 
-    public List<FeriadoAutomacao> consultarFeriadoAutomacao(FeriadoAutomacaoFiltros filtros) {
-        return feriadoAutomacaoClient.consultarFeriadosMunicipais(
-            filtros.getAno(), filtros.getEstado(), filtros.getCidade());
-    }
-
-    public void importarFeriadosAutomacaoMunicipais(FeriadoAutomacaoFiltros filtros) {
-        var usuarioAutenticado = autenticacaoService.getUsuarioAutenticado();
-
-        var cidades = new ArrayList<Cidade>();
-        cidades.add(Cidade.builder().id(1).nome("Londrina").build());
-        cidades.add(Cidade.builder().id(2).nome("Cambe").build());
-
-        var feriadosMunicipais = new ArrayList<FeriadoAutomacaoMunicipais>();
-
-        cidades.forEach(cidade -> {
-                filtros.setCidade(cidade.getNome());
-                var listaFeriadosAutomacao = consultarFeriadoAutomacao(filtros);
-
-                var feriadoAutomacaoMunicipal = new FeriadoAutomacaoMunicipais();
-                feriadoAutomacaoMunicipal.setCidadeId(cidade.getId());
-                feriadoAutomacaoMunicipal.setCidadeNome(cidade.getNome());
-                feriadoAutomacaoMunicipal.setFeriadosMunicipais(listaFeriadosAutomacao.stream().filter(
-                    f -> !f.getNome().equals("Sexta Feira Santa")).collect(Collectors.toList()));
-                feriadosMunicipais.add(feriadoAutomacaoMunicipal);
-            });
-
-        var res = feriadosMunicipais;
+    private void validarAutorizacaoGerenciamentoFeriados(UsuarioAutenticado usuario) {
+        if (!usuario.hasPermissao(CodigoFuncionalidade.CTR_2050)) {
+            throw new ValidacaoException("Usuario sem permissao para gerenciamento de feriados");
+        }
     }
 }

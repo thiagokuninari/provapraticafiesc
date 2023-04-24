@@ -24,7 +24,7 @@ public class CidadeRepositoryTest {
     @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarVazio_quandoInformarListaComCidadeIdNaoExistente() {
         var predicate = new CidadePredicate()
-            .comCidadeId(List.of(123123, 213213))
+            .comCidadesId(List.of(123123, 213213))
             .build();
 
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))
@@ -34,7 +34,7 @@ public class CidadeRepositoryTest {
     @Test
     public void findCodigoIbgeRegionalByCidade_deveRetornarListaCodigoIbgeRegionalResponse_quandoEncontrarPorCidadeId() {
         var predicate = new CidadePredicate()
-            .comCidadeId(List.of(3426, 5578))
+            .comCidadesId(List.of(3426, 5578))
             .build();
 
         assertThat(cidadeRepository.findCodigoIbgeRegionalByCidade(predicate))

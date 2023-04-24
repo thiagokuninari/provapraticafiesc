@@ -4,6 +4,7 @@ import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacaoFiltros;
 import br.com.xbrain.autenticacao.modules.feriado.service.FeriadoAutomacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +15,7 @@ public class FeriadoAutomacaoController {
     @Autowired
     private FeriadoAutomacaoService service;
 
-    @GetMapping("municipais")
+    @PostMapping("municipais")
     public void importarFeriadosAutomacaoMunicipais(FeriadoAutomacaoFiltros filtros) {
         service.importarFeriadosAutomacaoMunicipais(filtros);
     }

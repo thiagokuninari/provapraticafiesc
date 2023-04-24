@@ -74,7 +74,7 @@ public class CidadePredicate {
         return this;
     }
 
-    public CidadePredicate comCidadeId(List<Integer> cidadesId) {
+    public CidadePredicate comCidadesId(List<Integer> cidadesId) {
         if (!isEmpty(cidadesId)) {
             builder.and(
                 ExpressionUtils.anyOf(
@@ -83,6 +83,14 @@ public class CidadePredicate {
                         .map(cidade.id::in)
                         .collect(Collectors.toList())));
         }
+        return this;
+    }
+
+    public CidadePredicate comUfId(Integer ufId) {
+        if (ufId != null) {
+            builder.and(cidade.uf.id.eq(ufId));
+        }
+
         return this;
     }
 }

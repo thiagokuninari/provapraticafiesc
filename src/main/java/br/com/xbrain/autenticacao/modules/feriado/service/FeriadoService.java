@@ -157,16 +157,6 @@ public class FeriadoService {
         salvarFeriadoEstadualParaCidadesDoEstadoAsync(feriado);
     }
 
-    public void salvarFeriadoAutomacaoMunicipais(List<FeriadoAutomacao> feriadosMunipais) {
-        //feriadosMunipais.forEach(feriado -> );
-
-
-        //var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
-        //todo salvar feriados
-        //log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
-
-    }
-
     @Transactional
     public FeriadoResponse editarFeriado(FeriadoRequest request) {
         request.validarDadosObrigatorios();
@@ -210,10 +200,10 @@ public class FeriadoService {
             var cidades = new ArrayList<String>();
             feriadosFilhos.forEach(feriado -> {
                 cidades.add(feriado.getCidade().getNome());
-                });
+            });
             log.info("Qtde Cidades: " + cidades.size());
             log.info("Cidades: " + cidades);
-          //  repository.save(feriadosFilhos);
+            repository.save(feriadosFilhos);
         }
     }
 
@@ -233,7 +223,7 @@ public class FeriadoService {
                     .runAsync(() -> salvarFeriadoEstadualParaCidadesDoEstado(feriadoPai))
                     .exceptionally(ex -> {
                         log.error("Erro ao salvar o feriado estadual para as cidades do estado, feriadoPaiId: "
-                            + feriadoPai.getId(),
+                                + feriadoPai.getId(),
                             ex);
                         return null;
                     });
@@ -293,7 +283,7 @@ public class FeriadoService {
                 .build());
     }
 
-    private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
+    public void validarSeFeriadoJaCadastado(FeriadoRequest request) {
         repository.findByPredicate(
             new FeriadoPredicate()
                 .comNome(request.getNome())
@@ -304,6 +294,22 @@ public class FeriadoService {
                 .excetoExcluidos()
                 .excetoFeriadosFilhos()
                 .build())
+            .ifPresent(feriado -> {
+                throw EX_FERIADO_JA_CADASTRADO;
+            });
+    }
+
+    public void validarSeFeriadoJaCadastado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
+        repository.findByPredicate(
+                new FeriadoPredicate()
+                    .comNome(feriadoAutomacao.getNome())
+                    .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
+                    .comEstado(request.getEstadoId())
+                    .comCidade(request.getCidadeId(), request.getEstadoId())
+                    .comDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()))
+                    .excetoExcluidos()
+                    .excetoFeriadosFilhos()
+                    .build())
             .ifPresent(feriado -> {
                 throw EX_FERIADO_JA_CADASTRADO;
             });

@@ -16,7 +16,7 @@ public class CidadePredicateTest {
     @Test
     public void comCidadesId_deveFiltrarPorIds_quandoIdsListaComElementos() {
         var predicate = new CidadePredicate()
-            .comCidadeId(List.of(230, 100, 340))
+            .comCidadesId(List.of(230, 100, 340))
             .build();
         var expected = new BooleanBuilder(cidade.id.in(230, 100, 340));
         assertThat(predicate).isEqualTo(expected);
@@ -27,7 +27,7 @@ public class CidadePredicateTest {
         var cidadesId = generateRandomIntList(new Random(789), 2700);
 
         var predicate = new CidadePredicate()
-            .comCidadeId(cidadesId)
+            .comCidadesId(cidadesId)
             .build();
 
         var expected = new BooleanBuilder(cidade.id.in(cidadesId.subList(0, 1000)))

@@ -15,6 +15,8 @@ public interface CidadeRepositoryCustom {
 
     Optional<Cidade> findByPredicate(Predicate predicate);
 
+    List<Cidade> findCidadesByPredicate(Predicate predicate);
+
     List<Cidade> findAllByRegionalId(Integer regionalId, Predicate predicate);
 
     List<Cidade> findAllByNovaRegionalId(Integer regionalId, Predicate predicate);

@@ -28,7 +28,7 @@ import static br.com.xbrain.autenticacao.modules.usuario.model.QCidade.cidade;
 public class CidadeService {
 
     private static final ValidacaoException EX_NAO_ENCONTRADO = new ValidacaoException("Cidade não encontrada.");
-    
+
     @Autowired
     private AutenticacaoService autenticacaoService;
     @Autowired
@@ -185,7 +185,7 @@ public class CidadeService {
     public List<CodigoIbgeRegionalResponse> getCodigoIbgeRegionalByCidade(List<Integer> cidadesId) {
         if (!cidadesId.isEmpty()) {
             var predicate = new CidadePredicate()
-                .comCidadeId(cidadesId)
+                .comCidadesId(cidadesId)
                 .build();
             return cidadeRepository.findCodigoIbgeRegionalByCidade(predicate);
         }

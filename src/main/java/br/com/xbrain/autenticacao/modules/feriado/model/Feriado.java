@@ -53,7 +53,7 @@ public class Feriado {
     private Eboolean feriadoNacional;
 
     @JoinColumn(name = "FK_CIDADE", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "FK_FERIADO_CIDADE"))
+        foreignKey = @ForeignKey(name = "FK_FERIADO_CIDADE"))
     @ManyToOne(fetch = FetchType.LAZY)
     private Cidade cidade;
 

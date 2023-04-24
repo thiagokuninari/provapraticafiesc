@@ -219,6 +219,14 @@ public class CidadeRepositoryImpl extends CustomRepository<Cidade> implements Ci
     }
 
     @Override
+    public List<Cidade> findCidadesByPredicate(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(cidade)
+            .where(predicate)
+            .fetch();
+    }
+
+    @Override
     public Optional<Cidade> findFirstByPredicate(Predicate predicate) {
         return Optional.ofNullable(new JPAQueryFactory(entityManager)
             .selectFrom(cidade)
