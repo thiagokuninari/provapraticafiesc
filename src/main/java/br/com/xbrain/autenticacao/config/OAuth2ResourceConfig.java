@@ -12,7 +12,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
-import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.INDICE_ZERO;
+import java.util.Arrays;
+
+import static br.com.xbrain.autenticacao.modules.comum.util.Constantes.TEST;
 
 @Configuration
 @EnableResourceServer
@@ -94,14 +96,13 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        if (isAmbienteTeste()) {
+        if (isActiveProfileTest()) {
             resources.stateless(false);
         }
         resources.tokenStore(tokenStore);
     }
 
-    private boolean isAmbienteTeste() {
-        var profile = environment.getActiveProfiles()[INDICE_ZERO];
-        return profile.equals("test");
+    private boolean isActiveProfileTest() {
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch(env -> env.equalsIgnoreCase(TEST));
     }
 }
