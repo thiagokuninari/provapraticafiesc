@@ -2,7 +2,6 @@ package br.com.xbrain.autenticacao.modules.feriado.service;
 
 import br.com.xbrain.autenticacao.config.feign.FeignSkipBadRequestsConfiguration;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
-import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacaoEstadual;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,13 +16,14 @@ public interface FeriadoAutomacaoClient {
     String FERIADOS = "/feriados";
 
     @GetMapping(FERIADOS + "/municipal")
-    List<FeriadoAutomacao> consultarFeriadosMunicipais(@RequestParam("ano") Integer ano,
-                                                       @RequestParam("estado") String estado,
-                                                       @RequestParam("cidade") String cidade);
+    List<FeriadoAutomacao> buscarFeriadosMunicipais(@RequestParam("ano") Integer ano,
+                                                    @RequestParam("estado") String estado,
+                                                    @RequestParam("cidade") String cidade);
 
     @GetMapping(FERIADOS + "/nacional")
     List<FeriadoAutomacao> buscarFeriadosNacionais(@RequestParam("ano") Integer ano);
 
     @GetMapping(FERIADOS + "/estadual")
-    List<FeriadoAutomacaoEstadual> buscarFeriadosEstaduais(@RequestParam("ano") Integer ano);
+    List<FeriadoAutomacao> buscarFeriadosEstaduais(@RequestParam("ano") Integer ano,
+                                                           @RequestParam("estado") String estado);
 }

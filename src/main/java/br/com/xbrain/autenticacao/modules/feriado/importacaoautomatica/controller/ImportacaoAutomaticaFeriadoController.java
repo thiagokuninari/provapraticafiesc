@@ -3,7 +3,6 @@ package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.controll
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service.ImportacaoAutomaticaFeriadoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,13 +19,13 @@ public class ImportacaoAutomaticaFeriadoController {
         service.importarFeriadosAutomacaoMunicipais(request);
     }
 
-    @GetMapping("nacionais")
-    public void importarFeriadosAutomacaoNacionais(Integer ano) {
-        //service.importarFeriadosAutomacaoNacionais(ano);
+    @PostMapping("nacionais")
+    public void importarFeriadosAutomacaoNacionais(FeriadoRequest request) {
+        service.importarFeriadosAutomacaoNacionais(request);
     }
 
-    @GetMapping("estaduais")
-    public void importarFeriadosAutomacaoEstaduais(Integer ano) {
-        //service.importarFeriadosAutomacaoEstaduais(ano);
+    @PostMapping("estaduais")
+    public void importarFeriadosAutomacaoEstaduais(FeriadoRequest request) {
+        service.importarFeriadosAutomacaoEstaduais(request);
     }
 }

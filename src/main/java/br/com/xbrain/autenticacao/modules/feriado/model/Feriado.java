@@ -107,6 +107,25 @@ public class Feriado {
         return feriado;
     }
 
+    public static Feriado of(FeriadoAutomacao feriadoAutomacao, Integer usuarioCadastroId) {
+        var feriado = new Feriado();
+        BeanUtils.copyProperties(feriadoAutomacao, feriado);
+        feriado.setDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()));
+        feriado.setFeriadoNacional(
+            feriadoAutomacao.getTipoFeriado()
+                .equals(ETipoFeriado.NACIONAL) ? Eboolean.V : Eboolean.F);
+        if (nonNull(feriadoAutomacao.getUf())) {
+            feriado.setUf(new Uf(feriadoAutomacao.getUf().getId()));
+        }
+        if (nonNull(feriadoAutomacao.getCidade())) {
+            feriado.setCidade(new Cidade(feriadoAutomacao.getCidade().getId()));
+        }
+        feriado.setDataCadastro(LocalDateTime.now());
+        feriado.setSituacao(ESituacaoFeriado.ATIVO);
+        feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
+        return feriado;
+    }
+
     public static Feriado criarFeriadoFilho(Cidade cidade, Feriado feriadoPai) {
         var feriadoFilho = new Feriado();
         BeanUtils.copyProperties(feriadoPai, feriadoFilho);
