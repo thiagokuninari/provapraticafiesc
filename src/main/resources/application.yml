@@ -72,7 +72,7 @@ app-config:
   upload-async: true
   nome: Colaboradores
   url: http://localhost:3100
-  url-estatico: https://estatico.conexaoclarobrasil.com.br
+  url-estatico: https://estatico-hom.conexaoclarobrasil.com.br
   url-estatico-upload: ${app-config.url-estatico}/desenvolvimento/autenticacao
   estatico-dir: /opt/servidor_estatico/conexao_claro_brasil
   upload-dir: ${app-config.estatico-dir}/desenvolvimento/autenticacao
