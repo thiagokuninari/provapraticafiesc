@@ -78,6 +78,19 @@ public class OrganizacaoEmpresaHelper {
                 .build());
     }
 
+    public static List<OrganizacaoEmpresaResponse> umaListaOrganizacaoEmpresaResponseComNivel() {
+        return List.of(OrganizacaoEmpresaResponse.builder()
+                .id(1)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponse())
+                .build(),
+            OrganizacaoEmpresaResponse.builder()
+                .id(2)
+                .situacao(ESituacaoOrganizacaoEmpresa.A)
+                .nivel(umNivelResponseReceptivo())
+                .build());
+    }
+
     public static List<SelectResponse> duasOrganizacoesEmpresaSelectResponse() {
         return duasOrganizacoesEmpresaSelectResponse().stream()
             .map(organizacaoEmpresa ->
@@ -98,6 +111,14 @@ public class OrganizacaoEmpresaHelper {
             .id(1)
             .nome("VAREJO")
             .codigo(CodigoNivel.VAREJO.name())
+            .build();
+    }
+
+    public static NivelResponse umNivelResponseReceptivo() {
+        return NivelResponse.builder()
+            .id(2)
+            .nome("RECEPTIVO")
+            .codigo(CodigoNivel.RECEPTIVO.name())
             .build();
     }
 }

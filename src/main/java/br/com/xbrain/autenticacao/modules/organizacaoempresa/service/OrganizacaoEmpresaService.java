@@ -168,4 +168,14 @@ public class  OrganizacaoEmpresaService {
         }
         return organizacoes;
     }
+
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(List<Integer> niveisIds) {
+        var organizacoes = organizacaoEmpresaRepository
+            .findAllAtivosByNivelIdInAndSituacao(niveisIds, ESituacaoOrganizacaoEmpresa.A)
+            .stream().map(OrganizacaoEmpresaResponse::of).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(organizacoes)) {
+            throw EX_NAO_ENCONTRADO;
+        }
+        return organizacoes;
+    }
 }

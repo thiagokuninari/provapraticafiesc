@@ -18,6 +18,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioAdminAutenticado;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.ControllerTestHelper.umUsuarioMsoConsultorAutenticado;
 import static br.com.xbrain.autenticacao.modules.organizacaoempresa.helper.OrganizacaoEmpresaHelper.*;
@@ -306,6 +308,44 @@ public class OrganizacaoEmpresaControllerTest {
         mockMvc.perform(get(API_URI + "/por-nivel")
                 .header("Authorization", getAccessToken(mockMvc, ADMIN))
                 .param("nivelId", "100")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[1].id", is(2)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarUnauthorized_quandoUsuarioNaoAutenticado() {
+        when(organizacaoEmpresaService.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1,2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
+
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "1,2")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarBadRequest_quandoParametroNaoPreenchidoCorretamente() {
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "a")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    public void findAllOrganizacoesAtivasByNiveisIds_deveRetornarListaOrganizacoesEmpresaIdsPorNiveisId_quandoSolicitado() {
+        when(organizacaoEmpresaService.findAllOrganizacoesAtivasByNiveisIds(eq(List.of(1,2))))
+            .thenReturn(umaListaOrganizacaoEmpresaResponseComNivel());
+
+        mockMvc.perform(get(API_URI + "/niveis-ids")
+                .param("niveisIds", "1,2")
+                .header("Authorization", getAccessToken(mockMvc, ADMIN))
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))

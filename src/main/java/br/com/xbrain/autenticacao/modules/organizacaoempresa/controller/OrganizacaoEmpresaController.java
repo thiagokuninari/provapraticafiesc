@@ -65,4 +65,9 @@ public class OrganizacaoEmpresaController {
     public List<OrganizacaoEmpresaResponse> findByNivel(@NotNull @RequestParam Integer nivelId) {
         return service.findAllByNivelId(nivelId);
     }
+
+    @GetMapping("niveis-ids")
+    public List<OrganizacaoEmpresaResponse> findAllOrganizacoesAtivasByNiveisIds(@RequestParam List<Integer> niveisIds) {
+        return service.findAllOrganizacoesAtivasByNiveisIds(niveisIds);
+    }
 }

@@ -22,4 +22,7 @@ public interface OrganizacaoEmpresaRepository extends PagingAndSortingRepository
     boolean existsByCnpj(String cnpj);
 
     boolean existsByRazaoSocialAndCnpjAndIdNot(String razaoSocial, String cnpj, Integer id);
+
+    List<OrganizacaoEmpresa> findAllAtivosByNivelIdInAndSituacao(List<Integer> nivelId, ESituacaoOrganizacaoEmpresa situacao);
+
 }
