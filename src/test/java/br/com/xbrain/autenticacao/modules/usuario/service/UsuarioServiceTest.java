@@ -2153,7 +2153,7 @@ public class UsuarioServiceTest {
         usuarioService.getUsuariosPermitidosPelaEquipeDeVenda();
 
         verify(equipeVendaD2dService, times(1))
-            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS)));
+            .getUsuariosPermitidos(eq(List.of(SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS)));
     }
 
     @Test

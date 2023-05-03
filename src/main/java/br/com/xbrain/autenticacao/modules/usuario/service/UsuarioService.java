@@ -7,11 +7,7 @@ import br.com.xbrain.autenticacao.modules.autenticacao.service.AutenticacaoServi
 import br.com.xbrain.autenticacao.modules.comum.dto.EmpresaResponse;
 import br.com.xbrain.autenticacao.modules.comum.dto.PageRequest;
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoEmpresa;
-import br.com.xbrain.autenticacao.modules.comum.enums.CodigoUnidadeNegocio;
-import br.com.xbrain.autenticacao.modules.comum.enums.ESituacao;
-import br.com.xbrain.autenticacao.modules.comum.enums.ETipoFeeder;
-import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
+import br.com.xbrain.autenticacao.modules.comum.enums.*;
 import br.com.xbrain.autenticacao.modules.comum.exception.NotFoundException;
 import br.com.xbrain.autenticacao.modules.comum.exception.PermissaoException;
 import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
@@ -128,20 +124,20 @@ public class UsuarioService {
         "Usuário inativo por excesso de consultas, não foi possível reativá-lo. Para reativação deste usuário é"
             + " necessário a abertura de um incidente no CA, anexando a liberação do diretor comercial.";
     public static final int NUMERO_MAXIMO_TENTATIVAS_LOGIN_SENHA_INCORRETA = 3;
-    private static ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
-    private static ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
+    private static final ValidacaoException EMAIL_CADASTRADO_EXCEPTION = new ValidacaoException("Email já cadastrado.");
+    private static final ValidacaoException EMAIL_ATUAL_INCORRETO_EXCEPTION
         = new ValidacaoException("Email atual está incorreto.");
-    private static ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
+    private static final ValidacaoException SENHA_ATUAL_INCORRETA_EXCEPTION
         = new ValidacaoException("Senha atual está incorreta.");
-    private static ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
+    private static final ValidacaoException USUARIO_NOT_FOUND_EXCEPTION
         = new ValidacaoException("O usuário não foi encontrado.");
-    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
+    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_D2D = List.of(SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO,
         VENDEDOR_OPERACAO);
-    private static ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
+    private static final ValidacaoException USUARIO_ATIVO_LOCAL_POSSUI_AGENDAMENTOS_EX = new ValidacaoException(
         "Não foi possível inativar usuario Ativo Local com agendamentos"
     );
-    private static List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL = List.of(
-        SUPERVISOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_TELEVENDAS);
+    private static final List<CodigoCargo> CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL =
+        List.of(SUPERVISOR_OPERACAO, OPERACAO_TELEVENDAS);
     private static final List<CodigoCargo> LISTA_CARGOS_VALIDACAO_PROMOCAO = List.of(
         SUPERVISOR_OPERACAO, VENDEDOR_OPERACAO, ASSISTENTE_OPERACAO, OPERACAO_EXECUTIVO_VENDAS, COORDENADOR_OPERACAO);
     private static final List<CodigoCargo> LISTA_CARGOS_LIDERES_EQUIPE = List.of(
@@ -337,8 +333,8 @@ public class UsuarioService {
     }
 
     public Page<Usuario> getAll(PageRequest pageRequest, UsuarioFiltros filtros) {
-        UsuarioPredicate predicate = filtrarUsuariosPermitidos(filtros);
-        Page<Usuario> pages = repository.findAll(predicate.build(), pageRequest);
+        var predicate = filtrarUsuariosPermitidos(filtros);
+        var pages = repository.findAll(predicate.build(), pageRequest);
         if (!ObjectUtils.isEmpty(pages.getContent())) {
             popularUsuarios(pages.getContent());
         }
@@ -844,7 +840,7 @@ public class UsuarioService {
             .ifPresent(usuario -> {
                 if (ObjectUtils.isEmpty(usuarioId)
                     || !usuarioId.equals(usuario.getId())) {
-                    throw new ValidacaoException("Email já cadastrado.");
+                    throw EMAIL_CADASTRADO_EXCEPTION;
                 }
             });
     }
@@ -1325,7 +1321,7 @@ public class UsuarioService {
             .ifPresent(u -> {
                 if (ObjectUtils.isEmpty(usuario.getId())
                     || !usuario.getId().equals(u.getId())) {
-                    throw new ValidacaoException("Email já cadastrado.");
+                    throw EMAIL_CADASTRADO_EXCEPTION;
                 }
             });
     }
@@ -1946,7 +1942,7 @@ public class UsuarioService {
 
     private UsuarioPredicate filtrarUsuariosPermitidos(UsuarioFiltros filtros) {
         filtros.setNovasRegionaisIds(regionalService.getNovasRegionaisIds());
-        UsuarioPredicate predicate = filtros.toPredicate();
+        var predicate = filtros.toPredicate();
         predicate.filtraPermitidos(autenticacaoService.getUsuarioAutenticado(), this, true);
         if (!StringUtils.isEmpty(filtros.getCnpjAa())) {
             obterUsuariosAa(filtros.getCnpjAa(), predicate, true);
@@ -1959,12 +1955,10 @@ public class UsuarioService {
             ? CARGOS_PARA_INTEGRACAO_ATIVO_LOCAL
             : CARGOS_PARA_INTEGRACAO_D2D;
 
-        return IntStream.concat(
-                equipeVendaD2dService
-                    .getUsuariosPermitidos(cargos)
-                    .stream()
-                    .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId),
-                IntStream.of(autenticacaoService.getUsuarioId()))
+        var usuariosIdsDaEquipe = equipeVendaD2dService.getUsuariosPermitidos(cargos)
+            .stream()
+            .mapToInt(EquipeVendaUsuarioResponse::getUsuarioId);
+        return IntStream.concat(usuariosIdsDaEquipe, IntStream.of(autenticacaoService.getUsuarioId()))
             .boxed()
             .collect(Collectors.toList());
     }

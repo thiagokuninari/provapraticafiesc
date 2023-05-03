@@ -46,7 +46,7 @@ public class UsuarioPredicate {
     public UsuarioPredicate excluiIds(List<Integer> excluiIds) {
         if (!StringUtils.isEmpty(excluiIds)) {
             builder.and(ExpressionUtils.anyOf(
-                Lists.partition(excluiIds,QTD_MAX_IN_NO_ORACLE)
+                Lists.partition(excluiIds, QTD_MAX_IN_NO_ORACLE)
                     .stream()
                     .map(usuario.id::notIn)
                     .collect(Collectors.toList())
@@ -452,16 +452,18 @@ public class UsuarioPredicate {
 
         if (usuario.isUsuarioEquipeVendas()) {
             comIds(Stream.of(
-                usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
-                singletonList(usuario.getUsuario().getId()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList()));
+                        usuarioService.getUsuariosPermitidosPelaEquipeDeVenda(),
+                        usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), incluirProprio),
+                        singletonList(usuario.getUsuario().getId())
+                    )
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList())
+            );
 
         } else if (usuario.hasPermissao(CTR_VISUALIZAR_CARTEIRA_HIERARQUIA)) {
             comIds(Stream.of(
-                usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
-                usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
+                    usuarioService.obterIdsPorUsuarioCadastroId(usuario.getUsuario().getId()),
+                    usuarioService.getIdDosUsuariosSubordinados(usuario.getUsuario().getId(), true))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()));
 
