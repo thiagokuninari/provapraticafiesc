@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 public class CorsConfigFilterTest {
+
     private static final String ENDPOINT = "/api/feriado";
     @MockBean
     private RestTemplate restTemplate;
@@ -34,7 +35,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarCabecalho_seOriginForVazia() {
-
         var headers = new HttpHeaders();
         headers.set("Origin", "");
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -60,7 +60,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarCabecalho_seAccessControlAllowMethodsForCorrespondenteComOsDeclaradosNaClasse() {
-
         var headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -90,7 +89,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarCabecalho_seAccessControlMaxAgeForCorrespondenteComODeclaradoNaClasse() {
-
         var headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -104,7 +102,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarCabecalho_seAccessControlAllowHeadersForCorrespondenteComOsDeclaradosNaClasse() {
-
         var headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -116,12 +113,10 @@ public class CorsConfigFilterTest {
             .isEqualTo("[Authorization, Origin, X-Requested-With, Content-Type, Accept, X-Usuario-Canal, "
                 + HEADER_USUARIO_EMULADOR + "]");
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
     }
 
     @Test
     public void doFilter_deveRetornarCabecalho_seAccessControlAllowOriginsForCorrespondenteComOsDeclaradosNaClasse() {
-
         var headers = new HttpHeaders();
         headers.set("Origin", "http://localhost");
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -138,7 +133,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarCabecalho_seAccessControlAllowCredentialsForCorrespondenteComODeclaradosNaClasse() {
-
         var headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -153,7 +147,6 @@ public class CorsConfigFilterTest {
 
     @Test
     public void doFilter_deveRetornarNotFound_seRotaNaoEncontrado() {
-
         var headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<>(headers);
