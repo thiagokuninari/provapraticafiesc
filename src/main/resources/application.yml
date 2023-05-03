@@ -121,6 +121,7 @@ app-config:
     atualizar-usuario-pol: atualizar-usuario-pol.queue
     inativar-usuario-equipe-venda: inativar-usuario-equipe-venda.queue
     inativar-colaborador-pol: inativar-colaborador-pol.queue
+    inativar-colaborador-pol-failure: inativar-colaborador-pol-failure.queue
     distribuir-tabulacoes: distribuir-tabulacoes.queue
     usuario-ultimo-acesso-pol: usuario-ultimo-acesso-pol.queue
     atualizar-permissao-feeder: permissao-feeder-aa-atualizacao.queue
@@ -139,6 +140,8 @@ app-config:
     limpar-cpf-e-alterar-email-feeder-failure: limpar-cpf-e-alterar-email-feeder-failure.queue
     permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
+    adicionar-permissao-tecnico-indicador: adicionar-permissao-tecnico-indicador.queue
+    remover-permissao-tecnico-indicador: remover-permissao-tecnico-indicador.queue
 
   oauth-clients:
     autenticacao-api:
