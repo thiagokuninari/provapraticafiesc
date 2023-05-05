@@ -381,12 +381,12 @@ public class RabbitConfig {
 
     @Bean
     Queue adicionarPermissaoTecnicoIndicadorMq() {
-        return QueueBuilder.durable(adicionarPermissaoTecnicoIndicadorMq).build();
+        return QueueBuilder.nonDurable(adicionarPermissaoTecnicoIndicadorMq).build();
     }
 
     @Bean
     Queue removerPermissaoTecnicoIndicadorMq() {
-        return QueueBuilder.durable(removerPermissaoTecnicoIndicadorMq).build();
+        return QueueBuilder.nonDurable(removerPermissaoTecnicoIndicadorMq).build();
     }
 
     @Bean
