@@ -1,6 +1,7 @@
 package br.com.xbrain.autenticacao.modules.comum.service;
 
 import br.com.xbrain.autenticacao.modules.comum.dto.SelectResponse;
+import br.com.xbrain.autenticacao.modules.comum.exception.ValidacaoException;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
 import br.com.xbrain.autenticacao.modules.comum.repository.UfRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,8 @@ public class UfService {
                 .collect(Collectors.toList());
     }
 
-    public Uf findUfByUf(String uf) {
-        return ufRepository.findByUf(uf).orElseThrow();
+    public Uf findById(Integer id) {
+        return ufRepository.findById(id)
+            .orElseThrow(() -> new ValidacaoException("Uf não encontrado"));
     }
 }

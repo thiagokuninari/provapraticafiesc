@@ -5,6 +5,7 @@ import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.QUf;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoCidadeEstadoResponse;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoMesAnoResponse;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.model.Feriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.QCidade;
@@ -15,7 +16,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.Optional;
 
 import static br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado.ATIVO;
 import static br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado.EXCLUIDO;
@@ -43,14 +43,14 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
             .select(feriado.id.countDistinct())
             .from(feriado)
             .leftJoin(feriado.cidade, QCidade.cidade)
-            .leftJoin(QCidade.cidade.uf, QUf.uf1)
+            .leftJoin(feriado.uf, QUf.uf1)
             .where(
                 feriado.dataFeriado.eq(data)
                     .and(feriado.situacao.eq(ATIVO))
                     .and(feriado.feriadoNacional.eq(Eboolean.V)
-                        .or(QCidade.cidade.nome.eq(cidade.toUpperCase())
-                            .and(QUf.uf1.uf.eq(uf.toUpperCase())
-                                .or(QUf.uf1.nome.eq(uf.toUpperCase())))))
+                        .or(QCidade.cidade.nome.containsIgnoreCase(cidade.toUpperCase())
+                            .or(QUf.uf1.uf.containsIgnoreCase(uf.toUpperCase())
+                                .or(QUf.uf1.nome.containsIgnoreCase(uf.toUpperCase())))))
             )
             .fetchCount() > 0;
     }
@@ -107,12 +107,29 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
     }
 
     @Override
-    public Optional<Feriado> findByPredicate(Predicate predicate) {
-        return Optional.ofNullable(new JPAQueryFactory(entityManager)
-            .select(feriado)
+    public boolean existsByPredicate(Predicate predicate) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.id.count())
             .from(feriado)
             .where(predicate)
-            .fetchOne());
+            .fetchCount() > 0;
+    }
+
+    @Override
+    public boolean existsByDataFeriadoAndCidadeIdOrUfId(LocalDate data, Integer cidadeId,
+                                                        Integer ufId, ESituacaoFeriado situacao) {
+        return new JPAQueryFactory(entityManager)
+            .select(feriado.id.countDistinct())
+            .from(feriado)
+            .leftJoin(feriado.cidade, QCidade.cidade)
+            .leftJoin(feriado.uf, QUf.uf1)
+            .where(
+                feriado.dataFeriado.eq(data)
+                    .and(feriado.situacao.eq(ATIVO))
+                    .and(QCidade.cidade.id.eq(cidadeId)
+                        .or(QUf.uf1.id.eq(ufId)))
+            )
+            .fetchCount() > 0;
     }
 
     @Override
@@ -160,7 +177,7 @@ public class FeriadoRepositoryImpl extends CustomRepository<Feriado> implements 
                     .and(feriado.dataFeriado.between(
                         now.with(TemporalAdjusters.firstDayOfYear()),
                         now.with(TemporalAdjusters.lastDayOfYear()).plusDays(1)))
-                    )
+            )
             .fetch();
     }
 }

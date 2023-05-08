@@ -60,6 +60,14 @@ public class FeriadoPredicate {
         return this;
     }
 
+    public FeriadoPredicate comCidade(Integer cidadeId) {
+        if (!isEmpty(cidadeId)) {
+            builder.and(feriado.cidade.id.eq(cidadeId)
+                .or(feriado.feriadoNacional.eq(Eboolean.V)));
+        }
+        return this;
+    }
+
     public FeriadoPredicate comEstado(Integer estadoId) {
         if (!isEmpty(estadoId)) {
             builder.and(feriado.uf.id.eq(estadoId)

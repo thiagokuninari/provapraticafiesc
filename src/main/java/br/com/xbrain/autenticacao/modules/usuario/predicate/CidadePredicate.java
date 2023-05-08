@@ -85,12 +85,4 @@ public class CidadePredicate {
         }
         return this;
     }
-
-    public CidadePredicate comUfId(Integer ufId) {
-        if (ufId != null) {
-            builder.and(cidade.uf.id.eq(ufId));
-        }
-
-        return this;
-    }
 }

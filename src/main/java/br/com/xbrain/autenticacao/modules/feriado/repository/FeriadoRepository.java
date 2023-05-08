@@ -17,8 +17,6 @@ public interface FeriadoRepository extends PagingAndSortingRepository<Feriado, I
     Optional<Feriado> findByDataFeriadoAndFeriadoNacionalAndSituacao(LocalDate data, Eboolean nacional,
                                                                      ESituacaoFeriado situacao);
 
-    Optional<Feriado> findByDataFeriadoAndCidadeIdAndSituacao(LocalDate data, Integer cidadeId, ESituacaoFeriado situacao);
-
     Optional<Feriado> findById(Integer id);
 
     List<Feriado> findAll(Predicate predicate);

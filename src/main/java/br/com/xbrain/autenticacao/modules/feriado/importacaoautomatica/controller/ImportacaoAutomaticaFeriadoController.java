@@ -19,13 +19,13 @@ public class ImportacaoAutomaticaFeriadoController {
         service.importarFeriadosAutomacaoMunicipais(request);
     }
 
-    @PostMapping("nacionais")
-    public void importarFeriadosAutomacaoNacionais(FeriadoRequest request) {
-        service.importarFeriadosAutomacaoNacionais(request);
-    }
-
     @PostMapping("estaduais")
     public void importarFeriadosAutomacaoEstaduais(FeriadoRequest request) {
         service.importarFeriadosAutomacaoEstaduais(request);
+    }
+
+    @PostMapping("nacionais")
+    public void importarFeriadosAutomacaoNacionais(FeriadoRequest request) {
+        service.importarFeriadosAutomacaoNacionais(request);
     }
 }

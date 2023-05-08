@@ -1,0 +1,147 @@
+package br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.controller;
+
+import br.com.xbrain.autenticacao.config.OAuth2ResourceConfig;
+import br.com.xbrain.autenticacao.modules.equipevenda.service.EquipeVendaD2dService;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.service.ImportacaoAutomaticaFeriadoService;
+import lombok.SneakyThrows;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static helpers.Usuarios.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
+@AutoConfigureMockMvc
+@WebMvcTest(ImportacaoAutomaticaFeriadoController.class)
+@MockBeans({
+    @MockBean(EquipeVendaD2dService.class),
+    @MockBean(TokenStore.class),
+})
+@Import(OAuth2ResourceConfig.class)
+public class ImportacaoAutomaticaFeriadoControllerTest {
+
+    private static final String URL_BASE = "/api/importacao-automatica";
+
+    @Autowired
+    private MockMvc mvc;
+    @MockBean
+    private ImportacaoAutomaticaFeriadoService service;
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
+    public void importarFeriadosAutomacaoMunicipais_deveImportarFeriadosMunicipais_seSolicitado() {
+        mvc.perform(post(URL_BASE + "/municipais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).importarFeriadosAutomacaoMunicipais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void importarFeriadosAutomacaoMunicipais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
+        mvc.perform(post(URL_BASE + "/municipais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(service, never()).importarFeriadosAutomacaoMunicipais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
+    public void importarFeriadosAutomacaoMunicipais_deveLancarForbidden_seUsuarioSemPermissao() {
+        mvc.perform(post(URL_BASE + "/municipais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verify(service, never()).importarFeriadosAutomacaoMunicipais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
+    public void importarFeriadosAutomacaoEstaduais_deveImportarFeriadosMunicipais_seSolicitado() {
+        mvc.perform(post(URL_BASE + "/estaduais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).importarFeriadosAutomacaoEstaduais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void importarFeriadosAutomacaoEstaduais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
+        mvc.perform(post(URL_BASE + "/estaduais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(service, never()).importarFeriadosAutomacaoEstaduais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
+    public void importarFeriadosAutomacaoEstaduais_deveLancarForbidden_seUsuarioSemPermissao() {
+        mvc.perform(post(URL_BASE + "/estaduais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verify(service, never()).importarFeriadosAutomacaoEstaduais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = ADMIN, roles = {"CTR_2050"})
+    public void importarFeriadosAutomacaoNacionais_deveImportarFeriadosMunicipais_seSolicitado() {
+        mvc.perform(post(URL_BASE + "/nacionais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(service).importarFeriadosAutomacaoNacionais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithAnonymousUser
+    public void importarFeriadosAutomacaoNacionais_deveLancarUnauthorized_seUsuarioNaoAutorizado() {
+        mvc.perform(post(URL_BASE + "/nacionais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized());
+
+        verify(service, never()).importarFeriadosAutomacaoNacionais(any());
+    }
+
+    @Test
+    @SneakyThrows
+    @WithMockUser(username = OPERACAO_SUPERVISOR, roles = {"CTR_2033"})
+    public void importarFeriadosAutomacaoNacionais_deveLancarForbidden_seUsuarioSemPermissao() {
+        mvc.perform(post(URL_BASE + "/nacionais")
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        verify(service, never()).importarFeriadosAutomacaoNacionais(any());
+    }
+}

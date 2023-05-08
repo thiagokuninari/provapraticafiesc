@@ -81,9 +81,10 @@ public class FeriadoService {
     }
 
     public boolean consulta(String data, Integer cidadeId) {
-        return repository.findByDataFeriadoAndCidadeIdAndSituacao(DateUtils.parseStringToLocalDate(data),
-            cidadeId,
-            ESituacaoFeriado.ATIVO).isPresent();
+        var cidade = cidadeService.findById(cidadeId);
+        return repository.existsByDataFeriadoAndCidadeIdOrUfId(DateUtils.parseStringToLocalDate(data),
+            cidadeId, cidade.getIdUf(),
+            ESituacaoFeriado.ATIVO);
     }
 
     public Feriado save(FeriadoRequest request) {
@@ -147,14 +148,6 @@ public class FeriadoService {
         salvarFeriadoEstadualParaCidadesDoEstadoAsync(feriadoImportado);
         historicoService.salvarHistorico(feriadoImportado, IMPORTADO, autenticacaoService.getUsuarioAutenticado());
         return feriadoImportado;
-    }
-
-    public void salvarFeriadoAutomacao(FeriadoAutomacao feriadoAutomacao) {
-        var feriado = Feriado.ofAutomacao(feriadoAutomacao, autenticacaoService.getUsuarioAutenticado());
-        //todo salvar feriados
-
-        log.info("Feriado: " + feriado.getNome() + " / Data do Feriado: " + feriado.getDataFeriado());
-        salvarFeriadoEstadualParaCidadesDoEstadoAsync(feriado);
     }
 
     @Transactional
@@ -283,36 +276,34 @@ public class FeriadoService {
                 .build());
     }
 
-    public void validarSeFeriadoJaCadastado(FeriadoRequest request) {
-        repository.findByPredicate(
-            new FeriadoPredicate()
-                .comNome(request.getNome())
-                .comTipoFeriado(request.getTipoFeriado())
-                .comEstado(request.getEstadoId())
-                .comCidade(request.getCidadeId(), request.getEstadoId())
-                .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
-                .excetoExcluidos()
-                .excetoFeriadosFilhos()
-                .build())
-            .ifPresent(feriado -> {
-                throw EX_FERIADO_JA_CADASTRADO;
-            });
+    private void validarSeFeriadoJaCadastado(FeriadoRequest request) {
+        var predicate = new FeriadoPredicate()
+            .comNome(request.getNome())
+            .comTipoFeriado(request.getTipoFeriado())
+            .comEstado(request.getEstadoId())
+            .comCidade(request.getCidadeId(), request.getEstadoId())
+            .comDataFeriado(DateUtils.parseStringToLocalDate(request.getDataFeriado()))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+        if (repository.existsByPredicate(predicate)) {
+            throw EX_FERIADO_JA_CADASTRADO;
+        }
     }
 
-    public void validarSeFeriadoJaCadastado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
-        repository.findByPredicate(
-                new FeriadoPredicate()
-                    .comNome(feriadoAutomacao.getNome())
-                    .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
-                    .comEstado(request.getEstadoId())
-                    .comCidade(request.getCidadeId(), request.getEstadoId())
-                    .comDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()))
-                    .excetoExcluidos()
-                    .excetoFeriadosFilhos()
-                    .build())
-            .ifPresent(feriado -> {
-                throw EX_FERIADO_JA_CADASTRADO;
-            });
+    public void validarSeFeriadoAutomacaoJaCadastado(FeriadoAutomacao feriadoAutomacao, FeriadoRequest request) {
+        var predicate = new FeriadoPredicate()
+            .comNome(feriadoAutomacao.getNome())
+            .comTipoFeriado(feriadoAutomacao.getTipoFeriado())
+            .comEstado(request.getEstadoId())
+            .comCidade(request.getCidadeId())
+            .comDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+        if (repository.existsByPredicate(predicate)) {
+            throw EX_FERIADO_JA_CADASTRADO;
+        }
     }
 
     @CacheEvict(

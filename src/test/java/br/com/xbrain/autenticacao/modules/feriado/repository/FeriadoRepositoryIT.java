@@ -1,5 +1,9 @@
 package br.com.xbrain.autenticacao.modules.feriado.repository;
 
+import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.predicate.FeriadoPredicate;
+import br.com.xbrain.xbrainutils.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +46,7 @@ public class FeriadoRepositoryIT {
     @Test
     public void hasFeriadoNacionalOuRegional_deveRetornarFalse_casoNaoSejaFeriadoRegional() {
 
-        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 7, 28), "ARAPONGAS", "PR");
+        var isFeriado = feriadoRepository.hasFeriadoNacionalOuRegional(LocalDate.of(2019, 6, 28), "ARAPONGAS", "PR");
 
         assertThat(isFeriado).isFalse();
     }
@@ -132,5 +136,49 @@ public class FeriadoRepositoryIT {
             .hasSize(2)
             .contains(LocalDate.of(2019, 7, 29), LocalDate.of(2019, 9, 23))
             .doesNotContain(LocalDate.of(2019, 9, 30));
+    }
+
+    @Test
+    public void existsByPredicate_deveRetornarTrue_seFeriadoExistir() {
+        var predicate = new FeriadoPredicate()
+            .comNome("Feriado Fiorillo")
+            .comTipoFeriado(ETipoFeriado.MUNICIPAL)
+            .comEstado(1)
+            .comCidade(5578)
+            .comDataFeriado(DateUtils.parseStringToLocalDate("20/09/2023"))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+
+        assertThat(feriadoRepository.existsByPredicate(predicate)).isTrue();
+    }
+
+    @Test
+    public void existsByPredicate_deveRetornarFalse_seFeriadoNaoExistir() {
+        var predicate = new FeriadoPredicate()
+            .comNome("Feriado Fiorillo")
+            .comTipoFeriado(ETipoFeriado.MUNICIPAL)
+            .comEstado(1)
+            .comCidade(5578)
+            .comDataFeriado(DateUtils.parseStringToLocalDate("20/01/2023"))
+            .excetoExcluidos()
+            .excetoFeriadosFilhos()
+            .build();
+
+        assertThat(feriadoRepository.existsByPredicate(predicate)).isFalse();
+    }
+
+    @Test
+    public void existsByDataFeriadoAndCidadeIdOrUfId_deveRetornarTrue_seFeriadoExistir() {
+        assertThat(feriadoRepository.existsByDataFeriadoAndCidadeIdOrUfId(
+            LocalDate.of(2023, 9, 20), 5578, 1, ESituacaoFeriado.ATIVO))
+            .isTrue();
+    }
+
+    @Test
+    public void existsByDataFeriadoAndCidadeIdOrUfId_deveRetornarFalse_seFeriadoNaoExistir() {
+        assertThat(feriadoRepository.existsByDataFeriadoAndCidadeIdOrUfId(
+            LocalDate.of(2023, 1, 20), 5578, 1, ESituacaoFeriado.ATIVO))
+            .isFalse();
     }
 }

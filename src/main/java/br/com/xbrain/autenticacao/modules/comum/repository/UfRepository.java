@@ -16,4 +16,6 @@ public interface UfRepository extends PagingAndSortingRepository<Uf, Integer>, U
     List<Uf> findByOrderByNomeAsc();
 
     Optional<Uf> findByUf(String uf);
+
+    Optional<Uf> findById(Integer id);
 }

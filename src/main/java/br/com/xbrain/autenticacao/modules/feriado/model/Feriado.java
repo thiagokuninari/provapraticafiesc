@@ -1,14 +1,13 @@
 package br.com.xbrain.autenticacao.modules.feriado.model;
 
-import br.com.xbrain.autenticacao.modules.autenticacao.dto.UsuarioAutenticado;
 import br.com.xbrain.autenticacao.modules.comum.enums.Eboolean;
 import br.com.xbrain.autenticacao.modules.comum.model.Uf;
-import br.com.xbrain.autenticacao.modules.comum.util.DateUtil;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoAutomacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoImportacao;
 import br.com.xbrain.autenticacao.modules.feriado.dto.FeriadoRequest;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ESituacaoFeriado;
 import br.com.xbrain.autenticacao.modules.feriado.enums.ETipoFeriado;
+import br.com.xbrain.autenticacao.modules.feriado.importacaoautomatica.model.ImportacaoFeriado;
 import br.com.xbrain.autenticacao.modules.usuario.model.Cidade;
 import br.com.xbrain.autenticacao.modules.usuario.model.Usuario;
 import br.com.xbrain.xbrainutils.DateUtils;
@@ -85,6 +84,12 @@ public class Feriado {
     @JsonIgnore
     private Usuario usuarioCadastro;
 
+    @JoinColumn(name = "FK_IMPORTACAO", foreignKey = @ForeignKey(name = "FK_FERIADO_IMPORTACAO"),
+        referencedColumnName = "ID", updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private ImportacaoFeriado importacaoFeriado;
+
     @PrePersist
     public void setup() {
         nome = nome.toUpperCase();
@@ -107,22 +112,24 @@ public class Feriado {
         return feriado;
     }
 
-    public static Feriado of(FeriadoAutomacao feriadoAutomacao, Integer usuarioCadastroId) {
+    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao, Integer usuarioCadastroId,
+                                      FeriadoRequest request, ImportacaoFeriado importacaoFeriado) {
         var feriado = new Feriado();
         BeanUtils.copyProperties(feriadoAutomacao, feriado);
         feriado.setDataFeriado(DateUtils.parseStringToLocalDate(feriadoAutomacao.getDataFeriado()));
         feriado.setFeriadoNacional(
             feriadoAutomacao.getTipoFeriado()
                 .equals(ETipoFeriado.NACIONAL) ? Eboolean.V : Eboolean.F);
-        if (nonNull(feriadoAutomacao.getUf())) {
-            feriado.setUf(new Uf(feriadoAutomacao.getUf().getId()));
+        if (nonNull(request.getEstadoId())) {
+            feriado.setUf(new Uf(request.getEstadoId()));
         }
-        if (nonNull(feriadoAutomacao.getCidade())) {
-            feriado.setCidade(new Cidade(feriadoAutomacao.getCidade().getId()));
+        if (nonNull(request.getCidadeId())) {
+            feriado.setCidade(new Cidade(request.getCidadeId()));
         }
         feriado.setDataCadastro(LocalDateTime.now());
         feriado.setSituacao(ESituacaoFeriado.ATIVO);
         feriado.setUsuarioCadastro(new Usuario(usuarioCadastroId));
+        feriado.setImportacaoFeriado(importacaoFeriado);
         return feriado;
     }
 
@@ -172,24 +179,5 @@ public class Feriado {
     public void editarFeriadoFilho(Feriado feriadoPai) {
         nome = feriadoPai.getNome();
         dataFeriado = feriadoPai.getDataFeriado();
-    }
-
-    public static Feriado ofAutomacao(FeriadoAutomacao feriadoAutomacao,
-                                      UsuarioAutenticado usuarioAutenticado) {
-        var feriado = new Feriado();
-        feriado.setNome(feriadoAutomacao.getNome());
-        feriado.setDataFeriado(DateUtil.strToDate(feriadoAutomacao.getDataFeriado(), "dd/MM/yyyy"));
-        feriado.setDataCadastro(LocalDateTime.now());
-        feriado.setFeriadoNacional(
-            ETipoFeriado.NACIONAL.equals(feriadoAutomacao.getTipoFeriado()) ? Eboolean.V : Eboolean.F);
-        feriado.setTipoFeriado(feriadoAutomacao.getTipoFeriado());
-        if (nonNull(feriadoAutomacao.getUf())) {
-            feriado.setUf(feriadoAutomacao.getUf());
-        }
-        if (nonNull(feriadoAutomacao.getCidade())) {
-            feriado.setCidade(feriadoAutomacao.getCidade());
-        }
-        feriado.setUsuarioCadastro(usuarioAutenticado.getUsuario());
-        return feriado;
     }
 }
