@@ -2391,6 +2391,28 @@ public class UsuarioServiceTest {
         verify(equipeVendaD2dService, times(1)).getSubCanaisDaEquipeVendaD2dByUsuarioId(eq(usuarioDto.getId()));
     }
 
+    @Test
+    public void findByCpf_deveRetornarUsuarioSubCanalNivelResponse_seUsuarioExistir() {
+        var usuario = umUsuarioCompleto(OPERACAO_TELEVENDAS, 120,
+            OPERACAO, CodigoDepartamento.COMERCIAL, ECanal.D2D_PROPRIO);
+        usuario.setSubCanais(Set.of(umSubCanal()));
+
+        when(usuarioRepository.findTop1UsuarioByCpf(any())).thenReturn(Optional.of(usuario));
+
+        assertThat(usuarioService.findByCpf("11122233344"))
+            .extracting("id", "nome", "nivel", "subCanais")
+            .containsExactly(1, "NOME UM", OPERACAO, Set.of(umSubCanalDto(1, PAP, "PAP")));
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
+    @Test
+    public void findByCpf_deveRetornarNovoObjeto_seUsuarioNaoExistir() {
+        assertThat(usuarioService.findByCpf("00000000000")).isEqualTo(new UsuarioSubCanalNivelResponse());
+
+        verify(usuarioRepository, times(1)).findTop1UsuarioByCpf(anyString());
+    }
+
     private Canal umCanal() {
         return Canal
             .builder()
