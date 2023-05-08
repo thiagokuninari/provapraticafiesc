@@ -26,7 +26,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -148,5 +148,32 @@ public class CidadeServiceTest {
             .contains(
                 tuple(5578, "LONDRINA", 1, "PARANA", 1027, "RPS"),
                 tuple(4519, "FLORIANOPOLIS", 22, "SANTA CATARINA", 1027, "RPS"));
+    }
+
+    @Test
+    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarUfIdERegionalId() {
+        service.buscarTodas(1, 2, null);
+
+        verify(cidadeRepository).findAllByRegionalIdAndUfId(eq(2), eq(1), any());
+        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any());
+        verify(cidadeRepository, never()).findBySubCluster(anyInt());
+    }
+
+    @Test
+    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarUfId() {
+        service.buscarTodas(1, null, null);
+
+        verify(cidadeRepository).findCidadeByUfId(eq(1), any());
+        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any());
+        verify(cidadeRepository, never()).findBySubCluster(anyInt());
+    }
+
+    @Test
+    public void buscarTodas_deveBuscarTodasPorRegionalEUf_quandoPassarSubCluesterId() {
+        service.buscarTodas(null, null, 3);
+
+        verify(cidadeRepository).findBySubCluster(3);
+        verify(cidadeRepository, never()).findCidadeByUfId(anyInt(), any());
+        verify(cidadeRepository, never()).findAllByRegionalIdAndUfId(anyInt(), anyInt(), any());
     }
 }
