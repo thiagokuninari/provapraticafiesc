@@ -141,7 +141,9 @@ app-config:
     permissao-agente-autorizado-equipe-tecnica: permissao-agente-autorizado-equipe-tecnica.queue
     permissao-agente-autorizado-equipe-tecnica-failure: permissao-agente-autorizado-equipe-tecnica-failure.queue
     adicionar-permissao-tecnico-indicador: adicionar-permissao-tecnico-indicador.queue
+    adicionar-permissao-tecnico-indicador-failure: adicionar-permissao-tecnico-indicador-failure.queue
     remover-permissao-tecnico-indicador: remover-permissao-tecnico-indicador.queue
+    remover-permissao-tecnico-indicador-failure: remover-permissao-tecnico-indicador-failure.queue
 
   oauth-clients:
     autenticacao-api:

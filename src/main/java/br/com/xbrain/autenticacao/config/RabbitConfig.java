@@ -143,8 +143,14 @@ public class RabbitConfig {
     @Value("${app-config.queue.adicionar-permissao-tecnico-indicador}")
     private String adicionarPermissaoTecnicoIndicadorMq;
 
+    @Value("${app-config.queue.adicionar-permissao-tecnico-indicador-failure}")
+    private String adicionarPermissaoTecnicoIndicadorFailureMq;
+
     @Value("${app-config.queue.remover-permissao-tecnico-indicador}")
     private String removerPermissaoTecnicoIndicadorMq;
+
+    @Value("${app-config.queue.remover-permissao-tecnico-indicador-failure}")
+    private String removerPermissaoTecnicoIndicadorFailureMq;
 
     @Bean
     public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
@@ -381,12 +387,30 @@ public class RabbitConfig {
 
     @Bean
     Queue adicionarPermissaoTecnicoIndicadorMq() {
-        return QueueBuilder.nonDurable(adicionarPermissaoTecnicoIndicadorMq).build();
+        return QueueBuilder
+            .durable(adicionarPermissaoTecnicoIndicadorMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, adicionarPermissaoTecnicoIndicadorFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue adicionarPermissaoTecnicoIndicadorFailureMq() {
+        return QueueBuilder.durable(adicionarPermissaoTecnicoIndicadorFailureMq).build();
     }
 
     @Bean
     Queue removerPermissaoTecnicoIndicadorMq() {
-        return QueueBuilder.nonDurable(removerPermissaoTecnicoIndicadorMq).build();
+        return QueueBuilder
+            .durable(removerPermissaoTecnicoIndicadorMq)
+            .withArgument(DEAD_LETTER_EXCHANGE, "")
+            .withArgument(DEAD_LETTER_ROUTING_KEY, removerPermissaoTecnicoIndicadorFailureMq)
+            .build();
+    }
+
+    @Bean
+    Queue removerPermissaoTecnicoIndicadorFailureMq() {
+        return QueueBuilder.durable(removerPermissaoTecnicoIndicadorFailureMq).build();
     }
 
     @Bean
@@ -582,5 +606,33 @@ public class RabbitConfig {
         return BindingBuilder.bind(usuarioInativacaoPorAaMq())
             .to(exchange)
             .with(usuarioInativacaoPorAaMq);
+    }
+
+    @Bean
+    public Binding adicionarPermissaoTecnicoIndicadorMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(adicionarPermissaoTecnicoIndicadorMq())
+            .to(exchange)
+            .with(adicionarPermissaoTecnicoIndicadorMq);
+    }
+
+    @Bean
+    public Binding adicionarPermissaoTecnicoIndicadorFailureMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(adicionarPermissaoTecnicoIndicadorFailureMq())
+            .to(exchange)
+            .with(adicionarPermissaoTecnicoIndicadorFailureMq);
+    }
+
+    @Bean
+    public Binding removerPermissaoTecnicoIndicadorMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(removerPermissaoTecnicoIndicadorMq())
+            .to(exchange)
+            .with(removerPermissaoTecnicoIndicadorMq);
+    }
+
+    @Bean
+    public Binding removerPermissaoTecnicoIndicadorFailureMqBinding(TopicExchange exchange) {
+        return BindingBuilder.bind(removerPermissaoTecnicoIndicadorFailureMq())
+            .to(exchange)
+            .with(removerPermissaoTecnicoIndicadorFailureMq);
     }
 }
